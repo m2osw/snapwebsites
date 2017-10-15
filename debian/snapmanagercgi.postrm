@@ -1,0 +1,47 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "purge" ]
+then
+    # delete the snapmanagercgi logs if any
+    #
+    rm -f /var/log/snapwebsites/snapmanagercgi.log*
+    rm -f /var/log/snapwebsites/secure/snapmanagercgi.log*
+
+    rm -f /var/log/apache2/snapmanager-access.log*
+    rm -f /var/log/apache2/snapmanager-error.log*
+
+    # erase configuration files too
+    #
+    rm -f /etc/apache2/snap-conf/snapmanager/*.conf*
+    if test -d /etc/apache2/snap-conf/snapmanager
+    then
+        rmdir --ignore-fail-on-non-empty /etc/apache2/snap-conf/snapmanager
+    fi
+
+    # we create that file, so we want to remove it on a purge
+    #
+    rm -f /etc/snapwebsites/passwords/snapmanagercgi.pwd
+
+    # delete sessions
+    #
+    rm -rf /var/lib/snapwebsites/sessions/snapmanager
+    if test -e /var/lib/snapwebsites/sessions
+    then
+        rmdir --ignore-fail-on-non-empty /var/lib/snapwebsites/sessions
+    fi
+fi
+
+APACHEINIT=/usr/lib/snapwebsites/scripts/snapapacheinit
+if test -e ${APACHEINIT}
+then
+    ${APACHEINIT} remove
+fi
+
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

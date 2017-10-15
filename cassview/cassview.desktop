@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=View and edit your Cassandra contexts.
+Encoding=UTF-8
+Exec=/usr/bin/cassview
+GenericName=Cassandra View
+Icon=/usr/share/pixmaps/cassview.png
+Name=Cassandra View
+Categories=Application;Qt4;Web;
+StartupNotify=true
+Terminal=false
+Type=Application
+X-DCOP-ServiceType=
+X-KDE-SubstituteUID=false
+X-KDE-Username=

@@ -1,0 +1,966 @@
+snapserver-core-plugins (1.0.127.10~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Mon, 19 Jun 2017 02:00:51 -0700
+
+snapserver-core-plugins (1.0.127.0~xenial) xenial; urgency=high
+
+  * SNAP-173: Added support for removing system fields in "content", "branch"
+    and "revision" tables. Similar to removing links.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 18 Jun 2017 23:56:56 -0800
+
+snapserver-core-plugins (1.0.126.0~xenial) xenial; urgency=high
+
+  * SNAP-161: The saving now makes use of the language to retrieve the correct
+    revision key (without it, it would try to read a non-existant revision.)
+  * A couple of clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 18 Jun 2017 17:11:26 -0800
+
+snapserver-core-plugins (1.0.125.0~xenial) xenial; urgency=high
+
+  * SNAP-235: Fixed the meta tag of the generator, correct version now.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 18 Jun 2017 17:11:26 -0800
+
+snapserver-core-plugins (1.0.124.0~xenial) xenial; urgency=high
+
+  * EX-131: Added a reason to the block_ip() call in the password and
+    anti-hammering plugins.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 15 Jun 2017 13:11:46 -0800
+
+snapserver-core-plugins (1.0.123.0~xenial) xenial; urgency=high
+
+  * EX-131: Fixed the name of the file in the list of source files.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 14 Jun 2017 10:18:23 -0800
+
+snapserver-core-plugins (1.0.122.0~xenial) xenial; urgency=high
+
+  * EX-131: Added drop="drop" for the list and listref tables.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 14 Jun 2017 10:02:23 -0800
+
+snapserver-core-plugins (1.0.121.0~xenial) xenial; urgency=high
+
+  * EX-131: make sure that the files used by the journal are owned by
+    snapwebsites:snapwebsites (it may get run by root when run from the
+    command line!)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 13 Jun 2017 20:35:00 -0800
+
+snapserver-core-plugins (1.0.120.0~xenial) xenial; urgency=high
+
+  * EX-131: it is not necessary to have the db and journal folders accessible
+    by the www-data user.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 13 Jun 2017 20:33:37 -0800
+
+snapserver-core-plugins (1.0.119.0~xenial) xenial; urgency=high
+
+  * EX-131: Added the missing dependencies on qt5sql5[-mysql].
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 13 Jun 2017 20:30:57 -0800
+
+snapserver-core-plugins (1.0.118.0~xenial) xenial; urgency=high
+
+  * EX-131: Make use of the new column and index to find when the next wake
+    up call should hit.
+  * Directly put now + 1 day in the status column, that way we can eliminate
+    that computation from everywhere else.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 11 Jun 2017 23:05:29 -0800
+
+snapserver-core-plugins (1.0.117.0~xenial) xenial; urgency=high
+
+  * EX-131: Updated the list plugin to make use of MySQL for the list
+    journaling (instead of Cassandra which blocks very quickly).
+  * Install the /var/lib/snapwebsites/list folders.
+  * Removed the tests for now, since these were 100% relying on the list
+    and listref tables, which are now gone.
+  * Added the listdata_connection so the listjournal backend can run use
+    that class to send all the journal data to the pagelist backend.
+  * Changed the on_modified_content() to save new entries to the local
+    journal instead of the Cassandra.
+  * The list plugin run by a client now pings the listjournal backend
+    whenever the journal gets updated.
+  * Changed the generate_all_lists() to use the MySQL table instead of
+    the Cassandra list and listref tables.
+  * Changed the logic to make use of 3 simple SELECT and not one large
+    SELECT of all the data. (1) get high priority, (2) if no high priority,
+    get low priority, (3) get date and time for next wakeup.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 11 Jun 2017 17:29:29 -0800
+
+snapserver-core-plugins (1.0.116.0~xenial) xenial; urgency=high
+
+  * SNAP-235: Fixed the Link header so we can add many links if we want to.
+  * At this time we support "shorturl" (was already there) and "canonical".
+  * We now use a sub-class and the header generator, like for cookies, has
+    a special case for the "Link: ..." header.
+  * Noticed that the contact page short URL would show up on the home page.
+    Applied a fix for that to the shorturl plugin.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  7 Jun 2017 00:13:29 -0800
+
+snapserver-core-plugins (1.0.115.0~xenial) xenial; urgency=high
+
+  * SNAP-185: changed the canonical title to the page title.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  6 Jun 2017 00:15:19 -0800
+
+snapserver-core-plugins (1.0.114.0~xenial) xenial; urgency=high
+
+  * Add invalid email status.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sat, 03 Jun 2017 08:38:56 -0700
+
+snapserver-core-plugins (1.0.113.0~xenial) xenial; urgency=high
+
+  * EX-181: Changed journal table to a queue.
+
+ -- Build Server <build@m2osw.com>  Fri, 26 May 2017 02:00:52 -0700
+
+snapserver-core-plugins (1.0.112.0~xenial) xenial; urgency=high
+
+  * EX-181: added journaling support.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 25 May 2017 21:26:50 -0700
+
+snapserver-core-plugins (1.0.111.0~xenial) xenial; urgency=high
+
+  * EX-131: Made the pagelist not use the "ALLOW FILTERING".
+  * Moved a couple of lines in `editor.js`.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 22 May 2017 17:44:19 -0800
+
+snapserver-core-plugins (1.0.110.0~xenial) xenial; urgency=high
+
+  * EX-131: Added support for us to be able to change the loop timeouts.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 21 May 2017 12:19:19 -0800
+
+snapserver-core-plugins (1.0.109.0~xenial) xenial; urgency=high
+
+  * EX-79: Made the layout_contrib depend on output for the "/fonts".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 20 May 2017 00:16:19 -0800
+
+snapserver-core-plugins (1.0.108.0~xenial) xenial; urgency=high
+
+  * EX-180: Make sure that the expiration date is valid when processing a
+    credit card (if undefined, the string is empty and it would "Crash").
+  * Actually marked the card number, security code, and expiration date
+    fields of the editor as secret.
+  * Finally found the reason why error messages could not be closed after
+    you closed them once and fixed that problem.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 12 May 2017 23:30:19 -0800
+
+snapserver-core-plugins (1.0.107.0~xenial) xenial; urgency=high
+
+  * SNAP-185: Replaced the `jQuery()` accesses to "canonical" with "page-uri".
+  * Added the `<link rel="page-uri" ...>` tag to the header.
+  * EX-79: Fixed the box-sizing of the editor toolbar, it still appears at
+    the wrong position, though.
+  * Added the `expr()` function to the filter functionality.
+  * Fixed the filter `token_help()` function with missing entries.
+  * Fixed an error message in layout.cpp so it shows the correct filename.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  7 May 2017 10:27:19 -0800
+
+snapserver-core-plugins (1.0.106.0~xenial) xenial; urgency=high
+
+  * SNAP-185: Use the "core::canonical_domain" variable as the canonical domain
+    name on test websites, so SEO works better.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  6 May 2017 14:27:19 -0800
+
+snapserver-core-plugins (1.0.105.0~xenial) xenial; urgency=high
+
+  * users::user_logged_info_t now has a slight interface change, which forces
+    the user to add a path to the constructor. The ipath call is now const,
+    and returns a const object.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 05 May 2017 12:13:12 -0700
+
+snapserver-core-plugins (1.0.104.0~xenial) xenial; urgency=high
+
+  * EX-79: Fixed the box-sizing of the epayment buttons.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 28 Apr 2017 21:53:19 -0700
+
+snapserver-core-plugins (1.0.103.0~xenial) xenial; urgency=high
+
+  * EX-79: Fixed the Z-Index computation for popups and date widgets.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 28 Apr 2017 12:51:19 -0700
+
+snapserver-core-plugins (1.0.102.0~xenial) xenial; urgency=high
+
+  * EX-79: No changes, was just testing why Cancel would not work on popups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Apr 2017 23:30:19 -0700
+
+snapserver-core-plugins (1.0.101.0~xenial) xenial; urgency=high
+
+  * EX-79: Added a minimum "screen" height to be used by the sb-admin-2.js
+    so we do not get jumpy screens when scrolling down and a menu goes
+    from static to fixed.
+  * Fixed the fixed-box parameter validity test.
+  * Removed a space in the editor.js so it passes the JS compiler.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Apr 2017 22:16:19 -0700
+
+snapserver-core-plugins (1.0.100.0~xenial) xenial; urgency=high
+
+  * EX-1: Tested emitting an error in jQuery when accessing AJAX to see
+    whether we would get that Error 0/0 problem. It did not happen.
+    The result is that we have a new version in jquery.js but no
+    other changes.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Apr 2017 17:16:19 -0700
+
+snapserver-core-plugins (1.0.99.0~xenial) xenial; urgency=high
+
+  * EX-175: Added the ability to have "soft-redirects", so one can embed a
+    form from a different page, and have that page behave the same. For
+    example, a contact page.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 27 Apr 2017 08:49:35 -0700
+
+snapserver-core-plugins (1.0.98.0~xenial) xenial; urgency=high
+
+  * EX-79: As mentioned earlier, the output.js may not be working 100%
+    correctly with AJAX. That was indeed the case, a few period were missing.
+  * Also the XSL would add the class attribute twice on each item.
+  * Removed the width and height from the close-button img tag.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 29 Mar 2017 12:18:19 -0700
+
+snapserver-core-plugins (1.0.97.0~xenial) xenial; urgency=high
+
+  * EX-173: I noticed that an Edit button did not want to go away. The
+    test was missing the validation of the action for that page.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Mar 2017 21:39:19 -0700
+
+snapserver-core-plugins (1.0.96.0~xenial) xenial; urgency=high
+
+  * EX-79: Removed the "right-aligned" from the change-email form.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Mar 2017 00:27:19 -0800
+
+snapserver-core-plugins (1.0.95.0~xenial) xenial; urgency=high
+
+  * EX-79: Added support for a min-width, under that width, ignore fixed-box.
+  * Fixed the resize bug, I just had to bind to "scroll" and "resize".
+  * Added a currentMode_ field to avoid reapplying the CSS if not required.
+  * Fixed the adjustment of max, we really need to compare to `-this.margin_`.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 26 Mar 2017 00:20:19 -0800
+
+snapserver-core-plugins (1.0.94.0~xenial) xenial; urgency=high
+
+  * EX-79: Actually made the fixed-box function properly in Snap!
+  * Changed the direct attr() accesses with data() instead.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 25 Mar 2017 19:29:19 -0800
+
+snapserver-core-plugins (1.0.93.0~xenial) xenial; urgency=high
+
+  * EX-171: SNAP-173: Added a priority so a system revision may still be
+    ordered between various plugins.
+  * Removed the overwrite exception from revision since now we also need to
+    be able to overwrite revision fields.
+  * Made updates of output files for test purposes.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 23 Mar 2017 23:36:19 -0800
+
+snapserver-core-plugins (1.0.92.0~xenial) xenial; urgency=high
+
+  * EX-79: Fixed the error message box so it actually fits on a smartphone.
+  * Removed the resize from the script since it is not required anymore.
+  * Fixed a few $(...) which should have been jQuery(...).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 23 Mar 2017 18:04:19 -0800
+
+snapserver-core-plugins (1.0.91.0~xenial) xenial; urgency=high
+
+  * EX-79: Fixed the hidden field under the fixed header with a scroll.
+  * Fixed the maximum width of a line-edit to 100% so it fits smart phones.
+  * Fixed the contact form save button so it is shown as an inline-block.
+  * Made the sb-admin-2 script depend on the editor so we can set the height.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 23 Mar 2017 00:50:19 -0800
+
+snapserver-core-plugins (1.0.90.0~xenial) xenial; urgency=high
+
+  * EX-79: Added the copyright_date_range() token so we can easily enter a
+    copyright notice with a date range which will change with time.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 22 Mar 2017 21:09:19 -0800
+
+snapserver-core-plugins (1.0.89.0~xenial) xenial; urgency=high
+
+  * EX-79: Added a "focused" class to the snap-editor wrapper <div> tag.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 21 Mar 2017 22:02:19 -0800
+
+snapserver-core-plugins (1.0.88.0~xenial) xenial; urgency=high
+
+  * EX-79: Removed the "hide visible focus" from buttons in forms from the
+    bootstrap.css file (I could not find a way to restore the default!)
+  * Replaced the "data-background-value" with "placeholder" which does the
+    same thing (also generally better) in HTML 5.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 20 Mar 2017 18:57:19 -0800
+
+snapserver-core-plugins (1.0.87.0~xenial) xenial; urgency=high
+
+  * SNAP-259: EX-169: Added an extra flag to allow the "Forgot password"
+    verification in a different browser.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 20 Mar 2017 14:02:19 -0800
+
+snapserver-core-plugins (1.0.86.0~xenial) xenial; urgency=high
+
+  * EX-79: Fixed the dropdown location problem.
+  * There is still a size issue, though.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 20 Mar 2017 00:27:19 -0800
+
+snapserver-core-plugins (1.0.85.0~xenial) xenial; urgency=high
+
+  * EX-79: Removed all the spurious `id="content"` from editor forms.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Mar 2017 21:14:19 -0800
+
+snapserver-core-plugins (1.0.84.0~xenial) xenial; urgency=high
+
+  * EX-79: Quick update so I can see the normal title.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Mar 2017 15:46:19 -0800
+
+snapserver-core-plugins (1.0.83.0~xenial) xenial; urgency=high
+
+  * EX-79: Actually fixed the position of the footer in the HTML document
+    which means we can correctly calculate the min-height of the page
+    (but I had to fix the JavaScript code which was wrong in many ways.)
+  * Removed the `div` from `div.zordered` so we can use it with other tags.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Mar 2017 15:29:19 -0800
+
+snapserver-core-plugins (1.0.82.0~xenial) xenial; urgency=high
+
+  * EX-79: Added the sb-admin-2 theme from bootstrap.
+  * Added dependencies to a few JS/CSS files.
+  * Added the new JS/CSS files to the CMakeLists.txt file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Mar 2017 00:44:19 -0800
+
+snapserver-core-plugins (1.0.81.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Added try/catch to several destructors to avoid exceptions.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 18 Mar 2017 01:50:19 -0800
+
+snapserver-core-plugins (1.0.80.0~xenial) xenial; urgency=high
+
+  * EX-169: Fixed the conversion of the user ID from the session path when
+    verifying a "change password" session.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 15 Mar 2017 22:57:19 -0800
+
+snapserver-core-plugins (1.0.79.0~xenial) xenial; urgency=high
+
+  * EX-167: Fixed the create_revision tests, they were inverted (see 1.0.70).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 Mar 2017 04:10:19 -0800
+
+snapserver-core-plugins (1.0.78.0~xenial) xenial; urgency=high
+
+  * EX-79: Updated the editor code that shows the save dialog to support
+    any type of display mode ("block", "inline-block", "inline", etc.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 12 Mar 2017 23:37:19 -0800
+
+snapserver-core-plugins (1.0.77.0~xenial) xenial; urgency=high
+
+  * EX-8: Now log the messages sent using the trace().
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Mar 2017 16:11:19 -0800
+
+snapserver-core-plugins (1.0.76.0~xenial) xenial; urgency=high
+
+  * SNAP-557: Added support to add a "no-js" or "js" class to the <html> tag.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  9 Mar 2017 14:39:45 -0800
+
+snapserver-core-plugins (1.0.75.0~xenial) xenial; urgency=high
+
+  * EX-79: Small clean ups as I was looking for a bug.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  7 Mar 2017 00:54:45 -0800
+
+snapserver-core-plugins (1.0.74.0~xenial) xenial; urgency=high
+
+  * EX-167: The default locale, if all else fails, is expected to be "".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Feb 2017 12:22:45 -0800
+
+snapserver-core-plugins (1.0.73.0~xenial) xenial; urgency=high
+
+  * EX-167: For the image, the parameter must be valid XML so an `&` character
+    must be `&amp;`.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Feb 2017 00:23:45 -0800
+
+snapserver-core-plugins (1.0.72.0~xenial) xenial; urgency=high
+
+  * EX-167: With all parameters, always accept generating a revision key.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 27 Feb 2017 12:47:45 -0800
+
+snapserver-core-plugins (1.0.71.0~xenial) xenial; urgency=high
+
+  * EX-167: Fixed the namespace supported by the images plugin.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 26 Feb 2017 11:21:45 -0800
+
+snapserver-core-plugins (1.0.70.0~xenial) xenial; urgency=high
+
+  * EX-167: Fixed the image parent ipath with the main branch/revision/language.
+  * Fixed the on_save_content() so it actually works with multiple languages.
+  * Fixed the return of the create_body_string() function.
+  * Properly implemented the [content::page()] token.
+  * Various cleanups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 25 Feb 2017 13:28:45 -0800
+
+snapserver-core-plugins (1.0.69.0~xenial) xenial; urgency=high
+
+  * EX-167: Added image filter to handle inline image sources and versioning the URI
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 24 Feb 2017 16:35:18 -0800
+
+snapserver-core-plugins (1.0.68.0~xenial) xenial; urgency=high
+
+  * EX-167: append revisioning information to images presented by the editor
+    plugin. This overcomes browser caching of the same filename, even if the
+    user uploads a new image.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 21 Feb 2017 21:44:00 -0800
+
+snapserver-core-plugins (1.0.67.0~xenial) xenial; urgency=high
+
+  * EX-79: Got the layout.cpp to actually compile with the new function.
+  * Renamed a variable in functions that used "content_plugin" when it is a
+    pointer to a plugin which does not have to be the actual `content` plugin.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 20 Feb 2017 18:00:45 -0800
+
+snapserver-core-plugins (1.0.66.0~xenial) xenial; urgency=high
+
+  * Various fixes so it compiles with g++ 6.x.
+  * Added Qt5::Core to the list of link libraries in mimetype.
+  * EX-79: Changed the filter to pass the XML document in token_infot_t.
+  * Removed the `javascript` plugin as a dependency of `layout` and `output`.
+  * Put the layout-name and theme-name in the metadata instead of body.
+  * Cleaned up the filtering process in the create_body() function.
+  * Added a create_body_string() which will create the body and keep the
+    CSS and JS links. This is for the `[content::page(...)]` token.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 20 Feb 2017 16:39:45 -0800
+
+snapserver-core-plugins (1.0.65.0~xenial) xenial; urgency=high
+
+  * EX-79: Added the viewport meta tag with standard defaults.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 16 Feb 2017 21:10:45 -0800
+
+snapserver-core-plugins (1.0.64.0~xenial) xenial; urgency=high
+
+  * EX-79: Moved the layout_contrib files so they properly fit in the QRC file.
+  * Fixed the name="..." parameter of the attachments in content.xml.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 16 Feb 2017 00:26:45 -0800
+
+snapserver-core-plugins (1.0.63.0~xenial) xenial; urgency=high
+
+  * EX-79: The editor now accepts a layout="..." name in <editor-form> tags.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Feb 2017 16:21:45 -0800
+
+snapserver-core-plugins (1.0.62.0~xenial) xenial; urgency=high
+
+  * EX-79: Added the path to the user-page as a get_name().
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Feb 2017 13:11:45 -0800
+
+snapserver-core-plugins (1.0.61.0~xenial) xenial; urgency=high
+
+  * EX-79: remove the ";" at the end of layout scripts early.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 Feb 2017 13:02:45 -0800
+
+snapserver-core-plugins (1.0.60.0~xenial) xenial; urgency=high
+
+  * EX-79: Added a website_uri() function in the content plugin.
+  * Changed the layout_script handling to use our snap_expr instead of QScript.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 12 Feb 2017 20:59:45 -0800
+
+snapserver-core-plugins (1.0.59.0~xenial) xenial; urgency=high
+
+  * EX-79: Added the layout_contrib plugin to add many CSS/JS/Fonts for layouts.
+  * Added a /fonts and /fonts/snap set of Core pages for fonts.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 12 Feb 2017 00:25:45 -0800
+
+snapserver-core-plugins (1.0.58.0~xenial) xenial; urgency=high
+
+  * SNAP-30: Added the core::administrator_email to the info form.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  9 Feb 2017 23:28:45 -0800
+
+snapserver-core-plugins (1.0.57.0~xenial) xenial; urgency=high
+
+  * Tested the No IFrame plugin and applied a few fixes.
+  * Created a valid icon for the new plugin.
+  * Made the plugin not throw even between the "Add Plugin" and "Install" calls.
+  * Added a comment about the fact that the server-access.js script uses
+    document.location instead of window.location (i.e. cross origin problem.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  1 Feb 2017 18:27:45 -0800
+
+snapserver-core-plugins (1.0.56.0~xenial) xenial; urgency=high
+
+  * Added new plugin: No IFrame, to make sure people cannot use our websites
+    in an IFrame (particularly useful for payment processing areas...)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 31 Jan 2017 22:16:45 -0800
+
+snapserver-core-plugins (1.0.55.0~xenial) xenial; urgency=high
+
+  * SNAP-289: a for(;;) loop was not necessary, removed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 25 Jan 2017 23:12:45 -0800
+
+snapserver-core-plugins (1.0.54.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notices to 2017.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 17:33:45 -0800
+
+snapserver-core-plugins (1.0.53.0~xenial) xenial; urgency=high
+
+  * EX-164: Added new rights for administering a public page. Useful for
+    contact forms and things like that.
+  * EX-164: Repaired throw in sendmail when email was not a registered user.
+  * EX-164: Fixed bug in user_info_t::get_user_key(), which was using
+    f_user_email instead of the passed in email address.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 18 Jan 2017 13:38:07 -0800
+
+snapserver-core-plugins (1.0.52.0~xenial) xenial; urgency=high
+
+  * SNAP-329: Fixed the email address in the security_info_t object.
+    (because it is not available in the user_info_t object on creation of user.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 18 Jan 2017 00:19:45 -0800
+
+snapserver-core-plugins (1.0.51.0~xenial) xenial; urgency=high
+
+  * EX-165: As I bump in this bug, it created a problem where the default
+    saveDialogPopup widget would get created before we set the Save Changes
+    button. Here I fix the problem of having both activated.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 17 Jan 2017 22:43:45 -0800
+
+snapserver-core-plugins (1.0.50.0~xenial) xenial; urgency=high
+
+  * SNAP-468: Fixed the loading of the XSLT and XML files from the layout.
+  * Fixed the name of the them used to load the boxes.
+  * Removed some legacy support which is really not required anymore.
+  * Also get the name of the theme when loading an editor form.
+  * Moved the change-email to /change-email to avoid being under /admin.
+  * Removed the '[form::source]' reference in the /change-email page.
+  * Added the auto-save="no" attribute in the change-email form.
+  * Various cleanups and optimizations.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 16 Jan 2017 19:43:45 -0800
+
+snapserver-core-plugins (1.0.49.0~xenial) xenial; urgency=high
+
+  * SNAP-329: Fixed login redirect problem by saving the referrer using the
+    user identifier instead of a plain field name for all.
+  * Removed the snap_child parameter from the user_info_t constructor and
+    changed the get_snap() implementation in that regard. It makes it lighter.
+  * Introduced the IDENTIFIER_VALID and IDENTIFIER_ANONYMOUS instead of -1/0.
+  * Fixed signals to makes use of references instead of a copy of user_info
+    (it could end up making many copies otherwise!)
+  * Fixed the user_info_t::get_value() to return a reference to the value.
+  * Fixed the SNAP_NAME_USERS_HIT_CHECK name, the "HIT" was missing.
+  * Added a status to the "?hit=check" test: "soft".
+  * Fixed several check against the anonymous path using == anonymous instead
+    of isEmpty(), which was wrong.
+  * Changed the email canonicalization by having it done at the time you
+    call the get_user_key() function.
+  * Updated code to the user_info_t implementation for added security.
+  * Changed the get_user_path() to be both: base and standard. But especially
+    check whether the user is defined, if not use "user" as the path.
+  * Various cleanups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 16 Jan 2017 19:43:45 -0800
+
+snapserver-core-plugins (1.0.48.0~xenial) xenial; urgency=high
+
+  * SNAP-531: Found another 4 tests that were inverted and fixed them.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 15 Jan 2017 01:20:45 -0800
+
+snapserver-core-plugins (1.0.47.0~xenial) xenial; urgency=high
+
+  * SNAP-531: Fixed the test in process_verify_resend_form(), it needed to be
+    positive and not negative (i.e. no '!' in the if().)
+  * Now show a different message for verification codes that are out of date.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 14 Jan 2017 21:54:45 -0800
+
+snapserver-core-plugins (1.0.46.0~xenial) xenial; urgency=high
+
+  * SNAP-547: Added function to convert old site to new link implementation.
+  * Fixed the links::cleanup_links() function with an && instead of ||.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 11 Jan 2017 22:28:45 -0800
+
+snapserver-core-plugins (1.0.45.0~xenial) xenial; urgency=high
+
+  * SNAP-547: Corrected links to work as expected with any number of branches.
+  * Added a branch selection on the path_info_t::get_branch().
+  * Moved some of the more complex link_info implementation to the .cpp file.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 11 Jan 2017 22:28:45 -0800
+
+snapserver-core-plugins (1.0.44.0~xenial) xenial; urgency=high
+
+  * SNAP-163: Removed some padding under the buttons to avoid slider bar.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 08 Jan 2017 15:47:45 -0800
+
+snapserver-core-plugins (1.0.43.0~xenial) xenial; urgency=high
+
+  * SNAP-331: Open calendar popup toward the top of the date widget if
+    there is not enough space opening it under the widget.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  8 Jan 2017 01:31:51 -0800
+
+snapserver-core-plugins (1.0.42.0~xenial) xenial; urgency=high
+
+  * SNAP-547: Noticed that the branch was not being created when upgrading
+    the branch number of a JS script (would also happen with CSS.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  8 Jan 2017 01:29:51 -0800
+
+snapserver-core-plugins (1.0.41.0~xenial) xenial; urgency=high
+
+  * SNAP-258: Added support to the editor plugin to provide read-only access to
+    the underlying post and converted values.
+  * SNAP-258: Added email change form.
+  * EX-159: on errors, show the statusReady parameter to see what it is
+    [Alexis Wilke].
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 05 Jan 2017 09:51:14 -0800
+
+snapserver-core-plugins (1.0.40.0~xenial) xenial; urgency=high
+
+  * SNAP-258: Bump date and time in do_update() to get the new script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  4 Jan 2017 00:34:48 -0800
+
+snapserver-core-plugins (1.0.39.0~xenial) xenial; urgency=high
+
+  * SNAP-258: The date out of whack is in milliseconds, not seconds.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  3 Jan 2017 23:32:48 -0800
+
+snapserver-core-plugins (1.0.38.0~xenial) xenial; urgency=high
+
+  * SNAP-258: Fixed crucial bug which prevented the *id_row* from being
+    incremented when creating new users.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 03 Jan 2017 11:27:03 -0800
+
+snapserver-core-plugins (1.0.37.0~xenial) xenial; urgency=high
+
+  * EX-159: Some browsers set readyState to 4 when they timeout instead of
+    setting the status to 504 and an error message.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  3 Jan 2017 00:19:48 -0800
+
+snapserver-core-plugins (1.0.36.0~xenial) xenial; urgency=high
+
+  * SNAP-530: Actually, the timeout delay can go really negative when someone
+    has bad clocks (which happens on VMs, for example). Now the script forces
+    a minimum of 60 for the delay (1min.) and checks if it goes under 1h, if
+    so it prints a warning in the JavaScript console.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 30 Dec 2016 15:21:48 -0800
+
+snapserver-core-plugins (1.0.35.3~xenial) xenial; urgency=high
+
+  * SNAP-258: Now user logs in correctly.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 28 Dec 2016 16:27:33 -0800
+
+snapserver-core-plugins (1.0.34.1~xenial) xenial; urgency=high
+
+  * SNAP-258: Added trace statements in user login code for debugging.
+  * SNAP-258: Converts to id --> user info. The user_key is no longer the key into the users table.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 13 Dec 2016 11:34:18 -0800
+
+
+snapserver-core-plugins (1.0.33.0~xenial) xenial; urgency=high
+
+  * SNAP-530: Added AJAX support for checking the users session status.
+  * Fixed the hit=transparent feature with attachments, favicon, images.
+  * Avoid displaying the "Unauthorized" error message on a transparent access.
+  * Made the users hit variable part of the plugin so we can check it at any
+    time even after the cookies were checked.
+  * Added a hit=check which just returns the session current status.
+  * Changed the users.js timeout handling to use an AJAX request instead of
+    a reload (1) because if still valid we should not reload and (2) the
+    reload meant loading many files (i.e. favicon.ico) instead of just checking
+    the session which takes no time.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 21 Dec 2016 20:26:48 -0800
+
+snapserver-core-plugins (1.0.32.0~xenial) xenial; urgency=high
+
+  * SNAP-530: Added a debug log to see that transparent hit make it as expected.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 12 Dec 2016 11:58:42 -0800
+
+snapserver-core-plugins (1.0.31.0~xenial) xenial; urgency=high
+
+  * SNAP-254: Make sure that if the boolean value is not defined, ignore it.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  7 Dec 2016 22:32:47 -0800
+
+snapserver-core-plugins (1.0.30.0~xenial) xenial; urgency=high
+
+  * SNAP-200: Removed the 'priority' and 'frequency' which Google ignores now.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 28 Nov 2016 13:51:49 -0800
+
+snapserver-core-plugins (1.0.29.0~xenial) xenial; urgency=high
+
+  * SNAP-279: Updated the users and sendmail to support example users.
+  * Prevent sendmail from sending emails to example users.
+  * Added a function to check whether a user is an example user.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 27 Nov 2016 18:25:03 -0800
+
+snapserver-core-plugins (1.0.28.0~xenial) xenial; urgency=high
+
+  * SNAP-254: Implemented the redirect to HTTPS when on HTTP.
+  * Added a new tag named 'secure-page' to force a redirect on those pages.
+  * Marked the user login, register, etc. as needed a secure redirect.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 23 Nov 2016 01:46:48 -0800
+
+snapserver-core-plugins (1.0.27.0~xenial) xenial; urgency=high
+
+  * EX-114: Fixed an error message to include more information.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 22 Nov 2016 19:26:48 -0800
+
+snapserver-core-plugins (1.0.26.0~xenial) xenial; urgency=high
+
+  * EX-151: Fixed the stacked darken screen, it could be duplicated and then
+    the stack was wrong (duplicates never got removed).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 20 Nov 2016 16:35:48 -0800
+
+snapserver-core-plugins (1.0.25.0~xenial) xenial; urgency=high
+
+  * SNAP-61: Removed the last lock related remnants.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Nov 2016 00:45:50 -0800
+
+snapserver-core-plugins (1.0.24.0~xenial) xenial; urgency=high
+
+  * Upgraded jQuery to version 1.12.4.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 15 Nov 2016 23:59:47 -0800
+
+snapserver-core-plugins (1.0.23.0~xenial) xenial; urgency=high
+
+  * EX-150: make the forms non-editable when not marked as such (removed debug).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 15 Nov 2016 23:33:47 -0800
+
+snapserver-core-plugins (1.0.22.0~xenial) xenial; urgency=high
+
+  * EX-147: Put the hidden class back.
+  * Cleaned up the capture and accept attributes.
+  * Fixed the capture boolean value, it has to be "capture" and not "true".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 21:12:49 -0800
+
+snapserver-core-plugins (1.0.21.0~xenial) xenial; urgency=high
+
+  * EX-147: Trying without the hidden class and adding another attribute.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 20:43:49 -0800
+
+snapserver-core-plugins (1.0.20.0~xenial) xenial; urgency=high
+
+  * EX-147: Placed the attributes inside the input tag instead of after.
+  * Removed the replace() which does not work right.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 20:07:49 -0800
+
+snapserver-core-plugins (1.0.19.0~xenial) xenial; urgency=high
+
+  * EX-147: Fixed the regular expression so it works with Qt5.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 19:15:49 -0800
+
+snapserver-core-plugins (1.0.18.0~xenial) xenial; urgency=high
+
+  * EX-147: Added support for mime-types (i.e. the accept=... in an <input>).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 18:13:49 -0800
+
+snapserver-core-plugins (1.0.17.0~xenial) xenial; urgency=high
+
+  * EX-133: Added a flag so we can ignore the User-Agent when verifying a user.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 16:42:49 -0800
+
+snapserver-core-plugins (1.0.16.0~xenial) xenial; urgency=high
+
+  * EX-147: Added support to add the capture attribute to the file input.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 10 Nov 2016 23:12:47 -0700
+
+snapserver-core-plugins (1.0.15.0~xenial) xenial; urgency=high
+
+  * SNAP-501: Added new doc-only packages.
+
+ -- Doug Barbieri <doug@kosh>  Wed, 26 Oct 2016 17:11:25 -0700
+
+snapserver-core-plugins (1.0.14.0~xenial) xenial; urgency=high
+
+  * SNAP-465: postinst/postrm cleanups.
+  * Removed the restart of snapinit after removing the plugins.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 23:48:38 -0700
+
+snapserver-core-plugins (1.0.13.0~xenial) xenial; urgency=high
+
+  * SNAP-276: Fixed the check of bounced emails: it was using == instead of !=.
+  * Fixed the 4 months calculation, it needed to be in microseconds.
+  * Added a script to generate the 4 bounce fields for test purposes.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 19 Oct 2016 10:35:21 -0700
+
+snapserver-core-plugins (1.0.12.0~xenial) xenial; urgency=high
+
+  * EX-132: Added support for counting messages and avoid changing the
+    message type to "info" if there are still errors or warnings showing.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 13 Oct 2016 15:39:53 -0700
+
+snapserver-core-plugins (1.0.11.0~xenial) xenial; urgency=high
+
+  * EX-131: made the generate_list_for_page() function public.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 12 Oct 2016 09:44:48 -0700
+
+snapserver-core-plugins (1.0.10.0~xenial) xenial; urgency=high
+
+  * EX-131: Looking at the problem with list not updating, I noticed an
+    exception generated by GoogleBot trying to load some wordpress files.
+    This is the fix, instead of throwing we now return a 404 as expected.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 16:55:06 -0700
+
+snapserver-core-plugins (1.0.9.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Removed the initial_update() functions.
+  * Tables are now all created by snapcreatetables.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 12:43:06 -0700
+
+snapserver-core-plugins (1.0.8.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Show versions of additional tools.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 12:43:06 -0700
+
+snapserver-core-plugins (1.0.7.0~xenial) xenial; urgency=high
+
+  * EX-126: User gets logged out "randomly": the session was actually not
+    extended properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 11:47:06 -0700
+
+snapserver-core-plugins (1.0.6.0~xenial) xenial; urgency=high
+
+  * SNAP-468: Fixed the load_file so it loads files as is or with the
+    ".xsl" extension.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 04 Oct 2016 14:12:48 -0700
+
+snapserver-core-plugins (1.0.5.0~xenial) xenial; urgency=high
+
+  * SNAP-378: Removed access to the install_layout() call from frontend users.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 29 Sep 2016 21:53:40 -0700
+
+snapserver-core-plugins (1.0.4.0~xenial) xenial; urgency=high
+
+  * SNAP-413: Replaced the snapcreatetables call with the NEWTABLE signal.
+  * The snapserver Core plugins do not require snapcommunicator on
+    installation so snapsignal may not be available so this one checks
+    the availability of snapsignal.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 24 Sep 2016 14:59:48 -0700
+
+snapserver-core-plugins (1.0.3.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Removed obj->enum_name::enum_value so Coverity is happy.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 23 Sep 2016 18:57:43 -0700
+
+snapserver-core-plugins (1.0.2.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added SNAP_LOG_FATAL() for a few more throw().
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 16:58:22 -0700
+
+snapserver-core-plugins (1.0.1.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+snapserver-core-plugins (1.0.0) xenial; urgency=high
+
+  * Initial release of packaging for the new snapserver project.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 26 May 2016 20:23:45 -0800

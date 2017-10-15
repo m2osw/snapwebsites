@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == locale timezone page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="favicon" id="settings" content-modified="2015-09-07 23:22:10">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="icon"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="icon"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="icon" type="image-box" field="favicon::icon" path="favicon/icon" drop="drop" auto-save="html">
+    <attachment force-filename="favicon" force-path=""/>
+    <tooltip>Drag &amp; Drop your Favicon Image Here.</tooltip>
+    <help>
+      Drag &amp; Drop an image here or use the Browse button to define
+      your favicon. A favicon image must be a square image. The small one
+      appearing in the tab of your browser is a 16x16 image. Some browsers
+      support larger images and different formats. However, this field
+      is for the small version (16x16). Note that a .ico file may include
+      images of various sizes. You may provide one .ico image with 16x16,
+      32x32, 48x48, and 64x64 if you have such.
+    </help>
+    <sizes>
+      <min>16x16</min>
+      <resize>192x192</resize>
+      <max>512x512</max><!-- check the maximum; I think it is around 256x256 -->
+    </sizes>
+    <!--filters> == this is not working yet for the editor cannot easily read the filename extension
+      <! list of accepted image formats >
+      <extensions>ico,png,jpg,jpeg</extensions>
+    </filters-->
+    <background-value>Drag &amp; Drop<br/>Your Favicon<br/>Here</background-value>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

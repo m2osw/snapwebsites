@@ -1,0 +1,773 @@
+libsnapwebsites (1.2.7.13~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Fri, 16 Jun 2017 02:00:53 -0700
+
+libsnapwebsites (1.2.7.0~xenial) xenial; urgency=high
+
+  * EX-131: Added support for a reason parameter in the block_ip() call.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 15 Jun 2017 13:15:16 -0800
+
+libsnapwebsites (1.2.6.0~xenial) xenial; urgency=high
+
+  * EX-131: DROP TABLE should have had a timeout of 5min. like the CREATE TABLE.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 14 Jun 2017 14:00:14 -0800
+
+libsnapwebsites (1.2.5.0~xenial) xenial; urgency=high
+
+  * EX-131: dropping the "list" table is not unlikely to timeout, we added
+    a try/catch to ignore the problem since 99% of the time it won't be
+    a problem at all (i.e. the table is dropped, the cluster is just a
+    bit slow in letting us know and the client times out.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 14 Jun 2017 12:00:41 -0800
+
+libsnapwebsites (1.2.4.0~xenial) xenial; urgency=high
+
+  * EX-131: added get_list_data_path() to support snaplistd.
+  * Added various names to support snaplistd.
+  * Added several add_parameter() to the message class to support std::string.
+  * Fixed 3 bugs in the QtCassandra library, tests were inverted.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 11 Jun 2017 17:22:29 -0800
+
+libsnapwebsites (1.2.3.0~xenial) xenial; urgency=high
+
+  * SNAP-235: Fixed the Link header so we can add many links if we want to.
+  * At this time we support "shorturl" (was already there) and "canonical".
+  * We now use a sub-class and the header generator, like for cookies, has
+    a special case for the "Link: ..." header.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  7 Jun 2017 00:13:29 -0800
+
+libsnapwebsites (1.2.2.0~xenial) xenial; urgency=high
+
+  * SNAP-529: actually found one case that would SEGV in snap_backend because
+    the connection to cassandra gets cleared up and then we still try to
+    access a table.
+  * Also cancel the reconnect timer if we receive another CASSANDRAREADY
+    message (no need to re-request, right?)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  4 Jun 2017 23:34:29 -0800
+
+libsnapwebsites (1.2.1.0~xenial) xenial; urgency=high
+
+  * Replaces libqtcassandra packaging, to force debian to remove them.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 24 May 2017 11:31:28 -0700
+
+libsnapwebsites (1.2.0.0~xenial) xenial; urgency=high
+
+  * Now libQtCassandra no longer exists, and the library is provided by
+    this package.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 23 May 2017 16:20:52 -0700
+
+libsnapwebsites (1.1.93.0~xenial) xenial; urgency=high
+
+  * EX-185: Using the "sites" variable made me discover a couple of problems
+    in snap_uri, there may still be one more that I have not yet caught.
+    The problem was a variable that could be incremented twice in a row.
+  * Started a test to verify that the snap_uri object works as expected.
+  * Fixed the cell() function documentation in snap_expr.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  7 May 2017 10:22:29 -0800
+
+libsnapwebsites (1.1.92.0~xenial) xenial; urgency=high
+
+  * SNAP-185: Added a "sites" variable so we can fix the canonical domain name
+    on test websites, so SEO works better.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  6 May 2017 14:27:29 -0800
+
+libsnapwebsites (1.1.91.0~xenial) xenial; urgency=high
+
+  * EX-171: SNAP-173: Added the "content::field_priority::" to dbutils.
+  * Removed the "\n" at the end of the trace() message for the logger.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 23 Mar 2017 23:32:19 -0800
+
+libsnapwebsites (1.1.90.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Protected several destructors that could receive an exception.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 18 Mar 2017 01:13:19 -0800
+
+libsnapwebsites (1.1.89.0~xenial) xenial; urgency=high
+
+  * SNAP-529: Applied several fixes to avoid crashes when we lose a connection:
+  * (1) reset backend/sites/context pointers with just .reset(), the
+    destructors now know to safely clearCache() themselves.
+  * (2) added a try/catch in the is_ready() function since it can end up
+    throwing and we want to continue instead of "crashing".
+  * (3) removed the hack in the child process of snapbackend, we do not need
+    to keep the f_cassandra pointer of the parent around anymore.
+  * (4) added a signal handler so if we receive a SIGPIPE we know about it.
+  * (5) fixed the bio_deleter() to prevent BIO_free_all() from closing the
+    socket and thus avoid the shutdown(), that wayt the connect can continue
+    in the parent process. There is still a potential for a clash in
+    multi-threaded pr multi-process application, though.
+  * Added a note to the snap::process implementation and SIGPIPE.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 15 Mar 2017 19:51:19 -0800
+
+libsnapwebsites (1.1.88.0~xenial) xenial; urgency=high
+
+  * EX-8: Now log the messages sent using the trace().
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Mar 2017 16:11:19 -0800
+
+libsnapwebsites (1.1.87.0~xenial) xenial; urgency=high
+
+  * SNAP-547: There was one link still using a wrong field name.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 25 Feb 2017 14:12:45 -0800
+
+libsnapwebsites (1.1.86.0~xenial) xenial; urgency=high
+
+  * EX-167: Applied a fix to the images::uri() token after a quick code review.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 25 Feb 2017 14:12:45 -0800
+
+libsnapwebsites (1.1.85.0~xenial) xenial; urgency=high
+
+  * EX-167: Moved the implementation of the part_t class to the .cpp file.
+  * Made the default and undefined level values constexpr functions.
+  * Fixed the `<` operator so it sorts for largest to smallest.
+  * Broke out the parsing code of the WeightedHttpString so we can call it
+    multiple times cumulatively.
+  * The parser also generate error messages now.
+  * Moved the sorting of parts of the WeightedHttpString to the class.
+  * Added a get_composed() so we can composed a locale without each time
+    guessing whether a `_` or `-` is necessary.
+  * In parsing the browser languages, avoid the copy of the resulting vector.
+  * Added snap_child::get_all_locales() so one can check for a revision with
+    any one language the user prefers, plus a few defaults: "en", "xx", "".
+  * Fixed a loop that used `0` instead of `i` to access the data in the loop.
+  * Finally added a catch test for the libsnapwebsite library. At this time
+    this only includes a test for the WeightedHttpString object, but we are
+    to grow that with any number of tests we can add. It will be easy to add
+    more so we should not hesitate to do that as time passes.
+  * Added some documentation.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 25 Feb 2017 14:12:45 -0800
+
+libsnapwebsites (1.1.84.0~xenial) xenial; urgency=high
+
+  * Various fixes so it compiles with g++ 6.x.
+  * Removed the need for PROC_FILLWCHAN, newer system do not support it.
+  * Make use of C++ math functions, replace M_PI with a function.
+  * Removed a throw in a destructor and replaced with an std::terminate().
+  * Added some missing #include (string, vector, cmath...)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 20 Feb 2017 16:31:45 -0800
+
+libsnapwebsites (1.1.83.0~xenial) xenial; urgency=high
+
+  * EX-79: Load the "lock_obtension_duration" parameter on snapserver startup.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Feb 2017 13:14:45 -0800
+
+libsnapwebsites (1.1.82.0~xenial) xenial; urgency=high
+
+  * EX-79: Added support for functions without parameters in snap_expr.
+  * Call toupper() for the toupper() function, instead of tolower().
+  * Properly interpret the backslash in parsing a string in snap_parser.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 12 Feb 2017 20:59:45 -0800
+
+libsnapwebsites (1.1.81.0~xenial) xenial; urgency=high
+
+  * SNAP-529: Added more logs to the list, it looks like a non-reported crash.
+  * Also check the g_child_connection pointer before using it on zombies.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 27 Jan 2017 23:46:51 -0800
+
+libsnapwebsites (1.1.80.0~xenial) xenial; urgency=high
+
+  * SNAP-529: Added some logs to try to detect what function goes bad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 27 Jan 2017 23:46:51 -0800
+
+libsnapwebsites (1.1.79.0~xenial) xenial; urgency=high
+
+  * Removed use of qStableSort() which is deprecated in Qt 5.x.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 26 Jan 2017 16:41:51 -0800
+
+libsnapwebsites (1.1.78.0~xenial) xenial; urgency=high
+
+  * SNAP-168: Archived the snap_listen_thread class since it was replaced
+    by the snap_communicator environment.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 15:36:51 -0800
+
+libsnapwebsites (1.1.77.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notices to 2017.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 14:21:51 -0800
+
+libsnapwebsites (1.1.76.0~xenial) xenial; urgency=high
+
+  * SNAP-181: Fixed IPv6 check of ANY and LOOPBACK IPs.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 03:03:51 -0800
+
+libsnapwebsites (1.1.75.0~xenial) xenial; urgency=high
+
+  * SNAP-537: Added a message and date limits to avoid looping through a
+    single connection messages for possibly a very long time.
+  * Fixed the "is example" function, it would return UNKNOWN for existing
+    and cached MX checks.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 15 Jan 2017 00:26:51 -0800
+
+libsnapwebsites (1.1.74.0~xenial) xenial; urgency=high
+
+  * SNAP-529: added another try/catch when trying to retrieve the Cassandra
+    metadata because it does fail once in a while.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  7 Jan 2017 16:57:51 -0800
+
+libsnapwebsites (1.1.73.0~xenial) xenial; urgency=high
+
+  * EX-119: Added a couple of fields to dbutils.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 31 Dec 2016 10:43:51 -0800
+
+libsnapwebsites (1.1.72.0~xenial) xenial; urgency=high
+
+  * EX-119: Added a couple of date fields.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 31 Dec 2016 10:43:51 -0800
+
+libsnapwebsites (1.1.71.0~xenial) xenial; urgency=high
+
+  * SNAP-541: Added an "exists()" method for configuration files. This way you
+    can check for the existence of a configuration file before, and if it
+    doesn't exist, it won't call exit().
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 30 Dec 2016 15:37:40 -0800
+
+libsnapwebsites (1.1.70.3~xenial) xenial; urgency=high
+
+  * SNAP-258: Now catches libexcept messages in the snap_child.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 26 Dec 2016 13:16:16 -0800
+
+libsnapwebsites (1.1.69.0~xenial) xenial; urgency=high
+
+  * SNAP-258: dbutils now handles the new "users" table.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 21 Dec 2016 17:56:58 -0800
+
+libsnapwebsites (1.1.68.0~xenial) xenial; urgency=high
+
+  * SNAP-530: Added support for an AJAX check of the user session.
+  * Allow the process_cookies() to generate output.
+  * Fixed libsnapwebsites docs SOURCE, the headers were missing.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 21 Dec 2016 20:26:48 -0800
+
+libsnapwebsites (1.1.67.0~xenial) xenial; urgency=high
+
+  * EX-119: Added memo definitions to dbutils.
+  * SNAP-289: Check ievent structure size so make sure it won't overflow.
+  * Added an exception for the purpose.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 16 Dec 2016 20:12:49 -0700
+
+libsnapwebsites (1.1.66.0~xenial) xenial; urgency=high
+
+  * SNAP-529: Properly clear the cache of the context when disconnecting.
+  * Added a reconnect timer so if we lose our connection to Cassandra we
+    can reconnect at some point instead of crashing.
+  * Added a cassandra timer so the snapbackend without an action will
+    exit automatically if it never receives the CASSANDRAREADY message.
+  * Added a few try/catch so if a Cassandra error occurs, we can reset the
+    connection and go on instead of crashing.
+  * EX-158: Added a couple new functions to the thread FIFO.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>>  Wed, 14 Dec 2016 13:39:43 -0800
+
+libsnapwebsites (1.1.65.0~xenial) xenial; urgency=high
+
+  * SNAP-529: backend would crash because it could receive a PING before being
+    ready.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 10 Dec 2016 15:48:49 -0800
+
+libsnapwebsites (1.1.64.0~xenial) xenial; urgency=high
+
+  * SNAP-279: Mark users with an @example.com email as example users.
+  * Added a flag to allow registration of example users explicitly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 27 Nov 2016 02:00:49 -0800
+
+libsnapwebsites (1.1.63.0~xenial) xenial; urgency=high
+
+  * SNAP-279: Check that domain has an MX record.
+  * Added the "mx" table to record what we already checked to avoid the
+    "slowness" of dig.
+  * Updated the snap_child::verify_email() to test that the domain MX field
+    exists.
+  * Removed the lock table entry since we are not using it anymore.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 26 Nov 2016 21:41:48 -0800
+
+libsnapwebsites (1.1.62.0~xenial) xenial; urgency=high
+
+  * SNAP-381: Fixed the extension check in setup_uri().
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 25 Nov 2016 16:28:03 -0800
+
+libsnapwebsites (1.1.61.0~xenial) xenial; urgency=high
+
+  * SNAP-254: Added a field for the permissions secure flag.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 23 Nov 2016 01:44:47 -0800
+
+libsnapwebsites (1.1.60.0~xenial) xenial; urgency=high
+
+  * EX-114: For adding vendors, added a field to dbutils.
+  * Added a comment about the fact that we accept example.tld as good.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 22 Nov 2016 18:30:47 -0800
+
+libsnapwebsites (1.1.59.0~xenial) xenial; urgency=high
+
+  * SNAP-513: Removed logs for debug in the snapserver. The timer works.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Nov 2016 23:34:48 -0800
+
+libsnapwebsites (1.1.58.0~xenial) xenial; urgency=high
+
+  * SNAP-513: Fixed the callback name, copy/paste mistake: used process_signal()
+    instead of process_timeout() for the timer.
+  * Added destructors and override to all classes.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Nov 2016 23:34:48 -0800
+
+libsnapwebsites (1.1.57.0~xenial) xenial; urgency=high
+
+  * SNAP-513: Timer seems to be triggered but callback does not get called.
+  * Removed trace from low level snap_communicator::run() function.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Nov 2016 23:12:48 -0800
+
+libsnapwebsites (1.1.56.0~xenial) xenial; urgency=high
+
+  * SNAP-513: Added more debug statements to see what is happening.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Nov 2016 22:54:48 -0800
+
+libsnapwebsites (1.1.55.0~xenial) xenial; urgency=high
+
+  * SNAP-513: Added debug statements to see what is happening.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Nov 2016 21:18:48 -0800
+
+libsnapwebsites (1.1.54.0~xenial) xenial; urgency=high
+
+  * SNAP-513: Return false instead of calling exit(1) in check_cassandra().
+  * Added a cassandra_check_timer in case certain failures occur.
+  * Removed the --server-name command line option, it is not used anymore.
+  * Removed the server::create_table() function, it is not used anymore.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 16 Nov 2016 22:59:49 -0800
+
+libsnapwebsites (1.1.53.0~xenial) xenial; urgency=high
+
+  * SNAP-181: Added the what() for an exception that we get in snapfirewall
+    but do not really know why. It should help anyone using that function.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 15 Nov 2016 23:47:47 -0800
+
+libsnapwebsites (1.1.52.0~xenial) xenial; urgency=high
+
+  * SNAP-61: Removed various debug that I added to test why Cassandra was not
+    getting cleaned up after attempting to connect.
+  * Added a test in is_connected() to not crash if f_cassandra is null.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 15 Nov 2016 23:40:47 -0800
+
+libsnapwebsites (1.1.51.0~xenial) xenial; urgency=high
+
+  * EX-133: Define the type of the users::verify_ignore_user_agent cell.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 20:57:49 -0800
+
+libsnapwebsites (1.1.50.0~xenial) xenial; urgency=high
+
+  * SNAP-61: Attempt to avoid the CLOSE of the parent's CURSOR by the child.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 11:25:49 -0800
+
+libsnapwebsites (1.1.49.0~xenial) xenial; urgency=high
+
+  * SNAP-110: The FIREWALLUP message was not documented in COMMANDS.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 10 Nov 2016 20:34:49 -0800
+
+libsnapwebsites (1.1.48.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Changed a couple of logs from error/warning to debug.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 09 Nov 2016 23:47:49 -0800
+
+libsnapwebsites (1.1.47.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Use QString() instead of "" in setting up query strings.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 22:16:48 -0700
+
+libsnapwebsites (1.1.46.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Moved string hex conversions to a separate file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 13:38:48 -0700
+
+libsnapwebsites (1.1.45.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Moved the users password implementation to the library.
+  * Fixed the --version help string to use %p for the project name.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 20:16:48 -0700
+
+libsnapwebsites (1.1.44.0~xenial) xenial; urgency=high
+
+  * SNAP-393: Added an implementation of the inotify in our snap_communicator
+    environment: `snap_file_changed`.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 04 Nov 2016 16:34:47 -0700
+
+libsnapwebsites (1.1.43.0~xenial) xenial; urgency=high
+
+  * SNAP-110: snapserver gets many connections to snapdbproxy. I added debug
+    logs to try to determine where it happens.
+  * Added the get_name()/get_service() functions to the addr class.
+  * Removed the create_table(), it is not used at all anymore.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 04 Nov 2016 11:20:47 -0700
+
+libsnapwebsites (1.1.42.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Well... renamed those rows "ip::..." instead of "ip_info::...".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 03 Nov 2016 17:57:47 -0700
+
+libsnapwebsites (1.1.41.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Added a few more fields so we see the correct data with snapdb.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 03 Nov 2016 17:16:47 -0700
+
+libsnapwebsites (1.1.40.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Somehow the ip_info did not take, trying again.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 03 Nov 2016 16:52:47 -0700
+
+libsnapwebsites (1.1.39.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Added support for "ip_info::..." rows in "snapfirewall".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 03 Nov 2016 12:12:47 -0700
+
+libsnapwebsites (1.1.38.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Check whether the firewall is up (if active) before accepting
+    connections.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 31 Oct 2016 12:44:45 -0700
+
+libsnapwebsites (1.1.37.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a try/catch for the case where a spurious gossip generates
+    an error in Cassandra.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 28 Oct 2016 21:01:46 -0700
+
+libsnapwebsites (1.1.36.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a debug log in the table creation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 28 Oct 2016 18:00:46 -0700
+
+libsnapwebsites (1.1.35.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added support to mark any connection as done.
+  * Added a process_empty_buffer() so we know when the last write happened.
+  * Replaced the done() function with mark_done().
+  * Allow us to mark the permanent connection messenger as done.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Oct 2016 14:14:48 -0700
+
+libsnapwebsites (1.1.34.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a few debugs in case cassandra or snaplock are missing.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 25 Oct 2016 23:59:50 -0700
+
+libsnapwebsites (1.1.33.0~xenial) xenial; urgency=high
+
+  * Fixed the file creation and modification time in dbutils.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 09:52:38 -0700
+
+libsnapwebsites (1.1.32.0~xenial) xenial; urgency=high
+
+  * SNAP-491: Changed Ctrl-C in the equivalent of a STOP.
+  * Hide message about calculate_next_tick() when not required.
+  * Fixed the stop() function so it removes the messenger if not connected.
+  * Added a counter so the snapbackend without --action stops after 3 errors.
+  * Fixed the case where we receive a STOP and the child is still running.
+  * Set the f_stop_received flag to true in disconnect() to make sure we know.
+  * Fixed the UNREGISTER of the disconnect(), it was ignored before.
+  * Restore the SIGINT signal handler after the first SIGINT received.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 20 Oct 2016 11:17:49 -0700
+
+libsnapwebsites (1.1.31.0~xenial) xenial; urgency=high
+
+  * SNAP-461: Hide STATUS messages that we ignore.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 19 Oct 2016 11:28:18 -0700
+
+libsnapwebsites (1.1.30.0~xenial) xenial; urgency=high
+
+  * SNAP-443: Fixed the return value when BIO_eof() is true and a read "failed".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 18 Oct 2016 21:02:47 -0700
+
+libsnapwebsites (1.1.29.0~xenial) xenial; urgency=high
+
+  * SNAP-266: Commenting out the connect_messenger() in snap_child. At the
+    moment that makes the whole thing crash like crazy.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 18 Oct 2016 18:33:47 -0700
+
+libsnapwebsites (1.1.28.0~xenial) xenial; urgency=high
+
+  * SNAP-266: Check whether there is a messenger before getting an instance.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 18 Oct 2016 11:00:47 -0700
+
+libsnapwebsites (1.1.27.0~xenial) xenial; urgency=high
+
+  * SNAP-461: Added support to retrieve the status of the snaplock service.
+  * Prevent showing a website if snaplock is not running.
+  * Prevent running a backend if snaplock is not running.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 14 Oct 2016 17:19:45 -0700
+
+libsnapwebsites (1.1.26.0~xenial) xenial; urgency=high
+
+  * SNAP-266: Added f_func at the end of the log() calls.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 12 Oct 2016 23:06:53 -0700
+
+libsnapwebsites (1.1.25.0~xenial) xenial; urgency=high
+
+  * SNAP-266: Fixed a test in the logger that was inverted.
+  * SNAP-465: Added an entry about the /server-status, commented out by default.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 12 Oct 2016 22:45:53 -0700
+
+libsnapwebsites (1.1.24.0~xenial) xenial; urgency=high
+
+  * SNAP-266: snap_child recreates snapcom messenger with thread.
+  * Default is to use file logging and logging to snapcommunicator.
+  * Also took out all loggingserver API and properties files.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 12 Oct 2016 14:45:20 -0700
+
+libsnapwebsites (1.1.23.0~xenial) xenial; urgency=high
+
+  * SNAP-266: snaplog service is not "snaplogd."
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 11 Oct 2016 15:36:28 -0700
+
+libsnapwebsites (1.1.22.0~xenial) xenial; urgency=high
+
+  * SNAP-355: To really broadcast to all computers, I have to set the
+    service to "*". Setting just the server that way allows for broadcasting
+    only if the service in not running locally.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 11 Oct 2016 15:44:47 -0700
+
+libsnapwebsites (1.1.21.0~xenial) xenial; urgency=high
+
+  * SNAP-266: Added call to destructorImpl().
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 11 Oct 2016 10:20:47 -0700
+
+libsnapwebsites (1.1.20.0~xenial) xenial; urgency=high
+
+  * SNAP-266: Added the appender to the factory and to the configuration
+    file so it can be loaded by log4cplus.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 10 Oct 2016 22:12:37 -0700
+
+libsnapwebsites (1.1.19.0~xenial) xenial; urgency=high
+
+  * SNAP-355: We now broadcast the BLOCK message now.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 10 Oct 2016 00:40:48 -0700
+
+libsnapwebsites (1.1.18.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Write versions to stdout.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 11:22:48 -0700
+
+libsnapwebsites (1.1.17.0~xenial) xenial; urgency=high
+
+  * SNAP-378: Applied fix so the do_update() calls only happen when we use the
+    snapinstallwebsite command line. In other words, it is now in the
+    background and thus way safer.
+  * If current state not "ready," frontend users get a 503 error.
+  * Removed access to the install_layout() call from frontend users.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 29 Sep 2016 21:52:47 -0700
+
+libsnapwebsites (1.1.16.0~xenial) xenial; urgency=high
+
+  * SNAP-438: Added proper code to save data in override.conf instead
+    of directly in the .service file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 26 Sep 2016 13:04:46 -0700
+
+libsnapwebsites (1.1.15.0~xenial) xenial; urgency=high
+
+  * SNAP-443: Missed updating the snapinstallwebsite tool with SSL support.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 25 Sep 2016 12:49:48 -0700
+
+libsnapwebsites (1.1.14.0~xenial) xenial; urgency=high
+
+  * SNAP-426: Wait on the CASSANDRAREADY message before starting the timer.
+    This allows the first tick to happen very quickly instead of 5 min. later.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 24 Sep 2016 23:29:48 -0700
+
+libsnapwebsites (1.1.13.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Applied fixes to lines of code pointed out by Coverity.
+  * Suppressed a potential exception from the logger destructor.
+  * Verify that the socket is valid before using it (snap_communicator).
+  * Applied an additional casst in the snap_expr and added a comment.
+  * Fixed a bug in the implementation of the bio_server::accept() function:
+    the socket used was the one from the server and not the new client!
+  * Moved some lines of codes within the try/catch blocks.
+  * Fixed the exit code of the client/server tests to 1 on errors.
+  * Added a try/catch to the ip_test.
+  * EX-122: Adding a debug as I am having trouble with an installation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 24 Sep 2016 12:18:48 -0700
+
+libsnapwebsites (1.1.12.0~xenial) xenial; urgency=high
+
+  * SNAP-447: Applied a fix to the permanent connection. The background
+    connection would not properly remove the thread signal from the
+    snap communicator list of connections, so it could still be triggered
+    after the permanent connection entry was long gone.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 21 Sep 2016 20:16:49 -0700
+
+libsnapwebsites (1.1.11.0~xenial) xenial; urgency=high
+
+  * SNAP-447: Removed debug messages.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 21 Sep 2016 10:51:49 -0700
+
+libsnapwebsites (1.1.10.0~xenial) xenial; urgency=high
+
+  * SNAP-447: Actually set errno in bio_client because we check it later.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 21 Sep 2016 10:36:49 -0700
+
+libsnapwebsites (1.1.9.0~xenial) xenial; urgency=high
+
+  * SNAP-447: Adding debug in the read() of the client.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 21 Sep 2016 09:59:49 -0700
+
+libsnapwebsites (1.1.8.0~xenial) xenial; urgency=high
+
+  * SNAP-447: Add test to see whether the error occurs over and over again.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 21 Sep 2016 09:34:49 -0700
+
+libsnapwebsites (1.1.7.0~xenial) xenial; urgency=high
+
+  * SNAP-447: Handle case where the error queue never gets empty.
+  * SNAP-447: Show the broken up numbers so it makes it easy to read.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 21 Sep 2016 09:08:49 -0700
+
+libsnapwebsites (1.1.6.0~xenial) xenial; urgency=high
+
+  * SNAP-450: Added support for proper interthread locking in handling of
+    the BIO, SSL, CTX, etc. objects from the OpenSSL library.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 20 Sep 2016 21:08:49 -0700
+
+libsnapwebsites (1.1.5.1~xenial) xenial; urgency=high
+
+  * SNAP-440: Added SSL support for Cassandra.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 21 Sep 2016 16:58:03 -0700
+
+libsnapwebsites (1.1.5.0~xenial) xenial; urgency=high
+
+  * SNAP-447: Create a function to send OpenSSL errors to our log.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 20 Sep 2016 17:05:49 -0700
+
+libsnapwebsites (1.1.4.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+libsnapwebsites (1.1.3.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Changed a few lines to call get_server_name() instead of using
+    the f_parameters["server_name"] which is not available anymore.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 11 Sep 2016 15:44:19 -0700
+
+libsnapwebsites (1.1.2.0~xenial) xenial; urgency=high
+
+  * Added the exception information in the check_cassandra() function.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 25 Aug 2016 02:00:54 -0700
+
+libsnapwebsites (1.1.1.0~xenial) xenial; urgency=high
+
+  * Version number is wrong: it must have four parts (build number is missing).
+
+ -- Doug Barbieri <doug@dooglio.net>  Thu, 18 Aug 2016 18:48:45 -0700
+
+libsnapwebsites (1.1.0~xenial) xenial; urgency=high
+
+  * Fixed the initialization of the server_name parameter. We cannot have
+    a hard coded default anymore, plus it is not useful.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 18 Aug 2016 14:07:13 -0700
+
+libsnapwebsites (1.0.0) trusty; urgency=high
+
+  * Initial release of packaging for library.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 20 May 2016 10:45:41 -0800

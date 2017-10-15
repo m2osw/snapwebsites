@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+# Run the snapbackup command to make sure we have copies of the database.
+# This is not recommended on large clusters, though (i.e. Cassandra should
+# properly do backups on its own with a good replication factor)
+#
+# Important note: we are in cron.daily which means we run as root:root
+#
+
+set -e
+
+# make sure we are still installed, if not exit right away
+#
+test -x /usr/bin/snapbackup || exit 0
+
+# define defaults for our parameters
+#
+BACKUP_OPTIONS=
+BACKUP_HOST=127.0.0.1
+BACKUP_PATH=/var/backups/snapwebsites/cassandra-backups
+BACKUP_LOG=/var/log/snapwebsites/snapbackup.log
+
+# get one of the hosts running Cassandra
+#
+. /etc/default/snapbackup
+
+# write one line in logs so we get the date when this run started
+#
+echo "`date +%Y/%m/%d\ %H:%M:%S` $HOSTNAME $0[$$]: info: starting backup." >> ${BACKUP_LOG}
+
+# make sure the output folder exists
+#
+# TODO: should change the ownership? Right now this will all be root which
+#       should be just fine.
+#
+if ! mkdir -p ${BACKUP_PATH} >> ${BACKUP_LOG} 2>&1
+then
+	echo "error: could not create output path \"$BACKUP_PATH\"." >> ${BACKUP_LOG}
+	exit 1
+fi
+
+# define filename, we want one backup per day of the week
+#
+DAY=`date +%w`
+BACKUP_FILENAME="${BACKUP_PATH}/backup-${DAY}.sqlite3"
+
+# create the backup
+#
+if ! snapbackup ${BACKUP_OPTIONS} --host ${BACKUP_HOST} --dump-context ${BACKUP_FILENAME} >> ${BACKUP_LOG} 2>&1
+then
+	echo "warning: snapbackup returned with error code $? while creating backup ${BACKUP_FILENAME}" >> ${BACKUP_LOG}
+fi
+
+# make sure only root can read it (it includes all the secure data from the
+# database!)
+#
+if ! chmod 600 ${BACKUP_FILENAME} >> ${BACKUP_LOG} 2>&1
+then
+	echo "warning: chmod 600 of backup file \"\" failed" >> ${BACKUP_LOG}
+fi
+
+# compress the result so it takes less space
+#
+# Note: if running the backup on the same computer as Cassandra, -9
+#       may not be a good choice. It will use a large amount of memory
+#       which could slowdown the database for a little while.
+#
+if ! xz --compress --force -9 ${BACKUP_FILENAME} >> ${BACKUP_LOG} 2>&1
+then
+	echo "warning: xz compression of backup file \"${BACKUP_FILENAME}\" failed" >> ${BACKUP_LOG}
+fi
+

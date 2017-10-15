@@ -1,0 +1,506 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == snap software description database setup
+Copyright (C) 2012-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <!--content path="/snap-software-description"> == these are created as attachment as the SNSD plugin has nothing to do about the download, it's just a file at the time it gets accessed, just like feeds.
+    <param name="content::title" revision="revision">Snap! Software Description</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Snap! Software Description Catalog.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administrer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content-->
+  <content path="/types/snap-software-description" owner="output">
+    <param name="content::title" revision="revision">Snap! Software Description</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The types defined under this entry represent categories to sort software in various ways. The categories are managed in a tree. You are free to grow the tree to match your needs.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/table-of-contents" owner="output">
+    <param name="content::title" revision="revision">Snap! Software Description Table of Contents</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The link used to mark the page representing the table of content.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/publisher" owner="output">
+    <param name="content::title" revision="revision">Snap! Software Description Publisher</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This type marks publishers.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::publisher", page, "types/snap-software-description/publisher")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/support" owner="output">
+    <param name="content::title" revision="revision">Snap! Software Description Support</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This type marks support pages.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::support", page, "types/snap-software-description/support")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category" owner="output">
+    <param name="content::title" revision="revision">Snap Software Description Categories</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Categories used to give each software one or more type.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category", false)
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/communications" owner="output">
+    <param name="content::title" revision="revision">Communications</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Software handling communications.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/communications")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/database" owner="output">
+    <param name="content::title" revision="revision">Database</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A Database Software such as MySQL or PostgreSQL.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/database")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/desktop-environment" owner="output">
+    <param name="content::title" revision="revision">Desktop Environment</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software offering a Desktop Environment or an extension thereof.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/desktop-environment")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/education" owner="output">
+    <param name="content::title" revision="revision">Education</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software used to educate or at least help to educate.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/education")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/formats-and-protocols" owner="output">
+    <param name="content::title" revision="revision">Formats and Protocols</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software to handle data defined using specific formats or protocols.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/formats-and-protocols")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/games-and-entertainment" owner="output">
+    <param name="content::title" revision="revision">Games and Entertainment</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software implementing a game or something in link with entertainment.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/games-and-entertainment")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/internet" owner="output">
+    <param name="content::title" revision="revision">Internet</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software strongly linked to the Internet such as a browser.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/internet")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/mobile" owner="output">
+    <param name="content::title" revision="revision">Mobile</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software running and specifically created for Mobile devices.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/mobile")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/multimedia" owner="output">
+    <param name="content::title" revision="revision">Multimedia</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software used to help with multimedia items.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/multimedia")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/office-and-business" owner="output">
+    <param name="content::title" revision="revision">Multimedia</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software to help business men and employees working in an office.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/office-and-business")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/printing" owner="output">
+    <param name="content::title" revision="revision">Printing</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software used with various types of printers.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/printing")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/religion" owner="output">
+    <param name="content::title" revision="revision">Religion</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software in link with religion.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/religion")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/philosophy-social-science" owner="output">
+    <param name="content::title" revision="revision">Philosophy and Social Science</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software in link with philosophy and social science.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/philosophy-social-science")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/scientific-engineering" owner="output">
+    <param name="content::title" revision="revision">Scientific/Engineering</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software used in the scientific world or helping with engineering.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/scientific-engineering")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/security" owner="output">
+    <param name="content::title" revision="revision">Security</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software that helps you secure servers, a place, a vehicul, etc.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/security")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/sociology" owner="output">
+    <param name="content::title" revision="revision">Sociology</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software helping sociologs do their work.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/sociology")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/software-development" owner="output">
+    <param name="content::title" revision="revision">Tools for Software Development</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software used in software development such as a compiler, a linker, a static code analyzer, etc.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/software-development")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/system" owner="output">
+    <param name="content::title" revision="revision">System Software</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>An operating software, such a Linux, or a tool to work with the system (boot loader, OS benchmark, embedded software...)</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/system")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/terminal" owner="output">
+    <param name="content::title" revision="revision">Terminal</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software used to allow user input and system output.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/terminal")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/types/snap-software-description/category/text-editor" owner="output">
+    <param name="content::title" revision="revision">Text Editor</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A software to allow users to edit text files such as source code.</p>]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[page_status(page) == "normal"
+            && linked_to("snap_software_description::category", page, "types/snap-software-description/category/text-editor")
+            && perms(path, "", "view", "visitor")]]>
+    </param>
+    <!-- the order is absolutely unimportant so we just use the page creation date -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(int64(cell("content", page, "content::created")))]]>
+    </param>
+    <param name="list::selector" overwrite="yes">public</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/admin/settings/snap-software-description" owner="output">
+    <param name="content::title" revision="revision">Snap Software Description Settings</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Setup the Snap Software Description feature for this website.</p>]]>
+    </param>
+    <param name="editor::layout" revision="global" overwrite="yes">"snap_software_description-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"snap_software_description-settings-parser";</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+  </content>
+
+  <!-- the following is test data for the only purpose of testing this plugin -->
+  <content path="/publisher" owner="output">
+    <param name="content::title" revision="revision">Publisher ABC</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Publish ABC info...</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+    <link name="snap_software_description::publisher" to="snap_software_description::publisher" mode="1:*">/types/snap-software-description/publisher</link>
+  </content>
+  <content path="/software-support" owner="output">
+    <param name="content::title" revision="revision">Software Support</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Software Support by ABC info...</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+    <link name="snap_software_description::support" to="snap_software_description::support" mode="1:*">/types/snap-software-description/support</link>
+  </content>
+  <content path="/snap-websites-packages" owner="output">
+    <param name="content::title" revision="revision">Snap Websites Packages</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various Packages for the Snap Websites...</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+    <link name="snap_software_description::category" to="snap_software_description::category" mode="*:*">/types/snap-software-description/category</link>
+  </content>
+  <content path="/files-table-of-contents" owner="output">
+    <param name="content::title" revision="revision">Table of Contents</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various Packages for the Snap Websites...</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+    <link name="snap_software_description::table_of_content" to="snap_software_description::table_of_content" mode="1:1">/types/snap-software-description/table-of-contents</link>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

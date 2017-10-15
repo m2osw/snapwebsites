@@ -1,0 +1,20 @@
+# Snap Bounce
+
+# The log files get moved to a sub-folder so we are responsible
+# for rotating them
+#
+/var/log/mail/mail.* {
+    rotate 4
+    weekly
+    missingok
+    notifempty
+    compress
+    delaycompress
+    sharedscripts
+    postrotate
+        invoke-rc.d rsyslog rotate > /dev/null
+    endscript
+}
+
+# vim: ts=4 sw=4 et
+

@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# Often a Cassandra cluster will go bad and thus a repair will be
+# necessary; this should be done after you isolated the node to
+# be repaired... For the scrub command to work, you will have to
+# stop the node and restart it. Without a restart, it is likely
+# to not do what is necessary. Make sure to wait a little at the
+# start to give Cassandra enough time to restart.
+#
+# Make sure nodetool is in your path (it should be with the default
+# installation of Cassandra.)
+#
+# This command repairs the local node. To repair another node, either
+# log in that computer or specify the host on the command line.
+#
+nodetool scrub snap_websites
+
+#
+# You may also want to run a repair; this requires the node to be
+# back in the ring; it allows Cassandra to copy any missing data
+# from the other nodes to the node you just repaired
+#
+#nodetool repair snap_websites

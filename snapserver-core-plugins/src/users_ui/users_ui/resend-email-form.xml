@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == resend email form
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-form name="users__resend_email" session_id="user/10" owner="users_ui">
+  <auto-reset minutes="5"/>
+  <timeout minutes="180"/>
+  <focus refid="email"/>
+  <default-button refid="resend"/>
+  <taborder>
+    <tabindex refid="email"/>
+    <tabindex refid="resend"/>
+    <tabindex refid="cancel"/>
+    <tabindex refid="verify"/>
+  </taborder>
+  <accesskeys>
+    <!-- by keeping those in alphabetical order you'll avoid problems (duplicates) -->
+    <key refid="cancel">c</key><!-- default cancelation is expected to be [Shift-]Alt-C -->
+    <key refid="email">e</key>
+    <key refid="resend">s</key><!-- default submit is expected to be [Shift-]Alt-S -->
+    <key refid="verify">v</key>
+  </accesskeys>
+  <widget id="resend_email_info" type="fieldset">
+    <label>Resend a Verification Email</label>
+    <tooltip>If you registered on our website and you did not receive a confirmation email, then you can use this form to request for a new email.</tooltip>
+    <help>After registration, we require each user to verify their email address. If you properly entered your email address, then you will get a code that can be used to verify that you indeed own (or act as the owner of) that email address. However, if the email never makes it, you won't be able to verify your new account. This feature allows you to request a new email with the verification code so you can still complete your registration.</help>
+    <widgetorder>
+      <!-- used if order is tweaked (i.e. plugins add widgets) -->
+      <widgetpriority refid="email"/>
+      <widgetpriority refid="resend"/>
+      <widgetpriority refid="verify"/>
+      <widgetpriority refid="cancel"/>
+    </widgetorder>
+    <widget id="email" type="line-edit">
+      <label>Email</label>
+      <background-value>registration email</background-value>
+      <tooltip>Enter the exact same email address as you used for registering on our website. We will then send you another confirmation email.</tooltip>
+      <sizes>
+        <min>6</min>
+        <max>60</max>
+        <width>20</width>
+      </sizes>
+      <required>required</required>
+      <help>Enter your email address as you used to register on our website.</help>
+    </widget>
+    <widget id="resend" type="submit">
+      <label>Resend</label>
+      <tooltip>Once you entered your email address click here to have our system send you a new email.</tooltip>
+      <sizes>
+        <width>15</width>
+      </sizes>
+      <help>Please enter your email address in the box so named and then click on the Resend button.</help>
+      <value>Resend</value>
+    </widget>
+    <widget id="verify" type="link">
+      <label>Verify Code</label>
+      <tooltip>Click here to go to the verification form</tooltip>
+      <help>Just received the email after all? Click on this link to go back to the verification form or click the verification link included in the email.</help>
+      <value>/verify</value>
+    </widget>
+    <widget id="cancel" type="link">
+      <label>Cancel</label>
+      <tooltip>Click here to return to the home page</tooltip>
+      <help>Changed your mind? Click on this Cancel link to return to the home page.</help>
+      <value>/</value>
+    </widget>
+  </widget>
+</snap-form>
+<!-- vim: ts=2 sw=2 et
+-->

@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-swap.xml
+-->
+<bundle>
+  <name>swap</name>
+  <description>
+    <p>Add a swap file of the size you specify. By default, SSD-only
+    installations often do not offer any swap. It is yet a good idea
+    to have some on your snapserver and snapbackend machines.</p>
+  </description>
+  <fields>
+    <field name="cluster_name" type="input">
+      <label>Swap Size</label>
+      <description>
+        <p>Enter amount of swap you would like to have (i.e. 512M, 1G, ...)</p>
+        <p><strong>IMPORTANT NOTE:</strong> If you are to use this computer
+        just and only as a Cassandra node and the computer has about 4Gb or
+        more, then you do not need to install swap (Cassandra actually
+        suggests you do not setup swap to avoid slowness when hitting
+        swap.)</p>
+      </description>
+    </field>
+  </fields>
+  <is-installed>
+    if test -f /var/cache/swapfile
+    then
+      echo "install ok installed"
+    else
+      echo "unkown"
+    fi
+  </is-installed>
+  <packages></packages>
+  <postinst>
+    # Swap parameter documentation available here:
+    #   https://www.kernel.org/doc/Documentation/sysctl/vm.txt
+
+    if test ! -f /var/cache/swapfile
+    then
+      # Create a swap file
+      fallocate -l 1G /var/cache/swapfile
+      chmod 600 /var/cache/swapfile
+      mkswap /var/cache/swapfile
+
+      # Setup the swap in the filesystem definition
+      echo "/var/cache/swapfile none swap sw 0 0" >>/etc/fstab
+     
+      # Reduce the swappiness (i.e. keep things in RAM as much as possible)
+      SWAPPINESS=10
+      if grep vm.swappiness /etc/sysctl.conf
+      then
+        # that entry already exists, update it
+        sed -i.bak \
+            -s "/.*vm.swappiness.*=.*/vm.swappiness = $SWAPPINESS/" \
+                /etc/sysctl.conf
+      else
+        echo "vm.swappiness = $SWAPPINESS" >>/etc/sysctl.conf
+      fi
+      sysctl vm.swappiness=$SWAPPINESS
+
+      CACHE_PRESSURE=50
+      if grep vm.vfs_cache_pressure /etc/sysctl.conf
+      then
+        # that entry already exists, update it
+        sed -i.bak \
+            -s "/.*vm.vfs_cache_pressure.*=.*/vm.vfs_cache_pressure = $CACHE_PRESSURE/" \
+                /etc/sysctl.conf
+      else
+        # append
+        echo "vm.vfs_cache_pressure = $CACHE_PRESSURE" >>/etc/sysctl.conf
+      fi
+      sysctl vm.vfs_cache_pressure=$CACHE_PRESSURE
+     
+      # Turn on the swap, it will be on on each future reboot too
+      swapon -a
+    fi
+  </postinst>
+  <postrm>
+    if test -f /var/cache/swapfile
+    then
+      # turn off that swap file
+      swapoff /var/cache/swapfile
+
+      # remove that entry from the fstab file
+      sed -i.bak \
+            "/^.var.cache.swapfile/ d" \
+                /etc/fstab
+
+      # remove the file and reclaim the space
+      rm -f /var/cache/swapfile
+    fi
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

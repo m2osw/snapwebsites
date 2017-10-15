@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == attachment plugin database setup
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/images/attachment">
+    <param name="content::title" revision="revision">Attachment Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Images of the Attachment plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="attachment-logo" type="attachment/public">
+      <path>:/images/attachment/attachment-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/types/taxonomy/system/content-types/attachment">
+    <param name="content::title" revision="revision">Attachment Type</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This type represents an attachment. You may have public or private attachments.</p>]]>
+    </param>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view</link>
+  </content>
+  <content path="/types/taxonomy/system/content-types/attachment/public">
+    <param name="content::title" revision="revision">Public Attachment Type</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Public attachment can be downloaded by your users.</p>]]>
+    </param>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+  </content>
+  <content path="/types/taxonomy/system/content-types/attachment/private">
+    <param name="content::title" revision="revision">Private Attachment Type</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Private attachment can be downloaded by logged in users.</p>]]>
+    </param>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/private</link>
+    <link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+  </content>
+  <content path="/types/permissions/rights/view/attachment">
+    <param name="content::title" revision="revision">View Page Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>View an attachment.</p><p>This right is used to mark attachments. Only high level administrators are expected to be given the "view any attachment" permission, if even.</p><p>Note that attachments dropped in a form are given this permission by default so they are not visible.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/attachment/public">
+    <param name="content::title" revision="revision">Public Attachment Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Right given to public attachments so visitors can see them.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/attachment/private">
+    <param name="content::title" revision="revision">Private Attachment Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Right given to private attachments so registered users can see them.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/attachment/secure">
+    <param name="content::title" revision="revision">Secure Attachment Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Right given to secure attachments so only administrators can see them.</p>]]>
+    </param>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

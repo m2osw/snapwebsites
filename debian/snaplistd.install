@@ -1,0 +1,3 @@
+debian/tmp/usr/bin/snaplistd        usr/bin/
+snaplistd/conf/snaplistd.conf       etc/snapwebsites/
+snaplistd/conf/snaplistd.properties etc/snapwebsites/logger/

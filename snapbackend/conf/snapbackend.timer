@@ -1,0 +1,21 @@
+# Documentation available at:
+# https://www.freedesktop.org/software/systemd/man/systemd.timer.html
+
+[Unit]
+Description=Run the snapbackend service once every 5 minutes.
+
+[Timer]
+# You must have an OnBootSec (or OnStartupSec) otherwise it does not auto-start
+OnBootSec=5min
+OnUnitActiveSec=5min
+# The default accuracy is 1 minute. I'm not too sure that either way
+# will affect us. I am thinking that since our computers will be
+# permanently running, it probably won't be that inaccurate anyway.
+# See also:
+# http://stackoverflow.com/questions/39176514/is-it-correct-that-systemd-timer-accuracysec-parameter-make-the-ticks-slip
+#AccuracySec=1
+
+[Install]
+WantedBy=timers.target
+
+# vim: syntax=dosini

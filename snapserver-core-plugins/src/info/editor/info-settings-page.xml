@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == info settings page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="info" id="settings" content-modified="2015-09-07 23:22:10">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="site_name"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="site_name"/>
+    <tabindex refid="site_long_name"/>
+    <tabindex refid="site_short_name"/>
+    <tabindex refid="breadcrumbs_home_label"/>
+    <tabindex refid="show_home"/>
+    <tabindex refid="show_current_page"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- site name (normal, long, short) -->
+  <widget id="site_name" type="line-edit" field="core::site_name" path="info/site_name" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the name of your website.</tooltip>
+    <help>Help</help>
+  </widget>
+  <widget id="site_long_name" type="line-edit" field="core::site_long_name" path="info/site_long_name" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the long (complete) name of your website.</tooltip>
+    <help>Help</help>
+  </widget>
+  <widget id="site_short_name" type="line-edit" field="core::site_short_name" path="info/site_short_name" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the short name (possible an abbreviation) of your website.</tooltip>
+    <help>Help</help>
+  </widget>
+
+  <!-- administrator email -->
+  <widget id="administrator_email" type="line-edit" field="core::administrator_email" path="info/administrator_email" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the label to use for the Home breadcrumb label.</tooltip>
+    <help>Help</help>
+    <filters>
+      <regex name="email"/>
+    </filters>
+    <background-value>administrator email</background-value>
+  </widget>
+
+  <!-- breadcrumbs -->
+  <widget id="breadcrumbs_home_label" type="line-edit" field="content::breadcrumbs_home_label" path="info/breadcrumbs_home_label" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the label to use for the Home breadcrumb label.</tooltip>
+    <help>Help</help>
+    <background-value>Home</background-value>
+  </widget>
+  <widget id="show_home" type="checkmark" field="content::breadcrumbs_show_home" path="info/breadcrumbs/show_home" auto-save="int8">
+    <label>Show Home in your breadcrumbs</label>
+    <tooltip>If checked, then show the Home URL in your breadcrumbs (note that the home page is always included, it gets hidden using CSS.)</tooltip>
+    <help>Help</help>
+    <value>1</value>
+  </widget>
+  <widget id="show_current_page" type="checkmark" field="content::breadcrumbs_show_current_page" path="info/breadcrumbs/show_current_page" auto-save="int8">
+    <label>Show the current page in your breadcrumbs</label>
+    <tooltip>If checked, then show the Current Page URL in your breadcrumbs (note that the current page is always included, it gets hidden using CSS.)</tooltip>
+    <help>Help</help>
+    <value>1</value>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

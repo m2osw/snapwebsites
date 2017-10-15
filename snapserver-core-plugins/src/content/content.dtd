@@ -1,0 +1,94 @@
+<!--
+Snap Websites Server == DTD for all content.xml files
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!ELEMENT snap-tree (content)*>
+<!ATTLIST snap-tree content-modified CDATA #IMPLIED>
+
+<!ENTITY % html-data "(#PCDATA|b|i|u|em|strong|a|img|div|p)*" >
+
+<!ELEMENT content (param|remove-param|link|remove-link|attachment)*>
+<!ATTLIST content path CDATA #REQUIRED
+                  moved-from CDATA #IMPLIED
+                  owner CDATA #IMPLIED>
+
+<!ELEMENT param %html-data;>
+<!ATTLIST param name CDATA #REQUIRED
+                lang CDATA "en"
+                overwrite (yes|no) "no"
+                force-namespace (yes|no) "yes"
+                priority CDATA "0"
+                revision (global|branch|revision) "branch"
+                type (binary|float|float32|double|float64|int8|int32|int64|string) "string">
+
+<!ELEMENT remove-param %html-data;>
+<!ATTLIST remove-param name CDATA #REQUIRED
+                lang CDATA "en"
+                overwrite (yes|no) "no"
+                force-namespace (yes|no) "yes"
+                priority CDATA "0"
+                revision (global|branch|revision) "branch"
+                type (binary|float|float32|double|float64|int8|int32|int64|string) "string">
+
+<!ELEMENT link (#PCDATA)>
+<!ATTLIST link name CDATA #REQUIRED
+               to CDATA #REQUIRED
+               mode CDATA "1:1"
+               branches CDATA "0:0">
+
+<!ELEMENT remove-link (#PCDATA)>
+<!ATTLIST remove-link name CDATA #REQUIRED
+                      to CDATA #REQUIRED
+                      mode CDATA "1:1"
+                      branches CDATA "0:0">
+
+<!-- path is mandatory -->
+<!ELEMENT attachment (path, mime-type?, dependency*)>
+<!ATTLIST attachment name CDATA #REQUIRED
+                     type CDATA #REQUIRED
+                     owner CDATA #IMPLIED>
+
+<!ELEMENT path (#PCDATA)>
+<!ELEMENT mime-type (#PCDATA)>
+<!ELEMENT dependency (#PCDATA)>
+
+<!-- HTML tags that are used in default values or background values
+     we're not trying to replicate the whole HTML DTD, so we simply here -->
+<!ELEMENT b %html-data;>
+<!ELEMENT i %html-data;>
+<!ELEMENT u %html-data;>
+<!ELEMENT em %html-data;>
+<!ELEMENT strong %html-data;>
+
+<!ELEMENT a %html-data;>
+<!ATTLIST a href CDATA #REQUIRED
+            rel (nofollow) #IMPLIED
+            title CDATA "">
+
+<!ELEMENT img EMPTY>
+<!ATTLIST img src CDATA #REQUIRED
+              width CDATA #IMPLIED
+              height CDATA #IMPLIED
+              title CDATA #IMPLIED
+              alt CDATA #IMPLIED
+              type CDATA #IMPLIED>
+
+<!ELEMENT div %html-data;>
+<!ELEMENT p %html-data;>
+
+<!-- vim: ts=4 sw=4 et
+-->

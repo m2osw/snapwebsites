@@ -1,0 +1,3 @@
+debian/tmp/usr/bin/snaplayout                     usr/bin/
+debian/tmp/usr/share/snapwebsites/layouts/bare/*  usr/share/snapwebsites/layouts/bare/
+debian/tmp/usr/share/snapwebsites/layouts/white/* usr/share/snapwebsites/layouts/white/

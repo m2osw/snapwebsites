@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == OAuth2 page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="oauth2" id="settings" content-modified="2014-11-21 16:42:08">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="oauth2_enable"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="oauth2_enable"/>
+    <tabindex refid="oauth2_email"/>
+    <tabindex refid="oauth2_identifier"/>
+    <tabindex refid="oauth2_secret"/>
+    <tabindex refid="oauth2_user_enable"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="oauth2_enable" type="checkmark" field="oauth2::enable" path="oauth2/enable" auto-save="int8">
+    <label>Turn the OAuth2 feature ON or OFF</label>
+    <tooltip>Check this box to enable the OAuth2 feature. When OAuth2 is enabled applications that know of various API supported by your website can log in and manage your website remotely.</tooltip>
+    <help>Help</help>
+    <value>0</value>
+  </widget>
+  <widget id="oauth2_email" type="line-edit" field="oauth2::email" path="oauth2/email" auto-save="plain" secret="secret" no-toolbar="no-toolbar">
+    <tooltip>Enter the email address of the user who will be logged in for this application to work with private data.</tooltip>
+    <help>When the OAuth2 tool logs an application in, it has to make use of a user. This is done by assigning the session identifier to the email address specified here. Note that the application will have all the rights that this user has.</help>
+    <background-value>email</background-value>
+  </widget>
+  <widget id="oauth2_identifier" type="text-edit" field="oauth2::identifier" path="oauth2/identifier" auto-save="plain" secret="secret">
+    <tooltip>The OAuth2 plugin generates a connection identifier. This field shows you that identifier.</tooltip>
+    <state>read-only</state>
+  </widget>
+  <widget id="oauth2_secret" type="text-edit" field="oauth2::secret" path="oauth2/secret" auto-save="plain" secret="secret">
+    <tooltip>The OAuth2 plugin generates a connection secret. This field shows you that identifier.</tooltip>
+    <state>read-only</state>
+  </widget>
+  <widget id="oauth2_user_enable" type="checkmark" field="oauth2::user_enable" path="oauth2/user_enable" auto-save="int8">
+    <label>Turn the OAuth2 feature ON or OFF for Users</label>
+    <tooltip>Each user may be entitled to make us of an application. To allow your users to make use of that application, they will need to have their own identifier and secret codes. These are found in their account, but this checkmark has to be turned on for them to see and use the codes.</tooltip>
+    <help>Help</help>
+    <value>0</value>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

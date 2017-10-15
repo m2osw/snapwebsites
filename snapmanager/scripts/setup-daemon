@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Whenever we recompile, we destroy the snapmanagerdaemon setup so one
+# can use this script to setup the daemon again.
+#
+# If you are not working on the daemon, you probably want to copy it
+# it somewhere else and run these commands against that copy. This way
+# you can avoid having to re-run this script every single time.
+#
+sudo chown root ../../BUILD/snapwebsites/snapmanagercgi/daemon/snapmanagerdaemon
+sudo chmod 4775 ../../BUILD/snapwebsites/snapmanagercgi/daemon/snapmanagerdaemon

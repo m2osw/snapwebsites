@@ -1,0 +1,79 @@
+snapdb (1.0.11.162~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Sat, 21 Jan 2017 17:55:06 -0800
+
+snapdb (1.0.11.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notice to 2017.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 15:13:48 -0700
+
+snapdb (1.0.10.0~xenial) xenial; urgency=high
+
+  * SNAP-541: Added an "exists()" method for configuration files. This way you
+    can check for the existence of a configuration file before, and if it
+    doesn't exist, it won't call exit(). Now snapdb does not crash if no
+    config file exists.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 30 Dec 2016 15:39:34 -0800
+
+snapdb (1.0.9.0~xenial) xenial; urgency=high
+
+  * Added configuration file.
+  * Removed `--no-ssl` switch and replaced with `--use-ssl` switch. This is
+    also in the new configuration file.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sat, 10 Dec 2016 12:30:57 -0800
+
+snapdb (1.0.8.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the --version help string to use %p for the project name.
+  * Moved the old snapdb.cpp, snapdb.h, snapsiteinfo.cpp to the archive area.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 20:16:48 -0700
+
+snapdb (1.0.7.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Will output its own version instead of the libsnapwebsites one.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 11:28:46 -0700
+
+snapdb (1.0.6.0~xenial) xenial; urgency=high
+
+  * EX-128: Added the --save-cell command line option. It was accepted in
+    the code, but was not in the advgetopt list.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 02 Oct 2016 15:38:49 -0700
+
+snapdb (1.0.5.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Removed add_ssl_keys() method and replaced with parameter to
+    QCassandraSession::connect() method.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 29 Sep 2016 12:47:27 -0700
+
+snapdb (1.0.4.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Added SSL support for Cassandra.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 21 Sep 2016 16:57:14 -0700
+
+snapdb (1.0.3.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Moved .properties files under .../logger/.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 23 Sep 2016 15:04:10 -0700
+
+snapdb (1.0.2.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+snapdb (1.0.1) xenial; urgency=high
+
+  * Initial release of packaging for snapdb. 
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 30 May 2016 13:38:48 -0700

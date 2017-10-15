@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Retrieve each process VmSwap size and display it with its name if not zero.
+# This gives you a list of processes using swap memory in increasing order.
+
+sizes() {
+  for f in /proc/[0-9]*/status
+  do
+    rm -f /tmp/swap-usage
+    if cp $f /tmp/swap-usage
+    then
+      size=`grep 'VmSwap:\s*' $f | grep -v ' 0 kB' | sed -e 's/VmSwap:\s*//'`
+      if test -n "$size"
+      then
+        name=`grep Name: $f | sed -e 's/Name:\s*//'`
+        echo "${name}: $size"
+      fi
+    fi
+  done
+}
+
+#
+# To reverse the sort, use 2nr instead of just 2n
+sizes | sort -k 2n
+
+# vim: ts=2 sw=2 et

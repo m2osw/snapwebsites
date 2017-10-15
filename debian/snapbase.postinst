@@ -1,0 +1,86 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+ 
+available()
+{
+    command -v "$1" >/dev/null 2>&1
+}
+
+
+if [ "$1" = "configure" ]
+then
+    # The name disparity is because snapbase installs the logs for
+    # the snapserver and snapbackend packages
+    #
+    PACKAGENAME=snapserver
+
+    # make the snapwebsites log directory
+    # make sure that apache2 can write in there because of snapcgi.log
+    # (note: we should look into whether we could use root:adm like apache2)
+    #
+    SNAPLOGDIR=/var/log/snapwebsites
+    mkdir -p ${SNAPLOGDIR}
+    chown snapwebsites:www-data ${SNAPLOGDIR}
+    chmod 775 ${SNAPLOGDIR}
+
+    # the secure log directory must be writable by www-data for snapcgi.log
+    # (note: we should look into whether we could use root:adm like apache2)
+    #
+    SECURELOGDIR=/var/log/snapwebsites/secure
+    mkdir -p ${SECURELOGDIR}
+    chown snapwebsites:www-data ${SECURELOGDIR}
+    chmod 770 ${SECURELOGDIR}
+
+    # Create the all.log logfile because the snapwebsites user may
+    # have difficulties with it otherwise during logrotate.
+    #
+    ALLLOG=${SNAPLOGDIR}/all.log
+    touch ${ALLLOG}
+    chown snapwebsites:snapwebsites ${ALLLOG}
+    chmod 640 ${ALLLOG}
+
+    # Create the snapserver logfile because the snapwebsites user may
+    # have difficulties with it otherwise during logrotate. Also we initialize
+    # snapserver in the snapbase package because it is used by snapserver
+    # and snapbackend, two separate packages.
+    #
+    SNAPLOGDIR=/var/log/snapwebsites
+    LOGFILE=${SNAPLOGDIR}/${PACKAGENAME}.log
+    touch ${LOGFILE}
+    chown snapwebsites:snapwebsites ${LOGFILE}
+    chmod 640 ${LOGFILE}
+
+    SNAPSECURELOGDIR=/var/log/snapwebsites/secure
+    SECURELOGFILE=${SNAPSECURELOGDIR}/${PACKAGENAME}.log
+    touch ${SECURELOGFILE}
+    chown snapwebsites:snapwebsites ${SECURELOGFILE}
+    chmod 640 ${SECURELOGFILE}
+
+    # the cache directory is used by various daemons to save files that
+    # can be lost over time, but allow for faster access when present;
+    # at this time mainly snapcommunicator uses it to save messages it
+    # cannot immediately forward
+    #
+    CACHEDIR=/var/cache/snapwebsites
+    mkdir -p ${CACHEDIR}
+    chown snapwebsites:snapwebsites ${CACHEDIR}
+    chmod 770 ${CACHEDIR}
+
+    # we need a place to write data not directly stored in the cassandra db
+    #
+    mkdir -p /var/lib/snapwebsites
+    chown snapwebsites:snapwebsites /var/lib/snapwebsites
+
+    # Now run various common apache initializations
+    # (logrotate, enable/disable configuration/modules/sites)
+    # The external script will restart apache2 as well
+    #
+    /usr/lib/snapwebsites/scripts/snapapacheinit install
+fi
+
+# vim: ts=4 sw=4 et nocindent

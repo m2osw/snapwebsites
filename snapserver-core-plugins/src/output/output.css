@@ -1,0 +1,210 @@
+/*
+ * Name: output
+ * Version: 0.0.43
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+/** error messages popup **/
+div.user-messages
+{
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 1px; /* we need some height to make sure it works on all browsers */
+	padding-top: 50px;
+}
+div.user-messages.in-iframe
+{
+	padding-top: 10px;
+}
+div.user-message-box
+{
+	display: block;
+	margin: 0 150px;
+	max-width: 550px;
+	width: 100%;
+	padding: 0 10px;
+	border: 2px solid #00ff00;
+	border-radius: 5px;
+	background-color: #e0ffe0;
+}
+/*
+ * The width is 550px + 150px on each side until the screen is too narrow
+ * which means under 850px, then the width of the margin changes with the
+ * width of the screen.
+ */
+@media (max-width: 849px) and (min-width: 570px)
+{
+	div.user-message-box
+	{
+		margin: 0 calc((100% - 550px) / 2);
+	}
+}
+@media (max-width: 569px)
+{
+	div.user-message-box
+	{
+		margin: 0 10px;
+		/* in this case the width has to be reduced */
+		width: calc(100% - 20px);
+	}
+}
+div.user-message-box.warning-messages
+{
+	border: 2px solid #ff8030;
+	background-color: #ffce89;
+}
+div.user-message-box.error-messages
+{
+	border: 2px solid red;
+	background-color: #ffe0e0;
+}
+div.user-message-box .close-button
+{
+	float: right;
+	padding: 10px 0 10px 10px;
+	cursor: pointer;
+}
+div.user-message-box h3
+{
+	margin-top: 10px;
+	font-size: 100%;
+}
+
+
+/** fullscreen DIV to darken the background because of a pop-up **/
+#darkenPage
+{
+	display: none;
+	position: fixed;
+	z-index: 1;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	opacity: 0.2;
+}
+
+#darkenPage.wait
+{
+	background: black url(/images/snap/wait.gif) no-repeat 5% 95%;
+	opacity: 0.2;
+}
+
+
+/** default pop-up CSS **/
+iframe
+{
+	display: block;
+	border: none;
+}
+
+.snap-popup
+{
+	background: white;
+	border-radius: 10px;
+	padding: 10px;
+	box-shadow: 3px 3px 6px 0px #444444;
+}
+
+.snap-popup .close-popup
+{
+	float: right;
+	width: 25px;
+	height: 25px;
+	background: url(/images/snap/close-button.png) no-repeat 50% 50%;
+	outline: none;
+	cursor: pointer;
+}
+.snap-popup .close-popup:focus
+{
+	outline: 1px dotted #ff0000;
+}
+
+.snap-popup .popup-title h1,
+.snap-popup .popup-title h2,
+.snap-popup .popup-title h3,
+.snap-popup .popup-title h4,
+.snap-popup .popup-title h5,
+.snap-popup .popup-title h6
+{
+	margin: 0;
+}
+
+.snap-popup .popup-body
+{
+	clear: both;
+}
+
+
+/** default pop-up CSS **/
+div.breadcrumb ol
+{
+	padding-left: 0;
+	list-style-type: none;
+	font-size: 75%;
+}
+
+div.breadcrumb li::before
+{
+	/* WARNING: two spaces after the BB because the first is
+	 *          eaten as part of the escape character.
+	 */
+	content: " \BB  ";
+}
+div.breadcrumb li.first::before
+{
+	content: "";
+}
+
+div.breadcrumb li
+{
+	display: inline;
+}
+div.breadcrumb li.hide
+{
+	display: none;
+}
+
+
+/** list navigation */
+.navigation
+{
+	text-align: center;
+}
+.navigation ul
+{
+	display: inline-block;
+	margin: 10px 0;
+	padding: 0;
+}
+.navigation li
+{
+	display: block;
+	float: left;
+	margin: 0 5px;
+	list-style: none;
+}
+.navigation li.list-navigation-current
+{
+	font-weight: bold;
+}
+.navigation a
+{
+	text-decoration: none;
+}
+.navigation .div-clear
+{
+	clear: both;
+}
+
+/** List of Tokens */
+ul.token-list li span.token-name
+{
+	font-weight: bold;
+}

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == plugin settings page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="info" id="settings" content-modified="2015-09-07 23:22:10">
+  <timeout minutes="60"/> <!-- 1 hour -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="plugin_path"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="plugin_path"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- path to this Snap! installation plugins -->
+  <widget id="plugin_path" type="text-edit" path="plugin/path" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>The path to the plugins to be loaded. This path is defined in your snapserver.conf configuration file.</tooltip>
+    <help>
+      In order to change this parameter, edit your snapserver.conf
+      configuration file and edit the "plugins_path" parameter. When
+      undefined, the system uses the default of
+      "/usr/lib/snapwebsites/plugins". Unless you are working on Snap!
+      as a developer, you should never have to change this path.
+      Also as a developer, you may need to support more than one path.
+      This variable actually supports multiple paths each separated by
+      a colon. Plugins are search in each path and the first instance
+      found is the one loaded.
+    </help>
+    <state>read-only</state>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

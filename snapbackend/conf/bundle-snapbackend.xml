@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-snapbackend.xml
+-->
+<bundle>
+  <name>snapbackend</name>
+  <description>
+    <p>The snapbackend daemons are expected to run on one or more backend
+    computers. These daemons handle database management to make the
+    front end faster (i.e. that way front ends just have to gather
+    pre-computed data.)</p>
+
+    <p>Which backends run on which computer can be selected from the
+    various service and timer files. You may reserve one whole computer
+    to just run the pagelist backend, for instance.</p>
+
+    <p>This package depends on the snapserver-core-plugins. Backends that
+    you develop can depend on your own plugins as well.</p>
+  </description>
+  <affected-services>snapmanagerdaemon</affected-services>
+  <packages>snapbackend</packages>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

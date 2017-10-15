@@ -1,0 +1,365 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == timetracker plugin database setup
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/timetracker"> <!-- we want this page to be assigned timetracker as the owner -->
+    <param name="content::title" revision="revision">Time Tracker</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[[timetracker::main_page]]]>
+    </param>
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[(branch := int32(cell("content", page, "content::revision_control::current_branch")),
+                key := string(cell("content", page, "content::revision_control::current_revision_key::" + branch + "::en")),
+                key ? tolower(string(cell("revision", key, "content::title"))) : "no title")]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[parent(path) == "timetracker"]]>
+    </param>
+    <param name="list::selector">children</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/timetracker/main-page</link>
+    <link name="permissions::direct::action::edit" to="permissions::link_back::edit" mode="*:*">/types/permissions/rights/edit/timetracker/main-page</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/timetracker/main-page</link>
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/admin/settings/timetracker" owner="output">
+    <param name="content::title" revision="revision">Time Tracker Settings</param>
+    <param name="content::body" revision="revision">
+      <p>Time Tracker Settings</p>
+    </param>
+    <param name="editor::layout" revision="global" overwrite="yes">"timetracker-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"timetracker-settings-parser";</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/admin/settings/timetracker/add-user" owner="output">
+    <param name="content::title" revision="revision">Add User</param>
+    <param name="content::body" revision="revision">
+      <p>Add User.</p>
+    </param>
+    <param name="layout::boxes" overwrite="yes">.</param>
+    <param name="editor::layout" revision="global" overwrite="yes">"timetracker-add-user-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"timetracker-add-user-parser";</param>
+    <param name="layout::theme" revision="global" overwrite="yes">"notheme";</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/timetracker/main-page</link>
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/images/timetracker" owner="output">
+    <param name="content::title" revision="revision">Time Tracker Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various images used by the time tracker plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="timetracker-logo" type="attachment/public">
+      <path>:/images/timetracker/timetracker-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="black-bicycle" type="attachment/public">
+      <path>:/images/timetracker/black-bicycle.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="black-car" type="attachment/public">
+      <path>:/images/timetracker/black-car.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="black-commute" type="attachment/public">
+      <path>:/images/timetracker/black-commute.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="black-client" type="attachment/public">
+      <path>:/images/timetracker/black-client.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="black-foot" type="attachment/public">
+      <path>:/images/timetracker/black-foot.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="black-telecommute" type="attachment/public">
+      <path>:/images/timetracker/black-telecommute.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/css/timetracker" owner="output">
+    <param name="content::title" revision="revision">Info CSS</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Info script CSS support.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="timetracker" type="attachment/public">
+      <path>qrc:/css/timetracker/timetracker.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+  </content>
+  <content path="/js/timetracker" owner="output">
+    <param name="content::title" revision="revision">Script for Time Tracker</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Time Tracker scripts.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="timetracker" type="attachment/public">
+      <path>qrc:/js/timetracker/timetracker.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>editor (&gt;= 0.0.3.460)</dependency>
+    </attachment>
+  </content>
+  <content path="/types/taxonomy/system/content-types/timetracker" owner="output">
+    <param name="content::title" revision="revision">Various Time Tracker Page Types</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The time tracker makes use of these types to handle its data.</p>]]>
+    </param>
+    <!-- TODO: deal with the permissions at some point as in:
+               * plain users cannot see someone else's data
+               * an administrator or bookkeeper can see anyone's data
+    -->
+    <!--link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/timetracker/calendar</link-->
+    <!--link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/timetracker/calendar</link-->
+  </content>
+  <content path="/types/taxonomy/system/content-types/timetracker/calendar" owner="output">
+    <param name="content::title" revision="revision">Type of the time tracker calendar pages</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The calendar page of each Time Tracker user is given this type.</p>]]>
+    </param>
+    <!--link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/timetracker/calendar</link-->
+    <!--link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/timetracker/calendar</link-->
+  </content>
+  <content path="/types/taxonomy/system/content-types/timetracker/day" owner="output">
+    <param name="content::title" revision="revision">Type of the time tracker day pages</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The calendar daily pages is given this type.</p>]]>
+    </param>
+    <!--link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/timetracker/calendar</link-->
+    <!--link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/timetracker/calendar</link-->
+  </content>
+  <!--
+    timetracker specific permissions
+
+      . /types/permissions/timetracker
+
+        This is the root of all timetracker permissions. It should not be
+        used as a permission in itself.
+
+      . /types/permissions/timetracker/administrator
+
+        This permission is given to administrators. Administrators can
+        add users to the Time Tracker service and review all entries.
+        The administrator can also edit other users' entries for
+        corrections.
+
+      . /types/permissions/timetracker/bookkeeper
+
+        This permission is given to users who have to create invoices
+        from Time Tracker data. Bookkeepers can review all the data
+        entries, but they do not have edit permissions, nor can they
+        allow new users to access the Time Tracker system.
+
+      . /types/permissions/timetracker/user
+
+        This is a regular Time Tracker user. Such a user has access to
+        his time entry data and no others. The user also can enter and
+        edit his data.
+  -->
+  <content path="/types/permissions/timetracker" owner="permissions">
+    <param name="content::title" revision="revision">Time Tracker Permission</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Parent of various Time Tracker permissions.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/timetracker/administrator" owner="permissions">
+    <param name="content::title" revision="revision">Time Tracker Permission for Administrators</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Administrators who can manage Time Tracker pages and settings.
+        </p>
+        <p>
+          A Time Tracker Administrator can add users to the Time Tracker
+          system, review all the data, and even edit another user's data
+          to make corrections.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/timetracker/bookkeeper" owner="permissions">
+    <param name="content::title" revision="revision">Time Tracker Permission for Bookkeepers</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Users who can access all Time Tracker pages in order to generate
+          invoices from the data.
+        </p>
+        <p>
+          A bookkeeper is given access to all the data so as to be able to
+          create invoices from it. All pages are added to the bookkeeper
+          group in view mode.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/timetracker/user" owner="permissions">
+    <param name="content::title" revision="revision">Time Tracker Permission for General User</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Users who can manage their Time Tracker pages.
+        </p>
+        <p>
+          A Time Tracker user was added to the Time Tracker system by a
+          Time Tracker administrator. Once added, a user can go to his
+          Time Tracker page and edit his hours information. The
+          information gets locked after a while and once an invoice was
+          generated.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/timetracker" owner="permissions">
+    <param name="content::title" revision="revision">View Time Tracker Permissions</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>View access to all the timetracker pages.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/timetracker/main-page" owner="permissions">
+    <param name="content::title" revision="revision">View Time Tracker Main Page</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>View access to the main page of the timetracker plugin.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/timetracker/calendar" owner="permissions">
+    <param name="content::title" revision="revision">View Time Tracker Calendar</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          View access to the Calendar page of a user.
+        </p>
+        <p>
+          Each user is given a sub-permission with his identifier added
+          as a sub-path. This permission is added at the same time the
+          user is added.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/timetracker/day" owner="permissions">
+    <param name="content::title" revision="revision">View Time Tracker Day Data</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          View access to the Day data entry of the timetracker.
+        </p>
+        <p>
+          Each user is given a sub-permission with his identifier added
+          as a sub-path. This permission is added at the same time the
+          user is added.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/edit/timetracker" owner="permissions">
+    <param name="content::title" revision="revision">Edit Time Tracker Permissions</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Edit access to all the timetracker pages.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/edit/timetracker/main-page" owner="permissions">
+    <param name="content::title" revision="revision">Edit Time Tracker Main Page</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Edit access to the main page of the timetracker plugin.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/edit/timetracker/calendar" owner="permissions">
+    <param name="content::title" revision="revision">Edit Time Tracker Calendar</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Edit access to the Calendar page of a user.
+        </p>
+        <p>
+          Each user is given a sub-permission with his identifier added
+          as a sub-path. This permission is added at the same time the
+          user is added.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/edit/timetracker/day" owner="permissions">
+    <param name="content::title" revision="revision">Edit Time Tracker Day Data</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Edit access to the Day data entry of the timetracker.
+        </p>
+        <p>
+          Each user is given a sub-permission with his identifier added
+          as a sub-path. This permission is added at the same time the
+          user is added.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/timetracker" owner="permissions">
+    <param name="content::title" revision="revision">Administer Time Tracker Permissions</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Administer access to all the timetracker pages.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/timetracker/main-page" owner="permissions">
+    <param name="content::title" revision="revision">Administer Time Tracker Main Page</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Administer access to the main page of the timetracker plugin.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/timetracker/calendar" owner="permissions">
+    <param name="content::title" revision="revision">Administer Time Tracker Calendar</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Administer access to the Calendar page of a user.
+        </p>
+        <p>
+          Each user is given a sub-permission with his identifier added
+          as a sub-path. This permission is added at the same time the
+          user is added.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/timetracker/day" owner="permissions">
+    <param name="content::title" revision="revision">Administer Time Tracker Day Data</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Administer access to the Day data entry of the timetracker.
+        </p>
+        <p>
+          Each user is given a sub-permission with his identifier added
+          as a sub-path. This permission is added at the same time the
+          user is added.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/groups/root/administrator">
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/timetracker</link>
+    <link name="permissions::action::edit" to="permissions::link_back::edit" mode="*:*">/types/permissions/rights/edit/timetracker</link>
+    <link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/timetracker</link>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == JavaScript editor
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/admin/settings/editor" owner="output">
+    <param name="content::title" revision="revision">Editor Settings</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>Change your WYSIWYG editor behavior.</p>
+        <div>[list::theme("admin/settings/editor")]</div>
+      ]]>
+    </param>
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[(branch := int32(cell("content", page, "content::revision_control::current_branch")),
+                key := string(cell("content", page, "content::revision_control::current_revision_key::" + branch + "::en")),
+                key ? tolower(string(cell("revision", key, "content::title"))) : "no title")]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[parent(path) == "admin/settings/editor"]]>
+    </param>
+    <param name="list::selector">children</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+  </content>
+  <content path="/admin/settings/editor/test" owner="output">
+    <param name="content::title" revision="revision">Test of the WYSIWYG Editor</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This page is used to test the WYSIWYG editor in view and edit modes.</p>]]>
+    </param>
+    <param name="layout::layout" revision="global" overwrite="yes">"editor-test";</param>
+    <param name="editor::layout" revision="global" overwrite="yes">"editor-test-page";</param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/private</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <link name="permissions::direct::action::edit" to="permissions::link_back::edit" mode="*:*">/types/permissions/rights/administer/website/info</link>
+  </content>
+  <content path="/admin/drafts">
+    <param name="content::title" revision="revision">Draft Manager</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>List of your drafts and create a new draft.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <!-- TODO: do something to specify how the list needs to be paged -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[(branch := int32(cell("content", page, "content::revision_control::current_branch")),
+                key := string(cell("content", page, "content::revision_control::current_revision_key::" + branch + "::en")),
+                key ? string(cell("revision", key, "content::title")) : "no title")]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[parent(path) == "admin"]]>
+    </param>
+    <param name="list::selector">children</param>
+  </content>
+  <content path="/admin/drafts/new">
+    <param name="content::title" revision="revision">Create a New Draft</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Enter the following information and click Create Draft to create a new Draft. Once created, you will be able to work on your draft until it is ready for publication. At that point it is removed from the list of drafts and moved to the list of pages of the type you selected.</p>[form::source]]]>
+    </param>
+    <!--link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link-->
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <param name="form::source">new-draft</param>
+    <param name="content::final">1</param>
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/admin/trashcan">
+    <param name="content::title" revision="revision">Trashcan</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>List of your pages that were deleted (i.e. moved to the trashcan).</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <!-- TODO: do something to specify how the list needs to be paged -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[(branch := int32(cell("content", page, "content::revision_control::current_branch")),
+                key := string(cell("content", page, "content::revision_control::current_revision_key::" + branch + "::en")),
+                key ? string(cell("revision", key, "content::title")) : "no title")]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[parent(path) == "admin"]]>
+    </param>
+    <param name="list::selector">children</param>
+  </content>
+  <content path="/js/editor">
+    <!-- JavaScript code for the inline WYSIWYG editor -->
+    <param name="content::title" revision="revision">Editor Source</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>JavaScript code for the Snap! WYSIWYG Editor.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="editor" type="attachment/public">
+      <path>qrc:/js/editor/editor.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>rotate-animation (&gt;= 0.0.1)</dependency>
+      <dependency>popup (&gt;= 0.1.0.10)</dependency>
+      <dependency>listener (&gt;= 0.0.1.7)</dependency>
+      <!-- TODO: make the mimetype-basics optional, how do we do that?! -->
+      <dependency>mimetype-basics (&gt;= 0.0.3)</dependency>
+    </attachment>
+  </content>
+  <content path="/images/editor">
+    <param name="content::title" revision="revision">Editor Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Images used by the editor plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="editor-logo" type="attachment/public">
+      <path>:/images/editor/editor-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="buttons" type="attachment/public">
+      <path>:/images/editor/buttons.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <!-- TODO: put all those images in one image (like the toolbar buttons) -->
+    <attachment name="checkmark" type="attachment/public">
+      <path>:/images/editor/checkmark-15x11.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="dropdown-arrow" type="attachment/public">
+      <path>:/images/editor/dropdown-arrow-15x15.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="drag-n-drop-64x64" type="attachment/public">
+      <path>:/images/editor/drag-n-drop-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="drag-n-drop-128x128" type="attachment/public">
+      <path>:/images/editor/drag-n-drop-128x128.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="radio-selected" type="attachment/public">
+      <path>:/images/editor/radio-selected.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="radio-unselected" type="attachment/public">
+      <path>:/images/editor/radio-unselected.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/types/permissions/rights/administer/editor">
+    <param name="content::title" revision="revision">Full rights to the Editor</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Administer any and everything that the editor allows you to do.</p><p>This right is generally given to top administrators.</p>]]>
+    </param>
+  </content>
+  <!-- TODO: how do we offer per type / category / etc. rights to users? -->
+  <content path="/types/permissions/rights/administer/editor/update">
+    <param name="content::title" revision="revision">Update a Page Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Allow a user to update pages.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/editor/delete">
+    <param name="content::title" revision="revision">Delete a Page Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Allow a user to delete pages (put them in the trashcan).</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/editor/edit">
+    <param name="content::title" revision="revision">Edit a Page Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Allow a user to edit existing pages.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/editor/create">
+    <param name="content::title" revision="revision">Create a Page Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Allow a user to create a draft and publish it once ready. Note that this permission gives the user the right to edit his drafts.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/editor/moderate">
+    <param name="content::title" revision="revision">Moderate a Page Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Allow a user to moderate a page and flag it one way or another (i.e. mark as offensive, spam, etc.)</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/content-types/page/draft">
+    <param name="content::title" revision="revision">New Draft Content Type</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This type is used to create new pages when going through the New Draft creation process. The page is also assigned a <em>final</em> type from the start, but assigning a page content type of, for example, page/public would make the draft public immediatly.</p>]]>
+    </param>
+    <!--link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/??</link-->
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+    <link name="permissions::direct::action::edit" to="permissions::link_back::edit" mode="*:*">/types/permissions/rights/edit/page</link>
+  </content>
+  <content path="/css/editor">
+    <param name="content::title" revision="revision">Default CSS for Editor Forms</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The cascading style sheets for editor forms generated by the editor.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="editor" type="attachment/public">
+      <path>qrc:/css/editor/editor.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

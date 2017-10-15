@@ -1,0 +1,39 @@
+snaplistd (0.1.4.13~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Fri, 16 Jun 2017 02:00:53 -0700
+
+snaplistd (0.1.4.0~xenial) xenial; urgency=high
+
+  * EX-131: If the snaplog_password.sh file exists, it needs to be renamed
+    root_password.sh before we check whether the root password exists.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 15 Jun 2017 13:07:29 -0700
+
+
+snaplistd (0.1.3.0) xenial; urgency=high
+
+  * EX-131: Added the missing SQL dependencies to the binary.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Jun 2017 17:12:36 -0700
+
+snaplistd (0.1.2.0) xenial; urgency=high
+
+  * EX-131: Fixed the root password filename.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Jun 2017 09:24:36 -0700
+
+snaplistd (0.1.1.0) xenial; urgency=high
+
+  * EX-131: Put a virtual column of the status or key_start_date so we can
+    get one row to know what comes next. MySQL will do the work of computing
+    the next row using a BTREE index.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 11 Jun 2017 23:04:36 -0700
+
+snaplistd (0.1.0.0) xenial; urgency=high
+
+  * Initial release of packaging.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 10 Jun 2017 13:02:36 -0700

@@ -1,0 +1,10 @@
+Document: snapserver-core-plugins
+Title: Debian Snap! Websites C++ Server Core Plugins Library Manual
+Author: Alexis Wilke
+Abstract: This is the reference manual for the C++
+ Snapwebsites Server Core Plugins library.
+Section: web
+
+Format: HTML
+Index: /usr/share/doc/snapserver-core-plugins/html/index.html
+Files: /usr/share/doc/snapserver-core-plugins/html/*

@@ -1,0 +1,11 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource>
+    <file>add_dns_zone.sh</file>
+    <file>add_slave_zone.sh</file>
+  </qresource>
+</RCC>
+
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

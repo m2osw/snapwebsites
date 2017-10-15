@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == default layout database setup
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!-- to install: snaplayout content.xml -->
+<snap-tree content-modified="2015-11-04 15:43:39">
+  <content path="/layouts/default">
+    <param name="content::title" revision="revision">Default Layout</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The default layout is the default used internally by Snap!</p>
+               <p><small>Reminder: If your data works in the Default layout, it should work in any layout.</small></p>]]>
+    </param>
+    <param name="layout::boxes">left</param>
+  </content>
+  <content path="/layouts/default/left">
+    <param name="content::title" revision="revision">Left Boxes</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This box is shown on the left side of the content.</p>]]>
+    </param>
+  </content>
+  <content path="/layouts/default/left/login" owner="users_ui">
+    <!--
+      this is a default box as a proof of concept
+      once we can edit this data it will be much less useful
+    -->
+    <param name="content::title" revision="revision">User Login</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[[form::source]]]>
+    </param>
+    <param name="form::source">login-box-form</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+  </content>
+  <content path="/layouts/default/left/admin" owner="list">
+    <!--
+      all themes should get the administration menu and we may
+      actually end up adding it automatically (forcibly) instead
+      of hoping that it stays there since people can mess around
+      with their boxes and lose it!
+    -->
+    <param name="content::title" revision="revision">Admin</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[[list::theme("admin/menu/menu")]]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/private</link>
+    <!--link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link-->
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/private</link>
+  </content>
+  <content path="/css/default">
+    <param name="content::title" revision="revision">CSS for the Default Theme</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The cascading style sheets of the default theme.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="style" type="attachment/public">
+      <path>qrc:/css/layout/style.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

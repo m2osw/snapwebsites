@@ -1,0 +1,14 @@
+# Snap Backup
+/var/log/snapwebsites/snapbackup.log {
+    weekly
+    maxsize 10M
+    su snapwebsites snapwebsites
+    missingok
+    rotate 10
+    compress
+    delaycompress
+    notifempty
+    create 640 snapwebsites snapwebsites
+}
+
+# vim: ts=4 sw=4 et

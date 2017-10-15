@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == locale timezone page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="locale" id="settings" content-modified="2014-11-21 16:42:08">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="locale_timezone"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="locale_timezone"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- until we get a locale_locale type of widget, we use a line::edit... -->
+  <widget id="locale_locale" type="line-edit" field="locale_settings::locale" path="locale/locale" auto-save="string">
+    <tooltip>Enter a valid locale name such as "en_US".</tooltip>
+    <help>Help</help>
+    <background-value>locale name</background-value>
+  </widget>
+  <widget id="locale_timezone" type="locale_timezone" field="locale_settings::timezone" path="locale/timezone" auto-save="locale_timezone">
+    <tooltip>Select a continent/country and city that corresponds to your timezone.</tooltip>
+    <help>Help</help>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

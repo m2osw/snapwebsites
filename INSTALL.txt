@@ -1,0 +1,15 @@
+* Compile, Build, Install
+
+This project uses cmake to generate the Makefile necessary to build the
+project:
+
+   tar xf snapwebsites-0.1.0.tar.gz
+   mkdir build
+   cd build
+   cmake -DCMAKE_INSTALL_PREFIX=<where_you_want_it_to_go> ../snapwebsites-0.1.0
+   make
+   [sudo] make install
+
+This should work on all Unices. We have not yet worked on the project to
+get it to function under MS-Windows.
+

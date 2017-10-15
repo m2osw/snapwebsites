@@ -1,0 +1,191 @@
+cassview (0.1.9.139~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Tue, 14 Feb 2017 02:00:53 -0800
+
+cassview (0.1.9.0~xenial) xenial; urgency=high
+
+  * SNAP-551: took out check for selection size.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 13 Feb 2017 10:22:57 -0800
+
+cassview (0.1.8.23~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Sat, 21 Jan 2017 17:55:08 -0800
+
+cassview (0.1.8.0~xenial) xenial; urgency=high
+
+  * Bumped copyright date to 2017.
+  * Straighten out copyright notices in .cpp/.h files.
+  * Cleaned up the copyright file.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 14:00:49 -0700
+
+cassview (0.1.7.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Added a missing catch() as found by Coverity.
+  * Added code to print out stack at point of exception.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  8 Jan 2017 17:19:49 -0700
+
+cassview (0.1.6.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Added a  try/catch in main to catch exceptions from casswrapper.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 16 Dec 2016 20:12:49 -0700
+
+cassview (0.1.5.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Removed add_ssl_keys() method and replaced with parameter to
+    QCassandraSession::connect() method.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 29 Sep 2016 12:47:27 -0700
+
+cassview (0.1.4.12~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Doug Barbieri <doug@dooglio.net>  Thu, 22 Sep 2016 13:48:56 -0700
+
+cassview (0.1.4.1~xenial) xenial; urgency=high
+
+  * SNAP-440: Added SSL support for Cassandra.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 21 Sep 2016 16:58:50 -0700
+
+cassview (0.1.2.14~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Doug Barbieri <doug@dooglio.net>  Tue, 13 Sep 2016 17:34:11 -0700
+
+cassview (0.1.2.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+cassview (0.1.1.0~trusty) trusty; urgency=high
+
+  * Ported to qt5.
+  * Lots of bug fixes.
+  * Now works with CQL and QCassandraQuery.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 03 May 2016 20:44:43 -0700
+
+cassview (0.1.0) trusty; urgency=high
+
+  * Added support for a filter against row names.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 25 Apr 2015 23:49:13 -0700
+
+cassview (0.0.13~saucy) saucy; urgency=high
+
+  * Forgot to put in shlibs dependencies into the control file! Now the
+    package should bring in the appropriate dependencies.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 14 Feb 2014 16:04:42 -0800
+
+cassview (0.0.11~saucy) saucy; urgency=high
+
+  * Added host button and window title.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 13 Feb 2014 09:39:31 -0800
+
+cassview (0.0.10ubuntu1~saucy) saucy; urgency=high
+
+  * Bump for build on PPA.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 12 Feb 2014 16:14:20 -0800
+
+cassview (0.0.10~saucy) saucy; urgency=high
+
+  * Moved RowModel and TableModel into snapwebsites library.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 12 Feb 2014 15:03:53 -0800
+
+cassview (0.0.9~saucy) saucy; urgency=high
+
+  * Now all exceptions are displayed in a QMessageBox.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 12 Feb 2014 11:48:17 -0800
+
+cassview (0.0.8~saucy) saucy; urgency=high
+
+  * Improved InputDialog, better error support, save splitter state. 
+  * Repaired error with SettingsDialog, so the server information can be
+    changed and it persists and connects properly.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 11 Feb 2014 07:58:39 -0800
+
+cassview (0.0.7~saucy) saucy; urgency=high
+
+  * Now allows adding and removal of columns in any row.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 10 Feb 2014 19:17:17 -0800
+
+cassview (0.0.6~saucy) saucy; urgency=high
+
+  * Added application icon.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 10 Feb 2014 08:26:22 -0800
+
+cassview (0.0.5ubuntu1~saucy) saucy; urgency=high
+
+  * Bump for new build at the PPA site.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 10 Feb 2014 07:04:17 -0800
+
+cassview (0.0.5) saucy; urgency=high
+
+  * Bump for new build at the PPA site.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 06 Feb 2014 19:47:02 -0800
+
+cassview (0.0.4-1) saucy; urgency=high
+
+  * Proper versioning, plus nice about dialog and icons.
+  * Added a flag for display vs edit, so that way large blobs don't take a
+    long time to load.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 04 Feb 2014 16:13:47 -0800
+
+cassview (0.0.3-1) saucy; urgency=high
+
+  * Modified the RowModel to be a table-based model (but not item-based,
+    so no parent nodes).
+  * Has two columns: name and value. Name is read-only, value is editable.
+  * View has changed to a table view, and the columns automatically adjust
+    when the model is reset (reloaded).
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 03 Feb 2014 12:39:08 -0800
+
+cassview (0.0.2-2) saucy; urgency=high
+
+  * Forgot to include libsnapwebsites-dev in the control file.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 31 Jan 2014 09:28:48 -0800
+
+cassview (0.0.2-1) saucy; urgency=low
+
+  * Added proper, read-only support for snap_websites db, with proper
+    translation.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 30 Jan 2014 15:11:21 -0800
+
+cassview (0.0.1-1) saucy; urgency=high
+
+  * Repaired build error with builds on raring and lower. Qt4 had a strange
+    warning that was causing the build to crash.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 28 Jan 2014 10:27:27 -0800
+
+cassview (0.0.1) saucy; urgency=high
+
+  * Initial release of packaging.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 27 Jan 2014 10:26:21 -0800

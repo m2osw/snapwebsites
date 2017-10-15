@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-snaplistd.xml
+-->
+<bundle>
+  <name>snaplistd</name>
+  <description>
+    <p>
+      This bundle installs the 'snaplistd' package. It expects the mysql
+      bundle to be installed already. Since `snapmanager` does not have a
+      prereq-managment system, you have to make sure the MySQL bundle is already
+      installed on this system.
+    </p>
+    <p>
+      <b>NOTE:</b> The MySQL Host Address is fixed to 127.0.0.1. Therefore, you must
+      install the snaplistd bundle on the same machine.
+    </p>
+  </description>
+  <packages>snaplistd</packages>
+  <postinst>
+    # Create the snaplist user and snaplist database
+    #
+    PRIVATE_DIR=/var/lib/snapwebsites/private
+    source ${PRIVATE_DIR}/root_password.sh
+    MYSQL_PWD="${ROOT_PASSWORD}" mysql --user=root &lt;&lt;EOF
+CREATE USER 'snaplist'@'localhost' IDENTIFIED BY 'snaplist';
+GRANT SELECT, INSERT, UPDATE, DELETE ON snaplist.* TO 'snaplist'@'localhost';
+FLUSH PRIVILEGES;
+CREATE DATABASE snaplist;
+CREATE TABLE snaplist.journal
+  ( id              INT NOT NULL PRIMARY KEY AUTO_INCREMENT
+  , domain          TEXT NOT NULL          -- will change to the domain ID once SNAP-381 is done
+  , priority        SMALLINT NOT NULL      -- WARNING: don't use TINYINT because this is a number from 0 to 255 and TINYINT is -128 to +127
+  , key_start_date  BIGINT NOT NULL        -- Unix timestamp in microseconds
+  , uri             TEXT NOT NULL          -- will change to the page ID once SNAP-381 is done
+  , status          BIGINT DEFAULT NULL    -- new if NULL, working if set, if set for more than 24h, consider work failed, Unix timestamp in microseconds
+  , next_processing BIGINT AS (IF(status, status, key_start_date)) NOT NULL
+                                           -- this is the timestamp when we next want to process this row
+  , INDEX journal_index USING BTREE (domain(64), priority, key_start_date) COMMENT 'used to read the next page(s) to work on'
+  , INDEX journal_uri USING BTREE (uri(256)) COMMENT 'used to delete duplicates (we keep only the latest entry for each URI)'
+  , INDEX journal_next_row USING BTREE (domain(64), next_processing) COMMENT 'used to determine when to wake up next'
+  )
+  COMMENT 'journal of pages that were created or modified and thus have to be (re)checked for against Snap! lists'
+  COMPRESSION 'NONE'
+  ENCRYPTION 'N';
+EOF
+    systemctl restart snaplistd
+  </postinst>
+  <postrm>
+    PRIVATE_DIR=/var/lib/snapwebsites/private
+    source ${PRIVATE_DIR}/root_password.sh
+    MYSQL_PWD="${ROOT_PASSWORD}" mysql --user=root &lt;&lt;EOF
+DROP USER 'snaplist'@'localhost';
+FLUSH PRIVILEGES;
+DROP DATABASE snaplist;
+EOF
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

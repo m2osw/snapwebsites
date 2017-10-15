@@ -1,0 +1,211 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == mimetype plugin database setup
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <!-- here we have the list of JavaScript files that we support -->
+  <content path="/js/mimetype">
+    <!-- MIME type JavaScripts generated using the magic library -->
+    <param name="content::title" revision="revision">MIME Type JavaScripts</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The different JavaScripts generated to handle the determination of a file type from its content.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="mimetype-basics" type="attachment/public">
+      <path>:/js/mimetype/mimetype-basics.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>output (&gt;= 0.1.4)</dependency>
+    </attachment>
+    <!-- TODO: add standard and advanced once available -->
+  </content>
+  <content path="/images/mimetype">
+    <param name="content::title" revision="revision">Images Offered by Core</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of images offered and used by Core.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="file-aac" type="attachment/public">
+      <path>:/images/mimetype/file-aac.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-ai" type="attachment/public">
+      <path>:/images/mimetype/file-ai.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-avi" type="attachment/public">
+      <path>:/images/mimetype/file-avi.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-bin" type="attachment/public">
+      <path>:/images/mimetype/file-bin.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-bmp" type="attachment/public">
+      <path>:/images/mimetype/file-bmp.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-broken-document" type="attachment/public">
+      <path>:/images/mimetype/file-broken-document.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-cue" type="attachment/public">
+      <path>:/images/mimetype/file-cue.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-divx" type="attachment/public">
+      <path>:/images/mimetype/file-divx.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-doc" type="attachment/public">
+      <path>:/images/mimetype/file-doc.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-eps" type="attachment/public">
+      <path>:/images/mimetype/file-eps.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-flac" type="attachment/public">
+      <path>:/images/mimetype/file-flac.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-flv" type="attachment/public">
+      <path>:/images/mimetype/file-flv.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-gif" type="attachment/public">
+      <path>:/images/mimetype/file-gif.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-html" type="attachment/public">
+      <path>:/images/mimetype/file-html.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-ical" type="attachment/public">
+      <path>:/images/mimetype/file-ical.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-indd" type="attachment/public">
+      <path>:/images/mimetype/file-indd.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-inx" type="attachment/public">
+      <path>:/images/mimetype/file-inx.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-iso" type="attachment/public">
+      <path>:/images/mimetype/file-iso.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-jpg" type="attachment/public">
+      <path>:/images/mimetype/file-jpg.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-mov" type="attachment/public">
+      <path>:/images/mimetype/file-mov.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-mp3" type="attachment/public">
+      <path>:/images/mimetype/file-mp3.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-mpg" type="attachment/public">
+      <path>:/images/mimetype/file-mpg.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-pdf" type="attachment/public">
+      <path>:/images/mimetype/file-pdf.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-php" type="attachment/public">
+      <path>:/images/mimetype/file-php.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-png" type="attachment/public">
+      <path>:/images/mimetype/file-png.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-pps" type="attachment/public">
+      <path>:/images/mimetype/file-pps.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-ppt" type="attachment/public">
+      <path>:/images/mimetype/file-ppt.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-psd" type="attachment/public">
+      <path>:/images/mimetype/file-psd.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-qxd" type="attachment/public">
+      <path>:/images/mimetype/file-qxd.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-qxp" type="attachment/public">
+      <path>:/images/mimetype/file-qxp.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-raw" type="attachment/public">
+      <path>:/images/mimetype/file-raw.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-rtf" type="attachment/public">
+      <path>:/images/mimetype/file-rtf.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-svg" type="attachment/public">
+      <path>:/images/mimetype/file-svg.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-tif" type="attachment/public">
+      <path>:/images/mimetype/file-tif.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-txt" type="attachment/public">
+      <path>:/images/mimetype/file-txt.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-unknown" type="attachment/public">
+      <path>:/images/mimetype/file-unknown.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-vcf" type="attachment/public">
+      <path>:/images/mimetype/file-vcf.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-wav" type="attachment/public">
+      <path>:/images/mimetype/file-wav.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-wma" type="attachment/public">
+      <path>:/images/mimetype/file-wma.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-xls" type="attachment/public">
+      <path>:/images/mimetype/file-xls.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="file-xml" type="attachment/public">
+      <path>:/images/mimetype/file-xml.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <!-- TBD: add a settings screen? (i.e. we could make the standard and advanced load on request instead of having hard dependences on them.) -->
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

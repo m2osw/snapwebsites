@@ -1,0 +1,65 @@
+<!--
+Snap Plugin - - snap output plugin resources
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/plugins/output">
+    <file>content.xml</file>
+  </qresource>
+  <qresource prefix="/js/output">
+    <file>jquery.js</file>
+    <file>jquery-extensions.js</file>
+    <file>jquery-rotate.js</file>
+    <file>output.js</file>
+    <file>popup.js</file>
+    <file>javascript-unicode.js</file>
+    <file>fixed-box.js</file>
+    <file>rotate-animation.js</file>
+  </qresource>
+  <qresource prefix="/css/output">
+    <file>output.css</file>
+  </qresource>
+  <qresource prefix="/images/output">
+    <file>content-logo-64x64.png</file>
+    <file>snap-logo-64x64.png</file>
+    <file>layout-logo-64x64.png</file>
+    <file>links-logo-64x64.png</file>
+    <file>messages-logo-64x64.png</file>
+    <file>javascript-logo-64x64.png</file>
+    <file>close-button.png</file>
+    <file>plugin-icon-64x64.png</file>
+    <file>progress.gif</file>
+    <file>wait.gif</file>
+    <file>wait-dots.gif</file>
+    <file>wait-rotate.png</file>
+    <file>wait-rotate-64x64.png</file>
+  </qresource>
+  <qresource prefix="/xsl">
+    <file>layout/notheme-body-parser.xsl</file>
+    <file>layout/notheme-theme-parser.xsl</file>
+  </qresource>
+  <qresource prefix="/xml">
+    <file>layout/notheme-content.xml</file>
+  </qresource>
+  <qresource prefix="/css">
+    <file>layout/notheme-style.css</file>
+  </qresource>
+</RCC>
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

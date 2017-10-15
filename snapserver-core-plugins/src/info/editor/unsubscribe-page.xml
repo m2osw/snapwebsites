@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == sendmail unsubscribe edit widgets
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="sendmail" id="settings" content-modified="2015-05-20 22:21:08">
+  <timeout minutes="15"/> <!-- 15 minutes -->
+  <focus refid="email"/>
+  <immediate/> <!-- entire form is immediate -->
+  <no-toolbar/> <!-- none of the fields should have the toolbar -->
+  <mode action="edit"/>
+  <on-save allow-edit="no"/>
+  <taborder>
+    <tabindex refid="email"/>
+    <tabindex refid="level"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="sendmail/form/unsubscribe/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- the email address the user wants to unsubscribe -->
+  <widget id="email" type="line-edit" path="sendmail/email" auto-save="no">
+    <tooltip>Enter the email address you want us to unsubscribe.</tooltip>
+    <help>If you do not see the email address you want to unsubcribe or the email address is incorrect, edit it and then click Save.</help>
+    <background-value>email address</background-value>
+    <required>required</required>
+    <filters>
+      <regex name="email"/>
+    </filters>
+  </widget>
+
+  <!-- the level of unsubscription -->
+  <widget id="level" type="radio" path="sendmail/level" auto-save="no">
+    <tooltip>Select the level that you want to use with your unsubscription.</tooltip>
+    <help>
+      <p>
+        The unsubscription has two options:
+      </p>
+      <ul>
+        <li>
+          Disallow this website only: this option removes you from this
+          very website, other websites run by this installation of Snap!
+          Websites may continue to send you emails;
+        </li>
+        <li>
+          Never email from any website: this option authorizes us to
+          removes you completely, in this case we will not send you any
+          emails at all unless you create an account with our systems,
+          we will send you one email for verification purposes.
+        </li>
+      </ul>
+      <p>
+        At this time we do not give you the option to later change this
+        choice. You will have to contact us to remove your email from
+        our blacklist and thus start receiving emails again.
+      </p>
+    </help>
+    <preset>
+      <item value="orangelist" default="default">Do not allow this website to send me any more emails.</item>
+      <item value="blacklist">Do not allow any Snap! websites from this installation from sending me any emails.</item>
+    </preset>
+    <required>required</required>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == bookkeeping add client form
+Copyright (C) 2016-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="bookkeeping" content-modified="2016-01-10 02:27:44">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="client_name"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="client_name"/>
+    <tabindex refid="client_address1"/>
+    <tabindex refid="client_city"/>
+    <tabindex refid="client_state"/>
+    <tabindex refid="client_zip"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- client information -->
+  <widget id="client_name" type="line-edit" path="bookkeeping/client_name" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>Enter the name of your client.</tooltip>
+    <help>Help</help>
+  </widget>
+  <widget id="client_address1" type="line-edit" path="bookkeeping/client_address1" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>Enter the first line of your client's address. You may enter a second line after you click Save.</tooltip>
+    <help>Help</help>
+  </widget>
+  <widget id="client_city" type="line-edit" path="bookkeeping/client_city" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>Enter the address of your client.</tooltip>
+    <help>Help</help>
+  </widget>
+  <widget id="client_state" type="line-edit" path="bookkeeping/client_state" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>Enter the state of your client.</tooltip>
+    <help>Help</help>
+  </widget>
+  <widget id="client_zip" type="line-edit" path="bookkeeping/client_zip" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>Enter the zip code of your client.</tooltip>
+    <help>Help</help>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

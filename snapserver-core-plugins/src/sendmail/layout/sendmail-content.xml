@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == sendmail layout setup
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <!-- make the sendmail layout exist, but we keep it as simple as possible -->
+  <content path="/layouts/sendmail">
+    <param name="content::title" revision="revision">Sendmail Layout</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The sendmail layout is the default used when Snap! sends email.</p>
+               <p><small>Reminder: If your emails work with the sendmail layout, it should work in any valid layout.</small></p>]]>
+    </param>
+    <param name="layout::boxes">.</param>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

@@ -1,0 +1,45 @@
+<!--
+Snap Plugin - - locale plugin resources
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/plugins/cookie_consent_silktide">
+    <file>content.xml</file>
+  </qresource>
+  <qresource prefix="/xml/editor">
+    <file>cookie-consent-silktide-page.xml</file>
+  </qresource>
+  <qresource prefix="/xsl/layout">
+    <file>cookie-consent-silktide-parser.xsl</file>
+  </qresource>
+  <qresource prefix="/js/cookie-consent-silktide">
+    <file>cookie-consent-silktide.js</file>
+  </qresource>
+  <qresource prefix="/images/cookie-consent-silktide">
+    <file>cookie-consent-silktide-logo-64x64.png</file>
+    <file>dark-top.png</file>
+    <file>dark-floating.png</file>
+    <file>dark-bottom.png</file>
+    <file>light-top.png</file>
+    <file>light-floating.png</file>
+    <file>light-bottom.png</file>
+  </qresource>
+</RCC>
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

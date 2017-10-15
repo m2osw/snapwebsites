@@ -1,0 +1,86 @@
+<html>
+<!--
+
+File:
+     snapwebsites/snapcgi/conf/index.html
+
+Description:
+     Offer a default page, just in case. This page should never be
+     accessible since clients should always be sent to snap.cgi instead.
+
+Documentation:
+     This page is a placeholder in the destination directory which is
+     `/var/www/html/snap/public_html/index.html` by default.
+
+License:
+     Copyright (c) 2011-2017 Made to Order Software Corp.
+
+     http://snapwebsites.org/
+     contact@m2osw.com
+
+     This program is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation; either version 2 of the License, or
+     (at your option) any later version.
+    
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+    
+     You should have received a copy of the GNU General Public License
+     along with this program; if not, write to the Free Software
+     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+-->
+<head>
+  <title>Snap! Websites</title>
+	<link href="/favicon.ico" type="image/x-icon" rel="shortcut icon"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body
+    {
+      margin: 0;
+      font-family: arial, sans-serif;
+    }
+    table
+    {
+      width: 350px;
+      height: 100%;
+      margin: 0 auto;
+    }
+    td.content
+    {
+      vertical-align: middle;
+    }
+    h1
+    {
+      text-align: center;
+    }
+    p
+    {
+      text-align: justify;
+    }
+    p.logo
+    {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <tr>
+      <td class="content">
+        <h1>Snap! Websites</h1>
+        <p>This is the <a href="http://snapwebsites.org/">Snap! Websites</a>
+        index file. It should not be reachable, but it is here to protect
+        praying eyes in case the +Indexes option was being set.</p>
+        <p class="logo"><img src="/snap-logo.png"/></p>
+      </td>
+    </tr>
+  </table>
+</body>
+<!--
+  vim: ts=2 sw=2 et
+-->
+</html>

@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == QR Code page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="qrcode" id="settings" content-modified="2014-11-21 16:42:08">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="qrcode_private_enable"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="qrcode_private_enable"/>
+    <tabindex refid="qrcode_default_scale"/>
+    <tabindex refid="qrcode_default_edge"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="qrcode_private_enable" type="checkmark" field="qrcode::private_enable" path="qrcode/private_enable" auto-save="int8">
+    <label>Allow QR Code generation for private pages</label>
+    <tooltip>Select this checkmark to allow QR code for private pages. By default this is off because there is not much need for private pages to receive a QR code.</tooltip>
+    <help>Help</help>
+    <value>0</value>
+  </widget>
+  <widget id="qrcode_shorturl_enable" type="checkmark" field="qrcode::shorturl_enable" path="qrcode/shorturl_enable" auto-save="int8">
+    <label>Make use of the short URL in the QR code</label>
+    <tooltip>Select this checkmark to use the short URL to generate the QR code of a page. We have this turned on by default because some URLs may otherwise be too long to fit a QR code.</tooltip>
+    <help>A QR code is limited in the number of characters it supports. The binary mode, which is the one we use to support possible translations, accepts a maximum of 2,953 characters. If your URL is longer, you need to switch to the short URL. The software will automatically attempt the switch if it detects that the URL is already too long. However, one drawback of using short URL is that users sent to your website will be redirected once.</help>
+    <value>1</value>
+  </widget>
+  <widget id="qrcode_track_usage_enable" type="checkmark" field="qrcode::track_usage_enable" path="qrcode/track_usage_enable" auto-save="int8">
+    <label>Add a query string (?qrcode=true) so we can track usage of QR codes</label>
+    <tooltip>By default we send bare URL in QR code. By clicking this checkmark, you add a qrcode variable to the URL allowing us to know that the click came from a QR code.</tooltip>
+    <help>By default, whether a user comes through a QR code or not, there is no way of knowing. This option let you add a query string to the URL so we know that the user used the QR code. Note that this is not rocket science and anyone may add the query string to any URL and it will look like they used a QR code. We may later offer a way to use a randomly generated code if it looks like it gets abused in some way.</help>
+    <value>0</value>
+  </widget>
+  <widget id="qrcode_default_scale" type="radio" field="qrcode::default_scale" path="qrcode/default_scale" auto-save="int8">
+    <tooltip>Select the default scale of your QR Code. The scale does not define the white area around the resulting image. That part is defined by the edge parameter.</tooltip>
+    <help>Help</help>
+    <preset>
+      <item value="1"><img src="/images/qrcode/index.html?scale=1&amp;edge=71"/></item>
+      <item value="2"><img src="/images/qrcode/index.html?scale=2&amp;edge=54"/></item>
+      <item value="3"><img src="/images/qrcode/index.html?scale=3&amp;edge=38"/></item>
+      <item value="4"><img src="/images/qrcode/index.html?scale=4&amp;edge=21"/></item>
+      <item value="5"><img src="/images/qrcode/index.html?scale=5&amp;edge=5"/></item>
+    </preset>
+    <value>3</value>
+  </widget>
+  <widget id="qrcode_default_edge" type="line-edit" field="qrcode::default_edge" path="qrcode/default_edge" auto-save="int8">
+    <tooltip>Enter the widget of the edge around the QR Code. It most cases it should be set to 5 x Scale. We allow values from zero (0) to 50.</tooltip>
+    <help>Help</help>
+    <background-value>edge width</background-value>
+    <sizes>
+      <min>0</min>
+      <max>3</max>
+    </sizes>
+    <value>15</value>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

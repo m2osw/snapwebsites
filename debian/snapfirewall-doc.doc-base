@@ -1,0 +1,9 @@
+Document: snapfirewall
+Title: snapfirewall daemon
+Author: Alexis Wilke
+Abstract: This is the reference manual for the snapfirewall daemon.
+Section: web
+
+Format: HTML
+Index: /usr/share/doc/snapfirewall/html/index.html
+Files: /usr/share/doc/snapfirewall/html/*

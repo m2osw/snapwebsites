@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == no iframe settings page widgets
+Copyright (C) 2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="info" id="settings" content-modified="2017-01-31 21:11:10">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="mode"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="mode"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- mode -->
+  <widget id="mode" type="radio" field="no_iframe::mode" path="no_iframe/mode" auto-save="string">
+    <preset>
+      <item value="always" default="default">Always remove IFrame (this is the default)</item>
+      <item value="select-pages">Remove IFrame, but only on pages marked as <strong>No IFrame Allowed</strong></item>
+      <item value="except-select-pages">Remove IFrame, except on a pages marked as <strong>No IFrame Disabled</strong></item>
+      <item value="never">Turn Off the No IFrame plugin functionality without uninstalling the plugin</item>
+    </preset>
+    <required>required</required>
+    <tooltip>Select one of the four modes of operation of the No IFrame
+    plugin. The default is "Always remove IFrame".</tooltip>
+    <help>Help</help>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

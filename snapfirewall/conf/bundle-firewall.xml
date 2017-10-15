@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-firewall.xml
+-->
+<bundle>
+  <name>firewall</name>
+  <description>
+    <p>The snapfirewall daemon allows enforcing strong firewall
+    rules from any computer in your cluster.</p>
+
+    <p>It should be installed on all systems.</p>
+
+    <p>Note that the firewall requires the snapdbproxy package
+    since it makes use of the database to manage the list
+    of IP addresses to block.</p>
+
+    <p><strong>IMPORTANT NOTE:</strong> the IP address that
+    the VPN generates for your computers are NOT used with the
+    firewall because all those IP addresses are virtual and
+    they do not interact with the firewall at all. So, in the
+    following questions, you do not have to enter any IP
+    addresses that your VPN generates.</p>
+  </description>
+  <fields>
+    <field name="public_ip" type="input">
+      <label>This Computer Public IP</label>
+      <description>Enter the IP address of this computer, the one facing the Internet.</description>
+    </field>
+    <field name="public_interface" type="input">
+      <label>The Interface This Computer uses for Public IP</label>
+      <description>Enter the name of the interface (such as 'eth0') that this computer uses for his Public IP address.</description>
+    </field>
+    <field name="private_ip" type="input">
+      <label>This Computer Private IP</label>
+      <description>Enter the private IP address of this computer, the one used to communicate with your other private computers.</description>
+    </field>
+    <field name="private_interface" type="input">
+      <label>The Interface This Computer uses for Private IP</label>
+      <description>Enter the name of the interface (such as 'eth1') that this computer uses for his Private IP address.</description>
+    </field>
+    <field name="admin_ips" type="input">
+      <label>List of Administrator IPs</label>
+      <description>Enter the <strong>space separated</strong> list of IPs that your administrators use to access this computer.</description>
+    </field>
+    <field name="private_network_ips" type="input">
+      <label>Private Network IPs</label>
+      <description>Enter the <strong>space separated</strong> list of IPs of all the computers that may access this computer so we can open the corresponding ports in the firewall.</description>
+    </field>
+    <field name="secure_ip" type="input">
+      <label>Secure IP</label>
+      <description>Enter the secure IP of this computer if you have one. This is most often the <code>tun0</code> IP address created by OpenVPN. An address such as 10.8.0.34. This field can remain empty if you are not using OpenVPN or if you want to install the firewall before OpenVPN.</description>
+    </field>
+  </fields>
+  <affected-services>snapmanagerdaemon</affected-services>
+  <packages>snapfirewall, fail2ban</packages>
+  <postinst>
+    # Setup the firewall IPs and interfaces.
+    # Wed Sep  7 13:16:27 PDT 2016: Now edits firewall.conf, instead of the main firewall script.
+    #
+    sed -i.bak \
+      -e "s/@BUNDLE_PUBLIC_IP@/$BUNDLE_INSTALLATION_PUBLIC_IP/" \
+      -e "s/@BUNDLE_PUBLIC_INTERFACE@/$BUNDLE_INSTALLATION_PUBLIC_INTERFACE/" \
+      -e "s/@BUNDLE_PRIVATE_IP@/$BUNDLE_INSTALLATION_PRIVATE_IP/" \
+      -e "s/@BUNDLE_PRIVATE_INTERFACE@/$BUNDLE_INSTALLATION_PRIVATE_INTERFACE/" \
+      -e "s/@BUNDLE_ADMIN_IPS@/$BUNDLE_INSTALLATION_ADMIN_IPS/" \
+      -e "s/@BUNDLE_PRIVATE_NETWORK_IPS@/$BUNDLE_INSTALLATION_PRIVATE_NETWORK_IPS/" \
+      -e "s/@BUNDLE_SECURE_IP@/$BUNDLE_INSTALLATION_SECURE_IP/" \
+            /etc/network/firewall.conf
+
+    # The packager does not install the firewall since it requires
+    # those IP addresses and interface names, so we set it up now
+    #
+    /etc/network/firewall
+  </postinst>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

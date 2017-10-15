@@ -1,0 +1,882 @@
+/*
+ * Name: editor
+ * Version: 0.0.1.130
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+/** TOOLBAR **/
+#toolbar
+{
+	border: 1px solid black;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	padding: 5px;
+	float: left;
+	display: none;
+	position: absolute;
+	z-index: 4;
+	background: white;
+}
+#toolbar div.group
+{
+	float: left;
+	width: 4px;
+	height: 16px;
+	margin: 5px;
+	background: url(/images/editor/buttons.png) no-repeat 0 0;
+}
+#toolbar div.button
+{
+	float: left;
+	width: 16px;
+	height: 16px;
+	padding: 5px;
+	border: 1px solid white;
+	box-sizing: content-box;
+}
+#toolbar div.button:hover
+{
+	background-color: #e0f0ff;
+	border: 1px solid #a0d0ff;
+	border-radius: 5px;
+}
+#toolbar div.button .image
+{
+	display: block;
+	width: 16px;
+	height: 16px;
+}
+#toolbar .horizontal-separator
+{
+	clear: both;
+	height: 3px;
+	margin: 19px 0 0;
+	float: none;
+	width: 100%;
+}
+#toolbar div.button.bold .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -4px 0;
+}
+#toolbar div.button.italic .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -132px 0;
+}
+#toolbar div.button.underline .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -292px 0;
+}
+#toolbar div.button.strikeThrough .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -244px 0;
+}
+#toolbar div.button.removeFormat .image
+{
+	background:url(/images/editor/buttons.png) no-repeat -228px 0;
+}
+#toolbar div.button.subscript .image
+{
+	background:url(/images/editor/buttons.png) no-repeat -260px 0;
+}
+#toolbar div.button.superscript .image
+{
+	background:url(/images/editor/buttons.png) no-repeat -276px 0;
+}
+#toolbar div.button.createLink .image
+{
+	background:url(/images/editor/buttons.png) no-repeat -20px 0;
+}
+#toolbar div.button.unlink .image
+{
+	background:url(/images/editor/buttons.png) no-repeat -308px 0;
+}
+#toolbar div.button.insertUnorderedList .image
+{
+	background:url(/images/editor/buttons.png) no-repeat -116px 0;
+}
+#toolbar div.button.insertOrderedList .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -100px 0;
+}
+#toolbar div.button.outdent .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -212px 0;
+}
+#toolbar div.button.indent .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -52px 0;
+}
+#toolbar div.button.formatBlock .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -36px 0;
+}
+#toolbar div.button.insertHorizontalRule .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -84px 0;
+}
+#toolbar div.button.insertFieldset .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -68px 0;
+}
+#toolbar div.button.justifyLeft .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -180px 0;
+}
+#toolbar div.button.justifyCenter .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -148px 0;
+}
+#toolbar div.button.justifyRight .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -196px 0;
+}
+#toolbar div.button.justifyFull .image
+{
+	background: url(/images/editor/buttons.png) no-repeat -164px 0;
+}
+
+
+/** most boxes (i.e. LINE BOX, TEXT AREA, etc.) **/
+.editable
+{
+	margin: 10px 0;
+	border: 1px solid black;
+	border-radius: 3px;
+	background-color: #d8d8d8;
+	cursor: text;
+}
+.editable.snap-editor
+{
+	background-color: #f0f0f0;
+}
+.editable.snap-editor.erroneous
+{
+	background-color: #fff0f0;
+	border-color: #882222;
+}
+
+.editable.snap-editor.disabled
+{
+	background-color: #aaaaaa;
+}
+.editable.snap-editor.transparent
+{
+	background-color: transparent;
+	border: none;
+	cursor: auto;
+}
+.editable .snap-editor-background
+{
+	position: absolute;
+	display: none;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.editable .snap-editor-background-content
+{
+	color: #ffffff;
+	text-shadow: 1px 1px 0 #666666;
+	padding: 4px 0 0 5px;
+	pointer-events: none;
+}
+
+.editable.snap-editor:not(.disabled):not(.no-hover):not(.transparent):hover
+{
+	box-shadow: inset 0 0 0 3px rgba(64, 192, 64, 0.5);
+}
+
+.editable.snap-editor [contenteditable="true"] .filter-token
+{
+	background-color: #e0e0e0;
+}
+
+
+/** EDITOR LINK DIALOG **/
+#snap_editor_link_dialog
+{
+	display: none;
+	position: absolute;
+	z-index: 5;
+	float: left;
+	background: #f0f0ae;
+	padding: 0;
+	border: 1px solid black;
+	-webkit-border-bottom-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+	-webkit-border-bottom-left-radius: 10px;
+	border-bottom-left-radius: 10px;
+}
+#snap_editor_link_page
+{
+	margin: 0;
+	padding: 10px;
+}
+#snap_editor_link_dialog div.line
+{
+	clear: both;
+	padding: 5px 3px;
+}
+#snap_editor_link_dialog label.limited
+{
+	display: block;
+	float: left;
+	width: 80px;
+}
+#snap_editor_link_dialog input
+{
+	display: block;
+	float: left;
+	width: 150px;
+}
+#snap_editor_link_dialog div.title
+{
+	background: black;
+	color: white;
+	font-weight: bold;
+	padding: 5px;
+}
+
+
+/** EDITOR SILENT FIELD **/
+.snap-editor-silent
+{
+	display: none;
+}
+
+
+/** EDITOR HIDDEN FIELD **/
+.snap-editor-hidden
+{
+	display: none;
+}
+
+
+/** EDITOR BUTTONS **/
+.editor-edit-button
+{
+	display: none;
+	padding: 10px;
+	position: absolute;
+	font-weight: normal;
+	z-index: 1;
+	border: 1px solid black;
+	border-radius: 7px;
+	background: #f0fff0;
+	color: #0f000f;
+}
+.editor-action-button
+{
+	border: 1px solid black;
+	border-radius: 5px;
+	background-color: #b0e8a0;
+	display: inline-block;
+	padding: 10px;
+	margin: 10px;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: none;
+	box-shadow: 2px 2px 4px #666666;
+}
+
+
+/** IMAGE BOX **/
+.editable.image-box
+{
+	cursor: copy;
+}
+
+.editable.image-box .editor-content,
+.editable.dropped-file-with-preview-box .editor-content
+{
+	min-width: 200px;
+	min-height: 200px;
+}
+
+.editable.image-box .snap-editor-background-content,
+.editable.dropped-file-with-preview-box .snap-editor-background-content
+{
+	text-align: center;
+}
+
+/* images are added at z-index: 1 */
+.editable.image-box .browse-block,
+.editable.dropped-file-with-preview-box .browse-block
+{
+	position: absolute;
+	z-index: 3;
+}
+
+.editable.image-box .browse-block a.browse-button,
+.editable.dropped-file-with-preview-box .browse-block a.browse-button
+{
+	border: 1px solid black;
+	border-radius: 5px;
+	background-color: #b0e8a0;
+	display: inline-block;
+	padding: 10px;
+	margin: 10px;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: none;
+	box-shadow: 2px 2px 4px #666666;
+	opacity: 0.2;
+	transition: opacity 0.5s ease-in-out;
+}
+
+.editable.image-box:hover .browse-block a.browse-button,
+.editable.dropped-file-with-preview-box:hover .browse-block a.browse-button
+{
+	opacity: 1;
+	transition: opacity 0.5s ease;
+}
+
+/* hide the <input type="file"> widget */
+.editable.dropped-file-box .dropped-file-buttons .hidden.file-input,
+.editable.image-box .browse-block .hidden.file-input,
+.editable.dropped-file-with-preview-box .browse-block .hidden.file-input
+{
+	opacity: 0;
+	position: absolute;
+	width: 0;
+	height: 0;
+	overflow: hidden;
+}
+
+
+/** LINE EDIT **/
+.editable.line-edit
+{
+	max-width: 100%;
+}
+.editable.line-edit .editor-content
+{
+	padding: 3px;
+	height: 1.2em;
+	white-space: nowrap;
+	overflow: hidden;
+	/* another possibility instead of nowrap+hidden is (like text-edit):
+	min-height: 1.2em;
+	*/
+}
+
+
+/** TEXT EDIT **/
+.editable.text-edit .editor-content
+{
+	padding: 3px;
+	min-height: 1.2em;
+}
+
+
+/** DROPPED FILE **/
+.editable.dropped-file-box
+{
+	border: none;
+	cursor: auto;
+}
+.editable.drop.dropped-file-box
+{
+	cursor: copy;
+}
+.editable.dropped-file-box .editor-content
+{
+}
+.editable.dropped-file-box
+{
+	background: transparent;
+}
+.editable.dropped-file-box .dropped-file-icon
+{
+	float: left;
+	border: 1px solid black;
+	border-radius: 3px;
+	width: 64px;
+	height: 64px;
+	margin-right: 20px;
+	text-align: center;
+}
+.editable.dropped-file-box .dropped-file-icon.has-attachment
+{
+	background-color: #cccccc;
+	height: 56px;
+	padding-top: 8px;
+}
+.editable.dropped-file-box .dropped-file-filename-and-buttons
+{
+	float: left;
+	width: calc(100% - 86px);
+}
+.editable.dropped-file-box .dropped-file-filename
+{
+	background-color: #f0f0f0;
+	border: 1px solid black;
+	cursor: text;
+}
+/* here we use .drop to know whether the widget is in edit mode */
+.editable.drop.dropped-file-box .dropped-file-filename:hover
+{
+	box-shadow: inset 0 0 0 3px rgba(64, 192, 64, 0.5);
+}
+.editable.dropped-file-box.dragging-over:not(.disabled)
+{
+	background-color: #e1f86e;
+}
+.editable.dropped-file-box .editor-content .dropped-file-filename
+{
+	min-height: 1.2em;
+	padding: 3px;
+}
+.editable.dropped-file-box .dropped-file-buttons
+{
+	display: flex;
+	justify-content: center;
+}
+.editable.dropped-file-box .dropped-file-buttons .button
+{
+	border: 1px solid black;
+	border-radius: 5px;
+	background-color: #b0e8a0;
+	display: inline-block;
+	padding: 10px;
+	margin: 10px;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: none;
+	box-shadow: 2px 2px 4px #666666;
+	cursor: pointer;
+}
+.editable.dropped-file-box .dropped-file-buttons .button.disabled
+{
+	cursor: not-allowed;
+}
+.editable.dropped-file-box .dropped-file-buttons .button.disabled
+{
+	color: #666666;
+	background-color: #eeeeee;
+	cursor: normal;
+}
+.end-dropped-file
+{
+	clear: both;
+}
+
+
+/** DROPPED FILE WITH PREVIEW **/
+.editable .widget-wait-image
+{
+	display: none;
+	position: absolute;
+	pointer-events: none;
+	z-index: 3;
+	background: url(/images/snap/wait-rotate-64x64.png) no-repeat 0 0;
+	width: 64px;
+	height: 64px;
+}
+
+.editable .attachment-icon
+{
+	position: absolute;
+	pointer-events: none;
+	z-index: 3;
+	width: 64px;
+	height: 56px;
+	text-align: center;
+	padding-top: 8px;
+	border: 1px solid black;
+	background-color: #cccccc;
+}
+
+.editable .broken-attachment-icon
+{
+	position: absolute;
+	pointer-events: none;
+	z-index: 3;
+	width: 64px;
+	height: 64px;
+	text-align: center;
+	padding-top: 8px;
+}
+
+
+/** DROPDOWN **/
+.editable.dropdown
+{
+	/* our dropdowns make use of a static position so it can easily
+	 * work between IFRAMEs
+	 */
+	position: static;
+}
+.editable.dropdown .editor-content
+{
+	padding: 3px;
+	height: 1.2em;
+	background: url(/images/editor/dropdown-arrow-15x15.png) 97% 50% no-repeat;
+}
+
+.editable.dropdown div.snap-editor-dropdown-reset-value
+{
+	display: none;
+}
+
+.editable.dropdown .editor-content.select-only
+{
+	/* trick to hide the caret (blinking I-beam) that does not works well under IE */
+	color: transparent;
+	text-shadow: 0 0 0 #000;
+}
+
+.editable.dropdown .dropdown-items,
+.top-window.dropdown-items
+{
+	/* items are hidden by default */
+	display: none;
+
+	margin: 0;
+	padding: 0;
+	background-color: white;
+	border: 1px solid black;
+}
+.editable.dropdown .dropdown-items.algorithm-bottom,
+.top-window.dropdown-items.algorithm-bottom
+{
+	margin-left: 5px;
+	padding-bottom: 5px;
+	border-radius: 5px;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.5);
+}
+.editable.dropdown .dropdown-items.algorithm-top,
+.top-window.dropdown-items.algorithm-top
+{
+	margin-left: 5px;
+	padding-top: 5px;
+	border-radius: 5px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	box-shadow: 1px -2px 3px 0px rgba(0, 0, 0, 0.5);
+}
+.editable.dropdown .dropdown-items.algorithm-right,
+.top-window.dropdown-items.algorithm-right
+{
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-radius: 5px;
+	box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.5);
+}
+.editable.dropdown .dropdown-items.algorithm-bottom-horizontal-columns,
+.top-window.dropdown-items.algorithm-bottom-horizontal-columns,
+.editable.dropdown .dropdown-items.algorithm-bottom-horizontal-columns-with-scrollbar,
+.top-window.dropdown-items.algorithm-bottom-horizontal-columns-with-scrollbar
+{
+	margin-left: 5px;
+	padding-bottom: 5px;
+	border-radius: 5px;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.5);
+}
+.editable.dropdown .dropdown-items.algorithm-top-horizontal-columns,
+.top-window.dropdown-items.algorithm-top-horizontal-columns,
+.editable.dropdown .dropdown-items.algorithm-top-horizontal-columns-with-scrollbar,
+.top-window.dropdown-items.algorithm-top-horizontal-columns-with-scrollbar,
+.editable.dropdown .dropdown-items.algorithm-top-vertical-columns,
+.top-window.dropdown-items.algorithm-top-vertical-columns,
+.editable.dropdown .dropdown-items.algorithm-top-vertical-columns-with-scrollbar,
+.top-window.dropdown-items.algorithm-top-vertical-columns-with-scrollbar
+{
+	margin-left: 5px;
+	padding-top: 5px;
+	border-radius: 5px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.5);
+}
+.editable.dropdown .dropdown-items.algorithm-scrollbar,
+.top-window.dropdown-items.algorithm-scrollbar
+{
+	margin-left: 15px;
+	padding: 5px 0;
+	border-radius: 5px;
+	box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.5);
+}
+.editable.dropdown .dropdown-items.algorithm-bottom-horizontal-columns-with-scrollbar,
+.top-window.dropdown-items.algorithm-bottom-horizontal-columns-with-scrollbar,
+.editable.dropdown .dropdown-items.algorithm-top-horizontal-columns-with-scrollbar,
+.top-window.dropdown-items.algorithm-top-horizontal-columns-with-scrollbar,
+.editable.dropdown .dropdown-items.algorithm-bottom-vertical-columns-with-scrollbar,
+.top-window.dropdown-items.algorithm-bottom-vertical-columns-with-scrollbar,
+.editable.dropdown .dropdown-items.algorithm-top-vertical-columns-with-scrollbar,
+.top-window.dropdown-items.algorithm-top-vertical-columns-with-scrollbar,
+.editable.dropdown .dropdown-items.algorithm-scrollbar,
+.top-window.dropdown-items.algorithm-scrollbar
+{
+	overflow-y: scroll;
+}
+.editable.dropdown .dropdown-items.disabled,
+.top-window.dropdown-items.disabled
+{
+	background-color: #cccccc;
+}
+
+.editable.dropdown .dropdown-items .no-selection,
+.top-window.dropdown-items .no-selection
+{
+	padding: 5px 8px;
+}
+
+.editable.dropdown .dropdown-items ul,
+.top-window.dropdown-items ul
+{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.editable.dropdown .dropdown-items li,
+.top-window.dropdown-items li
+{
+	display: block;
+	padding: 5px 8px;
+	border: 1px solid white;
+}
+.editable.dropdown .dropdown-items li.selected,
+.top-window.dropdown-items li.selected
+{
+	background-color: #ffcc99;
+}
+
+.editable.dropdown .dropdown-items li:hover,
+.top-window.dropdown-items li:hover
+{
+	background-color: #ffeecc;
+	cursor: pointer;
+	border: 1px dashed #ffcc88;
+}
+.top-window.dropdown-items
+{
+	position: fixed;
+}
+
+.editable.dropdown .dropdown-items li.active,
+.top-window.dropdown-items li.active
+{
+	background-color: #eeffcc;
+	cursor: pointer;
+	border: 1px dashed #ccff88;
+}
+.editable.dropdown .dropdown-items li.active:hover,
+.top-window.dropdown-items li.active:hover
+{
+	background-color: #ccffee;
+}
+
+.editable.dropdown .dropdown-items li.disabled,
+.top-window.dropdown-items li.disabled
+{
+	color: #777777;
+	background-color: #eeeeee;
+	cursor: default;
+	border: none;
+}
+
+.editable.dropdown .dropdown-items li.hidden,
+.top-window.dropdown-items li.hidden
+{
+	display: none;
+}
+
+/** CHECKMARK **/
+.editable.checkmark
+{
+	margin-right: 10px;
+	border: none;
+	box-shadow: none;
+	background-color: transparent;
+	font-size: 90%;
+	width: 100%;
+	cursor: default;
+}
+
+.editable.checkmark .checkmark-flag
+{
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	padding-right: 10px;
+}
+
+.editable.checkmark .checkmark-flag .flag-box
+{
+	margin: 4px 0 0 2px;
+	border: 1px solid #aaaaaa;
+	box-shadow: 0 2px 3px 0px #cccccc;
+	width: 10px;
+	height: 10px;
+}
+
+.editable.checkmark .checkmark-flag .checkmark-area
+{
+	margin: -11px 0 0 3px;
+	width: 16px;
+	height: 16px;
+}
+
+.editable.checkmark .checkmark-flag .checkmark-area.checked
+{
+	background: url(/images/editor/checkmark-15x11.png) 0 0 no-repeat;
+}
+
+.editable.checkmark .editor-content:focus
+{
+	outline: 1px dotted #ff0000;
+}
+
+
+/** RADIO **/
+.editable.radio
+{
+	margin-right: 10px;
+	border: none;
+	box-shadow: none;
+	background: transparent;
+	font-size: 90%;
+	width: 100%;
+	cursor: default;
+}
+
+.editable.radio .editor-content ul
+{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.editable.radio .editor-content ul li
+{
+	clear: both;
+	display: block;
+	padding: 0;
+	margin: 5px 0;
+}
+
+.editable.radio .editor-content ul li .radio-flag-box
+{
+	float: left;
+	margin-right: 10px;
+	background: url(/images/editor/radio-unselected.png) no-repeat 2px 5px;
+	width: 20px;
+	height: 20px;
+}
+
+.editable.radio .editor-content ul li.selected .radio-flag-box
+{
+	background: url(/images/editor/radio-selected.png) no-repeat 2px 5px;
+}
+
+.editable.radio .editor-content ul li .radio-area
+{
+	padding: 3px 0;
+	float: left;
+}
+
+.editable.radio .editor-content ul li:focus
+{
+	outline: 1px dotted #ff0000;
+}
+
+.end-radio-item
+{
+	clear: both;
+}
+
+
+/** SAVE DIALOG **/
+#snap_editor_save_dialog
+{
+	border: 1px solid black;
+	border-radius: 7px;
+	background-color: #fff8f0;
+	padding: 10px;
+	position: fixed;
+	top: 10px;
+	z-index: 1;
+	width: 150px;
+}
+
+#snap_editor_save_dialog .title
+{
+	text-align: center;
+}
+
+#snap_editor_save_dialog .button
+{
+	border: 1px solid black;
+	border-radius: 5px;
+	background-color: #b0e8a0;
+	display: block;
+	padding: 10px;
+	margin: 10px;
+	font-weight: bold;
+	text-align: center;
+	font-variant: small-caps;
+	text-decoration: none;
+}
+
+#snap_editor_save_dialog .button.disabled
+{
+	background-color: #aaaaaa;
+}
+
+#snap_editor_save_dialog .description
+{
+	font-size: 80%;
+	font-style: italic;
+}
+
+.editor-help
+{
+	font-size: 80%;
+	font-style: italic;
+	color: #666666;
+}
+
+.editor-block label span.required
+{
+	color: #e00000;
+}
+
+
+/** message box */
+#confirm-popup-closure .popup-title
+{
+	font-size: 120%;
+	font-weight: bold;
+}
+
+#confirm-popup-closure .message-box
+{
+	margin: 15px 0;
+}
+
+#confirm-popup-closure .message-box-buttons
+{
+	display: flex;
+	justify-content: center;
+}
+#confirm-popup-closure .message-box-buttons .message-button
+{
+	margin: 0 10px;
+	padding: 0.5em 1em 0.55em;
+	border: 1px solid black;
+	border-radius: 5px;
+	background-color: #b0e8a0;
+	font-weight: bold;
+	text-align: center;
+	font-variant: small-caps;
+	text-decoration: none;
+}
+

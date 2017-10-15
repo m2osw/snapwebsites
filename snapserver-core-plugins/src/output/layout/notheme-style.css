@@ -1,0 +1,46 @@
+/*
+ * Name: notheme-style
+ * Version: 0.0.3
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+body, div
+{
+	padding: 0;
+	margin: 0;
+}
+
+body
+{
+	font-family: sans-serif;
+}
+
+.page
+{
+	padding: 10px;
+}
+
+.header h1
+{
+	text-align: center;
+	margin-top: 0;
+}
+
+.content
+{
+	float: left;
+	width: 730px;
+	padding: 10px;
+}
+
+.error input
+{
+	color: #ff0000;
+}
+
+.input-with-background-value
+{
+	color: #888888;
+}

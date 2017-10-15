@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == change email page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="info" id="settings" content-modified="2017-01-08 17:27:46">
+  <timeout minutes="60"/> <!-- 1 hour -->
+  <mode action="edit"/>
+  <immediate/>
+  <no-toolbar/> <!-- none of the fields should have the toolbar -->
+  <focus refid="email_address"/>
+  <on-save redirect="/user/me" target="_top" allow-edit="no" auto-save="no"/>
+  <taborder>
+    <tabindex refid="email_address"/>
+    <tabindex refid="repeat_email_address"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- Display the email address, and allow the user to change it -->
+  <widget id="current_email_address" type="line-edit" field="user::current_email_address" path="user/current_email_address" auto-save="no">
+    <label>Current email address</label>
+    <help>Displays the current email address.</help>
+    <state>read-only</state>
+    <!--<sizes>
+      <min>1</min>
+      <max>256</max>
+    </sizes>-->
+  </widget>
+
+  <!-- Display the email address, and allow the user to change it -->
+  <widget id="email_address" type="line-edit" field="user::email_address" path="user/email_address" auto-save="no">
+    <label>New email address</label>
+    <tooltip>Enter the new email address that you are going to change to.</tooltip>
+    <help>Help</help>
+    <!--<sizes>
+      <min>1</min>
+      <max>256</max>
+    </sizes>-->
+    <filters>
+      <regex name="email"/>
+    </filters>
+    <required>required</required>
+    <background-value>new address</background-value>
+  </widget>
+
+  <!-- total session duration (returning registered user who is not logged in) -->
+  <widget id="repeat_email_address" type="line-edit" field="user::repeat_email_address" path="user/repeat_email_address" auto-save="no" duplicate-of="email_address">
+    <label>Repeat the email address</label>
+    <tooltip>Repeat the new email address once for security.</tooltip>
+    <help>Help</help>
+    <!--<sizes>
+      <min>1</min>
+      <max>256</max>
+    </sizes>-->
+    <filters>
+      <regex name="email"/>
+    </filters>
+    <required>required</required>
+    <background-value>repeat address</background-value>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

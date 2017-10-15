@@ -1,0 +1,55 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+if [ "$1" = "configure" ]
+then
+    PACKAGENAME=snapmanagerdaemon
+
+    # Create files representing each service offered by this package
+    #
+    SERVICES_DIR=/usr/share/snapwebsites/services
+    touch $SERVICES_DIR/${PACKAGENAME}.service
+
+    # create the directory to be used to save the status files
+    #
+    CLUSTER_STATUS=/var/lib/snapwebsites/cluster-status
+    mkdir -p ${CLUSTER_STATUS}
+    chmod 775 ${CLUSTER_STATUS}
+    chown snapwebsites:www-data ${CLUSTER_STATUS}
+
+    # create the directory to be used to save the bundle files
+    # downloaded by snapmanagerdaemon
+    #
+    BUNDLES=/var/lib/snapwebsites/bundles
+    mkdir -p ${BUNDLES}
+    chmod 755 ${BUNDLES}
+    chown snapwebsites:snapwebsites ${BUNDLES}
+
+    # create the directory used to save bundle pre/post scripts
+    #
+    BUNDLE_SCRIPTS=/var/cache/snapwebsites/bundle-scripts
+    mkdir -p ${BUNDLE_SCRIPTS}
+    chmod 755 ${BUNDLE_SCRIPTS}
+    chown snapwebsites:snapwebsites ${BUNDLE_SCRIPTS}
+
+    # Create the logfile because the snapwebsites user may have
+    # difficulties with it otherwise during logrotate.
+    #
+    SNAPLOGDIR=/var/log/snapwebsites
+    LOGFILE=${SNAPLOGDIR}/${PACKAGENAME}.log
+    touch ${LOGFILE}
+    chown snapwebsites:snapwebsites ${LOGFILE}
+    chmod 640 ${LOGFILE}
+    #
+    SNAPSECURELOGDIR=/var/log/snapwebsites/secure
+    SECURELOGFILE=${SNAPSECURELOGDIR}/${PACKAGENAME}.log
+    touch ${SECURELOGFILE}
+    chown snapwebsites:snapwebsites ${SECURELOGFILE}
+    chmod 640 ${SECURELOGFILE}
+fi
+
+# vim: ts=4 sw=4 et nocindent

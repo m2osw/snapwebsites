@@ -1,0 +1,36 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "install" ]
+then
+    # add snapwebsites user and group if not there already
+    #
+    # this is done before the #DEBHELPER# script which starts the snapbootinit
+    # "too soon" otherwise
+    #
+    if ! getent group snapwebsites >/dev/null
+    then
+        addgroup --system snapwebsites
+    fi
+    #
+    if ! getent passwd snapwebsites >/dev/null
+    then
+        adduser --quiet \
+            --system \
+            --ingroup snapwebsites \
+            --disabled-login \
+            --disabled-password \
+            --home /var/lib/snapwebsites \
+            --no-create-home \
+            -gecos "Snapwebsites Daemons and Tools" \
+            snapwebsites
+    fi
+fi
+
+
+# vim: ts=4 sw=4 et nocindent

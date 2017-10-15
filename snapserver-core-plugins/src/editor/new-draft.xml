@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == new draft form
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-form name="editor__new_draft" session_id="1" owner="editor">
+  <auto-reset minutes="480"/> <!-- 8 hours -->
+  <focus refid="title"/>
+  <default-button refid="save"/>
+  <taborder>
+    <tabindex refid="type"/>
+    <tabindex refid="sibling"/>
+    <tabindex refid="title"/>
+    <tabindex refid="description"/>
+    <tabindex refid="save"/>
+    <tabindex refid="cancel"/>
+  </taborder>
+  <accesskeys>
+    <!-- by keeping those in alphabetical order (by key) you'll avoid problems (duplicates) -->
+    <key refid="cancel">c</key><!-- default cancelation is expected to be [Shift-]Alt-C -->
+    <key refid="description">d</key>
+    <key refid="sibling">i</key>
+    <!-- <key refid="reset">r</key>default reset is expected to be [Shift-]Alt-R -->
+    <key refid="save">s</key><!-- default submit is expected to be [Shift-]Alt-S -->
+    <key refid="title">t</key>
+    <key refid="type">y</key>
+  </accesskeys>
+  <widget id="new_draft_info" type="fieldset">
+    <label>New Draft Form</label>
+    <tooltip>Type in a title for your new draft. It will become the title of your page. You will be able to change it later even after the page is published, so don't worry if you are not exactly sure what the title should be. It just cannot be empty.</tooltip>
+    <help>Enter a title for your page. If you are writing a blog, remember that the title should be attractive for people to read it. Also a title should be at least 15 and at most 64 characters to better firt search engines results.</help>
+    <widgetorder>
+      <!-- used if order is tweaked (i.e. plugins add widgets) -->
+      <widgetpriority refid="type"/>
+      <widgetpriority refid="sibling"/>
+      <widgetpriority refid="title"/>
+      <widgetpriority refid="description"/>
+      <widgetpriority refid="save"/>
+      <widgetpriority refid="cancel"/>
+    </widgetorder>
+    <widget id="type" type="line-edit">
+      <!-- TODO: support a select instead of a line edit? (we could have a drop down here) -->
+      <label>Type</label>
+      <background-value>start typing the name of a page type</background-value>
+      <tooltip>Enter the name of a type to be used for this new draft. Note that the type of a page can be changed at a later time.</tooltip>
+      <sizes>
+        <min>1</min>
+        <max>128</max>
+        <width>45</width>
+      </sizes>
+      <required>required</required>
+      <!-- TODO: you may not be authorized to enter new types... how do we deal with shit like that? -->
+      <help>Start typing the name of a type and choose an existing type or enter the name of a new type for your new draft.</help>
+    </widget>
+    <widget id="sibling" type="line-edit">
+      <!-- TODO: use a select of the few types of sibling we can use: top, child, next/previous sibling, ... -->
+      <label>Sibling</label>
+      <background-value>enter sibling</background-value>
+      <tooltip>Enter where you want to create the page: top, child, next or previous sibling.</tooltip>
+      <sizes>
+        <min>1</min>
+        <max>128</max>
+        <width>45</width>
+      </sizes>
+      <required>required</required>
+      <help>Select how this new page fits in your existing tree of pages.</help>
+    </widget>
+    <widget id="title" type="line-edit">
+      <label>Title</label>
+      <background-value>new page title</background-value>
+      <tooltip>Enter a title for your new page. The title shoudl be between 15 and 64 characters long to better fit search engine results. It should be written to attract your readership too.</tooltip>
+      <sizes>
+        <min>1</min>
+        <max>300</max>
+        <width>45</width>
+      </sizes>
+      <required>required</required>
+      <help>Enter an appealing title for your new page. Note that you can always edit your draft later and change the title before publication. However, once published and broadcast on other websites, it will be a tad bit late to make changes to your title.</help>
+    </widget>
+    <widget id="description" type="line-edit">
+      <label>Description</label>
+      <background-value>page content description</background-value>
+      <tooltip>Enter a description (resume / short version) for your page. The optimal size for search engine is considered to be about 155 characters.</tooltip>
+      <sizes>
+        <min>0</min>
+        <max>1024</max>
+        <width>45</width>
+      </sizes>
+      <help>Enter a description of your page. This is generally a resume or short version. Although I suggest that you do not <em>give the answer</em> in your description. The optimal size for the description meta tag is around 155 characters.</help>
+    </widget>
+    <widget id="save" type="submit">
+      <label>Save Draft</label>
+      <tooltip>Once you entered at least a title click Save Draft to get to the full page editor.</tooltip>
+      <help>Save to enter the full page editor and actually create your new draft. Until then, no draft is created, although the data you enter in your last draft do get saved on your website so if you come back a few days later you'll still see the information you entered.</help>
+      <value>Save Draft</value>
+    </widget>
+    <widget id="cancel" type="link">
+      <label>Cancel</label>
+      <tooltip>Click here to return to the home page</tooltip>
+      <help>Click here to cancel this new draft. This will reset your form.</help>
+      <value>/</value> <!-- this should "just" be close this window -->
+    </widget>
+  </widget>
+</snap-form>
+<!-- vim: ts=2 sw=2 et
+-->

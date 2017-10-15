@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == login form (full page)
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-form name="users__login" session_id="user/1" owner="users_ui">
+  <auto-reset minutes="5"/>
+  <timeout minutes="180"/>
+  <focus refid="email"/>
+  <default-button refid="login"/>
+  <taborder>
+    <tabindex refid="email"/>
+    <tabindex refid="password"/>
+    <tabindex refid="remember"/>
+    <tabindex refid="login"/>
+    <tabindex refid="register"/>
+    <tabindex refid="forgot_password"/>
+    <tabindex refid="cancel"/>
+  </taborder>
+  <accesskeys>
+    <!-- by keeping those in alphabetical order you'll avoid problems (duplicates) -->
+    <key refid="cancel">c</key><!-- default cancelation is expected to be [Shift-]Alt-C -->
+    <key refid="email">e</key>
+    <key refid="forgot_password">f</key>
+    <key refid="log_info">l</key>
+    <key refid="remember">m</key>
+    <key refid="password">p</key>
+    <!-- <key refid="reset">r</key>default reset is expected to be [Shift-]Alt-R -->
+    <key refid="login">s</key><!-- default submit is expected to be [Shift-]Alt-S -->
+    <key refid="register">u</key>
+  </accesskeys>
+  <widget id="log_info" type="fieldset">
+    <label>Log In Form</label>
+    <tooltip>Enter your log in information below then click the Log In button.</tooltip>
+    <help>This form allows you to log in your Snap! website. Enter your log in name and password and then click on Log In to get a log in session.</help>
+    <widgetorder>
+      <!-- used if order is tweaked (i.e. plugins add widgets) -->
+      <widgetpriority refid="email"/>
+      <widgetpriority refid="password"/>
+      <widgetpriority refid="forgot_password"/>
+      <widgetpriority refid="register"/>
+      <widgetpriority refid="remember"/>
+      <widgetpriority refid="login"/>
+      <widgetpriority refid="cancel"/>
+    </widgetorder>
+    <widget id="email" type="line-edit">
+      <label>Email</label>
+      <background-value>name@example.com</background-value>
+      <tooltip>Enter your email address to log in your Snap! Website account.</tooltip>
+      <sizes>
+        <min>6</min>
+        <max>60</max>
+        <width>20</width>
+      </sizes>
+      <filters>
+        <regex name="email"/>
+      </filters>
+      <required>required</required>
+      <help>Enter the email address you used to register with Snap! All the Snap! Websites run by Made to Order Software Corp. allow you to use the same log in credentials.</help>
+    </widget>
+    <widget id="password" type="password" secret="secret">
+      <label>Password</label>
+      <background-value>*** your top secret password ***</background-value>
+      <tooltip>Enter your password, if you forgot your password, just the link below to request a change.</tooltip>
+      <sizes>
+        <min>10</min>
+        <max>256</max>
+        <width>25</width>
+      </sizes>
+      <required>required</required>
+      <help>Enter the password you used while registering with Snap! Your password is the same for all the Snap! Websites run by Made to Order Software Corp.</help>
+    </widget>
+    <widget id="forgot_password" type="link">
+      <label>Forgot Password</label>
+      <tooltip>Forgot your password? Click on this link to request Snap! to send you a link to change it with a new one.</tooltip>
+      <help>You use so many websites with an account... and each one has to have a different password! So it can be easy to forget the password for a given website. We store passwords in a one way encryption mechanism (i.e. we cannot decrypt it) so if you forget it, we can only offer you to replace it. This is done using the form this link sends you to.</help>
+      <value>/forgot-password</value>
+    </widget>
+    <widget id="register" type="link">
+      <label>Register</label>
+      <tooltip>No account yet? Register your own Snap! account now.</tooltip>
+      <help>To log in a Snap! account, you first have to register an account. Click on this link if you don't already have an account. If you are not sure, you can always try the <strong>Forgot Password</strong> link. It will tell you whether we know your email address.</help>
+      <value>/register</value>
+    </widget>
+    <widget id="remember" type="checkbox">
+      <label>Remember Me</label>
+      <tooltip>Select this checkbox to let your browser record a long time cookie. This way you can come back to your Snap! account(s) without having to log back in everytime.</tooltip>
+      <classes>remember-me-checkbox</classes>
+      <value>on</value>
+      <help>By checking this box you agree to have Snap! save a full session cookie which let you come back to your website over and over again. By not selecting the checkbox, you still get a cookie, but it will only last 2 hours unless your use your website constantly.</help>
+    </widget>
+    <widget id="login" type="submit">
+      <label>OK</label>
+      <tooltip>Enter your credentials to log into the site.</tooltip>
+      <classes>my-button-class</classes>
+      <sizes>
+        <width>25</width>
+      </sizes>
+      <help>Enter your user name and password, and then click the LOGIN button. This will log your user into the site.</help>
+      <value>Log In</value>
+    </widget>
+    <widget id="cancel" type="link">
+      <label>Cancel</label>
+      <tooltip>Click here to return to the home page</tooltip>
+      <classes>my-cancel-class</classes>
+      <help>Long description that goes in the help box explaining why you'd want to click Cancel.</help>
+      <value>/</value>
+    </widget>
+  </widget>
+</snap-form>
+<!-- vim: ts=2 sw=2 et
+-->

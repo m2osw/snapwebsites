@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == sitemap.xml database setup
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <!-- files that are 100% dynamically generated are defined here, but they do not get a title and body -->
+  <content path="/sitemap.xml">
+    <param name="content::final" type="int8" revision="global">1</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/sitemap.xsl">
+    <param name="content::final" type="int8" revision="global">1</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/sitemap.txt">
+    <param name="content::final" type="int8" revision="global">1</param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/public</link>
+  </content>
+  <content path="/admin/settings/sitemapxml" owner="output">
+    <param name="content::title" revision="revision">sitemap.xml settings</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Administer the different sitemap.xml files of your website. These files are for robots only. In most cases the default works as is.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+  </content>
+  <content path="/types/taxonomy/system/sitemapxml">
+    <param name="content::title" revision="revision">XML Sitemap</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of parameters used to change the insertion of pages in your XML sitemap. The XML sitemap defines a comprehensive list of all the pages that exist on your website and that you want to share with search engines.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/sitemapxml/include">
+    <param name="content::title" revision="revision">Include in XML Sitemap</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This page is included in your XML sitemap.</p>]]>
+    </param>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

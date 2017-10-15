@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-watchdog.xml
+-->
+<bundle>
+  <name>watchdog</name>
+  <description>
+    <p>The watchdog bundles installs various systems used to track
+    what happens on your server. These daemons will determine the
+    health of a system. If any part of a system breaks down, an
+    alarm is raised and the administrator should check on it. Many
+    parts are automatically worked on by killing a process and seeing
+    that it restart. At a later time, we may also look into creating
+    a new VPS automatically as a replacement of the whole server that's
+    failing.</p>
+  </description>
+  <affected-services>snapmanagerdaemon</affected-services>
+  <packages>snapwatchdog</packages>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

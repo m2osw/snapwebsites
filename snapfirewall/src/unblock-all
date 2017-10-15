@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# See SNAP-516 implement UNBLOCKALL
+# For now, we have a quick and dirty (very slow) script that one can use to
+# unblock all the IPs currently blocked on a machine.
+#
+
+if test -z "$1"
+then
+	echo "$0:error: first parameter must be the server name of the computer as known by snapcommunicator (the server_name=... parameter in snapcommunicator.conf, which defaults to hostname if not specifically set.)"
+	exit 1
+fi
+if test -z "$2"
+then
+	echo "$0:error: second parameter must be the host IP of one of your Cassandra nodes."
+	exit 1
+fi
+
+# Use counter so we can let people know of progress, we print one message
+# every 100 IPs that we unblock
+#
+count=0
+pos=1
+for ip in `snapdb --host "$2" firewall "$1" | awk '{print $5}'`
+do
+        if test $count -eq 100
+        then
+                count=0
+                echo "$pos ($ip)"
+                pos=`expr $pos + 1`
+        else
+                count=`expr $count + 1`
+        fi
+        snapsignal "snapfirewall/UNBLOCK uri=$ip"
+done
+
+echo
+echo "$0:warning: all the snapsignal were sent, however, the snapfirewall will take a little time to really remove all the IPs."
+echo "$0:warning: you may check the number of IP blocked with 'count-unwanted'."
+echo
+

@@ -1,0 +1,28 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "configure" ]
+then
+    PACKAGENAME=snapdb
+
+    # Create a default user editable snapmanager.conf file if it does not
+    # exist yet
+    #
+    USER_CONF_FILE=/etc/snapwebsites/snapwebsites.d/${PACKAGENAME}.conf
+    if test ! -f $USER_CONF_FILE
+    then
+        echo "# Various variables that you are likely to need to edit for snapdb."  >$USER_CONF_FILE
+        echo "#"                                                                   >>$USER_CONF_FILE
+        echo "#host="                                                              >>$USER_CONF_FILE
+        echo "#port="                                                              >>$USER_CONF_FILE
+        echo "#use_ssl="                                                           >>$USER_CONF_FILE
+    fi
+fi
+
+
+# vim: ts=4 sw=4 et nocindent

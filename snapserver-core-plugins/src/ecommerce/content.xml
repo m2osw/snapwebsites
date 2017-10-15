@@ -1,0 +1,210 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == ecommerce plugin database setup
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/products" owner="output">
+    <param name="content::title" revision="revision">Product Catalog</param>
+    <!-- we are expected to change the filter with an AJAX functionality
+         so lists of any size can be used for a huge online shop -->
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A Catalog of All the Products on this Website.</p>[list::theme(path = "/products", count = 100)]]]>
+    </param>
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[(branch := int32(cell("content", page, "content::revision_control::current_branch")),
+                key := string(cell("content", page, "content::revision_control::current_revision_key::" + branch + "::en")),
+                key ? string(cell("revision", key, "content::title")) : "no title")]]>
+    </param>
+    <!-- avoid administrative pages, always
+         also the permissions should be enough to not include admin/...
+         pages to this feed, here we only add pages that anonomous users
+         can view (pretty much all RSS feeds are expected to only send
+         public data anyway) -->
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[!strmatch("^admin/", path)
+            && linked_to("content::page_type", page, "types/taxonomy/system/content-types/epayment/product*")
+            && perms(path, "user", "view", "visitor")]]>
+    </param>
+    <param name="list::selector" overwrite="yes"><![CDATA[type=types/taxonomy/system/content-types/epayment/product]]></param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+  </content>
+  <content path="/products/test-01" owner="output">
+    <param name="content::title" revision="revision">Product Test 1</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The perfect software you always dreamed about!</p>]]>
+    </param>
+    <param name="epayment::price" revision="revision" type="float64">128.50</param>
+    <param name="epayment::product_name" revision="revision">test_01</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/epayment/product</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+  </content>
+  <content path="/products/test-02" owner="output">
+    <param name="content::title" revision="revision">Product Test 2</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Version two of the perfect software which is even better than version 1 which means we cannot even describe it!</p>]]>
+    </param>
+    <param name="epayment::price" revision="revision" type="float64">200</param>
+    <param name="epayment::product_name" revision="revision">test_02</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/epayment/product</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+  </content>
+  <content path="/products/test-03" owner="output">
+    <param name="content::title" revision="revision">Product Test 3</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Turn Watcher online, the best tool for DMs and players alike.</p>]]>
+    </param>
+    <param name="epayment::price" revision="revision" type="float64">200</param>
+    <param name="epayment::product_name" revision="revision">test_03</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/epayment/product</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+  </content>
+  <content path="/products/test-04" owner="output">
+    <param name="content::title" revision="revision">Product Test 4 -- subscription (daily)</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Turn Watcher online, the best tool for DMs and players alike. This is the subscription that gives you access to all the features without the need for anything more.</p>]]>
+    </param>
+    <param name="epayment::price" revision="revision" type="float64">2</param>
+    <param name="epayment::product_name" revision="revision">test_04</param>
+    <param name="epayment::recurring" revision="revision">
+      <![CDATA[DAY]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/epayment/product</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+  </content>
+  <content path="/products/test-05" owner="output">
+    <param name="content::title" revision="revision">Product Test 5 -- subscription (weekly)</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Turn Watcher online, the best tool for DMs and players alike. This is the subscription that gives you access to all the features without the need for anything more.</p>]]>
+    </param>
+    <param name="epayment::price" revision="revision" type="float64">2</param>
+    <param name="epayment::product_name" revision="revision">test_05</param>
+    <param name="epayment::recurring" revision="revision">
+      <![CDATA[WEEK]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/epayment/product</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+  </content>
+  <content path="/invoices" owner="output">
+    <param name="content::title" revision="revision">Invoices</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Snap! e-Commerce Invoices.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/ecommerce/invoice</link>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/system-page</link>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+    <link name="shorturl::no_shorturl" to="shorturl::no_shorturl" mode="1:*">/types/taxonomy/system/shorturl/no_shorturl</link>
+  </content>
+  <content path="/admin/settings/ecommerce" owner="output">
+    <param name="content::title" revision="revision">e-Commerce</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Name and other global settings of your online store.</p>]]>
+    </param>
+    <param name="editor::layout" revision="global" overwrite="yes">"ecommerce-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"ecommerce-settings-parser";</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+  </content>
+  <content path="/types/taxonomy/system/content-types/ecommerce" owner="output">
+    <param name="content::title" revision="revision">e-Commerce Related Types</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various types used in link with the e-Commerce plugin.</p>]]>
+    </param>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/public</link>
+    <link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+  </content>
+  <content path="/types/taxonomy/system/content-types/ecommerce/invoice" owner="output">
+    <param name="content::title" revision="revision">An e-Commerce Invoice</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>When a user is ready to checkout, an invoice is created from the current cart and marked as such using this type.</p>]]>
+    </param>
+    <param name="layout::layout" revision="global" overwrite="yes">"ecommerce-invoice-onscreen";</param>
+    <!--link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/public</link-->
+    <!--link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link-->
+  </content>
+  <content path="/images/ecommerce" owner="output">
+    <param name="content::title" revision="revision">Images Offered by e-Commerce</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Default set of images related to the e-Commerce system.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <attachment name="ecommerce-logo" type="attachment/public">
+      <path>:/images/ecommerce/ecommerce-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="empty-shopping-cart" type="attachment/public">
+      <path>:/images/ecommerce/empty-shopping-cart.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="shopping-cart" type="attachment/public">
+      <path>:/images/ecommerce/shopping-cart.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="button-delete-red-48x48" type="attachment/public">
+      <path>:/images/ecommerce/button-delete-red-48x48.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="button-minus-green-48x48" type="attachment/public">
+      <path>:/images/ecommerce/button-minus-green-48x48.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="button-plus-blue-48x48" type="attachment/public">
+      <path>:/images/ecommerce/button-plus-blue-48x48.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/css/ecommerce" owner="output">
+    <param name="content::title" revision="revision">e-Commerce CSS</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>CSS files used by e-Commerce.</p>]]>
+    </param>
+    <attachment name="ecommerce" type="attachment/public">
+      <path>qrc:/css/ecommerce/ecommerce.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+  </content>
+  <content path="/js/ecommerce" owner="output">
+    <param name="content::title" revision="revision">e-Commerce JavaScripts</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>e-Commerce JavaScripts to support the Snap! Websites cart feature among other things.</p>]]>
+    </param>
+    <!--param name="permissions::dynamic" type="int8" revision="global">1</param-->
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <attachment name="ecommerce" type="attachment/public">
+      <path>:/js/ecommerce/ecommerce.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>editor (&gt;= 0.0.3.262)</dependency>
+    </attachment>
+    <attachment name="ecommerce-cart" type="attachment/public" owner="ecommerce">
+      <path>:/js/ecommerce/ecommerce-cart.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>ecommerce (&gt;= 0.0.1.53)</dependency>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

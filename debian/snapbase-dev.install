@@ -1,0 +1,2 @@
+debian/tmp/usr/share/snapwebsites/dtd/simplified-xslt20.dtd usr/share/snapwebsites/dtd/
+debian/tmp/usr/share/snapwebsites/src/snap_tests.*          usr/share/snapwebsites/src/

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-ssh.xml
+-->
+<bundle>
+  <name>ssh</name>
+  <description>
+    <p>Install the ssh server on this computer.</p>
+  </description>
+  <packages>openssh-server</packages>
+  <postinst>
+    # Prevent password authentication and root user
+    sed -i.bak \
+          -e 's/.\?PasswordAuthentication.*/PasswordAuthentication no/' \
+          -e 's/.\?PermitRootLogin.*/PermitRootLogin no/' \
+              /etc/ssh/sshd_config
+  </postinst>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

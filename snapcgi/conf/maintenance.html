@@ -1,0 +1,92 @@
+<html>
+<!--
+
+File:
+     snapwebsites/snapcgi/conf/maintenance.html
+
+Description:
+     Offer a default page maintenance page.
+
+Documentation:
+     This page tells users that the websites are under maintenance.
+     It gets used whenever the maintenance mode is turned on from
+     `snapmanager.cgi` using a 503 error code while showing this page.
+
+License:
+     Copyright (c) 2011-2017 Made to Order Software Corp.
+
+     http://snapwebsites.org/
+     contact@m2osw.com
+
+     This program is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation; either version 2 of the License, or
+     (at your option) any later version.
+    
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+    
+     You should have received a copy of the GNU General Public License
+     along with this program; if not, write to the Free Software
+     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+-->
+<head>
+  <title>Maintenance of Server</title>
+  <link href="/snap-maintenance/favicon.ico" type="image/x-icon" rel="shortcut icon"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body
+    {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    table
+    {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    td
+    {
+      text-align: center;
+      vertical-align: middle;
+      background-color: white;
+    }
+    .footer
+    {
+      font-style: italic;
+      font-size: 70%;
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <tr>
+      <td>
+        <h1>Website Update<br/>in Progress</h1>
+        <p>This website is currently being updated.</p>
+        <p>Please come back soon!</p>
+        <p>&nbsp;</p>
+        <p><a href="http://snap.website"><img src="/snap-maintenance/snap-logo.png"
+        width="150" height="119"/></a></p>
+
+        <p class="footer">Copyright
+        <a href="http://www.m2osw.com/">Made to Order Software Corporation</a>
+        &copy; 2016</p>
+        <p class="footer">Powered by
+        <a href="http://snapwebsites.org/">Snap! Websites</a></p>
+      </td>
+    </tr>
+  </table>
+</body>
+<!--
+vim: ts=2 sw=2 et
+-->
+</html>

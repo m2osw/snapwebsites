@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == detectadblocker plugin database setup
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/detectadblocker"> <!-- we use this page to accept AJAX requests to know whether the client is blocking ads or not -->
+    <param name="content::title" revision="revision">Detect Ad Blocker Status</param>
+    <param name="content::body" revision="revision">
+      This page is used with AJAX from our Detect Ad Blocker plugin
+      with information on whether ads will be displayed or not.
+    </param>
+    <!--
+      at this time we allow even spammers on this page...
+    -->
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/for-spammers</link>
+  </content>
+  <content path="/detectadblocker/true"> <!-- well, an ad blocker is active -->
+    <param name="content::title" revision="revision">Ad Blocker is Active</param>
+    <param name="content::body" revision="revision">
+      This page is used with AJAX from our Detect Ad Blocker plugin
+      with information on whether ads will be displayed or not.
+    </param>
+    <!--
+      at this time we allow even spammers on this page...
+    -->
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/for-spammers</link>
+  </content>
+  <content path="/detectadblocker/false"> <!-- no ad blocker -->
+    <param name="content::title" revision="revision">No Ad Blocker Active</param>
+    <param name="content::body" revision="revision">
+      This page is used with AJAX from our Detect Ad Blocker plugin
+      with information on whether ads will be displayed or not.
+    </param>
+    <!--
+      at this time we allow even spammers on this page...
+    -->
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/for-spammers</link>
+  </content>
+  <content path="/admin/settings/detectadblocker" owner="output">
+    <param name="content::title" revision="revision">Detect Ad Blocker Settings</param>
+    <param name="content::body" revision="revision">
+      <p>Detect Ad Blocker Settings</p>
+    </param>
+    <param name="editor::layout" revision="global" overwrite="yes">"detectadblocker-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"detectadblocker-settings-parser";</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/images/detectadblocker" owner="output">
+    <param name="content::title" revision="revision">Detect Ad Blocker Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various images used by the detectadblocker plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="detectadblocker-logo" type="attachment/public">
+      <path>:/images/detectadblocker/detectadblocker-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/js/detectadblocker" owner="output">
+    <param name="content::title" revision="revision">Scripts for Detect Ad Blocker</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Detect Ad Blocker scripts.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="detectadblocker" type="attachment/public">
+      <path>qrc:/js/detectadblocker/detectadblocker.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>server_access (&gt;= 0.0.1)</dependency>
+    </attachment>
+    <attachment name="adframe" type="attachment/public">
+      <path>qrc:/js/detectadblocker/adframe.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>detectadblocker (&gt;= 0.0.1)</dependency>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

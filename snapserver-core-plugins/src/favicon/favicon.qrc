@@ -1,0 +1,51 @@
+<!--
+Snap Plugin - - snap favicon plugin resources
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/plugins/favicon">
+    <file>content.xml</file>
+  </qresource>
+  <qresource prefix="/images/favicon">
+    <file>asterisk.ico</file>
+    <file>checkmark.ico</file>
+    <file>earth.ico</file>
+    <file>five-colors.ico</file>
+    <file>ladybug.ico</file>
+    <file>molecule.ico</file>
+    <file>ring.ico</file>
+    <file>snap-favicon.ico</file>
+    <file>star.ico</file>
+    <file>yellow-ball.ico</file>
+  </qresource>
+  <qresource prefix="/xml/editor">
+    <file>favicon-settings-page.xml</file>
+  </qresource>
+  <qresource prefix="/xsl/layout">
+    <file>favicon-settings-parser.xsl</file>
+  </qresource>
+  <qresource prefix="/css/favicon">
+    <file>favicon.css</file>
+  </qresource>
+  <qresource prefix="/js/favicon">
+    <file>favicon.js</file>
+  </qresource>
+</RCC>
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

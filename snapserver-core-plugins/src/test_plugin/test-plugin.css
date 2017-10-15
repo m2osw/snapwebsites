@@ -1,0 +1,75 @@
+/*
+ * Name: test-plugin
+ * Version: 0.0.1.9
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+.test-plugin-warning
+{
+	border: 2px solid #ff0000;
+	border-radius: 5px;
+	background-color: #ffeeee;
+	padding: 0 10px;
+	margin: 10px 12%;
+}
+
+.test-plugin-warning h3
+{
+	text-align: center;
+}
+
+.test-plugin-warning p
+{
+	font-style: italic;
+}
+
+.test-plugin
+{
+	border: 1px solid rgba(255, 255, 255, 60);
+	padding: 3px;
+}
+
+.test-plugin .group
+{
+	border: 1px solid rgba(255, 128, 255, 100);
+	padding: 5px;
+	margin-bottom: 5px;
+}
+
+.test-plugin .group .group-title
+{
+	padding: 10px;
+}
+
+.test-plugin .group .group-tests
+{
+	padding: 10px 10px 5px;
+}
+
+.test-plugin .group .group-tests .test
+{
+	border: 1px solid #000000;
+	padding: 3px;
+	margin-bottom: 5px;
+}
+
+.test-plugin .group .group-tests .never-ran
+{
+}
+
+.test-plugin .group .group-tests .ran.succeeded
+{
+	background-color: #88ff88;
+}
+
+.test-plugin .group .group-tests .ran.failed
+{
+	background-color: #ffcccc;
+}
+
+.test-plugin .group .group-tests .working
+{
+	background: url(/images/snap/progress.gif) repeat;
+}

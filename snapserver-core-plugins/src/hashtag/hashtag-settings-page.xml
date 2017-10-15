@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == hashtag settings form
+Copyright (C) 2015-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="hashtag" id="settings" content-modified="2015-01-02 04:16:35">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="link"/>
+  <on-save allow-edit="no"/>
+  <taborder>
+    <tabindex refid="link"/>
+  </taborder>
+
+  <widget id="editor-session" type="silent" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="link" type="dropdown" field="hashtag::link" path="hashtag/link" auto-save="string">
+    <tooltip>Select the mode used to display the hashtags on this website.</tooltip>
+    <help>A hashtag can be shown as a link with the hash character in front of it (like twitter.)
+          It can be shown as a standard link, in other words we can remove the hash character.
+          The word can be made a hidden link, which means the word looks like the other words
+          although if clicked, it still sends the user to the hashtag.
+          Finally, the word can be plain normal and the link added at the bottom of the page.</help>
+    <default>hashtag</default>
+    <preset>
+      <item value="hashtag">Hashtag</item>
+      <item value="standard">Standard</item>
+      <item value="invisible">Invisible</item>
+      <item value="bottom">Bottom of Article</item>
+    </preset>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

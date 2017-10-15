@@ -1,0 +1,141 @@
+/*
+ * Name: epayment-credit-card
+ * Version: 0.0.1.28
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+/** credit card form **/
+body[data-editor-form-id='creditcard_form'][data-editor-form-owner='epayment_creditcard'] h1
+{
+	display: none;
+}
+ul.epayment-credit-card-tab-list
+{
+	margin: 0;
+	padding: 0 0 0 10px;
+	background: url(data:image/gif;base64,R0lGODdhAQABAIABAAAAAP///ywAAAAAAQABAAACAkQBADs=) repeat-x 0 100%;
+}
+ul.epayment-credit-card-tab-list li
+{
+	float: left;
+	display: block;
+	padding: 3px 10px;
+	margin: 0;
+	border: 1px solid #888888;
+	border-bottom: 1px solid #000000;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 65%, rgba(0, 0, 0, 0.25));
+	cursor: pointer;
+}
+ul.epayment-credit-card-tab-list li:hover
+{
+	color: #0055ff;
+}
+ul.epayment-credit-card-tab-list li.active
+{
+	border: 1px solid #000000;
+	border-bottom: 1px solid #ffffff;
+	background: transparent;
+}
+div.tab-selector
+{
+	border: 1px solid #000000;
+	border-top: none;
+	padding: 5px;
+	height: 220px;
+	overflow-y: auto;
+}
+div.epayment-credit-card-tab
+{
+	display: none;
+}
+body[data-editor-form-id='creditcard_form'][data-editor-form-owner='epayment_creditcard'] label
+{
+	font-size: 80%;
+}
+body[data-editor-form-id='creditcard_form'][data-editor-form-owner='epayment_creditcard'] div.editable
+{
+	margin: 5px 0;
+}
+.epayment-credit-card-billing-name,
+.epayment-credit-card-billing-address,
+.epayment-credit-card-billing-country,
+.epayment-credit-card-delivery-name,
+.epayment-credit-card-delivery-address,
+.epayment-credit-card-delivery-country,
+.epayment-credit-card-user-name
+{
+	display: flex;
+}
+.epayment-credit-card-billing-name .epayment-credit-card-business-name,
+.epayment-credit-card-billing-name .epayment-credit-card-attention,
+.epayment-credit-card-delivery-name .epayment-credit-card-business-name,
+.epayment-credit-card-delivery-name .epayment-credit-card-attention
+{
+	flex: 1 1 50%;
+}
+.epayment-credit-card-billing-address .epayment-credit-card-address-label,
+.epayment-credit-card-delivery-address .epayment-credit-card-address-label,
+.epayment-credit-card-billing-country .epayment-credit-card-country-label,
+.epayment-credit-card-delivery-country .epayment-credit-card-country-label
+{
+	flex: 1 1 auto;
+	padding-top: 10px;
+}
+.epayment-credit-card-billing-address .epayment-credit-card-address-widgets,
+.epayment-credit-card-delivery-address .epayment-credit-card-address-widgets,
+.epayment-credit-card-billing-country .epayment-credit-card-country-widget,
+.epayment-credit-card-delivery-country .epayment-credit-card-country-widget
+{
+	flex: 1 1 100%;
+	margin-left: 10px;
+}
+.epayment-credit-card-billing-name .editor-block ~ .editor-block,
+.epayment-credit-card-delivery-name .editor-block ~ .editor-block
+{
+	/* this line may have just one item, so we use a CSS3.x trick to add the margin conditionally */
+	margin-left: 10px;
+}
+.epayment-credit-card-billing-address .editor-block.epayment-billing-city,
+.epayment-credit-card-delivery-address .editor-block.epayment-delivery-city,
+.epayment-credit-card-billing-address .editor-block.epayment-billing-province,
+.epayment-credit-card-delivery-address .editor-block.epayment-delivery-province
+{
+	flex: 1 1 150px;
+}
+.epayment-credit-card-billing-address .editor-block.epayment-billing-province,
+.epayment-credit-card-delivery-address .editor-block.epayment-delivery-province
+{
+	margin: 0 10px;
+}
+.epayment-credit-card-billing-address .editor-block.epayment-billing-postal-code,
+.epayment-credit-card-delivery-address .editor-block.epayment-delivery-postal-code,
+.epayment-credit-card-user-name .epayment-credit-card-user-name-widget
+{
+	flex: 1 1 auto;
+}
+.epayment-credit-card-user-name .epayment-credit-card-user-name-label
+{
+	flex: 1 1 content;
+	margin-right: 15px;
+	vertical-align: middle;
+	line-height: 37px;
+}
+
+.epayment-credit-card-info
+{
+	display: flex;
+}
+.epayment-credit-card-info .epayment-card-number
+{
+	flex: 3 1 auto;
+	margin-right: 10px;
+}
+.epayment-credit-card-info .epayment-card-security-code
+{
+	flex: 1 1 auto;
+}
+

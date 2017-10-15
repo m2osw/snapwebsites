@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# A simple script I use to start my own version of cassandra (instead of
+# using a stock version) so I can quickly test various version if I want to.
+
+if test "$1"
+then
+	VERSION="$1"
+else
+	# Current version
+	VERSION=3.9
+fi
+
+export CASSANDRA_HOME=/home/alexis/m2osw/sources/freeware/snapwebsites/cassandra/apache-cassandra-${VERSION}
+${CASSANDRA_HOME}/bin/cassandra
+

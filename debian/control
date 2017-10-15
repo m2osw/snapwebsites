@@ -1,0 +1,747 @@
+Source: snapwebsites
+Priority: extra
+Maintainer: R. Douglas Barbieri <doug@dooglio.net>
+Build-Depends: catch (>= 1.0),
+    closure-linter (>= 2.3.13),
+    cmake,
+    csspp (>= 1.0.17.23~xenial),
+    debhelper,
+    dh-systemd,
+    doxygen,
+    graphviz,
+    libadvgetopt-dev (>= 1.1.10.139~xenial),
+    libas2js-dev (>= 0.1.18.68~xenial),
+    libboost-dev,
+    libcassvalue-dev (>= 1.0.1.143~xenial),
+    libcasswrapper-dev (>= 1.0.5.124~xenial),
+    libcsspp-dev (>= 1.0.17.23~xenial),
+    libexcept-dev (>= 1.0.2.124~xenial),
+    libicu-dev,
+    liblog4cplus12-dev (>= 1.2.3.251~xenial),
+    libmagic-dev,
+    libmagick++-dev (>= 6.7.7.10-6ubuntu3),
+    libprocps4-dev,
+    libqrencode-dev,
+    libqt5webkit5-dev,
+    libqt5xmlpatterns5-dev,
+    libqtserialization-dev (>= 0.1.20.68~xenial),
+    libssl-dev (>= 1.0.1),
+    libtld-dev (>= 1.5.6.124~xenial),
+    libxml2-utils,
+    libyaml-cpp-dev,
+    libzipios-dev (>= 2.1.6.68~xenial),
+    python-pip (>= 1.4.1-2),
+    qtbase5-dev,
+    qtscript5-dev,
+    snapcmakemodules (>= 1.0.34.89~xenial),
+    uuid-dev,
+    zip
+Standards-Version: 3.9.4
+Section: libs
+Homepage: http://www.snapwebsites.org/
+Vcs-Git: https://github.com/m2osw/snapcpp.git
+Vcs-Browser: https://github.com/m2osw/snapcpp
+
+Package: cassview
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: cassandra (>= 2.0.3), snapserver (>= 0.1.72.112~trusty)
+Description: GUI tool to maintain your cassandra database. Optimized for snapwebsites.
+ This graphical tool allows the user to view and edit a cassandra database. It is optimized
+ for a snapwebsites database, and understands the business rules for transforming the
+ internals to readable views.
+ .
+ This package contains the GUI binary.
+
+Package: libsnapbackup-dev
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libsnapbackup (= ${binary:Version})
+Description: Track status and health of any number of servers.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the developer package.
+
+Package: libsnapbackup
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Track status and health of any number of servers.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the manager-plugin runtime package.
+
+Package: libsnapmanager
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libsnapwebsites
+Suggests: snapmanagercgi, snapmanagerdaemon
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use
+ to create their own extensions.
+ .
+ This package contains a library offering common functions to the snapmanager
+ environment. It also includes all the plugins since both, the snapmanagercgi
+ and the snapmanagerdaemon access those plugins.
+
+Package: libsnapmanager-dev
+Section: admin
+Architecture: any
+Depends: libsnapmanager, ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the development package complete with C++ headers. It allows other
+ projects to offer extensions to snapmanagercgi and snapmanagerdaemon in
+ the form of plugins.
+
+Package: libsnapwatchdog
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator, snapdbproxy
+Description: Track status and health of any number of servers.
+ Snap! Watchdog is a tool that works on any number of servers to
+ gather various information that let you know how your server is
+ doing.
+ .
+ This is the base library binary package.
+
+Package: libsnapwatchdog-dev
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+    libsnapwatchdog (= ${binary:Version})
+Description: Track status and health of any number of servers.
+ Snap! Watchdog is a tool that works on any number of servers to
+ gather various information that let you know how your server is
+ doing.
+ .
+ This is the developer package.
+
+Package: libsnapwebsites
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: libqtcassandra
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the runtime package for the C++ library.
+
+Package: libsnapwebsites-dev
+Section: libdevel
+Architecture: any
+Depends: libsnapwebsites (= ${binary:Version}), ${misc:Depends}, libboost-dev, libssl-dev
+Suggests: libsnapwebsites-doc (= ${binary:Version})
+Replaces: libqtcassandra-dev
+Description: Fast Websites: powerful CMS for Apache written in C++ (development package).
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the development package complete with C++ headers.
+
+Package: libsnapwebsites-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Suggests: libsnapwebsites (= ${binary:Version})
+Description: Fast Websites: powerful CMS for Apache written in C++ (documentation package).
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the documenation package, complete developer reference.
+
+Package: snapbackend
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy
+Recommends: snapfirewall
+Suggests: snapbackend-doc, snapserver
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Package containing the backend server which runs cleanup and other important
+ batch duties.
+
+Package: snapbackend-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snapbackup
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqt5sql5-sqlite
+Suggests: cassandra (>= 3.0.0)
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This package contains the backup/restore utility that interfaces directly
+ with a Cassandra database backend.
+
+Package: snapbase
+Section: admin
+Architecture: any
+Depends: adduser, ntp, ${shlibs:Depends}, ${misc:Depends}
+Suggests: snapbase-doc
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is a base package that does some initial system setup such as user creation
+ and log file initialization.
+
+Package: snapbase-dev
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Common code for developers. For example, the snap_test.h/cpp files are here.
+
+Package: snapbase-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snapbounce
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapdbproxy, postfix, adduser
+Suggests: snapserver, snapbackend
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Email bounce handler for postfix.
+
+Package: snapbounce-dev
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapbounce (= ${binary:Version})
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Header files for snapmanager plugin.
+
+Package: snapcgi
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapbase, apache2 (>= 2.4)
+Recommends: snapfirewall
+Suggests: snapcgi-doc
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the package to install at the webserver level. This offers the CGI interface
+ which is the gateway to snapserver.
+
+Package: snapcgi-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snapcommunicator
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapbase
+Suggests: snapcommunicator-doc
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Faciliates communication between modules.
+
+Package: snapcommunicator-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snapdb
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: cassandra (>= 3.5.0)
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This package contains a command-line utility that allows the user to query
+ the Cassandra snap_websites context.
+
+Package: snapdbproxy
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator
+Suggests: cassandra (>= 3.5.0), snapdbproxy-doc
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This package contains a command-line utility that allows the user to query the snap_websites
+ context. This version requires snapdbproxy for now, but a later port will take away that dependency.
+
+Package: snapdbproxy-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snapfirewall
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapdbproxy, iplock, bc
+Recommends: fail2ban
+Suggests: snapserver, snapbackend, snapfirewall-doc
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This package handes the firewall to the snap server.
+
+Package: snapfirewall-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snaplayout
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapdbproxy
+Suggests: snapserver
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This package contains the layout tool and default layouts.
+
+Package: snaplistd
+Section: web
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+    snapcommunicator, libqt5sql5, libqt5sql5-mysql
+Suggests: snaplistd-doc
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the snaplistd-specific package.
+
+Package: snaplistd-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snaplock
+Section: web
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator
+Suggests: snaplock-doc
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the snaplock-specific package.
+
+Package: snaplock-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snaplog
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+    snapcommunicator, libqt5sql5, libqt5sql5-mysql
+Suggests: snaplog-doc, mysql-server
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This package contains a resident service which monitors the snapcommunicator network
+ and captures logs broadcast to SNAPLOG from the entire network. It uses MySQL to capture
+ and store all log entries and provide a SQL interface for ease of retrieval and reports.
+
+Package: snaplog-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+Package: snapmanagercgi
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapmanagerdaemon, apache2 (>= 2.4)
+Suggests: snapfirewall
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use
+ to create their own extensions.
+ .
+ This package contains a browser interface (CGI) for managing the software
+ installation and settings.
+
+Package: snapmanagercgi-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Suggests: snapmanagercgi, snapmanagerdaemon
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package for the snapmanager.cgi and snapmanagerdaemon tools.
+
+Package: snapmanagerdaemon
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator, snapdbproxy
+Suggests: snapfirewall, snapmanagercgi
+Description: Apply administrative commands on any computer in a cluster.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ It works using many other software freely available under Linux.
+ In order to manage that software installation, removal, administration,
+ this process is given root permissions and runs on all your computers
+ in your cluster.
+ .
+ This package contains a backend daemon capable of installing and removing
+ various software used by the Snap! C++ environment.
+
+Package: snapmanagergui
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: snapserver, cassandra
+Replaces: snapmanager
+Breaks: snapmanager
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This package contains a GUI interface for managing hosts, domains, websites,
+ and site information.
+
+Package: snapserver-core-plugins
+Section: web
+Architecture: any
+# The clamav was defined here before, which means it would get installed on
+# all computers that had the plugins when really it is only necessary on the
+# one computer running the CRON snapbackend processes; see the antivirus
+# bundle for more details; we suggest it in case a programmer installs the
+# package on his machine without using bundles...
+Depends: ${shlibs:Depends}, ${misc:Depends}, html2text,
+    libqrencode3 (>= 3.4), snapbase, libqt5sql5, libqt5sql5-mysql
+Recommends: snapserver
+Suggests: clamav
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to
+ use to create their own extensions.
+ .
+ This package contains required core plugins for the snapserver daemon.
+ .
+ html2text required for sendmail.
+ clamav required for antivirus.
+ libqrencode3 required for qrcode.
+
+Package: snapserver-core-plugins-dev
+Section: web
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapserver-core-plugins (= ${binary:Version})
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to
+ use to create their own extensions.
+ .
+ This package contains required core plugins development package.
+ .
+ html2text required for sendmail.
+ clamav required for antivirus.
+ libqrencode3 required for qrcode.
+
+Package: snapserver-core-plugins-doc
+Section: doc
+Architecture: any
+Suggests: ${misc:Depends}, snapserver-core-plugins (= ${binary:Version})
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to
+ use to create their own extensions.
+ .
+ This package contains the documentation for the core plugins dev package.
+
+Package: snapwatchdog
+Section: utils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+    libsnapwatchdog (= ${binary:Version}),
+    snapwatchdog-core-plugins
+Suggests: cassandra (>= 2.0.3), snapserver (= ${binary:Version})
+Description: Track status and health of any number of servers.
+ Snap! Watchdog is a tool that works on any number of servers to
+ gather various information that let you know how your server is
+ doing.
+ .
+ This package installs the server daemon that gathers the statistics
+ on one server.
+
+Package: snapwatchdog-core-plugins
+Section: utils
+Architecture: any
+Depends: libsnapwatchdog (= ${binary:Version}), ${shlibs:Depends},
+    ${misc:Depends}
+Description: Plugins used to gather various types of data from your
+ servers for the purpose of indicating the health of each computer
+ in your cluster. This includes processes, CPU, memory, disk,
+ number of network hits, connectivity.
+ .
+ This package contains required core plugins for the snapwatchdog daemon.
+
+Package: snapserver
+Section: web
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy
+Recommends: snapdb
+Suggests: cassandra (>= 3.5.0), snapcgi, snapbounce, snapserver-doc
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to
+ use to create their own extensions.
+ .
+ This package installs the server daemon that communicates with the
+ Cassandra server.
+ iplock require for snapfirewall.
+
+Package: snapserver-dev
+Section: web
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapserver (>= ${binary:Version})
+Recommends: snapdb
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to
+ use to create their own extensions.
+ .
+ This package installs the snapmanager development files.
+
+Package: snapserver-doc
+Section: admin
+Architecture: all
+Depends: ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ Documentation package.
+
+# vim: ts=4 sw=4 et

@@ -1,0 +1,171 @@
+<!--
+Snap Websites Server == DTD for rss.xsl files
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!--
+The default DTD for XSLT 2.0 is so complex that most systems trying to
+use it to verify an XSLT 2.0 file fail.
+
+Since we are not using all the features and we still want to test that
+our files are correct before sending them to a server, we use a simplified
+DTD of the XSLT 2.0.
+-->
+<!ELEMENT xsl:stylesheet (xsl:include|xsl:param|xsl:template|xsl:call-template|xsl:variable|xsl:function|xsl:output)+>
+<!ATTLIST xsl:stylesheet version CDATA #REQUIRED
+                         xmlns CDATA #IMPLIED
+                         xmlns:fn CDATA #IMPLIED
+                         xmlns:html CDATA #IMPLIED
+                         xmlns:sitemap CDATA #IMPLIED
+                         xmlns:snap CDATA #IMPLIED
+                         xmlns:xsl CDATA #IMPLIED
+                         xmlns:xs CDATA #IMPLIED>
+
+<!ELEMENT xsl:output EMPTY>
+<!ATTLIST xsl:output encoding CDATA #IMPLIED
+                     indent CDATA #IMPLIED
+                     method CDATA #IMPLIED
+                     version CDATA #IMPLIED>
+
+<!ELEMENT xsl:include EMPTY>
+<!ATTLIST xsl:include href CDATA #REQUIRED>
+
+<!ELEMENT xsl:param (#PCDATA)>
+<!ATTLIST xsl:param as CDATA #IMPLIED
+                    name CDATA #REQUIRED
+                    select CDATA #IMPLIED>
+
+<!ELEMENT xsl:with-param (#PCDATA)>
+<!ATTLIST xsl:with-param name CDATA #REQUIRED
+                         select CDATA #IMPLIED>
+
+<!ELEMENT xsl:template ANY>
+<!ATTLIST xsl:template name CDATA #IMPLIED
+                       match CDATA #IMPLIED>
+
+<!ELEMENT xsl:call-template ANY>
+<!ATTLIST xsl:call-template name CDATA #REQUIRED>
+
+<!ELEMENT xsl:apply-templates ANY>
+<!ATTLIST xsl:apply-templates select CDATA #IMPLIED>
+
+<!ELEMENT xsl:sort ANY>
+<!ATTLIST xsl:sort select CDATA #REQUIRED
+                   order (ascending|descending) "ascending">
+
+<!ELEMENT xsl:for-each ANY>
+<!ATTLIST xsl:for-each select CDATA #REQUIRED>
+
+<!ELEMENT xsl:choose (xsl:when|xsl:otherwise)+>
+
+<!ELEMENT xsl:when ANY>
+<!ATTLIST xsl:when test CDATA #REQUIRED>
+
+<!ELEMENT xsl:otherwise ANY>
+
+<!ELEMENT xsl:copy ANY>
+<!ATTLIST xsl:copy select CDATA #IMPLIED>
+
+<!ELEMENT xsl:copy-of ANY>
+<!ATTLIST xsl:copy-of select CDATA #REQUIRED>
+
+<!ELEMENT xsl:value-of ANY>
+<!ATTLIST xsl:value-of select CDATA #REQUIRED>
+
+<!ELEMENT xsl:attribute ANY>
+<!ATTLIST xsl:attribute name CDATA #REQUIRED>
+
+<!ELEMENT xsl:if ANY>
+<!ATTLIST xsl:if test CDATA #REQUIRED>
+
+<!ELEMENT xsl:variable ANY>
+<!ATTLIST xsl:variable as CDATA #IMPLIED
+                       name CDATA #REQUIRED
+                       select CDATA #IMPLIED>
+
+<!ELEMENT xsl:function ANY>
+<!ATTLIST xsl:function as CDATA #IMPLIED
+                       name CDATA #REQUIRED>
+
+<!ELEMENT xsl:text ANY>
+<!ATTLIST xsl:text xml:space (default|preserve) "default"
+                   disable-output-escaping (yes|no) "no">
+
+<!-- This is a tag we often use to generate our output
+     and to avoid problems with xsl:output, we should change it -->
+<!ELEMENT output ANY>
+<!ATTLIST output lang CDATA #IMPLIED>
+
+<!ELEMENT css ANY>
+<!ATTLIST css name CDATA #REQUIRED>
+
+<!ELEMENT javascript ANY>
+<!ATTLIST javascript name CDATA #REQUIRED>
+
+<!-- for the feed... -->
+<!ELEMENT rss ANY>
+<!ATTLIST rss version CDATA #REQUIRED
+              ns CDATA #IMPLIED
+              xmlns:atom CDATA #IMPLIED>
+
+<!ELEMENT snap-info ANY>
+<!ATTLIST snap-info extension CDATA #REQUIRED
+                    mimetype CDATA #REQUIRED>
+
+<!ELEMENT channel ANY>
+
+<!ELEMENT title ANY>
+
+<!ELEMENT link ANY>
+<!ATTLIST link href CDATA #IMPLIED
+               rel CDATA #IMPLIED
+               type CDATA #IMPLIED>
+
+<!ELEMENT description ANY>
+<!ATTLIST description feed-cdata (yes|no) "no">
+
+<!ELEMENT language ANY>
+<!ELEMENT copyright ANY>
+<!ELEMENT managingEditor ANY>
+<!ELEMENT webMaster ANY>
+<!ELEMENT pubDate ANY>
+<!ELEMENT lastBuildDate ANY>
+<!ELEMENT category ANY>
+<!ELEMENT generator ANY>
+<!ELEMENT docs ANY>
+<!ELEMENT cloud ANY>
+<!ELEMENT ttl ANY>
+<!ELEMENT image ANY>
+<!ELEMENT rating ANY>
+<!ELEMENT textInput ANY>
+<!ELEMENT skipHours ANY>
+<!ELEMENT skipDays ANY>
+<!ELEMENT url ANY>
+<!ELEMENT hour ANY>
+<!ELEMENT day ANY>
+<!ELEMENT item ANY>
+<!ELEMENT author ANY>
+<!ELEMENT comments ANY>
+<!ELEMENT enclosure ANY>
+<!ELEMENT guid ANY>
+<!ELEMENT height ANY>
+<!ELEMENT width ANY>
+
+<!ELEMENT source ANY>
+<!ATTLIST source url CDATA #REQUIRED>
+
+<!-- vim: ts=4 sw=4 et
+-->

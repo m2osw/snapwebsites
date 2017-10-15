@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == e-Payment Stripe Express Checkout page widgets
+Copyright (C) 2016-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="epayment_stripe" id="settings" content-modified="2016-01-27 00:15:15">
+  <timeout minutes="30" redirect="/admin/settings/epayment"/> <!-- 30 minutes -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="secret"/>
+  <on-save allow-edit="yes"/>
+  <no-toolbar/>
+  <taborder>
+    <tabindex refid="secret"/>
+    <tabindex refid="maximum_repeat_failures"/>
+    <tabindex refid="debug"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="secret" type="line-edit" field="epayment_stripe::secret" path="epayment_stripe/secret" auto-save="plain" secret="secret">
+    <tooltip>The Stripe system expects a client secret API key function. This field is expected to be filled with that secret API key.</tooltip>
+    <help>You get a secret API key whenever you register an account with Stripe. That key has to be copied here. Remember that it has to remain secret. Do not copy it anywhere else.</help>
+    <sizes>
+      <min>1</min>
+      <max>200</max>
+    </sizes>
+    <background-value>sk_live_...</background-value>
+  </widget>
+  <widget id="maximum_repeat_failures" type="line-edit" field="epayment_stripe::maximum_repeat_failures" path="epayment_stripe/maximum-repeat-failures" auto-save="int8">
+    <tooltip>The number of times the system will try to pass a recurring fee before it stops trying.</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>200</max>
+    </sizes>
+    <default>5</default>
+    <background-value>maximum number of failures</background-value>
+  </widget>
+  <widget id="debug" type="checkmark" field="epayment_stripe::debug" path="epayment_stripe/debug" auto-save="int8">
+    <label>Run in Debug mode. (<strong>WARNING:</strong> when Debug is turned on, no real charges are performed.)</label>
+    <tooltip>Check this box to run in debug mode. This means you can pass orders without actually making real payments.</tooltip>
+    <help>
+      The Debug mode is useful for you to make sure that everything is
+      functional. Stripe offers a debug account that everyone can use
+      without you having to do anything more than check this box.
+    </help>
+    <value>0</value>
+  </widget>
+  <widget id="test_secret" type="line-edit" field="epayment_stripe::test_secret" path="epayment_stripe/test_secret" auto-save="plain" secret="secret">
+    <tooltip>The Stripe system also gives you a secret key for test purposes. This is useful if you want to make sure things work before you actually change your stripe system to live and run real credit card tests.</tooltip>
+    <help>You get a live and a test secret API key whenever you register an account with Stripe. That test key can be copied here. It is only required if you want to run tests to make sure that your website is working. Remember that it has to remain secret. Do not copy it anywhere else.</help>
+    <sizes>
+      <max>200</max>
+    </sizes>
+    <background-value>sk_test_...</background-value>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

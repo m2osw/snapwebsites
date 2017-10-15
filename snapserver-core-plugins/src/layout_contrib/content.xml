@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == layout contrib plugin database setup
+Copyright (C) 2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/fonts/snap">
+    <attachment name="FontAwesome.otf" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/FontAwesome.otf</path>
+      <mime-type>application/x-font-opentype</mime-type>
+    </attachment>
+    <attachment name="fontawesome-webfont.eot" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/fontawesome-webfont.eot</path>
+      <mime-type>application/vnd.ms-fontobject</mime-type>
+    </attachment>
+    <attachment name="fontawesome-webfont.svg" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/fontawesome-webfont.svg</path>
+      <mime-type>image/svg+xml</mime-type>
+    </attachment>
+    <attachment name="fontawesome-webfont.ttf" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/fontawesome-webfont.ttf</path>
+      <mime-type>application/x-font-ttf</mime-type>
+    </attachment>
+    <attachment name="fontawesome-webfont.woff" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/fontawesome-webfont.woff</path>
+      <mime-type>application/font-woff</mime-type>
+    </attachment>
+    <attachment name="fontawesome-webfont.woff2" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/fontawesome-webfont.woff2</path>
+      <mime-type>application/font-woff2</mime-type>
+    </attachment>
+    <attachment name="glyphicons-halflings-regular.eot" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/glyphicons-halflings-regular.eot</path>
+      <mime-type>application/vnd.ms-fontobject</mime-type>
+    </attachment>
+    <attachment name="glyphicons-halflings-regular.svg" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/glyphicons-halflings-regular.svg</path>
+      <mime-type>image/svg+xml</mime-type>
+    </attachment>
+    <attachment name="glyphicons-halflings-regular.ttf" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/glyphicons-halflings-regular.ttf</path>
+      <mime-type>application/x-font-ttf</mime-type>
+    </attachment>
+    <attachment name="glyphicons-halflings-regular.woff" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/glyphicons-halflings-regular.woff</path>
+      <mime-type>application/font-woff</mime-type>
+    </attachment>
+    <attachment name="glyphicons-halflings-regular.woff2" type="attachment/public">
+      <path>qrc:/fonts/layout_contrib/glyphicons-halflings-regular.woff2</path>
+      <mime-type>application/font-woff2</mime-type>
+    </attachment>
+  </content>
+  <content path="/css/snap">
+    <attachment name="agency" type="attachment/public">
+      <path>qrc:/css/layout_contrib/agency.css</path>
+      <mime-type>text/css</mime-type>
+      <dependency>bootstrap (&gt;= 3.3.7)</dependency>
+    </attachment>
+    <attachment name="bootstrap" type="attachment/public">
+      <path>qrc:/css/layout_contrib/bootstrap.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+    <attachment name="bootstrap-social" type="attachment/public">
+      <path>qrc:/css/layout_contrib/bootstrap-social.css</path>
+      <mime-type>text/css</mime-type>
+      <dependency>bootstrap (&gt;= 3.3.7)</dependency>
+    </attachment>
+    <attachment name="bootstrap-theme" type="attachment/public">
+      <path>qrc:/css/layout_contrib/bootstrap-theme.css</path>
+      <mime-type>text/css</mime-type>
+      <dependency>bootstrap (&gt;= 3.3.7)</dependency>
+    </attachment>
+    <attachment name="font-awesome" type="attachment/public">
+      <path>qrc:/css/layout_contrib/font-awesome.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+    <attachment name="metis-menu" type="attachment/public">
+      <path>qrc:/css/layout_contrib/metis-menu.css</path>
+      <mime-type>text/css</mime-type>
+      <dependency>bootstrap (&gt;= 3.3.7)</dependency>
+    </attachment>
+    <attachment name="sb-admin-2" type="attachment/public">
+      <path>qrc:/css/layout_contrib/sb-admin-2.css</path>
+      <mime-type>text/css</mime-type>
+      <dependency>bootstrap (&gt;= 3.3.7), editor (&gt;= 0.0.3)</dependency>
+    </attachment>
+  </content>
+  <content path="/js/snap">
+    <attachment name="agency" type="attachment/public">
+      <path>qrc:/js/layout_contrib/agency.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>jquery (&gt;= 1.12)</dependency>
+    </attachment>
+    <attachment name="bootstrap" type="attachment/public">
+      <path>qrc:/js/layout_contrib/bootstrap.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>jquery (&gt;= 1.12)</dependency>
+    </attachment>
+    <attachment name="metis-menu" type="attachment/public">
+      <path>qrc:/js/layout_contrib/metis-menu.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>jquery (&gt;= 1.12)</dependency>
+    </attachment>
+    <attachment name="jquery-easing" type="attachment/public">
+      <path>qrc:/js/layout_contrib/jquery-easing.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>jquery (&gt;= 1.12)</dependency>
+    </attachment>
+    <attachment name="sb-admin-2" type="attachment/public">
+      <path>qrc:/js/layout_contrib/sb-admin-2.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>metis-menu (&gt;= 2.4.2)</dependency>
+    </attachment>
+  </content>
+  <content path="/images/snap">
+    <attachment name="layout_contrib-logo-64x64" type="attachment/public">
+      <path>:/images/layout_contrib/layout_contrib-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="header-background" type="attachment/public">
+      <path>:/images/layout_contrib/header-background.jpg</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="world-map" type="attachment/public">
+      <path>:/images/layout_contrib/world-map.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

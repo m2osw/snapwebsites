@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-mailserver.xml
+-->
+<bundle>
+  <name>mailserver</name>
+  <description>
+    <p>Install postfix and snapbounce to make this computer a mail server.</p>
+
+    <p>The post installation script will then update the necessary setup
+    files in order to get the duo working.</p>
+  </description>
+  <fields>
+    <field name="domain" type="input">
+      <label>Domain (myhostname)</label>
+      <description>
+        The name of the domain used for this mail server.
+        For example: mail.snapwebsites.net -- your DNS should define that
+        name as an MX record.
+      </description>
+    </field>
+    <field name="organization" type="input">
+      <label>Organization</label>
+      <description>
+        The name of your organization. It will be shown to people sending
+        emails manually. It may be used by various systems to help contacting
+        your organization. You may include a website URL although it is not
+        that costumary to do so.
+      </description>
+    </field>
+  </fields>
+  <packages>snapbounce,postfix,postfix-policyd-spf-python,opendkim,opendkim-tools,opendmarc,postsrsd</packages>
+  <postinst>
+    ################################################################################
+    # Setup the transport.map file
+    #
+    # I'm not too sure why we would want these two lines:
+    #
+    #localhost bounces:
+    #${BUNDLE_INSTALLATION_DOMAIN} bounces:
+    #
+    # For now, I removed them from the file altogether.
+    #
+    cat &gt;/etc/postfix/transport.maps &lt;EOF
+# See SNAP-67
+# After changes, run postmap:
+#   postmap /etc/postfix/transport.maps
+#
+bounces@${BUNDLE_INSTALLATION_DOMAIN} snapbounce:
+EOF
+    postmap /etc/postfix/transport.maps
+
+    echo "mail.${BUNDLE_INSTALLATION_DOMAIN}" &gt; /etc/mailname 
+
+    # setup the domain and a few other things
+    # the few entries at the bottom connects snapbounce to postfix
+    #
+    MAILSERVER_SED=/tmp/bundle-mailserver.sed
+    echo "s/^myhostname = .*/myhostname = mail.${BUNDLE_INSTALLATION_DOMAIN}/"                       &gt;     ${MAILSERVER_SED}
+    echo "s/^smtpd_banner = \\(.*\\) (.*)/smtpd_banner = \\1 (${BUNDLE_INSTALLATION_ORGANIZATION})/" &gt;&gt; ${MAILSERVER_SED}
+    sed -i.bak -f ${MAILSERVER_SED} /etc/postfix/main.cf
+
+    ################################################################################
+    # Remove RC4 from the server side TLS support, it is really not secure
+    # See http://serverfault.com/questions/744168/how-to-disable-rc4-on-postfix#answer-744171
+    #
+    postconf -e "smtpd_tls_exclude_ciphers = RC4, aNULL"
+
+    ################################################################################
+    # Remove support for SSL protocols, all versions, and TLS 1.0.
+    # See http://disablessl3.com/#postfix
+    #
+    postconf -e "smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1"
+    postconf -e "smtp_tls_mandatory_protocols  = !SSLv2,!SSLv3,!TLSv1"
+    postconf -e "smtpd_tls_protocols           = !SSLv2,!SSLv3,!TLSv1"
+    postconf -e "smtp_tls_protocols            = !SSLv2,!SSLv3,!TLSv1"
+
+    ################################################################################
+    # Also use TLS encryption whenever available, any major mail server supports
+    # that feature, but using "encrypt" fails with many legitimate servers,
+    # unfortunately.
+    #
+    # See http://serverfault.com/questions/653608/how-widely-supported-is-forced-tls-on-inbound-smtp-connections#answer-655775
+    #
+    postconf -e "smtpd_tls_security_level = may"
+    postconf -e "smtp_tls_security_level  = may"
+
+    ################################################################################
+    # Remove VRFY support as it can be used to find Unix/supported users.
+    # Require the HELO (and equivalent) from incoming connects.
+    #
+    postconf -e "disable_vrfy_command = yes"
+    postconf -e "smtpd_helo_required  = yes"
+
+    ################################################################################
+    # Add postsrsd support.
+    #
+    postconf -e "sender_canonical_maps       = tcp:127.0.0.1:10001"
+    postconf -e "sender_canonical_classes    = envelope_sender"
+    postconf -e "recipient_canonical_maps    = tcp:127.0.0.1:10002"
+    postconf -e "recipient_canonical_classes = envelope_recipient"
+    #
+    sed -i.bak \
+      -e "s/^SRS_DOMAIN=[^$]*$/SRS_DOMAIN=${BUNDLE_INSTALLATION_DOMAIN}/" \
+      /etc/default/postsrsd
+
+    ################################################################################
+    # Setup bouncing so it goes to Snap! and makes admins aware of the problem
+    #
+    postconf -e "notify_classes               = bounce"
+    postconf -e "bounce_notice_recipient      = bounces@${BUNDLE_INSTALLATION_DOMAIN}"
+    postconf -e "transport_maps               = hash:/etc/postfix/transport.maps"
+
+    ################################################################################
+    # we then need to add a snapbounce entry to the master.cf file
+    #
+    postconf -M snapbounce/unix="snapbounce unix -       n       n       -       -       pipe"
+    postconf -P "snapbounce/unix/flags=FRq"
+    postconf -P "snapbounce/unix/user=snapwebsites"
+    postconf -P "snapbounce/unix/argv=/usr/bin/snapbounce --sender \${sender} --recipient \${recipient}"
+
+    ################################################################################
+    # make sure submission/inet is turned on as well
+    #
+    # TODO: create TLS keys automatically...don't use the snakeoil stuff.
+    # TODO: add imap-ssl support.
+    #
+    postconf -M submission/inet="submission inet n       -       y       -       -       smtpd"
+    postconf -P "submission/inet/smtpd_enforce_tls=yes"
+    postconf -P "submission/inet/smtpd_sasl_auth_enable=yes"
+    postconf -P "submission/inet/syslog_name=postfix/submission"
+
+    ################################################################################
+    # (re)start services with the correct parameters
+    #
+    # also the tripwire bundle may disable postfix so here we make sure
+    # it is enabled
+    #
+    if systemctl -q is-active postfix
+    then
+      systemctl reload postfix
+    else
+      systemctl enable postfix
+      systemctl start postfix
+    fi
+  </postinst>
+  <postrm>
+    rm -rf /etc/opendkim /etc/opendmarc
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

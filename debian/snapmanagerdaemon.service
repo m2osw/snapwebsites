@@ -1,0 +1,33 @@
+# Documentation available at:
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+[Unit]
+Description=Snap! Websites snapmanagerdaemon
+After=snapbase.service snapcommunicator.service snapfirewall.service
+
+[Service]
+Type=simple
+# Since this one runs as root:root we have to specify the directory "by hand"
+WorkingDirectory=/var/lib/snapwebsites
+ProtectHome=off
+ExecStart=/usr/bin/snapmanagerdaemon
+ExecStop=/usr/bin/snapstop --timeout 300 --service $MAINPID
+Restart=on-failure
+RestartSec=1min
+# Be explicit, we need snapmanagerdaemon running as root
+User=root
+Group=root
+# Do not kill our children (i.e. snapupgrader) when we stop
+KillMode=process
+#LimitNPROC=... -- DO NOT CHANGE, We're running as root with this one
+# For developers and administrators to get console output
+#StandardOutput=tty
+#StandardError=tty
+#TTYPath=/dev/console
+# Enter a size to get a core dump in case of a crash
+#LimitCORE=10G
+
+[Install]
+WantedBy=multi-user.target
+
+# vim: syntax=dosini

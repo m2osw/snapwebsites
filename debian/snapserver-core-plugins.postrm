@@ -1,0 +1,19 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "purge" ]
+then
+    # delete the antivirus logs
+    #
+    ANTIVIRUSNAME=antivirus
+    rm -f /var/log/snapwebsites/${ANTIVIRUSNAME}.log*
+    rm -f /var/log/snapwebsites/secure/${ANTIVIRUSNAME}.log*
+fi
+
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

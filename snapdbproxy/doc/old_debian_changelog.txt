@@ -1,0 +1,327 @@
+snapdbproxy (1.1.32.14~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Thu, 15 Jun 2017 02:00:53 -0700
+
+snapdbproxy (1.1.32.0~xenial) xenial; urgency=high
+
+  * EX-131: Updated the snapcreatetables so it can actually drop old tables.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 14 Jun 2017 11:55:52 -0800
+
+snapdbproxy (1.1.31.0~xenial) xenial; urgency=high
+
+  * EX-131: added batch support.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 22 May 2017 16:54:52 -0700
+
+snapdbproxy (1.1.30.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Added a couple of try/catch because the mutex may throw while
+    we are in a destructor.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 17 Mar 2017 23:59:49 -0800
+
+snapdbproxy (1.1.29.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notice to 2017.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 15:18:49 -0800
+
+snapdbproxy (1.1.28.0~xenial) xenial; urgency=high
+
+  * SNAP-513: Send CASSANDRAREADY after creating all tables.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 16 Nov 2016 22:59:49 -0800
+
+snapdbproxy (1.1.27.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added test in logrotate script to skip the postrotate in
+    case snapsignal is not available anymore.
+  * Fixed --help output of snapinstallwebsite to mention the ?intall-layouts=.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 10 Nov 2016 15:56:50 -0800
+
+snapdbproxy (1.1.26.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the --version help string to use %p for the project name.
+  * Fixed the return value from 1 to 0 when using --version.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 20:16:48 -0700
+
+snapdbproxy (1.1.25.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Removed temporary logs from 1.1.22.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 22:07:49 -0700
+
+snapdbproxy (1.1.24.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the no_cassandra() call from the child thread by sending
+    a SIGUSR1 signal instead.
+  * Added a new snapdbproxy_cassandra class to handle the SIGUSR1 signal.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 21:00:49 -0700
+
+snapdbproxy (1.1.23.0~xenial) xenial; urgency=high
+
+  * SNAP-110: There is actually an exception (Column family ID mismatch).
+  * Added close() calls in case an exception occurs.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 14:24:49 -0700
+
+snapdbproxy (1.1.22.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added temporary debugs in an attempt to determine what blocks.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 14:09:49 -0700
+
+snapdbproxy (1.1.21.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the QtCassandraSession::connect() in the
+    snapdbproxy_connection class for slow commands.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 12:59:49 -0700
+
+snapdbproxy (1.1.20.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Use snap::process to run the snapcreatecontext/tables tools.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 12:17:49 -0700
+
+snapdbproxy (1.1.19.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the dbproxy plugin so we check the use_ssl flag as defined
+    in snapdbproxy.conf.
+  * Adding a debug message in snapmanagerdaemon plugins when connecting to
+    cassandra to know whether we are using SSL or not.
+  * Fixed the saving of field "cassandra_use_ssl", it has to return true and
+    we do not have to send the RELOADCONFIG twice.
+  * Fixed the mark_done() call in snapdbproxy to use "true" (i.e. kill the
+    messenger as well once done.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 11:34:49 -0700
+
+snapdbproxy (1.1.18.0~xenial) xenial; urgency=high
+
+  * SNAP-465: postinst/postrm cleanups.
+  * Properly remove the user defined snapserver.conf file if present.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 23:48:38 -0700
+
+snapdbproxy (1.1.17.0~xenial) xenial; urgency=high
+
+  * SNAP-493: Added code to detect Cassandra server disconnect, and forces a reconnect.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sun, 23 Oct 2016 18:04:01 -0700
+
+snapdbproxy (1.1.16.0~xenial) xenial; urgency=high
+
+  * SNAP-491: Changed Ctrl-C in the equivalent of a STOP.
+  * Fixed the stop() by adding the removal of the f_timer connection and
+    so it removes the messenger if not connected.
+  * Restore the SIGINT signal handler after the first SIGINT received.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 20 Oct 2016 11:17:49 -0700
+
+snapdbproxy (1.1.15.0~xenial) xenial; urgency=high
+
+  * SNAP-461: Removed "Requires=..." since all servers can run by themselves.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 19 Oct 2016 12:21:49 -0700
+
+snapdbproxy (1.1.14.0~xenial) xenial; urgency=high
+
+  * SNAP-481: Use 1,000 as the RLIMIT_NPROC. It is per user, not process.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 Oct 2016 17:59:49 -0700
+
+snapdbproxy (1.1.13.0~xenial) xenial; urgency=high
+
+  * SNAP-481: Drastically limit the number of sub-processes the snapbackend
+    can create between 100 and 1,000.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 Oct 2016 12:07:49 -0700
+
+snapdbproxy (1.1.12.0~xenial) xenial; urgency=high
+
+  * SNAP-454: Fixed the culprit that would keep the connection alive.
+  * Made the way the connection is passed to the thread actually safe now.
+  * Protected all the f_socket changes because they may be used by both sides.
+
+ --Alexis Wilke <alexis@m2osw.com>   Wed, 12 Oct 2016 15:47:53 -0700
+
+snapdbproxy (1.1.11.0~xenial) xenial; urgency=high
+
+  * SNAP-266: snap_child recreates snapcom messenger with thread.
+  * Default is to use file logging and logging to snapcommunicator.
+  * Also took out all loggingserver API and properties files.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 12 Oct 2016 14:48:34 -0700
+
+snapdbproxy (1.1.10.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the CMakeLists.txt so it actually works.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 02 Oct 2016 15:36:47 -0700
+
+snapdbproxy (1.1.9.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a snapwebsiteready to mark a website as ready in case a
+    tool changing that state fails inadvertendly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 02 Oct 2016 11:30:47 -0700
+
+snapdbproxy (1.1.8.0~xenial) xenial; urgency=high
+
+  * SNAP-378: snapinitializewebsite supports --protocol <HTTP | HTTPS>.
+  * Added my cassandra-start script to the snapdbproxy/tools.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 29 Sep 2016 21:52:27 -0700
+
+snapdbproxy (1.1.7.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Removed add_ssl_keys() method and replaced with parameter to
+    QCassandraSession::connect() method.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 29 Sep 2016 12:47:27 -0700
+
+snapdbproxy (1.1.6.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Added purge-keys ability for cassandra.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 28 Sep 2016 19:01:36 -0700
+
+snapdbproxy (1.1.5.0~xenial) xenial; urgency=high
+
+  * SNAP-413: Replaced the snapcreatetables call with the NEWTABLE signal.
+  * Added support for a NEWTABLE message (not implemented yet though.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 27 Sep 2016 14:54:54 -0700
+
+snapdbproxy (1.1.4.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Key file has to be flushed before QCassandraSession can pick it up.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 26 Sep 2016 17:46:40 -0700
+
+snapdbproxy (1.1.2.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Don't accept a key we already have.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 26 Sep 2016 15:51:03 -0700
+
+snapdbproxy (1.1.1.0~xenial) xenial; urgency=high
+
+  * SNAP-440: key is properly saved from cassandra plugin.
+
+ -- Doug Barbieri <doug@dooglio.net>  Sun, 25 Sep 2016 12:37:03 -0700
+
+snapdbproxy (1.1.0.1~xenial) xenial; urgency=high
+
+  * SNAP-440: added support for SSL to Cassandra.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 21 Sep 2016 16:54:43 -0700
+
+snapdbproxy (1.0.15.0~xenial) xenial; urgency=high
+
+  * SNAP-443: Missed updating the snapinstallwebsite tool with SSL support.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 25 Sep 2016 12:50:48 -0700
+
+snapdbproxy (1.0.14.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Applied fixes to lines of code pointed out by Coverity.
+  * Check the socket parameter and make sure it is positive (open).
+  * Added a try/catch to the snapinstallwebsite tool to avoid terminations.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 24 Sep 2016 21:25:48 -0700
+
+snapdbproxy (1.0.13.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Moved .properties files under .../logger/.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 23 Sep 2016 15:05:49 -0700
+
+snapdbproxy (1.0.12.0~xenial) xenial; urgency=high
+
+  * SNAP-450: Reintroduced the f_socket so kill() works safely.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 20 Sep 2016 23:00:09 -0700
+
+snapdbproxy (1.0.11.0~xenial) xenial; urgency=high
+
+  * SNAP-450: Removed debug trace and fixed the while() by removing the comma.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 20 Sep 2016 22:26:09 -0700
+
+snapdbproxy (1.0.10.0~xenial) xenial; urgency=high
+
+  * SNAP-450: Added some debug to try to understand why it uses 100% CPU
+    on my test VM (local connections on 4042 it seems).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 20 Sep 2016 21:55:09 -0700
+
+snapdbproxy (1.0.9.0~xenial) xenial; urgency=high
+
+  * SNAP-450: Bump version to see that the latest works properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 20 Sep 2016 21:36:09 -0700
+
+snapdbproxy (1.0.8.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Actually start the website initialization thread.
+  * Removed the throw and replaced it with cerr + exit(1).
+  * Added logging.
+
+ -- Build Server <build@m2osw.com>  Tue, 13 Sep 2016 16:10:44 -0700
+
+snapdbproxy (1.0.7.0~xenial) xenial; urgency=high
+
+  * SNAP-110: The delay of the timer used to reconnect in case we lose the
+    connection to snapdbproxy (or never got one from the start) was never
+    set. I also added the code that increases that delay (doubling it) on
+    each attempt from 1s to 5 min.
+
+ -- Build Server <build@m2osw.com>  Mon, 12 Sep 2016 02:00:44 -0700
+
+snapdbproxy (1.0.6.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a warning in case the consistency sent to the query
+    object is not QUORUM.
+
+ -- Alexis WIlke <alexis@m2osw.com>  Sat, 10 Sep 2016 02:00:55 -0700
+
+snapdbproxy (1.0.5.0~xenial) xenial; urgency=high
+
+  * Added support for the RELOADCONFIG message.
+  * Fixed a bug in the dbproxy plugin so values get saved.
+
+ -- Alexis WIlke <alexis@m2osw.com>  Sun, 28 Aug 2016 10:10:15 -0700
+
+snapdbproxy (1.0.4.0~xenial) xenial; urgency=high
+
+  * Now uses QtCassandra::QCassandraSchema to detect if the snapwebsites
+    schema has been created yet.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 22 Aug 2016 22:37:14 -0700
+
+snapdbproxy (1.0.3.0~xenial) xenial; urgency=high
+
+  * Removed the Cassandra database test from the manager plugin. It's wrong.
+
+ -- Alexis <alexis@m2osw.com>  Mon, 22 Aug 2016 02:00:52 -0700
+
+snapdbproxy (1.0.2.0~xenial) xenial; urgency=high
+
+  * Fixing the case where someone connects and sends requests before
+    snapdbproxy is able to process orders with Cassandra.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 19 Aug 2016 14:54:06 -0700
+
+snapdbproxy (1.0.1) xenial; urgency=high
+
+  * Initial release of packaging for snapdbproxy. 
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 30 May 2016 13:38:48 -0700

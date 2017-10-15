@@ -1,0 +1,42 @@
+/*
+ * Name: favicon
+ * Version: 0.0.1.8
+ * Browsers: all
+ * Copyright: Copyright 2015-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+/** ICON */
+.editor-form .snap-editor.editable.icon
+{
+	padding: 3px; /* so we can see the focus properly */
+	width: 192px;
+	height: 192px;
+	min-width: 192px;
+	min-height: 192px;
+}
+.editor-form .snap-editor.editable.icon .editor-content
+{
+	min-width: 192px;
+	min-height: 192px;
+}
+.editor-form ul.default-icons
+{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.editor-form ul.default-icons li
+{
+	float: left;
+	margin-right: 20px;
+}
+.editor-form ul.default-icons li a
+{
+	display: block;
+	padding: 3px;
+	background: #e0e0e0;
+	height: 16px;
+	border: 1px solid #c0c0c0;
+}
+

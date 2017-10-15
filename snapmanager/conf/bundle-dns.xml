@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-tools.xml
+-->
+<bundle>
+  <name>dns</name>
+  <description>
+    <p>This bundle installs the Domain Name Server (bind9) on your machine.</p>
+  </description>
+  <packages>bind9</packages>
+  <postinst>
+    # Install the bind9 jail knowing that fail2ban may not be installed
+    if test ! -d /etc/fail2ban/jail.d
+    then
+      mkdir -p /etc/fail2ban/jail.d
+      chmod 775 /etc/fail2ban
+      chmod 755 /etc/fail2ban/jail.d
+    fi
+    cp /usr/share/snapwebsites/fail2ban/snap-named-jail.conf /etc/fail2ban/jail.d/.
+  </postinst>
+  <!--
+    Leave the zone files just in case the user wants to reuse them after
+    removal.
+  -->
+  <prerm>
+    # Remove locally generated files...
+    #rm /etc/bind/*.zone*
+
+    # Remove the jail we installed manually
+    rm -f /etc/fail2ban/jail.d/snap-named-jail.conf
+    rmdir --ignore-fail-on-non-empty /etc/fail2ban/jail.d
+    rmdir --ignore-fail-on-non-empty /etc/fail2ban
+  </prerm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

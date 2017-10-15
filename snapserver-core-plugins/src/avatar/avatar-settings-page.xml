@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == settings form
+Copyright (C) 2015-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="avatar" id="settings" content-modified="2015-01-02 04:16:35">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="local_images"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="local_images"/>
+    <tabindex refid="share_images"/>
+    <tabindex refid="snap_images"/>
+    <tabindex refid="gravatar_images"/>
+  </taborder>
+
+  <widget id="editor-session" type="silent" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="local_images" type="checkmark" field="avatar::local_images" path="avatar/local_images" auto-save="int8">
+    <label>Show user image on this website</label>
+    <tooltip>Select this checkmark to allow the Avatar plugin to make use of images loaded on this Snap! Websites.</tooltip>
+    <help>This checkmark allows the Avatar plugin to retrieve images from this website only. Users who did not load an image get the default defined below.</help>
+    <value>1</value>
+  </widget>
+  <widget id="share_images" type="checkmark" field="avatar::share_images" path="avatar/share_images" auto-save="int8">
+    <label>Share your users images with other websites on this Snap! Installation</label>
+    <tooltip>Select this checkmark to allow the Avatar plugin to make use of images loaded by your users on any website this Snap! Installation has.</tooltip>
+    <help>When checked this option authorize the Avatar plugin to retrieve images from this website. Each user can also individually refuse to show their avatar on other websites.</help>
+    <value>0</value>
+  </widget>
+  <widget id="snap_images" type="checkmark" field="avatar::snap_images" path="avatar/snap_images" auto-save="int8">
+    <label>Show user Snap! image</label>
+    <tooltip>Select this checkmark to allow the Avatar plugin to make use of images loaded on this Snap! Websites installation by the end users. This works across all the Snap! websites.</tooltip>
+    <help>This checkmark authorizes the Avatar plugin to retrieve images from any user who registered on any website on this Snap! Installation. Note that each website and each user has the right to prevent images from being shared.</help>
+    <value>0</value>
+  </widget>
+  <widget id="gravatar_images" type="checkmark" field="avatar::gravatar_images" path="avatar/gravatar_images" auto-save="int8">
+    <label>Show user Gravatar image</label>
+    <tooltip>Select this checkmark to allow the Avatar plugin to check for an image on Gravatar.</tooltip>
+    <help>Many users have an account registered with Gravatar which is a major Avatar system on the Internet. This option allows the use of Gravatar from this website.</help>
+    <value>0</value>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

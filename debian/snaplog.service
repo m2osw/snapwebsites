@@ -1,0 +1,30 @@
+# Documentation available at:
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+[Unit]
+Description=Snap! Websites snaplog daemon
+After=snapbase.service snapcommunicator.service mysql.service
+
+[Service]
+Type=simple
+WorkingDirectory=~
+ProtectHome=true
+NoNewPrivileges=true
+ExecStart=/usr/bin/snaplog
+ExecStop=/usr/bin/snapstop --service $MAINPID
+Restart=on-failure
+RestartSec=10
+User=snapwebsites
+Group=snapwebsites
+LimitNPROC=1000
+# For developers and administrators to get console output
+#StandardOutput=tty
+#StandardError=tty
+#TTYPath=/dev/console
+# Enter a size to get a core dump in case of a crash
+#LimitCORE=10G
+
+[Install]
+WantedBy=multi-user.target
+
+# vim: syntax=dosini

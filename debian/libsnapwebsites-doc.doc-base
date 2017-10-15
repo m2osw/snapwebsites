@@ -1,0 +1,10 @@
+Document: libsnapwebsites
+Title: Debian Snap! Websites C++ Library Manual
+Author: Alexis Wilke
+Abstract: This is the reference manual for the C++
+ snapwebsites library.
+Section: web
+
+Format: HTML
+Index: /usr/share/doc/snapwebsites/html/index.html
+Files: /usr/share/doc/snapwebsites/html/*

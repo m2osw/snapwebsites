@@ -1,0 +1,44 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "configure" ]
+then
+    # WARNING: compare to a standard installation, we push our mail.log
+    #          files in a sub-directory so it makes the /var/log folder
+    #          easier to read
+    #
+    SYSLOGDIR=/var/log
+    MAILLOGDIR=$SYSLOGDIR/mail
+
+    # that folder may not yet exist (we manage it)
+    #
+    mkdir -p ${MAILLOGDIR}
+    chown syslog:adm ${MAILLOGDIR}
+    chmod 774 ${MAILLOGDIR}
+
+    # fail2ban will need the postfix log files to exist otherwise it
+    # generates an error, so we create them here
+    #
+    MAILLOG=${MAILLOGDIR}/mail.log
+    touch ${MAILLOG}
+    chown syslog:adm ${MAILLOG}
+    chmod 640 ${MAILLOG}
+
+    MAILERR=${MAILLOGDIR}/mail.err
+    touch ${MAILERR}
+    chown syslog:adm ${MAILERR}
+    chmod 640 ${MAILERR}
+
+    MAILWARN=${MAILLOGDIR}/mail.warn
+    touch ${MAILWARN}
+    chown syslog:adm ${MAILWARN}
+    chmod 640 ${MAILWARN}
+fi
+
+
+# vim: ts=4 sw=4 et nocindent

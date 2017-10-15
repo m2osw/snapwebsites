@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == e-Payment PayPal Express Checkout page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="epayment_paypal" id="settings" content-modified="2014-11-21 16:42:08">
+  <timeout minutes="3" redirect="/admin/settings/epayment"/> <!-- 30 minutes -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="client_id"/>
+  <on-save allow-edit="yes"/>
+  <no-toolbar/>
+  <taborder>
+    <tabindex refid="client_id"/>
+    <tabindex refid="secret"/>
+    <tabindex refid="maximum_repeat_failures"/>
+    <tabindex refid="debug"/>
+    <tabindex refid="sandbox_client_id"/>
+    <tabindex refid="sandbox_secret"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="client_id" type="line-edit" field="epayment_paypal::client_id" path="epayment_paypal/client_id" auto-save="plain" secret="secret">
+    <tooltip>The PayPal plugin makes use of users who have a specific client identifier and secret. This field is expected to be filled with the client_id.</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>200</max>
+    </sizes>
+    <background-value>client_id</background-value>
+  </widget>
+  <widget id="secret" type="line-edit" field="epayment_paypal::secret" path="epayment_paypal/secret" auto-save="plain" secret="secret">
+    <tooltip>The PayPal plugin makes use of users who have a specific client identifier and secret. This field is expected to be filled with the secret.</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>200</max>
+    </sizes>
+    <background-value>secret</background-value>
+  </widget>
+  <widget id="maximum_repeat_failures" type="line-edit" field="epayment_paypal::maximum_repeat_failures" path="epayment_paypal/maximum-repeat-failures" auto-save="int8">
+    <tooltip>The number of times the system will try to pass a recurring fee before it stops trying.</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>200</max>
+    </sizes>
+    <default>5</default>
+    <background-value>maximum number of failures</background-value>
+  </widget>
+  <widget id="debug" type="checkmark" field="epayment_paypal::debug" path="epayment_paypal/debug" auto-save="int8">
+    <label>Run in Debug mode. (<strong>WARNING:</strong> when Debug is turned on, no real charges are performed.)</label>
+    <tooltip>Check this box to run in debug mode. This means you can pass orders without actually passing real payments.</tooltip>
+    <help>Help</help>
+    <value>0</value>
+  </widget>
+  <widget id="sandbox_client_id" type="line-edit" field="epayment_paypal::sandbox_client_id" path="epayment_paypal/sandbox_client_id" auto-save="plain" secret="secret">
+    <tooltip>When in debug mode, the PayPal plugin makes use of sandbox users who have a specific client identifier and secret. This field is expected to be filled with the client_id.</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>200</max>
+    </sizes>
+    <background-value>client_id</background-value>
+  </widget>
+  <widget id="sandbox_secret" type="line-edit" field="epayment_paypal::sandbox_secret" path="epayment_paypal/sandbox_secret" auto-save="plain" secret="secret">
+    <tooltip>When in debug mode, the PayPal plugin makes use of sandbox users who have a specific client identifier and secret. This field is expected to be filled with the secret.</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>200</max>
+    </sizes>
+    <background-value>secret</background-value>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

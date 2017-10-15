@@ -1,0 +1,55 @@
+<!--
+Snap Plugin - - snap users plugin resources
+Copyright (C) 2012-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/plugins/users_ui">
+    <file>content.xml</file>
+  </qresource>
+  <qresource prefix="/xml">
+    <!-- old form forms (to be removed) -->
+    <file>users_ui/forgot-password-form.xml</file>
+    <file>users_ui/login-box-form.xml</file>
+    <file>users_ui/login-form.xml</file>
+    <file>users_ui/new-password-form.xml</file>
+    <file>users_ui/password-form.xml</file>
+    <file>users_ui/register-box-form.xml</file>
+    <file>users_ui/register-form.xml</file>
+    <file>users_ui/replace-password-form.xml</file>
+    <file>users_ui/resend-email-form.xml</file>
+    <file>users_ui/verify-credentials-form.xml</file>
+    <file>users_ui/verify-form.xml</file>
+    <!-- editor forms -->
+    <file>editor/change-email-page.xml</file>
+    <file>editor/users-settings-page.xml</file>
+  </qresource>
+  <qresource prefix="/xsl">
+    <!-- editor forms -->
+    <file>layout/change-email-parser.xsl</file>
+    <file>layout/users-settings-parser.xsl</file>
+  </qresource>
+  <qresource prefix="/js">
+    <file>users_ui/change-email.js</file>
+  </qresource>
+  <qresource prefix="/images">
+    <file>users_ui/default-user-image.png</file>
+  </qresource>
+</RCC>
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

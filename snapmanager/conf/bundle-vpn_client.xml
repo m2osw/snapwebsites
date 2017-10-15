@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-vpn_client.xml
+-->
+<bundle>
+  <name>vpn_client</name>
+  <description>
+    <p>The OpenVPN bundle is used to secure public connections
+    between computers. If you have a secure LAN then you do not
+    need to install OpenVPN at all. (i.e. a secure LAN is a LAN
+    that only your computers have access to.)</p>
+
+    <p>The OpenVPN creates a network of computers to communicate
+    through a safe, encrypted tunnel (Server Side) rendering a
+    public LAN secure.</p>
+
+    <p>The OpenVPN client allows this computer to connect to
+    OpenVPN servers to create a safe network. Once connected
+    to one or more servers, the new client can also communicate
+    with other clients (client-to-client).</p>
+  </description>
+  <!-- hide if easy-rsa is installed because that means the server is installed -->
+  <packages>openvpn, !easy-rsa</packages>
+  <!--
+    For a client, the setup is simpler: we just need to have a few
+    keys and a client.conf properly setup.
+  -->
+  <postinst>
+    # Remove any default configuration
+    if systemctl -q is-active openvpn@client
+    then
+      systemctl stop openvpn@client
+    fi
+    rm -f /etc/openvpn/*.conf
+  </postinst>
+  <prerm>
+    if systemctl -q is-active openvpn@client
+    then
+      systemctl stop openvpn@client
+    fi
+    systemctl disable openvpn@client
+  </prerm>
+  <postrm>
+    rm -f /etc/openvpn/*.conf
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

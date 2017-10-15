@@ -1,0 +1,212 @@
+<!--
+Snap Websites Server == DTD for editor forms
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!ELEMENT editor-form (timeout|auto-reset|focus|immediate|mode|on-save|drop|no-toolbar|taborder|widget)+>
+<!ATTLIST editor-form owner CDATA #REQUIRED
+                      layout CDATA #IMPLIED
+                      id ID #REQUIRED
+                      content-modified CDATA #REQUIRED>
+
+<!ENTITY % html-data "a|b|br|code|div|em|i|img|p|small|strong|table|tbody|td|tr|u|ul|ol|li">
+
+<!ELEMENT timeout EMPTY>
+<!ATTLIST timeout minutes CDATA #REQUIRED
+                  redirect CDATA #IMPLIED>
+
+<!ELEMENT auto-reset EMPTY>
+<!ATTLIST auto-reset minutes CDATA #REQUIRED>
+
+<!ELEMENT focus EMPTY>
+<!ATTLIST focus refid IDREF #REQUIRED>
+
+<!ELEMENT immediate EMPTY>
+
+<!ELEMENT mode EMPTY>
+<!ATTLIST mode action (edit|view|auto) #IMPLIED>
+
+<!ELEMENT on-save EMPTY>
+<!ATTLIST on-save redirect CDATA #IMPLIED
+                  target (_top|_parent|_self) "_self"
+                  allow-edit (yes|no) "yes"
+                  auto-save (yes|no) "yes">
+
+<!ELEMENT drop EMPTY>
+
+<!ELEMENT no-toolbar EMPTY>
+
+<!ELEMENT taborder (tabindex)*>
+<!ELEMENT tabindex EMPTY>
+<!ATTLIST tabindex refid IDREF #REQUIRED>
+
+<!-- for system offered widgets, we could use a list such as:
+     (line-edit|text-edit|image-box|...)
+     but that would prevent extensions from being used so we keep the
+     NMTOKEN in that place... -->
+<!ELEMENT widget (label|tooltip|help|background-value|background-confirm|attachment|sizes|filters|geometry|required|classes|value|preset|default|state|container|dropdown-algorithm|dropdown-date-edit)*>
+<!ATTLIST widget id ID #REQUIRED
+                 type NMTOKEN #REQUIRED
+                 field CDATA #IMPLIED
+                 path CDATA #REQUIRED
+                 duplicate-of IDREF #IMPLIED
+                 secret (public|secret) "public"
+                 mode (select-only|editable) "select-only"
+                 auto-save (date|double|float64|html|int8|int64|locale_timezone|ms-date-us|no|percent64|plain|string|time|dropdown-date) "string"
+                 drop (drop) #IMPLIED
+                 capture (capture) #IMPLIED
+                 no-toolbar (no-toolbar) #IMPLIED
+                 no-paste (no-paste) #IMPLIED>
+
+<!-- WARNING: label is used as the HTML label when appearing in HTML areas,
+              and as the label tag for other widgets -->
+<!ELEMENT label (#PCDATA|%html-data;)*>
+
+<!ELEMENT tooltip (#PCDATA|%html-data;)*>
+<!ELEMENT help (#PCDATA|%html-data;)*>
+<!ELEMENT background-value (#PCDATA|%html-data;)*>
+<!ELEMENT background-confirm (#PCDATA|%html-data;)*>
+<!ELEMENT required (#PCDATA)*>
+<!ELEMENT classes (#PCDATA)*>
+<!ELEMENT state (#PCDATA)*>
+<!ELEMENT container (#PCDATA)*>
+
+<!ELEMENT attachment EMPTY>
+<!ATTLIST attachment browse (yes|no) "yes"
+                     owner CDATA #IMPLIED
+                     identification CDATA "attachment"
+                     force-path CDATA #IMPLIED
+                     force-filename CDATA #IMPLIED
+                     multiple (multiple) #IMPLIED>
+
+<!ELEMENT default (#PCDATA|%html-data;)*>
+<!ATTLIST default not-a-value (not-a-value) #IMPLIED>
+
+<!ELEMENT value (#PCDATA|%html-data;|item)*>
+<!ATTLIST value default (today) #IMPLIED>
+
+<!ELEMENT preset (#PCDATA|%html-data;|item)*>
+<!ATTLIST preset default (today) #IMPLIED>
+
+<!ELEMENT item (#PCDATA|%html-data;)*>
+<!ATTLIST item default (default) #IMPLIED
+               class CDATA ""
+               value CDATA #IMPLIED> <!-- value is the result, i.e. you could use 0, 1, 2, 3, instead of the string in the dropdown -->
+
+<!ELEMENT regex (#PCDATA)>
+<!ATTLIST regex name CDATA #IMPLIED
+                match (yes|no) "yes">
+
+<!ELEMENT geometry EMPTY>
+<!ATTLIST geometry width CDATA "-1"
+                   height CDATA "-1">
+
+<!ELEMENT dropdown-algorithm (#PCDATA)>
+
+<!ELEMENT dropdown-date-edit (include-month|include-day|include-year)+>
+
+<!ELEMENT include-month EMPTY>
+<!ELEMENT include-day EMPTY>
+
+<!ELEMENT include-year EMPTY>
+<!ATTLIST include-year from CDATA #IMPLIED
+                       to CDATA #IMPLIED>
+
+<!ELEMENT uri (#PCDATA)>
+<!ATTLIST uri match (yes|no) "yes">
+
+<!ELEMENT sizes (absolute-min|min|absolute-max|max|min-lines|max-lines|resize)+>
+<!ELEMENT absolute-min (#PCDATA)>
+<!ELEMENT min (#PCDATA)>
+<!ELEMENT absolute-max (#PCDATA)>
+<!ELEMENT max (#PCDATA)>
+<!ELEMENT min-lines (#PCDATA)>
+<!ELEMENT max-lines (#PCDATA)>
+<!ELEMENT resize (#PCDATA)>
+<!ELEMENT filters (extensions|regex|min-value|max-value|mime-types|min-date|max-date|min-time|max-time|uri|validate|country)+>
+<!ELEMENT extensions (#PCDATA)>
+<!ELEMENT mime-types (mime)+>
+<!ELEMENT mime (#PCDATA)>
+<!ELEMENT min-value (#PCDATA)>
+<!ELEMENT max-value (#PCDATA)>
+<!ELEMENT min-date (#PCDATA)>
+<!ELEMENT max-date (#PCDATA)>
+<!ELEMENT min-time (#PCDATA)>
+<!ELEMENT max-time (#PCDATA)>
+<!ELEMENT validate (#PCDATA)>
+
+<!ELEMENT country (#PCDATA)>
+<!ATTLIST country mode CDATA #IMPLIED>
+
+<!-- HTML tags that are used in default values or background values
+     we're not trying to replicate the whole HTML DTD, so we simply here -->
+<!ELEMENT a (#PCDATA|%html-data;)*>
+<!ATTLIST a href CDATA #REQUIRED
+            rel (nofollow|author) #IMPLIED
+            title CDATA ""
+            target CDATA "">
+
+<!ELEMENT b (#PCDATA|%html-data;)*>
+<!ELEMENT br EMPTY>
+<!ELEMENT code (#PCDATA|%html-data;)*>
+<!ELEMENT div (#PCDATA|%html-data;)*>
+<!ELEMENT em (#PCDATA|%html-data;)*>
+<!ELEMENT i (#PCDATA|%html-data;)*>
+
+<!ELEMENT img EMPTY>
+<!ATTLIST img src CDATA #REQUIRED
+              width CDATA #IMPLIED
+              height CDATA #IMPLIED
+              title CDATA #IMPLIED
+              alt CDATA #IMPLIED
+              style CDATA #IMPLIED
+              type CDATA #IMPLIED>
+
+<!ELEMENT p (#PCDATA|%html-data;)*>
+<!ELEMENT small (#PCDATA|%html-data;)*>
+<!ELEMENT strong (#PCDATA|%html-data;)*>
+
+<!ELEMENT table (%html-data;)*>
+<!ATTLIST table border CDATA #IMPLIED
+                cellpadding CDATA #IMPLIED
+                cellspacing CDATA #IMPLIED
+                class CDATA #IMPLIED
+                height CDATA #IMPLIED
+                style CDATA #IMPLIED
+                width CDATA #IMPLIED>
+
+<!ELEMENT tbody (%html-data;)*>
+<!ATTLIST tbody class CDATA #IMPLIED>
+
+<!ELEMENT td (#PCDATA|%html-data;)*>
+<!ATTLIST td class CDATA #IMPLIED
+             width CDATA #IMPLIED
+             valign (top|middle|bottom) "middle">
+
+<!ELEMENT tr (%html-data;)*>
+<!ATTLIST tr class CDATA #IMPLIED>
+
+<!ELEMENT u (#PCDATA|%html-data;)*>
+
+<!ELEMENT ul (#PCDATA|%html-data;)*>
+
+<!ELEMENT ol (#PCDATA|%html-data;)*>
+
+<!ELEMENT li (#PCDATA|%html-data;)*>
+
+<!--
+vim: ts=4 sw=4 et
+-->

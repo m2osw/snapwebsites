@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == info settings page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="editor" id="settings" content-modified="2015-12-21 19:54:17">
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="title"/>
+    <tabindex refid="body"/>
+  </taborder>
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session"></widget>
+
+  <!-- title -->
+  <widget id="title" type="line-edit" field="content::title" path="content/title" auto-save="html">
+    <tooltip>Enter the title of this page.</tooltip>
+    <help>Help</help>
+  </widget>
+
+  <!-- body -->
+  <widget id="body" type="text-edit" field="content::body" path="content/body" auto-save="html">
+    <tooltip>Enter the content of this page.</tooltip>
+    <help>Help</help>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

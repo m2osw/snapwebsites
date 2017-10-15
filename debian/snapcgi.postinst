@@ -1,0 +1,67 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+if [ "$1" = "configure" ]
+then
+    PACKAGENAME=snapcgi
+
+    # Create the snapcgi.log file because the www-data user may have
+    # difficulties with it otherwise
+    #
+    SNAPLOGDIR=/var/log/snapwebsites
+    SNAPCGI_LOG=${SNAPLOGDIR}/${PACKAGENAME}.log
+    touch ${SNAPCGI_LOG}
+    chown www-data:www-data ${SNAPCGI_LOG}
+    chmod 640 ${SNAPCGI_LOG}
+
+    SNAPSECURELOGDIR=/var/log/snapwebsites/secure
+    SNAPSECURECGI_LOG=${SNAPSECURELOGDIR}/${PACKAGENAME}.log
+    touch ${SNAPSECURECGI_LOG}
+    chown www-data:www-data ${SNAPSECURECGI_LOG}
+    chmod 640 ${SNAPSECURECGI_LOG}
+
+    # Copy user editable files (which are not installed directly from
+    # our package so we do not get warnings when updating)
+    #
+    # The copy only happens the first time we install, after that, it
+    # does not happen unless a user delete one of those files.
+    #
+    for conf in snap-apache2-maintenance \
+                snap-apache2-vhost-security
+    do
+        cp -n /usr/share/snapwebsites/apache2/${conf}.conf /etc/apache2/snap-conf/.
+    done
+
+    # Copy the set of template to the default site settings
+    #
+    mkdir -p /etc/apache2/snap-conf/default
+    cp -n /usr/share/snapwebsites/apache2/user-snap-apache2-template-common.conf /etc/apache2/snap-conf/default/000-snap-apache2-default-common.conf
+    cp -n /usr/share/snapwebsites/apache2/user-snap-apache2-template-80.conf /etc/apache2/snap-conf/default/000-snap-apache2-default-80.conf
+    cp -n /usr/share/snapwebsites/apache2/user-snap-apache2-template-443.conf /etc/apache2/snap-conf/default/000-snap-apache2-default-443.conf
+
+    # The snap.cgi also requires the cgi module
+    #
+    a2enmod -qm cgi
+    a2enmod -qm rewrite
+
+    # disable the default Apache2 site configuration file and enable one
+    # of ours instead (but only if we do not already have one of our
+    # default sites enabled)
+    #
+    if ! a2query -q -s 000-snap-apache2-default-any \
+    && ! a2query -q -s 000-snap-apache2-default-80 \
+    && ! a2query -q -s 000-snap-apache2-default-443
+    then
+        a2dissite -qm 000-default
+        a2ensite -qm 000-snap-apache2-default-80
+    fi
+
+    # Now run various common apache initializations
+    # (logrotate, enable/disable configuration/modules/sites)
+    # The external script will restart apache2 as well
+    #
+    /usr/lib/snapwebsites/scripts/snapapacheinit install
+fi
+
+# vim: ts=4 sw=4 et nocindent

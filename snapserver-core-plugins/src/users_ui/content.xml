@@ -1,0 +1,258 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == users database setup
+Copyright (C) 2012-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/login">
+    <param name="content::title" revision="revision">User Log In</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Enter your email address and password to log in.</p>[form::source]]]>
+    </param>
+    <param name="content::cache_control" revision="global" overwrite="yes">no-store</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page" to="permissions::secure_page" mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+    <link name="robotstxt::noindex" to="robotstxt::noindex" mode="1:*">/types/taxonomy/system/robotstxt/noindex</link>
+    <link name="robotstxt::nofollow" to="robotstxt::nofollow" mode="1:*">/types/taxonomy/system/robotstxt/nofollow</link>
+    <param name="form::source">login-form</param>
+  </content>
+  <content path="/verify-credentials">
+    <param name="content::title" revision="revision">User Credentials Verification</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Please re-enter your email address and password before to continue. Most administrative and user profile interactions require a full log in which last only 3 hours, hence this verification process.</p>[form::source]]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page" to="permissions::secure_page" mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+    <link name="robotstxt::noindex" to="robotstxt::noindex" mode="1:*">/types/taxonomy/system/robotstxt/noindex</link>
+    <link name="robotstxt::nofollow" to="robotstxt::nofollow" mode="1:*">/types/taxonomy/system/robotstxt/nofollow</link>
+    <param name="form::source">verify-credentials-form</param>
+  </content>
+  <content path="/forgot-password">
+    <param name="content::title" revision="revision">Forgot Password</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Enter your email address and we'll send you a link to change your password.</p>[form::source]]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="robotstxt::noindex" to="robotstxt::noindex" mode="1:*">/types/taxonomy/system/robotstxt/noindex</link>
+    <link name="robotstxt::nofollow" to="robotstxt::nofollow" mode="1:*">/types/taxonomy/system/robotstxt/nofollow</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page" to="permissions::secure_page" mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+    <param name="form::source">forgot-password-form</param>
+  </content>
+  <content path="/new-password">
+    <param name="content::title" revision="revision">New Password Verification</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Enter the verification code we sent you to change your password.</p>[form::source]]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="robotstxt::noindex" to="robotstxt::noindex" mode="1:*">/types/taxonomy/system/robotstxt/noindex</link>
+    <link name="robotstxt::nofollow" to="robotstxt::nofollow" mode="1:*">/types/taxonomy/system/robotstxt/nofollow</link>
+    <param name="form::source">new-password-form</param>
+    <param name="permissions::dynamic" type="int8" revision="global">1</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page" to="permissions::secure_page" mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+  </content>
+  <content path="/register">
+    <param name="content::title" revision="revision">Register</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Enter your email address and a password to register.</p>[form::source]]]>
+    </param>
+    <param name="content::cache_control" revision="global" overwrite="yes">no-store</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="robotstxt::noindex" to="robotstxt::noindex" mode="1:*">/types/taxonomy/system/robotstxt/noindex</link>
+    <link name="robotstxt::nofollow" to="robotstxt::nofollow" mode="1:*">/types/taxonomy/system/robotstxt/nofollow</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page" to="permissions::secure_page" mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+    <param name="form::source">register-form</param>
+  </content>
+  <content path="/verify/resend">
+    <param name="content::title" revision="revision">Resend the Verification Email</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Did not receive the verification email? This form let you resend it to your email address.</p>[form::source]]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="robotstxt::noindex" to="robotstxt::noindex" mode="1:*">/types/taxonomy/system/robotstxt/noindex</link>
+    <link name="robotstxt::nofollow" to="robotstxt::nofollow" mode="1:*">/types/taxonomy/system/robotstxt/nofollow</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page" to="permissions::secure_page" mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+    <param name="form::source">resend-email-form</param>
+  </content>
+  <content path="/verify">
+    <param name="content::title" revision="revision">Verify an Email</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>We want to make sure that (1) you entered the correct email address, and (2) that you are indeed who you say your are. You'll receive an email very shortly and this form let you enter the code included in the email. The email also has a link which may be easier to follow to finish your registration.</p>[form::source]]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="robotstxt::noindex" to="robotstxt::noindex" mode="1:*">/types/taxonomy/system/robotstxt/noindex</link>
+    <link name="robotstxt::nofollow" to="robotstxt::nofollow" mode="1:*">/types/taxonomy/system/robotstxt/nofollow</link>
+    <param name="permissions::dynamic" type="int8" revision="global">1</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page" to="permissions::secure_page" mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+    <param name="form::source">verify-form</param>
+  </content>
+  <content path="/logout">
+    <param name="content::title" revision="revision">Logout</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Thank you for visiting our website. See you again soon.</p><p>Got back to the <a href="/">home page</a>.</p>]]>
+    </param>
+    <link name="robotstxt::noindex" to="robotstxt::noindex" mode="1:*">/types/taxonomy/system/robotstxt/noindex</link>
+    <link name="robotstxt::nofollow" to="robotstxt::nofollow" mode="1:*">/types/taxonomy/system/robotstxt/nofollow</link>
+    <!--link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/private</link-->
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/change-email" moved-from="/admin/change-email">
+    <param name="content::title" revision="revision">Change Your Email Address</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Please enter your new email address twice for verification.</p>]]>
+    </param>
+    <!--TODO needed?! <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/email</link>-->
+    <param name="editor::layout" revision="global" overwrite="yes">"change-email-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"change-email-parser";</param>
+    <link name="permissions::direct::action::view"       to="permissions::link_back::view"       mode="*:*">/types/permissions/rights/view/page/private</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page"                to="permissions::secure_page"           mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+  </content>
+  <content path="/user/password">
+    <param name="content::title" revision="revision">Change Your Password</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Please enter your old password once and then enter your new password twice.</p>[form::source]]]>
+    </param>
+    <link name="permissions::direct::action::view"       to="permissions::link_back::view"       mode="*:*">/types/permissions/rights/view/page/private</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page"                to="permissions::secure_page"           mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+    <param name="form::source">password-form</param>
+  </content>
+  <content path="/user/password/replace">
+    <param name="content::title" revision="revision">Replace Your Password</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Please enter your new password twice and click Save.</p>[form::source]]]>
+    </param>
+    <param name="content::cache_control" revision="global" overwrite="yes">no-store</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/user/register</link>
+    <link name="permissions::secure_page" to="permissions::secure_page" mode="1:*">/types/taxonomy/system/permissions/secure-page</link>
+    <param name="form::source">replace-password-form</param>
+  </content>
+  <content path="/images/users">
+    <param name="content::title" revision="revision">Images Offered by Users</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of images offered and used by the Users plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="close-button" type="attachment/public">
+      <path>:/images/users_ui/default-user-image.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/admin/settings/users">
+    <param name="content::title" revision="revision">User Settings</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of settings specific to the Users plugin.</p>]]>
+    </param>
+    <param name="editor::layout" revision="global" overwrite="yes">"users-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"users-settings-parser";</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/private</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+  </content>
+  <content path="/admin/email/users">
+    <param name="content::title" revision="revision">User Emails</param>
+    <param name="content::body" revision="revision">
+        <![CDATA[<p>Set of emails used to communicate with your Snap! website users.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/private</link>
+  </content>
+  <content path="/admin/email/users/verify">
+    <!-- email sent when users register so we can ask them to verify their email address -->
+    <param name="content::title" revision="revision">Please verify your email address</param>
+    <param name="content::body" revision="revision">
+        <![CDATA[
+          <p class="email_date" style="text-align: right;">Sent on [sendmail::date]</p>
+          <p class="welcome">Welcome to your Snap! C++ website.</p>
+          <p class="process-to-complete">In order to complete the creation of your new account, please click on the following link:</p>
+          <blockquote>[sendmail::verify_link("Click here to validate your email address")]</blockquote>
+          <p>If you have a problem clicking on this link, your verification code is:</p>
+          <blockquote><code>[select("/snap/page/body/sendmail/parameters/param[@name='users::verify_email']/@value")]</code></blockquote>
+          <p class="thank-you">Thank you.</p><p>To unsubscribe click here: [sendmail::unsubscribe_link("Unsubscribe from Snap! emails")].</p>
+          <p style="text-align: center;">Copyright [year] (c) by Made to Order Software Corporation -- All Rights Reserved</p>
+        ]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/email</link>
+  </content>
+  <content path="/admin/email/users/forgot-password">
+    <!-- email sent when users forgot their password -->
+    <param name="content::title" revision="revision">Please follow the link below to change your password</param>
+    <param name="content::body" revision="revision">
+        <![CDATA[
+          <p class="email_date" style="text-align: right;">Sent on [sendmail::date]</p>
+          <p class="welcome">It looks like you required the system to allow you to change your password. If this wasn't you, please reply to this email so we can make sure that everything is A-Okay.</p>
+          <p class="process-to-complete">In order to change your password, please click on the following link:</p>
+          <blockquote>[sendmail::forgot_password_link("Click here to change your password.")]</blockquote>
+          <p>You will be asked to change your password immediately. Once you save your password, you will automatically be logged in.</p>
+          <p>If you have a problem clicking on this link, your verification code is: <code>[select("/snap/page/body/sendmail/parameters/param[@name='users::forgot_password_email']/@value")]</code></p>
+          <p class="thank-you">Thank you.</p>
+          <p>To unsubscribe click here: [sendmail::unsubscribe_link("Unsubscribe from Snap! emails")].</p>
+          <p style="text-align: center;">Copyright [year] (c) by Made to Order Software Corporation -- All Rights Reserved</p>
+        ]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/email</link>
+  </content>
+  <content path="/admin/page/users">
+    <param name="content::title" revision="revision">Users Templates</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Templates for user pages.</p>]]>
+    </param>
+  </content>
+  <content path="/admin/page/users/profile">
+    <param name="content::title" revision="revision">[user-name]</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>User profile stuff...</p><p>This will be composed of tags to show the data that the administrator deems useful.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/robotstxt">
+    <param name="content::title" revision="revision">Robots Tags</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of tags used to determine how public pages should be presented to robots.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/robotstxt/noindex">
+    <param name="content::title" revision="revision">Robots: No Index</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Request that this page not be indexed by robots. Although there is no guarantee, doing so should prevent search engines from showing this page in their results.</p>]]>
+    </param>
+  </content>
+  <content path="/js/users_ui">
+    <!-- JavaScript code for the enhanced Snap! forms -->
+    <param name="content::title" revision="revision">Users UI javascripts</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>JavaScript code to handle users_ui specialized features.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="change-email" type="attachment/public">
+      <path>:/js/users_ui/change-email.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>users_ui (&gt;= 0.0.3.181)</dependency>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

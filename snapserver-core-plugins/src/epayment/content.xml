@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == epayment plugin database setup
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/epayment" owner="output">
+    <param name="content::title" revision="revision">Various e-Payment Pages!</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<div class="epayment-invoice"><p>e-Payment offers various pages, such as a Thank You, Canceled, and Payment Failed pages.</p></div>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/epayment/thank-you" owner="output">
+    <param name="content::title" revision="revision">Thank You!</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<div class="epayment-invoice"><p>Thank you for your payment.</p></div>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/epayment/thank-you-subscription" owner="output">
+    <param name="content::title" revision="revision">Thank You!</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<div class="epayment-invoice"><p>Thank you for subscribing to our services.</p></div>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/epayment/canceled" owner="output">
+    <param name="content::title" revision="revision">Order Canceled!</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<div class="epayment-invoice"><p>We're Sorry You Canceled.</p></div>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/epayment/failed" owner="output">
+    <param name="content::title" revision="revision">Payment Failed!</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<div class="epayment-invoice"><p>Your payment somehow failed. You may try <a href="/epayment/restore-cart">ordering again</a> if you'd like.</p></div>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/admin/settings/epayment" owner="output">
+    <param name="content::title" revision="revision">e-Payment</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Settings of the payments offered by your website.</p>
+          <p>The following is a list of e-Payment facilities currently available on this website:</p>
+          [list::theme("admin/settings/epayment")]]]>
+    </param>
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[(branch := int32(cell("content", page, "content::revision_control::current_branch")),
+                key := string(cell("content", page, "content::revision_control::current_revision_key::" + branch + "::en")),
+                key ? tolower(string(cell("revision", key, "content::title"))) : "no title")]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[parent(path) == "admin/settings/epayment"]]>
+    </param>
+    <param name="list::selector">children</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+  </content>
+  <content path="/admin/settings/epayment/store" owner="output">
+    <param name="content::title" revision="revision">Store Settings</param>
+    <param name="editor::layout" revision="global" overwrite="yes">"epayment-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"epayment-settings-parser";</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+  </content>
+  <content path="/css/epayment" owner="output">
+    <param name="content::title" revision="revision">e-Payment CSS</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>CSS files used by e-Payment.</p>]]>
+    </param>
+    <attachment name="epayment" type="attachment/public">
+      <path>qrc:/css/epayment/epayment.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+  </content>
+  <content path="/js/epayment" owner="output">
+    <param name="content::title" revision="revision">e-Payment JavaScripts</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>e-Payment JavaScripts to support the Snap! Website payment features.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="epayment" type="attachment/public">
+      <path>:/js/epayment/epayment.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>editor (&gt;= 0.0.3.262)</dependency>
+    </attachment>
+  </content>
+  <content path="/images/epayment" owner="output">
+    <param name="content::title" revision="revision">Images Offered by e-Payment and facilities</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of images related to the e-Payment facilities.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="epayment-logo" type="attachment/public">
+      <path>:/images/epayment/epayment-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/types/taxonomy/system/content-types/epayment" owner="output">
+    <param name="content::title" revision="revision">e-Payment Related Types</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various types used in link with the e-Payment plugin.</p>]]>
+    </param>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/public</link>
+    <link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+  </content>
+  <content path="/types/taxonomy/system/content-types/epayment/product" owner="output">
+    <param name="content::title" revision="revision">An e-Payment Product</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>A page marked with this type or a child of this type is viewed as a product by the e-Payment plugin and thus it can be added as a product to a list of products.</p>]]>
+    </param>
+    <param name="layout::layout" revision="global" overwrite="yes">"epayment-product";</param>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/public</link>
+    <link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

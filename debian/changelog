@@ -1,0 +1,212 @@
+snapwebsites (1.5.26.1~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Wed, 13 Sep 2017 16:04:38 -0700
+
+snapwebsites (1.5.26.0~xenial) xenial; urgency=high
+
+  * Fixed test websites: the canonical is not enough, we need to prevent
+    search engines from indexing such sites by telling them NOINDEX.
+  * Fixed reference to snapwebsites.org with HTTPS.
+  * Fixed the tag name: X-Robots-Tag -- we were missing "-Tag".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 13 Sep 2017 15:28:14 -0700
+
+snapwebsites (1.5.25.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Fixed the list.cpp file handling, I put the file descriptor in
+    a shared_ptr<>() object with a deletor that will always take care of that.
+  * SNAP-289: Fixed the disabled_mode variable handling in backend.cpp.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 23 Aug 2017 20:45:30 -0700
+
+snapwebsites (1.5.24.0~xenial) xenial; urgency=high
+
+  * EX-194: Fixed the call to snapstop with the --service command line option.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 15 Aug 2017 19:19:33 -0700
+
+snapwebsites (1.5.23.1~xenial) xenial; urgency=high
+
+  * Removed the warning notice on backends since we now have a dropdown we
+    cannot misspell the word.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 15 Aug 2017 13:48:40 -0700
+
+snapwebsites (1.5.23.0~xenial) xenial; urgency=high
+
+  * EX-191: Breadcrumb label may include HTML tags.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 14 Aug 2017 21:57:11 -0700
+
+snapwebsites (1.5.22.0~xenial) xenial; urgency=high
+
+  * SNAP-591: Existing links may need to be deleted before we create new ones.
+  * Added a couple of tests to verify that this is done properly for unique
+    links (we want to check the same with multiple links too at some point).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 14 Aug 2017 21:57:06 -0700
+
+snapwebsites (1.5.21.0~xenial) xenial; urgency=high
+
+  * Noticed a warning from the filter and applied a fix (i.e. do not filter
+    attributes of <xsl:...> tags because they include '[...]' specific to XSLT.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 13 Aug 2017 20:26:53 -0700
+
+snapwebsites (1.5.20.0~xenial) xenial; urgency=high
+
+  * EX-193: Added Reply-To header support.
+
+ -- Doug Barbieri <doug@garibaldi>  Thu, 10 Aug 2017 09:04:52 -0700
+
+snapwebsites (1.5.18.0~xenial) xenial; urgency=high
+
+  * Fixed the help of the "snapclearcache".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 03 Aug 2017 20:31:45 -0700
+
+snapwebsites (1.5.17.0~xenial) xenial; urgency=high
+
+  * Made the clear-cache.sh script a command line utility: "snapclearcache".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 02 Aug 2017 14:22:40 -0700
+
+snapwebsites (1.5.16.0~xenial) xenial; urgency=high
+
+  * The fix to the root user permissions actually exposed another bug: the
+    updating of the cache could end up using an empty version of the list
+    of permissions when we shortcut the calculation of the permissions to
+    know whether the user is allowed (i.e. the default list is the empty
+    list and we would save that even if we did not call the function used
+    to generate the list of permissions of a page.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 02 Aug 2017 13:54:07 -0700
+
+snapwebsites (1.5.15.0~xenial) xenial; urgency=high
+
+  * Fixed the root user permissions so the root can really access ALL pages
+    as it was first intended.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 01 Aug 2017 20:31:10 -0700
+
+snapwebsites (1.5.14.0~xenial) xenial; urgency=high
+
+  * Added new API to content::path_info_t such that access to the database
+    can be hidden and encapsulated.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 31 Jul 2017 22:20:27 -0700
+
+snapwebsites (1.5.13.0~xenial) xenial; urgency=high
+
+  * Added default for the snapbackup variables in case the default script
+    does not (yet) include those values.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Jul 2017 17:01:34 -0700
+
+snapwebsites (1.5.12.0~xenial) xenial; urgency=high
+
+  * Added INFO suffix in log for when snap_child finishes.
+  * Also fixed snapbackend with regard to the manager plugin.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 26 Jul 2017 17:52:50 -0700
+
+snapwebsites (1.5.11.0~xenial) xenial; urgency=high
+
+  * Fixed the snapbackup CRON script, the date requires a backslash.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Jul 2017 19:58:15 -0700
+
+snapwebsites (1.5.10.1~xenial) xenial; urgency=high
+
+  * Added "Save Everywhere" for ssh public keys (in ssh plugin).
+
+ -- Doug Barbieri <doug@garibaldi>  Fri, 21 Jul 2017 14:01:46 -0700
+
+snapwebsites (1.5.9.0~xenial) xenial; urgency=high
+
+  * EX-79: Found out that if a page supports more than one image, then we must
+    have a field name and not use "image" as that name. We may have a problem
+    with the body which does not offer a separate field name for each image...
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 08 Jul 2017 17:14:51 -0700
+
+snapwebsites (1.5.8.0~xenial) xenial; urgency=high
+
+  * Fixed an error in snapfirewall where the manager plugin was not being
+    installed, and where the fail2ban action file was being put into the wrong
+    directory.
+  * Updated some manager-plugins to use the new `widget_select` for drop
+    downs.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 07 Jul 2017 11:38:24 -0700
+
+snapwebsites (1.5.7.0~xenial) xenial; urgency=high
+
+  * snapmanager: changed dbproxy and ssh to use switches.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 06 Jul 2017 14:23:18 -0700
+
+snapwebsites (1.5.6.0~xenial) xenial; urgency=high
+
+  * SNAP-222: Checking whether a file was properly added required to test
+    with the correct path and not whether a file is attached to the field
+    (because on Save we get a string, not the file which was already sent
+    to use using AJAX.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 29 Jun 2017 11:49:42 -0700
+
+snapwebsites (1.5.5.0~xenial) xenial; urgency=high
+
+  * SNAP-574: Fixed the snapcgi.install so we get the HTML for maintenance and
+    first install under /usr/share/snapwebsites/html.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 29 Jun 2017 11:49:42 -0700
+
+snapwebsites (1.5.4.0~xenial) xenial; urgency=high
+
+  * SNAP-584: Send all output to $BACKUP_LOG now.
+  * Fixed the path, we were still using a hard coded path in two places.
+  * Prevent the backup process if the mkdir fails.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 28 Jun 2017 14:36:42 -0700
+
+snapwebsites (1.5.3.0~xenial) xenial; urgency=high
+
+  * SNAP-584: Moved the rotation of /var/mail/root to snapbase.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 28 Jun 2017 11:56:59 -0700
+
+snapwebsites (1.5.2.0~xenial) xenial; urgency=high
+
+  * SNAP-579: Split snaplistd/snaplog into a new bundle: mysql. These bundles
+    both rely on the mysql bundle to be installed. And both bundles will
+    manage their respective users and tables, removing them when purged.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 28 Jun 2017 11:26:49 -0700
+
+snapwebsites (1.5.1.5~xenial) xenial; urgency=high
+
+  * SNAP-574: Removed all debian subfolders but kept all of the changelogs.
+  * Added "NUM_DAYS" to `/etc/default/snaplog` so the admin may tune the
+    threshold for vacuuming.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 27 Jun 2017 14:26:51 -0700
+
+snapwebsites (1.5.1.1~xenial) xenial; urgency=high
+
+  * SNAP-547: Fixed issue with install spec for `libsnapwebsites-dev`. It no longer
+    installs the plugin headers.
+  * SNAP-547: Removed qtcassandra call in from cmake.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 26 Jun 2017 11:45:42 -0700
+
+snapwebsites (1.5.0.3) xenial; urgency=high
+
+  * SNAP-547: Initial release of packaging for the snapwebsites project, which brings in
+    all packaging into one debian source package.
+  * Bumping up to 1.5 so that way the older packing is sure to upgrade to
+    this version.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 19 Jun 2017 09:18:44 -0800

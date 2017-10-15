@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == sendmail database setup
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/admin/email" owner="output">
+    <param name="content::title" revision="revision">e-Mail</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Different emails that different plugins send to users.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/sendmail</link>
+  </content>
+  <content path="/images/sendmail" owner="output">
+    <param name="content::title" revision="revision">Sendmail Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Default set of images related to the Sendmail system.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <attachment name="sendmail-logo" type="attachment/public">
+      <path>:/images/sendmail/sendmail-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/types/sendmail">
+    <param name="content::title" revision="revision">Sendmail Statuses</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Different tags used for emails managed by the sendmail plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/sendmail</link>
+  </content>
+  <content path="/types/sendmail/status">
+    <!-- this is currently two direct values in two cells... -->
+    <param name="content::title" revision="revision">Sendmail Status</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The current status of an email.</p>]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/sendmail">
+    <param name="content::title" revision="revision">Sendmail Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Rights to access the different emails that the system sends to users (i.e. the email subject and body).</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/content-types/email">
+    <param name="taxonomy::name">sendmail::email_page</param>
+    <param name="content::title" revision="revision">Email Content Type</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This page type is used to mark all the emails of your website. It is used to categorize the emails that get sent to clients. This allows you, for example, to mark the emails with a specific theme.</p>]]>
+    </param>
+    <param name="layout::layout" revision="global">"sendmail";</param>
+    <param name="layout::theme" revision="global">"sendmail";</param>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

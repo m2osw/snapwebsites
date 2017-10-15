@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/manager-plugins/vpn">
+    <file>create_client_certs.sh</file>
+  </qresource>
+</RCC>
+
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-snapserver.xml
+-->
+<bundle>
+  <name>snapserver</name>
+  <description>
+    <p>The snapserver daemons are expected to run on many backend
+    computers. Often, for small organizations, snapserver is
+    installed along the frontend. Note that if you use OpenVPN,
+    you most certainly want to keep the frontend and server
+    on the frontend computers to avoid an additional
+    encryption/decryption along the way.</p>
+
+    <p>The snapserver is the actual daemon that generates the HTML
+    of your Snap! Websites.</p>
+  </description>
+  <affected-services>snapmanagerdaemon</affected-services>
+  <packages>snapserver</packages>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

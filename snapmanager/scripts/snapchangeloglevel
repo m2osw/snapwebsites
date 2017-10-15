@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# Change the logger level of all the currently installed services to
+# the specified level.
+#
+case "$1" in
+--help|-h)
+	echo "Usage: $0 <level>"
+	echo "  where level is one of:"
+	echo "    . TRACE"
+	echo "    . DEBUG"
+	echo "    . INFO"
+	echo "    . ERROR"
+	echo "    . FATAL"
+	exit 0
+	;;
+
+TRACE|DEBUG|INFO|ERROR|FATAL)
+	LEVEL=$1
+	for p in /etc/snapwebsites/logger/*.properties
+	do
+		sed -i.bak \
+			-e "s/^log4cplus.logger.snap=[^,]*,\(.*\)/log4cplus.logger.snap=${LEVEL},\1/" \
+			-e "s/^log4cplus.logger.messenger=[^,]*,\(.*\)/log4cplus.logger.messenger=${LEVEL},\1/" \
+			$p
+	done
+	exit 0
+	;;
+
+*)
+	echo "Unknown level '$1'. Try --help for a list of available levels."
+	;;
+esac

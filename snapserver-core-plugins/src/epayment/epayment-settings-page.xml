@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == e-Payment Store page widgets
+Copyright (C) 2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="epayment" id="settings" content-modified="2016-04-10 15:46:52">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="store_name"/>
+  <on-save allow-edit="yes"/>
+  <no-toolbar/>
+  <taborder>
+    <tabindex refid="store_name"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="store_name" type="line-edit" field="epayment::store_name" path="epayment/store_name" auto-save="plain">
+    <tooltip>
+      Enter the name of your store.
+      To make sure it fits on credit card statements,
+      make sure to make it short (i.e. the maximum is about 20 characters).
+    </tooltip>
+    <help>
+      Enter the official name of your store.
+      This name is used to present your store to your customers on the website.
+      It is also used in various other places such as credit card statements and emails.
+      The name should be short enough to fix in all those places.
+      Generally, the name should not be more than 20 characters.
+      The hard limit for bank card is 22 characters, but often the name gets shrunk to just about 10.
+      Here we allow you to enter up to 50 characters.
+    </help>
+    <sizes>
+      <min>1</min>
+      <max>50</max>
+    </sizes>
+    <background-value>store name</background-value>
+    <required>required</required>
+  </widget>
+  <widget id="store_address1" type="line-edit" path="epayment/store_address1" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>First line of the address of your business.</tooltip>
+    <help>Enter the first line of your business address. This information is required.</help>
+    <background-value>address line 1</background-value>
+    <required>required</required>
+  </widget>
+  <widget id="store_address2" type="line-edit" path="epayment/store_address2" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>Second line of the address of your business.</tooltip>
+    <help>Enter the second line of your business address. This information is optional.</help>
+    <background-value>address line 2</background-value>
+  </widget>
+  <widget id="store_city" type="line-edit" path="epayment/store_city" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>The name of the city of your business.</tooltip>
+    <help>Enter the city name of your business address. This information is required.</help>
+    <background-value>city</background-value>
+    <required>required</required>
+  </widget>
+  <widget id="store_province" type="line-edit" path="epayment/store_province" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>The name of the province of your business.</tooltip>
+    <help>Enter the name of the province of your business address. This information is optional for most countries.</help>
+    <background-value>province or state</background-value>
+  </widget>
+  <widget id="store_postal_code" type="line-edit" path="epayment/store_postal_code" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>The postal code of your business.</tooltip>
+    <help>Enter the postal code of your business address. This information is required.</help>
+    <background-value>postal code</background-value>
+    <required>required</required>
+  </widget>
+  <widget id="store_country" type="line-edit" path="epayment/store_country" no-toolbar="no-toolbar" auto-save="no">
+    <tooltip>The name of the country of your business.</tooltip>
+    <help>Enter the name of the country of your business address. This field is required.</help>
+    <background-value>province or state</background-value>
+    <required>required</required>
+  </widget>
+
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

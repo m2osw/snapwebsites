@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == timetracker form page
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="timetracker" id="settings" content-modified="2016-01-02 05:28:23">
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="client"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="client"/>
+    <tabindex refid="billing_duration"/>
+    <tabindex refid="location"/>
+    <tabindex refid="transportation"/>
+    <tabindex refid="description"/>
+  </taborder>
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+
+  <!-- row -->
+  <widget id="client" type="dropdown" field="timetracker::client" path="timetracker/client" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Select the client the work was done for.</tooltip>
+    <help>Help</help>
+    <!-- preset defined dynamically with existing clients -->
+  </widget>
+  <widget id="billing_duration" type="line-edit" field="timetracker::billing_duration" path="timetracker/billing_duration" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the number of hours of work. You may enter minutes after a colon (i.e. 3:15 for three hours and fifteen minutes).</tooltip>
+    <help>Help</help>
+  </widget>
+  <widget id="location" type="dropdown" field="timetracker::location" path="timetracker/location" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter a brief description of your work.</tooltip>
+    <help>Help</help>
+    <preset>
+      <item value="commute"><img src="/images/timetracker/black-commute.png" width="16" height="16"/> Commute</item>
+      <item value="telecommute"><img src="/images/timetracker/black-telecommute.png" width="16" height="16"/> Telecommute</item>
+      <item value="client"><img src="/images/timetracker/black-client.png" width="16" height="16"/> Client's Visit</item>
+    </preset>
+    <default>Select one...</default>
+    <required>required</required>
+  </widget>
+  <widget id="transportation" type="dropdown" field="timetracker::transportation" path="timetracker/transportation" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter a brief description of your work.</tooltip>
+    <help>Help</help>
+    <preset>
+      <item value="unspecified" default="default">Unspecified</item>
+      <item value="none">None</item>
+      <item value="foot"><img src="/images/timetracker/black-foot.png" width="16" height="16"/> On Foot</item>
+      <item value="bicycle"><img src="/images/timetracker/black-bicycle.png" width="16" height="16"/> Bicycle</item>
+      <item value="motorbike">Motorbike</item>
+      <item value="car"><img src="/images/timetracker/black-car.png" width="16" height="16"/> Car</item>
+      <item value="bus">Bus</item>
+      <item value="train">Train</item>
+      <item value="mix">Mixed</item>
+    </preset>
+  </widget>
+  <widget id="description" type="text-edit" field="timetracker::time" path="timetracker/description" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter a brief description of your work.</tooltip>
+    <help>Help</help>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

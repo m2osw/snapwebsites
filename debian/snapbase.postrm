@@ -1,0 +1,62 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+if [ "$1" = "purge" ]
+then
+    # delete various data directories we use in Snap!
+    #
+    rm -rf /var/lib/snapwebsites
+    rm -rf /var/log/snapwebsites
+    rm -rf /var/cache/snapwebsites
+
+    # delete the user configuration file
+    #
+    rm -f /etc/snapwebsites/snapwebsites.d/snapserver.conf
+
+    USER=snapwebsites
+    GROUP=snapwebsites
+
+    # delete snapwebsites daemon user, if it exists
+    #
+    if getent passwd ${USER} > /dev/null
+    then
+        if pgrep -u ${USER} > /dev/null
+        then
+            echo "Cannot delete user '${USER}' because there are processes running owned by this user!"
+        else
+            echo "Deleting ${USER} user"
+            deluser --quiet ${USER} > /dev/null || true
+        fi
+    fi
+
+    # delete snapwebsites daemon group, if it exists
+    #
+    if getent group ${GROUP} > /dev/null
+    then
+        if pgrep -G ${GROUP} > /dev/null
+        then
+            echo "Cannot delete group '${GROUP}' because there are processes running owned by this group!"
+        else
+            echo "Deleting ${GROUP} group"
+            delgroup --quiet ${GROUP} > /dev/null || true
+        fi
+    fi
+
+    # delete the settings directory, but leave it if non-empty
+    #
+    if test -d /etc/snapwebsites
+    then
+        rmdir --ignore-fail-on-non-empty /etc/snapwebsites
+    fi
+
+    # Folders created by snapbootinit on each reboot
+    #
+    rm -rf /run/lock/snapwebsites
+    rm -rf /run/snapwebsites
+fi
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

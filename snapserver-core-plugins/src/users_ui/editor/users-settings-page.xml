@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == users page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="info" id="settings" content-modified="2015-09-07 23:22:10">
+  <timeout minutes="60"/> <!-- 1 hour -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="soft_administrative_session"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="soft_administrative_session"/>
+    <tabindex refid="administrative_session_duration"/>
+    <tabindex refid="user_session_duration"/>
+    <tabindex refid="total_session_duration"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- soft administrative session (update the login time limit on each access) -->
+  <widget id="soft_administrative_session" type="checkmark" field="users::soft_administrative_session" path="users/soft_administrative_session" auto-save="int8">
+    <label>Transform the Administrative User Session to a Soft session</label>
+    <tooltip>When this flag is checked, the Administrative User Session becomes a "soft" session. This means on each access of the website, the duration is extended by the amount specified in the Administrative Session Duration. By default this is false meaning that the user has a limited amount of time to do administrative work and then his rights drop down.</tooltip>
+    <help>Help</help>
+    <value>0</value>
+  </widget>
+
+  <!-- administrative session duration (access to /admin and other similar pages) -->
+  <widget id="administrative_session_duration" type="line-edit" field="users::administrative_session_duration" path="users/administrative_session_duration" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>Enter the duration, in minutes, of the administrative User Session. Administrative pages can be used for that long then they end unless they are marked as Soft Administrative Sessions. The default is 180 minutes (i.e. 3h).</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>10</max>
+    </sizes>
+    <value>180</value> <!-- 3h in minutes is 180 -->
+    <background-value>administrative session duration (minutes)</background-value>
+  </widget>
+
+  <!-- user session duration (access to "standard" pages, not /admin) -->
+  <widget id="user_session_duration" type="line-edit" field="users::user_session_duration" path="users/user_session_duration" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>Enter the duration, in minutes, of the User Session Duration. Most <em>standard</em> pages can be viewed, edited, deleted, etc. when the user is logged in with a User Session. The default is 5 days (7200 minutes).</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>10</max>
+    </sizes>
+    <value>7200</value>
+    <background-value>user session duration (minutes)</background-value>
+  </widget>
+
+  <!-- total session duration (returning registered user who is not logged in) -->
+  <widget id="total_session_duration" type="line-edit" field="users::total_session_duration" path="users/total_session_duration" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>Enter the duration, in minutes, of the total session duration. In most cases, this is left to the default of 1 year (365 days = 525600 minutes). It cannot be made bigger. It can be reduced though.</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>10</max>
+    </sizes>
+    <value>525600</value>
+    <background-value>total session duration (minutes)</background-value>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

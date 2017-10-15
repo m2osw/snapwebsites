@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# This specifies shell vars defined that the snapbackup cron.daily
+# script uses.
+
+# BACKUP_OPTIONS=<snapbackup command line options>
+#
+# Additional options such as --use-ssl
+#
+# This variable cannot include the --host and --dump-context options.
+#
+# Default: <empty>
+#
+BACKUP_OPTIONS=
+
+# BACKUP_HOST=<IP address>
+#
+# One of the hosts running a Cassandra node.
+#
+# Default: 127.0.0.1
+#
+BACKUP_HOST=127.0.0.1
+
+# BACKUP_PATH=<path to directory>
+#
+# The path to the folder where backups get saved.
+#
+# WARNING: The default path got created when you installed the package.
+#          If you want to change this path, you have to make sure the
+#          new path exists.
+#
+# Default: /var/backups/snapwebsites/cassandra-backups
+#
+BACKUP_PATH=/var/backups/snapwebsites/cassandra-backups
+
+# BACKUP_LOG=<path to log file>
+#
+# The path to the log file used to save the output of snapbackup.
+#
+# Default: /var/log/snapwebsites/snapbackup.log
+#
+BACKUP_LOG=/var/log/snapwebsites/snapbackup.log

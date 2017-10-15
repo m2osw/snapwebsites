@@ -1,0 +1,19 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "remove" -o "$1" = "deconfigure" ]
+then
+    # "disable" our default site configuration files
+    # (those are soft links that were probably not removed)
+    #
+    a2dissite -q 000-snap-apache2-default-80
+    #a2dissite -q snap-apache2  #TODO: this file nolonger exists, so remarked out
+fi
+
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

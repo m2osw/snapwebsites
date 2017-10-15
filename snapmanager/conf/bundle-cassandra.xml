@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-cassandra.xml
+-->
+<bundle>
+  <name>cassandra</name>
+  <description>
+    <p>Install the Cassandra bundle and initializes it appropriately for your cluster.</p>
+  </description>
+  <fields>
+    <field name="cluster_name" type="input">
+      <label>Cluster Name</label>
+      <description>Enter the name of your Cassandra cluster. <strong>All the nodes must have the same cluster name.</strong></description>
+    </field>
+    <field name="seeds" type="input">
+      <label>Seeds</label>
+      <description>Indicate Cassandra seed nodes IP addresses separated by commas.</description>
+    </field>
+    <field name="listen_address" type="input">
+      <label>Listen Address</label>
+      <description>Indicate the private IP address of this node (Try ifconfig and take the address for tun0 or eth0, make sure to use the secured IP address if you are using OpenVPN).</description>
+    </field>
+  </fields>
+  <preinst>
+    # Java on Launchpad from Oracle
+    # (It is assumed that we will get Oracle installed and not any other
+    # Java environment)
+    apt-add-repository -y ppa:webupd8team/java
+    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+
+    # Cassandra from Apache2
+    echo "# Info from http://docs.datastax.com/en/cassandra/3.x/cassandra/install/installDeb.html" > /etc/apt/sources.list.d/cassandra.list
+    echo "#deb http://debian.datastax.com/datastax-ddc 3.5 main" >> /etc/apt/sources.list.d/cassandra.list
+    echo "deb http://www.apache.org/dist/cassandra/debian 39x main" >> /etc/apt/sources.list.d/cassandra.list
+    CASSKEY=A278B781FE4B2BDA
+    gpg --keyserver pgp.mit.edu --recv-keys ${CASSKEY}
+    gpg --export --armor ${CASSKEY} | sudo apt-key add -
+    gpg --keyserver pgp.mit.edu --recv-keys 2B5C1B00
+    gpg --export --armor 2B5C1B00 | sudo apt-key add -
+    gpg --keyserver pgp.mit.edu --recv-keys 0353B12C
+    gpg --export --armor 0353B12C | sudo apt-key add -
+
+    # After changing sources.list files we have to update the database
+    # at least once
+    apt-get update
+  </preinst>
+  <packages>oracle-java8-installer, cassandra</packages>
+  <postinst>
+    # cassandra auto-starts with the "wrong" parameters (arrrrhhh)
+    #
+    systemctl stop cassandra
+
+    # Delete the "wrong" data because it won't restart with the change
+    # of the cluster_name parameter below
+    #
+    rm -rf /var/lib/cassandra/*
+
+    # setup the parameters in the cassandra.yaml file
+    # The rcp_address and broadcast_rpc_address are bot set, which gives
+    # you the ability to later change rcp_address to 0.0.0.0 without having
+    # to worry about anything else.
+    #
+    # Also, remove all of the default encryption stuff since we are going to
+    # overwrite all of this with the plugin.
+    #
+    cp /etc/cassandra/cassandra.yaml /etc/cassandra/cassandra.yaml.orig
+    sed \
+      -e "s/^cluster_name: .*/cluster_name: ${BUNDLE_INSTALLATION_CLUSTER_NAME}/" \
+      -e "s/- seeds: \".*\"/- seeds: \"${BUNDLE_INSTALLATION_SEEDS}\"/" \
+      -e "s/^listen_address: .*/listen_address: ${BUNDLE_INSTALLATION_LISTEN_ADDRESS}/" \
+      -e "s/^rpc_address: .*/rpc_address: ${BUNDLE_INSTALLATION_LISTEN_ADDRESS}/" \
+      -e "s/^# broadcast_rpc_address: .*/broadcast_rpc_address: ${BUNDLE_INSTALLATION_LISTEN_ADDRESS}/" \
+      -e "s/^endpoint_snitch: .*/endpoint_snitch: GossipingPropertyFileSnitch/" \
+      -e "s/^auto_snapshot: .*/auto_snapshot: false/" \
+            /etc/cassandra/cassandra.yaml.orig &gt; /etc/cassandra/cassandra.yaml
+
+    # Make a backup of the well-commented version, since the cassandra plugin
+    # for snapmanagerdaemon will spit it back out with comments stripped
+    # when the user modifies it. This is for reference.
+    #
+    cp /etc/cassandra/cassandra.yaml /etc/cassandra/cassandra.yaml.bak
+
+    # restart cassandra
+    #
+    systemctl start cassandra
+  </postinst>
+  <postrm>
+    rm -rf /etc/cassandra /var/lib/cassandra /var/log/cassandra /var/lib/snapwebsites/keys
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

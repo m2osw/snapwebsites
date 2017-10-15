@@ -1,0 +1,9 @@
+Document: snapmanagercgi
+Title: snapmanagercgi tool and daemon
+Author: Alexis Wilke
+Abstract: This is the reference manual for the snapmanagercgi tool and daemon.
+Section: web
+
+Format: HTML
+Index: /usr/share/doc/snapmanagercgi/html/index.html
+Files: /usr/share/doc/snapmanagercgi/html/*

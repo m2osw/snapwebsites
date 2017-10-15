@@ -1,0 +1,7 @@
+debian/tmp/usr/bin/snapbackend                                usr/bin/
+debian/tmp/usr/lib/snapwebsites/manager_plugins/libbackend.so usr/lib/snapwebsites/manager_plugins/
+snapbackend/conf/snapbackend.timer                            lib/systemd/system/
+snapbackend/conf/snapimages.service                           lib/systemd/system/
+snapbackend/conf/snaplistjournal.service                      lib/systemd/system/
+snapbackend/conf/snappagelist.service                         lib/systemd/system/
+snapbackend/conf/snapsendmail.service                         lib/systemd/system/

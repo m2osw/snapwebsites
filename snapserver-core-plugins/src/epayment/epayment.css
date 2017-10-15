@@ -1,0 +1,142 @@
+/*
+ * Name: epayment
+ * Version: 0.0.1.20
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+.epayment .epayment-header
+{
+	padding-top: 10px;
+	font-size: 120%;
+	font-style: italic;
+}
+
+.epayment-facilities
+{
+	margin-top: 10px;
+	border-top: 1px solid #444444;
+	border-left: 1px solid #444444;
+	border-bottom: 1px solid #cccccc;
+	border-right: 1px solid #cccccc;
+	border-radius: 7px;
+	padding: 10px;
+}
+
+.epayment-facilities .epayment-facility-height-adjuster
+{
+	display: inline-block;
+}
+
+.epayment-facilities .epayment-facility
+{
+	box-sizing: content-box;
+	margin-right: 10px;
+	float: left;
+	border-top: 1px solid #cccccc;
+	border-left: 1px solid #cccccc;
+	border-bottom: 1px solid #444444;
+	border-right: 1px solid #444444;
+	border-radius: 20px;
+	padding: 5px;
+	background-color: #ffee33;
+	background: linear-gradient(to bottom, #fff79f, #ffee33 25%, #ffee33 85%, #c4b727);
+	cursor: pointer;
+	text-align: center;
+	line-height: 140px;
+	width: 140px;
+	height: 140px;
+}
+
+.epayment-facilities .epayment-facility .facility-icon
+{
+	vertical-align: middle;
+}
+
+.epayment-buttons
+{
+	padding: 20px 20px 0 20px;
+}
+
+.epayment-buttons .epayment-back,
+.epayment-buttons .epayment-more,
+.epayment-buttons .epayment-next,
+.epayment-buttons .epayment-send,
+.epayment-buttons .epayment-cancel
+{
+	display: block;
+	padding: 10px 30px;
+	border: 1px solid #000000;
+	border-radius: 7px;
+	color: black;
+	text-shadow: 0 0 6px #ffffff, 2px 2px 2px #886619;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+.epayment-buttons .epayment-cancel
+{
+	float: left;
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #fff79f, #fbea2f 25%, #fbea2f 85%, #c4b727); /* yellow */
+}
+
+.epayment-buttons .epayment-back,
+.epayment-buttons .epayment-more,
+.epayment-buttons .epayment-next
+{
+	float: right;
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #9fccff, #2f8efb 25%, #2f8efb 85%, #2770c4); /* blue */
+	margin-left: 10px;
+}
+
+.epayment-buttons .epayment-send
+{
+	float: right;
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #ff9fd8, #fb2fa6 25%, #fb2fa6 85%, #c42883); /* red */
+	margin-left: 10px;
+}
+
+/* product details box */
+div.epayment-product
+{
+	float: right;
+	border: 1px solid black;
+	border-radius: 3px;
+	padding: 20px 10px;
+	background-color: rgba(200, 200, 200, 200);
+	width: 250px;
+}
+
+div.epayment-product .epayment-button-area
+{
+	text-align: center;
+	padding: 10px;
+}
+
+div.epayment-product .epayment-button-area a.buy-now-button
+{
+	border: 1px solid #ffee33;
+	border-top-color: #eecc00;
+	border-radius: 7px;
+	padding: 10px 30px;
+	text-align: center;
+	box-shadow: 2px 2px 3px 0px #888888;
+	background-color: #ffee33;
+	background: linear-gradient(to bottom, #fff79f, #ffee33 25%, #ffee33 85%, #c4b727);
+	/*color: #386621; -- greenish */
+	color: black;
+	text-shadow: 0 0 6px #ffffff, 2px 2px 2px #886619;
+	text-decoration: none;
+}
+
+div.epayment-product .epayment-button-area a.buy-now-button:hover
+{
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #fff79f, #fbea2f 25%, #fbea2f 85%, #c4b727);
+	box-shadow: 2px 2px 3px 0px #888888, 0 0 7px 7px #96BEC8;
+}
+

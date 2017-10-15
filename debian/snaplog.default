@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# This specifies shell vars defined that the snaplog cron.daily
+# script uses.
+#
+
+# The host running mysql
+#
+HOST=127.0.0.1
+
+# The interval in days to keep in the log table when the cron task runs.
+# All other entries will be "vacuumed" away.
+#
+DAY_COUNT=7
+
+# vim: ts=4 sw=4 et

@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == epayment_stripe plugin database setup
+Copyright (C) 2016-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/admin/settings/epayment/stripe" owner="output">
+    <param name="content::title" revision="revision">Stripe Settings</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Settings of the Stripe payment facility.</p>]]>
+    </param>
+    <param name="editor::layout" revision="global" overwrite="yes">"epayment-stripe-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"epayment-stripe-settings-parser";</param>
+    <param name="content::cache_control" revision="global" overwrite="yes">no-store</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+  </content>
+  <!--content path="/epayment/stripe" owner="epayment_stripe">
+    <param name="content::title" revision="revision">Various Stripe Specific Pages</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>We support several return URL pages to satisfy standard Stripe payments.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/epayment/stripe/return" owner="epayment_stripe">
+    <param name="content::title" revision="revision">Return From Approval</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This page is a placeholder to process the return GET from Stripe when a user approved a Stripe payment.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/epayment/stripe/return-plan" owner="epayment_stripe">
+    <param name="content::title" revision="revision">Return From Approval</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This page is a placeholder to process the return GET from Stripe when a user approved a Stripe agreement plan.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/epayment/stripe/cancel" owner="epayment_stripe">
+    <param name="content::title" revision="revision">Order Canceled</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>We are sorry to see you cancel your order.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content>
+  <content path="/epayment/stripe/cancel-plan" owner="epayment_stripe">
+    <param name="content::title" revision="revision">Subscription Canceled</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>We are sorry to see you cancel your subscription plan.</p>]]>
+    </param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+  </content-->
+  <content path="/css/epayment" owner="output">
+    <attachment name="epayment-stripe" type="attachment/public">
+      <path>qrc:/css/epayment/epayment-stripe.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+  </content>
+  <content path="/js/epayment" owner="output">
+    <attachment name="epayment-stripe" type="attachment/public">
+      <path>:/js/epayment/epayment-stripe.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>epayment-credit-card (&gt;= 0.0.1)</dependency>
+    </attachment>
+  </content>
+  <content path="/images/epayment" owner="output">
+    <attachment name="stripe-logo" type="attachment/public">
+      <path>:/images/epayment/stripe-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <!--attachment name="stripe" type="attachment/public">
+      <path>:/images/epayment/stripe.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment-->
+    <attachment name="stripe-medium" type="attachment/public">
+      <path>:/images/epayment/stripe-medium.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+    <attachment name="stripe-large" type="attachment/public">
+      <path>:/images/epayment/stripe-large.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

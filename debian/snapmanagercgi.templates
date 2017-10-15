@@ -1,0 +1,53 @@
+
+Template: snapmanagercgi/title
+Type: title
+Description: snapmanager.cgi
+
+Template: snapmanagercgi/clients
+Type: string
+Description: List of comma separated IP addresses of clients
+ This is the comma separated list of IP addresses of the clients (i.e.
+ administrators) who will access snapmanager.cgi. In most cases, this
+ is your computer static IP address. It is expected that only a very
+ few IP addresses are to be defined here.
+
+Template: snapmanagercgi/user_name
+Type: string
+Description: Name of the first user to access snapmanager.cgi.
+ Enter the name of the very first user. Once fully installed, you will
+ be able to access the snapmanager.cgi front end by logging in with
+ that one user. This name does not need to match your Linux account
+ name.
+ .
+ Note: this user will be able to create new accounts for other
+ administrators (who in turn will be able to create new accounts.)
+
+Template: snapmanagercgi/user_password
+Type: password
+Description: Password for your first user.
+ Enter the password of your first user. This password can be used from
+ anywhere on the Internet. So do not use a weak password unless it is a
+ test syste.
+ .
+ snapmanager.cgi passwords are saved in a password file that only root
+ has access to under: "/etc/snapwebsites/passwords". The snappassword
+ tool can be used to manage that file.
+
+Template: snapmanagercgi/user_password_again
+Type: password
+Description: Please enter the password again.
+ To make sure you entered the password properly, enter it again.
+
+Template: snapmanagercgi/user_password_mismatch
+Type: error
+Description: Password input error (mismatch)
+ The two passwords you entered were not the same. Please try again.
+
+Template: snapmanagercgi/user_password_empty
+Type: error
+Description: Password input error (empty)
+ The password cannot be empty. This user name and password are used to log
+ in from anywhere on the Internet and thus hackers could have access to that
+ log in screen. They should not because of the clients IP addresses, but if
+ it does happen, you want to have a reasonable password.
+

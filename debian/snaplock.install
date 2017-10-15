@@ -1,0 +1,3 @@
+debian/tmp/usr/bin/snaplock       usr/bin/
+snaplock/conf/snaplock.conf       etc/snapwebsites/
+snaplock/conf/snaplock.properties etc/snapwebsites/logger/

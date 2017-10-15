@@ -1,0 +1,50 @@
+<!--
+Snap Plugin - - info plugin resources
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/plugins/info">
+    <file>content.xml</file>
+  </qresource>
+  <qresource prefix="/images/info">
+    <file>info-logo-64x64.png</file>
+  </qresource>
+  <qresource prefix="/css/info">
+    <file>info.css</file>
+  </qresource>
+  <qresource prefix="/xml">
+    <file>editor/info-settings-page.xml</file>
+    <file>editor/plugin-settings-page.xml</file>
+    <file>layout/unsubscribe-content.xml</file>
+    <file>editor/unsubscribe-page.xml</file>
+  </qresource>
+  <qresource prefix="/xsl">
+    <file>layout/info-settings-parser.xsl</file>
+    <file>layout/plugin-selection.xsl</file>
+    <file>layout/plugin-settings-parser.xsl</file>
+    <file>layout/unsubscribe-parser.xsl</file>
+    <file>layout/unsubscribe-theme-parser.xsl</file>
+  </qresource>
+  <qresource prefix="/js">
+    <file>plugin-selection/plugin-selection.js</file>
+    <file>sendmail/unsubscribe.js</file>
+  </qresource>
+</RCC>
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

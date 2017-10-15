@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-antivirus.xml
+-->
+<bundle>
+  <name>antivirus</name>
+  <description>
+    <p>The CRON backend is used to verify that uploaded files are not
+    infected by a virus. The feature requires the clamav antivirus
+    tool to be installed. If not installed, then the antivirus won't
+    run and the files won't be available for download...</p>
+
+    <p>This bundle should be installed on the computer that is to run
+    the CRON snapbackend.</p>
+  </description>
+  <packages>clamav</packages>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

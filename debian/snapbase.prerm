@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "remove" -o "$1" = "deconfigure" ]
+then
+    # We have to call the purge now because once in the postrm the
+    # script (snapapacheinit) will be gone
+    #
+    /usr/lib/snapwebsites/scripts/snapapacheinit purge
+fi
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

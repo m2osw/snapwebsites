@@ -1,0 +1,63 @@
+<!--
+Snap Plugin - - snap layout contrib plugin resources
+Copyright (C) 2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/plugins/layout_contrib">
+    <file>content.xml</file>
+  </qresource>
+  <qresource prefix="/images/layout_contrib">
+    <file>layout_contrib-logo-64x64.png</file>
+  </qresource>
+  <qresource prefix="/images">
+    <file>layout_contrib/header-background.jpg</file>
+    <file>layout_contrib/world-map.png</file>
+  </qresource>
+  <qresource prefix="/js">
+    <file>layout_contrib/agency.js</file>
+    <file>layout_contrib/bootstrap.js</file>
+    <file>layout_contrib/jquery-easing.js</file>
+    <file>layout_contrib/metis-menu.js</file>
+    <file>layout_contrib/sb-admin-2.js</file>
+  </qresource>
+  <qresource prefix="/css">
+    <file>layout_contrib/agency.css</file>
+    <file>layout_contrib/bootstrap.css</file>
+    <file>layout_contrib/bootstrap-social.css</file>
+    <file>layout_contrib/bootstrap-theme.css</file>
+    <file>layout_contrib/font-awesome.css</file>
+    <file>layout_contrib/metis-menu.css</file>
+    <file>layout_contrib/sb-admin-2.css</file>
+  </qresource>
+  <qresource prefix="/fonts">
+    <file>layout_contrib/FontAwesome.otf</file>
+    <file>layout_contrib/fontawesome-webfont.eot</file>
+    <file>layout_contrib/fontawesome-webfont.svg</file>
+    <file>layout_contrib/fontawesome-webfont.ttf</file>
+    <file>layout_contrib/fontawesome-webfont.woff</file>
+    <file>layout_contrib/fontawesome-webfont.woff2</file>
+    <file>layout_contrib/glyphicons-halflings-regular.eot</file>
+    <file>layout_contrib/glyphicons-halflings-regular.svg</file>
+    <file>layout_contrib/glyphicons-halflings-regular.ttf</file>
+    <file>layout_contrib/glyphicons-halflings-regular.woff</file>
+    <file>layout_contrib/glyphicons-halflings-regular.woff2</file>
+  </qresource>
+</RCC>
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

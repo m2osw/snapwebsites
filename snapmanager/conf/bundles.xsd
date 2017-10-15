@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <xs:annotation>
+    <xs:documentation>
+      <![CDATA[
+      This is the schema description of the bundle-*.xml files.
+
+      Note that ONE XML file represents ONE bundle. In other words, you
+      have to create one file per bundle. We do not currently offer a
+      way to merge more than one bundle within one file.
+
+      A <bundle> includes a <name> and a <description> (both those tags are
+      mandatory.)
+
+      Optionally, it includes the <packages>, <preinst>, <postinst>, <prerm>,
+      <postrm>, <fields> tags.
+
+        <bundle>
+        <name>  [required]
+          The name of the bundle. This should be an exact match of the
+          bundle filename as in:
+
+            bundle-<name>.xml
+
+        <bundle>
+        <description>  [required]
+          A basic HTML description of the bundle. This description is shown
+          to the administrator next to the bundle. It should include
+          information about the bundle. What it includes, what it is used
+          for, etc.
+
+        <bundle>
+        <affected-services>
+          A comma separated list of service names that need to be sent
+          the RELOADCONFIG after installing or uninstalling this bundle.
+
+        <bundle>
+        <packages>  [optional]
+          A comma separated list of package names. These are the packages
+          installed and managed by this bundle.
+
+        <bundle>
+        <preinst>  [optional]
+          This is a shell script that the installer will run before
+          installing the <packages>. If there are no packages to install
+          anyway, you may use either the <preinst> or <postinst> to
+          simulate an installation as required by your bundle.
+
+          The <preinst> script is given variables as defined by the
+          <fields> tag if present. See the <postinst> below for
+          details about that.
+
+        <bundle>
+        <postinst>  [optional]
+          This is a shell script that the installer will run after
+          installing the <packages>. In most cases this makes changes
+          to the settings, or the case of a bundle installing a software
+          that does not have a complete set of configuration files, it
+          may add such and start a default installation.
+
+          If required, one can setup fields for a bundle. Those fields will
+          be passed to the <preinst> and <postinst> scripts named after
+          the field name and introduced as BUNDLE_INSTALLATION_..., with
+          the name transformed to uppercase letters.
+
+          For example, if you have a field named "city", then you will get
+          a variable named:
+
+              BUNDLE_INSTALLATION_CITY
+
+        <bundle>
+        <prerm>  [optional]
+          This is a shell script that the uninstaller will run before
+          removing the <packages>. If there are no packages to uninstall
+          anyway, you may use either the <prerm> or <postrm> to
+          simulate an uninstallation as required by your bundle.
+
+          The <prerm> script is not given additional variables.
+
+        <bundle>
+        <postrm>  [optional]
+          This is a shell script that the uninstaller will run after
+          uninstalling the <packages>. In some cases some software
+          may not properly clean up behind themselves and in such
+          circumstances, this process can intervene to further clean
+          up the system.
+
+          The <postrm> script is not given additional variables.
+
+        <bundle>
+        <fields>  [optional]
+          Declare one or more fields to present to the user and that are
+          expected to be filled with values before running the
+          installation.
+
+          The result is a set of variables (see <postinst> above) that are
+          sent to the <preinst> and <postinst> scripts.
+
+          Note that the <fields> tag, if defined, must have at least one
+          <field> tag defined.
+
+        <bundle>
+        <fields>
+        <field name="..." type="...">  [optional]
+          Declare one field to be shown to the administrator so he can
+          enter some data that the installation scripts will use to
+          finish up the installation properly.
+
+          The name should be all lower case, following this regular
+          expression: '[a-z_][a-z0-9_]*'.
+
+          The type is one of the supported widget types:
+
+            . input  --  a simple text input box (one line)
+            . description  --  this one is allowed but should probably not
+                               be used, if you want to add a description,
+                               use the main <description> tag instead.
+
+        <bundle>
+        <fields>
+        <field>
+        <label>  [optional]
+          The label to use with this field. It is made optional in the
+          XSD file because some widgets do not make use of the label
+          and for those not having it is fine. Widgets that expect a
+          label should always have one defined.
+
+        <bundle>
+        <fields>
+        <field>
+        <description>  [optional]
+          The description for this specific field. You probably always
+          should add a description even though it is optional.
+
+The following was first defined in snapserver.conf, but we now make use
+of the snapmanagerdaemon status information to determine the type of
+a server.
+
+# server_types=<list of names>
+#
+# We had a concept of "server types" at first, but then we moved on to
+# having bundles. With bundles in place, the various types can be
+# "computed" checking whether such and such packages are installed
+# and then given a name (i.e. the bundle name!)
+#
+# The "Comp." column (Computer) defines where such and such service should
+# be running. Each set of services can run on the same computer (often does
+# while doing development.) However, running everything on a single computer
+# is not how Snap! was designed. The idea is to be able to run the websites
+# on any number of computers in a cluster. This is why we have Cassandra,
+# but really all parts can be running on any number of computers.
+#
+# +===============+===========================================+=======+
+# |    Name       |              Description                  | Comp. |
+# +===============+============================ Virtual ======+=======+
+# | base / "self" | snapmanager.cgi and dependencies          | All   |
+# +===============+============================ Created ======+=======+
+# | anti-virus    | clamav along snapbackend                  | Back  |
+# | backup        | snapbackup                                | Any   |
+# | cassandra     | cassandra database                        | Back  |
+# | firewall      | snapfirewall + iplock (need overhaul)     | All   |
+# | frontend      | apache with snap.cgi                      | Front |
+# | logserver     | loggingserver from log4cplus              | Back  |
+# | mailserver    | postfix with snapbounce                   | Front |
+# | rkhunter      | check that no rootkit gets installed      | All   |
+# | snapbackend   | one or more snapbackend                   | Back  |
+# | snapdb        | snapdb command line tool                  | Back  |
+# | snapserver    | snapserver                                | Back  |
+# | tripwire      | check that no files gets changed          | All   |
+# | vpn_client    | tinc / openvpn                            | All   |
+# | vpn_server    | tinc / openvpn                            | All   |
+# | watchdog      | snapwatchdog                              | All   |
+# +===============+============================ TODO =========+=======+
+# +===============+===========================================+=======+
+#
+# For NTP, we currently just install it in snapbase and assume that you
+# always install at least snapbase (i.e. snapmanagercgi depends on it)
+# so there is no additional need for. The snapfirewall default tables
+# open that UDP port by default.
+#
+# Note that right now the snapserver plugins come with clamav...
+      ]]>
+    </xs:documentation>
+  </xs:annotation>
+
+  <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <xs:annotation>
+    <xs:documentation>
+      PART 1: type definitions
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:simpleType name="name">
+    <xs:annotation>
+      <xs:documentation>
+        A valid name composed of letters, digits and underscores.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z_][a-zA-Z0-9_]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="field_type">
+    <xs:annotation>
+      <xs:documentation>
+        The type of widget this field is to use.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="input"/>
+      <xs:enumeration value="description"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="html" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="em"/>
+      <xs:element ref="i"/>
+      <xs:element ref="strong"/>
+      <xs:element ref="b"/>
+      <xs:element ref="u"/>
+      <xs:element ref="p"/>
+      <xs:element ref="div"/>
+      <xs:element ref="code"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <xs:annotation>
+    <xs:documentation>
+      PART 2: elements
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:annotation>
+    <xs:documentation>
+      PART 2.1: authorized HTML elements
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="em" type="html"/>
+  <xs:element name="i" type="html"/>
+  <xs:element name="strong" type="html"/>
+  <xs:element name="b" type="html"/>
+  <xs:element name="u" type="html"/>
+  <xs:element name="p" type="html"/>
+  <xs:element name="div" type="html"/>
+  <xs:element name="code" type="html"/>
+
+  <xs:annotation>
+    <xs:documentation>
+      PART 2.2: bundle elements
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="name" type="name"/>
+
+  <xs:element name="description" type="html"/>
+
+  <xs:element name="affected-services" type="xs:string"/>
+
+  <xs:element name="packages" type="xs:string"/>
+
+  <xs:element name="label" type="xs:string"/>
+
+  <xs:element name="is-installed" type="xs:string"/>
+
+  <xs:element name="preinst" type="xs:string"/>
+
+  <xs:element name="postinst" type="xs:string"/>
+
+  <xs:element name="prerm" type="xs:string"/>
+
+  <xs:element name="postrm" type="xs:string"/>
+
+  <xs:element name="field">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="label"/>
+        <xs:element ref="description"/>
+      </xs:choice>
+      <xs:attribute name="name" type="name" use="required"/>
+      <xs:attribute name="type" type="field_type"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="fields">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="field"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="bundle">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- required fields -->
+        <xs:element ref="name" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="description" minOccurs="1" maxOccurs="1"/>
+        <!-- optional fields -->
+        <xs:element ref="affected-services" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="packages" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="is-installed" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="preinst" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="postinst" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="prerm" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="postrm" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="fields" minOccurs="0" maxOccurs="1"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
+<!--
+vim: ts=2 sw=2 et
+-->

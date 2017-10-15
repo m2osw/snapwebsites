@@ -1,0 +1,9 @@
+Document: snapdbproxy
+Title: snapdbproxy daemon
+Author: Alexis Wilke
+Abstract: This is the reference manual for the snapdbproxy daemon.
+Section: web
+
+Format: HTML
+Index: /usr/share/doc/snapdbproxy/html/index.html
+Files: /usr/share/doc/snapdbproxy/html/*

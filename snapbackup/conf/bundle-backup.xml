@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-snapbackup.xml
+-->
+<bundle>
+  <name>backup</name>
+  <description>
+    <p>This bundle installs the snapbackup tool on a computer.
+    In most cases you want to install this tool on a computer
+    running Cassandra, especially if your network requires the
+    OpenVPN to create a secure LAN. However, watch out for disk
+    space if you save many backups on the same computer!</p>
+    <p><strong>WARNING:</strong> By default the installation
+    uses <code>127.0.0.1</code> as a Cassandra node IP address.
+    If you are not installing snapbackup on a Cassandra node,
+    then make sure to change that IP address or you will not
+    get any backups. A field named backup / host will appear
+    after installation.</p>
+  </description>
+  <affected-services>snapmanagerdaemon</affected-services>
+  <fields>
+    <field name="host" type="input">
+      <label>Cassandra Host Address</label>
+      <description>Enter one of the host IP addresses (or DNS names) of the Cassandra server cluster.</description>
+    </field>
+  </fields>
+  <packages>snapbackup,libsnapbackup</packages>
+  <postinst>
+    # Now put the HOST ip address into /etc/default/snapbackup
+    #
+    sed -i.bak -e "s/HOST=.*/HOST=${BUNDLE_INSTALLATION_HOST}/" /etc/default/snapbackup
+  </postinst>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

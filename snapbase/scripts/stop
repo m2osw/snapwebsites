@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# Daemons can now be stopped in any order and to prove it we randomize
+# the stopping of them...
+#
+
+ALL_PIDS=`ls tmp/*.pid | shuf`
+
+for pid_file in $ALL_PIDS
+do
+	# Dynamic variable selection in Bourne Shell (and others)
+	#
+	PID=`cat $pid_file`
+
+	# Now start the command
+	#
+	echo "snapstop --service $PID # from $pid_file"
+	BUILD/snapwebsites/snapcommunicator/src/snapstop --service $PID
+done
+
+

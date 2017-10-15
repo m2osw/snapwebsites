@@ -1,0 +1,9 @@
+Document: snapcgi
+Title: snapcgi tool
+Author: Alexis Wilke
+Abstract: This is the reference manual for the snapcgi tool.
+Section: web
+
+Format: HTML
+Index: /usr/share/doc/snapcgi/html/index.html
+Files: /usr/share/doc/snapcgi/html/*

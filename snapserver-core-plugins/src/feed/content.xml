@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == feed plugin database setup
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <!-- mark the following 3 pages as pages that should appear in our main feed FOR TEST PURPOSES ONLY == TO BE REMOVED -->
+  <content path="/" owner="output">
+    <!-- See SNAP-173 == current revision does not get copied -->
+    <!--param name="content::title" revision="revision">Home Page With Feed T16</param-->
+    <link name="feed::feed" to="feed::feed" mode="*:*">/types/taxonomy/system/content-types/feed/main</link>
+  </content>
+  <content path="/privacy-policy" owner="output">
+    <link name="feed::feed" to="feed::feed" mode="*:*">/types/taxonomy/system/content-types/feed/main</link>
+  </content>
+  <content path="/terms-and-conditions" owner="output">
+    <link name="feed::feed" to="feed::feed" mode="*:*">/types/taxonomy/system/content-types/feed/main</link>
+  </content>
+
+  <content path="/images/feed">
+    <param name="content::title" revision="revision">Feed Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various images used by the feed implementation.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="feed-logo" type="attachment/public">
+      <path>:/images/feed/feed-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+
+  <content path="/admin/settings/feed" owner="output">
+    <param name="content::title" revision="revision">Website Feeds Settings</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Sitewide Feed Settings.</p>]]>
+    </param>
+    <param name="permissions::dynamic" type="int8" revision="global">1</param>
+    <param name="editor::layout" revision="global" overwrite="yes">"feed-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"feed-settings-parser";</param>
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/administration-page</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="rss" type="attachment/private">
+      <path>:/xsl/feed/rss.xsl</path>
+      <mime-type>application/xslt+xml</mime-type>
+    </attachment>
+    <attachment name="atom" type="attachment/private">
+      <path>:/xsl/feed/atom.xsl</path>
+      <mime-type>application/xslt+xml</mime-type>
+    </attachment>
+  </content>
+  <content path="/feed" owner="output">
+    <param name="content::title" revision="revision">Website Feeds</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>List of available feeds for this website.</p>]]>
+    </param>
+    <!--param name="permissions::dynamic" type="int8" revision="global">1</param-->
+    <!-- although the feeds themselves are always changing this page not so much -->
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="shorturl::no_shorturl" to="shorturl::no_shorturl" mode="1:*">/types/taxonomy/system/shorturl/no_shorturl</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+  </content>
+  <content path="/feed/main" owner="output">
+    <param name="content::title" revision="revision">Main Website Feed</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The following is a list of pages composing the main website feed.</p>[list::theme(path = "/feed/main", count = 100)]]]>
+    </param>
+    <!-- this is the defacto description of a feed, if not defined, use the
+         global website description instead; we should not have one for the
+         main feed; use for test purposes only -->
+    <param name="feed::description" revision="revision">
+      <![CDATA[<p>Main feed of this Snap! Website.</p>]]>
+    </param>
+    <!-- sort by creation date of the revision, inverted -->
+    <!-- this would only work in English (see the "::en") which is not too good
+         also I do not think that putting a page back to the front each time a
+         small edit is done there is worth it.
+      <![CDATA[(branch := int32(cell("content", page, "content::revision_control::current_branch")),
+                key := string(cell("content", page, "content::revision_control::current_revision_key::" + branch + "::en")),
+                format("%019d", (9223372036854775807 - (key ? int64(cell("revision", key, "content::created")) : 9223372036854775807))))]]>
+    -->
+    <!-- sort by creation date of the page, inverted -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[format("%019d::%s", 9223372036854775807 - int64(cell("content", page, "content::created")), preg_replace("\/", "::", path))]]>
+    </param>
+    <!-- avoid administrative pages, always
+         also the permissions should be enough to not include admin/...
+         pages to this feed, here we only add pages that anonomous users
+         can view (pretty much all RSS feeds are expected to only send
+         public data anyway) -->
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[!strmatch("^admin/", path)
+            && linked_to("feed::feed", page, "types/taxonomy/system/content-types/feed/main", false)
+            && perms(path, "user", "view", "visitor")]]>
+    </param>
+    <param name="list::selector" overwrite="yes"><![CDATA[type=types/taxonomy/system/content-types/feed/main]]></param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <!--param name="permissions::dynamic" type="int8" revision="global">1</param-->
+    <!-- although the feeds themselves are always changing this page not so much -->
+    <link name="content::page_type" to="content::page" mode="1:*">/types/taxonomy/system/content-types/page/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+  </content>
+  <content path="/types/taxonomy/system/content-types/feed" owner="output">
+    <param name="content::title" revision="revision">Feed Tags</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Tags defined under this one are used to mark pages that are to be added to a feed.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/content-types/feed/attachment" owner="output">
+    <param name="content::title" revision="revision">Attachment Generated by the Feed Plugin</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This special tag is used to mark feed attachment as such. This is particularly useful to give a complete list of feeds to create links in the HTML header of pages served.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/content-types/feed/main" owner="output">
+    <param name="content::title" revision="revision">Main Feed</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Mark pages with this tag to add them to your website main feed.</p>]]>
+    </param>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

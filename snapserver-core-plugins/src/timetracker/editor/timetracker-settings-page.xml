@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == timetracker settings form page
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="timetracker-settings" id="settings" content-modified="2016-01-02 05:28:23">
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="week_first_day"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="week_first_day"/>
+  </taborder>
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+
+  <!-- calendar -->
+  <widget id="week_first_day" type="dropdown" field="timetracker::week_first_day" path="timetracker/week_first_day" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Select whether the first day of the week should be Sunday or Monday (NOT IMPLEMENTED YET).</tooltip>
+    <help>
+      In most cases, since you are going to use the Time Tracker for
+      tracking staff hours, you probably want to use Monday or Thursday
+      as the first day of the week. However, some people may find that
+      offensive thinking that Sunday has to be the first day. This
+      selection allows you to choose how to show the weeks to your users.
+    </help>
+    <preset>
+      <item value="0" default="default">Sunday</item>
+      <item value="1">Monday</item>
+      <item value="2">Tuesday</item>
+      <item value="3">Wednesday</item>
+      <item value="4">Thursday</item>
+      <item value="5">Friday</item>
+      <item value="6">Saturday</item>
+    </preset>
+  </widget>
+
+  <widget id="first_week" type="dropdown" field="timetracker::first_week" path="timetracker/first_week" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Select how the first week of the year is determined.</tooltip>
+    <help>
+      <p>
+        The <strong>First Sunday</strong> is used by most of the Americas,
+        South Africa, China, Japan, Israel. The first week may be given
+        number 0 instead of 1, representing a first week starting in
+        the previous year.
+      </p>
+      <p>
+        ISO 8601 (<strong>First Thursday</strong>) is used by most of the
+        European countries, most of Asian and Oceania. The first week may
+        not start in the previous year.
+      </p>
+      <p>
+        The <strong>First Monday</strong> represents the day of the first
+        week in the new year.
+      </p>
+      <p>
+        Unfortunately, strftime() does not currently support a first week
+        day starting on a Friday so we do not support Islamic weeks properly.
+        This is used throughout the Middle East.
+      </p>
+    </help>
+    <preset>
+      <item value="U">First Sunday</item>
+      <item value="V">First Thursday (ISO 8601)</item>
+      <item value="W">First Monday</item>
+    </preset>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

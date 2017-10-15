@@ -1,0 +1,9 @@
+Document: snapcommunicator
+Title: snapcommunicator daemon
+Author: Alexis Wilke
+Abstract: This is the reference manual for the snapcommunicator daemon.
+Section: web
+
+Format: HTML
+Index: /usr/share/doc/snapcommunicator/html/index.html
+Files: /usr/share/doc/snapcommunicator/html/*

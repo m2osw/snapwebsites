@@ -1,0 +1,36 @@
+/*
+ * Name: hashtag
+ * Version: 0.0.1.7
+ * Browsers: all
+ * Copyright: Copyright 2015-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+.hashtag-invisible
+{
+	text-decoration: inherit;
+	color: inherit;
+}
+
+.hashtag-hashtag
+{
+	text-decoration: inherit;
+	color: #005197;
+}
+
+.hashtag-hashtag s
+{
+	text-decoration: inherit;
+	color: #6696C0;
+}
+
+.hashtag-hashtag b
+{
+	font-weight: inherit;
+}
+
+a.hashtag-hashtag:hover b
+{
+	text-decoration: underline;
+}
+

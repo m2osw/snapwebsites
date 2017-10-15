@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == locale timezone page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="feed" id="settings" content-modified="2015-10-24 16:28:15">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="default_logo"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="default_logo"/>
+    <tabindex refid="allow_main_rss_xml"/>
+    <tabindex refid="allow_main_atom_xml"/>
+    <tabindex refid="publish_full_article"/>
+    <tabindex refid="teaser_words"/>
+    <tabindex refid="teaser_tags"/>
+    <tabindex refid="teaser_end_marker"/>
+    <tabindex refid="top_maximum_number_of_items_in_any_feed"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- main feed parameters -->
+  <widget id="default_logo" type="image-box" field="feed::default_logo" path="feed/default_logo" drop="drop" auto-save="html">
+    <!-- save logo under /feed so it can be publicly accessible -->
+    <attachment force-path="feed" force-filename="logo" identification="page/public"/>
+    <tooltip>Logo added to your main RSS feed.</tooltip>
+    <help>Drag and drop an image here to add a logo for your RSS feed.</help>
+    <geometry width="144" height="400"/>
+    <sizes>
+      <min>16x16</min>
+      <resize>144x400</resize> <!-- the resize is not acted on by the editor plugin, only by editor.js -->
+      <max>2048x2048</max>
+    </sizes>
+    <!--
+      RSS 2.0 only accepts PNG, JPEG and GIF file formats
+      that being said, we may want to support a script that
+      resizes and changes the format and thus we accept more
+      formats but really only send a PNG to the feed.
+      The size constrained for RSS 2.0 are 144x400 maximum
+      and we suspect around 16x16 minimum. The default
+      expected size is 88x31.
+
+      Atom 1.0 does not specify an image format, however, it
+      does say images should be squares (WxH where W == H)
+      for icons and 2x1 (WxH where W = H x 2) for logos;
+      and overall that the size "should remain small".
+    -->
+    <!--filters> == this is not working yet for the editor cannot easily read the filename extension
+      <! list of accepted image formats >
+      <extensions>png,jpg,jpeg,gif</extensions>
+    </filters-->
+    <background-value>Drag &amp; Drop<br/>Your Photo<br/>Here<br/>(32x32 to 144x400)</background-value>
+  </widget>
+  <widget id="top_maximum_number_of_items_in_any_feed" type="line-edit" field="feed::top_maximum_number_of_items_in_any_feed" path="feed/top_maximum_number_of_items_in_any_feed" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>Enter the maximum number of items to add in any one feed.</tooltip>
+    <help>The Feed system generates feeds by adding items found in a list. As your website grows, so does your feed, if you do not impose any limit. The top maximum number of items in any feed parameter is used to impose such a limit. If your website has more than that many pages that could be included in your feed, then the Feed system limits to that many and stops. This maximum is applied to all your feeds. You may change the feed maximum too.</help>
+    <filters>
+      <regex name="integer"/>
+      <min-value>1</min-value>
+      <min-value>1000</min-value>
+    </filters>
+    <sizes>
+      <min>0</min>
+      <max>5</max>
+    </sizes>
+  </widget>
+
+  <!-- /rss.xml and /atom.xml -->
+  <widget id="allow_main_rss_xml" type="checkmark" field="feed::allow_main_rss_xml" path="feed/allow_main_rss_xml" auto-save="int8">
+    <label>Allow the main feed RSS file format to appear under <code>/rss.xml</code>.</label>
+    <tooltip>Check this checkmark to allow /rss.xml to point to /feed/main/main.rss (with an internal redirect meaning that we won't generate a 301 Redirect.)</tooltip>
+    <help>By clicking this checkmark, you allow the main feed RSS file to be duplicated in /rss.xml. Make sure to turn this checkmark off if you delete the main feed.</help>
+  </widget>
+  <widget id="allow_main_atom_xml" type="checkmark" field="feed::allow_main_atom_xml" path="feed/allow_main_atom_xml" auto-save="int8">
+    <label>Allow the main feed Atom file format to appear under <code>/atom.xml</code>.</label>
+    <tooltip>Check this checkmark to allow /atom.xml to point to /feed/main/main.atom (with an internal redirect meaning that we won't generate a 301 Redirect.)</tooltip>
+    <help>By clicking this checkmark, you allow the main feed Atom file to be duplicated in /atom.xml. Make sure to turn this checkmark off if you delete the main feed.</help>
+  </widget>
+
+  <!-- teaser handling -->
+  <widget id="publish_full_article" type="checkmark" field="feed::publish_full_article" path="feed/publish_full_article" auto-save="int8">
+    <label>Publish the whole article when checked. Otherwise make use of a teaser (see parameters below.)</label>
+    <tooltip>Select to publish whole pages in your feed.</tooltip>
+    <help>In most cases, you want to only publish a teaser inyour feeds (teaser is as defined below.) This option allows you to turn off the teaser function and use the whole page instead.</help>
+  </widget>
+  <widget id="teaser_words" type="line-edit" field="feed::teaser_words" path="feed/teaser_words" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>Enter the number of words that should appear in your feed teasers.</tooltip>
+    <help>The Feed system generates its own teaser for each feed item. This parameter indicates the number of words to display in the feed. Usually you want between 200 and 300 words in a teaser.</help>
+    <filters>
+      <regex name="integer"/>
+      <min-value>0</min-value>
+      <min-value>5000</min-value>
+    </filters>
+    <sizes>
+      <min>0</min>
+      <max>5</max>
+    </sizes>
+  </widget>
+  <widget id="teaser_tags" type="line-edit" field="feed::teaser_tags" path="feed/teaser_tags" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>Enter the maximum number of tags that should be added to your feed teaser.</tooltip>
+    <help>The Feed system generates its own teaser for each feed item. This parameter indicates the number of tags to include in such a teaser. In most cases, you do not limit the number of tags. To do so, use a large number such as 1000.</help>
+    <filters>
+      <regex name="integer"/>
+      <min-value>0</min-value>
+      <min-value>5000</min-value>
+    </filters>
+    <sizes>
+      <min>0</min>
+      <max>5</max>
+    </sizes>
+  </widget>
+  <widget id="teaser_end_marker" type="line-edit" field="feed::teaser_end_marker" path="feed/teaser_end_marker" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the text to display at the bottom of the teaser to let users know that there is more to read.</tooltip>
+    <help>The Feed system generates its own teaser for each feed item. This parameter represents the text to append at the end of the teaser to indicate when more data is available. This is often the elipsis (<strong>...</strong>), eventually between square brackets (<strong>[...]</strong>). The Feed system does not allow adding a link to the page so please avoid using something such as <strong>Read more...</strong> since it won't be clickable.</help>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

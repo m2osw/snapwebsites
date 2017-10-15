@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if test "$1" = "--clean-first"
+then
+	rm -rf BUILD
+fi
+
+mkdir BUILD
+cd BUILD
+cmake ..
+make
+./javascript_unicode

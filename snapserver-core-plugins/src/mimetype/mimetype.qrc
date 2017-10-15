@@ -1,0 +1,73 @@
+<!--
+Snap Plugin - - snap mimetype plugin resources
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/plugins/mimetype">
+    <file>content.xml</file>
+  </qresource>
+  <qresource prefix="/js/mimetype">
+    <file>mimetype-basics.js</file>
+  </qresource>
+  <qresource prefix="/images">
+    <file>mimetype/file-aac.png</file>
+    <file>mimetype/file-ai.png</file>
+    <file>mimetype/file-avi.png</file>
+    <file>mimetype/file-bin.png</file>
+    <file>mimetype/file-bmp.png</file>
+    <file>mimetype/file-broken-document.png</file>
+    <file>mimetype/file-cue.png</file>
+    <file>mimetype/file-divx.png</file>
+    <file>mimetype/file-doc.png</file>
+    <file>mimetype/file-eps.png</file>
+    <file>mimetype/file-flac.png</file>
+    <file>mimetype/file-flv.png</file>
+    <file>mimetype/file-gif.png</file>
+    <file>mimetype/file-html.png</file>
+    <file>mimetype/file-ical.png</file>
+    <file>mimetype/file-indd.png</file>
+    <file>mimetype/file-inx.png</file>
+    <file>mimetype/file-iso.png</file>
+    <file>mimetype/file-jpg.png</file>
+    <file>mimetype/file-mov.png</file>
+    <file>mimetype/file-mp3.png</file>
+    <file>mimetype/file-mpg.png</file>
+    <file>mimetype/file-pdf.png</file>
+    <file>mimetype/file-php.png</file>
+    <file>mimetype/file-png.png</file>
+    <file>mimetype/file-pps.png</file>
+    <file>mimetype/file-ppt.png</file>
+    <file>mimetype/file-psd.png</file>
+    <file>mimetype/file-qxd.png</file>
+    <file>mimetype/file-qxp.png</file>
+    <file>mimetype/file-raw.png</file>
+    <file>mimetype/file-rtf.png</file>
+    <file>mimetype/file-svg.png</file>
+    <file>mimetype/file-tif.png</file>
+    <file>mimetype/file-txt.png</file>
+    <file>mimetype/file-unknown.png</file>
+    <file>mimetype/file-vcf.png</file>
+    <file>mimetype/file-wav.png</file>
+    <file>mimetype/file-wma.png</file>
+    <file>mimetype/file-xls.png</file>
+    <file>mimetype/file-xml.png</file>
+  </qresource>
+</RCC>
+<!--
+vim: ts=2 sw=2 et syntax=xml
+-->

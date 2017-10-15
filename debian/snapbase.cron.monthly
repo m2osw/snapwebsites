@@ -1,0 +1,26 @@
+#!/bin/sh -e
+#
+
+# Delete old files and empty directories under /var/cache/snapwebsites
+#
+find /var/cache/snapwebsites/* -type f -atime +31 -delete
+find /var/cache/snapwebsites/* -type d -exec rmdir --ignore-fail-on-non-empty "{}" \;
+
+# Unfortunately, at this time the www-data user cannot write under
+# our /var/cache/snapwebsites directory (we may open it later?)
+# We want to delete user sessions that we place under
+# /var/lib/snapwebsites/sessions
+# Those files should get deleted when new ones are created, but to
+# make sure we do not just fill up the drive and this is useful in
+# case users get deleted, the interface is not used for a long time
+# etc.
+#
+# Note: we do not delete empty directories at this time.
+#       (directories are not dynamically created there.)
+#
+if test -d /var/lib/snapwebsites/sessions
+then
+    find /var/lib/snapwebsites/sessions -type f -atime +31 -delete
+fi
+
+# vim: ts=4 sw=4 et

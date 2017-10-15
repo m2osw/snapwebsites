@@ -1,0 +1,28 @@
+/*
+ * Name: sortable
+ * Version: 0.0.1.6
+ * Browsers: all
+ * Copyright: Copyright 2016-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+/** SORTABLE */
+.snap-editor.snap-editor-sortable
+{
+	display: none;
+}
+.snap-sortable-container .snap-sortable-items:hover
+{
+	background-color: #d8c090;
+	cursor: move;
+}
+.snap-sortable-container .snap-sortable-items.sortable-chosen
+{
+	background-color: #c0f8d0;
+	cursor: move;
+}
+.editable.sortable:hover
+{
+	border: 1px solid black;
+}
+

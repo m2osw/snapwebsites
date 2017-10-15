@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == verify form
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-form name="users__verify" session_id="user/6" owner="users_ui">
+  <auto-reset minutes="5"/>
+  <timeout minutes="180"/>
+  <focus refid="verification_code"/>
+  <default-button refid="verify"/>
+  <taborder>
+    <tabindex refid="verification_code"/>
+    <tabindex refid="verify"/>
+    <tabindex refid="resend"/>
+    <tabindex refid="login"/>
+    <tabindex refid="cancel"/>
+  </taborder>
+  <accesskeys>
+    <!-- by keeping those in alphabetical order you'll avoid problems (duplicates) -->
+    <key refid="cancel">c</key><!-- default cancelation is expected to be [Shift-]Alt-C -->
+    <key refid="login">l</key>
+    <key refid="resend">r</key>
+    <key refid="verify">s</key><!-- default submit is expected to be [Shift-]Alt-S -->
+    <key refid="verification_code">v</key>
+  </accesskeys>
+  <widget id="verification_info" type="fieldset">
+    <label>Verification Information</label>
+    <tooltip>You registered on our website, now you are asked to enter a verification code that we emailed to you.</tooltip>
+    <help>After registration we ensure you entered a valid email address by asking you to enter a verification code. This form allows you to enter that verification code. Once verified, you can log in your account and start using our website as a registered user.</help>
+    <widgetorder>
+      <!-- used if order is tweaked (i.e. plugins add widgets) -->
+      <widgetpriority refid="verification_code"/>
+      <widgetpriority refid="verify"/>
+      <widgetpriority refid="resend"/>
+      <widgetpriority refid="login"/>
+      <widgetpriority refid="cancel"/>
+    </widgetorder>
+    <widget id="verification_code" type="line-edit">
+      <label>Verification Code</label>
+      <background-value>verification code</background-value>
+      <tooltip>Enter your verification code. If you did not yet receive the email we sent you, make sure to verify your spam folder in case your email provider does not like our emails.</tooltip>
+      <sizes>
+        <min>10</min>
+        <max>30</max>
+        <width>25</width>
+      </sizes>
+      <required>required</required>
+      <help>Enter your verification code in order to verify your email address.</help>
+    </widget>
+    <widget id="verify" type="submit">
+      <label>Verify</label>
+      <tooltip>Once you entered your verification code click here to process the form.</tooltip>
+      <sizes>
+        <width>15</width>
+      </sizes>
+      <help>Please enter your Verification Code in the box so named and then click on the Verification button.</help>
+      <value>Verify</value>
+    </widget>
+    <widget id="resend" type="link">
+      <label>Resend Code</label>
+      <tooltip>Click here to request for another verification email</tooltip>
+      <help>Did not receive the verification email? Click here to request the system to send you the request again.</help>
+      <value>/verify/resend</value>
+    </widget>
+    <widget id="login" type="link">
+      <label>Log In</label>
+      <tooltip>Click here to log in</tooltip>
+      <help>Already verified? Click here to go to the log in form instead.</help>
+      <value>/login</value>
+    </widget>
+    <widget id="cancel" type="link">
+      <label>Cancel</label>
+      <tooltip>Click here to return to the home page</tooltip>
+      <help>Changed your mind? Click on this Cancel link to return to the home page.</help>
+      <value>/</value>
+    </widget>
+  </widget>
+</snap-form>
+<!-- vim: ts=2 sw=2 et
+-->

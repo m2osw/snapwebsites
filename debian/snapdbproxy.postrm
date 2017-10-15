@@ -1,0 +1,29 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+PACKAGENAME=snapdbproxy
+
+# Remove files representing each service offered by this package
+#
+SERVICES_DIR=/usr/share/snapwebsites/services
+rm -f $SERVICES_DIR/${PACKAGENAME}.service
+
+if [ "$1" = "purge" ]
+then
+    # delete the logs
+    #
+    rm -f /var/log/snapwebsites/${PACKAGENAME}.log*
+    rm -f /var/log/snapwebsites/secure/${PACKAGENAME}.log*
+
+    # delete the user configuration file
+    #
+    rm -f /etc/snapwebsites/snapwebsites.d/${PACKAGENAME}.conf
+fi
+
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

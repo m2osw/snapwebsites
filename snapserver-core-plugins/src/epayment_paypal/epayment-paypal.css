@@ -1,0 +1,36 @@
+/*
+ * Name: epayment-paypal
+ * Version: 0.0.1.3
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+.epayment_paypal-process-buttons .epayment_paypal-cancel,
+.epayment_paypal-process-buttons .epayment_paypal-process
+{
+	display: block;
+	padding: 10px 30px;
+	border: 1px solid #000000;
+	border-radius: 7px;
+	color: black;
+	text-shadow: 0 0 6px #ffffff, 2px 2px 2px #886619;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+.epayment_paypal-process-buttons .epayment_paypal-cancel
+{
+	float: left;
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #ff3d3d, #fb2f2f 25%, #fb2f2f 85%, #c42727);
+	text-shadow: 0 0 6px #ff5858, 2px 2px 2px #883309;
+}
+
+.epayment_paypal-process-buttons .epayment_paypal-process
+{
+	float: right;
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #fff79f, #fbea2f 25%, #fbea2f 85%, #c4b727);
+}
+

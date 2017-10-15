@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-tools.xml
+-->
+<bundle>
+  <name>tools</name>
+  <description>
+    <p>Install various tools that we like to have to work remotely on a server.</p>
+  </description>
+  <packages>htop, zip, unzip</packages>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

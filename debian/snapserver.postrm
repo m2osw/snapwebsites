@@ -1,0 +1,33 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+PACKAGENAME=snapserver
+
+# Remove files representing each service offered by this package
+#
+SERVICES_DIR=/usr/share/snapwebsites/services
+rm -f $SERVICES_DIR/${PACKAGENAME}.service
+
+if [ "$1" = "purge" ]
+then
+    # delete all logs
+    #
+    # WARNING: This is done in snapbase.postrm instead because
+    #          these logs are common to snapserver and snapbackend
+    #
+    #rm -f /var/log/snapwebsites/${PACKAGENAME}.log
+    #rm -f /var/log/snapwebsites/secure/${PACKAGENAME}.log
+
+    # delete the snapserver SSL files
+    #
+    SNAPSSL=/etc/snapwebsites/ssl
+    rm -f $SNAPSSL/${PACKAGENAME}.key
+    rm -f $SNAPSSL/${PACKAGENAME}.crt
+fi
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

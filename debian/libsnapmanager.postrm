@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "purge" ]
+then
+    # delete the data directories
+    #
+    rm -rf /var/lib/snapwebsites/cluster-status
+
+    # delete the user configuration file
+    #
+    rm -f /etc/snapwebsites/snapwebsites.d/snapmanager.conf
+fi
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

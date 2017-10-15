@@ -1,0 +1,158 @@
+snapbackend (1.0.23.16~xenial) xenial; urgency=high
+
+  * Nightly build.
+  * EX-131: broadcast status after local update-all change.
+
+ -- Build Server <build@m2osw.com>  Fri, 16 Jun 2017 02:00:53 -0700
+
+snapbackend (1.0.23.2~xenial) xenial; urgency=high
+
+  * EX-131: Now uses the new `widget_select` UI in snapmanager.
+  * EX-131: Now keeps backends disabled after an upgrade (or first install).
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 14 Jun 2017 18:43:39 -0700
+
+snapbackend (1.0.22.2~xenial) xenial; urgency=high
+
+  * EX-131: Added the snaplistjournal to the list of services to start in the
+    snapbackend.postinst script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Jun 2016 17:14:25 -0800
+
+snapbackend (1.0.21.0~xenial) xenial; urgency=high
+
+  * EX-131: Fixed the name from snaplistd to snaplistjournal in .install file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Jun 2016 11:25:37 -0800
+
+snapbackend (1.0.20.0~xenial) xenial; urgency=high
+
+  * EX-131: Adding the new `listjournal` backend.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Jun 2016 11:25:37 -0800
+
+snapbackend (1.0.19.1~xenial) xenial; urgency=high
+
+  * Added broadcast for backend status.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 06 Jun 2017 15:04:43 -0700
+
+snapbackend (1.0.18.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notices to 2017.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Dec 2017 14:44:48 -0800
+
+snapbackend (1.0.17.0~xenial) xenial; urgency=high
+
+  * EX-158: Reduced the restart timeout for pagelist to 5min instead of 1h.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 14 Dec 2016 13:39:48 -0800
+
+snapbackend (1.0.16.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Increased stop wait from 1 min. to 5 min.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 09 Nov 2016 22:27:47 -0700
+
+snapbackend (1.0.15.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added -q on the `systemctl is-enabled ...` command.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 31 Oct 2016 12:43:47 -0700
+
+snapbackend (1.0.14.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Added -q to systemctl when using is-active so we avoid output
+    in our scripts.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 30 Oct 2016 23:44:46 -0700
+
+snapbackend (1.0.13.0~xenial) xenial; urgency=high
+
+  * SNAP-491: Make use of the snapstop command to stop snapbackend processes.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 20 Oct 2016 11:17:49 -0700
+
+snapbackend (1.0.12.0~xenial) xenial; urgency=high
+
+  * SNAP-461: Removed "Requires=..." since all servers can run by themselves.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 19 Oct 2016 12:21:49 -0700
+
+snapbackend (1.0.11.0~xenial) xenial; urgency=high
+
+  * SNAP-481: Use 1,000 as the RLIMIT_NPROC. It is per user, not process.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 Oct 2016 17:59:49 -0700
+
+snapbackend (1.0.10.0~xenial) xenial; urgency=high
+
+  * SNAP-481: Drastically limit the number of sub-processes the snapbackend
+    can create between 100 and 1,000.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 Oct 2016 12:07:49 -0700
+
+snapbackend (1.0.9.0~xenial) xenial; urgency=high
+
+  * SNAP-439: Added the NoNewPrivileges flag to the sendmail service because
+    without it postfix /usr/sbin/postdrop fails to drop new emails (i.e. the
+    group cannot change to "postdrop".)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 27 Sep 2016 17:40:40 -0700
+
+snapbackend (1.0.8.0~xenial) xenial; urgency=high
+
+  * SNAP-413: Replaced the snapcreatetables call with the NEWTABLE signal.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 27 Sep 2016 14:50:47 -0700
+
+snapbackend (1.0.7.0~xenial) xenial; urgency=high
+
+  * SNAP-438: Fixed the misspelled "Se[r]vice" for the RestartSec parameter.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 26 Sep 2016 23:13:09 -0700
+
+snapbackend (1.0.6.0~xenial) xenial; urgency=high
+
+  * SNAP-438: Added the SECTION flag, without it the section won't work.
+  * Fixed the cache once a service configuration is changed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 26 Sep 2016 17:39:09 -0700
+
+snapbackend (1.0.5.0~xenial) xenial; urgency=high
+
+  * SNAP-438: Added proper code to save data in override.conf instead
+    of directly in the .service file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 26 Sep 2016 13:06:09 -0700
+
+snapbackend (1.0.4.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+snapbackend (1.0.3.0~xenial) xenial; urgency=high
+
+  * Applied a fix so disabling/enabling/activating a service works.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 28 Aug 2016 10:10:16 -0700
+
+snapbackend (1.0.2.0~xenial) xenial; urgency=high
+
+  * The .timer file also needs to be installed by us.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 26 Aug 2016 02:00:52 -0700
+
+snapbackend (1.0.1.1~xenial) xenial; urgency=high
+
+  * Fixing install mistakes with new systemd services.
+
+ -- Doug Barbieri <doug@dooglio.net>  Thu, 25 Aug 2016 20:11:35 -0700
+
+snapbackend (1.0.0) xenial; urgency=high
+
+  * Initial release of packaging.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 26 May 2016 22:49:55 -0800

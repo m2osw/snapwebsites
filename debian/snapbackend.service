@@ -1,0 +1,33 @@
+# Documentation available at:
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+[Unit]
+Description=Snap! Websites snapbackend CRON daemon
+After=snapbase.service snapcommunicator.service snapfirewall.service snaplock.service snapdbproxy.service
+
+[Service]
+# See also the snapbackend.timer file
+Type=simple
+WorkingDirectory=~
+ProtectHome=true
+NoNewPrivileges=true
+ExecStart=/usr/bin/snapbackend
+ExecStop=/usr/bin/snapstop --timeout 300 --service $MAINPID
+User=snapwebsites
+Group=snapwebsites
+# No auto-restart, we use the timer to start once in a while
+# We also want to make systemd think that exit(1) is fine
+SuccessExitStatus=1
+Nice=5
+LimitNPROC=1000
+# For developers and administrators to get console output
+#StandardOutput=tty
+#StandardError=tty
+#TTYPath=/dev/console
+# Enter a size to get a core dump in case of a crash
+#LimitCORE=10G
+
+[Install]
+WantedBy=multi-user.target
+
+# vim: syntax=dosini

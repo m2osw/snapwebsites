@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == editor test page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="editor" id="test" content-modified="2014-10-06 22:53:48">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="file_widget"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="file_widget"/>
+    <tabindex refid="picture_widget"/>
+    <tabindex refid="line_edit_widget"/>
+    <tabindex refid="password_widget"/>
+    <tabindex refid="password_confirm_widget"/>
+    <tabindex refid="text_edit_widget"/>
+    <tabindex refid="dropdown_widget"/>
+    <tabindex refid="checkmark_widget"/>
+    <tabindex refid="radio_widget"/>
+    <tabindex refid="button_widget"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="file_widget" type="dropped-file" field="editor::file_widget" path="editor/file_widget" drop="drop" auto-save="html">
+    <attachment identification="page/public"/>
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <sizes>
+      <max>2048x2048</max>
+    </sizes>
+    <!--filters> == this is not working yet for the editor cannot easily read the filename extension
+      <! list of accepted image formats >
+      <extensions>png,jpg,jpeg,svg</extensions>
+    </filters-->
+    <background-value>Drag &amp; Drop Your File Here</background-value>
+  </widget>
+  <widget id="picture_widget" type="image-box" field="editor::picture_widget" path="editor/picture_widget" drop="drop" auto-save="html">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>64x64</min>
+      <resize>150x150</resize>
+      <max>2048x2048</max>
+    </sizes>
+    <!--filters> == this is not working yet for the editor cannot easily read the filename extension
+      <! list of accepted image formats >
+      <extensions>png,jpg,jpeg,svg</extensions>
+    </filters-->
+    <background-value>Drag &amp; Drop<br/>An Image<br/>Here</background-value>
+  </widget>
+  <!-- TBD: we probably need to test each type of widget with each type of auto-save value available! -->
+  <widget id="line_edit_widget" type="line-edit" field="editor::line_edit_widget" path="editor/line_edit_widget" auto-save="plain">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>128</max>
+    </sizes>
+    <background-value>line edit</background-value>
+  </widget>
+  <widget id="password_widget" type="password" field="editor::password_widget" path="editor/password_widget" no-toolbar="no-toolbar" auto-save="plain">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>128</max>
+    </sizes>
+    <background-value>password</background-value>
+  </widget>
+  <widget id="password_confirm_widget" type="password_confirm" field="editor::password_confirm_widget" path="editor/password_confirm_widget" no-toolbar="no-toolbar" auto-save="plain">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>128</max>
+    </sizes>
+    <background-value>password</background-value>
+    <background-confirm>confirm</background-confirm>
+  </widget>
+  <widget id="text_edit_widget" type="text-edit" field="editor::text_edit_widget" path="editor/text_edit_widget" auto-save="string">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>0</min>
+      <max>2000</max>
+    </sizes>
+    <background-value>text edit</background-value>
+  </widget>
+  <widget id="dropdown_widget" type="dropdown" path="editor/dropdown_widget" auto-save="no">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <default not-a-value="not-a-value">Select one...</default>
+    <sizes>
+      <min>1</min>
+      <max>128</max>
+    </sizes>
+    <preset>
+      <item value="1">First Item</item>
+      <item value="2">Second Item</item>
+      <item value="3">Third Item</item>
+    </preset>
+    <!-- define one of three defaults:
+          use the <value> (defined by editor.cpp if available, most often because it was saved in the database earlier)
+          use the item with ... default="default" ... if one exists
+          use the value of the <default> tag if defined -->
+  </widget>
+  <widget id="checkmark_widget" type="checkmark" field="editor::checkmark_widget" path="editor/checkmark_widget" auto-save="string">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <label>Click to select / unselect</label>
+  </widget>
+  <widget id="radio_widget" type="radio" field="editor::radio_widget" path="editor/radio_widget" auto-save="string">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <preset>
+      <item value="1">One Month</item>
+      <item value="6" default="default">6 Months</item>
+      <item value="12">12 Months</item>
+    </preset>
+    <!-- define one of two defaults:
+          use the <value> (defined by editor.cpp if available, most often because it was saved in the database earlier)
+          use the item with ... default="default" ... if one exists -->
+  </widget>
+  <widget id="button_widget" type="button" path="editor/button_widget" auto-save="no">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <label>Click Me</label>
+    <!-- the value is put in the href of the anchor -->
+    <value>#</value>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

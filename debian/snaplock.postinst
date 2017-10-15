@@ -1,0 +1,35 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "configure" ]
+then
+    PACKAGENAME=snaplock
+
+    # Create files representing each service offered by this package
+    #
+    SERVICES_DIR=/usr/share/snapwebsites/services
+    touch $SERVICES_DIR/${PACKAGENAME}.service
+
+    # Create the logfile because the snapwebsites user may have
+    # difficulties with it otherwise during logrotate.
+    #
+    SNAPLOGDIR=/var/log/snapwebsites
+    LOGFILE=${SNAPLOGDIR}/${PACKAGENAME}.log
+    touch ${LOGFILE}
+    chown snapwebsites:snapwebsites ${LOGFILE}
+    chmod 640 ${LOGFILE}
+
+    SNAPSECURELOGDIR=/var/log/snapwebsites/secure
+    SECURELOGFILE=${SNAPSECURELOGDIR}/${PACKAGENAME}.log
+    touch ${SECURELOGFILE}
+    chown snapwebsites:snapwebsites ${SECURELOGFILE}
+    chmod 640 ${SECURELOGFILE}
+fi
+
+
+# vim: ts=4 sw=4 et nocindent

@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-tripwire.xml
+-->
+<bundle>
+  <name>tripwire</name>
+  <description>
+    <p>Install tripwire, a tool used to detect unexpected changes to various
+    system files.</p>
+    <p><strong>WARNING:</strong> tripwire requires the installation of
+    postfix. It will be disabled unless you also installed the mailserver
+    bundle on the same computer.</p>
+  </description>
+  <fields>
+    <field name="passphrase" type="input">
+      <label>Passphrase</label>
+      <description>
+        Tripwire requires a passphrase for the keys used to protect the
+        current state of your computer. Later that password can be used
+        to reset the state of the computer as if nothing had changed
+        (especially useful after an upgrade or a few configuration file
+        changes.)
+      </description>
+    </field>
+    <field name="postfix_ip" type="input">
+      <label>Postfix IP Address</label>
+      <description>
+        <p>Enter the IP address of the private server running Postfix
+        in this cluster. You may set it up as "localhost" (the default
+        in twcfg.txt).</p>
+      </description>
+    </field>
+  </fields>
+  <preinst>
+    if test -d /etc/postfix
+    then
+      touch /run/postfix-already-installed
+    fi
+  </preinst>
+  <packages>tripwire</packages>
+  <postinst>
+    LOCALKEY=`hostname`-local.key
+    # TODO: apply some changes to the default .txt files?
+    sed -i.bak \
+        -e 's/\(SMTPHOST\s*\)=.*/\1=$BUNDLE_INSTALLATION_POSTFIX_IP/' \
+              /etc/tripwire/twcfg.txt
+
+    # Create the encryption keys with the administrator passphrase
+    twadmin --generate-keys --site-keyfile site.key --site-passphrase "$BUNDLE_INSTALLATION_PASSPHRASE"
+    twadmin --generate-keys --local-keyfile $LOCALKEY --local-passphrase "$BUNDLE_INSTALLATION_PASSPHRASE"
+    twadmin --create-cfgfile --site-keyfile site.key --site-passphrase "$BUNDLE_INSTALLATION_PASSPHRASE" twcfg.txt
+    twadmin --create-polfile --site-keyfile site.key --site-passphrase "$BUNDLE_INSTALLATION_PASSPHRASE" twpol.txt
+
+    # Create the original database
+    tripwire --init --local-passphrase "$BUNDLE_INSTALLATION_PASSPHRASE"
+
+    # If postfix was not already installed, disable it
+    # (if it was already installed because of tripwire, it should already
+    # be disabled so we should be just fine.)
+    if test ! -f /run/postfix-already-installed
+    then
+      systemctl stop postfix
+      systemctl disable postfix
+    fi
+  </postinst>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

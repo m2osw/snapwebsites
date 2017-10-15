@@ -1,0 +1,54 @@
+snaplayout (1.0.7.138~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Wed, 15 Feb 2017 02:00:57 -0800
+
+snaplayout (1.0.7.0~xenial) xenial; urgency=high
+
+  * EX-79: Added support for layouts that are owned by a different plugin.
+  * Fixed the search for a name in content.xml, a position was wrong.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Feb 2017 16:20:48 -0700
+
+snaplayout (1.0.6.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notice to 2017.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 15:41:48 -0700
+
+snaplayout (1.0.5.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the --version help string to use %p for the project name.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 20:16:48 -0700
+
+snaplayout (1.0.4.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Snap layout did not yet have a --no-ssl command line option.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 14 Oct 2016 11:09:48 -0700
+
+snaplayout (1.0.3.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Will output its own version instead of the libsnapwebsites one.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 11:32:49 -0700
+
+snaplayout (1.0.2.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Moved .properties files under .../logger/.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 23 Sep 2016 15:07:11 -0700
+
+snaplayout (1.0.1.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+snaplayout (1.0.0) xenial; urgency=high
+
+  * Initial release of packaging.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 26 May 2016 22:49:55 -0800

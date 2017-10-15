@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-snaplog.xml
+-->
+<bundle>
+  <name>snaplog</name>
+  <description>
+    <p>
+      This bundle installs the 'snaplog' package. It expects the mysql
+      bundle to be installed already. Since `snapmanager` does not have a
+      prereq-managment system, you have to make sure the MySQL bundle is already
+      installed on this system.
+    </p>
+    <p>
+      <b>NOTE:</b> The MySQL Host Address is fixed to 127.0.0.1. Therefore, you must
+      install the snaplistd bundle on the same machine.
+    </p>
+  </description>
+  <packages>snaplog</packages>
+  <postinst>
+    # Create the snaplog user and snaplog database
+    #
+    PRIVATE_DIR=/var/lib/snapwebsites/private
+    source ${PRIVATE_DIR}/root_password.sh
+    MYSQL_PWD="${ROOT_PASSWORD}" mysql --user=root &lt;&lt;EOF
+CREATE USER 'snaplog'@'localhost' IDENTIFIED BY 'snaplog';
+GRANT SELECT, INSERT, UPDATE, DELETE ON snaplog.* TO 'snaplog'@'localhost';
+FLUSH PRIVILEGES;
+CREATE DATABASE snaplog;
+CREATE TABLE snaplog.log
+  ( id INT NOT NULL PRIMARY KEY AUTO_INCREMENT
+  , timestamp   DATETIME DEFAULT CURRENT_TIMESTAMP
+  , server      VARCHAR(25)
+  , service     VARCHAR(25)
+  , level       VARCHAR(10)
+  , msgid       VARCHAR(20)
+  , ipaddr      TEXT
+  , file        VARCHAR(120)
+  , line        INT
+  , func        VARCHAR(100)
+  , message     LONGTEXT
+  );
+EOF
+    systemctl restart snaplog
+  </postinst>
+  <postrm>
+    PRIVATE_DIR=/var/lib/snapwebsites/private
+    source ${PRIVATE_DIR}/root_password.sh
+    MYSQL_PWD="${ROOT_PASSWORD}" mysql --user=root &lt;&lt;EOF
+DROP USER 'snaplog'@'localhost';
+FLUSH PRIVILEGES;
+DROP DATABASE snaplog;
+EOF
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

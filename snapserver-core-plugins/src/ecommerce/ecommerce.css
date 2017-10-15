@@ -1,0 +1,209 @@
+/*
+ * Name: ecommerce
+ * Version: 0.0.1.12
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+/** CART **/
+#cart
+{
+	border: 1px solid black;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	padding: 5px;
+	float: left;
+	display: none;
+	position: absolute;
+	z-index: 1;
+	background: white;
+}
+
+#ecommerce-cart div.popup-title
+{
+	font-size: 150%;
+	font-weight: bold;
+}
+
+#ecommerce-cart div.cart-table-scrollarea
+{
+	height: 220px;
+	overflow-y: auto;
+}
+
+#ecommerce-cart table.cart-product-table
+{
+	width: 100%;
+	border-spacing: 0;
+	border-collapse: collapse;
+}
+
+#ecommerce-cart table.cart-product-table th.first-row,
+#ecommerce-cart table.cart-product-table th.first-column,
+#ecommerce-cart table.cart-product-table td.first-column
+{
+	border-left: 1px solid black;
+	border-top: 1px solid black;
+}
+
+#ecommerce-cart table.cart-product-table th
+{
+	background-color: #f0f0f0;
+}
+
+#ecommerce-cart table.cart-product-table th,
+#ecommerce-cart table.cart-product-table td
+{
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	padding: 5px;
+}
+
+
+#ecommerce-cart table.cart-product-table td.empty-cart-cell
+{
+	text-align: center;
+	font-style: italic;
+	color: #666666;
+}
+
+#ecommerce-cart table.cart-product-table th.ecommerce--delete.first-row
+{
+	padding: 0 0 0 10px;
+	width: 22px;
+	border-top: none;
+	border-right: none;
+	border-bottom: none;
+	background-color: transparent;
+}
+
+#ecommerce-cart table.cart-product-table td.ecommerce--delete
+{
+	padding: 0 0 0 10px;
+	width: 22px;
+	border-right: none;
+	border-bottom: none;
+	background-color: transparent;
+}
+
+#ecommerce-cart table.cart-product-table td.ecommerce--no,
+#ecommerce-cart table.cart-product-table td.ecommerce--quantity,
+#ecommerce-cart table.cart-product-table td.ecommerce--price,
+#ecommerce-cart table.cart-product-table td.ecommerce--total
+{
+	text-align: right;
+}
+
+#ecommerce-cart table.cart-product-table td.cart-row-footer-label
+{
+	text-align: right;
+	font-weight: bold;
+	border-left: none;
+	border-bottom: none;
+}
+
+#ecommerce-cart table.cart-product-table td.cart-row-footer-costs
+{
+	text-align: right;
+	font-weight: bold;
+}
+
+#ecommerce-cart table.cart-product-table td.cart-row-footer-extras
+{
+	padding: 0;
+	border-right: none;
+	border-bottom: none;
+}
+
+#ecommerce-cart table.cart-product-table td.ecommerce--description a
+{
+	text-decoration: none;
+}
+
+#ecommerce-cart div.cart-footer
+{
+	font-size: 90%;
+	font-style: italic;
+}
+
+#ecommerce-cart div.cart-buttons
+{
+	margin-top: 20px;
+}
+
+#ecommerce-cart div.cart-buttons a.clear-cart,
+#ecommerce-cart div.cart-buttons a.continue-shopping,
+#ecommerce-cart div.cart-buttons a.checkout
+{
+	display: block;
+	border: 1px solid #000000;
+	border-radius: 7px;
+	padding: 10px 30px;
+	color: black;
+	text-shadow: 0 0 6px #ffffff, 2px 2px 2px #886619;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+#ecommerce-cart div.cart-buttons a.clear-cart
+{
+	float: left;
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #ff3d3d, #fb2f2f 25%, #fb2f2f 85%, #c42727);
+	text-shadow: 0 0 6px #ff5858, 2px 2px 2px #883309;
+}
+
+#ecommerce-cart div.cart-buttons a.continue-shopping
+{
+	float: right;
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #a6ff9f, #3efb2f 25%, #3efb2f 85%, #32c427);
+	text-shadow: 0 0 6px #9fff98, 2px 2px 2px #448809;
+}
+
+#ecommerce-cart div.cart-buttons a.checkout
+{
+	float: right;
+	margin-left: 20px;
+	margin-right: 20px;
+	background-color: #fbea2f;
+	background: linear-gradient(to bottom, #fff79f, #fbea2f 25%, #fbea2f 85%, #c4b727);
+}
+
+#ecommerce-cart div.cart-buttons a.clear-cart.disabled,
+#ecommerce-cart div.cart-buttons a.checkout.disabled
+{
+	color: #666666;
+	background-color: #b1b1b1;
+	background: linear-gradient(to bottom, #dcdcdc, #b1b1b1 25%, #b1b1b1 85%, #8b8b8b);
+	text-shadow: 0 0 6px #ffffff, 2px 2px 2px #886619;
+	cursor: default;
+}
+
+div.ecommerce-invoice-details
+{
+	float: right;
+	background: #f0f0f0;
+	border: 1px solid black;
+	border-radius: 3px;
+	padding: 10px 13px;
+}
+
+div.ecommerce-invoice-details div
+{
+	margin: 5px;
+}
+
+div.ecommerce-invoice-details .invoice-label
+{
+	font-weight: bold;
+}
+
+div.ecommerce-invoice-details .invoice-value
+{
+	color: #000066;
+	font-style: italic;
+}
+

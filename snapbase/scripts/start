@@ -1,0 +1,117 @@
+#!/bin/sh
+#
+# This script is often softlinked just outside the snapcpp directory:
+#
+#      git clone .../snapcpp
+#      snapcpp/bin/snap-ubuntu-packages
+#      snapcpp/bin/build-snap
+#      ln -s snapcpp/snapwebsites/snapbase/script/start .
+#      ln -s snapcpp/snapwebsites/snapbase/script/stop .
+#      ./start
+#
+# Once done, in another console you do:
+#
+#      ./stop
+#
+# To stop everything, however, the while loop at the end of this script
+# will go on forever...
+#
+
+HERE=`pwd`
+
+# Add the snapupgrader for snapmanagerdaemon to find the compiled one on a programmer system
+PATH=${HERE}/BUILD/snapwebsites/snapmanagercgi/upgrader:${PATH}
+
+mkdir -p ${HERE}/tmp
+
+# Daemons can now be started in any order and to prove it we randomize
+# the starting of them...
+#
+DAEMON1="BUILD/snapwebsites/snapcommunicator/src/snapcommunicator"
+DAEMON2="BUILD/snapwebsites/snaplog/src/snaplog"
+DAEMON3="BUILD/snapwebsites/snaplock/src/snaplock"
+DAEMON4="BUILD/snapwebsites/snapdbproxy/src/snapdbproxy"
+DAEMON5="BUILD/snapwebsites/snapfirewall/src/snapfirewall"
+DAEMON6="BUILD/snapwebsites/snapserver/src/snapserver"
+DAEMON7="BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action images::images"
+DAEMON8="BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action list::listjournal"
+DAEMON9="BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action list::pagelist"
+DAEMON10="BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action sendmail::sendmail --param GLOBAL_LOCK=1"
+DAEMON11="BUILD/snapwebsites/snapmanagercgi/daemon/snapmanagerdaemon"
+DAEMON12="BUILD/snapwebsites/snapwatchdog/src/snapwatchdogserver"
+DAEMON13="BUILD/snapwebsites/snaplistd/src/snaplistd"
+
+ORDER=`seq 1 13 | shuf`
+PAUSE=`seq 1 20 | shuf | awk 'NR==1 {print; exit}'`
+
+for idx in $ORDER
+do
+	# Dynamic variable selection in Bourne Shell (and others)
+	#
+	VARNAME=DAEMON${idx}
+	cmd=`eval echo \\\$\${VARNAME}`
+
+	# Now start the command
+	#
+	echo $cmd
+	$cmd &
+	PID=$!
+
+	BASENAME=`echo $cmd | grep :: | sed -e 's/.* [a-z]\+::\([a-z]\+\).*/\1/'`
+	if test -z "$BASENAME"
+	then
+		BASENAME=`basename $cmd`
+	fi
+	echo $PID >tmp/${BASENAME}.pid
+
+	# add one random pause to further prove that it does not need to
+	# all sort exactly at the same time
+	#
+	if test $idx -eq $PAUSE
+	then
+		sleep 1
+	fi
+done
+
+
+
+# # First we start snapcommunicator which is required by other processes
+# BUILD/snapwebsites/snapcommunicator/src/snapcommunicator &
+# 
+# # Wait a tad bit for the initialization process to get done
+# sleep 2
+# 
+# # Write a programmer tool to create a barrier? It seems to me that the
+# # other tools needto be smart enough to wait for snapcommunicator to be
+# # ready to connect to otherwise we will miss it in many cases anyway.
+# 
+# # Start other services (comment out if you do not want to start such and such)
+# BUILD/snapwebsites/snaplog/src/snaplog &
+# BUILD/snapwebsites/snaplock/src/snaplock &
+# BUILD/snapwebsites/snapdbproxy/src/snapdbproxy &
+# BUILD/snapwebsites/snapfirewall/src/snapfirewall &
+# BUILD/snapwebsites/snapserver/src/snapserver &
+# BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action images::images &
+# BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action list::pagelist &
+# BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action sendmail::sendmail --param GLOBAL_LOCK=1 &
+# BUILD/snapwebsites/snapmanagercgi/daemon/snapmanagerdaemon &
+# BUILD/snapwebsites/snapwatchdog/src/snapwatchdogserver &
+
+
+# For the CRON task, run it once in a while...
+#
+# TODO: find a way to exit if all the other processes exit...
+#       (i.e. once we have the PID of snapcommunicator from its .pid file,
+#       we can sleep 1 second, use `if kill --pid $PID 0 ...` and if true
+#       we can sleep some more, if false it is dead, exit immediately.)
+#
+while true
+do
+	sleep 300
+
+	# Run this one blocking to avoid having to instances running
+	# simultaneously
+	#
+	BUILD/snapwebsites/snapbackend/src/snapbackend
+done
+

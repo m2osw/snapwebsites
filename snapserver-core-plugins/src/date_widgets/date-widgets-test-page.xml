@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == editor test page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="date_widgets" id="test" content-modified="2016-02-14 16:58:18">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="date_edit_widget"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="date_edit_widget"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="date_edit_widget" type="date-edit" field="editor::date_edit_widget" path="editor/date_edit_widget" no-toolbar="no-toolbar" auto-save="date">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>30</max>
+    </sizes>
+    <filters>
+      <regex name="date"/>
+      <min-date>now - 1 year</min-date>
+      <max-date>now + 1 year</max-date>
+    </filters>
+    <background-value>date edit</background-value>
+  </widget>
+  <widget id="dropdown_date_edit_widget" type="dropdown-date-edit" field="editor::dropdown_date_edit_widget" path="editor/dropdown_date_edit_widget" no-toolbar="no-toolbar" auto-save="dropdown-date">
+    <tooltip>Tooltip</tooltip>
+    <help>Help</help>
+    <sizes>
+      <min>1</min>
+      <max>30</max>
+    </sizes>
+    <filters>
+      <regex name="date"/>
+      <min-date>now - 1 year</min-date>
+      <max-date>now + 19 year</max-date>
+    </filters>
+    <background-value>unused</background-value>
+    <dropdown-date-edit>
+      <include-month/>
+      <include-day/>
+      <include-year from="now" to="now + 19 years"/> <!-- +19 means 20 years displayed -->
+    </dropdown-date-edit>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

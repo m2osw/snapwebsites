@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-snaplistd.xml
+-->
+<bundle>
+  <name>mysql</name>
+  <description>
+    <p>
+      This bundle installs the MySQL database server. This bundle is a prereq
+      for 'snaplog' and 'snaplistd' packages, and any thing else requiring mysql.
+    </p>
+    <p>
+      <b>NOTE:</b> The MySQL Host Address is fixed to 127.0.0.1, so any bundle installed requiring
+      this particular MySQL server needs to be on this system only.
+    </p>
+  </description>
+  <packages>mysql-server</packages>
+  <preinst>
+    if ! dpkg -l pwgen 2> /dev/null
+    then
+      apt install pwgen
+    fi
+
+    # Next, create a private dir that is read/writable only by root,
+    # and squirrel these passwords away
+    #
+    PRIVATE_DIR=/var/lib/snapwebsites/private
+    mkdir -p ${PRIVATE_DIR}
+    chown root.root ${PRIVATE_DIR}
+    chmod 0700 ${PRIVATE_DIR}
+
+    if test ! -f ${PRIVATE_DIR}/root_password.sh
+    then
+      # Create the passwords we will use
+      #
+      ROOT_PASSWORD=`pwgen -cns 20`
+
+      echo "ROOT_PASSWORD=${ROOT_PASSWORD}" &gt; ${PRIVATE_DIR}/root_password.sh
+
+      # Lastly, set the root password in debconf, so it won't ask for it when
+      # creating the database first time
+      #
+      debconf-set-selections &lt;&lt;&lt; \
+        "mysql-server mysql-server/root_password password ${ROOT_PASSWORD}"
+      debconf-set-selections &lt;&lt;&lt; \
+        "mysql-server mysql-server/root_password_again password ${ROOT_PASSWORD}"
+    fi
+  </preinst>
+  <postrm>
+    apt purge -y "mysql-server-*"
+    rm -rf /var/lib/mysql
+    PRIVATE_DIR=/var/lib/snapwebsites/private
+    rm ${PRIVATE_DIR}/root_password.sh
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

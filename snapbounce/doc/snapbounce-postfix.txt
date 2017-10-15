@@ -1,0 +1,80 @@
+Our online documentation:
+
+  http://snapwebsites.org/implementation/feature-requirements/email-feature-core/setting-postfix-snapbounce
+
+
+1) Create a "snapbounce" user for executing the script
+
+Note that the name of this user cannot be "root" or "postfix".
+The account must have no shell and no login.
+
+	useradd snapbounce
+
+
+2) Edit:  /etc/postfix/main.cf
+
+	# Additions to Postfix for snapbounce to work
+	notify_classes = bounce
+	bounce_notice_recipient = bounces@snapwebsites.org
+	transport_maps = hash:/etc/postfix/transport.maps
+
+* WARNING: if you already have the field "notify_classes", add "bounce"
+           to it by separating existing flags with a comma
+
+* Where "bounces@snapwebsites.org" has to correspond to your domain name.
+
+* Just like "notify_classes", if you already have a "transport_maps",
+  then you do not need to create a new one. You will want to edit
+  that file and not "/etc/postfix/transport.maps" as indicated in step (3).
+
+
+3) Create or Edit:  /etc/postfix/transport.maps
+
+	# After changes to this file, run postmap:
+	#   postmap /etc/postfix/transport.maps
+	bounces@snapwebsites.org snapbounce:
+
+* Where "bounces@snapwebsites.org" is the same as defined in
+  bounce_notice_recipient in main.cf
+
+* Make sure to run:   postmap /etc/postfix/transport.maps
+  so the .db file is generated with your changes
+
+
+4) Edit:  /etc/postfix/master.cf
+
+We name the service "snapbounce". The same as what appears in the
+/etc/postfix/transport.maps file. There is our changes:
+
+	# service  type  private unpriv  chroot  wakeup  maxproc command + args
+	#                (yes)   (yes)   (yes)   (never) (100)
+	snapbounce unix  -       n       n       -       -       pipe
+		flags=FRq user=snapbounce argv=/usr/bin/snapbounce --sender ${sender} --recipient ${recipient}
+
+* The snapbounce tool is installed under /usr/bin when installing
+  the package of the same name.
+
+
+5) Verify:  /etc/snapwebsites/snapserver.conf
+
+Make sure your snapserver configuration is in order. It must have the
+Cassandra IP and port (will change once we have a Cassandra driver):
+
+	# Host & Port to connect to Cassandra
+	cassandra_host=10.0.0.2
+	cassandra_port=9160
+
+
+6) Make sure the Cassandra server is up and running.
+
+	sudo service cassandra start
+
+
+7) Restart postfix so the changes take effect.
+
+	sudo service postfix restart
+
+
+Inspired from: http://iamsto.wordpress.com/2012/04/07/how-to-handle-bounce-emails-in-postfix-with-script/
+See also: http://serverfault.com/questions/48326/how-to-collect-bounces-in-postfix#48661
+

@@ -1,0 +1,294 @@
+snapbase (1.0.43.17~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Mon, 12 Jun 2017 02:00:52 -0700
+
+snapbase (1.0.43.0~xenial) xenial; urgency=high
+
+  * EX-131: Added snaplistd and listjournal to my start script.
+  * Added the list_journal_path to the configuration file.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 11 Jun 2017 17:25:48 -0800
+
+snapbase (1.0.42.0~xenial) xenial; urgency=high
+
+  * EX-131: Added documentation about the list loop timeouts.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 21 May 2017 12:20:48 -0800
+
+snapbase (1.0.41.0~xenial) xenial; urgency=high
+
+  * EX-79: Added one more fixed-box attribute for smartphone support.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 26 Mar 2017 00:18:48 -0800
+
+snapbase (1.0.40.0~xenial) xenial; urgency=high
+
+  * EX-79: Added the necessary attribute to allow a fixed-box in ExDox.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 25 Mar 2017 19:26:48 -0800
+
+snapbase (1.0.39.0~xenial) xenial; urgency=high
+
+  * EX-79: Added a few more attributes.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Mar 2017 00:42:48 -0800
+
+snapbase (1.0.38.0~xenial) xenial; urgency=high
+
+  * EX-79: Added support so we can setup editor buttons as inline
+    or inline-block instead of the default of block.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 12 Mar 2017 23:35:48 -0800
+
+snapbase (1.0.37.0~xenial) xenial; urgency=high
+
+  * Added `id` attribute defs to `img`, `ul`, and `li`.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 17 Feb 2017 10:42:08 -0800
+
+snapbase (1.0.36.0~xenial) xenial; urgency=high
+
+  * EX-79: Added definitions to simplified-xslt20.dtd.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 16 Feb 2017 17:45:48 -0800
+
+snapbase (1.0.35.0~xenial) xenial; urgency=high
+
+  * EX-79: Added definitions to simplified-xslt20.dtd.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 16 Feb 2017 00:24:48 -0800
+
+snapbase (1.0.34.0~xenial) xenial; urgency=high
+
+  * EX-79: Added a "lock_obtension_duration" parameter to snapserver.conf.
+  * Added the "table_schema_path" to the snapserver.conf, it was missing.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Feb 2017 13:13:48 -0800
+
+snapbase (1.0.33.0~xenial) xenial; urgency=high
+
+  * Added 'src' attribute to <script> tag.
+  * Changed 'type' attribute of <link> tag so it's not required.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sat, 11 Feb 2017 23:31:44 -0800
+
+snapbase (1.0.32.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notice to 2017.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 14:50:48 -0800
+
+snapbase (1.0.31.0~xenial) xenial; urgency=high
+
+  * SNAP-530: Added the qs_hit definition to the .conf file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 12 Dec 2016 11:58:42 -0800
+
+snapbase (1.0.30.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Remove the /run/lock/snapwebsites and /run/snapwebsites folders
+    on a purge of snapbase.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 11 Nov 2016 16:13:48 -0800
+
+snapbase (1.0.29.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Removed the server.log and secure.log entries from logrotate.
+    Those where in case we were using the log4cplus loggingserver.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 10 Nov 2016 15:56:50 -0800
+
+snapbase (1.0.28.0~xenial) xenial; urgency=high
+
+  * SNAP-512: Moved the snapwebsites user/group to the preinst.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 09 Nov 2016 20:07:48 -0800
+
+snapbase (1.0.27.0~xenial) xenial; urgency=high
+
+  * SNAP-512: Define snapwebsites user/group before we start snapbootinit.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 09 Nov 2016 16:39:48 -0800
+
+snapbase (1.0.26.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Added a monthly deletion of session files.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 17:43:48 -0700
+
+snapbase (1.0.25.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Enable the SSL module.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Oct 2016 17:27:33 -0700
+
+snapbase (1.0.24.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added the -m option to a2en* calls.
+  * Make use of the a2query to know whether a site is enabled.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Oct 2016 17:27:33 -0700
+
+snapbase (1.0.23.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Also run `snapbootinit` once in `snapbase.postinst`.
+  * And enable the `snapbase` service, it does not get enabled automatically.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 25 Oct 2016 13:53:49 -0700
+
+snapbase (1.0.22.0~xenial) xenial; urgency=high
+
+  * SNAP-465: postinst/postrm cleanups.
+  * Properly remove the user defined snapserver.conf file if present.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 23:48:38 -0700
+
+snapbase (1.0.21.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Moved the apache cleanup to the snapapacheinit script.
+  * Call the script from the snapbase.prerm script.
+  * Added the missing apache SSL log removal in snapbase.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 21:19:38 -0700
+
+snapbase (1.0.20.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Use restart and not reload in the snapapacheinit script.
+  * Fixed the sed in the snapbootinit, the $1 requires we use " and not '.
+  * snapbootinit would break on mkdir if it was already there, use -p now.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 17:18:38 -0700
+
+snapbase (1.0.19.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Swapped the snapapacheinit and snapbootinit location.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 17:18:38 -0700
+
+snapbase (1.0.18.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Merged all the apache2 initialization in snapapachelog.sh and
+    then renamed the script snapapacheinit.
+  * Moved the apache2 setup in snapapacheinit.
+  * Moved the snapapacheinit script to /usr/lib/snapwebsites/scripts/.
+  * Protected an rmdir in case the directory was already removed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 16:12:38 -0700
+
+snapbase (1.0.17.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Actually install the swap-usage script.
+  * SNAP-491: Actually install the snapbootinit script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 12:39:37 -0700
+
+snapbase (1.0.16.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Added a script to list processes using swap space.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 23 Oct 2016 14:54:38 -0700
+
+snapbase (1.0.15.0~xenial) xenial; urgency=high
+
+  * SNAP-491: Changed Ctrl-C in the equivalent of a STOP.
+  * Moved the run_path, lock_path, user, and group parameters from
+    snapcommunicator.conf to snapserver.conf.
+  * Moved the code from snapcommunicator to initialize the /run/...
+    directories to snapbootinit and made that a "runonce" service.
+  * Enhanced start script to it shuffles the daemons each time.
+  * Updated the start script to save the PID so we can have a stop script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 20 Oct 2016 11:17:49 -0700
+
+snapbase (1.0.14.0~xenial) xenial; urgency=high
+
+  * SNAP-479: One of the directory names needed updating.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 18 Oct 2016 11:53:47 -0700
+
+snapbase (1.0.13.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Moved the special rule to change the permissions on ssl-snap.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 18 Oct 2016 10:14:47 -0700
+
+snapbase (1.0.12.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Moving the SSL configuration and log format to snapbase.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 17 Oct 2016 23:57:47 -0700
+
+snapbase (1.0.11.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Fixed the spelling of "mod" (no 'e').
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 17 Oct 2016 00:53:47 -0700
+
+snapbase (1.0.10.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Finished up setting up the CIS recommendations.
+  * Install the snap-apache2-extra-options.conf file under /usr/share/...
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 16 Oct 2016 21:18:47 -0700
+
+snapbase (1.0.9.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Added a snap-apache2-extra-options.conf file to replace Mutex.
+  * Try to prevent use of .htaccess files.
+  * Deny access of /usr/share directory.
+  * Made only index.html and index.htm default directory items.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 16 Oct 2016 13:15:47 -0700
+
+snapbase (1.0.8.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Added the snap-apache2-security.conf file to replace secure.conf.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 14 Oct 2016 21:59:53 -0700
+
+snapbase (1.0.7.0~xenial) xenial; urgency=high
+
+  * SNAP-266: snap_child recreates snapcom messenger with thread.
+  * Default is to use file logging and logging to snapcommunicator.
+  * Also took out all loggingserver API and properties files.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 12 Oct 2016 14:47:03 -0700
+
+snapbase (1.0.6.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed up other configuration file installation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 23 Sep 2016 16:47:11 -0700
+
+snapbase (1.0.5.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Moved .properties files under .../logger/.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 23 Sep 2016 15:04:11 -0700
+
+snapbase (1.0.4.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+snapbase (1.0.2.1~xenial) xenial; urgency=high
+
+  * Now clears out /var/cache/snapwebsites
+
+ -- Doug Barbieri <doug@dooglio.net>  Sun, 07 Aug 2016 18:49:17 -0700
+
+snapbase (1.0.1.1~xenial) xenial; urgency=high
+
+  * Added guards around the deletion of user/group 'snapwebsites' and protecting /etc/snapwebsites
+
+ -- Doug Barbieri <doug@dooglio.net>  Sun, 07 Aug 2016 17:25:00 -0700
+
+snapbase (1.0.0) xenial; urgency=high
+
+  * Initial release of packaging.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 26 May 2016 22:49:55 -0800

@@ -1,0 +1,112 @@
+<html>
+<head>
+  <title>Login</title>
+  <link href="/favicon.ico" type="image/x-icon" rel="shortcut icon"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body
+    {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      font-family: arial, sans-serif;
+    }
+    table.frame
+    {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    td.frame
+    {
+      text-align: center;
+      vertical-align: middle;
+      background-color: white;
+    }
+    form
+    {
+    }
+    table.form
+    {
+      width: 350px;
+      margin: 0 auto;
+      padding: 10px;
+      border: 1px solid black;
+      background-color: #f0f0f0;
+    }
+    td.title-col
+    {
+      text-align: center;
+      font-weight: bold;
+      font-size: 135%;
+      padding-bottom: 20px;
+    }
+    td.left-col
+    {
+      text-align: right;
+    }
+    td.right-col
+    {
+      text-align: left;
+    }
+    td.button-col
+    {
+      padding-top: 20px;
+      text-align: center;
+    }
+    td.button-col input
+    {
+      font-size: 110%;
+    }
+    td.error-col
+    {
+      font-style: italic;
+      font-size: 90%;
+      color: #660000;
+      text-align: center;
+    }
+    .mandatory
+    {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <form name="login" method="POST" action="/snapmanager" autocomplete="off">
+    <table class="frame">
+      <tr>
+        <td class="frame" colspan="2">
+          <table class="form">
+            <tr>
+              <td class="title-col" colspan="2">Login</td>
+            </tr>
+            <tr>
+              <td class="error-col" colspan="2">@error@</td>
+            </tr>
+            <tr>
+              <td class="left-col"><label for="user_name">Username:&nbsp;<span class="mandatory">*</span></label></td>
+              <td class="right-col"><input id="user_name" name="user_name" autocorrect="false"
+                                           autofocus="true" pattern=".+" required="true"
+                                           title="Enter your snapmanager.cgi username."/></td>
+            </tr>
+            <tr>
+              <td class="left-col"><label for="user_password">Password:&nbsp;<span class="mandatory">*</span></label></td>
+              <td class="right-col"><input id="user_password" type="password" name="user_password"
+                                           pattern=".+" required="true"
+                                           title="Enter your snapmanager.cgi password."/></td>
+            </tr>
+            <tr>
+              <td class="button-col" colspan="2"><input type="submit" name="user_login" value="Log In"/></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </form>
+</body>
+<!--
+  vim: ts=2 sw=2 et
+-->
+</html>

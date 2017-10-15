@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == locale plugin database setup
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/js/locale-widgets">
+    <!-- JavaScript code for the inline locale extension -->
+    <param name="content::title" revision="revision">Locale Scripts</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>JavaScript code for the locale extension.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="locale-timezone" type="attachment/public">
+      <path>qrc:/js/locale_widgets/locale-timezone.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>editor (&gt;= 0.0.3.245)</dependency>
+    </attachment>
+  </content>
+  <content path="/css/locale-widgets">
+    <param name="content::title" revision="revision">Locale CSS</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>CSS for the locale extension.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="locale-timezone" type="attachment/public">
+      <path>qrc:/css/locale_widgets/locale-timezone.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

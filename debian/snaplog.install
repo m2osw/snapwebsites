@@ -1,0 +1,4 @@
+debian/tmp/usr/bin/snaplog        usr/bin/
+snaplog/conf/snaplog.conf         etc/snapwebsites/
+snaplog/conf/snaplog.properties   etc/snapwebsites/logger/
+snaplog/conf/snap-mysql-jail.conf etc/fail2ban/jail.d/

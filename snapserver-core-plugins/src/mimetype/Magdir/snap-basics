@@ -1,0 +1,21 @@
+
+# Some entries that we added to Magdir and that we want to add to the basics
+# definitions; although they may be copied from other locations, these are
+# parsable by our 2014/2015 version of the .cpp tool
+
+# Windows icon (.ico files)
+
+0   belong    0x00000100
+>9  byte      0
+>>4 leshort   !0
+>>>12 lelong  !0
+>>>>14 lelong !0
+!:mime	image/x-icon
+
+0   belong    0x00000100
+>9  byte      0xff
+>>4 leshort   !0
+>>>12 lelong  !0
+>>>>14 lelong !0
+!:mime	image/x-icon
+

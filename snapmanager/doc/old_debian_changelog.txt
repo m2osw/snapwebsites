@@ -1,0 +1,1102 @@
+snapmanager (1.3.15.14~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Fri, 16 Jun 2017 02:00:53 -0700
+
+snapmanager (1.3.15.1~xenial) xenial; urgency=high
+
+  * EX-131: Added menu support for a new type of input.
+  * EX-131: Added a reason for all the block_ip() calls. (Alexis Wilke)
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 14 Jun 2017 14:18:23 -0700
+
+snapmanager (1.3.14.0~xenial) xenial; urgency=high
+
+  * Fixed the color of the text in an "active" tab (black on yellow now).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Mar 2017 12:31:46 -0700
+
+snapmanager (1.3.13.0~xenial) xenial; urgency=high
+
+  * Added status color to the tabs if modified/warnings/errors.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 07 Jun 2017 19:53:19 -0700
+
+snapmanager (1.3.12.1~xenial) xenial; urgency=high
+
+  * Added broadcast for backend status.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 06 Jun 2017 15:05:28 -0700
+
+snapmanager (1.3.11.1~xenial) xenial; urgency=high
+
+  * Now works with snapcgi maintenance broadcast.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 01 Jun 2017 11:01:16 -0700
+
+snapmanager (1.3.10.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Nevermind, the bug was actually in conf/snapmanager-apache2.conf.
+    Doug added a link and did not update the skip, also he could have added
+    to the existing regex. So I did that and did not change the skip which
+    are now correct again.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Mar 2017 21:37:20 -0700
+
+snapmanager (1.3.9.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Actually output `buffer` and not `buffer.c_str()` or we miss
+    quite a few bytes.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Mar 2017 21:08:20 -0700
+
+snapmanager (1.3.8.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Moved the gathering of the cookie back after favicon.ico.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Mar 2017 20:46:20 -0700
+
+snapmanager (1.3.7.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the cookie handling.
+  * Changed I/O interface to use the snap::file_content instead.
+  * Added some debug to try to see why the favicon.ico does not get through.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Mar 2017 20:00:20 -0700
+
+snapmanager (1.3.6.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added support for favicon.ico and at the same time do not lock
+    someone's IP address when attempting to access that file.
+  * Removed package snapmanagerbuild which is not used anymore.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Mar 2017 16:49:49 -0700
+
+snapmanager (1.3.5.0~xenial) xenial; urgency=high
+
+  * Added spinning globe.
+  * Javascript improvements.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 17 Feb 2017 11:02:52 -0800
+
+snapmanager (1.3.4.0~xenial) xenial; urgency=high
+
+  * Changed the tabs so that they are no longer incrementing a number, but
+    instead using the plugin name. This simplifies the code a lot.
+  * Replaced the js interval with a timeout. This is more efficient.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 16 Feb 2017 19:38:46 -0800
+
+snapmanager (1.3.3.1~xenial) xenial; urgency=high
+
+  * Adding tabs jQuery UI to the main snapmanager page.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sun, 12 Feb 2017 00:08:29 -0800
+
+snapmanager (1.3.2.1~xenial) xenial; urgency=high
+
+  * Now captures apt-key for import.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Fri, 10 Feb 2017 09:18:44 -0800
+
+snapmanager (1.3.1.6~xenial) xenial; urgency=high
+
+  * Added apt plugin.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 09 Feb 2017 10:09:01 -0800
+
+snapmanager (1.3.0.1~xenial) xenial; urgency=high
+
+  * This is the new version of snapmanager source package, which contains all
+    snapmanager-related projects (including the gui).
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 01 Feb 2017 12:22:16 -0800
+
+snapmanagercgi (1.2.48.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notices to 2017.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 16:14:49 -0700
+
+snapmanagercgi (1.2.47.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Added tests around chmod() calls to log a warning on failure.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 16 Dec 2016 20:12:49 -0700
+
+snapmanagercgi (1.2.46.0~xenial) xenial; urgency=high
+
+  * SNAP-521: Add PasswordAuthentication field for ssh server in ssh plugin.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 21 Nov 2016 10:11:44 -0800
+
+snapmanagercgi (1.2.45.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Removed a newline in case no output was returned from an install.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Nov 2016 00:56:45 -0800
+
+snapmanagercgi (1.2.44.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Actually put the snap-named-jail.conf in the package.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 12 Nov 2016 13:52:50 -0800
+
+snapmanagercgi (1.2.43.0~xenial) xenial; urgency=high
+
+  * SNAP-110: The server_name must be highlighted and not be a warning when
+    it is commented out. Otherwise we cannot edit the field at all.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 10 Nov 2016 15:56:50 -0800
+
+snapmanagercgi (1.2.42.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Actually the script needs to work whether things are installed
+    or not. That's the correct procedure under Debian. So do not remove
+    the /etc/dpkg/dpkg.cfg.d/snapmanager-dpkg-update script...
+  * Added test in logrotate script to skip the postrotate in
+    case snapsignal is not available anymore.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 10 Nov 2016 15:56:50 -0800
+
+snapmanagercgi (1.2.41.0~xenial) xenial; urgency=high
+
+  * SNAP-110: On a "remove" we have to cancel the dpkg callback.
+    (a.k.a. delete the /etc/dpkg/dpkg.cfg.d/snapmanager-dpkg-update script)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 10 Nov 2016 11:34:49 -0800
+
+snapmanagercgi (1.2.40.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Made the ServerName a comment by default again.
+  * Changed the field to a WARNING if ServerName is commented.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 09 Nov 2016 23:48:47 -0700
+
+snapmanagercgi (1.2.39.0~xenial) xenial; urgency=high
+
+  * SNAP-509: Allow favicon.ico to go through.
+  * SNAP-110: Increased stop wait from 1 min. to 5 min.
+  * Create /etc/apache2/snap-conf instead of /usr/share/snapwebsites/...
+  * Removed the /etc/apache2/snap-conf/snapmanager on a purge.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 09 Nov 2016 22:27:47 -0700
+
+snapmanagercgi (1.2.38.0~xenial) xenial; urgency=high
+
+  * SNAP-509: Added a redirect for "/" to "/snapmanager" when index.html is
+    not accessible (it makes more sense, I think.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 08 Nov 2016 22:42:50 -0800
+
+snapmanagercgi (1.2.37.0~xenial) xenial; urgency=high
+
+  * SNAP-509: Missed a couple of /cgi-bin/snapmanager.cgi, converted now.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 08 Nov 2016 22:25:50 -0800
+
+snapmanagercgi (1.2.36.0~xenial) xenial; urgency=high
+
+  * SNAP-509: The REQUEST_URI actually includes the Query String...
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 08 Nov 2016 22:05:50 -0800
+
+snapmanagercgi (1.2.35.0~xenial) xenial; urgency=high
+
+  * SNAP-509: Added wrong path to log so we can see why it fails.
+  * Made a few more updated to the index.html.
+  * Fixed the path in the Home and Log Out links.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 08 Nov 2016 21:54:50 -0800
+
+snapmanagercgi (1.2.34.0~xenial) xenial; urgency=high
+
+  * SNAP-509: Access to snapmanager.cgi is now through "/snapmanager" only.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 08 Nov 2016 21:29:50 -0800
+
+snapmanagercgi (1.2.33.0~xenial) xenial; urgency=high
+
+  * SNAP-509: Ignore all parameters on command line of snapmanager.cgi.
+  * Changed snapmanager-apache2.conf to use RewriteRule which prevents unwanted
+    access (because all is sent to snapmanager.cgi which is in control).
+  * SNAP-110: Moved snapmanager.cgi to /var/www/snapmanager/cgi-bin so it is
+    not universally accessible.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 08 Nov 2016 12:24:50 -0800
+
+snapmanagercgi (1.2.32.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Remove all the snapmanager sessions on a --purge.
+  * Added the signal handlers to the snapmanagercgi/snapmanagerdaemon.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 22:16:48 -0700
+
+snapmanagercgi (1.2.31.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Added a logout link.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 20:45:48 -0700
+
+snapmanagercgi (1.2.30.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Made the user_name variable a field so we know who is logged in.
+  * Fixed the write() to the session to include a "\n".
+  * Fixed a test with == instead of !=, so old sessions do get deleted.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 16:46:48 -0700
+
+snapmanagercgi (1.2.29.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Fixed the user_password check, it needed to use !=.
+  * Added logs to the login operation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 16:46:48 -0700
+
+snapmanagercgi (1.2.28.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Prevent reinterpretation of the POST after a log in.
+  * Added a snappassword.log file to log output of snappassword.
+  * Added a corresponding logrotate entry.
+  * exit(2) if password file cannot be read or user cannot be found.
+  * Fixed the test of the exit code using proper macros.
+  * Added a '\n' at the end of the session file.
+  * Added a link back to home when outputting an error.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 17:43:48 -0700
+
+snapmanagercgi (1.2.27.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Fixed session ID generation (race condition and loop test.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 16:46:48 -0700
+
+snapmanagercgi (1.2.26.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Making snappassword --check work for non-root users.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 16:13:48 -0700
+
+snapmanagercgi (1.2.25.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Test the cookie on the GET only.
+  * Fixed the form further, especially, the button is a "submit" now.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 16:13:48 -0700
+
+snapmanagercgi (1.2.24.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Fixed the replace_all_copy() with just replace_all().
+  * Enhanced the form, added validation of at least one character.
+  * Fixed the form declaration, it now includes an action.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 15:53:48 -0700
+
+snapmanagercgi (1.2.23.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Printed the HTML twice, removed first output.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 15:20:48 -0700
+
+snapmanagercgi (1.2.22.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Try again with logs. It is still not work right.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 14:58:48 -0700
+
+snapmanagercgi (1.2.21.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Wrong return when the loging page is displayed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 14:58:48 -0700
+
+snapmanagercgi (1.2.20.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Properly installed the snapmanager-login.html file.
+  * On purge, delete the snapmanagercgi.pwd file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 14:28:48 -0700
+
+snapmanagercgi (1.2.19.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Implemented the support for a cookie.
+  * Added a login HTML file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 07 Nov 2016 13:38:48 -0700
+
+snapmanagercgi (1.2.18.0~xenial) xenial; urgency=high
+
+  * SNAP-484: snappassword needs to be explicitly installed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 23:26:48 -0700
+
+snapmanagercgi (1.2.17.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Fixed a couple of bugs in the config script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 23:16:48 -0700
+
+snapmanagercgi (1.2.16.0~xenial) xenial; urgency=high
+
+  * SNAP-484: The templates file cannot include comments anywhere.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 23:01:48 -0700
+
+snapmanagercgi (1.2.15.0~xenial) xenial; urgency=high
+
+  * SNAP-484: The passwords folder is in snapmanagercgi, not -daemon.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 22:55:48 -0700
+
+snapmanagercgi (1.2.14.0~xenial) xenial; urgency=high
+
+  * SNAP-484: It is required to have the /etc/snapwebsites/passwords folder.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 21:46:48 -0700
+
+snapmanagercgi (1.2.13.0~xenial) xenial; urgency=high
+
+  * SNAP-484: The templates file cannot include comments.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 21:46:48 -0700
+
+snapmanagercgi (1.2.12.0~xenial) xenial; urgency=high
+
+  * SNAP-484: Added a command line tool one can use to setup passwords.
+  * SNAP-110: Fixed the --version help string to use %p for the project name.
+  * Added a .config to ask for the administrator IP addresses and the first
+    user and password. Updated the postinst accordingly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 20:16:48 -0700
+
+snapmanagercgi (1.2.11.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Removing the 50-snap.conf and rkhunter.d folder on an uninstall.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 03 Nov 2016 12:47:47 -0700
+
+snapmanagercgi (1.2.10.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Put "true" in CRON_DAILY_RUN.
+  * Set "true" in CRON_DB_UPDATE so we won't have to run --propupd
+  * Set "true" in APT_AUTOGEN so it gets updated when upgrading/installing.
+  * Set "19" in NICE so it is less likely to bother other processes.
+  * Moved the REPORT_EMAIL to /etc/default/rkhunter.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 03 Nov 2016 11:33:47 -0700
+
+snapmanagercgi (1.2.9.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Fixed test to block proxy attempts received by snapmanager.cgi.
+  * Changed the block to 1 year on a proxy attempt.
+  * Added a test, if snapmanager.cgi receives /xmlrpc.php, block immediately.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  2 Oct 2016 10:35:46 -0700
+
+snapmanagercgi (1.2.8.0~xenial) xenial; urgency=high
+
+  * SNAP-110: rkhunter does not create the /etc/rkhunter.d folder.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  1 Oct 2016 22:21:47 -0700
+
+snapmanagercgi (1.2.7.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added entries to accept byobu files to rkhunter exceptions.
+  * Fixed a couple of comments.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  1 Oct 2016 13:53:47 -0700
+
+snapmanagercgi (1.2.6.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Added -q to systemctl when using is-active so we avoid output
+    in our scripts.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 30 Oct 2016 23:44:46 -0700
+
+snapmanagercgi (1.2.5.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Changed the apache2 path to ${APACHE_LOG_DIR}.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 22:38:49 -0700
+
+snapmanagercgi (1.2.4.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Trimmed a log message to avoid the \n at the end of it.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 11:34:49 -0700
+
+snapmanagercgi (1.2.3.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Adding a debug message in snapmanagerdaemon plugins when
+    connecting to cassandra to know whether we are using SSL or not.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 29 Oct 2016 11:34:49 -0700
+
+snapmanagercgi (1.2.2.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the path in the redirect from port 80 to 443.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Oct 2016 20:33:33 -0700
+
+snapmanagercgi (1.2.1.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the destination path for the user-snap-apache2* files.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Oct 2016 20:06:33 -0700
+
+snapmanagercgi (1.2.0.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Could not install files under /etc/apache2/snap-conf/snapmanager
+    because it did not exist. Added a README.md file in it.
+  * Fixed the path used by Include in snapmanager-apache2.conf
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Oct 2016 19:43:33 -0700
+
+snapmanagercgi (1.1.52.0~xenial) xenial; urgency=high
+
+  * SNAP-110: The .install was not installing apache2 files.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Oct 2016 19:13:33 -0700
+
+snapmanagercgi (1.1.51.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Extracted user modified apache2 options to separate files.
+  * Updated the concerned scripts accordingly.
+  * Enable the rewrite module because we now use it for the redirect.
+  * Replaced abbreviated flags with full length names in RewriteRule's.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 28 Oct 2016 17:27:33 -0700
+
+snapmanagercgi (1.1.50.0~xenial) xenial; urgency=high
+
+  * SNAP-110: done() is now mark_done() for all connections.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Oct 2016 14:14:46 -0700
+
+snapmanagercgi (1.1.49.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the loop sending the RELOADCONFIG, we must send that
+    message to the snapcommunicator last.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 26 Oct 2016 23:14:34 -0700
+
+snapmanagercgi (1.1.39.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a title to a few errors.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 26 Oct 2016 17:56:34 -0700
+
+snapmanagercgi (1.1.38.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added an environment variable so we know whether we are accessing
+    the snapmanager.cgi from the right VirtualHost.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 26 Oct 2016 17:13:34 -0700
+
+snapmanagercgi (1.1.37.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a viewport entry to the index.html.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 26 Oct 2016 13:29:34 -0700
+
+snapmanagercgi (1.1.36.0~xenial) xenial; urgency=high
+
+  * SNAP-497: specify YAML::Newline so comment at the end is on a newline.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 25 Oct 2016 17:46:49 -0700
+
+snapmanagercgi (1.1.36.0~xenial) xenial; urgency=high
+
+  * EX-110: Fixed the saving of the .is-installed scripts, now we use the cache.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 25 Oct 2016 13:50:49 -0700
+
+snapmanagercgi (1.1.35.0~xenial) xenial; urgency=high
+
+  * SNAP-465: postinst/postrm cleanups.
+  * Properly remove the user defined snapserver.conf file if present.
+  * Fix the mode of the snapmanager-bundle.log file to 640 instead of 644.
+  * Delete the snapmanager-bundle.log in postrm.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 23:48:38 -0700
+
+snapmanagercgi (1.1.34.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Removed the disabling of the snapmanager-apache2 site from the
+    postrm since it is actually done in the prerm script already.
+  * Remove the site configurations on a remove as well.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 16:12:38 -0700
+
+snapmanagercgi (1.1.33.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Call the snapapacheinit script to run the common initialization.
+  * Remove the site configurations on a remove as well.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2016 16:12:38 -0700
+
+snapmanagercgi (1.1.32.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Added a file to enable the bind9 jail for fail2ban.
+  * Added scripts in the DNS bundle to install/remove the jail.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 23 Oct 2016 17:39:38 -0700
+
+snapmanagercgi (1.1.31.0~xenial) xenial; urgency=high
+
+  * SNAP-491: Changed Ctrl-C in the equivalent of a STOP.
+  * Read the lock_path, user, group from snapserver.conf now.
+  * Fixed the stop() function so it removes the messenger if not connected.
+  * Restore the SIGINT signal handler after the first SIGINT received.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 20 Oct 2016 12:27:49 -0700
+
+snapmanagercgi (1.1.30.0~xenial) xenial; urgency=high
+
+  * SNAP-461: Removed "Requires=..." since all servers can run by themselves.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 19 Oct 2016 12:21:49 -0700
+
+snapmanagercgi (1.1.29.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Moving the SSL configuration and log format to snapbase.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 17 Oct 2016 23:57:47 -0700
+
+snapmanagercgi (1.1.28.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Removed the snap-bundles-footer from the install.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 16 Oct 2016 23:25:49 -0700
+
+snapmanagercgi (1.1.28.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Removed the snapmanagerbuild.install.
+  * Moved the footer to the build-system instead.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 16 Oct 2016 21:20:49 -0700
+
+snapmanagercgi (1.1.27.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Verify the HTTP version. It must be 1.0 or 1.1.
+  * Removed the installation of the Apache2 bundle configuration file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 16 Oct 2016 21:20:49 -0700
+
+snapmanagercgi (1.1.26.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Removed any Allow/Deny/Order since we remove that module.
+  * Removed the /server-status example since we remove that module.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 16 Oct 2016 13:20:49 -0700
+
+snapmanagercgi (1.1.25.0~xenial) xenial; urgency=high
+
+  * SNAP-481: Use 1,000 as the RLIMIT_NPROC. It is per user, not process.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 Oct 2016 17:59:49 -0700
+
+snapmanagercgi (1.1.24.0~xenial) xenial; urgency=high
+
+  * SNAP-481: Drastically limit the number of sub-processes the snapbackend
+    can create between 100 and 1,000.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 Oct 2016 12:07:49 -0700
+
+snapmanagercgi (1.1.23.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Added the snap-apache2-security.conf file to replace secure.conf.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 14 Oct 2016 22:06:44 -0700
+
+snapmanagercgi (1.1.22.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a favicon to the website.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 12 Oct 2016 19:00:53 -0700
+
+snapmanagercgi (1.1.21.0~xenial) xenial; urgency=high
+
+  * SNAP-266: snap_child recreates snapcom messenger with thread.
+  * Default is to use file logging and logging to snapcommunicator.
+  * Also took out all loggingserver API and properties files.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 12 Oct 2016 14:50:57 -0700
+
+snapmanagercgi (1.1.20.1~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a favicon to the website.
+
+ -- Build Server <build@m2osw.com>  Wed, 12 Oct 2016 02:00:49 -0700
+
+snapmanagercgi (1.1.20.0~xenial) xenial; urgency=high
+
+   * SNAP-266: snaplog service is not "snaplogd."
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 11 Oct 2016 15:36:28 -0700
+
+snapmanagercgi (1.1.19.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the case where bundles are gathered and the bundle is
+    not installed. It was still shown as WARNING instead of HIGHLIGHT.
+  * Fixed a variable name so it is more sensible.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 21:27:47 -0700
+
+snapmanagercgi (1.1.18.0~xenial) xenial; urgency=high
+
+  * SNAP-462: missed adding the return statement to the new message handler.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 30 Sep 2016 13:34:49 -0700
+
+snapmanagercgi (1.1.17.0~xenial) xenial; urgency=high
+
+  * SNAP-462: message parameter names cannot include a dash, use '_' instead.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 30 Sep 2016 13:14:49 -0700
+
+snapmanagercgi (1.1.16.0~xenial) xenial; urgency=high
+
+  * SNAP-462: added signal from dpkg so we can update our package info quickly
+    after changes were made (i.e. an `apt-get upgrade` from a console, etc.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 30 Sep 2016 11:09:49 -0700
+
+snapmanagercgi (1.1.15.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Put a guard around the key generation stuff. If cassandra.yaml
+    is not on the system, we assume Cassandra is not installed on this box.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 29 Sep 2016 17:02:27 -0700
+
+snapmanagercgi (1.1.14.0~xenial) xenial; urgency=high
+
+  * SNAP-440: The snaprestartcassandra script was not being installed
+    properly.
+  * Fixed the error with the session pointer.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 29 Sep 2016 14:07:27 -0700
+
+snapmanagercgi (1.1.13.0~xenial) xenial; urgency=high
+
+  * SNAP-455: Changed default directory from "/var/lib/snapwebsites/keys" to
+    be "/var/lib/snapwebsites/cassandra-keys" instead.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 29 Sep 2016 12:47:27 -0700
+
+snapmanagercgi (1.1.12.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Removed add_ssl_keys() method and replaced with parameter to
+    QCassandraSession::connect() method.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Thu, 29 Sep 2016 12:47:27 -0700
+
+snapmanagercgi (1.1.11.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Fixed bug where /etc/cassandra/ssl was not being deleted on purge.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 28 Sep 2016 22:39:36 -0700
+
+snapmanagercgi (1.1.10.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Added purge-keys ability for cassandra.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 28 Sep 2016 19:00:30 -0700
+
+snapmanagercgi (1.1.9.0~xenial) xenial; urgency=high
+
+  * SNAP-440: now if a value isn't there, you can create it.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 28 Sep 2016 13:00:05 -0700
+
+snapmanagercgi (1.1.8.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Ignore !<name> when installing packages.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 28 Sep 2016 11:28:54 -0700
+
+snapmanagercgi (1.1.7.0~xenial) xenial; urgency=high
+
+  * SNAP-440: turn off cassandra reboot after every change
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 28 Sep 2016 10:36:48 -0700
+
+snapmanagercgi (1.1.6.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Testing another way, somehow it still says "Uninstall" when
+    it is in "Highlight" mode.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 28 Sep 2016 09:46:54 -0700
+
+snapmanagercgi (1.1.5.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a test to know whether Cassandra is installed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 28 Sep 2016 08:48:54 -0700
+
+snapmanagercgi (1.1.4.0~xenial) xenial; urgency=high
+
+  * SNAP-110: The Install/Uninstall was decided using WARNING, changed to
+    highlight so it works with the new version.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 28 Sep 2016 08:10:54 -0700
+
+snapmanagercgi (1.1.3.0~xenial) xenial; urgency=high
+
+  * SNAP-440: Fixed issues with server-to-server Cassandra SSL key exchange.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 26 Sep 2016 19:25:01 -0700
+
+snapmanagercgi (1.1.2.1~xenial) xenial; urgency=high
+
+  * SNAP-440: Numerous changes for key negotiation.
+
+ -- Doug Barbieri <doug@dooglio.net>  Sun, 25 Sep 2016 12:36:10 -0700
+
+snapmanagercgi (1.1.1.1~xenial) xenial; urgency=high
+
+  * SNAP-440: Added YAML-CPP support for parsing the Cassandra conf file.
+
+ -- Doug Barbieri <doug@dooglio.net>  Sat, 24 Sep 2016 15:05:05 -0700
+
+snapmanagercgi (1.1.0.1~xenial) xenial; urgency=high
+
+  * SNAP-440: added SSL support.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 21 Sep 2016 16:54:11 -0700
+
+snapmanagercgi (1.0.44.1~xenial) xenial; urgency=high
+
+  * SNAP-110: Hide some bundles if they have a conflict.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 27 Sep 2016 13:17:47 -0700
+
+snapmanagercgi (1.0.43.0~xenial) xenial; urgency=high
+
+  * SNAP-326: Added the deletion of the cached scripts on purge.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 26 Sep 2016 16:01:46 -0700
+
+snapmanagercgi (1.0.42.0~xenial) xenial; urgency=high
+
+  * SNAP-326: Highlight the swap file info if considered to be in the wrong
+    state (i.e. there along Cassandra, not there and no Cassandra...)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 26 Sep 2016 15:49:46 -0700
+
+snapmanagercgi (1.0.41.0~xenial) xenial; urgency=high
+
+  * SNAP-438: Added proper code to save data in override.conf instead
+    of directly in the .service file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 26 Sep 2016 13:05:46 -0700
+
+snapmanagercgi (1.0.40.0~xenial) xenial; urgency=high
+
+  * SNAP-424: Moved the bundle-scripts folder to the cache instead of the
+    data directory.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 26 Sep 2016 12:33:46 -0700
+
+snapmanagercgi (1.0.39.0~xenial) xenial; urgency=high
+
+  * SNAP-435: Offer a field in snapmanager.cgi to redirect unwanted users.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 25 Sep 2016 19:51:49 -0700
+
+snapmanagercgi (1.0.38.1~xenial) xenial; urgency=high
+
+  * SNAP-432: Added a redirect for users who are not authorized. By default
+    this is turned off. This redirect will only happen if they hit
+    snapmanager.cgi and not the snapmanager "website" (one page really.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 25 Sep 2016 18:19:47 -0700
+
+snapmanagercgi (1.0.38.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Applied fixes to lines of code pointed out by Coverity.
+  * Test the return value of the doc.setContent(), chmod(), chownnm(),
+    lseek() functions.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 24 Sep 2016 21:28:48 -0700
+
+snapmanagercgi (1.0.37.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Removed obj->enum_name::enum_value so Coverity is happy.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 23 Sep 2016 18:56:49 -0700
+
+snapmanagercgi (1.0.36.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Noticed that 3 bundle files were not getting installed.
+  * Also two were not being checked.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 23 Sep 2016 17:50:49 -0700
+
+snapmanagercgi (1.0.35.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed up other configuration file installation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 23 Sep 2016 16:52:49 -0700
+
+snapmanagercgi (1.0.34.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Moved .properties files under .../logger/.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 23 Sep 2016 15:08:49 -0700
+
+snapmanagercgi (1.0.33.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Made sure we had a rule to setup CMAKE_BUILD_TYPE before we
+    start compiling anything.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 15 Sep 2016 17:36:07 -0700
+
+snapmanagercgi (1.0.32.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the handling of the comment for broadcast_rpc_address
+    and auto_snapshot.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 15 Sep 2016 13:55:07 -0700
+
+snapmanagercgi (1.0.31.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the replacement of a variable when it may be commented.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 15 Sep 2016 13:39:07 -0700
+
+snapmanagercgi (1.0.30.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Applied fix so we can change the "seeds" cassandra.yaml field.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 15 Sep 2016 12:56:07 -0700
+
+snapmanagercgi (1.0.29.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+snapmanagercgi (1.0.28.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Okay, this time the actual implementation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 09 Sep 2016 02:00:55 -0700
+
+snapmanagercgi (1.0.27.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Getting there, adding more logs and probably the correct code too.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 09 Sep 2016 02:00:55 -0700
+
+snapmanagercgi (1.0.26.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added more test code to understand how to retrieve the
+    replication factor with our existing interface.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 09 Sep 2016 02:00:55 -0700
+
+snapmanagercgi (1.0.25.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added code to support changing the replication factor.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 09 Sep 2016 02:00:55 -0700
+
+snapmanagercgi (1.0.24.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added a warning along the highlight so people know why the
+    memory entry gets lit.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 08 Sep 2016 22:19:04 -0700
+
+snapmanagercgi (1.0.23.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added the highlight class that was still missing.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 08 Sep 2016 19:40:04 -0700
+
+snapmanagercgi (1.0.22.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the VPN script name so it is defined in one place and
+    reused as required. Also use the cache path instead of the lib path.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 08 Sep 2016 14:23:15 -0700
+
+snapmanagercgi (1.0.21.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Somehow some messages for local processes make it to other
+    servers.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 08 Sep 2016 12:36:39 -0700
+
+snapmanagercgi (1.0.20.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Need to open the input file before reading from it.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 08 Sep 2016 09:19:39 -0700
+
+snapmanagercgi (1.0.19.0~xenial) xenial; urgency=high
+
+  * Fixed the sending of the CASSANDRAQUERY message.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 07 Sep 2016 09:52:41 -0700
+
+snapmanagercgi (1.0.18.0~xenial) xenial; urgency=high
+
+  * Okay, there is a synchronization problem. I added a sleep() as a
+    temporary hack until we do better...
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 06 Sep 2016 02:00:54 -0700
+
+snapmanagercgi (1.0.17.0~xenial) xenial; urgency=high
+
+  * Trying to understand why apt-get update returns 100 by no error messages.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 06 Sep 2016 02:00:54 -0700
+
+snapmanagercgi (1.0.16.1~xenial) xenial; urgency=high
+
+  * Still an error with reading the zone files. Try again.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sat, 03 Sep 2016 23:47:39 -0700
+
+snapmanagercgi (1.0.15.1~xenial) xenial; urgency=high
+
+  * Fixed error in script call.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sat, 03 Sep 2016 23:16:19 -0700
+
+snapmanagercgi (1.0.14.1~xenial) xenial; urgency=high
+
+  * Bumped version for script fixes.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sat, 03 Sep 2016 23:08:32 -0700
+
+snapmanagercgi (1.0.13.1~xenial) xenial; urgency=high
+
+  * Added dns plugin.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Sat, 03 Sep 2016 18:19:18 -0700
+
+snapmanagercgi (1.0.12.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added the affected-services tag to the XSD definitions.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 29 Aug 2016 02:00:55 -0700
+
+snapmanagercgi (1.0.11.0~xenial) xenial; urgency=high
+
+  * Fix for snapcgi apache conf file.
+
+ -- Doug Barbieri <doug@dooglio.net>  Mon, 22 Aug 2016 18:28:34 -0700
+
+snapmanagercgi (1.0.10.1~xenial) xenial; urgency=high
+
+  * Bumping to accomodate new change to enable openvpn.
+
+ -- Doug Barbieri <doug@dooglio.net>  Fri, 19 Aug 2016 14:47:59 -0700
+
+snapmanagercgi (1.0.9.0~xenial) xenial; urgency=high
+
+  * SNAP-406: Adding various logs to try to find out where it crashes
+    with an invalid string.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 18 Aug 2016 14:07:14 -0700
+
+snapmanagercgi (1.0.8.0~xenial) xenial; urgency=high
+
+  * Applied a couple of fixes to the handling of installation bundles.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 18 Aug 2016 14:07:14 -0700
+
+snapmanagercgi (1.0.7.2~xenial) xenial; urgency=high
+
+  * SNAP-403: Now puts up vpn client box *only* on clients, and similar for servers.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 16 Aug 2016 18:15:23 -0700
+
+snapmanagercgi (1.0.7.1~xenial) xenial; urgency=high
+
+  * SNAP-403: Can't use "ovpn" suffix under linux
+  * SNAP-403: <crt> is wrong: it is really <cert>
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 16 Aug 2016 17:17:31 -0700
+
+snapmanagercgi (1.0.7.0~xenial) xenial; urgency=high
+
+  * SNAP-403: Need to remove script before trying to overwrite it.
+
+ -- Doug Barbieri <doug@dooglio.net>  Tue, 16 Aug 2016 16:51:41 -0700
+
+snapmanagercgi (1.0.6.7~xenialm2osw4) xenial; urgency=high
+
+  * SNAP-403: Now can handle text without any '\n's in it.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 16 Aug 2016 16:26:58 -0700
+
+snapmanagercgi (1.0.6.7~xenialm2osw3) xenial; urgency=high
+
+  * SNAP-403: Now using public_ip for script, and clients are one per line.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Tue, 16 Aug 2016 15:37:00 -0700
+
+snapmanagercgi (1.0.6.7~xenialm2osw2) xenial; urgency=high
+
+  * SNAP-403: Bumping version for testing of new client-level functionality in plugin
+
+ -- Doug Barbieri <doug@dooglio.net>  Tue, 16 Aug 2016 14:55:46 -0700
+
+snapmanagercgi (1.0.6.7~xenialm2osw1) xenial; urgency=high
+
+  * SNAP-403: Text box appears with no button for VPN certs.
+
+ -- Doug Barbieri <doug@dooglio.net>  Tue, 16 Aug 2016 13:10:27 -0700
+
+snapmanagercgi (1.0.6~xenial) xenial; urgency=high
+
+  * SNAP-110: Also make the script executable (755).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 11 Aug 2016 16:03:24 -0700
+
+snapmanagercgi (1.0.5~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the snapmanagercgi so it sends the bundle variables
+    name and value instead of just the name of the variable.
+  * SNAP-110: Also applied a fix in the event a variable entry is just a
+    name so it works as expected in the installer.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 11 Aug 2016 09:07:09 -0700
+
+snapmanagercgi (1.0.4~xenial) xenial; urgency=high
+
+  * SNAP-110: Change the scheme to make use of a preinst/postinst script
+    file instead of calling system() with that one long script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 10 Aug 2016 12:25:49 -0700
+
+snapmanagercgi (1.0.3.1~xenial) xenial; urgency=high
+
+  * Taking back out apache confs and sites we put in.
+
+ -- Doug Barbieri <doug@dooglio.net>  Sun, 07 Aug 2016 17:47:52 -0700
+
+snapmanagercgi (1.0.2.1~xenial) xenial; urgency=high
+
+  * SNAP-110: Delete the bundles.status whenever a bundle gets intalled/uninstalled.
+  * SNAP-110: Missed one 'e'.
+
+ -- Doug Barbieri <doug@dooglio.net>  Mon, 01 Aug 2016 18:06:07 -0700
+
+snapmanagercgi (1.0.1.78~xenial) xenial; urgency=high
+
+  * SNAP-110: Removed the extra quotes for the Dpkg::Options::=...
+
+ -- Doug Barbieri <doug@dooglio.net>  Mon, 01 Aug 2016 16:17:44 -0700
+
+snapmanagercgi (1.0.0) xenial; urgency=high
+
+  * Initial release of packaging for snapmanager.cgi.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 25 May 2016 08:31:39 -0700

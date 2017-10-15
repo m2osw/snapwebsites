@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == settings for the javascript detecting whether an ad blocker is running
+Copyright (C) 2016-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="detectadblocker-settings" id="settings" content-modified="2016-01-02 05:28:23">
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="inform_server"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="inform_server"/>
+  </taborder>
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+
+  <!-- inform server -->
+  <widget id="inform_server" type="checkmark" field="detectadblocker::inform_server" path="detectadblocker/inform_server" auto-save="int8">
+    <label>Inform server of the status of the ad blocker on the client side via AJAX</label>
+    <tooltip>
+      This checkbox is selected by default making this plugin send us
+      (the server) a true or false flag to know whether an ad blocker
+      was detected (true) or not (false).
+    </tooltip>
+    <help>
+      The detect ad blocker uses an AJAX command to inform the server on
+      whether the client's browser is running an ad blocker or not. This
+      allows the server to save the information attached to that end user
+      and avoid sending further ads to the client if they already informed
+      us that an ad blocker was active. This saves time and bandwidth on
+      your server.
+    </help>
+    <value>1</value>
+  </widget>
+
+  <!-- how long we cache an AJAX reply -->
+  <widget id="prevent_ads_duration" type="line-edit" field="detectadblocker::prevent_ads_duration" path="detectadblocker/prevent_ads_duration" auto-save="int64">
+    <tooltip>Enter the number of days a user prevents ads from being sent to him.</tooltip>
+    <help>
+      This parameter defines the number of days the server will stop
+      sending adds to a client that has an ad blocker. The default is
+      one day. The maximum is 366 which is also the maximum duration
+      of a user session. Note that many times the cookie we send to
+      users does not last very long anyway (unless the user comes back
+      to the website over and over again.)
+    </help>
+    <filters>
+      <regex name="integer"/>
+      <min-value>1</min-value>
+      <max-value>366</max-value>
+    </filters>
+    <background-value>number of days (1 to 366)</background-value>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

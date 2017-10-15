@@ -1,0 +1,239 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == bookkeeping plugin database setup
+Copyright (C) 2016-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/admin/settings/bookkeeping" owner="output">
+    <param name="content::title" revision="revision">Bookkeeping Settings</param>
+    <param name="content::body" revision="revision">
+      <p>Bookkeeping Settings</p>
+    </param>
+    <param name="editor::layout" revision="global" overwrite="yes">"bookkeeping-settings-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"bookkeeping-settings-parser";</param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/bookkeeping" owner="output">
+    <param name="content::title" revision="revision">Bookkeeping</param>
+    <param name="content::body" revision="revision">
+      <p>Bookkeeping Balance Sheet</p>
+    </param>
+    <remove-link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</remove-link>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/bookkeeping/balance-sheet</link>
+    <!--link name="permissions::direct::action::edit" to="permissions::link_back::edit" mode="*:*">/types/permissions/rights/administer/bookkeeping/balance-sheet</link-->
+    <!--link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/bookkeeping/balance-sheet</link-->
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/bookkeeping/client" owner="output">
+    <param name="content::title" revision="revision">Clients</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <div class="bookkeeping-buttons">
+          <a class="bookkeeping-button add-client" href="#add-client">Add Client</a>
+          <css name="bookkeeping"/>
+          <javascript name="bookkeeping-client"/>
+        </div>
+        <p>List of Clients:</p>
+        <div class="client-list">[list::theme("bookkeeping/client")]</div>
+      ]]>
+    </param>
+    <!-- get title of the page; TODO: we need to have functions that do that with one instruction! -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[(branch := int32(cell("content", page, "content::revision_control::current_branch")),
+                key := string(cell("content", page, "content::revision_control::current_revision_key::" + branch + "::xx")),
+                key ? tolower(string(cell("revision", key, "content::title"))) : "no title")]]>
+    </param>
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[
+           parent(path) == "bookkeeping/client"
+        && path != "bookkeeping/client/add-client"
+      ]]>
+    </param>
+    <param name="list::selector">children</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/bookkeeping/client</link>
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/bookkeeping/client/add-client"> <!-- we manage the generation and handling of POSTs to this page -->
+    <param name="content::title" revision="revision">New Client</param>
+    <param name="bookkeeping::counter" revision="global" type="int64">0</param>
+    <param name="editor::layout" revision="global" overwrite="yes">"bookkeeping-add-client-page";</param>
+    <param name="layout::layout" revision="global" overwrite="yes">"bookkeeping-add-client-parser";</param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/bookkeeping/client</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/bookkeeping/client</link>
+    <link name="menu::admin" to="menu::admin" mode="1:*">/types/taxonomy/system/menu/item/admin</link>
+  </content>
+  <content path="/images/bookkeeping">
+    <param name="content::title" revision="revision">Bookkeeping Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various images used by the bookkeeping plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="bookkeeping-logo" type="attachment/public">
+      <path>:/images/bookkeeping/bookkeeping-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/css/bookkeeping">
+    <param name="content::title" revision="revision">Bookkeeping CSS</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various CSS file used by the bookkeeping plugin.</p>]]>
+    </param>
+    <attachment name="bookkeeping-logo" type="attachment/public">
+      <path>:/css/bookkeeping/bookkeeping.css</path>
+      <mime-type>text/css</mime-type>
+    </attachment>
+  </content>
+  <content path="/js/bookkeeping">
+    <param name="content::title" revision="revision">Script for Bookkeeping</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>JavaScript files for the Bookkeeping handling.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="bookkeeping-client" type="attachment/public">
+      <path>qrc:/js/bookkeeping/bookkeeping-client.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>editor (&gt;= 0.0.3.484)</dependency>
+    </attachment>
+    <attachment name="bookkeeping-add-client" type="attachment/public">
+      <path>qrc:/js/bookkeeping/bookkeeping-add-client.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>editor (&gt;= 0.0.3.484)</dependency>
+    </attachment>
+  </content>
+  <content path="/types/taxonomy/system/content-types/bookkeeping" owner="output">
+    <param name="content::title" revision="revision">Various Bookkeeping Page Types</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The time tracker makes use of these types to handle its data.</p>]]>
+    </param>
+    <!-- TODO: deal with the permissions at some point as in:
+               * plain users cannot see someone else's data
+               * an administrator or bookkeeper can see anyone's data
+    -->
+    <!--link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/timetracker/calendar</link-->
+    <!--link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/timetracker/calendar</link-->
+  </content>
+  <content path="/types/taxonomy/system/content-types/bookkeeping/client" owner="output">
+    <param name="content::title" revision="revision">Client pages</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>The client page of each Bookkeeping client is given this type.</p>]]>
+    </param>
+    <!--link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/timetracker/calendar</link-->
+    <!--link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/timetracker/calendar</link-->
+  </content>
+  <content path="/types/permissions/rights/view/bookkeeping" owner="permissions">
+    <param name="content::title" revision="revision">Various Bookkeeping View Rights</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>Access the Bookkeeping system on the website.</p>
+        <p>
+          This right gives the user view access to all the bookkeeping data
+          on the website. It is generally not assigned to anyone except
+          the top administrator, instead the sub-rights are assigned to
+          users.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/bookkeeping/balance-sheet" owner="permissions">
+    <param name="content::title" revision="revision">Balance Sheet View Rights</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>Access the Bookkeeping Balance Sheet on the website.</p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/view/bookkeeping/client" owner="permissions">
+    <param name="content::title" revision="revision">Client View Rights</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Access to the list of clients on the Bookkeeping system on the website.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/edit/bookkeeping" owner="permissions">
+    <param name="content::title" revision="revision">Various Bookkeeping Edit Rights</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>Access the Bookkeeping system on the website.</p>
+        <p>
+          This right gives the user edit access to all the bookkeeping data
+          on the website. It is generally not assigned to anyone except
+          the top administrator, instead the sub-rights are assigned to
+          users.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/edit/bookkeeping/client" owner="permissions">
+    <param name="content::title" revision="revision">Client Bookkeeping Edit Rights</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>Access the Bookkeeping system on the website.</p>
+        <p>
+          This right gives the user edit access to all the bookkeeping data
+          on the website. It is generally not assigned to anyone except
+          the top administrator, instead the sub-rights are assigned to
+          users.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/bookkeeping" owner="permissions">
+    <param name="content::title" revision="revision">Various Bookkeeping Administer Rights</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>Access the Bookkeeping system on the website.</p>
+        <p>
+          This right gives the user administrative access to all the
+          bookkeeping data on the website. It is generally not assigned
+          to anyone except the top administrator, instead the sub-rights
+          are assigned to users.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <content path="/types/permissions/rights/administer/bookkeeping/client" owner="permissions">
+    <param name="content::title" revision="revision">Right to Administer Clients</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[
+        <p>
+          Administer the list of clients on the Bookkeeping system on the
+          website.
+        </p>
+      ]]>
+    </param>
+  </content>
+  <!-- tweak permissions for the main website administrator and root users -->
+  <content path="/types/permissions/groups/root">
+    <!-- give all permissions to root -->
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/bookkeeping</link>
+    <link name="permissions::action::edit" to="permissions::link_back::edit" mode="*:*">/types/permissions/rights/edit/bookkeeping</link>
+    <link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/bookkeeping</link>
+  </content>
+  <content path="/types/permissions/groups/root/administrator">
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/bookkeeping/balance-sheet</link>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/bookkeeping/client</link>
+    <link name="permissions::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/bookkeeping/client</link>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

@@ -1,0 +1,107 @@
+/*
+ * Name: default
+ * Layout: default
+ * Version: 0.0.1
+ * Browsers: all
+ * Copyright: Copyright 2011-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+body, div
+{
+	padding: 0;
+	margin: 0;
+}
+
+body
+{
+	font-family: sans-serif;
+}
+
+.page
+{
+	width: 1000px;
+	margin: 0 auto;
+}
+
+.header
+{
+	height: 65px;
+	border-bottom: 1px solid #666666;
+	margin-bottom: 20px;
+}
+
+.header h1
+{
+	text-align: center;
+	font-size: 250%;
+	padding-top: 10px;
+}
+
+.left
+{
+	float: left;
+	padding-right: 10px;
+	width: 239px;
+	min-height: 350px;
+	border-right: 1px solid #666666;
+}
+
+.content
+{
+	float: left;
+	width: 730px;
+	padding: 10px;
+}
+
+div.user-messages
+{
+	border: 1px solid #550000;
+	background-color: #fff0f0;
+	padding: 0 10px;
+	margin-bottom: 20px;
+}
+
+div.message h3
+{
+	color: #770033;
+}
+
+.clear-both
+{
+	clear: both;
+}
+
+.inner-page
+{
+}
+
+.content .body
+{
+}
+
+.footer
+{
+	margin-top: 20px;
+	padding: 10px;
+	border-top: 1px solid #666666;
+	text-align: center;
+	color: #888888;
+	font-size: 80%;
+}
+
+.error input
+{
+	color: #ff0000;
+}
+
+.left .box input.line-edit-input,
+.left .box input.password-input
+{
+	display: block;
+	width: 150px;
+}
+
+.input-with-background-value
+{
+	color: #888888;
+}

@@ -1,0 +1,7 @@
+debian/tmp/usr/bin/snapbounce                                    usr/bin/
+debian/tmp/usr/lib/snapwebsites/manager_plugins/libmailserver.so usr/lib/snapwebsites/manager_plugins/
+snapbounce/conf/snap-postfix.conf                                etc/fail2ban/filter.d/
+snapbounce/conf/snap-postfix-rbl.conf                            etc/fail2ban/filter.d/
+snapbounce/conf/snap-postfix-sasl.conf                           etc/fail2ban/filter.d/
+snapbounce/conf/snap-postfix-jail.conf                           etc/fail2ban/jail.d/
+snapbounce/conf/02-mail.conf                                     etc/rsyslog.d/

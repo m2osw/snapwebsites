@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# Safely restart Cassandra
+#
+# At this time, the systemd environment is likely to improperly restart
+# Cassandra because it won't quit fast enough if it is still busy.
+# This script does a restart by stopping the currently running version,
+# waiting for that version to end, and then starting the service anew.
+#
+# The script is expected to be run as root.
+
+CASSANDRA_PID=/run/cassandra/cassandra.pid
+
+if test ! -f $CASSANDRA_PID
+then
+	echo "warning: it does not look like the cassandra daemon is currently running."
+	exit 1
+fi
+
+# Get the process PID
+#
+# Note: the PID variable in /etc/init.d/cassandra uses $NAME and could
+#       change further in future versions so we hard code our path.
+#
+PID=`cat $CASSANDRA_PID`
+
+# Request a stop by systemctl
+#
+systemctl stop cassandra
+
+# Block until that process really quits (systemd may "lose its patience!")
+#
+while kill -0 $PID >/dev/null 2>&1
+do
+	# sleep on it
+	sleep 1
+done
+
+# We're good, restart Cassandra
+#
+systemctl start cassandra

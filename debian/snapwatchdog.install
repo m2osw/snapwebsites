@@ -1,0 +1,4 @@
+debian/tmp/usr/bin/snapwatchdogserver                          usr/bin/
+debian/tmp/usr/lib/snapwebsites/manager_plugins/libwatchdog.so usr/lib/snapwebsites/manager_plugins/
+snapwatchdog/conf/snapwatchdog.conf                            etc/snapwebsites/
+snapwatchdog/conf/snapwatchdog.properties                      etc/snapwebsites/logger/

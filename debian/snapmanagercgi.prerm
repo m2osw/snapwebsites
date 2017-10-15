@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "remove" -o "$1" = "deconfigure" ]
+then
+    a2dissite snapmanager-apache2
+fi
+
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

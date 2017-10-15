@@ -1,0 +1,31 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+PACKAGENAME=snapmanagerdaemon
+
+# Remove files representing each service offered by this package
+#
+SERVICES_DIR=/usr/share/snapwebsites/services
+rm -f $SERVICES_DIR/${PACKAGENAME}.service
+
+
+if [ "$1" = "purge" ]
+then
+    # delete the data and cache files
+    #
+    rm -rf /var/lib/snapwebsites/bundles
+    rm -rf /var/cache/snapwebsites/bundle-script
+    rm -f /var/cache/snapwebsites/apt-check.output
+
+    # delete the logs if any
+    #
+    rm -f /var/log/snapwebsites/${PACKAGENAME}.log*
+    rm -f /var/log/snapwebsites/secure/${PACKAGENAME}.log*
+    rm -f /var/log/snapwebsites/secure/snapmanager-bundle.log*
+fi
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

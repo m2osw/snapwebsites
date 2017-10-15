@@ -1,0 +1,65 @@
+# Test with the following command:
+#  make -f plugins/dependencies.txt <plugin name>
+
+# Core is the library (the server class is a plugin)
+core:	; @echo $@
+
+antivirus: form versions	; @echo $@
+attachment: permissions	; @echo $@
+avatar: filter	; @echo $@
+carousel: output	; @echo $@
+char_chart: sitemapxml	; @echo $@
+content: links	; @echo $@
+cookie_consent_silktide: editor	; @echo $@
+ecommerce: content	; @echo $@
+editor: attachment mimetype sendmail	; @echo $@
+epayment: editor	; @echo $@
+epayment_paypal: epayment	; @echo $@
+favicon: form permissions	; @echo $@
+feed: content layout messages path	; @echo $@
+filter: content messages	; @echo $@
+form: sessions	; @echo $@
+hashtag: filter	; @echo $@
+header: output	; @echo $@
+images: listener versions	; @echo $@
+info: path form messages users output	; @echo $@
+javascript: content	; @echo $@
+layout: filter javascript path taxonomy	; @echo $@
+links: core content test_plugin_suite	; @echo $@
+list: path output	; @echo $@
+listener: path	; @echo $@
+locale: core	; @echo $@
+locale_settings: locale_widgets	; @echo $@
+locale_widgets: editor	; @echo $@
+mailinglist: core content	; @echo $@
+menu: layout output	; @echo $@
+messages: core	; @echo $@
+mimetype: output	; @echo $@
+oauth2: users form	; @echo $@
+output: layout locale messages	; @echo $@
+path: links server_access	; @echo $@
+permissions: layout messages output users	; @echo $@
+qrcode: attachment shorturl	; @echo $@
+robotstxt: layout	; @echo $@
+search: content layout	; @echo $@
+sendmail: filter sessions users	; @echo $@
+server_access: content messages	; @echo $@
+sessions: output	; @echo $@
+shorturl: messages path sessions	; @echo $@
+sitemapxml: permissions robotstxt shorturl	; @echo $@
+snap_software_description: layout form	; @echo $@
+taxonomy: content	; @echo $@
+test_plugin: output test_plugin_suite	; @echo $@
+test_plugin_suite: core	; @echo $@
+tracker: users	; @echo $@
+users: output	; @echo $@
+# TODO: break users as a user and users_form to break the sendmail <-> users inter dependency
+#       then later add a users_editor to support using our edit to register, validate, login, etc.
+users_editor: editor	; @echo $@
+users_form: form sendmail	; @echo $@
+versions: filter users	; @echo $@
+zoom: output	; @echo $@
+
+
+
+# vim: syntax=make ts=95

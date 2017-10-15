@@ -1,0 +1,47 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "purge" ]
+then
+    # delete the snapcgi logs if any
+    #
+    rm -f /var/log/snapwebsites/snapcgi.log*
+    rm -f /var/log/snapwebsites/secure/snapcgi.log*
+
+    # delete the user configuration file
+    #
+    rm -f /etc/snapwebsites/snapwebsites.d/snapcgi.conf
+
+    # delete user editable files and directories that we manage
+    # files may have a .bak hence the "*" at the end
+    # (i.e. other than the default domain, we do not touch)
+    #
+    rm -f /etc/apache2/snap-conf/snap-apache2-maintenance.conf*
+    rm -f /etc/apache2/snap-conf/snap-apache2-vhost-security.conf*
+    rm -f /etc/apache2/snap-conf/default/*.conf*
+    for subdir in /etc/apache2/snap-conf/*
+    do
+        if test -d "$subdir"
+        then
+            rmdir --ignore-fail-on-non-empty "$subdir"
+        fi
+    done
+    if test -d /etc/apache2/snap-conf
+    then
+        rmdir --ignore-fail-on-non-empty /etc/apache2/snap-conf
+    fi
+fi
+
+APACHEINIT=/usr/lib/snapwebsites/scripts/snapapacheinit
+if test -e ${APACHEINIT}
+then
+    ${APACHEINIT} remove
+fi
+
+
+#DEBHELPER#
+
+# vim: ts=4 sw=4 et nocindent

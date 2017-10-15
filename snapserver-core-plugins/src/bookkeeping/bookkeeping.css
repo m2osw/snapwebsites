@@ -1,0 +1,92 @@
+/*
+ * Name: bookkeeping
+ * Version: 0.0.17
+ * Browsers: all
+ * Copyright: Copyright 2016-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+
+/** bookkeeping buttons */
+.bookkeeping-button
+{
+	display: block;
+	padding: 10px;
+	font-weight: normal;
+	border: 1px solid black;
+	border-radius: 7px;
+	background: #b0e8a0;
+	text-decoration: none;
+}
+
+div.bookkeeping-buttons
+{
+	float: right;
+}
+
+/** add client popup */
+body[popup="popup"] div.page div.header
+{
+	display: none;
+}
+div[form_name="bookkeeping_add_client"] .editor-block label
+{
+}
+div[form_name="bookkeeping_add_client"] .editor-block div.snap-editor.editable
+{
+}
+
+div[form_name="bookkeeping_add_client"] .editor-block label.city
+{
+	float: left;
+	margin: 0 10px 10px 0;
+	padding-top: 4px;
+	width: 48%;
+}
+div[form_name="bookkeeping_add_client"] .editor-block label.state
+{
+	float: left;
+	margin: 0 10px 10px 0;
+	padding-top: 4px;
+	width: 24%;
+}
+div[form_name="bookkeeping_add_client"] .editor-block label.zip
+{
+	float: left;
+	margin: 0 10px 10px 0;
+	padding-top: 4px;
+	width: 20%;
+}
+
+div[form_name="bookkeeping_add_client"] .editor-block div.snap-editor.editable.client_city
+{
+	margin-right: 8px;
+	margin-top: 0;
+	float: left;
+	width: 48%;
+}
+div[form_name="bookkeeping_add_client"] .editor-block div.snap-editor.editable.client_state
+{
+	margin-right: 8px;
+	margin-top: 0;
+	float: left;
+	width: 24%;
+}
+div[form_name="bookkeeping_add_client"] .editor-block div.snap-editor.editable.client_zip
+{
+	margin-top: 0;
+	float: left;
+	width: 20%;
+}
+
+.bookkeeping-button.cancel-button
+{
+	display: block;
+	float: left;
+}
+.bookkeeping-button.save-button
+{
+	display: block;
+	float: right;
+}
+

@@ -1,0 +1,28 @@
+# Snap CGI
+/var/log/snapwebsites/snapcgi.log {
+    weekly
+    maxsize 10M
+    su www-data www-data
+    missingok
+    rotate 10
+    compress
+    delaycompress
+    notifempty
+    create 640 www-data www-data
+}
+/var/log/snapwebsites/secure/snapcgi.log {
+    weekly
+    maxage 92
+    maxsize 10M
+    su www-data www-data
+    missingok
+    rotate 5
+    compress
+    delaycompress
+    notifempty
+    shred
+    nomail
+    create 600 www-data www-data
+}
+
+# vim: ts=4 sw=4 et

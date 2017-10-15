@@ -1,0 +1,58 @@
+#!/bin/sh
+#
+# Initialization after a reboot, called before other daemons get started.
+#
+# TODO: transform this in a C++ executable so that way we can load the
+#       parameters using the snap_config class (only I think snapbase
+#       cannot depend on libsnapwebsites? TBD)
+#
+
+# \brief Get a value from a configuration file
+#
+# \warning
+# The variable must be defined in the first column and immediately followed
+# by an equal sign (i.e. "blah=..." works, "  blah = ..." fails.)
+#
+# \param[in] $1  The name of the variable to search in the configuration file.
+# \param[in] $2  The default value if the variable is not found in the
+#                configuration files.
+# \param[in] $3  The filename to check with, defaults to "snapserver.conf".
+#
+# \return print value in stdout
+#
+getvalue() {
+    FILENAME=snapserver.conf
+    if test ! -z "$3"
+    then
+        FILENAME="$3"
+    fi
+    VALUE=`grep -s "^$1=" /etc/snapwebsites/snapwebsites.d/$FILENAME | sed -e "s/^$1=//"`
+    if test -z "$VALUE"
+    then
+        VALUE=`grep -s "^$1=" /etc/snapwebsites/$FILENAME | sed -e "s/^$1=//"`
+        if test -z "$VALUE"
+        then
+            VALUE="$2"
+        fi
+    fi
+    echo $VALUE
+}
+
+# Get the USER and GROUP parameters
+#
+USER=`getvalue user snapwebsites`
+GROUP=`getvalue group snapwebsites`
+
+# Create the LOCK_PATH
+#
+LOCK_PATH=`getvalue lock_path /run/lock/snapwebsites`
+mkdir -p $LOCK_PATH
+chown $USER:$GROUP $LOCK_PATH
+
+# Create the RUN_PATH
+#
+RUN_PATH=`getvalue run_path /run/snapwebsites`
+mkdir -p $RUN_PATH
+chown $USER:$GROUP $RUN_PATH
+
+# vim: ts=4 sw=4 et

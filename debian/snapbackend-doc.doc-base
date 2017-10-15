@@ -1,0 +1,9 @@
+Document: snapbackend
+Title: snapbackend daemons
+Author: Alexis Wilke
+Abstract: This is the reference manual for the snapbackend daemons.
+Section: web
+
+Format: HTML
+Index: /usr/share/doc/snapbackend/html/index.html
+Files: /usr/share/doc/snapbackend/html/*

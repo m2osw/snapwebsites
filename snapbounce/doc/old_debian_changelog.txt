@@ -1,0 +1,120 @@
+snapbounce (1.0.16.13~xenial) xenial; urgency=high
+
+  * Nightly build.
+
+ -- Build Server <build@m2osw.com>  Fri, 16 Jun 2017 02:00:54 -0700
+
+snapbounce (1.0.16.0~xenial) xenial; urgency=high
+
+  * EX-276: Added a log rotate of the /var/log/mail folder because the default
+    logrotate for mail does not see that sub-folder.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 15 Jun 2017 10:14:32 -0700
+
+snapbounce (1.0.15.0~xenial) xenial; urgency=high
+
+  * SNAP-571: Added our own postfix filters for fail2ban.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 26 May 2017 21:47:48 -0700
+
+snapbounce (1.0.14.0~xenial) xenial; urgency=high
+
+  * SNAP-276: Added an rsyslog configuration file to force all postfix messages
+    to /var/log/mail/mail.log only (i.e. no syslog and no /var/log/mail.log*).
+  * Updated the fail2ban paths to point to the new location.
+  * Updated the debian/install file to add the rsyslog file.
+  * Updated the postinst script to move the log files in the sub-folder.
+  * Fixed the chown separator from '.' to ':'.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 30 Apr 2017 20:35:48 -0700
+
+snapbounce (1.0.13.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Changed TLS to "may" instead of "encrypt".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 12 Mar 2017 13:27:48 -0700
+
+snapbounce (1.0.12.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Added list of not allowed protocols (SSLv2/3, TLSv1).
+  * Force postfix to make use of TLS (security level).
+  * Disabled the VRFY command.
+  * Force sender to use HELO to present itself.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon,  6 Mar 2017 16:17:48 -0700
+
+snapbounce (1.0.11.0~xenial) xenial; urgency=high
+
+  * SMAP-110: Added the smtpd_tls_exclude_ciphers parameter.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  5 Feb 2017 17:39:48 -0700
+
+snapbounce (1.0.10.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notice to 2017.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 15:02:48 -0700
+
+snapbounce (1.0.9.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Fixed the --version help string to use %p for the project name.
+  * The --version also exit(0) now, instead of 1.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 06 Nov 2016 20:16:48 -0700
+
+snapbounce (1.0.8.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Create log files so fail2ban works as expected.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 31 Oct 2016 12:42:47 -0700
+
+snapbounce (1.0.7.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Added -q to systemctl when using is-active so we avoid output
+    in our scripts.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 30 Oct 2016 23:44:46 -0700
+
+snapbounce (1.0.6.0~xenial) xenial; urgency=high
+
+  * SNAP-465: Added a file to enable the postfix jail for fail2ban.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 23 Oct 2016 17:39:38 -0700
+
+snapbounce (1.0.5.0~xenial) xenial; urgency=high
+
+  * SNAP-479: Rotate the root emails because it may not get redirected and
+    it would just grow on us.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 12 Oct 2016 02:00:48 -0700
+
+snapbounce (1.0.4.0~xenial) xenial; urgency=high
+
+  * SNAP-439: removing the add/rm group postdrop, instead we allow the 's'
+    flag of /usr/sbin/postdrop to work by the sendmail backend.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 11 Oct 2016 17:36:48 -0700
+
+snapbounce (1.0.3.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Will output its own version instead of the libsnapwebsites one.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 Oct 2016 12:53:08 -0700
+
+snapbounce (1.0.2.0~xenial) xenial; urgency=high
+
+  * SNAP-110: Bumped version to get my test system to upgrade properly.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Sep 2016 11:59:22 -0700
+
+snapbounce (1.0.1.1~xenial) xenial; urgency=high
+
+  * Added new snapmanager plugin: mailserver.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Mon, 05 Sep 2016 12:15:49 -0700
+
+snapbounce (1.0.0) xenial; urgency=high
+
+  * Initial release of packaging.
+
+ -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 26 May 2016 22:49:55 -0800

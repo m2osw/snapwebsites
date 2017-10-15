@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == users database setup
+Copyright (C) 2012-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/user">
+    <param name="content::title" revision="revision">User</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>List of users on your Snap! Website.</p><div class="user-list">[list::theme("user")]</div>]]>
+    </param>
+    <link name="permissions::direct::action::administrer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+    <!-- by default you need administration rights to see all the users
+         registered on a website; administrator can then make the list
+         public if he wants to. -->
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/administer/website</link>
+    <link name="sitemapxml::include" to="sitemapxml::include" mode="1:*">/types/taxonomy/system/sitemapxml/include</link>
+    <!-- create a list of users sorted by reversed identifiers -->
+    <!-- reverse order (larger identifier first) -->
+    <param name="list::original_item_key_script" overwrite="yes">
+      <![CDATA[string(9223372036854775807 - int64(segment(path, "/", 1)))]]>
+    </param>
+    <!-- exactly 2 segments, the first being "user" and the second being an integer -->
+    <param name="list::original_test_script" overwrite="yes">
+      <![CDATA[parent(path) == "user" && is_integer(segment(path, "/", 1))]]>
+    </param>
+    <param name="list::selector">children</param>
+    <link name="list::type" to="list::type" mode="1:*">/types/taxonomy/system/list</link>
+  </content>
+  <content path="/user/me">
+    <param name="content::title" revision="revision">User Profile</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This entry is a placeholder. You should never see it live on your website. It is used to simplify permission assignment.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/private</link>
+  </content>
+  <content path="/js/users">
+    <!-- JavaScript code for the users session handling, client side -->
+    <param name="content::title" revision="revision">Users Source</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>JavaScript code for the Snap! Users.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="users" type="attachment/public">
+      <path>qrc:/js/users/users.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>popup (&gt;= 0.1.0.10)</dependency>
+    </attachment>
+  </content>
+  <content path="/images/users" owner="users_ui">
+    <param name="content::title" revision="revision">User Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Various images used by the users plugins.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="users-logo" type="attachment/public">
+      <path>:/images/users/users-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/types/permissions/rights/administer/website/info" owner="permissions">
+    <param name="content::title" revision="revision">Administer Basic Website Information Right</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Administer basic information on the website.</p><p>This right gives the user access to all basic information available on the website.</p>]]>
+    </param>
+  </content>
+  <content path="/types/users">
+    <param name="content::title" revision="revision">Users</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>All users are defined as children of this type. Any other content should never be assigned this type.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+  </content>
+  <content path="/types/users/auto">
+    <param name="content::title" revision="revision">Automatic Users</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Users who just do not register, but participate (i.e. post a comment) and include their email address, get added to the system. These users automatically get an account tagged as automatic. This means they never registered and can still do so at a later time. Such an account is otherwise used to let those users define their email preferences (i.e. never email me, email at most once a month, etc.)</p>]]>
+    </param>
+  </content>
+  <content path="/types/users/new">
+    <!-- if not linked to new then the user was confirmed -->
+    <param name="content::title" revision="revision">New Users</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Users who just registered are put in this list. They get moved to the full list once they confirmed their email address.</p>]]>
+    </param>
+  </content>
+  <content path="/types/users/password">
+    <param name="content::title" revision="revision">Change Password</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>When a user request a password change, this tag is added to his account (unless the account is "auto", "new", or "blocked"). This allows the log in process to force the user to go to ones profile and change the password.</p>]]>
+    </param>
+  </content>
+  <content path="/types/users/blocked">
+    <param name="content::title" revision="revision">Blocked Users</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Users who get blocked for whatever reason are moved under this folder. Keeping these user accounts may be mandatory (i.e. user purchased something on your site) and it is useful to prevent users with that same email addresses from re-registering.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/content-types/user-page">
+    <param name="taxonomy::name">users::user_page</param>
+    <param name="content::title" revision="revision">User Content Type</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This page type represents a user page. These pages have a different set of permissions which allows website owners to completely hide their list of registered users.</p>]]>
+    </param>
+    <link name="permissions::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/administer/website</link>
+  </content>
+  <content path="/types/taxonomy/system/content-types/page/not-main-page">
+    <param name="taxonomy::name">users::user_page</param>
+    <param name="content::title" revision="revision">Not a Main Page</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This type is used to mark a page as "not a main page" meaning that it cannot be viewed as a referrer. This is used for pages such as boxes which should never be used as referrers.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/users">
+    <param name="content::title" revision="revision">User Tags</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of tags used to label users on your site. These tags are considered free form so additional tags can be created.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/taxonomy</link>
+  </content>
+  <content path="/types/taxonomy/system/users/spammer">
+    <param name="content::title" revision="revision">Spammer User</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This user posted spam on my website.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/users/hacker">
+    <param name="content::title" revision="revision">Hacker User</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This user tried to gain access or otherwise illegally tried to access my website.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/users/impolite">
+    <param name="content::title" revision="revision">Impolite User</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>User has been quite impolite and as marked as such.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/users/offensive">
+    <param name="content::title" revision="revision">Offensive User</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>User is offensive when using our website (write profanity.)</p>]]>
+    </param>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-vpn_server.xml
+-->
+<bundle>
+  <name>vpn_server</name>
+  <description>
+    <p>The OpenVPN bundle is used to secure public connections
+    between computers. If you have a secure LAN then you do not
+    need to install OpenVPN at all. (i.e. a secure LAN is a LAN
+    that only your computers have access to.)</p>
+
+    <p>The OpenVPN creates a network of computers to communicate
+    through a safe, encrypted tunnel (Server Side) rendering a
+    public LAN secure.</p>
+
+    <p>An OpenVPN server is used to setup a computer that allows
+    connections and accepts connections. Servers are a bottle
+    neck, however, you can install the server multiple times
+    and in effect make it work in a failsafe manner.</p>
+  </description>
+  <fields>
+    <field name="organization" type="input">
+      <label>Organization</label>
+      <description>Name of your organization.</description>
+    </field>
+    <field name="organization_unit" type="input">
+      <label>Organization Unit</label>
+      <description>The unit of your organization responsible for your servers.</description>
+    </field>
+    <field name="city" type="input">
+      <label>City</label>
+      <description>Name of your city.</description>
+    </field>
+    <field name="province" type="input">
+      <label>Province or State</label>
+      <description>Name of your province.</description>
+    </field>
+    <field name="country" type="input">
+      <label>Country</label>
+      <description>Two letter abbrieviation for the name of your country (e.g. 'US' stands for 'United States').</description>
+    </field>
+    <field name="email" type="input">
+      <label>Email</label>
+      <description>Contact email address.</description>
+    </field>
+  </fields>
+  <packages>openvpn, easy-rsa</packages>
+  <!--
+    The setup requires the user data entry for the IP addresses, but we
+    can at least copy and create some files as required.
+  -->
+  <postinst>
+    if systemctl -q is-active openvpn@server
+    then
+      systemctl stop openvpn@server
+    fi
+
+    # Clear out the easy-rsa dist just in case
+    cd /etc/openvpn
+    rm -rf *.crt *.key *.conf *.ovpn easy-rsa
+
+    # get the default RSA key data
+    cp -r /usr/share/easy-rsa .
+
+    # Generate the Diffie-Hellman parameters
+    DH2048=/etc/openvpn/dh2048.pem
+    if [ ! -f ${DH2048} ]
+    then
+      openssl dhparam -out ${DH2048} 2048
+    fi
+
+    # Create server.conf file
+    gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | \
+    sed \
+      -e "s/dh1024.pem/dh2048.pem/" \
+      -e "s/;user nobody/user nobody/" \
+      -e "s/;group nogroup/group nogroup/" \
+      -e "s/;client-to-client/client-to-client/" \
+          &gt; /etc/openvpn/server.conf
+
+    # Setup the keys as defined by the user in the installation form
+    sed \
+      -e "s/KEY_ORG=\".*\"/KEY_ORG=\"${BUNDLE_INSTALLATION_ORGANIZATION}\"/" \
+      -e "s/KEY_OU=\".*\"/KEY_OU=\"${BUNDLE_INSTALLATION_ORGANIZATION_UNIT}\"/" \
+      -e "s/KEY_CITY=\".*\"/KEY_CITY=\"${BUNDLE_INSTALLATION_CITY}\"/" \
+      -e "s/KEY_PROVINCE=\".*\"/KEY_PROVINCE=\"${BUNDLE_INSTALLATION_PROVINCE}\"/" \
+      -e "s/KEY_COUNTRY=\".*\"/KEY_COUNTRY=\"${BUNDLE_INSTALLATION_COUNTRY}\"/" \
+      -e "s/KEY_EMAIL=\".*\"/KEY_EMAIL=\"${BUNDLE_INSTALLATION_EMAIL}\"/" \
+          /usr/share/easy-rsa/vars &gt; /etc/openvpn/easy-rsa/vars
+
+    # Now create the RSA CA key
+    cd /etc/openvpn/easy-rsa
+    . ./vars
+    ./clean-all
+    ./pkitool --initca
+
+    # Now create the server key and copy it in
+    ./pkitool --server server
+    cp /etc/openvpn/easy-rsa/keys/{server.crt,server.key,ca.crt} /etc/openvpn/
+ 
+    # Start the server
+    systemctl enable openvpn@server
+    systemctl start openvpn@server
+  </postinst>
+  <prerm>
+    if systemctl -q is-active openvpn@server
+    then
+      systemctl stop openvpn@server
+    fi
+    systemctl disable openvpn@server
+  </prerm>
+  <postrm>
+    cd /etc/openvpn
+    rm -rf *.crt *.key *.conf *.ovpn easy-rsa
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == antihammering settings page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="antihammering" id="settings" content-modified="2015-12-22 11:28:10">
+  <timeout minutes="60"/> <!-- 1 hour -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="hit_limit"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="hit_limit"/>
+    <tabindex refid="hit_limit_duration"/>
+    <tabindex refid="first_pause"/>
+    <tabindex refid="second_pause"/>
+    <tabindex refid="third_pause"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- thresholds -->
+  <widget id="hit_limit" type="line-edit" field="antihammering::hit_limit" path="antihammering/hit_limit" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>
+      The maximum number of valid hits (HTTP 200) a client is authorized
+      to make within the hit limit duration defined below before to the
+      website blocked the client.
+    </tooltip>
+    <help>
+      A client who hits the website too many times within a small amount
+      of time as defined by the hit limit duration below will get asked
+      to slow down. The first three times, we softly asked the client
+      to stop bothering us. If the client does not respect the pause
+      we are asking him to take, the block escalate to the next level.
+      After the forth access, the firewall is asked to block the user
+      100% for one whole day. The default is 100 times although this is
+      a really large number. If you really want to block any annoying
+      user, a number as small as 12 will work. But you may want to
+      perform quite a few tests after any changes you make to ensure
+      a continuous and smooth usage of your website.
+    </help>
+    <value>100</value>
+    <filters>
+      <regex name="integer"/>
+      <min-value>5</min-value>
+    </filters>
+  </widget>
+  <widget id="hit_limit_duration" type="line-edit" field="antihammering::hit_limit_duration" path="antihammering/hit_limit_duration" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>
+      Count the number of hits for this amount of time in the past starting
+      now, in seconds. The minimum is 1 second.
+    </tooltip>
+    <help>
+      The antihammering plugin counts the number of hits for this number
+      of seconds in the past starting now. The minimum, which is also the
+      default, is one second. The hit limit duration should remain very
+      small since a user is not unlikely to hit the website quite a few
+      times quickly in some circumstances.
+    </help>
+    <value>1</value>
+    <filters>
+      <regex name="integer"/>
+      <min-value>1</min-value>
+    </filters>
+  </widget>
+  <widget id="first_pause" type="line-edit" field="antihammering::first_pause" path="antihammering/first_pause" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>
+      How long to force the client to wait before hitting the website again.
+      This value is in seconds. By default this value is set to 1 minute
+      (60).
+    </tooltip>
+    <help>
+      The first time we detect hammering hits, we use this first pause
+      with a 503 Server Unavailable and a Retry-Wait field set to this
+      pause amount. By the forth attempt, people who continue to hammer
+      our site will get blocked at our firewall level so we do not waste
+      any time in Apache and Snap! Websites.
+    </help>
+    <value>60</value>
+    <filters>
+      <regex name="integer"/>
+      <min-value>10</min-value>
+    </filters>
+  </widget>
+  <widget id="second_pause" type="line-edit" field="antihammering::second_pause" path="antihammering/second_pause" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>
+      How long to force the client to wait before hitting the website again
+      in case he hit the website before the first pause was out.
+      This value is in seconds. By default this value is set to 2 minutes
+      (120).
+    </tooltip>
+    <help>
+      The second time we detect hammering hits, we add this second pause
+      delay with a 503 Server Unavailable and a Retry-Wait field set to this
+      total pause amount. By the forth attempt, people who continue to
+      hammer our site will get blocked at our firewall level so we do not
+      waste any time in Apache and Snap! Websites.
+    </help>
+    <value>120</value>
+    <filters>
+      <regex name="integer"/>
+      <min-value>10</min-value>
+    </filters>
+  </widget>
+  <widget id="third_pause" type="line-edit" field="antihammering::third_pause" path="antihammering/third_pause" no-toolbar="no-toolbar" auto-save="int64">
+    <tooltip>
+      How long to force the client to wait before hitting the website again
+      in case he hits the website before the second pause was out.
+      This value is in seconds. By default this value is set to 1h (3600).
+    </tooltip>
+    <help>
+      The third time we detect hammering hits, we add this third pause
+      delay with a 503 Server Unavailable and a Retry-Wait field set to this
+      total pause amount. One more hit after this and he gets blocked at
+      our firewall level.
+    </help>
+    <value>3600</value>
+    <filters>
+      <regex name="integer"/>
+      <min-value>10</min-value>
+    </filters>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

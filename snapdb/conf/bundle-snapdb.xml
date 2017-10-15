@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-snapdb.xml
+-->
+<bundle>
+  <name>snapdb</name>
+  <description>
+    <p>The snapdb tools to manage your database cluster.</p>
+
+    <p>Some packages may depend on this one so as to be able to add
+    and remove fields in the database from a shell script.</p>
+  </description>
+  <packages>snapdb</packages>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == search database setup
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/search" owner="output">
+    <param name="content::title" revision="revision">Search</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Enter what you want to search on our website: (add the search form right here...)</p>]]>
+    </param>
+    <link name="search::ignore" to="search::ignore" mode="1:*">/types/taxonomy/system/search/status/ignore</link>
+  </content>
+  <content path="/admin/settings/search" owner="output">
+    <param name="content::title" revision="revision">Search Settings</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Define what your users are allowed to find on your website.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+  </content>
+  <content path="/images/search" owner="output">
+    <param name="content::title" revision="revision">Search Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Default set of images related to the Search system.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
+    <attachment name="search-logo" type="attachment/public">
+      <path>:/images/search/search-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/types/taxonomy/system/search">
+    <param name="content::title" revision="revision">Search Taxonomy</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of terms used by the search plugin.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/search/status">
+    <param name="content::title" revision="revision">Search Status</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of status used to mark a page for search or not. A page without a search status does not get indexed.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/search/status/index">
+    <param name="content::title" revision="revision">Search Status: Index</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This page is to be indexed.</p>]]>
+    </param>
+  </content>
+  <content path="/types/taxonomy/system/search/status/ignore">
+    <param name="content::title" revision="revision">Search Status: Ignore</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>This page is to be ignore by the search plugin.</p>]]>
+    </param>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

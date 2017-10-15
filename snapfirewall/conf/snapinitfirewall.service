@@ -1,0 +1,17 @@
+# Documentation available at:
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+[Unit]
+Description=Snap! Websites firewall initialization
+Before=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/etc/network/firewall
+#ExecStop=... -- why would you ever want to remove your firewall rules?
+
+[Install]
+WantedBy=multi-user.target
+
+# vim: syntax=dosini

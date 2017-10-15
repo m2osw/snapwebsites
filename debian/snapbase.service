@@ -1,0 +1,16 @@
+# Documentation available at:
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+[Unit]
+Description=Snap! Websites basic initialization on each reboot
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/snapbootinit
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
+
+# vim: syntax=dosini

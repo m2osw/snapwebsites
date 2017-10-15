@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == mailinglist database setup
+Copyright (C) 2013-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/admin/settings/mailinglist">
+    <param name="content::title" revision="revision">Mailing List Administration</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Administration of your mailing lists.</p>]]>
+    </param>
+  </content>
+  <content path="/images/mailinglist">
+    <param name="content::title" revision="revision">Mailing List Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Images used by the mailinglist plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="mailinglist-logo" type="attachment/public">
+      <path>:/images/mailinglist/mailinglist-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+  <content path="/types/mailinglist/status">
+    <param name="content::title" revision="revision">Mailing List Status</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Different statuses used by mailing lists. These statuses are managed internally only.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->

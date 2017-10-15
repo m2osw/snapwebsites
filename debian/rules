@@ -1,0 +1,51 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@ --with systemd --parallel
+
+
+# By default CMAKE_PREFIX_PATH is empty; here it gets used to access the
+# test src files as defined by snapbase/src/snap_test*
+#
+# However, this is incorrect because the CMAKE_PREFIX_PATH can actually
+# be more than one path, see:
+#
+#    https://cmake.org/cmake/help/v3.3/variable/CMAKE_PREFIX_PATH.html
+#
+# See SNAP-444
+#
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DCMAKE_BUILD_TYPE=Release    \
+		-DCMAKE_PREFIX_PATH:PATH=/usr
+
+# Remove the 'rwx' flags from the password directory so only root has access
+#
+# Add the 's' flag to the snappassword to make sure we can run as root with
+# the --check command line (otherwise we cannot log in users from
+# snapmanager.cgi...) Note: also we do NOT want to send a password in clear
+# through snapcommunicator.
+#
+# Add the 's' flag to the daemon to make sure we can run as root
+#
+# TODO: This is probably not required anymore since we start the
+#       `snapmanagerdaemon` from a .service and we can start it
+#       as root, automatically.
+#
+override_dh_fixperms:
+	dh_fixperms
+	chmod go-rwx debian/snapmanagercgi/etc/snapwebsites/passwords
+	chmod u+s    debian/snapmanagercgi/usr/bin/snappassword
+	chmod u+s    debian/snapmanagerdaemon/usr/bin/snapmanagerdaemon
+	chmod go-rwx debian/snapbase/etc/apache2/ssl-snap
+	chmod go-rwx debian/snapcommunicator/etc/snapwebsites/ssl
+

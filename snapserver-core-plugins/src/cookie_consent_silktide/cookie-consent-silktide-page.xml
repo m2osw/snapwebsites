@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == locale timezone page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="cookie-consent-silktide" id="settings" content-modified="2015-08-18 16:26:00">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <no-toolbar/>
+  <focus refid="message"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="message"/>
+    <tabindex refid="learn_more_label"/>
+    <tabindex refid="learn_more_uri"/>
+    <tabindex refid="dismiss"/>
+    <tabindex refid="domain"/>
+    <tabindex refid="consent_duration"/>
+    <tabindex refid="theme"/>
+  </taborder>
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+  <widget id="message" type="line-edit" field="cookie_consent_silktide::message" path="cookie_consent_silktide/message" auto-save="string">
+    <tooltip>Enter the message to show users when they reach your website.</tooltip>
+    <help>This message is shown before the <em>More Info</em> link (see below).
+          In most cases it is just one sentence saying that this website
+          makes use of cookies.</help>
+    <sizes>
+      <min>1</min>
+      <max>300</max>
+    </sizes>
+    <required>required</required>
+    <background-value>message to user</background-value>
+  </widget>
+  <widget id="learn_more_label" type="line-edit" field="cookie_consent_silktide::learn_more_label" path="cookie_consent_silktide/learn_more_label" auto-save="string">
+    <tooltip>Enter the label of a link users can click to read more about your cookie policy.</tooltip>
+    <help>This label is often set to <strong>More Info</strong>
+          or <strong>Learn More</strong> or <strong>Our Cookie
+          Policy</strong>. Whatever is best adapted to your website.</help>
+    <sizes>
+      <max>60</max>
+    </sizes>
+    <background-value>label for link</background-value>
+  </widget>
+  <widget id="learn_more_uri" type="line-edit" field="cookie_consent_silktide::learn_more_uri" path="cookie_consent_silktide/learn_more_uri" auto-save="string">
+    <tooltip>Enter the URL where users can read more about your cookie policy.</tooltip>
+    <help>In most cases this is a link to your terms and conditions page.
+          If you have a specific paragraph about cookies, you may want to
+          add an anchor (...#cookies) at the end of your URL. You may also
+          have a specific page to explain about cookies.</help>
+    <sizes>
+      <max>300</max>
+    </sizes>
+    <!-- the URI filter does not work with just local paths at this point -->
+    <!--filters>
+      <uri/>
+    </filters-->
+    <background-value>link to your cookie policy page</background-value>
+  </widget>
+  <widget id="dismiss" type="line-edit" field="cookie_consent_silktide::dismiss" path="cookie_consent_silktide/dismiss" auto-save="string">
+    <tooltip>Enter the label to show in the dimiss button.</tooltip>
+    <help>The popup includes a dismiss button that can be clicked to
+          dismiss the popup (which generally means the user consents
+          to the cookie policy). The label can be changed using this
+          edit box. A usual label here is <strong>OK</strong> or
+          <strong>Got it!</strong> or <strong>Dimiss</strong>.</help>
+    <sizes>
+      <max>300</max>
+    </sizes>
+    <background-value>dismiss button label</background-value>
+  </widget>
+  <widget id="domain" type="line-edit" field="cookie_consent_silktide::domain" path="cookie_consent_silktide/domain" auto-save="string">
+    <tooltip>Enter domain to use with the Cookie Consent cookie.</tooltip>
+    <help>Cookie consent saves its information in a cookie. By default, the
+          cookie makes use of the current domain and sub-domain. This can be
+          a problem if you allow access to your website with subdomain names
+          such as w, ww, www and wwww without redirecting the user. In that
+          case, you probably want to enter your domain name without any
+          sub-domain. (i.e. "example.com" instead of "www.example.com")</help>
+    <sizes>
+      <max>300</max>
+    </sizes>
+    <background-value>domain used with consent cookie</background-value>
+  </widget>
+  <widget id="consent_duration" type="line-edit" field="cookie_consent_silktide::consent_duration" path="cookie_consent_silktide/consent_duration" auto-save="int64">
+    <tooltip>Enter the number of days the cookie of the Cookie Consent script is saved for.</tooltip>
+    <help>By default the consent on the cookie is set to 1 year (365 days.)
+          You may reduce that number. The HTTP/1.1 protocol forbids us to
+          use a larger duration. Although we accept durations as small as
+          1 day, it is probably wise to use at least 7 (consent once a week)
+          or even 30 (consent about once a month).</help>
+    <filters>
+      <regex name="integer"/>
+      <min-value>1</min-value>
+      <max-value>366</max-value>
+    </filters>
+    <background-value>number of days (1 to 366)</background-value>
+  </widget>
+  <widget id="theme" type="radio" field="cookie_consent_silktide::theme" path="cookie_consent_silktide/theme" auto-save="string">
+    <tooltip>Select the theme you want to use with your website.</tooltip>
+    <help>The theme determines how the popup looks like and where it appears. It also includes some default information on how the popup animates.</help>
+    <preset>
+      <item value="dark-top"><img src="/images/cookie-consent-silktide/dark-top.png"/></item>
+      <item value="dark-floating"><img src="/images/cookie-consent-silktide/dark-floating.png"/></item>
+      <item value="dark-bottom"><img src="/images/cookie-consent-silktide/dark-bottom.png"/></item>
+      <item value="light-top"><img src="/images/cookie-consent-silktide/light-top.png"/></item>
+      <item value="light-floating"><img src="/images/cookie-consent-silktide/light-floating.png"/></item>
+      <item value="light-bottom"><img src="/images/cookie-consent-silktide/light-bottom.png"/></item>
+    </preset>
+    <value>dark-bottom</value>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

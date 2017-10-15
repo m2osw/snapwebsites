@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-rkhunter.xml
+-->
+<bundle>
+  <name>rkhunter</name>
+  <description>
+    <p>Install rkhunter, a tool used to verify that a certain number of
+    files do not get infected by a rootkit.</p>
+  </description>
+  <fields>
+    <field name="contact_email" type="input">
+      <label>Contact Email Address</label>
+      <description>
+        The email address of the person to contact when rkhunter finds
+        problems on a computer. If you want to email a list, use one
+        email address and set it as a broadcast in your mail system
+        (instead of trying to as rkhunter to email a long list of
+        people.) So enter exactly one email address here.
+      </description>
+    </field>
+  </fields>
+  <packages>rkhunter</packages>
+  <postinst>
+    # rkhunter knows about /etc/rkhunter.d but it does not create it!?
+    mkdir /etc/rkhunter.d
+
+    # change the setup for snap purposes
+    cat &gt;/etc/rkhunter.d/50-snap.conf &lt;&lt;EOF
+# Specific settings for a Snap! system
+
+# Email a message to this address
+#MAIL-ON-WARNING=$BUNDLE_INSTALLATION_CONTACT_EMAIL
+
+# Change the syslog level to notice instead of the default of warning
+USE_SYSLOG=authpriv.notice
+
+# No need for any colors
+AUTO_X_DETECT=0
+
+# Old scripts white list entries
+#SCRIPTWHITELIST=/usr/bin/groups
+#SCRIPTWHITELIST=/usr/bin/lwp-request
+
+# Allow some hidden directories
+ALLOWHIDDENDIR=/etc/.java
+#ALLOWHIDDENDIR=/dev/.udev
+#ALLOWHIDDENDIR=/dev/.udevdb
+#ALLOWHIDDENDIR=/dev/.udev.tdb
+#ALLOWHIDDENDIR=/dev/.static
+#ALLOWHIDDENDIR=/dev/.initramfs
+#ALLOWHIDDENDIR=/dev/.SRC-unix
+#ALLOWHIDDENDIR=/dev/.mdadm
+#ALLOWHIDDENDIR=/dev/.blkid.tab
+#ALLOWHIDDENDIR=/dev/.blkid.tab.old
+ALLOWHIDDENDIR=/dev/shm/byobu-*/.last.screen
+
+# Allow various device files
+#ALLOWDEVFILE=/dev/abc
+#ALLOWDEVFILE=/dev/shm/PostgreSQL.*
+#ALLOWDEVFILE=/dev/shm/pulse-shm-*
+#ALLOWDEVFILE=/dev/shm/sem.ADBE_ReadPrefs_*
+#ALLOWDEVFILE=/dev/shm/sem.ADBE_REL_*
+#ALLOWDEVFILE=/dev/shm/sem.ADBE_WritePrefs_*
+ALLOWDEVFILE=/dev/shm/byobu-*/.last.screen/*
+
+# Allow Cassandra which uses port 7000 often detected as a rogue IRC port
+# TODO: add support to turn this on only on Cassandra nodes
+PORT_PATH_WHITELIST=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java:TCP:7000
+EOF
+
+    # change the CRON_DAILY_RUN to yes
+    #
+    sed -i.bak \
+        -e 's/CRON_DAILY_RUN=""/CRON_DAILY_RUN="true"/' \
+        -e 's/CRON_DB_UPDATE=""/CRON_DB_UPDATE="true"/' \
+        -e 's/APT_AUTOGEN="false"/APT_AUTOGEN="true"/' \
+        -e 's/NICE="0"/NICE="19"/' \
+        -e 's/REPORT_EMAIL="root"/REPORT_EMAIL="'$BUNDLE_INSTALLATION_CONTACT_EMAIL'"/' \
+              /etc/default/rkhunter
+
+    # do a refresh now otherwise we are likely to have errors up front
+    #
+    rkhunter --propupd
+  </postinst>
+  <postrm>
+    # We created that file and folder, we have to remove them
+    rm /etc/rkhunter.d/50-snap.conf
+    rmdir --ignore-fail-on-non-empty /etc/rkhunter.d
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

@@ -1,0 +1,102 @@
+/*
+ * Name: info
+ * Version: 0.0.4
+ * Browsers: all
+ * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * License: GPL 2.0
+ */
+
+
+/** admin/plugins -- plugin selection */
+div.editor-block div.plugin
+{
+	padding: 10px;
+	margin: 20px 0;
+	border: 1px solid black;
+	border-radius: 5px;
+	background-color: #e0e0e0;
+}
+div.editor-block div.plugin.newly-installed
+{
+	background-color: #e0ffe0;
+}
+div.editor-block div.plugin.newly-removed
+{
+	background-color: #ffe0e0;
+}
+div.editor-block div.plugin .top-row .installed .installed-checkmark
+{
+	color: #008000;
+}
+div.editor-block div.plugin .top-row .name
+{
+	float: left;
+}
+div.editor-block div.plugin h3
+{
+	margin-top: 0;
+}
+div.editor-block div.plugin .top-row ul
+{
+	float: right;
+	list-style: none;
+	text-align: center;
+	margin-top: 0;
+}
+div.editor-block div.plugin .top-row ul a.button,
+div.editor-block div.plugin .top-row ul span.button
+{
+	display: block;
+	border: 1px solid #888888;
+	border-radius: 2px;
+	background-color: #ffffff;
+	text-decoration: none;
+	padding: 5px 10px;
+	margin-bottom: 10px;
+}
+div.editor-block div.plugin .top-row ul a.button:hover
+{
+	color: #cfa010;
+	background-color: #e0e0ff;
+}
+div.editor-block div.plugin .top-row ul a.button.disabled,
+div.editor-block div.plugin .top-row ul span.button.disabled
+{
+	color: #888888;
+	background-color: #cccccc;
+	border: 1px solid #444444;
+	cursor: not-allowed;
+}
+div.editor-block div.plugin .description-row
+{
+	clear: left;
+}
+div.editor-block div.plugin .description-row .icon
+{
+	float: left;
+}
+div.editor-block div.plugin .description-row .icon img
+{
+	width: 64px;
+	height: 64px;
+	margin-right: 15px;
+}
+div.editor-block div.plugin .last-row
+{
+	clear: left;
+}
+div.editor-block div.plugin .last-row .last-modification
+{
+	margin: 10px 0;
+}
+div.editor-block div.plugin .last-row .filename
+{
+	margin: 10px 0;
+}
+div.editor-block div.plugin .last-row .dependencies
+{
+	font-size: 80%;
+	font-style: italic;
+}
+
+

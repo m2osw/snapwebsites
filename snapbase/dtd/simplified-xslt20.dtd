@@ -1,0 +1,483 @@
+<!--
+Snap Websites Server == DTD for all .xsl files
+Copyright (C) 2011-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<!--
+The default DTD for XSLT 2.0 is so complex that most systems trying to
+use it to verify an XSLT 2.0 file fail.
+
+Since we are not using all the features and we still want to test that
+our files are correct before sending them to a server, we use a simplified
+DTD of the XSLT 2.0.
+-->
+<!ELEMENT xsl:stylesheet (xsl:include|xsl:param|xsl:template|xsl:call-template|xsl:variable|xsl:function|xsl:output)+>
+<!ATTLIST xsl:stylesheet version CDATA #REQUIRED
+                         xmlns CDATA #IMPLIED
+                         xmlns:fn CDATA #IMPLIED
+                         xmlns:html CDATA #IMPLIED
+                         xmlns:image CDATA #IMPLIED
+                         xmlns:sitemap CDATA #IMPLIED
+                         xmlns:snap CDATA #IMPLIED
+                         xmlns:xsl CDATA #IMPLIED
+                         xmlns:xs CDATA #IMPLIED>
+
+<!ELEMENT xsl:output EMPTY>
+<!ATTLIST xsl:output encoding CDATA #IMPLIED
+                     indent CDATA #IMPLIED
+                     method CDATA #IMPLIED
+                     version CDATA #IMPLIED>
+
+<!ELEMENT xsl:include EMPTY>
+<!ATTLIST xsl:include href CDATA #REQUIRED>
+
+<!ELEMENT xsl:param (#PCDATA)>
+<!ATTLIST xsl:param as CDATA #IMPLIED
+                    name CDATA #REQUIRED
+                    select CDATA #IMPLIED>
+
+<!ELEMENT xsl:with-param (#PCDATA)>
+<!ATTLIST xsl:with-param name CDATA #REQUIRED
+                         select CDATA #IMPLIED>
+
+<!ELEMENT xsl:template ANY>
+<!ATTLIST xsl:template name CDATA #IMPLIED
+                       match CDATA #IMPLIED>
+
+<!ELEMENT xsl:call-template ANY>
+<!ATTLIST xsl:call-template name CDATA #REQUIRED>
+
+<!ELEMENT xsl:apply-templates ANY>
+<!ATTLIST xsl:apply-templates select CDATA #IMPLIED>
+
+<!ELEMENT xsl:sort ANY>
+<!ATTLIST xsl:sort select CDATA #REQUIRED
+                   order (ascending|descending) "ascending">
+
+<!ELEMENT xsl:for-each ANY>
+<!ATTLIST xsl:for-each select CDATA #REQUIRED>
+
+<!ELEMENT xsl:choose (xsl:when|xsl:otherwise)+>
+
+<!ELEMENT xsl:when ANY>
+<!ATTLIST xsl:when test CDATA #REQUIRED>
+
+<!ELEMENT xsl:otherwise ANY>
+
+<!ELEMENT xsl:copy ANY>
+<!ATTLIST xsl:copy select CDATA #IMPLIED>
+
+<!ELEMENT xsl:copy-of ANY>
+<!ATTLIST xsl:copy-of select CDATA #REQUIRED>
+
+<!ELEMENT xsl:value-of ANY>
+<!ATTLIST xsl:value-of select CDATA #REQUIRED>
+<!-- disable-output-escaping (yes|no) "no" / not supported by Qt implementation -->
+
+<!ELEMENT xsl:attribute ANY>
+<!ATTLIST xsl:attribute name CDATA #REQUIRED>
+
+<!ELEMENT xsl:if ANY>
+<!ATTLIST xsl:if test CDATA #REQUIRED>
+
+<!ELEMENT xsl:variable ANY>
+<!ATTLIST xsl:variable as CDATA #IMPLIED
+                       name CDATA #REQUIRED
+                       select CDATA #IMPLIED>
+
+<!ELEMENT xsl:function ANY>
+<!ATTLIST xsl:function as CDATA #IMPLIED
+                       name CDATA #REQUIRED>
+
+<!ELEMENT xsl:text ANY>
+<!ATTLIST xsl:text xml:space (default|preserve) "default">
+<!-- QtXmlPattern does not support disable-output-escaping (yes|no) "no" -->
+
+<!-- This is a tag we often use to generate our output
+     and to avoid problems with xsl:output, we should change it -->
+<!ELEMENT output ANY>
+<!ATTLIST output filter CDATA #IMPLIED
+                 lang CDATA #IMPLIED>
+
+<!ELEMENT css ANY>
+<!ATTLIST css name CDATA #REQUIRED>
+
+<!ELEMENT javascript ANY>
+<!ATTLIST javascript name CDATA #REQUIRED>
+
+<!-- HTML tags that are used in default values or background values
+     we are not trying to replicate the whole HTML DTD, so we simply here
+     WARNING: the rel parameter accepts a space separated list of
+              tokens so we cannot verify them with a DTD...
+              (alternate|archives|author|bookmark|external|first|help|home|index|last|license|next|nofollow|noopener|noreferrer|prefetch|prev|search|sidebar|tag|up) -->
+<!ELEMENT a ANY>
+<!ATTLIST a class CDATA #IMPLIED
+            field_type CDATA #IMPLIED
+            href CDATA #IMPLIED
+            product-guid CDATA #IMPLIED
+            rel CDATA #IMPLIED
+            style CDATA #IMPLIED
+            tabindex CDATA #IMPLIED
+            target CDATA #IMPLIED
+            title CDATA ""
+            data-toggle CDATA #IMPLIED
+            data-target CDATA #IMPLIED
+            data-display-mode CDATA #IMPLIED>
+
+<!ELEMENT button ANY>
+<!ATTLIST button id CDATA #IMPLIED
+                 type CDATA #IMPLIED
+                 class CDATA #IMPLIED
+                 data-toggle CDATA #IMPLIED
+                 data-target CDATA #IMPLIED>
+
+<!-- product-guid is from ecommerce -->
+
+<!ELEMENT br EMPTY>
+
+<!ELEMENT header ANY>
+<!ATTLIST header class CDATA #IMPLIED
+                 id CDATA #IMPLIED
+                 style CDATA #IMPLIED
+                 popup CDATA #IMPLIED>
+
+<!ELEMENT footer ANY>
+<!ATTLIST footer class CDATA #IMPLIED
+                 id CDATA #IMPLIED
+                 style CDATA #IMPLIED
+                 popup CDATA #IMPLIED>
+
+<!ELEMENT section ANY>
+<!ATTLIST section class CDATA #IMPLIED
+                  id CDATA #IMPLIED
+                  style CDATA #IMPLIED
+                  popup CDATA #IMPLIED>
+
+<!ELEMENT body ANY>
+<!ATTLIST body class CDATA #IMPLIED
+               id CDATA #IMPLIED
+               popup CDATA #IMPLIED>
+
+<!ELEMENT code ANY>
+<!ATTLIST code class CDATA #IMPLIED>
+
+<!ELEMENT div ANY>
+<!ATTLIST div class CDATA #IMPLIED
+              id CDATA #IMPLIED
+              idref CDATA #IMPLIED
+              mode CDATA #IMPLIED
+              style CDATA #IMPLIED
+              field_name CDATA #IMPLIED
+              field_type CDATA #IMPLIED
+              form_name CDATA #IMPLIED
+              session CDATA #IMPLIED
+              name CDATA #IMPLIED
+              invoice_number CDATA #IMPLIED
+              title CDATA ""
+              value CDATA #IMPLIED
+              data-item-name CDATA #IMPLIED
+              tabindex CDATA #IMPLIED
+              role CDATA #IMPLIED
+              aria-labelledby CDATA #IMPLIED
+              data-fixed-box-name CDATA #IMPLIED
+              data-fixed-box-container CDATA #IMPLIED
+              data-fixed-box-orientation (horizontal|vertical) "vertical"
+              data-fixed-box-margin CDATA "0"
+              data-fixed-box-min-width CDATA "-1">
+
+<!ELEMENT nav ANY>
+<!ATTLIST nav class CDATA #IMPLIED
+              id CDATA #IMPLIED
+              role CDATA #IMPLIED
+              style CDATA #IMPLIED
+              data-fixed-box-name CDATA #IMPLIED
+              data-fixed-box-container CDATA #IMPLIED
+              data-fixed-box-orientation CDATA "vertical"
+              data-fixed-box-margin CDATA "0"
+              data-fixed-box-min-width CDATA "-1">
+
+<!ELEMENT form ANY>
+<!ATTLIST form accept-charset CDATA #IMPLIED
+               action CDATA #IMPLIED
+               id CDATA #IMPLIED
+               name CDATA #IMPLIED
+               novalidate CDATA #IMPLIED
+               method (get|post) "get">
+
+<!ELEMENT h1 ANY>
+<!ATTLIST h1 class CDATA #IMPLIED
+             id ID #IMPLIED
+             style CDATA #IMPLIED>
+
+<!ELEMENT h2 ANY>
+<!ATTLIST h2 class CDATA #IMPLIED
+             name CDATA #IMPLIED
+             id ID #IMPLIED
+             style CDATA #IMPLIED>
+
+<!ELEMENT h3 ANY>
+<!ATTLIST h3 class CDATA #IMPLIED
+             id ID #IMPLIED
+             style CDATA #IMPLIED>
+
+<!ELEMENT h4 ANY>
+<!ATTLIST h4 class CDATA #IMPLIED
+             id ID #IMPLIED
+             style CDATA #IMPLIED>
+
+<!ELEMENT h5 ANY>
+<!ATTLIST h5 class CDATA #IMPLIED
+             id ID #IMPLIED
+             style CDATA #IMPLIED>
+
+<!ELEMENT h6 ANY>
+<!ATTLIST h6 class CDATA #IMPLIED
+             id ID #IMPLIED
+             style CDATA #IMPLIED>
+
+<!ELEMENT head ANY>
+
+<!-- WARNING: no 'class' attribute because that's added by the html-attribute
+              and thus never need (Wanted) in the html tag itself. -->
+<!ELEMENT html ANY>
+<!ATTLIST html lang CDATA #IMPLIED
+               prefix CDATA #IMPLIED
+               xml:lang CDATA #IMPLIED>
+
+<!ELEMENT b ANY>
+<!ATTLIST b class CDATA #IMPLIED>
+
+<!ELEMENT i ANY>
+<!ATTLIST i aria-hidden CDATA #IMPLIED
+            class CDATA #IMPLIED
+            title CDATA #IMPLIED>
+
+<!ELEMENT input ANY>
+<!ATTLIST input disabled (disabled) #IMPLIED
+                id CDATA #IMPLIED
+                name CDATA #IMPLIED
+                type CDATA #IMPLIED
+                value CDATA #IMPLIED
+                placeholder CDATA #IMPLIED
+                required CDATA #IMPLIED
+                class CDATA #IMPLIED
+                data-validation-required-message CDATA #IMPLIED>
+
+<!ELEMENT textarea ANY>
+<!ATTLIST textarea disabled (disabled) #IMPLIED
+                   id CDATA #IMPLIED
+                   name CDATA #IMPLIED
+                   type CDATA #IMPLIED
+                   value CDATA #IMPLIED
+                   placeholder CDATA #IMPLIED
+                   required CDATA #IMPLIED
+                   class CDATA #IMPLIED
+                   data-validation-required-message CDATA #IMPLIED>
+
+<!ELEMENT em ANY>
+
+<!ELEMENT fieldset ANY>
+<!ATTLIST fieldset class CDATA #IMPLIED
+                   style CDATA #IMPLIED>
+
+<!ELEMENT img ANY>
+<!ATTLIST img src CDATA #IMPLIED
+              width CDATA #IMPLIED
+              height CDATA #IMPLIED
+              title CDATA #IMPLIED
+              class CDATA #IMPLIED
+              alt CDATA #IMPLIED
+              style CDATA #IMPLIED
+              type CDATA #IMPLIED
+              id CDATA #IMPLIED
+              align (middle|left|right|bottom|top) #IMPLIED
+              data-original CDATA #IMPLIED>
+
+<!-- IDREF would be better for the "for" attribute, but unfortunately,
+     at the point we are checking the files, the items may not yet exist -->
+<!ELEMENT label ANY>
+<!ATTLIST label class CDATA #IMPLIED
+                for CDATA #IMPLIED>
+
+<!ELEMENT legend ANY>
+
+<!--
+  we use the 'value' attribute in dropdown selection
+  we use the 'for' attribute in tabs to indicate which block to display
+-->
+<!ELEMENT li ANY>
+<!ATTLIST li class CDATA #IMPLIED
+             value CDATA #IMPLIED
+             id CDATA #IMPLIED
+             for CDATA #IMPLIED>
+
+<!-- WARNING: the rel parameter accepts a space separated list of
+              tokens so we cannot verify them with a DTD...
+              (alternate|archives|author|dns-prefetch|first|help|home|icon|index|last|license|manifest|next|pingback|preconnect|prefetch|preload|prerender|prev|search|stylesheet|sidebar|up) -->
+<!ELEMENT link ANY> <!-- marked as ANY to support RSS feeds -->
+<!ATTLIST link href CDATA #REQUIRED
+               hreflang CDATA #IMPLIED
+               rel CDATA #REQUIRED
+               sizes CDATA #IMPLIED
+               title CDATA #IMPLIED
+               type CDATA #IMPLIED>
+
+<!ELEMENT meta ANY>
+<!ATTLIST meta charset CDATA #IMPLIED
+               content CDATA #IMPLIED
+               http-equiv CDATA #IMPLIED
+               name CDATA #IMPLIED
+               property CDATA #IMPLIED>
+
+<!ELEMENT p ANY>
+<!ATTLIST p class CDATA #IMPLIED>
+
+<!ELEMENT pre ANY>
+<!ATTLIST pre class CDATA #IMPLIED>
+
+<!ELEMENT script ANY>
+<!ATTLIST script type CDATA #REQUIRED
+                 src  CDATA #IMPLIED>
+
+<!ELEMENT small ANY>
+<!ATTLIST small class CDATA #IMPLIED>
+
+<!ELEMENT span ANY>
+<!ATTLIST span class CDATA #IMPLIED
+               id CDATA #IMPLIED
+               title CDATA #IMPLIED>
+
+<!ELEMENT strong ANY>
+<!ELEMENT style ANY>
+
+<!ELEMENT table ANY>
+<!ATTLIST table border CDATA #IMPLIED
+                cellpadding CDATA #IMPLIED
+                cellspacing CDATA #IMPLIED
+                class CDATA #IMPLIED
+                height CDATA #IMPLIED
+                style CDATA #IMPLIED
+                width CDATA #IMPLIED>
+
+<!ELEMENT thead ANY>
+<!ATTLIST thead class CDATA #IMPLIED>
+
+<!ELEMENT tfoot ANY>
+<!ATTLIST tfoot class CDATA #IMPLIED>
+
+<!ELEMENT tbody ANY>
+<!ATTLIST tbody class CDATA #IMPLIED>
+
+<!ELEMENT td ANY>
+<!ATTLIST td align CDATA #IMPLIED
+             class CDATA #IMPLIED
+             colspan CDATA #IMPLIED
+             rowspan CDATA #IMPLIED
+             style CDATA #IMPLIED
+             valign (top|middle|bottom) "middle"
+             width CDATA #IMPLIED
+             data-month CDATA #IMPLIED
+             data-year CDATA #IMPLIED>
+
+<!ELEMENT th ANY>
+<!ATTLIST th class CDATA #IMPLIED
+             colspan CDATA #IMPLIED
+             rowspan CDATA #IMPLIED
+             valign (top|middle|bottom) "middle"
+             width CDATA #IMPLIED
+             data-month CDATA #IMPLIED
+             data-year CDATA #IMPLIED>
+
+<!ELEMENT tr ANY>
+<!ATTLIST tr class CDATA #IMPLIED>
+
+<!ELEMENT title (#PCDATA|xsl:copy-of|xsl:value-of)*>
+
+<!ELEMENT u ANY>
+
+<!ELEMENT ul ANY>
+<!ATTLIST ul class CDATA #IMPLIED>
+<!ATTLIST ul id CDATA #IMPLIED>
+
+<!-- Editor tags, these are simplified -->
+<!ELEMENT editor-form ANY>
+
+<!ELEMENT widget ANY>
+<!ATTLIST widget path CDATA #REQUIRED>
+
+<!ELEMENT classes ANY>
+
+<!ELEMENT value ANY>
+
+<!ELEMENT default ANY>
+
+<!ELEMENT dropdown-algorithm ANY>
+
+<!ELEMENT preset ANY>
+
+<!ELEMENT item ANY>
+<!ATTLIST item default (default) #IMPLIED
+               class CDATA ""
+               value CDATA #IMPLIED>
+
+<!ELEMENT attachment ANY>
+
+<!ELEMENT background-value ANY>
+
+<!ELEMENT help ANY>
+
+<!ELEMENT tooltip ANY>
+
+
+<!-- TODO: I'm not too sure how I can handle "special" tags used in
+           variable .xsl files; that .xsl file should declare those
+           in some way, but I do not know of a valid way to do that
+           for a DTD... -->
+
+<!ELEMENT sales-total-amount ANY>
+<!ELEMENT sales-total-count ANY>
+<!ELEMENT main-sales-total-amount ANY>
+<!ELEMENT main-sales-total-count ANY>
+<!ELEMENT cpm-sales-total-amount ANY>
+<!ELEMENT cpm-sales-total-count ANY>
+<!ELEMENT coupons-total-amount ANY>
+<!ELEMENT labor-total-amount ANY>
+<!ELEMENT labor-total-count ANY>
+<!ELEMENT labor-count-without-management ANY>
+<!ELEMENT coupon-amount ANY>
+<!ELEMENT coupon-count ANY>
+<!ELEMENT discount-amount ANY>
+<!ELEMENT discount-count ANY>
+<!ELEMENT details-amount ANY>
+<!ELEMENT details-count ANY>
+<!ELEMENT extras-amount ANY>
+<!ELEMENT extras-count ANY>
+<!ELEMENT gc-ppd-amount ANY>
+<!ELEMENT gc-ppd-count ANY>
+<!ELEMENT computed ANY>
+<!ELEMENT location-report ANY>
+<!ELEMENT competition-report ANY>
+
+<!-- for the feed... -->
+<!ELEMENT url ANY>
+<!ELEMENT author ANY>
+<!ELEMENT created ANY>
+<!ELEMENT created-long-date ANY>
+<!ELEMENT copyright ANY>
+<!ELEMENT description ANY>
+
+<!-- vim: ts=4 sw=4 et
+-->

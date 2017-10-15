@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == e-payment credit card settings page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="epayment_creditcard" id="settings" content-modified="2016-03-30 19:18:09">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="show_one_name"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="show_one_name"/>
+    <tabindex refid="show_business_name"/>
+    <tabindex refid="show_delivery"/>
+    <tabindex refid="show_address2"/>
+    <tabindex refid="show_province"/>
+    <tabindex refid="show_country"/>
+    <tabindex refid="default_country"/>
+    <tabindex refid="show_phone"/>
+    <tabindex refid="gateway"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <!-- optional fields -->
+  <widget id="show_one_name" type="checkmark" field="epayment_creditcard::show_one_name" path="epayment/credit_card/show_one_name" auto-save="int8">
+    <tooltip>When selected (default) the attention fields of the billing and delivery addresses gets hidden.</tooltip>
+    <help>When this flag is selected (which is the default), the systems asked for a single user name above the credit card number. Otherwise, the customer can enter a different name in the billing and delivery addresses.</help>
+    <label>One customer name for credit card and addresses.</label>
+    <value>1</value>
+  </widget>
+  <widget id="show_business_name" type="checkmark" field="epayment_creditcard::show_business_name" path="epayment/credit_card/show_business_name" auto-save="int8">
+    <tooltip>When selected the billing and delivery addresses include a field where the user can enter his business name.</tooltip>
+    <help>Check this flag in order to allow the customer to enter a business name in the billing and/or delivery area.</help>
+    <label>Show fields to enter a business name.</label>
+    <value>1</value>
+  </widget>
+  <widget id="show_delivery" type="checkmark" field="epayment_creditcard::show_delivery" path="epayment/credit_card/show_delivery" auto-save="int8">
+    <tooltip>Select to allow two addresses: Billing address and Delivery address.</tooltip>
+    <help>By selecting this flag you allow the user to enter a billing address which is different from the delivery address.</help>
+    <label>Show seperate Billing and Delivery addresses.</label>
+  </widget>
+  <widget id="show_address2" type="checkmark" field="epayment_creditcard::show_address2" path="epayment/credit_card/show_address2" auto-save="int8">
+    <tooltip>Uncheck this checkmark if you do not want people to choose to enter a second line for their address.</tooltip>
+    <help>In most cases, the more detail the better, however, at times, a second line in the address can prevent a credit card gateway you are using from working right.</help>
+    <label>Show the second line in the user's address.</label>
+    <value>1</value>
+  </widget>
+  <widget id="show_province" type="checkmark" field="epayment_creditcard::show_province" path="epayment/credit_card/show_province" auto-save="int8">
+    <tooltip>Uncheck this checkmark if you do not want people to enter a province or state name.</tooltip>
+    <help>If you expect your users from a country where the province or state is not generally included in their address, then you may hide this field.</help>
+    <label>Show the Province / State field.</label>
+    <value>1</value>
+  </widget>
+  <widget id="show_country" type="checkmark" field="epayment_creditcard::show_country" path="epayment/credit_card/show_country" auto-save="int8">
+    <tooltip>Uncheck this checkmark if you do not want people to enter the name of their country.</tooltip>
+    <help>If your sales are limited to your country, you want to uncheck this checkmark. You may enter the default country name below.</help>
+    <label>Show the Country field.</label>
+    <value>1</value>
+  </widget>
+  <widget id="default_country" type="line-edit" field="epayment_creditcard::default_country" path="epayment/credit_card/default_country" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the name of the default country. (WARNING: if you enter a default, many users are likely to not enter their country name. Be careful.)</tooltip>
+    <help>
+      In general, you will want to enter the name of the country you
+      do business from. The default is to not specify a default. This
+      ensures people enter their country name instead of leaving the
+      default <em>by mistake.</em>
+    </help>
+    <sizes>
+      <max>64</max>
+    </sizes>
+    <background-value>default country name</background-value>
+  </widget>
+  <widget id="show_phone" type="dropdown" field="epayment_creditcard::show_phone" path="epayment/credit_card/show_phone" auto-save="int8">
+    <tooltip>Select how the <strong>Phone</strong> field has to be managed: hidden, shown but optional, or required.</tooltip>
+    <help>If you are selling items over the internet (i.e. a PDF file) then it may increase your sales by not asking for a phone number. If you are shipping goods, a phone number may actually be required.</help>
+    <label>Show the Country field.</label>
+    <preset>
+      <item value="0">Hide the <strong>Phone</strong> field</item>
+      <item value="1" default="default">Show an optional <strong>Phone</strong> field</item>
+      <item value="2">Show a required <strong>Phone</strong> field</item>
+    </preset>
+  </widget>
+
+  <widget id="allow_credit_card_tokens" type="checkmark" field="epayment_creditcard::allow_credit_card_tokens" path="epayment/credit_card/allow_credit_card_tokens" auto-save="int8">
+    <tooltip>
+      Allow Snap! to register credit card tokens. This will allow
+      the system to re-charge a card in case you accept subscriptions.
+    </tooltip>
+    <help>
+      By default the Snap! system allows for subscriptions (repeat charges
+      to the same user on a specially scheduled time frame.) By turning off
+      this checkmark, you prevent such from happening with credit cards
+      (You may still offer services that allow for subscriptions such as
+      PayPal.) Such credit card tokens may be considered personal data
+      and thus may not be data you want to have on your website.
+    </help>
+    <label>Allow Snap! to register credit card tokens for subscriptions.</label>
+    <value>1</value>
+  </widget>
+  <widget id="gateway" type="dropdown" field="epayment_creditcard::gateway" path="epayment/credit_card/gateway" auto-save="string">
+    <tooltip>Select the default gateway. It is possible to <em>force</em> the use of a credit card gateway by specifying it on the URI, otherwise this one is used.</tooltip>
+    <help>In most cases, it is not required to define a default gateway because it will automatically be defined using a query string variable on the URI used to retrieve the user credit card information. However, if you offer multiple gateways, it can become useful to have a default one, just in case.</help>
+    <preset>
+      <item value="no-default" default="default">No default gateway</item>
+    </preset>
+  </widget>
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

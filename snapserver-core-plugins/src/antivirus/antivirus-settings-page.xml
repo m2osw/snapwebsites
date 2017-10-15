@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == Antivirus page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="antivirus" id="settings" content-modified="2015-11-27 03:15:42">
+  <timeout minutes="1440"/> <!-- 1 day -->
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="antivirus_enable"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="antivirus_enable"/>
+  </taborder>
+
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+  <widget id="editor-timeout" type="silent" field="editor::timeout" path="editor/timeout">
+  </widget>
+
+  <widget id="antivirus_enable" type="checkmark" field="antivirus::enable" path="antivirus/enable" auto-save="int8">
+    <label>Turn the Antivirus feature ON</label>
+    <tooltip>Uncheck this box to disable the Antivirus feature. When disabled, the Antivirus plugin ignores files.</tooltip>
+    <help>Help</help>
+    <value>1</value>
+  </widget>
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

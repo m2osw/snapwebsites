@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == Snap Software Description page widgets
+Copyright (C) 2014-2017  Made to Order Software Corp.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<editor-form owner="snap_software_description" id="settings" content-modified="2015-11-27 18:17:45">
+  <mode action="edit"/>
+  <immediate/>
+  <focus refid="snsd_enable"/>
+  <on-save allow-edit="yes"/>
+  <taborder>
+    <tabindex refid="snsd_enable"/>
+  </taborder>
+  <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
+  </widget>
+
+  <widget id="snsd_enable" type="checkmark" field="snsd::enable" path="snsd/enable" auto-save="int8">
+    <label>Enable the Snap Software Description feature</label>
+    <tooltip>This flag allows you to stop serving Snap Software Descriptions and yet keep the plugin and data installed.</tooltip>
+    <help>Help</help>
+    <value>1</value>
+  </widget>
+
+  
+
+</editor-form>
+<!-- vim: ts=2 sw=2 et
+-->

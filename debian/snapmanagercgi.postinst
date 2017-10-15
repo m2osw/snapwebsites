@@ -1,0 +1,111 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+
+if [ "$1" = "configure" ]
+then
+    PACKAGENAME=snapmanagercgi
+
+    # Create a default user editable snapmanager.conf file if it does not
+    # exist yet
+    #
+    SNAPMANAGER_USER_CONFIGURATION_FILENAME=/etc/snapwebsites/snapwebsites.d/snapmanager.conf
+    if test ! -f $SNAPMANAGER_USER_CONFIGURATION_FILENAME
+    then
+        # We do not have an IP address to add to the clients variable
+        # but the user should edit that specific variable
+        #
+        echo "# Various changes to get snapmanager.cgi and snapmanagerdaemon to work" >$SNAPMANAGER_USER_CONFIGURATION_FILENAME
+        echo "# for more info and details about the variables defined here, check" >>$SNAPMANAGER_USER_CONFIGURATION_FILENAME
+        echo "# the file of the same name one directory up" >>$SNAPMANAGER_USER_CONFIGURATION_FILENAME
+        echo "#" >>$SNAPMANAGER_USER_CONFIGURATION_FILENAME
+
+        db_get snapmanagercgi/clients && clients="$RET"
+        echo "clients=$clients" >>$SNAPMANAGER_USER_CONFIGURATION_FILENAME
+    fi
+
+    # Handle the first user name and his password
+    #
+    db_get snapmanagercgi/user_name && user_name="$RET"
+    db_get snapmanagercgi/user_password && user_password="$RET"
+    if test -n "$user_name" -a -n "$user_password"
+    then
+        # XXX look into not passing the password on a command line?
+        #
+        snappassword --add --username $user_name --password $user_password
+    fi
+
+    # forget the clear password in the dpkg installation database
+    #
+    db_set snapmanagercgi/user_password
+    db_set snapmanagercgi/user_password_again
+
+    # Create the snapmanagercgi.log file because the www-data user may have
+    # difficulties with it otherwise
+    #
+    SNAPLOGDIR=/var/log/snapwebsites
+    SNAPMANAGERCGI_LOG=${SNAPLOGDIR}/${PACKAGENAME}.log
+    touch ${SNAPMANAGERCGI_LOG}
+    chown www-data:www-data ${SNAPMANAGERCGI_LOG}
+    chmod 640 ${SNAPMANAGERCGI_LOG}
+    
+    SNAPSECURELOGDIR=/var/log/snapwebsites/secure
+    SNAPSECUREMANAGERCGI_LOG=${SNAPSECURELOGDIR}/${PACKAGENAME}.log
+    touch ${SNAPSECUREMANAGERCGI_LOG}
+    chown www-data:www-data ${SNAPSECUREMANAGERCGI_LOG}
+    chmod 640 ${SNAPSECUREMANAGERCGI_LOG}
+
+    SNAPPASSWORD_LOG=${SNAPSECURELOGDIR}/snappassword.log
+    touch ${SNAPPASSWORD_LOG}
+    chown www-data:www-data ${SNAPPASSWORD_LOG}
+    chmod 640 ${SNAPPASSWORD_LOG}
+
+    # create the directory to be used to save the status files
+    #
+    mkdir -p /var/lib/snapwebsites/cluster-status
+    chmod 775 /var/lib/snapwebsites/cluster-status
+    chown snapwebsites:www-data /var/lib/snapwebsites/cluster-status
+
+    # create the directory to be used to save sessions
+    #
+    mkdir -p /var/lib/snapwebsites/sessions
+    chmod 700 /var/lib/snapwebsites/sessions
+    chown www-data:www-data /var/lib/snapwebsites/sessions
+
+    # create the sub-directory for snapmanager.cgi
+    #
+    mkdir -p /var/lib/snapwebsites/sessions/snapmanager
+    chmod 700 /var/lib/snapwebsites/sessions/snapmanager
+    chown www-data:www-data /var/lib/snapwebsites/sessions/snapmanager
+
+    # create the snapmanager sub-directory to put out ServerName/Webmaster
+    # parameter that the user is likely to change
+    #
+    mkdir -p /etc/apache2/snap-conf/snapmanager
+    cp -n /usr/share/snapwebsites/apache2/user-snap-apache2-snapmanager-common.conf /etc/apache2/snap-conf/snapmanager/snapmanager-apache2-common.conf
+    cp -n /usr/share/snapwebsites/apache2/user-snap-apache2-snapmanager-443.conf /etc/apache2/snap-conf/snapmanager/snapmanager-apache2-443.conf
+
+    # The snapmanager.cgi also requires the cgi and rewrite modules
+    #
+    a2enmod -qm cgi
+    a2enmod -qm rewrite
+
+    # enable the snapmanager-apache2.conf site and make sure to remove the
+    # default if it is still enabled
+    #
+    a2dissite -qm 000-default
+    a2ensite -qm snapmanager-apache2
+
+    # Now run various common apache initializations
+    # (logrotate, enable/disable configuration/modules/sites)
+    # The external script will restart apache2 as well
+    #
+    /usr/lib/snapwebsites/scripts/snapapacheinit install
+fi
+
+
+# vim: ts=4 sw=4 et nocindent

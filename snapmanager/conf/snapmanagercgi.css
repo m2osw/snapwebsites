@@ -1,0 +1,104 @@
+/*
+ * Name: snapmanagercgi.css
+ * Layout: default
+ * Version: 0.4
+ * Browsers: all
+ * Copyright: Copyright 2017 (c) Made to Order Software Inc.
+ * License: GPLv2
+ */
+
+body
+{
+    font-family: sans;
+}
+div.access-warning
+{
+    width: 80%;
+    margin: 20px auto;
+    border: 1px solid red;
+    background: #ffe0e0;
+    padding: 10px;
+    padding-bottom: 0;
+}
+div.access-warning div.access-title
+{
+    text-align: center;
+    font-weight: bold;
+    font-size: 120%;
+}
+table
+{
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+table th
+{
+    background-color: #e0e0e0;
+}
+table th,
+table td
+{
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+    padding: 3px;
+    vertical-align: top;
+}
+table .errors td
+{
+    border-bottom: 1px solid red;
+    border-right: 1px solid red;
+}
+table tr.modified,
+a.modified
+{
+    background-color: #d6b2ff;
+}
+table tr.highlight,
+a.highlight
+{
+    background-color: #fff881;
+}
+table tr.warnings,
+a.warnings
+{
+    background-color: #ffde9f;
+}
+table tr.down,
+a.down
+{
+    background-color: #ffdede;
+    text-decoration: line-through;
+}
+table tr.errors,
+a.errors
+{
+    background-color: #ffd8d8;
+    border-left: 1px solid red;
+}
+label
+{
+    font-weight: bold;
+    display: block;
+}
+input[type="input"]
+{
+    width: calc(100% - 20px);
+}
+button
+{
+    margin: 5px 10px;
+}
+.ui-state-active a,
+.ui-state-active a:link,
+.ui-state-active a:visited
+{
+    /* jquery-ui.css set this one to white, which on bright yellow does not
+     * work well.
+     */
+    color: black;
+}
+
+/* vim: ts=4 sw=4 et
+ */

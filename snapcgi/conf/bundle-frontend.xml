@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-frontend.xml
+-->
+<bundle>
+  <name>frontend</name>
+  <description>
+    <p>The frontend bundle installs Apache2 and snap.cgi which together
+    handle client requests and determine whether to proxy the request
+    to a snapserver.</p>
+
+    <p>It is expected to be installed only on frontend computers.</p>
+
+    <p>You should not install this bundle on any of your backend
+    computer. If you want to run snapmanager.cgi on a backend,
+    it will not involve snap.cgi at all.</p>
+  </description>
+  <fields>
+    <field name="webmaster_email" type="input">
+      <label>Webmaster Email Address</label>
+      <description>
+        The email address of the website. Note that all the websites
+        running on a Snap! Websites cluster make use of the same
+        Apache definition. So this is expected to be the main
+        maintainer of the Snap! Websites system.
+      </description>
+    </field>
+    <field name="domain_name" type="input">
+      <label>Domain Name</label>
+      <description>
+        The default domain name to use for your Snap! Websites. This
+        should have no effect to the other websites, so the system
+        will be accessible whatever the domain name, really. However,
+        Apache2 tends to use the default domain name in case an
+        error occurs or the website is accessed by an IP address.
+      </description>
+    </field>
+  </fields>
+  <affected-services>snapmanagerdaemon</affected-services>
+  <packages>snapcgi</packages>
+  <postinst>
+    systemctl stop apache2
+
+    # setup the default apache2 configuration file
+    #
+    sed -i.bak \
+        -e "s/snap.example.com/$BUNDLE_INSTALLATION_DOMAIN_NAME/" \
+        -e "s/webmaster@example.com/$BUNDLE_INSTALLATION_WEBMASTER_EMAIL/" \
+              /etc/apache2/snap-conf/default/000-snap-apache2-default-common.conf
+
+    systemctl start apache2
+  </postinst>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->
