@@ -109,17 +109,17 @@ class save_info_t
 public:
                                             save_info_t(content::path_info_t & p_ipath,
                                                         QDomDocument & p_editor_widgets,
-                                                        QtCassandra::QCassandraRow::pointer_t p_revision_row,
-                                                        QtCassandra::QCassandraRow::pointer_t p_secret_row,
-                                                        QtCassandra::QCassandraRow::pointer_t p_draft_row);
+                                                        libdbproxy::row::pointer_t p_revision_row,
+                                                        libdbproxy::row::pointer_t p_secret_row,
+                                                        libdbproxy::row::pointer_t p_draft_row);
 
     content::path_info_t &                  ipath();
 
     QDomDocument &                          editor_widgets();
 
-    QtCassandra::QCassandraRow::pointer_t   revision_row() const;
-    QtCassandra::QCassandraRow::pointer_t   secret_row() const;
-    QtCassandra::QCassandraRow::pointer_t   draft_row() const;
+    libdbproxy::row::pointer_t   revision_row() const;
+    libdbproxy::row::pointer_t   secret_row() const;
+    libdbproxy::row::pointer_t   draft_row() const;
 
     void                                    lock();
 
@@ -131,9 +131,9 @@ public:
 private:
     content::path_info_t &                  f_ipath;
     QDomDocument                            f_editor_widgets;
-    QtCassandra::QCassandraRow::pointer_t   f_revision_row;
-    QtCassandra::QCassandraRow::pointer_t   f_secret_row;
-    QtCassandra::QCassandraRow::pointer_t   f_draft_row;
+    libdbproxy::row::pointer_t   f_revision_row;
+    libdbproxy::row::pointer_t   f_secret_row;
+    libdbproxy::row::pointer_t   f_draft_row;
     bool                                    f_locked = false;
     bool                                    f_modified = false;
     bool                                    f_has_errors = false;
@@ -195,14 +195,14 @@ public:
             ERROR
         };
 
-                                        value_to_string_info_t(content::path_info_t & ipath, QDomElement widget, QtCassandra::QCassandraValue const & value);
+                                        value_to_string_info_t(content::path_info_t & ipath, QDomElement widget, libdbproxy::value const & value);
 
         bool                            is_done() const;
         bool                            is_valid() const;
         void                            set_status(status_t const status);
         content::path_info_t &          get_ipath() const;
         QDomElement                     get_widget() const;
-        QtCassandra::QCassandraValue const & get_value() const;
+        libdbproxy::value const & get_value() const;
         QString const &                 get_widget_type() const;
         QString const &                 get_data_type() const;
         QString const &                 get_type_name() const;
@@ -214,7 +214,7 @@ public:
 
         content::path_info_t &          f_ipath;
         QDomElement                     f_widget;
-        QtCassandra::QCassandraValue const & f_value;
+        libdbproxy::value const & f_value;
 
         mutable QString                 f_widget_type;
         mutable QString                 f_data_type;
@@ -245,7 +245,7 @@ public:
         QString const &                 get_data_type() const;
         QString const &                 get_type_name() const;
         void                            set_type_name(QString const & new_type_name);
-        QtCassandra::QCassandraValue &  result();
+        libdbproxy::value &  result();
 
     private:
         status_t                        f_status = status_t::WORKING;
@@ -258,7 +258,7 @@ public:
         mutable QString                 f_data_type;
         QString                         f_type_name = "unknown";
 
-        QtCassandra::QCassandraValue    f_result;
+        libdbproxy::value    f_result;
     };
 
                         editor();
@@ -318,7 +318,7 @@ public:
     SNAP_SIGNAL(validate_editor_post_for_widget, (content::path_info_t & ipath, sessions::sessions::session_info & info, QDomElement const & widget, QString const & widget_name, QString const & widget_type, QString const & value, bool const is_secret), (ipath, info, widget, widget_name, widget_type, value, is_secret));
     SNAP_SIGNAL(replace_uri_token, (editor_uri_token & token_info), (token_info));
     SNAP_SIGNAL_WITH_MODE(dynamic_editor_widget, (content::path_info_t & cpath, QString const & name, QDomDocument & editor_widgets), (cpath, name, editor_widgets), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(init_editor_widget, (content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t row), (ipath, field_id, field_type, widget, row), NEITHER);
+    SNAP_SIGNAL_WITH_MODE(init_editor_widget, (content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row), (ipath, field_id, field_type, widget, row), NEITHER);
     SNAP_SIGNAL_WITH_MODE(new_attachment_saved, (content::attachment_file & the_attachment, QDomElement const & widget, QDomElement const & attachment_tag), (the_attachment, widget, attachment_tag), NEITHER);
     SNAP_SIGNAL_WITH_MODE(finish_editor_form_processing, (content::path_info_t & ipath, bool & succeeded), (ipath, succeeded), NEITHER);
     SNAP_SIGNAL(string_to_value, (string_to_value_info_t & value_info), (value_info));
@@ -335,11 +335,11 @@ public:
     QString             get_post_value( QString const & name ) const;
 
     bool 							has_value( QString const & name ) const;
-    QtCassandra::QCassandraValue	get_value( QString const & name ) const;
+    libdbproxy::value	get_value( QString const & name ) const;
 
 private:
     typedef QMap<QString, QString>      value_map_t;
-    typedef QMap<QString, QtCassandra::QCassandraValue>     cassandra_value_map_t;
+    typedef QMap<QString, libdbproxy::value>     cassandra_value_map_t;
 
     void                content_update(int64_t variables_timestamp);
     void                process_new_draft();

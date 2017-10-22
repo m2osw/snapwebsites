@@ -43,7 +43,7 @@ set_property( TARGET ${PROJECT_NAME} PROPERTY OUTPUT_NAME snap.cgi )
 
 target_link_libraries(${PROJECT_NAME}
     snapwebsites
-    QtCassandra
+    libdbproxy
     ${ADVGETOPT_LIBRARIES}
     ${LOG4CPLUS_LIBRARIES}
     ${CASSWRAPPER_LIBRARIES}

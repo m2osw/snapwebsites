@@ -62,7 +62,7 @@ target_link_libraries( ${PROJECT_NAME}
     pthread
     dl
     snapwebsites
-    QtCassandra
+    libdbproxy
 )
 
 # vim: ts=4 sw=4 et nocindent

@@ -208,7 +208,6 @@ void snapbackup::restoreSchema( const QString& context_name )
             sleep(1);
         }
         std::cout << "done!" << std::endl;
-        cass_query->getQueryResult();
         cass_query->end();
     }
 
@@ -247,7 +246,6 @@ void snapbackup::dropContext( const QString& context_name )
             std::cout << "." << std::flush;
             sleep(1);
         }
-        q->getQueryResult();
         std::cout << "dropped!" << std::endl;
     }
 
@@ -261,7 +259,6 @@ void snapbackup::dropContext( const QString& context_name )
             std::cout << "." << std::flush;
             sleep(1);
         }
-        q->getQueryResult();
         std::cout << "dropped!" << std::endl;
     }
 

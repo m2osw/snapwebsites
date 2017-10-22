@@ -100,7 +100,7 @@ private:
     bool                                    load_xsl_file(QString const & filename, QString & xsl);
 
     snap_child *                            f_snap = nullptr;
-    QtCassandra::QCassandraRow::pointer_t   f_snap_software_description_settings_row;
+    libdbproxy::row::pointer_t   f_snap_software_description_settings_row;
     content::path_info_t::pointer_t         f_table_of_content_ipath;
     QString                                 f_snap_software_description_parser_catalog_xsl;
     QString                                 f_snap_software_description_parser_file_xsl;

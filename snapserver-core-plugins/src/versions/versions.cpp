@@ -301,9 +301,9 @@ bool versions::versions_libraries_impl(filter::filter::token_info_t & token)
     token.f_replacement += " (compiled with " QT_VERSION_STR ")</li>";
         // libQtCassandra
     token.f_replacement += "<li>libQtCassandra v";
-    token.f_replacement += QtCassandra::QCassandra::version();
+    token.f_replacement += libdbproxy::libdbproxy::version();
     token.f_replacement += " (compiled with ";
-    token.f_replacement += QtCassandra::QT_CASSANDRA_LIBRARY_VERSION_STRING;
+    token.f_replacement += libdbproxy::LIBDBPROXY_LIBRARY_VERSION_STRING;
     token.f_replacement += ")</li>";
         // libQtSerialization
     token.f_replacement += "<li>libQtSerialization v";

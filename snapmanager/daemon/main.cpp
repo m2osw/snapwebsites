@@ -69,9 +69,9 @@ int main(int argc, char * argv[])
     {
         SNAP_LOG_ERROR("snap_exception in snapmanagerdaemon: ")(e.what());
     }
-    catch(QtCassandra::QCassandraException const & e)
+    catch(libdbproxy::exception const & e)
     {
-        SNAP_LOG_ERROR("QCassandraException in snapmanagerdaemon: ")(e.what());
+        SNAP_LOG_ERROR("exception in snapmanagerdaemon: ")(e.what());
     }
     catch(std::runtime_error const & e)
     {

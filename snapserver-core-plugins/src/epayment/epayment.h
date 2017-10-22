@@ -207,8 +207,8 @@ private:
     mutable verification_t                              f_verified = verification_t::VERIFICATION_NOT_DONE;
     mutable content::path_info_t                        f_product_ipath;
     mutable content::content *                          f_content_plugin = nullptr;
-    mutable QtCassandra::QCassandraTable::pointer_t     f_revision_table;
-    mutable QtCassandra::QCassandraRow::pointer_t       f_revision_row;
+    mutable libdbproxy::table::pointer_t     f_revision_table;
+    mutable libdbproxy::row::pointer_t       f_revision_row;
 };
 
 

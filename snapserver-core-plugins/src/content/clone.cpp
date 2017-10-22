@@ -256,7 +256,7 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
             //path_info_t::raii_status_t destination_state(destination, f_destination.f_processing_state, f_destination.f_done_state);
 
             // save the date when we cloned the page
-            f_content_table->row(destination.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_CLONED))->setValue(f_start_date);
+            f_content_table->getRow(destination.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_CLONED))->setValue(f_start_date);
 
             // the content table is just one row, we specialize it because
             // we can directly fix the branch/revision information (and that
@@ -301,27 +301,27 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
             // otherwise we would have problems with the status and a
             // few other things; also that way we can immediately fix
             // the branch and revision URIs
-            QtCassandra::QCassandraRow::pointer_t source_row(f_content_table->row(source.get_key()));
+            libdbproxy::row::pointer_t source_row(f_content_table->getRow(source.get_key()));
             source_row->clearCache();
-            QtCassandra::QCassandraRow::pointer_t destination_row(f_content_table->row(destination.get_key()));
-            auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+            libdbproxy::row::pointer_t destination_row(f_content_table->getRow(destination.get_key()));
+            auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
             column_predicate->setCount(1000); // we have to copy everything also it is likely very small (i.e. 10 fields...)
             column_predicate->setIndex(); // behave like an index
             for(;;)
             {
                 source_row->readCells(column_predicate);
-                QtCassandra::QCassandraCells const source_cells(source_row->cells());
+                libdbproxy::cells const source_cells(source_row->getCells());
                 if(source_cells.isEmpty())
                 {
                     // done
                     break;
                 }
                 // handle one batch
-                for(QtCassandra::QCassandraCells::const_iterator nc(source_cells.begin());
+                for(libdbproxy::cells::const_iterator nc(source_cells.begin());
                         nc != source_cells.end();
                         ++nc)
                 {
-                    QtCassandra::QCassandraCell::pointer_t source_cell(*nc);
+                    libdbproxy::cell::pointer_t source_cell(*nc);
                     QByteArray cell_key(source_cell->columnKey());
                     // ignore the status
                     if(strcmp(cell_key.data(), get_name(name_t::SNAP_NAME_CONTENT_STATUS)) != 0
@@ -335,23 +335,23 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
                          || key.contains(current_revision_key)
                          || key.contains(current_working_revision_key)))
                         {
-                            QString uri(source_cell->value().stringValue());
+                            QString uri(source_cell->getValue().stringValue());
                             if(uri.startsWith(source.get_key()))
                             {
                                 // fix the key so it matches the destination properly
                                 uri = destination.get_key() + uri.mid(source.get_key().length());
-                                destination_row->cell(cell_key)->setValue(uri);
+                                destination_row->getCell(cell_key)->setValue(uri);
                             }
                             else
                             {
                                 // TODO: verify that this is not actually an error?
-                                destination_row->cell(cell_key)->setValue(source_cell->value());
+                                destination_row->getCell(cell_key)->setValue(source_cell->getValue());
                             }
                         }
                         else
                         {
                             // anything else gets copied as is for now
-                            destination_row->cell(cell_key)->setValue(source_cell->value());
+                            destination_row->getCell(cell_key)->setValue(source_cell->getValue());
                         }
                     }
                 }
@@ -373,7 +373,7 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
             QString last_branch_key(QString("%1::%2")
                     .arg(get_name(name_t::SNAP_NAME_CONTENT_REVISION_CONTROL))
                     .arg(get_name(name_t::SNAP_NAME_CONTENT_REVISION_CONTROL_LAST_BRANCH)));
-            QtCassandra::QCassandraValue last_branch_value(f_content_table->row(source_key)->cell(last_branch_key)->value());
+            libdbproxy::value last_branch_value(f_content_table->getRow(source_key)->getCell(last_branch_key)->getValue());
             snap_version::version_number_t last_branch;
             if(last_branch_value.nullValue())
             {
@@ -395,7 +395,7 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
                 QString const source_uri(f_content_plugin->generate_branch_key(source_key, branch));
                 QString const destination_uri(f_content_plugin->generate_branch_key(destination_key, branch));
                 if(f_branch_table->exists(source_uri)
-                && f_branch_table->row(source_uri)->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
+                && f_branch_table->getRow(source_uri)->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
                 {
                     cloned_branch_t cloned_branch;
                     cloned_branch.f_branch = branch;
@@ -404,33 +404,33 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
                     // Handle our own copy to avoid copying the links because
                     // it could cause all sorts of weird side effects (i.e.
                     // wrong parent, wrong children to cite only those two...)
-                    QtCassandra::QCassandraRow::pointer_t source_row(f_branch_table->row(source_uri));
+                    libdbproxy::row::pointer_t source_row(f_branch_table->getRow(source_uri));
                     source_row->clearCache();
-                    QtCassandra::QCassandraRow::pointer_t destination_row(f_branch_table->row(destination_uri));
-                    auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+                    libdbproxy::row::pointer_t destination_row(f_branch_table->getRow(destination_uri));
+                    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
                     column_predicate->setCount(1000); // we have to copy everything also it is likely very small (i.e. 10 fields...)
                     column_predicate->setIndex(); // behave like an index
                     for(;;)
                     {
                         source_row->readCells(column_predicate);
-                        QtCassandra::QCassandraCells const source_cells(source_row->cells());
+                        libdbproxy::cells const source_cells(source_row->getCells());
                         if(source_cells.isEmpty())
                         {
                             // done
                             break;
                         }
                         // handle one batch
-                        for(QtCassandra::QCassandraCells::const_iterator nc(source_cells.begin());
+                        for(libdbproxy::cells::const_iterator nc(source_cells.begin());
                                 nc != source_cells.end();
                                 ++nc)
                         {
-                            QtCassandra::QCassandraCell::pointer_t source_cell(*nc);
+                            libdbproxy::cell::pointer_t source_cell(*nc);
                             QByteArray cell_key(source_cell->columnKey());
                             // ignore all links
                             if(!cell_key.startsWith(links_bytearray))
                             {
                                 // anything else gets copied as is for now
-                                destination_row->cell(source_cell->columnKey())->setValue(source_cell->value());
+                                destination_row->getCell(source_cell->columnKey())->setValue(source_cell->getValue());
                             }
                         }
                     }
@@ -487,29 +487,29 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
                     .arg(get_name(name_t::SNAP_NAME_CONTENT_REVISION_CONTROL_LAST_REVISION))
                     .arg(cloned_branch.f_branch));
 
-            auto column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+            auto column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
             column_predicate->setCount(10000); // 4 bytes per entry + row name of under 100 bytes, that's 1Mb max.
             column_predicate->setIndex(); // behave like an index
             column_predicate->setStartCellKey(last_revision_key); // no language (fully neutral) is a valid entry
             column_predicate->setEndCellKey(last_revision_key + "|"); // languages are limited to letters
-            QtCassandra::QCassandraRow::pointer_t revision_row(f_content_table->row(source_key));
+            libdbproxy::row::pointer_t revision_row(f_content_table->getRow(source_key));
             revision_row->clearCache();
             for(;;)
             {
                 revision_row->readCells(column_predicate);
-                QtCassandra::QCassandraCells const new_cells(revision_row->cells());
+                libdbproxy::cells const new_cells(revision_row->getCells());
                 if(new_cells.isEmpty())
                 {
                     break;
                 }
                 // handle one batch
-                for(QtCassandra::QCassandraCells::const_iterator nc(new_cells.begin());
+                for(libdbproxy::cells::const_iterator nc(new_cells.begin());
                         nc != new_cells.end();
                         ++nc)
                 {
                     // verify the entry is valid
-                    QtCassandra::QCassandraCell::pointer_t last_revision_cell(*nc);
-                    if(!last_revision_cell->value().nullValue())
+                    libdbproxy::cell::pointer_t last_revision_cell(*nc);
+                    if(!last_revision_cell->getValue().nullValue())
                     {
                         // the revision number is the cell value
                         // we need the row key to extract the language
@@ -526,7 +526,7 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
                             // extract the locale (language name)
                             locale = column_name.mid(pos + 1);
                         }
-                        snap_version::version_number_t last_revision(last_revision_cell->value().uint32Value());
+                        snap_version::version_number_t last_revision(last_revision_cell->getValue().uint32Value());
 
                         // all the revision names end with:
                         //    '#' <locale> '/' <branch> '.' <revision>
@@ -538,7 +538,7 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
                             QString const destination_uri(f_content_plugin->generate_revision_key(destination_key, cloned_branch.f_branch, revision, locale));
 
                             if(f_revision_table->exists(source_uri)
-                            && f_revision_table->row(source_uri)->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
+                            && f_revision_table->getRow(source_uri)->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
                             {
                                 dbutils::copy_row(f_revision_table, source_uri, f_revision_table, destination_uri);
 
@@ -560,9 +560,9 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
         clone_info_t                                f_source;
         clone_info_t                                f_destination;
         int64_t const                               f_start_date;
-        QtCassandra::QCassandraTable::pointer_t     f_content_table;
-        QtCassandra::QCassandraTable::pointer_t     f_branch_table;
-        QtCassandra::QCassandraTable::pointer_t     f_revision_table;
+        libdbproxy::table::pointer_t     f_content_table;
+        libdbproxy::table::pointer_t     f_branch_table;
+        libdbproxy::table::pointer_t     f_revision_table;
         cloned_tree_t                               f_clones;
         bool                                        f_result = true;
     };
@@ -598,8 +598,8 @@ bool content::move_page(path_info_t & ipath_source, path_info_t & ipath_destinat
     //
     // (administrative pages, those created from content.xml, are nearly
     // all marked as not deletable by default!)
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
-    QtCassandra::QCassandraValue prevent_delete(content_table->row(ipath_source.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_PREVENT_DELETE))->value());
+    libdbproxy::table::pointer_t content_table(get_content_table());
+    libdbproxy::value prevent_delete(content_table->getRow(ipath_source.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_PREVENT_DELETE))->getValue());
     if(!prevent_delete.nullValue() && prevent_delete.signedCharValue())
     {
         f_snap->die(snap_child::http_code_t::HTTP_CODE_FORBIDDEN, "Forbidden Move",
@@ -649,8 +649,8 @@ bool content::trash_page(path_info_t & ipath)
     //
     // (administrative pages, those created from content.xml, are nearly
     // all marked as not deletable by default!)
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
-    QtCassandra::QCassandraValue prevent_delete(content_table->row(ipath.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_PREVENT_DELETE))->value());
+    libdbproxy::table::pointer_t content_table(get_content_table());
+    libdbproxy::value prevent_delete(content_table->getRow(ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_PREVENT_DELETE))->getValue());
     if(!prevent_delete.nullValue() && prevent_delete.signedCharValue())
     {
         f_snap->die(snap_child::http_code_t::HTTP_CODE_FORBIDDEN, "Forbidden Removal",
@@ -663,7 +663,7 @@ bool content::trash_page(path_info_t & ipath)
     QString trashcan_path("trashcan");
 
     // path can be changed by administrator
-    QtCassandra::QCassandraValue trashcan_path_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_CONTENT_TRASHCAN)));
+    libdbproxy::value trashcan_path_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_CONTENT_TRASHCAN)));
     if(!trashcan_path_value.nullValue())
     {
         // administrators can move the trashcan around up until something
@@ -692,15 +692,15 @@ bool content::trash_page(path_info_t & ipath)
         create_content(trashcan_ipath, get_name(name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER), "system-page");
 
         // save the creation date, title, and description
-        QtCassandra::QCassandraTable::pointer_t revision_table(get_revision_table());
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(trashcan_ipath.get_revision_key()));
+        libdbproxy::table::pointer_t revision_table(get_revision_table());
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(trashcan_ipath.get_revision_key()));
         int64_t const start_date(f_snap->get_start_date());
-        revision_row->cell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
+        revision_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
         // TODO: add support for translation
         QString const title("Trashcan");
-        revision_row->cell(get_name(name_t::SNAP_NAME_CONTENT_TITLE))->setValue(title);
+        revision_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_TITLE))->setValue(title);
         QString const empty_string;
-        revision_row->cell(get_name(name_t::SNAP_NAME_CONTENT_BODY))->setValue(empty_string);
+        revision_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_BODY))->setValue(empty_string);
     }
 
     // new page goes under a randomly generated number

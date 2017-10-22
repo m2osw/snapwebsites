@@ -201,7 +201,7 @@ public:
 
     // editor signals
     void                on_prepare_editor_form(editor::editor * e);
-    void                on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t data_row);
+    void                on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t data_row);
 
     // layout::layout_content implementation
     void                on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
@@ -209,7 +209,7 @@ public:
     // layout signals
     void                on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
 
-    QtCassandra::QCassandraTable::pointer_t get_password_table();
+    libdbproxy::table::pointer_t get_password_table();
     QString             check_password_against_policy(users::users::user_info_t user_info, QString const & user_password, QString const & policy);
     QString             create_password(QString const & policy = "users");
 
@@ -220,7 +220,7 @@ private:
     void                on_path_execute__blacklist_remove_passwords(content::path_info_t & ipath);
 
     snap_child *                            f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t f_password_table;
+    libdbproxy::table::pointer_t f_password_table;
     bool                                    f_added_policy = false;
 };
 

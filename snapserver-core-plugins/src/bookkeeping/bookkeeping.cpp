@@ -300,8 +300,8 @@ bool bookkeeping::create_new_client(content::path_info_t & ipath)
     server_access::server_access * server_access_plugin(server_access::server_access::instance());
     output::output * output_plugin(output::output::instance());
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
 
     // assign a new number to this customer
     // 
@@ -310,14 +310,14 @@ bool bookkeeping::create_new_client(content::path_info_t & ipath)
     int64_t counter(0);
     content::path_info_t add_client_ipath;
     add_client_ipath.set_path("bookkeeping/client/add-client");
-    QtCassandra::QCassandraRow::pointer_t add_client_row(content_table->row(add_client_ipath.get_key()));
+    libdbproxy::row::pointer_t add_client_row(content_table->getRow(add_client_ipath.get_key()));
     {
         // lock this page while we increase the counter
         //
         snap_lock lock(add_client_ipath.get_key());
 
-        counter = add_client_row->cell(QString(get_name(name_t::SNAP_NAME_BOOKKEEPING_COUNTER)))->value().safeInt64Value(0, 0) + 1;
-        add_client_row->cell(QString(get_name(name_t::SNAP_NAME_BOOKKEEPING_COUNTER)))->setValue(counter);
+        counter = add_client_row->getCell(QString(get_name(name_t::SNAP_NAME_BOOKKEEPING_COUNTER)))->getValue().safeInt64Value(0, 0) + 1;
+        add_client_row->getCell(QString(get_name(name_t::SNAP_NAME_BOOKKEEPING_COUNTER)))->setValue(counter);
     }
 
     // TODO: properly setup the locale (use the User defined locale?)
@@ -332,45 +332,45 @@ bool bookkeeping::create_new_client(content::path_info_t & ipath)
     client_ipath.force_locale(locale);
     content_plugin->create_content(client_ipath, output_plugin->get_plugin_name(), "bookkeeping/client");
 
-    QtCassandra::QCassandraRow::pointer_t content_row(content_table->row(client_ipath.get_key()));
-    content_row->cell(layout::get_name(layout::name_t::SNAP_NAME_LAYOUT_LAYOUT))->setValue(QString("\"bookkeeping-client-parser\";"));
-    content_row->cell(editor::get_name(editor::name_t::SNAP_NAME_EDITOR_LAYOUT))->setValue(QString("\"bookkeeping-client-page\";"));
+    libdbproxy::row::pointer_t content_row(content_table->getRow(client_ipath.get_key()));
+    content_row->getCell(layout::get_name(layout::name_t::SNAP_NAME_LAYOUT_LAYOUT))->setValue(QString("\"bookkeeping-client-parser\";"));
+    content_row->getCell(editor::get_name(editor::name_t::SNAP_NAME_EDITOR_LAYOUT))->setValue(QString("\"bookkeeping-client-page\";"));
 
-    QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(client_ipath.get_revision_key()));
+    libdbproxy::row::pointer_t revision_row(revision_table->getRow(client_ipath.get_revision_key()));
     int64_t const start_date(f_snap->get_start_date());
-    revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
+    revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
 
     // the title is used for the client's name (see below)
-    //revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(QString("...").arg(counter));
+    //revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(QString("...").arg(counter));
     // the body is empty by default, it is used for the description
-    //revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->setValue(QString("<div>...</div>"));
+    //revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->setValue(QString("<div>...</div>"));
 
     // this one is mandatory and was already checked and we know it is present
     QString const client_name(f_snap->postenv("client_name"));
-    revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(client_name);
+    revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(client_name);
 
     if(f_snap->postenv_exists("client_address1"))
     {
         QString const client_address1(f_snap->postenv("client_address1"));
-        revision_row->cell(get_name(name_t::SNAP_NAME_BOOKKEEPING_CLIENT_ADDRESS1))->setValue(client_address1);
+        revision_row->getCell(get_name(name_t::SNAP_NAME_BOOKKEEPING_CLIENT_ADDRESS1))->setValue(client_address1);
     }
 
     if(f_snap->postenv_exists("client_city"))
     {
         QString const client_city(f_snap->postenv("client_city"));
-        revision_row->cell(get_name(name_t::SNAP_NAME_BOOKKEEPING_CLIENT_CITY))->setValue(client_city);
+        revision_row->getCell(get_name(name_t::SNAP_NAME_BOOKKEEPING_CLIENT_CITY))->setValue(client_city);
     }
 
     if(f_snap->postenv_exists("client_state"))
     {
         QString const client_state(f_snap->postenv("client_state"));
-        revision_row->cell(get_name(name_t::SNAP_NAME_BOOKKEEPING_CLIENT_STATE))->setValue(client_state);
+        revision_row->getCell(get_name(name_t::SNAP_NAME_BOOKKEEPING_CLIENT_STATE))->setValue(client_state);
     }
 
     if(f_snap->postenv_exists("client_zip"))
     {
         QString const client_zip(f_snap->postenv("client_zip"));
-        revision_row->cell(get_name(name_t::SNAP_NAME_BOOKKEEPING_CLIENT_ZIP))->setValue(client_zip);
+        revision_row->getCell(get_name(name_t::SNAP_NAME_BOOKKEEPING_CLIENT_ZIP))->setValue(client_zip);
     }
 
     {

@@ -20,7 +20,7 @@
 #include "snapwebsites/log.h"
 #include "snapwebsites/snapwebsites.h"
 
-#include <QtCassandra/QCassandra.h>
+#include <libdbproxy/libdbproxy.h>
 
 #include <sys/time.h>
 

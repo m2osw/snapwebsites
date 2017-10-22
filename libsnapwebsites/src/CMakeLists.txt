@@ -31,7 +31,7 @@
 
 project(snapwebsites_src)
 
-add_subdirectory( QtCassandra  )
+add_subdirectory( libdbproxy   )
 add_subdirectory( snapwebsites )
 
 # vim: ts=4 sw=4 et nocindent

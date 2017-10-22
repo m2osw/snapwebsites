@@ -73,8 +73,8 @@ mailinglist::list::list(mailinglist * parent, QString const & list_name)
     : f_parent(parent)
     , f_name(list_name)
     , f_table(f_parent->get_mailinglist_table())
-    , f_row(f_table->row(f_name))
-    , f_column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>())
+    , f_row(f_table->getRow(f_name))
+    , f_column_predicate(std::make_shared<libdbproxy::cell_range_predicate>())
     //, f_cells() -- auto-init
     , f_c(f_cells.end())
     //, f_done(false) -- auto-init;
@@ -126,7 +126,7 @@ QString mailinglist::list::next()
     {
         //f_row->clearCache();
         f_row->readCells(f_column_predicate);
-        f_cells = f_row->cells();
+        f_cells = f_row->getCells();
         f_c = f_cells.begin();
         if(f_c == f_cells.end())
         {
@@ -135,7 +135,7 @@ QString mailinglist::list::next()
         }
     }
 
-    QtCassandra::QCassandraValue value((*f_c)->value());
+    libdbproxy::value value((*f_c)->getValue());
     ++f_c;
     // TODO: write a loop so we properly handle the case of an empty
     //       entry (although it should not happen, we never know!)
@@ -299,7 +299,7 @@ void mailinglist::bootstrap(snap_child * snap)
  *
  * \return The pointer to the users table.
  */
-QtCassandra::QCassandraTable::pointer_t mailinglist::get_mailinglist_table()
+libdbproxy::table::pointer_t mailinglist::get_mailinglist_table()
 {
     return f_snap->get_table(get_name(name_t::SNAP_NAME_MAILINGLIST_TABLE));
 }
@@ -362,7 +362,7 @@ bool mailinglist::name_to_list_impl(QString const & name, QSharedPointer<list> &
     if(!emails)
     {
         // first make sure that the row exists, if not, it is not a mailing list
-        QtCassandra::QCassandraTable::pointer_t table(get_mailinglist_table());
+        libdbproxy::table::pointer_t table(get_mailinglist_table());
         if(table->exists(name))
         {
             emails = QSharedPointer<list>(new list(this, name));

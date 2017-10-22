@@ -54,10 +54,10 @@ void snap_cassandra::connect()
     tcp_client_server::get_addr_port(config["listen"], f_snapdbproxy_addr, f_snapdbproxy_port, "tcp");
 
 //std::cerr << "snap proxy info: " << f_snapdbproxy_addr << " and " << f_snapdbproxy_port << "\n";
-    f_cassandra = QtCassandra::QCassandra::create();
+    f_cassandra = libdbproxy::libdbproxy::create();
     if(!f_cassandra)
     {
-        QString const msg("could not create the QCassandra instance.");
+        QString const msg("could not create the libdbproxy instance.");
         SNAP_LOG_FATAL(msg);
         throw snap_cassandra_not_available_exception(msg);
     }
@@ -68,11 +68,11 @@ void snap_cassandra::connect()
     // Note: the low level library forces everything to QUORUM anyway so
     //       this call is not really useful as it stands.
     //
-    f_cassandra->setDefaultConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
+    f_cassandra->setDefaultConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
 
     if( !f_cassandra->connect(f_snapdbproxy_addr, f_snapdbproxy_port) )
     {
-        QString const msg("could not connect QCassandra to snapdbproxy.");
+        QString const msg("could not connect libdbproxy to snapdbproxy.");
         SNAP_LOG_FATAL(msg);
         throw snap_cassandra_not_available_exception(msg);
     }
@@ -85,7 +85,7 @@ void snap_cassandra::disconnect()
 }
 
 
-QtCassandra::QCassandraContext::pointer_t snap_cassandra::get_snap_context()
+libdbproxy::context::pointer_t snap_cassandra::get_snap_context()
 {
     if( !f_cassandra )
     {
@@ -97,7 +97,7 @@ QtCassandra::QCassandraContext::pointer_t snap_cassandra::get_snap_context()
     // we need to read all the contexts in order to make sure the
     // findContext() works
     //
-    f_cassandra->contexts();
+    f_cassandra->getContexts();
     QString const context_name(snap::get_name(snap::name_t::SNAP_NAME_CONTEXT));
     return f_cassandra->findContext(context_name);
 }
@@ -125,16 +125,16 @@ bool snap_cassandra::is_connected() const
 }
 
 
-QtCassandra::QCassandraTable::pointer_t snap_cassandra::get_table(QString const & table_name)
+libdbproxy::table::pointer_t snap_cassandra::get_table(QString const & table_name)
 {
-    QtCassandra::QCassandraContext::pointer_t context(get_snap_context());
+    libdbproxy::context::pointer_t context(get_snap_context());
     if(!context)
     {
         throw snap_cassandra_not_available_exception("The snap_websites context is not available in this Cassandra database.");
     }
 
     // does table exist?
-    QtCassandra::QCassandraTable::pointer_t table(context->findTable(table_name));
+    libdbproxy::table::pointer_t table(context->findTable(table_name));
     if(!table)
     {
         SNAP_LOG_FATAL("could not find table \"")(table_name)("\" in Cassandra.");
@@ -163,7 +163,7 @@ QtCassandra::QCassandraTable::pointer_t snap_cassandra::get_table(QString const 
  */
 void snap_cassandra::create_table_list()
 {
-    QtCassandra::QCassandraContext::pointer_t context(get_snap_context());
+    libdbproxy::context::pointer_t context(get_snap_context());
     if(!context)
     {
         throw snap_cassandra_not_available_exception("The snap_websites context is not available in this Cassandra database.");
@@ -196,7 +196,7 @@ void snap_cassandra::create_table_list()
         QString const table_name(s.second.get_name());
 
         // does table exist?
-        QtCassandra::QCassandraTable::pointer_t table(context->findTable(table_name));
+        libdbproxy::table::pointer_t table(context->findTable(table_name));
         if(!table
         && !s.second.get_drop())
         {
@@ -206,7 +206,7 @@ void snap_cassandra::create_table_list()
             //
             // setup the name in the "constructor"
             //
-            table = context->table(table_name);
+            table = context->getTable(table_name);
 
             // other fields make use of a map
             //
@@ -480,7 +480,7 @@ void snap_cassandra::create_table_list()
                 //
                 context->dropTable(table_name);
             }
-            catch(QtCassandra::QCassandraException const & e)
+            catch(libdbproxy::exception const & e)
             {
                 SNAP_LOG_WARNING("an exception was raised with \"")(e.what())("\"");
                 sleep(10);

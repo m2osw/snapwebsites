@@ -89,7 +89,7 @@ public:
     virtual void                bootstrap(snap_child * snap);
 
     // editor signals
-    void                        on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t row);
+    void                        on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row);
     void                        on_prepare_editor_form(editor::editor * e);
     void                        on_string_to_value(editor::editor::string_to_value_info_t & value_info);
     void                        on_value_to_string(editor::editor::value_to_string_info_t & value_info);

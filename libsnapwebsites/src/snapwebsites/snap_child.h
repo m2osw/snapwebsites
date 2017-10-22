@@ -29,10 +29,10 @@
 #include "snapwebsites/tcp_client_server.h"
 #include "snapwebsites/udp_client_server.h"
 
-// QtCassandra lib
+// libdbproxy lib
 //
-#include <QtCassandra/QCassandra.h>
-#include <QtCassandra/QCassandraContext.h>
+#include <libdbproxy/libdbproxy.h>
+#include <libdbproxy/context.h>
 
 // Qt lib
 //
@@ -357,12 +357,12 @@ public:
     QString                     get_server_parameter(QString const & name);
     QString                     get_list_data_path();
     void                        reset_sites_table();
-    QtCassandra::QCassandraValue
+    libdbproxy::value
                                 get_site_parameter(QString const & name);
-    void                        set_site_parameter(QString const & name, QtCassandra::QCassandraValue const & value);
+    void                        set_site_parameter(QString const & name, libdbproxy::value const & value);
     void                        improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag);
     QString                     error_body(http_code_t err_code, QString const & err_name, QString const & err_description);
-    QtCassandra::QCassandraContext::pointer_t
+    libdbproxy::context::pointer_t
                                 get_context() { return f_context; }
     QString const &             get_domain_key() const { return f_domain_key; }
     QString const &             get_website_key() const { return f_website_key; }
@@ -387,7 +387,7 @@ public:
     bool                        has_header(QString const & name) const;
     QString                     get_header(QString const & name) const;
     QString                     get_unique_number();
-    QtCassandra::QCassandraTable::pointer_t
+    libdbproxy::table::pointer_t
                                 get_table(QString const & table_name);
     void                        new_content();
     void                        verify_permissions(QString const & path, permission_error_callback & err_callback);
@@ -472,8 +472,8 @@ protected:
     bool                                        f_is_child = false;
     pid_t                                       f_child_pid = 0;
     tcp_client_server::bio_client::pointer_t    f_client;
-    QtCassandra::QCassandra::pointer_t          f_cassandra;
-    QtCassandra::QCassandraContext::pointer_t   f_context;
+    libdbproxy::libdbproxy::pointer_t          f_cassandra;
+    libdbproxy::context::pointer_t   f_context;
     int64_t                                     f_start_date = 0; // time request arrived
     bool                                        f_ready = false; // becomes true just before the server::execute() call
     environment_map_t                           f_env;
@@ -506,7 +506,7 @@ private:
     void                        output_cookies();
     void                        output_session_log( QString const& what );
 
-    QtCassandra::QCassandraTable::pointer_t     f_sites_table;
+    libdbproxy::table::pointer_t     f_sites_table;
     bool                                        f_new_content = false;
     bool                                        f_is_being_initialized = false;
     environment_map_t                           f_post;

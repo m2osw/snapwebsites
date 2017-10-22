@@ -97,7 +97,7 @@ public:
 
     //// editor signals
     //void                    on_finish_editor_form_processing(content::path_info_t & ipath, bool & succeeded);
-    //void                    on_init_editor_widget(content::path_info_t  & ipath, QString const  & field_id, QString const  & field_type, QDomElement  & widget, QtCassandra::QCassandraRow::pointer_t row);
+    //void                    on_init_editor_widget(content::path_info_t  & ipath, QString const  & field_id, QString const  & field_type, QDomElement  & widget, libdbproxy::row::pointer_t row);
 
 private:
     void                    content_update(int64_t variables_timestamp);

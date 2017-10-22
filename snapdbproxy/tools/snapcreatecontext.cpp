@@ -20,7 +20,7 @@
 #include <snapwebsites/snap_config.h>
 #include <snapwebsites/snapwebsites.h>
 
-
+#include <casswrapper/query.h>
 
 
 

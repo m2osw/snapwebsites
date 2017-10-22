@@ -96,14 +96,14 @@ public:
     virtual int64_t     do_dynamic_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child *snap) override;
 
-    QtCassandra::QCassandraTable::pointer_t get_layout_table();
+    libdbproxy::table::pointer_t get_layout_table();
 
     // server signals
     void                on_load_file(snap_child::post_file_t & file, bool & found);
     bool                on_improve_signature(QString const & path, QDomDocument doc, QDomElement & signature_tag);
 
     // content signals
-    void                on_copy_branch_cells(QtCassandra::QCassandraCells & source_cells, QtCassandra::QCassandraRow::pointer_t destination_row, snap_version::version_number_t const destination_branch);
+    void                on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch);
 
     QString             get_layout(content::path_info_t & ipath, const QString & column_name, bool use_qs_theme);
     QDomDocument        create_document(content::path_info_t & ipath, plugin * content_plugin);
@@ -130,7 +130,7 @@ private:
     void                generate_boxes(content::path_info_t & ipath, QString const & layout_name, QDomDocument doc);
 
     snap_child *                            f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t f_content_table;
+    libdbproxy::table::pointer_t f_content_table;
     std::vector<QString>                    f_initialized_layout;
 };
 

@@ -21,8 +21,8 @@
 #include "../links/links.h"
 #include "../test_plugin_suite/test_plugin_suite.h"
 
-#include <QtCassandra/QCassandraTable.h>
-#include <QtCassandra/QCassandraValue.h>
+#include <libdbproxy/table.h>
+#include <libdbproxy/value.h>
 
 #include <stack>
 
@@ -398,12 +398,12 @@ public:
     bool                                branch_value_exists  ( QString const& name ) const;
     bool                                revision_value_exists( QString const& name ) const;
     //
-    const QtCassandra::QCassandraValue& get_content_value ( QString const& name ) const;
-    const QtCassandra::QCassandraValue& get_branch_value  ( QString const& name ) const;
-    const QtCassandra::QCassandraValue& get_revision_value( QString const& name ) const;
-    void                                set_content_value ( QString const& name, const QtCassandra::QCassandraValue& val );
-    void                                set_branch_value  ( QString const& name, const QtCassandra::QCassandraValue& val );
-    void                                set_revision_value( QString const& name, const QtCassandra::QCassandraValue& val );
+    const libdbproxy::value& get_content_value ( QString const& name ) const;
+    const libdbproxy::value& get_branch_value  ( QString const& name ) const;
+    const libdbproxy::value& get_revision_value( QString const& name ) const;
+    void                                set_content_value ( QString const& name, const libdbproxy::value& val );
+    void                                set_branch_value  ( QString const& name, const libdbproxy::value& val );
+    void                                set_revision_value( QString const& name, const libdbproxy::value& val );
     //
     void                                drop_content_cell ( QString const& name );
     void                                drop_branch_cell  ( QString const& name );
@@ -437,9 +437,9 @@ private:
     mutable QString                         f_revision_key;
     mutable QString                         f_draft_key;
     mutable QString                         f_suggestion_key;
-    QtCassandra::QCassandraTable::pointer_t f_content_table;
-    QtCassandra::QCassandraTable::pointer_t f_branch_table;
-    QtCassandra::QCassandraTable::pointer_t f_revision_table;
+    libdbproxy::table::pointer_t f_content_table;
+    libdbproxy::table::pointer_t f_branch_table;
+    libdbproxy::table::pointer_t f_revision_table;
 };
 
 
@@ -502,11 +502,11 @@ public:
     enum class mode_t : int32_t
     {
         SEARCH_MODE_FIRST,            // default mode: only return first parameter found
-        SEARCH_MODE_EACH,             // return a list of QCassandraValue's of all the entire tree
+        SEARCH_MODE_EACH,             // return a list of value's of all the entire tree
         SEARCH_MODE_PATHS             // return a list of paths (for debug purposes usually)
     };
 
-    typedef QVector<QtCassandra::QCassandraValue> search_result_t;
+    typedef QVector<libdbproxy::value> search_result_t;
     typedef QMap<QString, QString> variables_t;
 
     class cmd_info_t
@@ -517,7 +517,7 @@ public:
                             cmd_info_t(command_t cmd, QString const & str_value);
                             cmd_info_t(command_t cmd, int64_t int_value);
                             cmd_info_t(command_t cmd, mode_t const ipath);
-                            cmd_info_t(command_t cmd, QtCassandra::QCassandraValue & value);
+                            cmd_info_t(command_t cmd, libdbproxy::value & value);
                             cmd_info_t(command_t cmd, QDomElement element);
                             cmd_info_t(command_t cmd, QDomDocument doc);
                             cmd_info_t(command_t cmd, search_result_t & result);
@@ -527,14 +527,14 @@ public:
         QString const       get_string()  const { return f_value.stringValue(); }
         int32_t             get_int32() const { return f_value.int32Value(); }
         int64_t             get_int64() const { return f_value.int64Value(); }
-        QtCassandra::QCassandraValue const & get_value() const { return f_value; }
+        libdbproxy::value const & get_value() const { return f_value; }
         QDomElement         get_element() const { return f_element; }
         search_result_t *   get_result() const { return f_result; }
         path_info_t &       get_ipath() const { return const_cast<path_info_t &>(f_path_info); }
 
     private:
         command_t                       f_cmd = command_t::COMMAND_UNKNOWN;
-        QtCassandra::QCassandraValue    f_value;
+        libdbproxy::value    f_value;
         QDomElement                     f_element;
         search_result_t *               f_result = nullptr;
         path_info_t                     f_path_info;
@@ -549,7 +549,7 @@ public:
     field_search &      operator () (command_t cmd, QString const & str_value);
     field_search &      operator () (command_t cmd, int64_t int_value);
     field_search &      operator () (command_t cmd, mode_t mode);
-    field_search &      operator () (command_t cmd, QtCassandra::QCassandraValue value);
+    field_search &      operator () (command_t cmd, libdbproxy::value value);
     field_search &      operator () (command_t cmd, QDomElement element);
     field_search &      operator () (command_t cmd, QDomDocument doc);
     field_search &      operator () (command_t cmd, search_result_t & result);
@@ -664,7 +664,7 @@ private:
     journal_list( snap_child* snap );
 
     snap_child*                             f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t f_journal_table;
+    libdbproxy::table::pointer_t f_journal_table;
     QStringList                             f_url_list;
     bool                                    f_finished_called = false;
 
@@ -784,14 +784,14 @@ public:
     // server signal implementation
     void                on_add_snap_expr_functions(snap_expr::functions_t & functions);
 
-    QtCassandra::QCassandraTable::pointer_t get_content_table();
-    QtCassandra::QCassandraTable::pointer_t get_secret_table();
-    QtCassandra::QCassandraTable::pointer_t get_files_table();
-    QtCassandra::QCassandraTable::pointer_t get_branch_table();
-    QtCassandra::QCassandraTable::pointer_t get_revision_table();
-    QtCassandra::QCassandraTable::pointer_t get_processing_table();
-    QtCassandra::QCassandraTable::pointer_t get_cache_table();
-    QtCassandra::QCassandraValue get_content_parameter(path_info_t & path, QString const & param_name, param_revision_t revision_type);
+    libdbproxy::table::pointer_t get_content_table();
+    libdbproxy::table::pointer_t get_secret_table();
+    libdbproxy::table::pointer_t get_files_table();
+    libdbproxy::table::pointer_t get_branch_table();
+    libdbproxy::table::pointer_t get_revision_table();
+    libdbproxy::table::pointer_t get_processing_table();
+    libdbproxy::table::pointer_t get_cache_table();
+    libdbproxy::value get_content_parameter(path_info_t & path, QString const & param_name, param_revision_t revision_type);
     snap_child *        get_snap();
 
     // revision control
@@ -803,7 +803,7 @@ public:
     snap_version::version_number_t get_new_branch(QString const & key, QString const & locale);
     snap_version::version_number_t get_new_revision(QString const & key, snap_version::version_number_t const branch, QString const & locale, bool repeat, snap_version::version_number_t const old_branch = static_cast<snap_version::basic_version_number_t>(snap_version::SPECIAL_VERSION_UNDEFINED));
     void                copy_branch(QString const & key, snap_version::version_number_t const source_branch, snap_version::version_number_t const destination_branch);
-    static void         copy_branch_cells_as_is(QtCassandra::QCassandraCells & source_cells, QtCassandra::QCassandraRow::pointer_t destination_row, QString const & plugin_namespace);
+    static void         copy_branch_cells_as_is(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, QString const & plugin_namespace);
     QString             get_branch_key(QString const & key, bool working_branch);
     void                initialize_branch(QString const & key);
     QString             generate_branch_key(QString const & key, snap_version::version_number_t branch);
@@ -830,9 +830,9 @@ public:
     SNAP_SIGNAL(create_attachment, (attachment_file & file, snap_version::version_number_t branch_number, QString const & locale), (file, branch_number, locale));
     SNAP_SIGNAL(modified_content, (path_info_t & ipath), (ipath));
     SNAP_SIGNAL_WITH_MODE(check_attachment_security, (attachment_file const & file, permission_flag & secure, bool const fast), (file, secure, fast), NEITHER);
-    SNAP_SIGNAL(process_attachment, (QtCassandra::QCassandraRow::pointer_t file_row, attachment_file const & file), (file_row, file));
+    SNAP_SIGNAL(process_attachment, (libdbproxy::row::pointer_t file_row, attachment_file const & file), (file_row, file));
     SNAP_SIGNAL(page_cloned, (cloned_tree_t const & tree), (tree));
-    SNAP_SIGNAL(copy_branch_cells, (QtCassandra::QCassandraCells & source_cells, QtCassandra::QCassandraRow::pointer_t destination_row, snap_version::version_number_t const destination_branch), (source_cells, destination_row, destination_branch));
+    SNAP_SIGNAL(copy_branch_cells, (libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch), (source_cells, destination_row, destination_branch));
     SNAP_SIGNAL_WITH_MODE(destroy_page, (path_info_t & ipath), (ipath), START_AND_DONE);
     SNAP_SIGNAL_WITH_MODE(destroy_revision, (QString const & revision_key), (revision_key), START_AND_DONE);
 
@@ -917,8 +917,8 @@ private:
     void        backend_action_extract_resource();
     void        backend_action_destroy_page();
     void        backend_action_new_file();
-    void        backend_compressed_file(QtCassandra::QCassandraRow::pointer_t file_row, attachment_file const& file);
-    void        backend_minify_css_file(QtCassandra::QCassandraRow::pointer_t file_row, attachment_file const& file);
+    void        backend_compressed_file(libdbproxy::row::pointer_t file_row, attachment_file const& file);
+    void        backend_minify_css_file(libdbproxy::row::pointer_t file_row, attachment_file const& file);
     void        backend_action_rebuild_index();
 
     void        journal_list_pop();
@@ -928,13 +928,13 @@ private:
     SNAP_TEST_PLUGIN_TEST_DECL(test_journal_list)
 
     snap_child *                                    f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t         f_content_table;
-    QtCassandra::QCassandraTable::pointer_t         f_secret_table;
-    QtCassandra::QCassandraTable::pointer_t         f_processing_table;
-    QtCassandra::QCassandraTable::pointer_t         f_cache_table;
-    QtCassandra::QCassandraTable::pointer_t         f_branch_table;
-    QtCassandra::QCassandraTable::pointer_t         f_revision_table;
-    QtCassandra::QCassandraTable::pointer_t         f_files_table;
+    libdbproxy::table::pointer_t         f_content_table;
+    libdbproxy::table::pointer_t         f_secret_table;
+    libdbproxy::table::pointer_t         f_processing_table;
+    libdbproxy::table::pointer_t         f_cache_table;
+    libdbproxy::table::pointer_t         f_branch_table;
+    libdbproxy::table::pointer_t         f_revision_table;
+    libdbproxy::table::pointer_t         f_files_table;
     content_block_map_t                             f_blocks;
     int32_t                                         f_file_index = 0;
     bool                                            f_updating = false;

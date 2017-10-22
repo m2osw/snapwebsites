@@ -202,7 +202,7 @@ private:
     void                    content_update(int64_t variables_timestamp);
     void                    clean_session_table(int64_t variables_timestamp);
 
-    QtCassandra::QCassandraTable::pointer_t get_sessions_table();
+    libdbproxy::table::pointer_t get_sessions_table();
 
     snap_child *            f_snap = nullptr;
 };

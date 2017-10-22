@@ -247,7 +247,7 @@ public:
     virtual int64_t         do_update(int64_t last_updated);
     virtual void            bootstrap(snap_child * snap);
 
-    QtCassandra::QCassandraTable::pointer_t get_emails_table();
+    libdbproxy::table::pointer_t get_emails_table();
 
     // server signals
     void                    on_register_backend_cron(server::backend_action_set & actions);

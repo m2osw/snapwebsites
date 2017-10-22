@@ -79,33 +79,33 @@ dbutils::dbutils( QString const & table_name, QString const & row_name )
  * \param[in] tb  The destination table.
  * \param[in] b  The name of the row to copy to.
  */
-void dbutils::copy_row(QtCassandra::QCassandraTable::pointer_t ta, QString const & a, // source
-                       QtCassandra::QCassandraTable::pointer_t tb, QString const & b) // destination
+void dbutils::copy_row(libdbproxy::table::pointer_t ta, QString const & a, // source
+                       libdbproxy::table::pointer_t tb, QString const & b) // destination
 {
     // just in case there is still a previous query, clear the cache ahead of time
-    QtCassandra::QCassandraRow::pointer_t source_row(ta->row(a));
+    libdbproxy::row::pointer_t source_row(ta->getRow(a));
     source_row->clearCache();
-    QtCassandra::QCassandraRow::pointer_t destination_row(tb->row(b));
-    auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+    libdbproxy::row::pointer_t destination_row(tb->getRow(b));
+    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     column_predicate->setCount(100); // we have to copy everything also it is likely very small (i.e. 10 fields...)
     column_predicate->setIndex(); // behave like an index
     for(;;)
     {
         source_row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const source_cells(source_row->cells());
+        libdbproxy::cells const source_cells(source_row->getCells());
         if(source_cells.isEmpty())
         {
             // done
             break;
         }
         // handle one batch
-        for(QtCassandra::QCassandraCells::const_iterator nc(source_cells.begin());
+        for(libdbproxy::cells::const_iterator nc(source_cells.begin());
                 nc != source_cells.end();
                 ++nc)
         {
-            QtCassandra::QCassandraCell::pointer_t source_cell(*nc);
+            libdbproxy::cell::pointer_t source_cell(*nc);
             QByteArray cell_key(source_cell->columnKey());
-            destination_row->cell(cell_key)->setValue(source_cell->value());
+            destination_row->getCell(cell_key)->setValue(source_cell->getValue());
         }
     }
 }
@@ -137,7 +137,7 @@ QByteArray dbutils::get_row_key() const
     }
     else if( f_tableName == "users" )
     {
-        QtCassandra::QCassandraValue const identifier(f_rowName);
+        libdbproxy::value const identifier(f_rowName);
         if( identifier.stringValue() == "*index_row*" || identifier.stringValue() == "*id_row*" )
         {
             return identifier.binaryValue();
@@ -145,7 +145,7 @@ QByteArray dbutils::get_row_key() const
         else
         {
             QByteArray new_key;
-            QtCassandra::appendInt64Value( new_key, static_cast<int64_t>(f_rowName.toLong()) );
+            libdbproxy::appendInt64Value( new_key, static_cast<int64_t>(f_rowName.toLong()) );
             return new_key;
         }
     }
@@ -304,7 +304,7 @@ void dbutils::set_display_len( int const val )
 }
 
 
-QString dbutils::get_row_name( QtCassandra::QCassandraRow::pointer_t p_r ) const
+QString dbutils::get_row_name( libdbproxy::row::pointer_t p_r ) const
 {
     QByteArray key(p_r->rowKey());
     return get_row_name( key );
@@ -327,7 +327,7 @@ QString dbutils::get_row_name( const QByteArray& key ) const
     }
     else if( f_tableName == "users" )
     {
-        QtCassandra::QCassandraValue const identifier(key);
+        libdbproxy::value const identifier(key);
         if( identifier.stringValue() == "*index_row*" || identifier.stringValue() == "*id_row*" )
         {
             return identifier.stringValue();
@@ -357,7 +357,7 @@ QByteArray dbutils::set_row_name( const QString& name, const QByteArray& orig_ke
 }
 
 
-QString dbutils::get_column_name( QtCassandra::QCassandraCell::pointer_t c ) const
+QString dbutils::get_column_name( libdbproxy::cell::pointer_t c ) const
 {
     return get_column_name( c->columnKey() );
 }
@@ -374,17 +374,17 @@ QString dbutils::get_column_name( const QByteArray& key ) const
     }
     else if((f_tableName == "list" && f_rowName != "*standalone*"))
     {
-        unsigned char priority(QtCassandra::safeUnsignedCharValue(key, 0));
-        QString const time(microseconds_to_string(QtCassandra::safeInt64Value(key, sizeof(unsigned char)), true));
+        unsigned char priority(libdbproxy::safeUnsignedCharValue(key, 0));
+        QString const time(microseconds_to_string(libdbproxy::safeInt64Value(key, sizeof(unsigned char)), true));
         name = QString("%1 %2 %3")
                 .arg(static_cast<int>(priority))
                 .arg(time)
-                .arg(QtCassandra::stringValue(key, sizeof(unsigned char) + sizeof(uint64_t)));
+                .arg(libdbproxy::stringValue(key, sizeof(unsigned char) + sizeof(uint64_t)));
     }
     else if((f_tableName == "files" && f_rowName == "images"))
     {
-        QString const time(microseconds_to_string(QtCassandra::safeInt64Value(key, 0), true));
-        name = QString("%1 %2").arg(time).arg(QtCassandra::stringValue(key, sizeof(uint64_t)));
+        QString const time(microseconds_to_string(libdbproxy::safeInt64Value(key, 0), true));
+        name = QString("%1 %2").arg(time).arg(libdbproxy::stringValue(key, sizeof(uint64_t)));
     }
     else if(f_tableName == "branch" && (key.startsWith(content_attachment_reference.toLatin1())) )
     {
@@ -418,31 +418,31 @@ QString dbutils::get_column_name( const QByteArray& key ) const
             {
                 name += ".";
             }
-            name += QString("%1").arg(QtCassandra::safeUInt32Value(key, i));
+            name += QString("%1").arg(libdbproxy::safeUInt32Value(key, i));
         }
     }
     else if( f_tableName == "users" )
     {
-        QtCassandra::QCassandraValue const identifier(key);
+        libdbproxy::value const identifier(key);
         name = identifier.stringValue();
     }
     else if( (f_tableName == "shorturl" && f_rowName.endsWith("/*index_row*"))
          || f_tableName == "serverstats")
     {
         // special case where the column key is a 64 bit integer
-        QtCassandra::QCassandraValue const identifier(key);
+        libdbproxy::value const identifier(key);
         name = QString("%1").arg(identifier.safeInt64Value());
     }
     else if(f_tableName == "tracker"
          || (f_tableName == "backend" && !f_rowName.startsWith("*"))
          || (f_tableName == "firewall" && !f_rowName.startsWith("ip::")))
     {
-        QtCassandra::QCassandraValue const start_date(key);
+        libdbproxy::value const start_date(key);
         name = microseconds_to_string(start_date.safeInt64Value(), true);
     }
     else if(f_tableName == "emails" && f_rowName == "bounced_raw")
     {
-        QtCassandra::QCassandraValue const start_date(key);
+        libdbproxy::value const start_date(key);
 
         // 64 bit value (microseconds)
         name = microseconds_to_string(start_date.safeInt64Value(), true);
@@ -450,7 +450,7 @@ QString dbutils::get_column_name( const QByteArray& key ) const
         // 128 bit UUID
         if( static_cast<size_t>(start_date.size()) >= sizeof(int64_t) + sizeof(uuid_t) )
         {
-            QByteArray const bytes(QtCassandra::binaryValue( start_date.binaryValue(), sizeof(int64_t), sizeof(uuid_t) ));
+            QByteArray const bytes(libdbproxy::binaryValue( start_date.binaryValue(), sizeof(int64_t), sizeof(uuid_t) ));
             uuid_t uuid;
             memcpy( uuid, bytes.data(), sizeof(uuid) );
             char unique_key[37];
@@ -485,11 +485,11 @@ void dbutils::set_column_name( QByteArray& key, const QString& name ) const
         }
 
         const char priority = arr[0][0].toLatin1();
-        QtCassandra::appendUnsignedCharValue( key, priority );
+        libdbproxy::appendUnsignedCharValue( key, priority );
 
         const uint64_t microsec( string_to_microseconds( arr[1] ) );
-        QtCassandra::appendInt64Value( key, microsec );
-        QtCassandra::appendStringValue( key, arr[2] );
+        libdbproxy::appendInt64Value( key, microsec );
+        libdbproxy::appendStringValue( key, arr[2] );
     }
     else if((f_tableName == "files" && f_rowName == "images"))
     {
@@ -500,14 +500,14 @@ void dbutils::set_column_name( QByteArray& key, const QString& name ) const
         }
 
         const uint64_t microsec( string_to_microseconds( arr[0] ) );
-        QtCassandra::appendInt64Value( key, microsec );
+        libdbproxy::appendInt64Value( key, microsec );
 
-        QtCassandra::appendStringValue( key, arr[1] );
+        libdbproxy::appendStringValue( key, arr[1] );
     }
     else if(f_tableName == "branch" && (name.startsWith(content_attachment_reference.toLatin1())) )
     {
-        QtCassandra::appendStringValue( key, content_attachment_reference );
-        QtCassandra::appendStringValue( key, name );
+        libdbproxy::appendStringValue( key, content_attachment_reference );
+        libdbproxy::appendStringValue( key, name );
     }
     else if((f_tableName == "files" && f_rowName == "javascripts")
          || (f_tableName == "files" && f_rowName == "css"))
@@ -519,30 +519,30 @@ void dbutils::set_column_name( QByteArray& key, const QString& name ) const
             throw std::runtime_error( "The column key is expected to be in the form: <name>_<browser>_<version>!" );
         }
 
-        QtCassandra::appendStringValue( key, arr[0] + "_" );       // name
-        QtCassandra::appendStringValue( key, arr[1] + "_" );       // browser
+        libdbproxy::appendStringValue( key, arr[0] + "_" );       // name
+        libdbproxy::appendStringValue( key, arr[1] + "_" );       // browser
 
         QStringList version( arr[2].split('.') );
         for( auto rev : version )
         {
-            QtCassandra::appendUInt32Value( key, static_cast<uint32_t>(rev.toUInt()) );
+            libdbproxy::appendUInt32Value( key, static_cast<uint32_t>(rev.toUInt()) );
         }
     }
     else if( f_tableName == "users" )
     {
-        QtCassandra::appendStringValue( key, name );
+        libdbproxy::appendStringValue( key, name );
     }
     else if( (f_tableName == "shorturl" && f_rowName.endsWith("/*index_row*"))
              || f_tableName == "serverstats")
     {
-        QtCassandra::appendInt64Value( key, static_cast<int64_t>(name.toLong()) );
+        libdbproxy::appendInt64Value( key, static_cast<int64_t>(name.toLong()) );
     }
     else if(f_tableName == "tracker"
          || (f_tableName == "backend" && !f_rowName.startsWith("*"))
          || (f_tableName == "firewall" && !f_rowName.startsWith("ip::")))
     {
         const uint64_t microsec( string_to_microseconds( name ) );
-        QtCassandra::appendInt64Value( key, microsec );
+        libdbproxy::appendInt64Value( key, microsec );
     }
     else if(f_tableName == "emails" && f_rowName == "bounced_raw")
     {
@@ -550,18 +550,18 @@ void dbutils::set_column_name( QByteArray& key, const QString& name ) const
         if( arr.size() == 2 )
         {
             const uint64_t microsec( string_to_microseconds( arr[0] ) );
-            QtCassandra::appendInt64Value( key, microsec );
+            libdbproxy::appendInt64Value( key, microsec );
             //
             uuid_t uuid;
             uuid_parse( arr[1].toUtf8().data(), uuid );
             char unique_key[sizeof(uuid)];
             memcpy( unique_key, uuid, sizeof(uuid) );
-            QtCassandra::appendBinaryValue( key, QByteArray(unique_key, sizeof(unique_key)) );
+            libdbproxy::appendBinaryValue( key, QByteArray(unique_key, sizeof(unique_key)) );
         }
         else
         {
             const uint64_t microsec( string_to_microseconds( name ) );
-            QtCassandra::appendInt64Value( key, microsec );
+            libdbproxy::appendInt64Value( key, microsec );
         }
     }
     else
@@ -571,7 +571,7 @@ void dbutils::set_column_name( QByteArray& key, const QString& name ) const
 }
 
 
-dbutils::column_type_t dbutils::get_column_type( QtCassandra::QCassandraCell::pointer_t c ) const
+dbutils::column_type_t dbutils::get_column_type( libdbproxy::cell::pointer_t c ) const
 {
     return get_column_type( c->columnKey() );
 }
@@ -949,19 +949,19 @@ QString dbutils::get_column_type_name( const QByteArray& key ) const
 }
 
 
-QString dbutils::get_column_value( QtCassandra::QCassandraCell::pointer_t c, bool const display_only ) const
+QString dbutils::get_column_value( libdbproxy::cell::pointer_t c, bool const display_only ) const
 {
-    return get_column_value( c->columnKey(), c->value().binaryValue(), display_only );
+    return get_column_value( c->columnKey(), c->getValue().binaryValue(), display_only );
 }
 
 
 QString dbutils::get_column_value( const QByteArray& key, const QByteArray& value, bool const display_only ) const
 {
-    QtCassandra::QCassandraValue cvalue(value);
+    libdbproxy::value cvalue(value);
     return get_column_value( key, cvalue, display_only );
 }
 
-QString dbutils::get_column_value( const QByteArray& key, const QtCassandra::QCassandraValue& value, bool const display_only ) const
+QString dbutils::get_column_value( const QByteArray& key, const libdbproxy::value& value, bool const display_only ) const
 {
     QString v;
     try
@@ -1057,17 +1057,17 @@ QString dbutils::get_column_value( const QByteArray& key, const QtCassandra::QCa
             case column_type_t::CT_time_microseconds_and_string:
             {
                 v = QString("%1 %2")
-                            .arg(microseconds_to_string(QtCassandra::safeInt64Value(value.binaryValue(), 0), true))
-                            .arg(QtCassandra::stringValue(value.binaryValue(), sizeof(int64_t)));
+                            .arg(microseconds_to_string(libdbproxy::safeInt64Value(value.binaryValue(), 0), true))
+                            .arg(libdbproxy::stringValue(value.binaryValue(), sizeof(int64_t)));
             }
             break;
 
             case column_type_t::CT_priority_and_time_microseconds_and_string:
             {
                 v = QString("%1 %2 %3")
-                            .arg(static_cast<int>(QtCassandra::safeUnsignedCharValue(value.binaryValue(), 0)))
-                            .arg(microseconds_to_string(QtCassandra::safeInt64Value(value.binaryValue(), sizeof(unsigned char)), true))
-                            .arg(QtCassandra::stringValue(value.binaryValue(), sizeof(unsigned char) + sizeof(int64_t)));
+                            .arg(static_cast<int>(libdbproxy::safeUnsignedCharValue(value.binaryValue(), 0)))
+                            .arg(microseconds_to_string(libdbproxy::safeInt64Value(value.binaryValue(), sizeof(unsigned char)), true))
+                            .arg(libdbproxy::stringValue(value.binaryValue(), sizeof(unsigned char) + sizeof(int64_t)));
             }
             break;
 
@@ -1258,9 +1258,9 @@ QString dbutils::get_column_value( const QByteArray& key, const QtCassandra::QCa
 }
 
 
-void dbutils::set_column_value( QtCassandra::QCassandraCell::pointer_t c, QString const & v ) const
+void dbutils::set_column_value( libdbproxy::cell::pointer_t c, QString const & v ) const
 {
-    QtCassandra::QCassandraValue cvalue;
+    libdbproxy::value cvalue;
     set_column_value( c->columnKey(), cvalue, v );
     c->setValue( cvalue );
 }
@@ -1268,13 +1268,13 @@ void dbutils::set_column_value( QtCassandra::QCassandraCell::pointer_t c, QStrin
 
 void dbutils::set_column_value( const QByteArray& key, QByteArray& value, QString const & v ) const
 {
-    QtCassandra::QCassandraValue cvalue;
+    libdbproxy::value cvalue;
     set_column_value( key, cvalue, v );
     value = cvalue.binaryValue();
 }
 
 
-void dbutils::set_column_value( const QByteArray& key, QtCassandra::QCassandraValue& cvalue, QString const & v ) const
+void dbutils::set_column_value( const QByteArray& key, libdbproxy::value& cvalue, QString const & v ) const
 {
     switch( get_column_type( key ) )
     {
@@ -1382,8 +1382,8 @@ void dbutils::set_column_value( const QByteArray& key, QtCassandra::QCassandraVa
 
             // concatenate the result
             QByteArray tms;
-            QtCassandra::appendInt64Value( tms, tt * 1000000 + ns );
-            QtCassandra::appendStringValue( tms, str );
+            libdbproxy::appendInt64Value( tms, tt * 1000000 + ns );
+            libdbproxy::appendStringValue( tms, str );
             cvalue.setBinaryValue(tms);
         }
         break;
@@ -1435,9 +1435,9 @@ void dbutils::set_column_value( const QByteArray& key, QtCassandra::QCassandraVa
 
             // concatenate the result
             QByteArray tms;
-            QtCassandra::appendUnsignedCharValue( tms, static_cast<unsigned char>(priority) );
-            QtCassandra::appendInt64Value( tms, tt * 1000000 + ns );
-            QtCassandra::appendStringValue( tms, str );
+            libdbproxy::appendUnsignedCharValue( tms, static_cast<unsigned char>(priority) );
+            libdbproxy::appendInt64Value( tms, tt * 1000000 + ns );
+            libdbproxy::appendStringValue( tms, str );
             cvalue.setBinaryValue(tms);
         }
         break;
@@ -1594,7 +1594,7 @@ void dbutils::set_column_value( const QByteArray& key, QtCassandra::QCassandraVa
         case column_type_t::CT_string_value:
         {
             // all others viewed as strings
-            //v = c->value().stringValue().replace("\n", "\\n");
+            //v = c->getValue().stringValue().replace("\n", "\\n");
             QString convert( v );
             cvalue.setStringValue( convert.replace( "\\r", "\r" ).replace( "\\n", "\n" ) );
         }
@@ -1606,7 +1606,7 @@ void dbutils::set_column_value( const QByteArray& key, QtCassandra::QCassandraVa
             // by '\n'
             QString convert( v );
             QByteArray buffer;
-            QtCassandra::setInt64Value( buffer, string_to_microseconds(v) );
+            libdbproxy::setInt64Value( buffer, string_to_microseconds(v) );
             int pos(v.indexOf(')'));
             if(pos > 0)
             {
@@ -1615,7 +1615,7 @@ void dbutils::set_column_value( const QByteArray& key, QtCassandra::QCassandraVa
                 {
                     ++pos;
                 }
-                QtCassandra::appendStringValue( buffer, v.mid(pos + 1) );
+                libdbproxy::appendStringValue( buffer, v.mid(pos + 1) );
             }
             cvalue.setBinaryValue(buffer);
         }

@@ -325,20 +325,20 @@ bool qrcode::on_path_execute(content::path_info_t & ipath)
         content::content * content_plugin(content::content::instance());
         content::path_info_t settings_ipath;
         settings_ipath.set_path("admin/settings/qrcode");
-        QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-        QtCassandra::QCassandraRow::pointer_t settings_row(revision_table->row(settings_ipath.get_revision_key()));
+        libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+        libdbproxy::row::pointer_t settings_row(revision_table->getRow(settings_ipath.get_revision_key()));
 
         // verify that at least this user has permission to that page
         //
         permissions::permissions * permissions_plugin(permissions::permissions::instance());
         QString const & login_status(permissions_plugin->get_login_status());
-        bool const accept_private_pages(settings_row->cell(get_name(name_t::SNAP_NAME_QRCODE_PRIVATE_ENABLE))->value().safeSignedCharValue() != 0);
+        bool const accept_private_pages(settings_row->getCell(get_name(name_t::SNAP_NAME_QRCODE_PRIVATE_ENABLE))->getValue().safeSignedCharValue() != 0);
         QString const & user_path(accept_private_pages ? permissions_plugin->get_user_path() : "");
         content::permission_flag allowed;
         path::path::instance()->access_allowed(user_path, page_ipath, "view", login_status, allowed);
         if(allowed.allowed())
         {
-            QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+            libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
             if(content_table->exists(page_ipath.get_key()))
             {
                 // by default we expect the normal page URL to be used,
@@ -358,16 +358,16 @@ bool qrcode::on_path_execute(content::path_info_t & ipath)
                 // Note that the QR code will fail if the page has a URL
                 // that is too long (~2950) and no short URL is available.
                 //
-                bool const use_short_url(settings_row->cell(get_name(name_t::SNAP_NAME_QRCODE_SHORTURL_ENABLE))->value().safeSignedCharValue(0, 1) != 0);
+                bool const use_short_url(settings_row->getCell(get_name(name_t::SNAP_NAME_QRCODE_SHORTURL_ENABLE))->getValue().safeSignedCharValue(0, 1) != 0);
                 if((use_short_url || url_utf8.length() > 2900)
-                && content_table->row(page_ipath.get_key())->exists(shorturl::get_name(shorturl::name_t::SNAP_NAME_SHORTURL_URL)))
+                && content_table->getRow(page_ipath.get_key())->exists(shorturl::get_name(shorturl::name_t::SNAP_NAME_SHORTURL_URL)))
                 {
                     // use the Short URL instead
                     //
                     // TODO: use a Short URL interface instead of directly
                     //       poking the data ourselves
                     //
-                    QString const shorturl(content_table->row(page_ipath.get_key())->cell(shorturl::get_name(shorturl::name_t::SNAP_NAME_SHORTURL_URL))->value().stringValue());
+                    QString const shorturl(content_table->getRow(page_ipath.get_key())->getCell(shorturl::get_name(shorturl::name_t::SNAP_NAME_SHORTURL_URL))->getValue().stringValue());
                     url_utf8 = shorturl.toUtf8().data();
                 }
 
@@ -384,7 +384,7 @@ bool qrcode::on_path_execute(content::path_info_t & ipath)
                 //      has access to that code, we have the same problem
                 //      again anyway...
                 //
-                bool const track_qrcode(settings_row->cell(get_name(name_t::SNAP_NAME_QRCODE_TRACK_USAGE_ENABLE))->value().safeSignedCharValue() != 0);
+                bool const track_qrcode(settings_row->getCell(get_name(name_t::SNAP_NAME_QRCODE_TRACK_USAGE_ENABLE))->getValue().safeSignedCharValue() != 0);
                 if(track_qrcode)
                 {
                     url_utf8 += "?qrcode=true";
@@ -411,7 +411,7 @@ bool qrcode::on_path_execute(content::path_info_t & ipath)
                     }
                     if(!scale_ok)
                     {
-                        int8_t const s(settings_row->cell(get_name(name_t::SNAP_NAME_QRCODE_DEFAULT_SCALE))->value().safeSignedCharValue());
+                        int8_t const s(settings_row->getCell(get_name(name_t::SNAP_NAME_QRCODE_DEFAULT_SCALE))->getValue().safeSignedCharValue());
                         if(s > 0)
                         {
                             scale = s;
@@ -439,7 +439,7 @@ bool qrcode::on_path_execute(content::path_info_t & ipath)
                     }
                     if(!edge_ok && settings_row->exists(get_name(name_t::SNAP_NAME_QRCODE_DEFAULT_EDGE)))
                     {
-                        int8_t const e(settings_row->cell(get_name(name_t::SNAP_NAME_QRCODE_DEFAULT_EDGE))->value().safeSignedCharValue());
+                        int8_t const e(settings_row->getCell(get_name(name_t::SNAP_NAME_QRCODE_DEFAULT_EDGE))->getValue().safeSignedCharValue());
                         if(e >= 0 && e <= 50)
                         {
                             edge = e;

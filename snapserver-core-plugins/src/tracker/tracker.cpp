@@ -239,7 +239,7 @@ void tracker::bootstrap(snap_child * snap)
  *
  * \return The pointer to the tracker table.
  */
-QtCassandra::QCassandraTable::pointer_t tracker::get_tracker_table()
+libdbproxy::table::pointer_t tracker::get_tracker_table()
 {
     if(!f_tracker_table)
     {
@@ -364,19 +364,19 @@ void tracker::on_detach_from_session()
     // the key is the date (64 bit in microseconds)
     int64_t const start_date(f_snap->get_start_date());
     QByteArray start_date_key;
-    QtCassandra::setInt64Value(start_date_key, start_date);
+    libdbproxy::setInt64Value(start_date_key, start_date);
 
     // also save the date in the data to make it easy to get later
     parent_tag.setAttribute("date", static_cast<qlonglong>(start_date));
 
     // the data is that XML file in the form of a string
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setTtl(86400 * 31);       // keep for 1 month (TODO: make it an editable preference)
     value.setStringValue(f_doc.toString(-1));
 
     // now save the result in Cassandra
-    QtCassandra::QCassandraTable::pointer_t tracker_table(get_tracker_table());
-    tracker_table->row(email)->cell(start_date_key)->setValue(value);
+    libdbproxy::table::pointer_t tracker_table(get_tracker_table());
+    tracker_table->getRow(email)->getCell(start_date_key)->setValue(value);
 }
 
 
@@ -413,16 +413,16 @@ void tracker::on_attach_to_session()
         // the key is the date (64 bit in microseconds)
         int64_t const start_date(f_snap->get_start_date());
         QByteArray start_date_key;
-        QtCassandra::setInt64Value(start_date_key, start_date);
+        libdbproxy::setInt64Value(start_date_key, start_date);
 
         // the data is that XML file in the form of a string
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setTtl(86400 * 31);       // keep for 1 month (TODO: make it an editable preference)
         value.setStringValue(f_doc.toString(-1));
 
         // now save the result in Cassandra
-        QtCassandra::QCassandraTable::pointer_t tracker_table(get_tracker_table());
-        tracker_table->row(email)->cell(start_date_key)->setValue(value);
+        libdbproxy::table::pointer_t tracker_table(get_tracker_table());
+        tracker_table->getRow(email)->getCell(start_date_key)->setValue(value);
     }
 }
 

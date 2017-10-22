@@ -412,7 +412,7 @@ void path::bootstrap(::snap::snap_child * snap)
  */
 plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_error_callback & err_callback)
 {
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
 
     // get the name of the plugin that owns this URL
     plugins::plugin * owner_plugin(nullptr);
@@ -421,8 +421,8 @@ plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_erro
 
     // define the primary owner
     if(content_table->exists(ipath.get_key())
-    && content_table->row(ipath.get_key())->exists(primary_owner))
-    //&& content_table->row(ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_STATUS)))
+    && content_table->getRow(ipath.get_key())->exists(primary_owner))
+    //&& content_table->getRow(ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_STATUS)))
     {
 //SNAP_LOG_TRACE("found path ")(ipath.get_key())(" in database... no dynamic stuff.");
         QString const action(define_action(ipath));
@@ -444,13 +444,13 @@ plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_erro
         // (TBD: we may want a signal on that one and have a dynamic owner)
         //
         //QString const owner_with_action(QString("%1::%2").arg(primary_owner).arg(action));
-        //if(content_table->row(ipath.get_key())->exists(owner_with_action))
+        //if(content_table->getRow(ipath.get_key())->exists(owner_with_action))
         //{
-        //    owner = content_table->row(ipath.get_key())->cell(owner_with_action)->value().stringValue();
+        //    owner = content_table->getRow(ipath.get_key())->getCell(owner_with_action)->getValue().stringValue();
         //}
-        //else if(content_table->row(ipath.get_key())->exists(primary_owner))
+        //else if(content_table->getRow(ipath.get_key())->exists(primary_owner))
         //{
-        //    owner = content_table->row(ipath.get_key())->cell(primary_owner)->value().stringValue();
+        //    owner = content_table->getRow(ipath.get_key())->getCell(primary_owner)->getValue().stringValue();
         //}
 
         // verify that the status is good for displaying this page
@@ -488,8 +488,8 @@ plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_erro
 
         // get the modified date so we can setup the Last-Modified HTTP header field
         // it is also another way to determine that a path is valid
-        QtCassandra::QCassandraValue const value(content_table->row(ipath.get_key())->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->value());
-        QString const owner(content_table->row(ipath.get_key())->cell(primary_owner)->value().stringValue());
+        libdbproxy::value const value(content_table->getRow(ipath.get_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->getValue());
+        QString const owner(content_table->getRow(ipath.get_key())->getCell(primary_owner)->getValue().stringValue());
         if(value.nullValue() || owner.isEmpty())
         {
             err_callback.on_error(snap_child::http_code_t::HTTP_CODE_NOT_FOUND,

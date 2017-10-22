@@ -94,7 +94,7 @@ public:
     void                    on_token_help(filter::filter::token_help_t & help);
 
     // editor signals
-    void                    on_init_editor_widget(content::path_info_t & ipath, QString const & field_name, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t row);
+    void                    on_init_editor_widget(content::path_info_t & ipath, QString const & field_name, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row);
     void                    on_finish_editor_form_processing(content::path_info_t & ipath, bool & succeeded);
     void					on_save_editor_fields(editor::save_info_t & save_info);
 

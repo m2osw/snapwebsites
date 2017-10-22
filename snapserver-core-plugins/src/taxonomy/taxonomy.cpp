@@ -212,7 +212,7 @@ void taxonomy::owner_update(int64_t variables_timestamp)
 {
     NOTUSED(variables_timestamp);
 
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
 
     // we cannot include the output plugin from the taxonomy plugin...
     //QString const new_owner(output::output::instance()->get_plugin_name());
@@ -235,7 +235,7 @@ void taxonomy::owner_update(int64_t variables_timestamp)
         if(content_table->exists(taxonomy_ipath.get_key()))
         {
             // the page still exists, change the owner
-            content_table->row(taxonomy_ipath.get_key())->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER))->setValue(new_owner);
+            content_table->getRow(taxonomy_ipath.get_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER))->setValue(new_owner);
         }
     }
 }
@@ -272,9 +272,9 @@ void taxonomy::bootstrap(snap_child * snap)
  *
  * \return The value found in the Cassandra database.
  */
-QtCassandra::QCassandraValue taxonomy::find_type_with(content::path_info_t & ipath, QString const & taxonomy_name, QString const & col_name, QString const & limit_name)
+libdbproxy::value taxonomy::find_type_with(content::path_info_t & ipath, QString const & taxonomy_name, QString const & col_name, QString const & limit_name)
 {
-    QtCassandra::QCassandraValue const not_found;
+    libdbproxy::value const not_found;
     // get link taxonomy_name from ipath
     links::link_info type_info(taxonomy_name, true, ipath.get_key(), ipath.get_branch());
     QSharedPointer<links::link_context> type_ctxt(links::links::instance()->new_link_context(type_info));
@@ -289,7 +289,7 @@ QtCassandra::QCassandraValue taxonomy::find_type_with(content::path_info_t & ipa
     {
         return not_found;
     }
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     for(;;)
     {
         // TODO: determine whether the type should be checked in the branch instead of global area.
@@ -301,17 +301,17 @@ QtCassandra::QCassandraValue taxonomy::find_type_with(content::path_info_t & ipa
             // TODO: should this be an error instead? all the types should exist!
             return not_found;
         }
-        QtCassandra::QCassandraRow::pointer_t row(content_table->row(type_key));
+        libdbproxy::row::pointer_t row(content_table->getRow(type_key));
 
         // check for the key, if it exists we found what the user is
         // looking for!
-        QtCassandra::QCassandraValue result(row->cell(col_name)->value());
+        libdbproxy::value result(row->getCell(col_name)->getValue());
         if(!result.nullValue())
         {
             return result;
         }
         // have we reached the limit
-        QtCassandra::QCassandraValue limit(row->cell(QString(get_name(name_t::SNAP_NAME_TAXONOMY_NAME)))->value());
+        libdbproxy::value limit(row->getCell(QString(get_name(name_t::SNAP_NAME_TAXONOMY_NAME)))->getValue());
         if(!limit.nullValue() && limit.stringValue() == limit_name)
         {
             // we reached the limit and have not found a result
@@ -350,7 +350,7 @@ QtCassandra::QCassandraValue taxonomy::find_type_with(content::path_info_t & ipa
 //}
 
 
-void taxonomy::on_copy_branch_cells(QtCassandra::QCassandraCells & source_cells, QtCassandra::QCassandraRow::pointer_t destination_row, snap_version::version_number_t const destination_branch)
+void taxonomy::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
     NOTUSED(destination_branch);
 

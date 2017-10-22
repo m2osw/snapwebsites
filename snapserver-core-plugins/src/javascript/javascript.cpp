@@ -633,7 +633,7 @@ QVariant javascript::evaluate_script(QString const & script)
  * \param[in] file_row  The row where the file is saved in \p files_table.
  * \param[in] file  The file to be processed.
  */
-void javascript::on_process_attachment(QtCassandra::QCassandraRow::pointer_t file_row, content::attachment_file const & file)
+void javascript::on_process_attachment(libdbproxy::row::pointer_t file_row, content::attachment_file const & file)
 {
     // TODO: got to finish the as2js compiler...
     NOTUSED(file_row);

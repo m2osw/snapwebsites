@@ -71,7 +71,7 @@ public:
     void                    on_prepare_editor_form(editor::editor * e);
     void                    on_value_to_string(editor::editor::value_to_string_info_t & value_info);
     void                    on_string_to_value(editor::editor::string_to_value_info_t & value_info);
-    void                    on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t row);
+    void                    on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row);
     void                    on_validate_editor_post_for_widget(content::path_info_t & ipath, sessions::sessions::session_info & info, QDomElement const & widget, QString const & widget_name, QString const & widget_type, QString const & value, bool const is_secret);
 
 private:

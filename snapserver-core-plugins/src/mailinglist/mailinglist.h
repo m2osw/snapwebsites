@@ -63,11 +63,11 @@ public:
     private:
         mailinglist *                                           f_parent = nullptr;
         QString const                                           f_name;
-        QtCassandra::QCassandraTable::pointer_t                 f_table;
-        QtCassandra::QCassandraRow::pointer_t                   f_row;
-        QtCassandra::QCassandraCellRangePredicate::pointer_t    f_column_predicate;
-        QtCassandra::QCassandraCells                            f_cells;
-        QtCassandra::QCassandraCells::const_iterator            f_c;
+        libdbproxy::table::pointer_t                 f_table;
+        libdbproxy::row::pointer_t                   f_row;
+        libdbproxy::cell_range_predicate::pointer_t    f_column_predicate;
+        libdbproxy::cells                            f_cells;
+        libdbproxy::cells::const_iterator            f_c;
         bool                                                    f_done = false;
     };
 
@@ -83,7 +83,7 @@ public:
     virtual int64_t     do_update(int64_t last_updated);
     virtual void        bootstrap(snap_child * snap);
 
-    QtCassandra::QCassandraTable::pointer_t get_mailinglist_table();
+    libdbproxy::table::pointer_t get_mailinglist_table();
 
     SNAP_SIGNAL(name_to_list, (QString const & name, QSharedPointer<list> & emails), (name, emails));
 

@@ -47,7 +47,7 @@ void call_page_status(snap_expr::variable_t & result, snap_expr::variable_t::var
     //SNAP_LOG_WARNING("got in page_status(")(ipath.get_key())(") = \"")(named_status)("\".");
 
     // save the result
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setStringValue(named_status.c_str());
     result.set_value(snap_expr::variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
 }
@@ -65,7 +65,7 @@ void call_website_uri(snap_expr::variable_t & result, snap_expr::variable_t::var
     QString const website_uri(main_uri.get_website_uri(false));
 
     // save the result
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setStringValue(website_uri);
     result.set_value(snap_expr::variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
 }

@@ -332,7 +332,7 @@ void epayment_stripe::bootstrap(snap_child * snap)
  *
  * \return The pointer to the epayment_stripe table.
  */
-QtCassandra::QCassandraTable::pointer_t epayment_stripe::get_epayment_stripe_table()
+libdbproxy::table::pointer_t epayment_stripe::get_epayment_stripe_table()
 {
     if(!f_epayment_stripe_table)
     {
@@ -411,8 +411,8 @@ void epayment_stripe::on_generate_header_content(content::path_info_t & ipath, Q
     settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH));
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-    QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(settings_ipath.get_key()));
+    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+    libdbproxy::row::pointer_t secret_row(secret_table->getRow(settings_ipath.get_key()));
 
     bool const debug(get_debug());
 
@@ -470,7 +470,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //    if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CANCEL_URL)
 //    || cpath == get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CANCEL_PLAN_URL))
 //    {
-//        QtCassandra::QCassandraTable::pointer_t epayment_stripe_table(get_epayment_stripe_table());
+//        libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
 //
 //        // the user canceled that invoice...
 //        //
@@ -500,7 +500,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //    }
 //    else if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_RETURN_URL))
 //    {
-//        QtCassandra::QCassandraTable::pointer_t epayment_stripe_table(get_epayment_stripe_table());
+//        libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
 //
 //        for(;;)
 //        {
@@ -524,7 +524,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //
 //            QString const id(main_uri.query_option("paymentId"));
 //std::cerr << "*** paymentId is [" << id << "] [" << main_uri.full_domain() << "]\n";
-//            QString const date_invoice(epayment_stripe_table->row(main_uri.full_domain())->cell("id/" + id)->value().stringValue());
+//            QString const date_invoice(epayment_stripe_table->getRow(main_uri.full_domain())->getCell("id/" + id)->getValue().stringValue());
 //            int const pos(date_invoice.indexOf(','));
 //            if(pos < 1)
 //            {
@@ -588,12 +588,12 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            QString const payer_id(main_uri.query_option("PayerID"));
 //
 //            content::content *content_plugin(content::content::instance());
-//            QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-//            QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-//            QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(invoice_ipath.get_key()));
+//            libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+//            libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+//            libdbproxy::row::pointer_t secret_row(secret_table->getRow(invoice_ipath.get_key()));
 //
 //            // save the PayerID value
-//            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PAYER_ID))->setValue(payer_id);
+//            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PAYER_ID))->setValue(payer_id);
 //
 //            // Optionally, we may get a token that we check, just in case
 //            // (for Stripe payments this token is not used at this time)
@@ -601,7 +601,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            {
 //                // do we have a match?
 //                QString const token(main_uri.query_option("token"));
-//                QString const expected_token(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PAYMENT_TOKEN))->value().stringValue());
+//                QString const expected_token(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PAYMENT_TOKEN))->getValue().stringValue());
 //                if(expected_token != token)
 //                {
 //                    messages::messages::instance()->set_error(
@@ -645,7 +645,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //
 //            // the URL to send the execute request to Stripe is saved in the
 //            // invoice secret area
-//            QString const execute_url(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTE_PAYMENT))->value().stringValue());
+//            QString const execute_url(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTE_PAYMENT))->getValue().stringValue());
 //
 //            http_client_server::http_client http;
 //            //http.set_keep_alive(true); -- this is the default
@@ -781,8 +781,8 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            execute_request.set_data(body.toUtf8().data());
 //            http_client_server::http_response::pointer_t response(http.send_request(execute_request));
 //
-//            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_PAYMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-//            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_PAYMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
+//            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_PAYMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+//            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_PAYMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
 //
 //            // looks pretty good, check the actual answer...
 //            as2js::JSON::pointer_t json(new as2js::JSON);
@@ -872,11 +872,11 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //                break;
 //            }
 //
-//            QtCassandra::QCassandraTable::pointer_t epayment_stripe_table(get_epayment_stripe_table());
+//            libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
 //
 //            QString const token(main_uri.query_option("token"));
 //SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
-//            QString const date_invoice(epayment_stripe_table->row(main_uri.full_domain())->cell("agreement/" + token)->value().stringValue());
+//            QString const date_invoice(epayment_stripe_table->getRow(main_uri.full_domain())->getCell("agreement/" + token)->getValue().stringValue());
 //            int const pos(date_invoice.indexOf(','));
 //            if(pos < 1)
 //            {
@@ -928,9 +928,9 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            }
 //
 //            content::content * content_plugin(content::content::instance());
-//            QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-//            QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-//            QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(invoice_ipath.get_key()));
+//            libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+//            libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+//            libdbproxy::row::pointer_t secret_row(secret_table->getRow(invoice_ipath.get_key()));
 //
 //            // No saved ID for agreements...
 //            //
@@ -967,7 +967,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //
 //            // the URL to send the execute request to Stripe is saved in the
 //            // invoice secret area
-//            QString const execute_url(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTE_AGREEMENT))->value().stringValue());
+//            QString const execute_url(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTE_AGREEMENT))->getValue().stringValue());
 //
 //            http_client_server::http_client http;
 //            //http.set_keep_alive(true) -- this is the default;
@@ -1019,8 +1019,8 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            //SNAP_LOG_INFO("Request: ")(execute_request.get_request());
 //            http_client_server::http_response::pointer_t response(http.send_request(execute_request));
 //
-//            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_AGREEMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-//            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_AGREEMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
+//            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_AGREEMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+//            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_AGREEMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
 //
 //            // we need a successful response
 //            if(response->get_response_code() != 200
@@ -1076,7 +1076,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //                throw epayment_stripe_exception_io_error("'id' missing in 'execute' response");
 //            }
 //            QString const execute_id(QString::fromUtf8(object.at("id")->get_string().to_utf8().c_str()));
-//            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_AGREEMENT_ID))->setValue(execute_id);
+//            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_AGREEMENT_ID))->setValue(execute_id);
 //
 //            // LINKS / SELF
 //            //
@@ -1119,7 +1119,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //                        }
 //                        as2js::String const& plan_url_str(link_object.at("href")->get_string());
 //                        agreement_url = QString::fromUtf8(plan_url_str.to_utf8().c_str());
-//                        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_AGREEMENT_URL))->setValue(agreement_url);
+//                        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_AGREEMENT_URL))->setValue(agreement_url);
 //                    }
 //                }
 //            }
@@ -1153,9 +1153,9 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 
 void epayment_stripe::cancel_invoice(QString const & token)
 {
-    QtCassandra::QCassandraTable::pointer_t epayment_stripe_table(get_epayment_stripe_table());
+    libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
     snap_uri const main_uri(f_snap->get_uri());
-    QString const invoice(epayment_stripe_table->row(main_uri.full_domain())->cell("token/" + token)->value().stringValue());
+    QString const invoice(epayment_stripe_table->getRow(main_uri.full_domain())->getCell("token/" + token)->getValue().stringValue());
     content::path_info_t invoice_ipath;
     invoice_ipath.set_path(invoice);
 
@@ -1204,13 +1204,13 @@ bool epayment_stripe::get_debug()
         settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH));
 
         content::content * content_plugin(content::content::instance());
-        QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(settings_ipath.get_revision_key()));
+        libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(settings_ipath.get_revision_key()));
 
         // TODO: if backends require it, we want to add a reset of the
         //       revision_row before re-reading the debug flag here
 
-        QtCassandra::QCassandraValue debug_value(revision_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_DEBUG))->value());
+        libdbproxy::value debug_value(revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_DEBUG))->getValue());
         f_debug = !debug_value.nullValue() && debug_value.signedCharValue();
 
         f_debug_defined = true;
@@ -1239,8 +1239,8 @@ QString epayment_stripe::get_stripe_key(bool const debug)
         settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH));
 
         content::content * content_plugin(content::content::instance());
-        QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-        QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(settings_ipath.get_key()));
+        libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+        libdbproxy::row::pointer_t secret_row(secret_table->getRow(settings_ipath.get_key()));
 
         // TODO: if backends require it, we want to add a reset of the
         //       revision_row before re-reading the debug flag here
@@ -1250,11 +1250,11 @@ QString epayment_stripe::get_stripe_key(bool const debug)
             // Stripe provides a "public" test key which is really convenient!
             // However, the user should use its own key.
             //
-            f_stripe_key[idx] = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_TEST_SECRET))->value().stringValue();
+            f_stripe_key[idx] = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_TEST_SECRET))->getValue().stringValue();
         }
         else
         {
-            f_stripe_key[idx] = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_SECRET))->value().stringValue();
+            f_stripe_key[idx] = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_SECRET))->getValue().stringValue();
         }
 
         if(f_stripe_key[idx].isEmpty())
@@ -1345,10 +1345,10 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
         settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH));
 
         content::content * content_plugin(content::content::instance());
-        QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(settings_ipath.get_revision_key()));
+        libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(settings_ipath.get_revision_key()));
 
-        QtCassandra::QCassandraValue maximum_repeat_failures_value(revision_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_MAXIMUM_REPEAT_FAILURES))->value());
+        libdbproxy::value maximum_repeat_failures_value(revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_MAXIMUM_REPEAT_FAILURES))->getValue());
         if(maximum_repeat_failures_value.size() == sizeof(int8_t))
         {
             f_maximum_repeat_failures = maximum_repeat_failures_value.signedCharValue();
@@ -1398,10 +1398,10 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH));
 //
 //    content::content *content_plugin(content::content::instance());
-//    //QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-//    //QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(settings_ipath.get_revision_key()));
-//    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-//    QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(settings_ipath.get_key()));
+//    //libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+//    //libdbproxy::row::pointer_t revision_row(revision_table->getRow(settings_ipath.get_revision_key()));
+//    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+//    libdbproxy::row::pointer_t secret_row(secret_table->getRow(settings_ipath.get_key()));
 //
 //    bool const debug(get_debug());
 //
@@ -1412,17 +1412,17 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    snap_lock lock(f_snap->get_context(), settings_ipath.get_key());
 //
 //    // If there is a saved OAuth2 which is not out of date, use that
-//    QtCassandra::QCassandraValue secret_debug_value(secret_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_DEBUG))->value());
+//    libdbproxy::value secret_debug_value(secret_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_DEBUG))->getValue());
 //    if(!secret_debug_value.nullValue()
 //    && (secret_debug_value.signedCharValue() != 0) == debug) // if debug flag changed, it's toasted
 //    {
-//        QtCassandra::QCassandraValue expires_value(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_EXPIRES))->value());
+//        libdbproxy::value expires_value(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_EXPIRES))->getValue());
 //        int64_t const current_date(f_snap->get_current_date());
 //        if(expires_value.size() == sizeof(int64_t)
 //        && expires_value.int64Value() > current_date) // we do not use 'start date' here because it could be wrong if the process was really slow
 //        {
-//            token_type = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_TOKEN_TYPE))->value().stringValue().toUtf8().data();
-//            access_token = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_ACCESS_TOKEN))->value().stringValue().toUtf8().data();
+//            token_type = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_TOKEN_TYPE))->getValue().stringValue().toUtf8().data();
+//            access_token = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_ACCESS_TOKEN))->getValue().stringValue().toUtf8().data();
 //            return true;
 //        }
 //    }
@@ -1433,14 +1433,14 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    if(debug)
 //    {
 //        // User setup debug mode for now
-//        client_id = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_SANDBOX_CLIENT_ID))->value().stringValue();
-//        secret = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_SANDBOX_SECRET))->value().stringValue();
+//        client_id = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_SANDBOX_CLIENT_ID))->getValue().stringValue();
+//        secret = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_SANDBOX_SECRET))->getValue().stringValue();
 //    }
 //    else
 //    {
 //        // Normal user settings
-//        client_id = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CLIENT_ID))->value().stringValue();
-//        secret = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_SECRET))->value().stringValue();
+//        client_id = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CLIENT_ID))->getValue().stringValue();
+//        secret = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_SECRET))->getValue().stringValue();
 //    }
 //
 //    if(client_id.isEmpty()
@@ -1509,9 +1509,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // save that info in case of failure we may have a chance to check
 //    // what went wrong
 //    signed char const debug_flag(debug ? 1 : 0);
-//    secret_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_DEBUG))->setValue(debug_flag);
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_DATA))->setValue(QString::fromUtf8(response->get_response().c_str()));
+//    secret_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_DEBUG))->setValue(debug_flag);
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_DATA))->setValue(QString::fromUtf8(response->get_response().c_str()));
 //
 //    // looks pretty good...
 //    as2js::JSON::pointer_t json(new as2js::JSON);
@@ -1534,7 +1534,7 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // at this point we expect "Bearer", but we assume it could change
 //    // since they are sending us a copy of that string
 //    token_type = object.at("token_type")->get_string().to_utf8();
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_TOKEN_TYPE))->setValue(QString::fromUtf8(token_type.c_str()));
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_TOKEN_TYPE))->setValue(QString::fromUtf8(token_type.c_str()));
 //
 //    // ACCESS TOKEN
 //    // we should always have an access token
@@ -1544,7 +1544,7 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //        throw epayment_stripe_exception_io_error("oauth access_token missing");
 //    }
 //    access_token = object.at("access_token")->get_string().to_utf8();
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_ACCESS_TOKEN))->setValue(QString::fromUtf8(access_token.c_str()));
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_ACCESS_TOKEN))->setValue(QString::fromUtf8(access_token.c_str()));
 //
 //    // EXPIRES IN
 //    // get the amount of time the token will last in seconds
@@ -1557,14 +1557,14 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    int64_t const expires(object.at("expires_in")->get_int64().get());
 //    int64_t const start_date(f_snap->get_start_date());
 //    // we save an absolute time limit instead of a "meaningless" number of seconds
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_EXPIRES))->setValue(start_date + expires * 1000000);
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_EXPIRES))->setValue(start_date + expires * 1000000);
 //
 //    // SCOPE
 //    // get the scope if available (for info at this point)
 //    if(object.find("scope") != object.end())
 //    {
 //        QString const scope(QString::fromUtf8(object.at("scope")->get_string().to_utf8().c_str()));
-//        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_SCOPE))->setValue(scope);
+//        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_SCOPE))->setValue(scope);
 //    }
 //
 //    // APP ID
@@ -1572,7 +1572,7 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    if(object.find("app_id") != object.end())
 //    {
 //        QString const app_id(QString::fromUtf8(object.at("app_id")->get_string().to_utf8().c_str()));
-//        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_APP_ID))->setValue(app_id);
+//        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_OAUTH2_APP_ID))->setValue(app_id);
 //    }
 //
 //    return true;
@@ -1615,24 +1615,24 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    product_ipath.set_path(guid);
 //
 //    content::content *content_plugin(content::content::instance());
-//    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-//    QtCassandra::QCassandraRow::pointer_t row(revision_table->row(product_ipath.get_revision_key()));
-//    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-//    QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(product_ipath.get_key()));
+//    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+//    libdbproxy::row::pointer_t row(revision_table->getRow(product_ipath.get_revision_key()));
+//    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+//    libdbproxy::row::pointer_t secret_row(secret_table->getRow(product_ipath.get_key()));
 //
 //    // This entire job may be used by any user of the system so it has to
 //    // be done while locked; it should not add much downtime to the end
 //    // user since users subscribe just once for a while in general
 //    snap_lock lock(f_snap->get_context(), product_ipath.get_key());
 //
-//    plan_id = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_ID))->value().stringValue();
+//    plan_id = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_ID))->getValue().stringValue();
 //    if(!plan_id.isEmpty())
 //    {
 //        // although if the name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_ID is
 //        // properly setup, we should always have a valid URL, but just
 //        // in case, we verify that; if it is not valid, we create a
 //        // new plan...
-//        QString const plan_url(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_URL))->value().stringValue());
+//        QString const plan_url(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_URL))->getValue().stringValue());
 //        if(!plan_url.isEmpty())
 //        {
 //            return plan_url;
@@ -1766,7 +1766,7 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    as2js::JSON::JSONValue::pointer_t body(new as2js::JSON::JSONValue(pos, empty_object));
 //
 //    // NAME
-//    QString subscription_name(row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue());
+//    QString subscription_name(row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue());
 //    if(subscription_name.isEmpty())
 //    {
 //        // setup to a default name although all products should have
@@ -1780,7 +1780,7 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    }
 //
 //    // DESCRIPTION
-//    QString const subscription_description(row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->value().stringValue());
+//    QString const subscription_description(row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->getValue().stringValue());
 //    {
 //        if(subscription_description.isEmpty())
 //        {
@@ -1964,8 +1964,8 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    create_plan_request.set_data(body->to_string().to_utf8());
 //    http_client_server::http_response::pointer_t response(http.send_request(create_plan_request));
 //
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CREATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CREATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CREATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CREATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
 //
 //    // we need a successful response (it should always be 201)
 //    if(response->get_response_code() != 200
@@ -2020,12 +2020,12 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    }
 //    as2js::String const id_string(object.at("id")->get_string());
 //    plan_id = QString::fromUtf8(id_string.to_utf8().c_str());
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_ID))->setValue(plan_id);
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_ID))->setValue(plan_id);
 //
 //    // save a back reference in the epayment_stripe table
-//    QtCassandra::QCassandraTable::pointer_t epayment_stripe_table(get_epayment_stripe_table());
+//    libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
 //    snap_uri const main_uri(f_snap->get_uri());
-//    epayment_stripe_table->row(main_uri.full_domain())->cell("plan/" + plan_id)->setValue(product_ipath.get_key());
+//    epayment_stripe_table->getRow(main_uri.full_domain())->getCell("plan/" + plan_id)->setValue(product_ipath.get_key());
 //
 //    // LINKS / SELF
 //    //
@@ -2068,7 +2068,7 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //                }
 //                as2js::String const& plan_url_str(link_object.at("href")->get_string());
 //                plan_url = QString::fromUtf8(plan_url_str.to_utf8().c_str());
-//                secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_URL))->setValue(plan_url);
+//                secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_PLAN_URL))->setValue(plan_url);
 //            }
 //        }
 //    }
@@ -2143,8 +2143,8 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    activate_plan_request.set_data(body->to_string().to_utf8());
 //    response = http.send_request(activate_plan_request);
 //
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_ACTIVATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-//    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_ACTIVATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_ACTIVATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+//    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_ACTIVATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
 //std::cerr << "***\n*** answer is [" << QString::fromUtf8(response->get_response().c_str()) << "]\n***\n";
 //
 //    // we need a successful response (according to the documentation,
@@ -2180,9 +2180,9 @@ void epayment_stripe::on_replace_token(content::path_info_t & ipath, QDomDocumen
         snap_uri const main_uri(f_snap->get_uri());
         if(main_uri.has_query_option("paymentId"))
         {
-            QtCassandra::QCassandraTable::pointer_t epayment_stripe_table(get_epayment_stripe_table());
+            libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
             QString const id(main_uri.query_option("paymentId"));
-            QString const invoice(epayment_stripe_table->row(main_uri.full_domain())->cell("id/" + id)->value().stringValue());
+            QString const invoice(epayment_stripe_table->getRow(main_uri.full_domain())->getCell("id/" + id)->getValue().stringValue());
             content::path_info_t invoice_ipath;
             invoice_ipath.set_path(invoice);
 
@@ -2250,12 +2250,12 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
 
     content::content * content_plugin(content::content::instance());
 
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-    QtCassandra::QCassandraTable::pointer_t epayment_stripe_table(get_epayment_stripe_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+    libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
 
-    QtCassandra::QCassandraRow::pointer_t first_secret_row(secret_table->row(first_invoice_ipath.get_key()));
-    QtCassandra::QCassandraValue customer_key(first_secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_USER_KEY))->value());
+    libdbproxy::row::pointer_t first_secret_row(secret_table->getRow(first_invoice_ipath.get_key()));
+    libdbproxy::value customer_key(first_secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_USER_KEY))->getValue());
     if(customer_key.nullValue())
     {
         // no Stripe customer, we cannot repeat this payment in this
@@ -2263,7 +2263,7 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         return;
     }
 
-    QtCassandra::QCassandraRow::pointer_t customer_row(epayment_stripe_table->row(customer_key.binaryValue()));
+    libdbproxy::row::pointer_t customer_row(epayment_stripe_table->getRow(customer_key.binaryValue()));
 
     int64_t const start_date(f_snap->get_start_date());
 
@@ -2272,10 +2272,10 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
     {
         // Now actually charge the customer card
         //
-        QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(new_invoice_ipath.get_key()));
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(new_invoice_ipath.get_revision_key()));
+        libdbproxy::row::pointer_t secret_row(secret_table->getRow(new_invoice_ipath.get_key()));
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(new_invoice_ipath.get_revision_key()));
 
-        secret_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CREATED))->setValue(start_date);
+        secret_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CREATED))->setValue(start_date);
 
         // create a charge now
         //
@@ -2296,7 +2296,7 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         // POST variables
 
         // Basic variables
-        double const grand_total(revision_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_GRAND_TOTAL))->value().safeDoubleValue());
+        double const grand_total(revision_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_GRAND_TOTAL))->getValue().safeDoubleValue());
         stripe_charge_request.set_post("amount", QString("%1").arg(static_cast<uint64_t>(grand_total * 100.0)).toUtf8().data()); // amount in cents
 
         // once we have time to add proper support for various currencies:
@@ -2312,7 +2312,7 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         // pass the SNAP_NAME_CONTENT_TITLE as description, it often is
         // the invoice number, but could be more descriptive...
         //
-        QString const invoice_description(revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue());
+        QString const invoice_description(revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue());
         stripe_charge_request.set_post("description", snap_dom::remove_tags(invoice_description).toUtf8().data());
 
         stripe_charge_request.set_post("metadata[user_id]", customer_key.stringValue().toUtf8().data()); // can make it easier to find the customer this way
@@ -2327,7 +2327,7 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         //stripe_charge_request.set_post("shipping[...]", ...);
 
         // Customer
-        QString const customer_stripe_key(customer_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CUSTOMER_KEY))->value().stringValue());
+        QString const customer_stripe_key(customer_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CUSTOMER_KEY))->getValue().stringValue());
         stripe_charge_request.set_post("customer", customer_stripe_key.toUtf8().data());
 
         // Source
@@ -2338,9 +2338,9 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         //
         content::path_info_t epayment_settings;
         epayment_settings.set_path("admin/settings/epayment/store");
-        QtCassandra::QCassandraRow::pointer_t epayment_settings_row(revision_table->row(epayment_settings.get_revision_key()));
-        QString const store_name(epayment_settings_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_STORE_NAME))->value().stringValue());
-        QString const invoice_number(revision_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER))->value().stringValue());
+        libdbproxy::row::pointer_t epayment_settings_row(revision_table->getRow(epayment_settings.get_revision_key()));
+        QString const store_name(epayment_settings_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_STORE_NAME))->getValue().stringValue());
+        QString const invoice_number(revision_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER))->getValue().stringValue());
         QString const statement(QString("%1 #%2").arg(store_name).arg(invoice_number));
         stripe_charge_request.set_post("statement_descriptor", statement.toUtf8().data());
 
@@ -2348,16 +2348,16 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
 
         // we can save the reply header as is
         //
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(QString::fromUtf8(charge_response->get_original_header().c_str()));
         value.setTtl(365 * 86400); // keep for about 1 year
-        secret_row->cell(QString("%1::%2")
+        secret_row->getCell(QString("%1::%2")
                             .arg(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_HEADER))
                             .arg(start_date))
                   ->setValue(value);
 
         // NO DIRECT LOGGING OF RESPONSE, SEE WARNING AT START OF epayment_stripe::process_creditcard() FUNCTION
-        //secret_row->cell(...)->setValue(QString::fromUtf8(charge_response->get_response().c_str()));
+        //secret_row->getCell(...)->setValue(QString::fromUtf8(charge_response->get_response().c_str()));
 
         // Stripe makes it simple, if anything fails, including a
         // payment, then the response code is not 200
@@ -2395,10 +2395,10 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
             throw epayment_stripe_exception_io_error("'id' missing in 'charge' response");
         }
         QString const charge_id(QString::fromUtf8(root_object.at("id")->get_string().to_utf8().c_str()));
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_KEY))->setValue(charge_id);
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_KEY))->setValue(charge_id);
 
         // to re-charge the same customer we need a link back to that customer
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_USER_KEY))->setValue(customer_key);
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_USER_KEY))->setValue(customer_key);
 
         // now we want to save the JSON, only it includes some personal
         // data about the user:
@@ -2421,7 +2421,7 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
             source->set_member("last4", as2js::JSON::JSONValue::pointer_t());
         }
 
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_INFO))
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_INFO))
                   ->setValue(QString::fromUtf8(charge_json_value->to_string().to_utf8().c_str()));
 
         epayment::epayment * epayment_plugin(epayment::epayment::instance());
@@ -2496,7 +2496,7 @@ void epayment_stripe::gateway_features(epayment_creditcard::epayment_gateway_fea
  *
  * \param[in] response  The HTTP response with the error.
  */
-void epayment_stripe::log_error(http_client_server::http_response::pointer_t response, QtCassandra::QCassandraRow::pointer_t row)
+void epayment_stripe::log_error(http_client_server::http_response::pointer_t response, libdbproxy::row::pointer_t row)
 {
     // make sure we are not called with an invalid response
     //
@@ -2510,10 +2510,10 @@ void epayment_stripe::log_error(http_client_server::http_response::pointer_t res
 
     // log the response in the database
     //
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setStringValue(QString::fromUtf8(response->get_response().c_str()));
     value.setTtl(365 * 86400); // keep for about 1 year
-    row->cell(QString("%1::%2")
+    row->getCell(QString("%1::%2")
                         .arg(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_ERROR_REPLY))
                         .arg(start_date))
                 ->setValue(value);
@@ -2572,7 +2572,7 @@ void epayment_stripe::log_error(http_client_server::http_response::pointer_t res
     // since we have message, we can just save it in Cassandra as well
     // (and make it permanent in this case)
     //
-    row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_LAST_ERROR_MESSAGE))->setValue(message);
+    row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_LAST_ERROR_MESSAGE))->setValue(message);
 
     // TODO: somehow, add support so it is possible to translate error
     //       messages (Stripe does not provide such, unfortunately.)
@@ -2616,11 +2616,11 @@ bool epayment_stripe::process_creditcard(epayment_creditcard::epayment_creditcar
     epayment::epayment * epayment_plugin(epayment::epayment::instance());
     messages::messages * messages_plugin(messages::messages::instance());
 
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-    QtCassandra::QCassandraTable::pointer_t epayment_stripe_table(get_epayment_stripe_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+    libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
 
     bool const debug(get_debug());
     int64_t const start_date(f_snap->get_start_date());
@@ -2659,7 +2659,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
 
     content::path_info_t epayment_settings;
     epayment_settings.set_path("admin/settings/epayment/store");
-    QtCassandra::QCassandraRow::pointer_t epayment_settings_row(revision_table->row(epayment_settings.get_revision_key()));
+    libdbproxy::row::pointer_t epayment_settings_row(revision_table->getRow(epayment_settings.get_revision_key()));
 
     QString const stripe_key(get_stripe_key(debug));
     if(stripe_key.isEmpty())
@@ -2716,7 +2716,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             catch(boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call> > const &)
             {
             }
-            catch(QtCassandra::QCassandraException const &)
+            catch(libdbproxy::exception const &)
             {
             }
         }
@@ -2752,14 +2752,14 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         // saved by Stripe
         //
         create_customer_account = revision_table
-                        ->row(user_ipath.get_revision_key())
-                        ->cell(epayment_creditcard::get_name(epayment_creditcard::name_t::SNAP_NAME_EPAYMENT_CREDITCARD_USER_ALLOWS_SAVING_TOKEN))
-                        ->value().safeSignedCharValue(0, 1) != 0;
+                        ->getRow(user_ipath.get_revision_key())
+                        ->getCell(epayment_creditcard::get_name(epayment_creditcard::name_t::SNAP_NAME_EPAYMENT_CREDITCARD_USER_ALLOWS_SAVING_TOKEN))
+                        ->getValue().safeSignedCharValue(0, 1) != 0;
     }
 
     if(create_customer_account)
     {
-        QtCassandra::QCassandraRow::pointer_t customer_row(epayment_stripe_table->row(customer_key));
+        libdbproxy::row::pointer_t customer_row(epayment_stripe_table->getRow(customer_key));
 
         QString customer_stripe_key;
 
@@ -2769,8 +2769,8 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             // the user already exists in our database, so it has to exist
             // in Stripe database too...
             //
-            customer_stripe_key = customer_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CUSTOMER_KEY))
-                                              ->value().stringValue();
+            customer_stripe_key = customer_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CUSTOMER_KEY))
+                                              ->getValue().stringValue();
 
             if(!customer_stripe_key.isEmpty())
             {
@@ -2793,11 +2793,11 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                 // log the header, that has no customer data per se
                 value.setStringValue(QString::fromUtf8(retrieve_response->get_original_header().c_str()));
                 value.setTtl(365 * 86400);  // keep for about 1 year
-                customer_row->cell(QString("%1::%2").arg(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_RETRIEVE_CUSTOMER_HEADER)).arg(start_date))
+                customer_row->getCell(QString("%1::%2").arg(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_RETRIEVE_CUSTOMER_HEADER)).arg(start_date))
                             ->setValue(value);
 
                 // NO DIRECT LOGGING OF RESPONSE, SEE WARNING AT START OF FUNCTION
-                //customer_row->cell(...)->setValue(QString::fromUtf8(retrieve_response->get_response().c_str()));
+                //customer_row->getCell(...)->setValue(QString::fromUtf8(retrieve_response->get_response().c_str()));
     
                 // Here Stripe makes it simple, if anything fails, including a
                 // payment, then the response code is not 200
@@ -2958,14 +2958,14 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             //
             value.setStringValue(QString::fromUtf8(create_response->get_original_header().c_str()));
             value.setTtl(365 * 86400); // keep for about 1 year
-            customer_row->cell(QString("%1::%2")
+            customer_row->getCell(QString("%1::%2")
                                 .arg(get_name(update ? name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_UPDATE_CUSTOMER_HEADER
                                                      : name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CREATE_CUSTOMER_HEADER))
                                 .arg(start_date))
                         ->setValue(value);
 
             // NO DIRECT LOGGING OF RESPONSE, SEE WARNING AT START OF FUNCTION
-            //customer_row->cell(...)->setValue(QString::fromUtf8(create_response->get_response().c_str()));
+            //customer_row->getCell(...)->setValue(QString::fromUtf8(create_response->get_response().c_str()));
 
             // Stripe makes it simple, if anything fails, including a
             // payment, then the response code is not 200
@@ -3020,8 +3020,8 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                 //
                 customer_stripe_key = customer_id;
 
-                customer_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CREATED))->setValue(start_date);
-                customer_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CUSTOMER_KEY))->setValue(customer_stripe_key);
+                customer_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CREATED))->setValue(start_date);
+                customer_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CUSTOMER_KEY))->setValue(customer_stripe_key);
             }
 
             // now we want to save the JSON, only it includes some personal
@@ -3053,7 +3053,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                 }
             }
 
-            customer_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CUSTOMER_INFO))->setValue(QString::fromUtf8(create_json_value->to_string().to_utf8().c_str()));
+            customer_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CUSTOMER_INFO))->setValue(QString::fromUtf8(create_json_value->to_string().to_utf8().c_str()));
 
             if(update)
             {
@@ -3068,10 +3068,10 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         {
             // Now actually charge the customer card
             //
-            QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(invoice_ipath.get_key()));
-            QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(invoice_ipath.get_revision_key()));
+            libdbproxy::row::pointer_t secret_row(secret_table->getRow(invoice_ipath.get_key()));
+            libdbproxy::row::pointer_t revision_row(revision_table->getRow(invoice_ipath.get_revision_key()));
 
-            secret_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CREATED))->setValue(start_date);
+            secret_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CREATED))->setValue(start_date);
 
             // create a charge now
             //
@@ -3092,7 +3092,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             // POST variables
 
             // Basic variables
-            double const grand_total(revision_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_GRAND_TOTAL))->value().safeDoubleValue());
+            double const grand_total(revision_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_GRAND_TOTAL))->getValue().safeDoubleValue());
             stripe_charge_request.set_post("amount", QString("%1").arg(static_cast<uint64_t>(grand_total * 100.0)).toUtf8().data()); // amount in cents
 
             // once we have time to add proper support for various currencies:
@@ -3108,7 +3108,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             // pass the SNAP_NAME_CONTENT_TITLE as description, it often is
             // the invoice number, but could be more descriptive...
             //
-            QString const invoice_description(revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue());
+            QString const invoice_description(revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue());
             stripe_charge_request.set_post("description", snap_dom::remove_tags(invoice_description).toUtf8().data());
 
             stripe_charge_request.set_post("metadata[user_id]", customer_key.toUtf8().data()); // can make it easier to find the customer this way
@@ -3131,8 +3131,8 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
 
             // Description appearing on the credit card bank statements
             //
-            QString const store_name(epayment_settings_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_STORE_NAME))->value().stringValue());
-            QString const invoice_number(revision_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER))->value().stringValue());
+            QString const store_name(epayment_settings_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_STORE_NAME))->getValue().stringValue());
+            QString const invoice_number(revision_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER))->getValue().stringValue());
             QString const statement(QString("%1 #%2").arg(store_name).arg(invoice_number));
             stripe_charge_request.set_post("statement_descriptor", statement.toUtf8().data());
 
@@ -3142,13 +3142,13 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             //
             value.setStringValue(QString::fromUtf8(charge_response->get_original_header().c_str()));
             value.setTtl(365 * 86400); // keep for about 1 year
-            secret_row->cell(QString("%1::%2")
+            secret_row->getCell(QString("%1::%2")
                                 .arg(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_HEADER))
                                 .arg(start_date))
                         ->setValue(value);
 
             // NO DIRECT LOGGING OF RESPONSE, SEE WARNING AT START OF FUNCTION
-            //secret_row->cell(...)->setValue(QString::fromUtf8(charge_response->get_response().c_str()));
+            //secret_row->getCell(...)->setValue(QString::fromUtf8(charge_response->get_response().c_str()));
 
             // Stripe makes it simple, if anything fails, including a
             // payment, then the response code is not 200
@@ -3186,10 +3186,10 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                 throw epayment_stripe_exception_io_error("'id' missing in 'charge' response");
             }
             QString const charge_id(QString::fromUtf8(root_object.at("id")->get_string().to_utf8().c_str()));
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_KEY))->setValue(charge_id);
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_KEY))->setValue(charge_id);
 
             // to re-charge the same customer we need a link back to that customer
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_USER_KEY))->setValue(customer_key);
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_USER_KEY))->setValue(customer_key);
 
             // now we want to save the JSON, only it includes some personal
             // data about the user:
@@ -3212,7 +3212,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                 source->set_member("last4", as2js::JSON::JSONValue::pointer_t());
             }
 
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_INFO))
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_INFO))
                       ->setValue(QString::fromUtf8(charge_json_value->to_string().to_utf8().c_str()));
 
             SNAP_LOG_INFO("epayment_stripe::process_creditcard() subscription charge succeeded.");
@@ -3229,10 +3229,10 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         // Charge the customer card directly
         // We do not create a customer object in this case
         //
-        QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(invoice_ipath.get_key()));
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(invoice_ipath.get_revision_key()));
+        libdbproxy::row::pointer_t secret_row(secret_table->getRow(invoice_ipath.get_key()));
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(invoice_ipath.get_revision_key()));
 
-        secret_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CREATED))
+        secret_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_CREATED))
                   ->setValue(start_date);
 
         // create a charge now
@@ -3255,7 +3255,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
 
         // Amount in cents
         //
-        double const grand_total(revision_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_GRAND_TOTAL))->value().safeDoubleValue());
+        double const grand_total(revision_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_GRAND_TOTAL))->getValue().safeDoubleValue());
         stripe_charge_request.set_post("amount", QString("%1").arg(static_cast<uint64_t>(grand_total * 100.0)).toUtf8().data());
 
         // once we have time to add proper support for various currencies:
@@ -3271,7 +3271,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         // pass the SNAP_NAME_CONTENT_TITLE as description, it often is
         // the invoice number, but could be more descriptive...
         //
-        QString const invoice_description(revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue());
+        QString const invoice_description(revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue());
         stripe_charge_request.set_post("description", snap_dom::remove_tags(invoice_description).toUtf8().data());
 
         if(users_plugin->user_is_logged_in())
@@ -3341,8 +3341,8 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
 
         // Description appearing on the credit card bank statements
         //
-        QString const store_name(epayment_settings_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_STORE_NAME))->value().stringValue());
-        QString const invoice_number(revision_row->cell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER))->value().stringValue());
+        QString const store_name(epayment_settings_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_STORE_NAME))->getValue().stringValue());
+        QString const invoice_number(revision_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER))->getValue().stringValue());
         QString const statement(QString("%1 #%2").arg(store_name).arg(invoice_number));
         stripe_charge_request.set_post("statement_descriptor", statement.toUtf8().data());
 
@@ -3352,11 +3352,11 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         //
         value.setStringValue(QString::fromUtf8(charge_response->get_original_header().c_str()));
         value.setTtl(365 * 86400); // keep for about 1 year
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_HEADER))
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_HEADER))
                   ->setValue(value);
 
         // NO DIRECT LOGGING OF RESPONSE, SEE WARNING AT START OF FUNCTION
-        //secret_row->cell(...)->setValue(QString::fromUtf8(charge_response->get_response().c_str()));
+        //secret_row->getCell(...)->setValue(QString::fromUtf8(charge_response->get_response().c_str()));
 
         // Stripe makes it simple, if anything fails, including a
         // payment, then the response code is not 200
@@ -3394,7 +3394,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             throw epayment_stripe_exception_io_error("'id' missing in 'charge' response");
         }
         QString const charge_id(QString::fromUtf8(root_object.at("id")->get_string().to_utf8().c_str()));
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_KEY))
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_KEY))
                   ->setValue(charge_id);
 
         // now we want to save the JSON, only it includes some personal
@@ -3418,7 +3418,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             source->set_member("last4", as2js::JSON::JSONValue::pointer_t());
         }
 
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_INFO))
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_INFO))
                   ->setValue(QString::fromUtf8(charge_json_value->to_string().to_utf8().c_str()));
 
         SNAP_LOG_INFO("epayment_stripe::process_creditcard() simple charge succeeded.");

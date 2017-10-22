@@ -39,6 +39,10 @@
 #include <QFile>
 #include <QTextStream>
 
+// casswrapper
+//
+#include <casswrapper/query.h>
+
 // C++ lib
 //
 #include <fstream>

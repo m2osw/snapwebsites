@@ -586,8 +586,8 @@ void snap_manager::on_f_cassandraConnectButton_clicked()
     auto q = Query::create( f_session );
     q->query( "SELECT cluster_name,native_protocol_version FROM system.local" );
     q->start();
-    console->addItem("Cluster Name: " + q->getStringColumn("cluster_name"));
-    console->addItem("Protocol Version: " + q->getStringColumn("native_protocol_version"));
+    console->addItem("Cluster Name: "     + q->getVariantColumn("cluster_name").toString());
+    console->addItem("Protocol Version: " + q->getVariantColumn("native_protocol_version").toString());
     q->end();
 
     // read all the contexts so the findContext() works
@@ -1169,7 +1169,7 @@ void snap_manager::on_domainSelectionChanged( const QModelIndex & /*selected*/, 
 
     if( query->nextRow() )
     {
-        f_domain_org_rules = query->getStringColumn(0);
+        f_domain_org_rules = query->getVariantColumn(0).toString();
     }
     else
     {
@@ -1698,7 +1698,7 @@ void snap_manager::onLoadWebsite( Query::pointer_t q )
 
     if( q->nextRow() )
     {
-        f_website_org_rules = q->getStringColumn(0);
+        f_website_org_rules = q->getVariantColumn(0).toString();
     }
     else
     {

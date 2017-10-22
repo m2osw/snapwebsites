@@ -330,17 +330,17 @@ void epayment_creditcard::setup_form(
     // read the settings
     //
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
     content::path_info_t epayment_creditcard_settings_ipath;
     epayment_creditcard_settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SETTINGS_PATH));
     if(!content_table->exists(epayment_creditcard_settings_ipath.get_key())
-    || !content_table->row(epayment_creditcard_settings_ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
+    || !content_table->getRow(epayment_creditcard_settings_ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
     {
         // the form by default is what we want if no settings were defined
         return;
     }
-    QtCassandra::QCassandraRow::pointer_t settings_row(revision_table->row(epayment_creditcard_settings_ipath.get_revision_key()));
+    libdbproxy::row::pointer_t settings_row(revision_table->getRow(epayment_creditcard_settings_ipath.get_revision_key()));
 
     // remove unwanted widgets if the administrator required so...
     //
@@ -348,7 +348,7 @@ void epayment_creditcard::setup_form(
     // delivery
     //
     {
-        bool const show_delivery(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_DELIVERY))->value().safeSignedCharValue(0, 1) != 0);
+        bool const show_delivery(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_DELIVERY))->getValue().safeSignedCharValue(0, 1) != 0);
         if(!show_delivery)
         {
             char const * delivery_fields[] =
@@ -380,7 +380,7 @@ void epayment_creditcard::setup_form(
     // one name
     //
     {
-        bool const show_one_name(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_ONE_NAME))->value().safeSignedCharValue(0, 1) != 0);
+        bool const show_one_name(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_ONE_NAME))->getValue().safeSignedCharValue(0, 1) != 0);
         if(show_one_name) // WARNING: here we test the flag INVERTED! (default is hide those fields)
         {
             // forget that widget
@@ -405,7 +405,7 @@ void epayment_creditcard::setup_form(
     // business name
     //
     {
-        bool const show_business_name(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_BUSINESS_NAME))->value().safeSignedCharValue(0, 1) != 0);
+        bool const show_business_name(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_BUSINESS_NAME))->getValue().safeSignedCharValue(0, 1) != 0);
         if(!show_business_name)
         {
             // forget that widget
@@ -430,7 +430,7 @@ void epayment_creditcard::setup_form(
     // address2
     //
     {
-        bool const show_address2(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_ADDRESS2))->value().safeSignedCharValue(0, 1) != 0);
+        bool const show_address2(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_ADDRESS2))->getValue().safeSignedCharValue(0, 1) != 0);
         if(!show_address2)
         {
             // forget that widget
@@ -455,7 +455,7 @@ void epayment_creditcard::setup_form(
     // country
     //
     {
-        bool const show_country(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_COUNTRY))->value().safeSignedCharValue(0, 1) != 0);
+        bool const show_country(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_COUNTRY))->getValue().safeSignedCharValue(0, 1) != 0);
         if(!show_country)
         {
             // forget that widget
@@ -479,7 +479,7 @@ void epayment_creditcard::setup_form(
         {
             // setup the default if there is one and we did not remove the
             // widget
-            QString const default_country(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_DEFAULT_COUNTRY))->value().stringValue());
+            QString const default_country(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_DEFAULT_COUNTRY))->getValue().stringValue());
             if(!default_country.isEmpty())
             {
                 QDomXPath dom_xpath;
@@ -508,7 +508,7 @@ void epayment_creditcard::setup_form(
     // province
     //
     {
-        bool const show_province(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_PROVINCE))->value().safeSignedCharValue(0, 1) != 0);
+        bool const show_province(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_PROVINCE))->getValue().safeSignedCharValue(0, 1) != 0);
         if(!show_province)
         {
             // forget that widget
@@ -533,7 +533,7 @@ void epayment_creditcard::setup_form(
     // phone
     //
     {
-        int const show_phone(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_PHONE))->value().safeSignedCharValue(0, 1));
+        int const show_phone(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_PHONE))->getValue().safeSignedCharValue(0, 1));
         switch(show_phone)
         {
         case 0: // Hide phone number
@@ -600,7 +600,7 @@ void epayment_creditcard::setup_form(
             {
                 // no gateway in the URI, try with the default
                 //
-                gateway = settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_GATEWAY))->value().stringValue();
+                gateway = settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_GATEWAY))->getValue().stringValue();
             }
 
             if(gateway.isEmpty()
@@ -779,17 +779,17 @@ void epayment_creditcard::on_save_editor_fields(editor::save_info_t & save_info)
     // get the settings ready
     //
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
     content::path_info_t epayment_creditcard_settings_ipath;
     epayment_creditcard_settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SETTINGS_PATH));
     if(!content_table->exists(epayment_creditcard_settings_ipath.get_key())
-    || !content_table->row(epayment_creditcard_settings_ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
+    || !content_table->getRow(epayment_creditcard_settings_ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
     {
         // the form by default is what we want if no settings were defined
         return;
     }
-    QtCassandra::QCassandraRow::pointer_t settings_row(revision_table->row(epayment_creditcard_settings_ipath.get_revision_key()));
+    libdbproxy::row::pointer_t settings_row(revision_table->getRow(epayment_creditcard_settings_ipath.get_revision_key()));
 
     // retrieve the data and save it in a epayment_creditcard_info_t object
     //
@@ -844,13 +844,13 @@ void epayment_creditcard::on_save_editor_fields(editor::save_info_t & save_info)
     // country may be hidden and have a default instead
     //
     {
-        bool const show_country(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_COUNTRY))->value().safeSignedCharValue(0, 1) != 0);
+        bool const show_country(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_COUNTRY))->getValue().safeSignedCharValue(0, 1) != 0);
         if(!show_country)
         {
             // user could not enter a country, administrator may have
             // a default though...
             //
-            creditcard_info.set_billing_country(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_DEFAULT_COUNTRY))->value().stringValue());
+            creditcard_info.set_billing_country(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_DEFAULT_COUNTRY))->getValue().stringValue());
         }
         else
         {
@@ -873,7 +873,7 @@ void epayment_creditcard::on_save_editor_fields(editor::save_info_t & save_info)
     // country may be hidden and have a default instead
     //
     {
-        bool const show_country(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_COUNTRY))->value().safeSignedCharValue(0, 1) != 0);
+        bool const show_country(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SHOW_COUNTRY))->getValue().safeSignedCharValue(0, 1) != 0);
         if(!show_country)
         {
             // user could not enter a country, administrator may have
@@ -882,7 +882,7 @@ void epayment_creditcard::on_save_editor_fields(editor::save_info_t & save_info)
             // TBD: should we check whether the delivery address should be
             //      added and if not avoid this call?
             //
-            creditcard_info.set_delivery_country(settings_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_DEFAULT_COUNTRY))->value().stringValue());
+            creditcard_info.set_delivery_country(settings_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_DEFAULT_COUNTRY))->getValue().stringValue());
         }
         else
         {

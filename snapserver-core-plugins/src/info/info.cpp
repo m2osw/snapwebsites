@@ -336,21 +336,21 @@ void info::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
     }
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraRow::pointer_t settings_row(revision_table->row(ipath.get_revision_key()));
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::row::pointer_t settings_row(revision_table->getRow(ipath.get_revision_key()));
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
 
-    value = settings_row->cell(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_NAME))->value();
+    value = settings_row->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_NAME))->getValue();
     f_snap->set_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_NAME), value);
 
-    value = settings_row->cell(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_LONG_NAME))->value();
+    value = settings_row->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_LONG_NAME))->getValue();
     f_snap->set_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_LONG_NAME), value);
 
-    value = settings_row->cell(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_SHORT_NAME))->value();
+    value = settings_row->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_SHORT_NAME))->getValue();
     f_snap->set_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_SHORT_NAME), value);
 
-    value = settings_row->cell(snap::get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL))->value();
+    value = settings_row->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL))->getValue();
     f_snap->set_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL), value);
 }
 
@@ -418,7 +418,7 @@ void info::on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynami
 }
 
 
-void info::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t row)
+void info::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
     NOTUSED(field_type);
     NOTUSED(row);

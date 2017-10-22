@@ -539,7 +539,7 @@ void users::user_identifier_update(int64_t variables_timestamp)
     //
     users_table->clearCache();
 
-    QtCassandra::QCassandraRowPredicate::pointer_t row_predicate( std::make_shared<QtCassandra::QCassandraRowPredicate>() );
+    libdbproxy::row_predicate::pointer_t row_predicate( std::make_shared<libdbproxy::row_predicate>() );
     row_predicate->setCount(100);
 
     // Now go through and find all user rows and change them to ids. Add index entries.
@@ -553,10 +553,10 @@ void users::user_identifier_update(int64_t variables_timestamp)
             break;
         }
 
-        auto row_list(users_table->rows());
+        auto row_list(users_table->getRows());
         for( QByteArray const & row_key : row_list.keys() )
         {
-            QtCassandra::QCassandraValue const email( row_key );
+            libdbproxy::value const email( row_key );
             QString email_name(email.stringValue());
             SNAP_LOG_TRACE("checking email_name=")(email_name);
             if( email_name == id_row_name || email_name == index_row_name )
@@ -573,22 +573,22 @@ void users::user_identifier_update(int64_t variables_timestamp)
                 continue;
             }
 
-            QtCassandra::QCassandraRow::pointer_t  const & row     ( row_list[row_key] );
-            QtCassandra::QCassandraCell::pointer_t const & id_cell ( row->cell(identifier_name) );
-            QtCassandra::QCassandraValue const             id      ( id_cell->value() );
-            QtCassandra::QCassandraRow::pointer_t  const & new_row ( users_table->row(id.binaryValue()) );
+            libdbproxy::row::pointer_t  const & row     ( row_list[row_key] );
+            libdbproxy::cell::pointer_t const & id_cell ( row->getCell(identifier_name) );
+            libdbproxy::value const             id      ( id_cell->getValue() );
+            libdbproxy::row::pointer_t  const & new_row ( users_table->getRow(id.binaryValue()) );
             SNAP_LOG_TRACE("found email [")(email_name)("], converting to id=[")(id.int64Value());
 
             // Now create the new row
             //
-            QtCassandra::QCassandraCellPredicate::pointer_t crp( std::make_shared<QtCassandra::QCassandraCellPredicate>() );
+            libdbproxy::cell_predicate::pointer_t crp( std::make_shared<libdbproxy::cell_predicate>() );
             crp->setCount( 10000 );
             row->readCells( crp );
-            auto cell_list(row->cells());
+            auto cell_list(row->getCells());
             for( QByteArray const & cell_key : cell_list.keys() )
             {
-                QtCassandra::QCassandraValue value( cell_list[cell_key]->value() );
-                QtCassandra::QCassandraCell::pointer_t new_cell( new_row->cell(cell_key) );
+                libdbproxy::value value( cell_list[cell_key]->getValue() );
+                libdbproxy::cell::pointer_t new_cell( new_row->getCell(cell_key) );
                 new_cell->setValue( value );
             }
 
@@ -608,7 +608,7 @@ void users::user_identifier_update(int64_t variables_timestamp)
     SNAP_LOG_TRACE("Creating *index_row*");
     {
         auto current_email_name( get_name(name_t::SNAP_NAME_USERS_CURRENT_EMAIL) );
-        QtCassandra::QCassandraRow::pointer_t const & index_row( users_table->row(index_row_name) );
+        libdbproxy::row::pointer_t const & index_row( users_table->getRow(index_row_name) );
         for( ;; )
         {
             uint32_t const count(users_table->readRows(row_predicate));
@@ -618,10 +618,10 @@ void users::user_identifier_update(int64_t variables_timestamp)
                 break;
             }
 
-            auto row_list(users_table->rows());
+            auto row_list(users_table->getRows());
             for( QByteArray const & row_key : row_list.keys() )
             {
-                QtCassandra::QCassandraValue const id( row_key );
+                libdbproxy::value const id( row_key );
                 QString row_text(id.stringValue());
                 if( row_text == id_row_name || row_text == index_row_name )
                 {
@@ -630,13 +630,13 @@ void users::user_identifier_update(int64_t variables_timestamp)
                     continue;
                 }
 
-                QtCassandra::QCassandraRow::pointer_t  const & row           ( row_list[row_key] );
-                QtCassandra::QCassandraValue           const & current_email ( row->cell(current_email_name)->value() );
-                QtCassandra::QCassandraValue           const & identifier    ( row_key );
+                libdbproxy::row::pointer_t  const & row           ( row_list[row_key] );
+                libdbproxy::value           const & current_email ( row->getCell(current_email_name)->getValue() );
+                libdbproxy::value           const & identifier    ( row_key );
 
                 SNAP_LOG_TRACE("Creating current_email entry: first=")(current_email.stringValue())
                         (", second=")(identifier.int64Value());
-                index_row->cell( current_email.binaryValue() )->setValue( identifier.binaryValue() );
+                index_row->getCell( current_email.binaryValue() )->setValue( identifier.binaryValue() );
             }
         }
     }
@@ -684,7 +684,7 @@ void users::bootstrap(snap_child * snap)
  *
  * \return The pointer to the users table.
  */
-QtCassandra::QCassandraTable::pointer_t users::get_users_table() const
+libdbproxy::table::pointer_t users::get_users_table() const
 {
     return f_snap->get_table(get_name(name_t::SNAP_NAME_USERS_TABLE));
 }
@@ -716,7 +716,7 @@ int64_t users::get_total_session_duration()
 
     if(cached_duration == -1)
     {
-        QtCassandra::QCassandraValue const total_session_duration(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_TOTAL_SESSION_DURATION)));
+        libdbproxy::value const total_session_duration(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_TOTAL_SESSION_DURATION)));
         // value in database is in days
         cached_duration = total_session_duration.safeInt64Value(0, default_total_session_duration) * 60LL;
     }
@@ -752,7 +752,7 @@ int64_t users::get_user_session_duration()
 
     if(cached_duration == -1)
     {
-        QtCassandra::QCassandraValue const user_session_duration(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_USER_SESSION_DURATION)));
+        libdbproxy::value const user_session_duration(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_USER_SESSION_DURATION)));
         // value in database is in minutes
         cached_duration = user_session_duration.safeInt64Value(0, default_user_session_duration) * 60LL;
     }
@@ -785,7 +785,7 @@ int64_t users::get_administrative_session_duration()
 
     if(cached_duration == -1)
     {
-        QtCassandra::QCassandraValue const administrative_session_duration(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_ADMINISTRATIVE_SESSION_DURATION)));
+        libdbproxy::value const administrative_session_duration(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_ADMINISTRATIVE_SESSION_DURATION)));
         // value in database is in minutes
         cached_duration = administrative_session_duration.safeInt64Value(0, default_administrative_session_duration) * 60LL;
     }
@@ -821,7 +821,7 @@ bool users::get_soft_administrative_session()
 
     if(cached_soft_session == -1)
     {
-        QtCassandra::QCassandraValue const soft_administrative_session(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_SOFT_ADMINISTRATIVE_SESSION)));
+        libdbproxy::value const soft_administrative_session(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_SOFT_ADMINISTRATIVE_SESSION)));
         cached_soft_session = soft_administrative_session.safeSignedCharValue(0, default_soft_administrative_session);
     }
 
@@ -1497,7 +1497,7 @@ bool users::authenticated_user(identifier_t const id, sessions::sessions::sessio
     // the time limit was reached (i.e. returning user,
     // opposed to just a returning visitor)
     //
-    QtCassandra::QCassandraValue const long_sessions(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_LONG_SESSIONS)));
+    libdbproxy::value const long_sessions(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_LONG_SESSIONS)));
     if(f_user_logged_in
     || (long_sessions.nullValue() || long_sessions.signedCharValue()))
     {
@@ -1565,7 +1565,7 @@ void users::user_logout()
     f_info->set_time_to_live(total_session_duration);
 
     // Save the date when the user logged out
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setInt64Value(f_snap->get_start_date());
     f_user_info.set_value(name_t::SNAP_NAME_USERS_LOGOUT_ON, value);
 
@@ -1684,7 +1684,7 @@ void users::on_generate_header_content(content::path_info_t & ipath, QDomElement
 
     QDomDocument doc(header.ownerDocument());
 
-    //QtCassandra::QCassandraTable::pointer_t users_table(get_users_table());
+    //libdbproxy::table::pointer_t users_table(get_users_table());
 
     // retrieve the row for that user
     if(f_user_info.exists())
@@ -1700,7 +1700,7 @@ void users::on_generate_header_content(content::path_info_t & ipath, QDomElement
         }
 
         {   // snap/head/metadata/desc[@type='users::name']/data
-            QtCassandra::QCassandraValue const value(f_user_info.get_value(name_t::SNAP_NAME_USERS_USERNAME));
+            libdbproxy::value const value(f_user_info.get_value(name_t::SNAP_NAME_USERS_USERNAME));
             if(!value.nullValue())
             {
                 QDomElement desc(doc.createElement("desc"));
@@ -1714,7 +1714,7 @@ void users::on_generate_header_content(content::path_info_t & ipath, QDomElement
         }
 
         {   // snap/head/metadata/desc[@type='users::created']/data
-            QtCassandra::QCassandraValue const value(f_user_info.get_value(name_t::SNAP_NAME_USERS_CREATED_TIME));
+            libdbproxy::value const value(f_user_info.get_value(name_t::SNAP_NAME_USERS_CREATED_TIME));
             if(!value.nullValue())
             {
                 QDomElement desc(doc.createElement("desc"));
@@ -1796,7 +1796,7 @@ void users::on_generate_page_content(content::path_info_t & ipath, QDomElement &
     // retrieve the authors
     // TODO: add support to retrieve the "author" who last modified this
     //       page (i.e. user reference in the last revision)
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     QString const link_name(get_name(name_t::SNAP_NAME_USERS_AUTHOR));
     links::link_info author_info(link_name, true, ipath.get_key(), ipath.get_branch());
     QSharedPointer<links::link_context> link_ctxt(links::links::instance()->new_link_context(author_info));
@@ -1835,7 +1835,7 @@ void users::on_generate_page_content(content::path_info_t & ipath, QDomElement &
         }
 
         {   // snap/page/body/author[@type="users::name"]/data
-            QtCassandra::QCassandraValue const value(content_table->row(user_ipath.get_key())->cell(get_name(name_t::SNAP_NAME_USERS_USERNAME))->value());
+            libdbproxy::value const value(content_table->getRow(user_ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_USERS_USERNAME))->getValue());
             if(!value.nullValue())
             {
                 QDomElement author(doc.createElement("author"));
@@ -1862,7 +1862,7 @@ void users::on_create_content(content::path_info_t & ipath, QString const & owne
 
     if(f_user_info.exists())
     {
-        QtCassandra::QCassandraValue const value(f_user_info.get_value(name_t::SNAP_NAME_USERS_IDENTIFIER));
+        libdbproxy::value const value(f_user_info.get_value(name_t::SNAP_NAME_USERS_IDENTIFIER));
         if(!value.nullValue())
         {
             QString const site_key(f_snap->get_site_key_with_slash());
@@ -1915,14 +1915,14 @@ void users::on_create_content(content::path_info_t & ipath, QString const & owne
  */
 void users::verify_user(content::path_info_t & ipath)
 {
-    QtCassandra::QCassandraTable::pointer_t users_table(get_users_table());
+    libdbproxy::table::pointer_t users_table(get_users_table());
 
     if(f_user_info.is_user())
     {
         // TODO: consider moving this parameter to the /admin/settings/users
         //       page instead (unless we want to force a "save to sites table"?)
         //
-        QtCassandra::QCassandraValue const multiuser(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_MULTIUSER)));
+        libdbproxy::value const multiuser(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_MULTIUSER)));
         if(multiuser.nullValue() || !multiuser.signedCharValue())
         {
             // user is logged in already, just send him to his profile
@@ -1966,7 +1966,7 @@ void users::verify_user(content::path_info_t & ipath)
 
         // Save the date when the user logged out
         //
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setInt64Value(f_snap->get_start_date());
         f_user_info.set_value(name_t::SNAP_NAME_USERS_LOGOUT_ON, value);
 
@@ -1999,10 +1999,10 @@ void users::verify_user(content::path_info_t & ipath)
     // TODO: remove the ending characters such as " ", "/", "\" and "|"?
     //       (it happens that people add those by mistake at the end of a URI...)
     session->load_session(session_id, info);
-    QtCassandra::QCassandraValue verify_ignore_user_agent(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_VERIFY_IGNORE_USER_AGENT)));
+    libdbproxy::value verify_ignore_user_agent(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_VERIFY_IGNORE_USER_AGENT)));
     QString const path(info.get_object_path());
     bool ok(false);
-    QtCassandra::QCassandraValue const id_val(static_cast<identifier_t>(path.mid(6).toLongLong(&ok))); // this is the identifier from the session (SNAP-258)
+    libdbproxy::value const id_val(static_cast<identifier_t>(path.mid(6).toLongLong(&ok))); // this is the identifier from the session (SNAP-258)
     //
     if( (info.get_session_type() != sessions::sessions::session_info::session_info_type_t::SESSION_INFO_VALID)
         || ((info.add_check_flags(0) & info.CHECK_HTTP_USER_AGENT) != 0
@@ -2130,7 +2130,7 @@ void users::verify_user(content::path_info_t & ipath)
     links::links::instance()->delete_link(user_status_info);
 
     // Save the date when the user verified
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setInt64Value(f_snap->get_start_date());
     user_info.set_value(name_t::SNAP_NAME_USERS_VERIFIED_ON, value);
 
@@ -2208,7 +2208,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
     if(user_info.exists())
     {
 //SNAP_LOG_TRACE("user exists");
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
 
         // existing users have a unique identifier
         if( !user_info.is_user() )
@@ -2243,7 +2243,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
         // although the user exists, as in, has an account on this Snap!
         // website, that account may not be attached to this website so
         // we need to verify that before moving further.
-        QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+        libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
         content::path_info_t ipath(logged_info.user_ipath());
         if(!content_table->exists(ipath.get_key()))
         {
@@ -2332,7 +2332,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
 
                 // make sure the user password was not blocked
                 //
-                //QtCassandra::QCassandraValue password_blocked;
+                //libdbproxy::value password_blocked;
                 if(user_info.value_exists(name_t::SNAP_NAME_USERS_PASSWORD_BLOCKED))
                 {
                     // increase the 503s counter and block the IP if
@@ -2431,7 +2431,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
                         {
                             // User is now logged in, redirect him
                             //
-                            QtCassandra::QCassandraValue login_redirect(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_LOGIN_REDIRECT)));
+                            libdbproxy::value login_redirect(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_LOGIN_REDIRECT)));
                             if(login_redirect.nullValue())
                             {
                                 // by default redirect to user profile
@@ -2531,7 +2531,7 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
     {
         // Administrator can turn off that feature
         //
-        QtCassandra::QCassandraValue const multisessions(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_MULTISESSIONS)));
+        libdbproxy::value const multisessions(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_MULTISESSIONS)));
         if(multisessions.nullValue() || !multisessions.signedCharValue())
         {
             // close other session
@@ -3037,11 +3037,11 @@ users::status_t users::register_user(QString const & email, QString const & pass
     //
     auto const user_key(user_info.get_user_key(email));
 
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t users_table(get_users_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t users_table(get_users_table());
 
-    QtCassandra::QCassandraValue value;
-    value.setConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
+    libdbproxy::value value;
+    value.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
     value.setStringValue(email); // this is what we save in the user table, with upper/lowercase as given by the end user
 
     int64_t identifier(0);
@@ -3051,8 +3051,8 @@ users::status_t users::register_user(QString const & email, QString const & pass
     QString const identifier_key(get_name(name_t::SNAP_NAME_USERS_IDENTIFIER));
     QString const email_key(get_name(name_t::SNAP_NAME_USERS_ORIGINAL_EMAIL));
     QString const user_path(get_name(name_t::SNAP_NAME_USERS_PATH));
-    QtCassandra::QCassandraValue new_identifier;
-    new_identifier.setConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
+    libdbproxy::value new_identifier;
+    new_identifier.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
 
     // Note that the email was already checked when coming from the Register
     // form, however, it was checked for validity as an email, not checked
@@ -3085,12 +3085,12 @@ users::status_t users::register_user(QString const & email, QString const & pass
         //       to me that I was checking the ID in the index before, not
         //       100% sure though...
         //
-        QtCassandra::QCassandraValue email_data;
-        QtCassandra::QCassandraCell::pointer_t cell(user_info.get_cell(email_key));
+        libdbproxy::value email_data;
+        libdbproxy::cell::pointer_t cell(user_info.get_cell(email_key));
         if(cell != nullptr)
         {
-            cell->setConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
-            email_data = cell->value();
+            cell->setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
+            email_data = cell->getValue();
         }
         if(!email_data.nullValue())
         {
@@ -3100,7 +3100,7 @@ users::status_t users::register_user(QString const & email, QString const & pass
             // "someone else" already registered with that email
             // first check whether that user exists on this website
             //
-            QtCassandra::QCassandraValue const existing_identifier(user_info.get_value(identifier_key));
+            libdbproxy::value const existing_identifier(user_info.get_value(identifier_key));
             if(existing_identifier.size() != sizeof(int64_t))
             {
                 // this means no user can register until this value gets
@@ -3160,10 +3160,10 @@ users::status_t users::register_user(QString const & email, QString const & pass
             //
             if(users_table->exists(id_row_name))
             {
-                QtCassandra::QCassandraRow::pointer_t id_row(users_table->row(id_row_name));
-                QtCassandra::QCassandraCell::pointer_t id_cell(id_row->cell(identifier_key));
-                id_cell->setConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
-                QtCassandra::QCassandraValue const current_identifier(id_cell->value());
+                libdbproxy::row::pointer_t id_row(users_table->getRow(id_row_name));
+                libdbproxy::cell::pointer_t id_cell(id_row->getCell(identifier_key));
+                id_cell->setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
+                libdbproxy::value const current_identifier(id_cell->getValue());
                 if(current_identifier.size() != sizeof(int64_t))
                 {
                     // this means no user can register until this value gets
@@ -3195,7 +3195,7 @@ users::status_t users::register_user(QString const & email, QString const & pass
             // save the new identifier back in the database
             //
             new_identifier.setInt64Value(identifier);
-            users_table->row(id_row_name)->cell(identifier_key)->setValue(new_identifier);
+            users_table->getRow(id_row_name)->getCell(identifier_key)->setValue(new_identifier);
         }
         // the lock automatically goes away here
     }
@@ -3258,19 +3258,19 @@ users::status_t users::register_user(QString const & email, QString const & pass
     content_plugin->create_content(user_ipath, get_plugin_name(), "user-page");
 
     // mark when the user was created in the branch
-    QtCassandra::QCassandraTable::pointer_t branch_table(content_plugin->get_branch_table());
-    QtCassandra::QCassandraRow::pointer_t branch_row(branch_table->row(user_ipath.get_branch_key()));
-    branch_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(created_date);
+    libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
+    libdbproxy::row::pointer_t branch_row(branch_table->getRow(user_ipath.get_branch_key()));
+    branch_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(created_date);
 
     // save a default title and body
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(user_ipath.get_revision_key()));
-    revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(created_date);
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::row::pointer_t revision_row(revision_table->getRow(user_ipath.get_revision_key()));
+    revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(created_date);
     // no title or body by default--other plugins could set those to the
     //                              user name or other information
     QString const empty_string;
-    revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(empty_string);
-    revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->setValue(empty_string);
+    revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(empty_string);
+    revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->setValue(empty_string);
 
     // if already marked as valid, for sure do not mark this user as new!?
     if(status != status_t::STATUS_VALID)
@@ -3702,7 +3702,7 @@ void users::set_referrer( QString path, user_info_t const & user_info )
 
     // make sure it is a valid page
     //
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     if(!content_table->exists(ipath.get_key())
     && ipath.get_real_key().isEmpty())
     {
@@ -3863,7 +3863,7 @@ void users::on_define_locales(http_strings::WeightedHttpString & locales)
     if(f_user_info.is_user()
     && f_user_info.exists())
     {
-        QtCassandra::QCassandraValue const value(f_user_info.get_value(name_t::SNAP_NAME_USERS_LOCALES));
+        libdbproxy::value const value(f_user_info.get_value(name_t::SNAP_NAME_USERS_LOCALES));
         if(!value.nullValue())
         {
             locales.parse(value.stringValue());
@@ -4132,7 +4132,7 @@ void users::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, f
     }
 
     // anything else requires the user to be verified
-    QtCassandra::QCassandraValue const verified_on(f_user_info.get_value(name_t::SNAP_NAME_USERS_LOCALES));
+    libdbproxy::value const verified_on(f_user_info.get_value(name_t::SNAP_NAME_USERS_LOCALES));
     if(verified_on.nullValue())
     {
         // not verified yet
@@ -4145,7 +4145,7 @@ void users::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, f
         if(token.is_token("users::since"))
         {
             // TODO: add support for a user defined date format
-            QtCassandra::QCassandraValue const value(f_user_info.get_value( name_t::SNAP_NAME_USERS_CREATED_TIME ));
+            libdbproxy::value const value(f_user_info.get_value( name_t::SNAP_NAME_USERS_CREATED_TIME ));
             int64_t date(value.int64Value());
             token.f_replacement = QString("%1 %2")
                     .arg(f_snap->date_to_string(date, snap_child::date_format_t::DATE_FORMAT_SHORT))
@@ -4196,11 +4196,11 @@ void users::on_token_help(filter::filter::token_help_t & help)
 void users::token_user_count(filter::filter::token_info_t & token)
 {
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t branch_table(content_plugin->get_branch_table());
+    libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
 
     content::path_info_t user_count_ipath;
     user_count_ipath.set_path(get_name(name_t::SNAP_NAME_USERS_PATH));
-    int32_t const count(branch_table->row(user_count_ipath.get_branch_key())->cell(list::get_name(list::name_t::SNAP_NAME_LIST_NUMBER_OF_ITEMS))->value().safeInt32Value());
+    int32_t const count(branch_table->getRow(user_count_ipath.get_branch_key())->getCell(list::get_name(list::name_t::SNAP_NAME_LIST_NUMBER_OF_ITEMS))->getValue().safeInt32Value());
     token.f_replacement = QString("%1").arg(count);
 }
 
@@ -4224,7 +4224,7 @@ void users::token_user_count(filter::filter::token_info_t & token)
  */
 bool users::user_is_a_spammer()
 {
-    QtCassandra::QCassandraTable::pointer_t users_table(get_users_table());
+    libdbproxy::table::pointer_t users_table(get_users_table());
     QString const black_list(get_name(name_t::SNAP_NAME_USERS_BLACK_LIST));
     if(users_table->exists(black_list))
     {
@@ -4238,7 +4238,7 @@ bool users::user_is_a_spammer()
         //           f_snap->get_canonicalized_remote_ip()
         //
         QString const ip(f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_REMOTE_ADDR)));
-        QtCassandra::QCassandraRow::pointer_t row(users_table->row(black_list));
+        libdbproxy::row::pointer_t row(users_table->getRow(black_list));
         if(row->exists(ip))
         {
             // "unfortunately" this user is marked as a spammer
@@ -4363,13 +4363,13 @@ void users::on_set_locale()
     if(user_path != get_name(name_t::SNAP_NAME_USERS_ANONYMOUS_PATH))
     {
         content::content * content_plugin(content::content::instance());
-        QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+        libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
 
         content::path_info_t user_ipath;
         user_ipath.set_path(user_path);
 
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(user_ipath.get_revision_key()));
-        QString const user_locale(revision_row->cell(get_name(name_t::SNAP_NAME_USERS_LOCALE))->value().stringValue());
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(user_ipath.get_revision_key()));
+        QString const user_locale(revision_row->getCell(get_name(name_t::SNAP_NAME_USERS_LOCALE))->getValue().stringValue());
         if(!user_locale.isEmpty())
         {
             locale::locale::instance()->set_current_locale(user_locale);
@@ -4403,13 +4403,13 @@ void users::on_set_timezone()
     if(user_path != get_name(name_t::SNAP_NAME_USERS_ANONYMOUS_PATH))
     {
         content::content * content_plugin(content::content::instance());
-        QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+        libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
 
         content::path_info_t user_ipath;
         user_ipath.set_path(user_path);
 
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(user_ipath.get_revision_key()));
-        QString const user_timezone(revision_row->cell(get_name(name_t::SNAP_NAME_USERS_TIMEZONE))->value().stringValue());
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(user_ipath.get_revision_key()));
+        QString const user_timezone(revision_row->getCell(get_name(name_t::SNAP_NAME_USERS_TIMEZONE))->getValue().stringValue());
         if(!user_timezone.isEmpty())
         {
             locale::locale::instance()->set_current_timezone(user_timezone);
@@ -4493,7 +4493,7 @@ void users::save_password_done(user_info_t & user_info, QString const & user_pas
 
     QByteArray salt;
     QByteArray hash;
-    QtCassandra::QCassandraValue digest(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_PASSWORD_DIGEST)));
+    libdbproxy::value digest(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_PASSWORD_DIGEST)));
     if(user_password == "!")
     {
         // special case; these users cannot log in
@@ -4515,7 +4515,7 @@ void users::save_password_done(user_info_t & user_info, QString const & user_pas
 
     int64_t const start_date(f_snap->get_start_date());
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
 
     // save the hashed password (never the original password!)
     //

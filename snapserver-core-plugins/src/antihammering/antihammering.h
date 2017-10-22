@@ -66,7 +66,7 @@ public:
     virtual int64_t         do_update(int64_t last_updated);
     virtual void            bootstrap(snap_child * snap);
 
-    QtCassandra::QCassandraTable::pointer_t get_antihammering_table();
+    libdbproxy::table::pointer_t get_antihammering_table();
 
     // server signals
     void                    on_output_result(QString const & uri_path, QByteArray & output);
@@ -78,7 +78,7 @@ private:
     void                    content_update(int64_t variables_timestamp);
 
     snap_child *                            f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t f_antihammering_table;
+    libdbproxy::table::pointer_t f_antihammering_table;
 };
 
 

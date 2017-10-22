@@ -31,7 +31,7 @@
 #include "snapwebsites/snap_lock.h"
 #include "snapwebsites/snap_magic.h"
 
-#include <QtCassandra/QCassandraException.h>
+#include <libdbproxy/exception.h>
 #include <QtSerialization/QSerialization.h>
 #include <libtld/tld.h>
 
@@ -3036,7 +3036,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
             //        be way faster than the database (but we have to
             //        reinitialize that state on a reboot...)
             //
-            QtCassandra::QCassandraValue const state(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_SITE_STATE)));
+            libdbproxy::value const state(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_SITE_STATE)));
             if(state.nullValue())
             {
                 // after the very first installation, it is always defined
@@ -3088,12 +3088,12 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
             SNAP_LOG_ERROR("libexcept(): backtrace=")( stack_string );
         }
     }
-    catch( QtCassandra::QCassandraException const & e )
+    catch( libdbproxy::exception const & e )
     {
-        SNAP_LOG_FATAL("snap_child::process(): QtCassandra::QCassandraException caught: ")(e.what());
+        SNAP_LOG_FATAL("snap_child::process(): libdbproxy::exception caught: ")(e.what());
         for( auto const & stack_string : e.get_stack_trace() )
         {
-            SNAP_LOG_ERROR("QCassandraException(): backtrace=")( stack_string );
+            SNAP_LOG_ERROR("exception(): backtrace=")( stack_string );
         }
     }
     catch( std::exception const & std_except )
@@ -4037,11 +4037,11 @@ void snap_child::snap_info()
 
     // the libQtCassandra version
     version = "LIBQTCASSANDRA=";
-    version += QtCassandra::QT_CASSANDRA_LIBRARY_VERSION_STRING;
+    version += libdbproxy::LIBDBPROXY_LIBRARY_VERSION_STRING;
     version += "\n";
     write(version);
     version = "RUNTIME_LIBQTCASSANDRA=";
-    version += QtCassandra::QCassandra::version();
+    version += libdbproxy::libdbproxy::version();
     version += "\n";
     write(version);
 
@@ -4435,7 +4435,7 @@ snap_child::verified_email_t snap_child::verify_email(QString const & email, siz
         throw snap_child_exception_invalid_email(QString("no emails, even though \"%1\" is not empty.").arg(email));
     }
 
-    QtCassandra::QCassandraTable::pointer_t mx_table(get_table(get_name(name_t::SNAP_NAME_MX)));
+    libdbproxy::table::pointer_t mx_table(get_table(get_name(name_t::SNAP_NAME_MX)));
 
     verified_email_t result(verified_email_t::VERIFIED_EMAIL_UNKNOWN);
 
@@ -4494,14 +4494,14 @@ snap_child::verified_email_t snap_child::verify_email(QString const & email, siz
             }
         }
 
-        QtCassandra::QCassandraRow::pointer_t row(mx_table->row(QString::fromUtf8(e.f_domain.c_str())));
-        QtCassandra::QCassandraValue last_checked_value(row->cell(QString(get_name(name_t::SNAP_NAME_CORE_MX_LAST_CHECKED)))->value());
+        libdbproxy::row::pointer_t row(mx_table->getRow(QString::fromUtf8(e.f_domain.c_str())));
+        libdbproxy::value last_checked_value(row->getCell(QString(get_name(name_t::SNAP_NAME_CORE_MX_LAST_CHECKED)))->getValue());
         if(last_checked_value.size() == sizeof(int64_t))
         {
             time_t const last_update(last_checked_value.int64Value());
             if(f_start_date < last_update + 86400LL * 1000000LL)
             {
-                QtCassandra::QCassandraValue result_value(row->cell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->value());
+                libdbproxy::value result_value(row->getCell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->getValue());
                 if(result_value.safeSignedCharValue())
                 {
                     // considered valid without the need to check again
@@ -4517,12 +4517,12 @@ snap_child::verified_email_t snap_child::verify_email(QString const & email, siz
                         .arg(QString::fromUtf8(e.f_canonicalized_email.c_str())));
             }
         }
-        row->cell(QString(get_name(name_t::SNAP_NAME_CORE_MX_LAST_CHECKED)))->setValue(f_start_date);
+        row->getCell(QString(get_name(name_t::SNAP_NAME_CORE_MX_LAST_CHECKED)))->setValue(f_start_date);
         mail_exchangers exchangers(e.f_domain);
         if(!exchangers.domain_found())
         {
             signed char const failed(0);
-            row->cell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->setValue(failed);
+            row->getCell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->setValue(failed);
             throw snap_child_exception_invalid_email(QString("domain \"%1\" from email \"%2\" does not exist.")
                         .arg(QString::fromUtf8(e.f_domain.c_str()))
                         .arg(QString::fromUtf8(e.f_canonicalized_email.c_str())));
@@ -4530,13 +4530,13 @@ snap_child::verified_email_t snap_child::verify_email(QString const & email, siz
         if(exchangers.size() == 0)
         {
             signed char const failed(0);
-            row->cell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->setValue(failed);
+            row->getCell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->setValue(failed);
             throw snap_child_exception_invalid_email(QString("domain \"%1\" from email \"%2\" does not provide an MX record.")
                         .arg(QString::fromUtf8(e.f_domain.c_str()))
                         .arg(QString::fromUtf8(e.f_canonicalized_email.c_str())));
         }
         signed char const succeeded(1);
-        row->cell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->setValue(succeeded);
+        row->getCell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->setValue(succeeded);
 
         SNAP_LOG_TRACE("domain \"")(e.f_domain)("\" was just checked and is considered valid (it has an MX record.)");
 
@@ -4601,8 +4601,8 @@ bool snap_child::connect_cassandra(bool child)
     tcp_client_server::get_addr_port(config["listen"], snapdbproxy_addr, snapdbproxy_port, "tcp");
 
     // connect to Cassandra
-    f_cassandra = QtCassandra::QCassandra::create();
-    f_cassandra->setDefaultConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
+    f_cassandra = libdbproxy::libdbproxy::create();
+    f_cassandra->setDefaultConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
     bool connected(false);
     try
     {
@@ -4636,7 +4636,7 @@ SNAP_LOG_WARNING("snap_child::connect_cassandra() should not have to call contex
     try
     {
         // select the Snap! context
-        f_cassandra->contexts();
+        f_cassandra->getContexts();
         QString const context_name(get_name(name_t::SNAP_NAME_CONTEXT));
         f_context = f_cassandra->findContext(context_name);
         if(!f_context)
@@ -4696,7 +4696,7 @@ void snap_child::disconnect_cassandra()
     snap_expr::expr::set_cassandra_context(nullptr);
 
     // we must get rid of the site table otherwise it will hold a shared
-    // pointer to the context and the context to the QtCassandra object
+    // pointer to the context and the context to the libdbproxy object
     //
     reset_sites_table();
 
@@ -4724,14 +4724,14 @@ void snap_child::disconnect_cassandra()
  *
  * \param[in] table_name  The name of the table to create.
  */
-QtCassandra::QCassandraTable::pointer_t snap_child::get_table(QString const & table_name)
+libdbproxy::table::pointer_t snap_child::get_table(QString const & table_name)
 {
     if(f_context == nullptr)
     {
-        throw snap_child_exception_no_cassandra("table \"" + table_name + "\" cannot be determined, we have no QCassandraContext.");
+        throw snap_child_exception_no_cassandra("table \"" + table_name + "\" cannot be determined, we have no context.");
     }
 
-    QtCassandra::QCassandraTable::pointer_t table(f_context->findTable(table_name));
+    libdbproxy::table::pointer_t table(f_context->findTable(table_name));
     if(table == nullptr)
     {
         throw snap_child_exception_table_missing("table \"" + table_name + "\" does not exist.");
@@ -4760,7 +4760,7 @@ void snap_child::canonicalize_domain()
 {
     // retrieve domain table
     QString const table_name(get_name(name_t::SNAP_NAME_DOMAINS));
-    QtCassandra::QCassandraTable::pointer_t table(f_context->table(table_name));
+    libdbproxy::table::pointer_t table(f_context->getTable(table_name));
 
     // row for that domain exists?
     f_domain_key = f_uri.domain() + f_uri.top_level_domain();
@@ -4772,7 +4772,7 @@ void snap_child::canonicalize_domain()
     }
 
     // get the core::rules
-    QtCassandra::QCassandraValue value(table->row(f_domain_key)->cell(QString(get_name(name_t::SNAP_NAME_CORE_RULES)))->value());
+    libdbproxy::value value(table->getRow(f_domain_key)->getCell(QString(get_name(name_t::SNAP_NAME_CORE_RULES)))->getValue());
     if(value.nullValue())
     {
         // Null value means an empty string or undefined column and either
@@ -4928,7 +4928,7 @@ void snap_child::canonicalize_website()
 {
     // retrieve website table
     QString const table_name(get_name(name_t::SNAP_NAME_WEBSITES));
-    QtCassandra::QCassandraTable::pointer_t table(f_context->table(table_name));
+    libdbproxy::table::pointer_t table(f_context->getTable(table_name));
 
     // row for that website exists?
     if(!table->exists(f_website_key))
@@ -4939,7 +4939,7 @@ void snap_child::canonicalize_website()
     }
 
     // get the core::rules
-    QtCassandra::QCassandraValue value(table->row(f_website_key)->cell(QString(get_name(name_t::SNAP_NAME_CORE_RULES)))->value());
+    libdbproxy::value value(table->getRow(f_website_key)->getCell(QString(get_name(name_t::SNAP_NAME_CORE_RULES)))->getValue());
     if(value.nullValue())
     {
         // Null value means an empty string or undefined column and either
@@ -5741,7 +5741,7 @@ bool snap_child::verify_country_name(QString & country)
  */
 void snap_child::site_redirect()
 {
-    QtCassandra::QCassandraValue redirect(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_REDIRECT)));
+    libdbproxy::value redirect(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_REDIRECT)));
     if(redirect.nullValue())
     {
         // no redirect
@@ -6446,17 +6446,17 @@ void snap_child::improve_signature(QString const & path, QDomDocument doc, QDomE
  *
  * \return The content of the row as a Cassandra value.
  */
-QtCassandra::QCassandraValue snap_child::get_site_parameter(QString const & name)
+libdbproxy::value snap_child::get_site_parameter(QString const & name)
 {
     // retrieve site table if not there yet
     if(!f_sites_table)
     {
         QString const table_name(get_name(name_t::SNAP_NAME_SITES));
-        QtCassandra::QCassandraTable::pointer_t table(f_context->findTable(table_name));
+        libdbproxy::table::pointer_t table(f_context->findTable(table_name));
         if(!table)
         {
             // the whole table is still empty
-            QtCassandra::QCassandraValue value;
+            libdbproxy::value value;
             return value;
         }
         f_sites_table = table;
@@ -6465,18 +6465,18 @@ QtCassandra::QCassandraValue snap_child::get_site_parameter(QString const & name
     if(!f_sites_table->exists(f_site_key))
     {
         // an empty value is considered to be a null value
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         return value;
     }
-    QtCassandra::QCassandraRow::pointer_t row(f_sites_table->row(f_site_key));
+    libdbproxy::row::pointer_t row(f_sites_table->getRow(f_site_key));
     if(!row->exists(name))
     {
         // an empty value is considered to be a null value
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         return value;
     }
 
-    return row->cell(name)->value();
+    return row->getCell(name)->getValue();
 }
 
 
@@ -6494,7 +6494,7 @@ QtCassandra::QCassandraValue snap_child::get_site_parameter(QString const & name
  * \param[in] name  The name of the parameter to save.
  * \param[in] value  The new value for this parameter.
  */
-void snap_child::set_site_parameter(QString const & name, QtCassandra::QCassandraValue const & value)
+void snap_child::set_site_parameter(QString const & name, libdbproxy::value const & value)
 {
     // retrieve site table if not there yet
     //
@@ -6505,7 +6505,7 @@ void snap_child::set_site_parameter(QString const & name, QtCassandra::QCassandr
         f_sites_table = get_table(get_name(name_t::SNAP_NAME_SITES));
     }
 
-    f_sites_table->row(f_site_key)->cell(name)->setValue(value);
+    f_sites_table->getRow(f_site_key)->getCell(name)->setValue(value);
 }
 
 
@@ -6862,7 +6862,7 @@ QString snap_child::error_body(http_code_t err_code, QString const & err_name, Q
     QString const site_key(get_site_key());
     if(f_cassandra)
     {
-        QtCassandra::QCassandraValue const site_name(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_SITE_NAME)));
+        libdbproxy::value const site_name(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_SITE_NAME)));
         QDomElement a_tag(doc.createElement("a"));
         a_tag.setAttribute("class", "home");
         a_tag.setAttribute("target", "_top");
@@ -7584,7 +7584,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults)
     if(site_plugins.isEmpty())
     {
         // maybe user defined his list of plugins in his website
-        QtCassandra::QCassandraValue plugins(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_PLUGINS)));
+        libdbproxy::value plugins(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_PLUGINS)));
         site_plugins = plugins.stringValue();
         if(site_plugins.isEmpty())
         {
@@ -7706,7 +7706,7 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
     // system updates run at most once every 10 minutes
     QString const core_last_updated(get_name(name_t::SNAP_NAME_CORE_LAST_UPDATED));
     QString const core_last_dynamic_update(get_name(name_t::SNAP_NAME_CORE_LAST_DYNAMIC_UPDATE));
-    QtCassandra::QCassandraValue last_updated(get_site_parameter(core_last_updated));
+    libdbproxy::value last_updated(get_site_parameter(core_last_updated));
     if(last_updated.nullValue())
     {
         // use an "old" date (631152000)
@@ -7726,7 +7726,7 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
         snap_lock lock(QString("%1#snap-child-updating").arg(get_site_key_with_slash()), 60 * 60); // lock for up to 1h
 
         // set the state to "updating" if it currently is "ready"
-        QtCassandra::QCassandraValue state(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_SITE_STATE)));
+        libdbproxy::value state(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_SITE_STATE)));
         if(state.nullValue())
         {
             // set the state to "initializing if it is undefined
@@ -7763,7 +7763,7 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
         // so we set it on initialization, user can replace the name
         // later from the UI
         //
-        QtCassandra::QCassandraValue site_name(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_SITE_NAME)));
+        libdbproxy::value site_name(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_SITE_NAME)));
         if(site_name.nullValue())
         {
             site_name.setStringValue("Website Name");
@@ -7775,7 +7775,7 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
         last_updated.setInt64Value(f_start_date);
         QString const core_plugin_threshold(get_name(name_t::SNAP_NAME_CORE_PLUGIN_THRESHOLD));
         set_site_parameter(core_last_updated, last_updated);
-        QtCassandra::QCassandraValue threshold(get_site_parameter(core_plugin_threshold));
+        libdbproxy::value threshold(get_site_parameter(core_plugin_threshold));
         if(threshold.nullValue())
         {
             // same old date...
@@ -7806,7 +7806,7 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
                 // we have a date/time for each plugin since each has
                 // its own list of date/time checks
                 QString const specific_param_name(QString("%1::%2").arg(core_last_updated).arg(plugin_name));
-                QtCassandra::QCassandraValue specific_last_updated(get_site_parameter(specific_param_name));
+                libdbproxy::value specific_last_updated(get_site_parameter(specific_param_name));
                 int64_t const old_last_updated(specific_last_updated.safeInt64Value());
                 if(specific_last_updated.nullValue())
                 {
@@ -7850,7 +7850,7 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
                 // we have a date/time for each plugin since each has
                 // its own list of date/time checks
                 QString const specific_param_name(QString("%1::%2").arg(core_last_dynamic_update).arg(plugin_name));
-                QtCassandra::QCassandraValue specific_last_updated(get_site_parameter(specific_param_name));
+                libdbproxy::value specific_last_updated(get_site_parameter(specific_param_name));
                 int64_t const old_last_updated(specific_last_updated.safeInt64Value());
                 if(specific_last_updated.nullValue())
                 {

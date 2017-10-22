@@ -63,8 +63,8 @@ private:
     bool                        is_ready(QString const & uri);
 
     pid_t                                   f_parent_pid = -1;
-    QtCassandra::QCassandraTable::pointer_t f_sites_table;
-    QtCassandra::QCassandraTable::pointer_t f_backend_table;
+    libdbproxy::table::pointer_t f_sites_table;
+    libdbproxy::table::pointer_t f_backend_table;
     QString                                 f_action;
     QString                                 f_website;
     int                                     f_not_ready_counter = 0;

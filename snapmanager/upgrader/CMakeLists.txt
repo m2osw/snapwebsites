@@ -46,7 +46,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     snapmanager
     snapwebsites
-    QtCassandra
+    libdbproxy
     ${ADVGETOPT_LIBRARIES}
     ${AS2JS_LIBRARIES}
     ${LIBTLD_LIBRARIES}

@@ -33,8 +33,8 @@
 
 #include <advgetopt.h>
 
-#include <QtCassandra/QCassandra.h>
-#include <QtCassandra/QCassandraContext.h>
+#include <libdbproxy/libdbproxy.h>
+#include <libdbproxy/context.h>
 
 #include <iostream>
 
@@ -140,8 +140,8 @@ advgetopt::getopt *g_opt = NULL;
 int g_errcnt = 0;
 bool g_verbose = 0;
 
-QtCassandra::QCassandra::pointer_t          g_cassandra;
-QtCassandra::QCassandraContext::pointer_t   g_context;
+libdbproxy::libdbproxy::pointer_t          g_cassandra;
+libdbproxy::context::pointer_t   g_context;
 
 
 void connect_cassandra()
@@ -153,8 +153,8 @@ void connect_cassandra()
     }
 
     // connect to Cassandra
-    g_cassandra = QtCassandra::QCassandra::create();
-    g_cassandra->setDefaultConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
+    g_cassandra = libdbproxy::libdbproxy::create();
+    g_cassandra->setDefaultConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
     QString const host(QString::fromUtf8(g_opt->get_string("host").c_str()));
     int const port(QString(g_opt->get_string("port").c_str()).toInt());
     if(!g_cassandra->connect(host, port))
@@ -164,7 +164,7 @@ void connect_cassandra()
     }
 
     // select the Snap! context
-    g_cassandra->contexts();
+    g_cassandra->getContexts();
     QString const context_name(snap::get_name(snap::name_t::SNAP_NAME_CONTEXT));
     g_context = g_cassandra->findContext(context_name);
     if(!g_context)

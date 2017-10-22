@@ -43,9 +43,9 @@ SNAP_TEST_PLUGIN_SUITE_END()
 SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_delete)
 {
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t branch_table(content_plugin->get_branch_table());
-    QtCassandra::QCassandraTable::pointer_t links_table(get_links_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
+    libdbproxy::table::pointer_t links_table(get_links_table());
 
     content::path_info_t source;
     content::path_info_t destination;
@@ -73,15 +73,15 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_delete)
     SNAP_TEST_PLUGIN_SUITE_ASSERT(content_table->exists(destination.get_key()))
 
     // second, check whether the link already exists, if so delete it
-    if(branch_table->row(source.get_branch_key())->exists(source_field_name))
+    if(branch_table->getRow(source.get_branch_key())->exists(source_field_name))
     {
-        branch_table->row(source.get_branch_key())->dropCell(source_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(source.get_branch_key())->exists(source_field_name))
+        branch_table->getRow(source.get_branch_key())->dropCell(source_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(source.get_branch_key())->exists(source_field_name))
     }
-    if(branch_table->row(destination.get_branch_key())->exists(destination_field_name))
+    if(branch_table->getRow(destination.get_branch_key())->exists(destination_field_name))
     {
-        branch_table->row(destination.get_branch_key())->dropCell(destination_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(destination.get_branch_key())->exists(destination_field_name))
+        branch_table->getRow(destination.get_branch_key())->dropCell(destination_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(destination.get_branch_key())->exists(destination_field_name))
     }
 
     // third, check that there are no multi-link definitions either
@@ -95,8 +95,8 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_delete)
     create_link(source_info, destination_info);
 
     // now those two fields must exist or we have a problem
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(source.get_branch_key())->exists(source_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(destination.get_branch_key())->exists(destination_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(source.get_branch_key())->exists(source_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(destination.get_branch_key())->exists(destination_field_name))
 
     // but the multi-link must still not have been created
     SNAP_TEST_PLUGIN_SUITE_ASSERT(!links_table->exists(source_multilink_name))
@@ -106,17 +106,17 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_delete)
     delete_link(source_info);
 
     // got deleted, it must be gone now
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(source.get_branch_key())->exists(source_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(destination.get_branch_key())->exists(destination_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(source.get_branch_key())->exists(source_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(destination.get_branch_key())->exists(destination_field_name))
 }
 
 
 SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_replace_delete)
 {
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t branch_table(content_plugin->get_branch_table());
-    QtCassandra::QCassandraTable::pointer_t links_table(get_links_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
+    libdbproxy::table::pointer_t links_table(get_links_table());
 
     // test a unique link as follow:
     //
@@ -163,20 +163,20 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_replace_delete)
 
     // second, check whether the link already exists, if so delete it
     //
-    if(branch_table->row(page1.get_branch_key())->exists(page1_field_name))
+    if(branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
     {
-        branch_table->row(page1.get_branch_key())->dropCell(page1_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page1.get_branch_key())->exists(page1_field_name))
+        branch_table->getRow(page1.get_branch_key())->dropCell(page1_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
     }
-    if(branch_table->row(page2.get_branch_key())->exists(page2_field_name))
+    if(branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
     {
-        branch_table->row(page2.get_branch_key())->dropCell(page2_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page2.get_branch_key())->exists(page2_field_name))
+        branch_table->getRow(page2.get_branch_key())->dropCell(page2_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
     }
-    if(branch_table->row(page3.get_branch_key())->exists(page3_field_name))
+    if(branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
     {
-        branch_table->row(page3.get_branch_key())->dropCell(page3_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page3.get_branch_key())->exists(page3_field_name))
+        branch_table->getRow(page3.get_branch_key())->dropCell(page3_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
     }
 
     // third, check that there are no multi-link definitions either
@@ -198,9 +198,9 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_replace_delete)
     // now those two fields must exist or we have a problem
     // and "obviously" the 3rd field cannot exist
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page2.get_branch_key())->exists(page2_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
 
     // but the multi-link must still not have been created
     //
@@ -215,9 +215,9 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_replace_delete)
     // now those two fields must exist or we have a problem
     // and "obviously" the 3rd field cannot exist anymore
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page3.get_branch_key())->exists(page3_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
 
     // and the multi-link must still not have been created
     //
@@ -231,18 +231,18 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create_replace_delete)
 
     // got deleted, it must all be gone now
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page2.get_branch_key())->exists(page2_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
 }
 
 
 SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create2_replace2_delete2)
 {
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t branch_table(content_plugin->get_branch_table());
-    QtCassandra::QCassandraTable::pointer_t links_table(get_links_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
+    libdbproxy::table::pointer_t links_table(get_links_table());
 
     // test a double unique link as follow:
     //
@@ -307,25 +307,25 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create2_replace2_delete2)
 
     // second, check whether the link already exists, if so delete it
     //
-    if(branch_table->row(page1.get_branch_key())->exists(page1_field_name))
+    if(branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
     {
-        branch_table->row(page1.get_branch_key())->dropCell(page1_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page1.get_branch_key())->exists(page1_field_name))
+        branch_table->getRow(page1.get_branch_key())->dropCell(page1_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
     }
-    if(branch_table->row(page2.get_branch_key())->exists(page2_field_name))
+    if(branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
     {
-        branch_table->row(page2.get_branch_key())->dropCell(page2_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page2.get_branch_key())->exists(page2_field_name))
+        branch_table->getRow(page2.get_branch_key())->dropCell(page2_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
     }
-    if(branch_table->row(page3.get_branch_key())->exists(page3_field_name))
+    if(branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
     {
-        branch_table->row(page3.get_branch_key())->dropCell(page3_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page3.get_branch_key())->exists(page3_field_name))
+        branch_table->getRow(page3.get_branch_key())->dropCell(page3_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
     }
-    if(branch_table->row(page4.get_branch_key())->exists(page4_field_name))
+    if(branch_table->getRow(page4.get_branch_key())->exists(page4_field_name))
     {
-        branch_table->row(page4.get_branch_key())->dropCell(page4_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page4.get_branch_key())->exists(page4_field_name))
+        branch_table->getRow(page4.get_branch_key())->dropCell(page4_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page4.get_branch_key())->exists(page4_field_name))
     }
 
     // third, check that there are no multi-link definitions either
@@ -349,10 +349,10 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create2_replace2_delete2)
     // now those two fields must exist or we have a problem
     // and "obviously" the 3rd field cannot exist
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page2.get_branch_key())->exists(page2_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page3.get_branch_key())->exists(page3_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page4.get_branch_key())->exists(page4_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page4.get_branch_key())->exists(page4_field_name))
 
     // and no multi-link
     //
@@ -367,10 +367,10 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create2_replace2_delete2)
 
     // all links exist
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page2.get_branch_key())->exists(page2_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page3.get_branch_key())->exists(page3_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page4.get_branch_key())->exists(page4_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page4.get_branch_key())->exists(page4_field_name))
 
     // and the multi-link must still not have been created
     //
@@ -386,10 +386,10 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create2_replace2_delete2)
     // both page1 <-> page2 and page3 <-> page4 links should be deleted
     // then page1 and page3 get linked
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page3.get_branch_key())->exists(page3_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page2.get_branch_key())->exists(page2_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page4.get_branch_key())->exists(page4_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page4.get_branch_key())->exists(page4_field_name))
 
     // and no multi-link
     //
@@ -405,10 +405,10 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create2_replace2_delete2)
 
     // all linked again
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page2.get_branch_key())->exists(page2_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page3.get_branch_key())->exists(page3_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page4.get_branch_key())->exists(page4_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page4.get_branch_key())->exists(page4_field_name))
 
     // and no multi-link
     //
@@ -423,10 +423,10 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create2_replace2_delete2)
 
     // all linked again
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page3.get_branch_key())->exists(page3_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page2.get_branch_key())->exists(page2_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->row(page4.get_branch_key())->exists(page4_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(branch_table->getRow(page4.get_branch_key())->exists(page4_field_name))
 
     // and delete the other link
     //
@@ -434,19 +434,19 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_unique_unique_create2_replace2_delete2)
 
     // all links gone
     //
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page1.get_branch_key())->exists(page1_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page2.get_branch_key())->exists(page2_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page3.get_branch_key())->exists(page3_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(page4.get_branch_key())->exists(page4_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page1.get_branch_key())->exists(page1_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page2.get_branch_key())->exists(page2_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page3.get_branch_key())->exists(page3_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(page4.get_branch_key())->exists(page4_field_name))
 }
 
 
 SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
 {
     content::content *content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t branch_table(content_plugin->get_branch_table());
-    QtCassandra::QCassandraTable::pointer_t links_table(get_links_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
+    libdbproxy::table::pointer_t links_table(get_links_table());
 
     content::path_info_t source;
     content::path_info_t destination;
@@ -485,23 +485,23 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
     // 2. check whether the already link exists, if so delete it
 
     // 2.1 check with "unique" field names, although these should really not exist!
-    if(branch_table->row(source.get_branch_key())->exists(source_field_name))
+    if(branch_table->getRow(source.get_branch_key())->exists(source_field_name))
     {
-        branch_table->row(source.get_branch_key())->dropCell(source_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(source.get_branch_key())->exists(source_field_name))
+        branch_table->getRow(source.get_branch_key())->dropCell(source_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(source.get_branch_key())->exists(source_field_name))
     }
-    if(branch_table->row(destination.get_branch_key())->exists(destination_field_name))
+    if(branch_table->getRow(destination.get_branch_key())->exists(destination_field_name))
     {
-        branch_table->row(destination.get_branch_key())->dropCell(destination_field_name);
-        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(destination.get_branch_key())->exists(destination_field_name))
+        branch_table->getRow(destination.get_branch_key())->dropCell(destination_field_name);
+        SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(destination.get_branch_key())->exists(destination_field_name))
     }
 
     // 2.2 check with multiple field names
     // 2.2.1 check the source
     {
-        QtCassandra::QCassandraRow::pointer_t row(branch_table->row(source.get_branch_key()));
+        libdbproxy::row::pointer_t row(branch_table->getRow(source.get_branch_key()));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setStartCellKey(QString("%1-").arg(source_field_multiname_start));
         column_predicate->setEndCellKey(QString("%1.").arg(source_field_multiname_start));
         column_predicate->setCount(100);
@@ -510,13 +510,13 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 QString const key(QString::fromUtf8(cell_iterator.key()));
                 row->dropCell(key);
@@ -527,9 +527,9 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
 
     // 2.2.2 check the destination
     {
-        QtCassandra::QCassandraRow::pointer_t row(branch_table->row(destination.get_branch_key()));
+        libdbproxy::row::pointer_t row(branch_table->getRow(destination.get_branch_key()));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setStartCellKey(QString("%1-").arg(destination_field_multiname_start));
         column_predicate->setEndCellKey(QString("%1.").arg(destination_field_multiname_start));
         column_predicate->setCount(100);
@@ -538,13 +538,13 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 QString const key(QString::fromUtf8(cell_iterator.key()));
                 row->dropCell(key);
@@ -570,15 +570,15 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
     create_link(source_info, destination_info);
 
     // the two unique fields should still not exist
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(source.get_branch_key())->exists(source_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(destination.get_branch_key())->exists(destination_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(source.get_branch_key())->exists(source_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(destination.get_branch_key())->exists(destination_field_name))
 
     // however, we have got ONE multi-link now
     // search for it, and then verify it exists in the links table as expected
     {
-        QtCassandra::QCassandraRow::pointer_t row(branch_table->row(source.get_branch_key()));
+        libdbproxy::row::pointer_t row(branch_table->getRow(source.get_branch_key()));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setStartCellKey(QString("%1-").arg(source_field_multiname_start));
         column_predicate->setEndCellKey(QString("%1.").arg(source_field_multiname_start));
         column_predicate->setCount(100);
@@ -587,13 +587,13 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 // we have to make sure it is the right branch
                 QString const key(QString::fromUtf8(cell_iterator.key()));
@@ -603,7 +603,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
                     SNAP_TEST_PLUGIN_SUITE_ASSERT(source_multilink_unique_name.isEmpty())
                     source_multilink_unique_name = key;
                     link_info info;
-                    info.from_data(cell_iterator.value()->value().stringValue());
+                    info.from_data(cell_iterator.value()->getValue().stringValue());
                     SNAP_TEST_PLUGIN_SUITE_ASSERT(info.branch() == destination_branch)
                     SNAP_TEST_PLUGIN_SUITE_ASSERT(info.name() == destination_name)
                     SNAP_TEST_PLUGIN_SUITE_ASSERT(!info.is_unique())
@@ -614,9 +614,9 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
         SNAP_TEST_PLUGIN_SUITE_ASSERT(!source_multilink_unique_name.isEmpty())
     }
     {
-        QtCassandra::QCassandraRow::pointer_t row(branch_table->row(destination.get_branch_key()));
+        libdbproxy::row::pointer_t row(branch_table->getRow(destination.get_branch_key()));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setStartCellKey(QString("%1-").arg(destination_field_multiname_start));
         column_predicate->setEndCellKey(QString("%1.").arg(destination_field_multiname_start));
         column_predicate->setCount(100);
@@ -625,13 +625,13 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 // we have to make sure it is the right branch
                 QString const key(QString::fromUtf8(cell_iterator.key()));
@@ -641,7 +641,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
                     SNAP_TEST_PLUGIN_SUITE_ASSERT(destination_multilink_unique_name.isEmpty())
                     destination_multilink_unique_name = key;
                     link_info info;
-                    info.from_data(cell_iterator.value()->value().stringValue());
+                    info.from_data(cell_iterator.value()->getValue().stringValue());
                     SNAP_TEST_PLUGIN_SUITE_ASSERT(info.branch() == source_branch)
                     SNAP_TEST_PLUGIN_SUITE_ASSERT(info.name() == source_name)
                     SNAP_TEST_PLUGIN_SUITE_ASSERT(!info.is_unique())
@@ -661,58 +661,58 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
     // value is the field name as we just read from the branch table
     {
         bool found(false);
-        QtCassandra::QCassandraRow::pointer_t row(links_table->row(source_multilink_name));
+        libdbproxy::row::pointer_t row(links_table->getRow(source_multilink_name));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setCount(100);
         column_predicate->setIndex(); // behave like an index
         for(;;)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 SNAP_TEST_PLUGIN_SUITE_ASSERT(!found)
                 found = true;
 
                 // there has to be only one
                 SNAP_TEST_PLUGIN_SUITE_ASSERT(destination.get_key() == QString::fromUtf8(cell_iterator.key()))
-                SNAP_TEST_PLUGIN_SUITE_ASSERT(source_multilink_unique_name == cell_iterator.value()->value().stringValue())
+                SNAP_TEST_PLUGIN_SUITE_ASSERT(source_multilink_unique_name == cell_iterator.value()->getValue().stringValue())
             }
         }
         SNAP_TEST_PLUGIN_SUITE_ASSERT(found)
     }
     {
         bool found(false);
-        QtCassandra::QCassandraRow::pointer_t row(links_table->row(destination_multilink_name));
+        libdbproxy::row::pointer_t row(links_table->getRow(destination_multilink_name));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setCount(100);
         column_predicate->setIndex(); // behave like an index
         for(;;)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 SNAP_TEST_PLUGIN_SUITE_ASSERT(!found)
                 found = true;
 
                 // there has to be only one
                 SNAP_TEST_PLUGIN_SUITE_ASSERT(source.get_key() == QString::fromUtf8(cell_iterator.key()))
-                SNAP_TEST_PLUGIN_SUITE_ASSERT(destination_multilink_unique_name == cell_iterator.value()->value().stringValue())
+                SNAP_TEST_PLUGIN_SUITE_ASSERT(destination_multilink_unique_name == cell_iterator.value()->getValue().stringValue())
             }
         }
         SNAP_TEST_PLUGIN_SUITE_ASSERT(found)
@@ -722,14 +722,14 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
     delete_link(source_info);
 
     // the unique entry are still not there
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(source.get_branch_key())->exists(source_field_name))
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->row(destination.get_branch_key())->exists(destination_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(source.get_branch_key())->exists(source_field_name))
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(!branch_table->getRow(destination.get_branch_key())->exists(destination_field_name))
 
     // now check that all the multi-link data was indeed removed as expected
     {
-        QtCassandra::QCassandraRow::pointer_t row(branch_table->row(source.get_branch_key()));
+        libdbproxy::row::pointer_t row(branch_table->getRow(source.get_branch_key()));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setStartCellKey(QString("%1-").arg(source_field_multiname_start));
         column_predicate->setEndCellKey(QString("%1.").arg(source_field_multiname_start));
         column_predicate->setCount(3);
@@ -738,13 +738,13 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 // we have to make sure it is the right branch
                 QString const key(QString::fromUtf8(cell_iterator.key()));
@@ -757,9 +757,9 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
         }
     }
     {
-        QtCassandra::QCassandraRow::pointer_t row(branch_table->row(destination.get_branch_key()));
+        libdbproxy::row::pointer_t row(branch_table->getRow(destination.get_branch_key()));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setStartCellKey(QString("%1-").arg(destination_field_multiname_start));
         column_predicate->setEndCellKey(QString("%1.").arg(destination_field_multiname_start));
         column_predicate->setCount(3);
@@ -768,13 +768,13 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 // we have to make sure it is the right branch
                 QString const key(QString::fromUtf8(cell_iterator.key()));
@@ -797,44 +797,44 @@ SNAP_TEST_PLUGIN_TEST_IMPL(links, test_multiple_multiple_create_delete)
     // there must be only one, the key of the cell is the URI and the
     // value is the field name as we just read from the branch table
     {
-        QtCassandra::QCassandraRow::pointer_t row(links_table->row(source_multilink_name));
+        libdbproxy::row::pointer_t row(links_table->getRow(source_multilink_name));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setCount(3);
         column_predicate->setIndex(); // behave like an index
         for(;;)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 SNAP_TEST_PLUGIN_SUITE_ASSERT(false)
             }
         }
     }
     {
-        QtCassandra::QCassandraRow::pointer_t row(links_table->row(destination_multilink_name));
+        libdbproxy::row::pointer_t row(links_table->getRow(destination_multilink_name));
         row->clearCache();
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setCount(3);
         column_predicate->setIndex(); // behave like an index
         for(;;)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             {
                 SNAP_TEST_PLUGIN_SUITE_ASSERT(false)
             }

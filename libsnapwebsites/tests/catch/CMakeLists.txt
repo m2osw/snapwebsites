@@ -61,7 +61,7 @@ if(CATCH_FOUND)
         pthread
         dl
         snapwebsites
-        QtCassandra
+        libdbproxy
     )
 
     # You can use the --success command line option to see all the tests

@@ -1503,7 +1503,7 @@ bool server::check_cassandra(QString const & mandatory_table, bool & timer_requi
 
         // make sure we have the "snap_websites" context
         //
-        QtCassandra::QCassandraContext::pointer_t context( cassandra.get_snap_context() );
+        libdbproxy::context::pointer_t context( cassandra.get_snap_context() );
         if( !context )
         {
             // CASSANDRAREADY will be sent to use again once the tables are

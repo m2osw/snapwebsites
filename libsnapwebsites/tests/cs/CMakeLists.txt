@@ -49,7 +49,7 @@ set( LIBRARIES
     ${LIBTLD_LIBRARIES}
     ${QT_LIBRARIES}
     snapwebsites
-    QtCassandra
+    libdbproxy
 )
 
 ##

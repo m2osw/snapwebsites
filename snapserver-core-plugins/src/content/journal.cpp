@@ -99,9 +99,9 @@ void journal_list::add_page_url( QString const & full_url )
     auto field_timestamp ( get_name(name_t::SNAP_NAME_CONTENT_JOURNAL_TIMESTAMP)  );
     auto field_url       ( get_name(name_t::SNAP_NAME_CONTENT_JOURNAL_URL)        );
 
-    auto current_journal_row( f_journal_table->row(full_url) );
-    current_journal_row->cell(field_timestamp) ->setValue( QtCassandra::QCassandraValue(f_snap->get_start_date()) );
-    current_journal_row->cell(field_url)       ->setValue( full_url );
+    auto current_journal_row( f_journal_table->getRow(full_url) );
+    current_journal_row->getCell(field_timestamp) ->setValue( libdbproxy::value(f_snap->get_start_date()) );
+    current_journal_row->getCell(field_url)       ->setValue( full_url );
 
     f_url_list << full_url;
 }

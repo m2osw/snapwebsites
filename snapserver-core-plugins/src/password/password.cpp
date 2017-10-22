@@ -391,7 +391,7 @@ void password::on_prepare_editor_form(editor::editor * e)
  * \param[in,out] widget  The concerned widget.
  * \param[in,out] data_row  The row pointer to by ipath.
  */
-void password::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t data_row)
+void password::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t data_row)
 {
     NOTUSED(ipath);
     NOTUSED(field_id);
@@ -515,7 +515,7 @@ void password::on_generate_page_content(content::path_info_t & ipath, QDomElemen
 void password::on_path_execute__is_password_blacklisted(content::path_info_t & ipath)
 {
     QString const user_password(f_snap->postenv("password").toLower());
-    QtCassandra::QCassandraTable::pointer_t table(password::password::instance()->get_password_table());
+    libdbproxy::table::pointer_t table(password::password::instance()->get_password_table());
     if(table->exists(user_password))
     {
         messages::messages::instance()->set_info(
@@ -643,7 +643,7 @@ void password::on_path_execute__blacklist_remove_passwords(content::path_info_t 
  *
  * \return The pointer to the list table.
  */
-QtCassandra::QCassandraTable::pointer_t password::get_password_table()
+libdbproxy::table::pointer_t password::get_password_table()
 {
     if(!f_password_table)
     {
@@ -787,7 +787,7 @@ QString password::check_password_against_policy(users::users::user_info_t user_i
             // to delete it (and any following passwords)
             //
             QString const password_modified_name(QString("%1_%2").arg(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_MODIFIED)).arg(idx));
-            QtCassandra::QCassandraValue const old_password_modified(user_info.get_value(password_modified_name));
+            libdbproxy::value const old_password_modified(user_info.get_value(password_modified_name));
             int64_t const password_start_date(old_password_modified.safeInt64Value(0, 0));
             if(idx >= minimum_count && password_start_date < age_limit)
             {
@@ -827,10 +827,10 @@ QString password::check_password_against_policy(users::users::user_info_t user_i
                 QString const password_salt_name  (QString("%1_%2").arg(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_SALT  )).arg(idx));
                 QString const password_digest_name(QString("%1_%2").arg(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_DIGEST)).arg(idx));
 
-                //QtCassandra::QCassandraValue const old_password       (row->cell(password_name         )->value());
-                QtCassandra::QCassandraValue const old_password       (user_info.get_value(password_name         ));
-                QtCassandra::QCassandraValue const old_password_salt  (user_info.get_value(password_salt_name    ));
-                QtCassandra::QCassandraValue const old_password_digest(user_info.get_value(password_digest_name  ));
+                //libdbproxy::value const old_password       (row->getCell(password_name         )->getValue());
+                libdbproxy::value const old_password       (user_info.get_value(password_name         ));
+                libdbproxy::value const old_password_salt  (user_info.get_value(password_salt_name    ));
+                libdbproxy::value const old_password_digest(user_info.get_value(password_digest_name  ));
 
                 // we have to encrypt the new password with the old digest to
                 // get a hash similar to the saved hash
@@ -1146,11 +1146,11 @@ void password::on_save_password(users::users::user_info_t & user_info, QString c
     int64_t const old_password(start_date - pp.get_old_passwords_maximum_age() * 86400LL * 1000000LL);
     int64_t const minimum_count(pp.get_minimum_old_passwords());
 
-    //QtCassandra::QCassandraValue previous_password         (row->cell(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD         ))->value());
-    QtCassandra::QCassandraValue previous_password         (user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD         ));
-    QtCassandra::QCassandraValue previous_password_modified(user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_MODIFIED));
-    QtCassandra::QCassandraValue previous_password_salt    (user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_SALT    ));
-    QtCassandra::QCassandraValue previous_password_digest  (user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_DIGEST  ));
+    //libdbproxy::value previous_password         (row->getCell(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD         ))->getValue());
+    libdbproxy::value previous_password         (user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD         ));
+    libdbproxy::value previous_password_modified(user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_MODIFIED));
+    libdbproxy::value previous_password_salt    (user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_SALT    ));
+    libdbproxy::value previous_password_digest  (user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_DIGEST  ));
 
     bool more(true);
     int64_t drop(0);
@@ -1162,15 +1162,15 @@ void password::on_save_password(users::users::user_info_t & user_info, QString c
         QString const password_salt_name    (QString("%1_%2").arg(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_SALT    )).arg(idx));
         QString const password_digest_name  (QString("%1_%2").arg(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_DIGEST  )).arg(idx));
 
-        QtCassandra::QCassandraValue next_password;
-        QtCassandra::QCassandraValue next_password_modified;
-        QtCassandra::QCassandraValue next_password_salt;
-        QtCassandra::QCassandraValue next_password_digest;
+        libdbproxy::value next_password;
+        libdbproxy::value next_password_modified;
+        libdbproxy::value next_password_salt;
+        libdbproxy::value next_password_digest;
 
         //if(row->exists(password_name))
         if(user_info.value_exists(password_name))
         {
-            //next_password_modified = row->cell(password_modified_name)->value();
+            //next_password_modified = row->getCell(password_modified_name)->getValue();
             next_password_modified = user_info.get_value(password_modified_name);
             int64_t const password_start_date(next_password_modified.safeInt64Value(0, 0));
             if(idx >= minimum_count && password_start_date < old_password)
@@ -1180,7 +1180,7 @@ void password::on_save_password(users::users::user_info_t & user_info, QString c
             }
             else
             {
-                //next_password          = row->cell(password_name         )->value();
+                //next_password          = row->getCell(password_name         )->getValue();
                 next_password          = user_info.get_value(password_name         );
                 next_password_salt     = user_info.get_value(password_salt_name    );
                 next_password_digest   = user_info.get_value(password_digest_name  );
@@ -1191,7 +1191,7 @@ void password::on_save_password(users::users::user_info_t & user_info, QString c
             more = false;
         }
 
-        //row->cell(password_name         )->setValue(previous_password);
+        //row->getCell(password_name         )->setValue(previous_password);
         user_info.set_value(password_name         , previous_password);
         user_info.set_value(password_modified_name, previous_password_modified);
         user_info.set_value(password_salt_name    , previous_password_salt);
@@ -1258,7 +1258,7 @@ void password::on_invalid_password(users::users::user_info_t & user_info, QStrin
     {
         snap_lock lock(user_info.get_user_key()); // TODO: change to id
 
-        QtCassandra::QCassandraValue count_failures(user_info.get_value(get_name(name_t::SNAP_NAME_PASSWORD_COUNT_FAILURES)));
+        libdbproxy::value count_failures(user_info.get_value(get_name(name_t::SNAP_NAME_PASSWORD_COUNT_FAILURES)));
         count = count_failures.safeInt64Value(0, 0) + 1LL;
         count_failures.setInt64Value(count);
         count_failures.setTtl(pp.get_invalid_passwords_counter_lifetime() * 60LL * 60LL);
@@ -1269,7 +1269,7 @@ void password::on_invalid_password(users::users::user_info_t & user_info, QStrin
     {
         // user tried too many times, add a temporary block
         //
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setSignedCharValue(1);
         value.setTtl(pp.get_invalid_passwords_block_duration() * 60LL * 60LL);
         user_info.set_value(users::name_t::SNAP_NAME_USERS_PASSWORD_BLOCKED,value);
@@ -1316,7 +1316,7 @@ void password::on_blocked_user(users::users::user_info_t & user_info, QString co
     {
         snap_lock lock(user_info.get_user_key());  // TODO: change to id
 
-        QtCassandra::QCassandraValue count_503s(user_info.get_value(get_name(name_t::SNAP_NAME_PASSWORD_COUNT_BAD_PASSWORD_503S)));
+        libdbproxy::value count_503s(user_info.get_value(get_name(name_t::SNAP_NAME_PASSWORD_COUNT_BAD_PASSWORD_503S)));
         count = count_503s.safeInt64Value(0, 0) + 1LL;
         count_503s.setInt64Value(count);
         count_503s.setTtl(pp.get_blocked_user_counter_lifetime() * 24LL * 60LL * 60LL);
@@ -1344,10 +1344,10 @@ void password::on_blocked_user(users::users::user_info_t & user_info, QString co
         //      how long it should block the user in days rather than
         //      1 day, 1 week, 1 month...
         //
-        //QtCassandra::QCassandraValue value;
+        //libdbproxy::value value;
         //value.setSignedCharValue(1);
         //value.setTtl(pp.get_blocked_user_firewall_duration() * 24LL * 60LL * 60LL);
-        //row->cell(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_BLOCKED))->setValue(value);
+        //row->getCell(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_BLOCKED))->setValue(value);
         QString const remote_addr(f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_REMOTE_ADDR)));
         server::block_ip(remote_addr, pp.get_blocked_user_firewall_duration(), "password plugin blocking user on too many login attempts");
     }

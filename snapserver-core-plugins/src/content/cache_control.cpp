@@ -37,9 +37,9 @@ SNAP_PLUGIN_EXTENSION_START(content)
 
 void content::set_cache_control_page(path_info_t & ipath)
 {
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
 
-    QString const cache_control(content_table->row(ipath.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_CACHE_CONTROL))->value().stringValue());
+    QString const cache_control(content_table->getRow(ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_CACHE_CONTROL))->getValue().stringValue());
 
     // setup the page, we first reset it in case another page was set
     // here earlier

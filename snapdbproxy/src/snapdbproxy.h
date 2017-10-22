@@ -49,13 +49,14 @@
 //
 #include <advgetopt/advgetopt.h>
 
-// QtCassandra lib
+// libdbproxy lib
 //
-#include <QtCassandra/QCassandraOrder.h>
-#include <QtCassandra/QCassandraProxy.h>
+#include <libdbproxy/order.h>
+#include <libdbproxy/proxy.h>
 
 // CassWrapper lib
 //
+#include <casswrapper/batch.h>
 #include <casswrapper/query.h>
 #include <casswrapper/session.h>
 
@@ -182,7 +183,7 @@ private:
 
 class snapdbproxy_connection
         : public snap::snap_thread::snap_runner
-        , public QtCassandra::QCassandraProxyIO
+        , public libdbproxy::proxy_io
 {
 public:
                                 snapdbproxy_connection
@@ -198,7 +199,7 @@ public:
     // implement snap_runner
     virtual void                run() override;
 
-    // implement QCassandraProxyIO
+    // implement proxy_io
     virtual ssize_t             read(void * buf, size_t count) override;
     virtual ssize_t             write(void const * buf, size_t count) override;
 
@@ -214,19 +215,20 @@ private:
     struct batch_t
     {
         casswrapper::Query::pointer_t f_query;
+        casswrapper::Batch::pointer_t f_batch;
     };
 
-    void                        send_order(casswrapper::Query::pointer_t q, QtCassandra::QCassandraOrder const & order);
-    void                        declare_cursor(QtCassandra::QCassandraOrder const & order);
-    void                        declare_batch(QtCassandra::QCassandraOrder const & order);
-    void                        describe_cluster(QtCassandra::QCassandraOrder const & order);
+    void                        send_order(casswrapper::Query::pointer_t q, libdbproxy::order const & order);
+    void                        declare_cursor(libdbproxy::order const & order);
+    void                        declare_batch(libdbproxy::order const & order);
+    void                        describe_cluster(libdbproxy::order const & order);
     void                        clear_cluster_description();
-    void                        fetch_cursor(QtCassandra::QCassandraOrder const & order);
-    void                        close_cursor(QtCassandra::QCassandraOrder const & order);
-    void                        commit_batch(QtCassandra::QCassandraOrder const & order);
-    void                        read_data(QtCassandra::QCassandraOrder const & order);
-    void                        rollback_batch(QtCassandra::QCassandraOrder const & order);
-    void                        execute_command(QtCassandra::QCassandraOrder const & order);
+    void                        fetch_cursor(libdbproxy::order const & order);
+    void                        close_cursor(libdbproxy::order const & order);
+    void                        commit_batch(libdbproxy::order const & order);
+    void                        read_data(libdbproxy::order const & order);
+    void                        rollback_batch(libdbproxy::order const & order);
+    void                        execute_command(libdbproxy::order const & order);
     void                        close();
 
     void                        clear_batch( int32_t const batch_index );
@@ -235,7 +237,7 @@ private:
     // (and it would create a loop)
     snapdbproxy *                               f_snapdbproxy = nullptr;
 
-    QtCassandra::QCassandraProxy                f_proxy;
+    libdbproxy::proxy                           f_proxy;
     casswrapper::Session::pointer_t             f_session;
     std::vector<cursor_t>                       f_cursors;
     std::vector<batch_t>                        f_batches;

@@ -217,8 +217,8 @@ void hashtag::on_filter_text(filter::filter::filter_text_t & txt_filt)
 {
     // initialized only if needed
     content::content * content_plugin(nullptr);
-    QtCassandra::QCassandraTable::pointer_t content_table;
-    QtCassandra::QCassandraTable::pointer_t revision_table;
+    libdbproxy::table::pointer_t content_table;
+    libdbproxy::table::pointer_t revision_table;
     QString link_settings;
 
     bool first(true);
@@ -257,13 +257,13 @@ void hashtag::on_filter_text(filter::filter::filter_text_t & txt_filt)
 
                 content::path_info_t settings_ipath;
                 settings_ipath.set_path(get_name(name_t::SNAP_NAME_HASHTAG_SETTINGS_PATH));
-                link_settings = revision_table->row(settings_ipath.get_revision_key())->cell(get_name(name_t::SNAP_NAME_HASHTAG_LINK))->value().stringValue();
+                link_settings = revision_table->getRow(settings_ipath.get_revision_key())->getCell(get_name(name_t::SNAP_NAME_HASHTAG_LINK))->getValue().stringValue();
             }
             if(content_table->exists(hash_ipath.get_key())
-            && content_table->row(hash_ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
+            && content_table->getRow(hash_ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
             {
                 // the tag exists, add the link
-                QString const title(revision_table->row(hash_ipath.get_revision_key())->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue());
+                QString const title(revision_table->getRow(hash_ipath.get_revision_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue());
                 QString a;
                 if(link_settings == "bottom")
                 {

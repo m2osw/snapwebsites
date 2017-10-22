@@ -20,7 +20,7 @@
 #include "snapwebsites/snap_config.h"
 #include "snapwebsites/snap_exception.h"
 
-#include <QtCassandra/QCassandra.h>
+#include <libdbproxy/libdbproxy.h>
 
 
 namespace snap
@@ -55,16 +55,16 @@ public:
 
     void                                        connect();
     void                                        disconnect();
-    QtCassandra::QCassandraContext::pointer_t   get_snap_context();
+    libdbproxy::context::pointer_t   get_snap_context();
     void                                        create_table_list();
-    QtCassandra::QCassandraTable::pointer_t     get_table(QString const & table_name);
+    libdbproxy::table::pointer_t     get_table(QString const & table_name);
 
     QString                                     get_snapdbproxy_addr() const;
     int32_t                                     get_snapdbproxy_port() const;
     bool                                        is_connected() const;
 
 private:
-    QtCassandra::QCassandra::pointer_t          f_cassandra;
+    libdbproxy::libdbproxy::pointer_t          f_cassandra;
     QString                                     f_snapdbproxy_addr = "localhost";
     int                                         f_snapdbproxy_port = 4042;
     QMap<QString, bool>                         f_created_table;

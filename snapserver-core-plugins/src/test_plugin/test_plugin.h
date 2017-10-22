@@ -83,13 +83,13 @@ public:
     void                    on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token);
     void                    on_token_help(filter::filter::token_help_t & help);
 
-    QtCassandra::QCassandraTable::pointer_t get_test_results_table();
+    libdbproxy::table::pointer_t get_test_results_table();
 
 private:
     void                    content_update(int64_t variables_timestamp);
 
     snap_child *                            f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t f_test_results_table;
+    libdbproxy::table::pointer_t f_test_results_table;
 };
 
 

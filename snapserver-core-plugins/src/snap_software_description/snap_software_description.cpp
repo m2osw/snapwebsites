@@ -436,12 +436,12 @@ void snap_software_description::on_backend_process()
     restore_path_t rp(f_snap);
 
     content::content * content_plugin(content::content::instance());
-    //QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    //libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
 
     content::path_info_t snap_software_description_settings_ipath;
     snap_software_description_settings_ipath.set_path(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_SETTINGS_PATH));
-    f_snap_software_description_settings_row = revision_table->row(snap_software_description_settings_ipath.get_revision_key());
+    f_snap_software_description_settings_row = revision_table->getRow(snap_software_description_settings_ipath.get_revision_key());
 
     if(!create_publisher())
     {
@@ -602,7 +602,7 @@ bool snap_software_description::create_publisher()
     }
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
     list::list * list_plugin(list::list::instance());
     path::path * path_plugin(path::path::instance());
     attachment::attachment * attachment_plugin(attachment::attachment::instance());
@@ -642,9 +642,9 @@ bool snap_software_description::create_publisher()
 
         // modified since we last generated that file?
         //
-        QtCassandra::QCassandraRow::pointer_t row(content_table->row(publisher_ipath.get_key()));
-        int64_t const modified(row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED))->value().safeInt64Value(0, 0));
-        int64_t const last_snsd_update(row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->value().safeInt64Value(0, 0));
+        libdbproxy::row::pointer_t row(content_table->getRow(publisher_ipath.get_key()));
+        int64_t const modified(row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED))->getValue().safeInt64Value(0, 0));
+        int64_t const last_snsd_update(row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->getValue().safeInt64Value(0, 0));
         if(last_snsd_update > 0
         && (modified == 0 || modified < last_snsd_update))
         {
@@ -694,7 +694,7 @@ bool snap_software_description::create_publisher()
             content_plugin->create_attachment(attachment, snap_version::SPECIAL_VERSION_SYSTEM_BRANCH, "");
         }
 
-        row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->setValue(start_date);
+        row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->setValue(start_date);
     }
 
     return true;
@@ -719,7 +719,7 @@ bool snap_software_description::create_support()
     }
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
     list::list * list_plugin(list::list::instance());
     path::path * path_plugin(path::path::instance());
     attachment::attachment * attachment_plugin(attachment::attachment::instance());
@@ -759,9 +759,9 @@ bool snap_software_description::create_support()
 
         // modified since we last generated that file?
         //
-        QtCassandra::QCassandraRow::pointer_t row(content_table->row(support_ipath.get_key()));
-        int64_t const modified(row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED))->value().safeInt64Value(0, 0));
-        int64_t const last_snsd_update(row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->value().safeInt64Value(0, 0));
+        libdbproxy::row::pointer_t row(content_table->getRow(support_ipath.get_key()));
+        int64_t const modified(row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED))->getValue().safeInt64Value(0, 0));
+        int64_t const last_snsd_update(row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->getValue().safeInt64Value(0, 0));
         if(last_snsd_update > 0
         && (modified == 0 || modified < last_snsd_update))
         {
@@ -811,7 +811,7 @@ bool snap_software_description::create_support()
             content_plugin->create_attachment(attachment, snap_version::SPECIAL_VERSION_SYSTEM_BRANCH, "");
         }
 
-        row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->setValue(start_date);
+        row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->setValue(start_date);
     }
 
     return true;
@@ -865,8 +865,8 @@ bool snap_software_description::create_support()
 bool snap_software_description::create_catalog(content::path_info_t & catalog_ipath, int const depth)
 {
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
     list::list * list_plugin(list::list::instance());
     attachment::attachment * attachment_plugin(attachment::attachment::instance());
     int64_t const start_date(f_snap->get_start_date());
@@ -877,7 +877,7 @@ bool snap_software_description::create_catalog(content::path_info_t & catalog_ip
 
     bool has_data(false);
 
-    int const max_files(f_snap_software_description_settings_row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_SETTINGS_MAX_FILES))->value().safeInt64Value(0, 1000));
+    int const max_files(f_snap_software_description_settings_row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_SETTINGS_MAX_FILES))->getValue().safeInt64Value(0, 1000));
     list::list_item_vector_t list(list_plugin->read_list(catalog_ipath, 0, max_files));
     int const max_items(list.size());
     for(int idx(0); idx < max_items; ++idx)
@@ -946,8 +946,8 @@ bool snap_software_description::create_catalog(content::path_info_t & catalog_ip
             QDomText sub_category_uri(doc.createTextNode(sub_category_ipath.get_key()));
             sub_category.appendChild(sub_category_uri);
 
-            QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(sub_category_ipath.get_revision_key()));
-            QString const category_name(revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue());
+            libdbproxy::row::pointer_t revision_row(revision_table->getRow(sub_category_ipath.get_revision_key()));
+            QString const category_name(revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue());
             sub_category.setAttribute("name", snap_dom::remove_tags(category_name));
         }
     }
@@ -966,9 +966,9 @@ bool snap_software_description::create_catalog(content::path_info_t & catalog_ip
 
     // modified since we last generated that file?
     //
-    QtCassandra::QCassandraRow::pointer_t row(content_table->row(catalog_ipath.get_key()));
-    //int64_t const modified(row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED))->value().safeInt64Value(0, 0));
-    //int64_t const last_snsd_update(row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->value().safeInt64Value(0, 0));
+    libdbproxy::row::pointer_t row(content_table->getRow(catalog_ipath.get_key()));
+    //int64_t const modified(row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED))->getValue().safeInt64Value(0, 0));
+    //int64_t const last_snsd_update(row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->getValue().safeInt64Value(0, 0));
     //if(last_snsd_update > 0
     //&& (modified == 0 || modified < last_snsd_update))
     //{
@@ -1031,7 +1031,7 @@ bool snap_software_description::create_catalog(content::path_info_t & catalog_ip
             content_plugin->create_attachment(attachment, snap_version::SPECIAL_VERSION_SYSTEM_BRANCH, "");
         }
 
-        row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->setValue(start_date);
+        row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->setValue(start_date);
     }
 
     return true;
@@ -1081,7 +1081,7 @@ bool snap_software_description::create_catalog(content::path_info_t & catalog_ip
 bool snap_software_description::create_file(content::path_info_t & file_ipath)
 {
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
     path::path * path_plugin(path::path::instance());
     attachment::attachment * attachment_plugin(attachment::attachment::instance());
     layout::layout * layout_plugin(layout::layout::instance());
@@ -1089,9 +1089,9 @@ bool snap_software_description::create_file(content::path_info_t & file_ipath)
 
     // modified since we last generated that file?
     //
-    QtCassandra::QCassandraRow::pointer_t row(content_table->row(file_ipath.get_key()));
-    int64_t const modified(row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED))->value().safeInt64Value(0, 0));
-    int64_t const last_snsd_update(row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->value().safeInt64Value(0, 0));
+    libdbproxy::row::pointer_t row(content_table->getRow(file_ipath.get_key()));
+    int64_t const modified(row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED))->getValue().safeInt64Value(0, 0));
+    int64_t const last_snsd_update(row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->getValue().safeInt64Value(0, 0));
     if(last_snsd_update > 0
     && modified < last_snsd_update)  // this case includes 'modified == 0'
     {
@@ -1166,7 +1166,7 @@ bool snap_software_description::create_file(content::path_info_t & file_ipath)
     // save the last update before saving the PADFile so if saving
     // the PADFile fails, it just gets ignored
     //
-    row->cell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->setValue(start_date);
+    row->getCell(get_name(name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_LAST_UPDATE))->setValue(start_date);
 
     // Create the PADFile
     //

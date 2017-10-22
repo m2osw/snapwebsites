@@ -70,7 +70,7 @@ add_executable(${PROJECT_NAME}
 # while developing you may need to set LD_LIBRARY_PATH
 target_link_libraries(${PROJECT_NAME}
     snapwebsites
-    QtCassandra
+    libdbproxy
     ${ADVGETOPT_LIBRARIES}
     ${CASSWRAPPER_LIBRARIES}
     ${LIBEXCEPT_LIBRARY}

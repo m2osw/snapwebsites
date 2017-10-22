@@ -56,7 +56,7 @@ if(CATCH_FOUND)
     )
     set( TEST_LIBRARIES
         snapwebsites
-        QtCassandra
+        libdbproxy
         ${LOG4CPLUS_LIBRARIES}
         ${LIBTLD_LIBRARIES}
         ${QT_LIBRARIES}

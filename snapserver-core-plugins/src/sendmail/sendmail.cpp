@@ -33,7 +33,7 @@
 #include <snapwebsites/snap_pipe.h>
 
 #include <libtld/tld.h>
-#include <QtCassandra/QCassandraValue.h>
+#include <libdbproxy/value.h>
 #include <QtSerialization/QSerializationComposite.h>
 #include <QtSerialization/QSerializationFieldString.h>
 #include <QtSerialization/QSerializationFieldTag.h>
@@ -1660,7 +1660,7 @@ void sendmail::bootstrap(snap_child * snap)
  *
  * \return The pointer to the users table.
  */
-QtCassandra::QCassandraTable::pointer_t sendmail::get_emails_table()
+libdbproxy::table::pointer_t sendmail::get_emails_table()
 {
     return f_snap->get_table(get_name(name_t::SNAP_NAME_SENDMAIL_EMAILS_TABLE));
 }
@@ -1927,11 +1927,11 @@ void sendmail::post_email(email const & e)
     copy.set_site_key(f_snap->get_site_key());
     QString const key(f_snap->get_unique_number());
     copy.set_email_key(key);
-    QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-    QtCassandra::QCassandraValue value;
+    libdbproxy::table::pointer_t emails_table(get_emails_table());
+    libdbproxy::value value;
     QString const data(copy.serialize());
     value.setStringValue(data);
-    emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_NEW))->cell(key)->setValue(value);
+    emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_NEW))->getCell(key)->setValue(value);
 
     // signal the sendmail backend server with a PING
     f_snap->udp_ping(get_name(name_t::SNAP_NAME_SENDMAIL));
@@ -1954,7 +1954,7 @@ void sendmail::post_email(email const & e)
  */
 QString sendmail::default_from() const
 {
-    QtCassandra::QCassandraValue from(f_snap->get_site_parameter(get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL)));
+    libdbproxy::value from(f_snap->get_site_parameter(get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL)));
     if(from.nullValue())
     {
         // some hard coded fallback default...
@@ -2038,19 +2038,19 @@ void sendmail::on_backend_action(QString const & action)
             exit(1);
             NOTREACHED();
         }
-        catch( QtCassandra::QCassandraException const & e )
+        catch( libdbproxy::exception const & e )
         {
-            SNAP_LOG_FATAL("sendmail::on_backend_action(): QCassandraException caught: ")(e.what());
+            SNAP_LOG_FATAL("sendmail::on_backend_action(): exception caught: ")(e.what());
             for( auto bt_line : e.get_stack_trace() )
             {
-                SNAP_LOG_ERROR("QCassandraException backtrace: ")(bt_line);
+                SNAP_LOG_ERROR("exception backtrace: ")(bt_line);
             }
             exit(1);
             NOTREACHED();
         }
         catch( std::exception const & e )
         {
-            SNAP_LOG_FATAL("sendmail::on_backend_action(): exception caught: ")(e.what())(" (not a snap_exception nor a QCassandraException!)");
+            SNAP_LOG_FATAL("sendmail::on_backend_action(): exception caught: ")(e.what())(" (not a snap_exception nor a exception!)");
             exit(1);
             NOTREACHED();
         }
@@ -2083,30 +2083,30 @@ void sendmail::check_bounced_emails()
     // TODO: this one needs to be protected if we are to allow multi-computer
     //       processing of emails
     //
-    QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-    QtCassandra::QCassandraRow::pointer_t raw_row(emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED_RAW)));
+    libdbproxy::table::pointer_t emails_table(get_emails_table());
+    libdbproxy::row::pointer_t raw_row(emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED_RAW)));
     raw_row->clearCache();
-    auto all_column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+    auto all_column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     all_column_predicate->setCount(100); // should this be a parameter?
     all_column_predicate->setIndex(); // behave like an index
     for(;;)
     {
         raw_row->readCells(all_column_predicate);
-        QtCassandra::QCassandraCells const cells(raw_row->cells());
+        libdbproxy::cells const cells(raw_row->getCells());
         if(cells.isEmpty())
         {
             break;
         }
         // handle one batch
-        for(QtCassandra::QCassandraCells::const_iterator c(cells.begin());
+        for(libdbproxy::cells::const_iterator c(cells.begin());
                 c != cells.end();
                 ++c)
         {
             // get the email from the database
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
-            QtCassandra::QCassandraCell::pointer_t cell(*c);
-            QString const bounce_report(cell->value().stringValue());
+            libdbproxy::cell::pointer_t cell(*c);
+            QString const bounce_report(cell->getValue().stringValue());
             reorganize_bounce_email(cell->columnKey(), bounce_report);
             raw_row->dropCell(cell->columnKey());
 
@@ -2123,9 +2123,9 @@ void sendmail::check_bounced_emails()
 
     //SNAP_LOG_TRACE("process \"")(website_key)("\" bounced emails");
 
-    QtCassandra::QCassandraRow::pointer_t row(emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED)));
+    libdbproxy::row::pointer_t row(emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED)));
     row->clearCache();
-    auto column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+    auto column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
     column_predicate->setStartCellKey(website_key + "/");
     column_predicate->setEndCellKey(website_key + "0");
     column_predicate->setCount(100); // should this be a parameter?
@@ -2133,21 +2133,21 @@ void sendmail::check_bounced_emails()
     for(;;)
     {
         row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const cells(row->cells());
+        libdbproxy::cells const cells(row->getCells());
         if(cells.isEmpty())
         {
             break;
         }
         // handle one batch
-        for(QtCassandra::QCassandraCells::const_iterator c(cells.begin());
+        for(libdbproxy::cells::const_iterator c(cells.begin());
                 c != cells.end();
                 ++c)
         {
             // get the email from the database
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
-            QtCassandra::QCassandraCell::pointer_t cell(*c);
-            QString const bounce_report(cell->value().stringValue());
+            libdbproxy::cell::pointer_t cell(*c);
+            QString const bounce_report(cell->getValue().stringValue());
             process_bounce_email(cell->columnKey(), bounce_report, nullptr);
             row->dropCell(cell->columnKey());
 
@@ -2233,7 +2233,7 @@ void sendmail::reorganize_bounce_email(QByteArray const & column_key, QString co
                     // session identifier
                     //
                     QString const website(message_id.mid(at + 1, message_id.length() - at - 2));
-                    int64_t const date(QtCassandra::safeInt64Value(column_key, 0, 0));
+                    int64_t const date(libdbproxy::safeInt64Value(column_key, 0, 0));
                     QString const session_id(message_id.mid(1, period - 1));
 
                     // the website needs to have a session with that identifier
@@ -2247,11 +2247,11 @@ void sendmail::reorganize_bounce_email(QByteArray const & column_key, QString co
                         // someone can still check those out to see whether
                         // there is a problem with it
                         //
-                        QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-                        QtCassandra::QCassandraValue report;
+                        libdbproxy::table::pointer_t emails_table(get_emails_table());
+                        libdbproxy::value report;
                         report.setStringValue(bounce_report);
                         report.setTtl(86400 * 93); // keep for about 3 months
-                        emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED_FAILED))->cell(column_key)->setValue(report);
+                        emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED_FAILED))->getCell(column_key)->setValue(report);
                         SNAP_LOG_INFO("ignoring bounce email with website \"")(website)("\" since no sessions use it.");
                         return;
                     }
@@ -2274,11 +2274,11 @@ void sendmail::reorganize_bounce_email(QByteArray const & column_key, QString co
                         // gets deleted or is somehow invalid and the message
                         // would stick around forever...
                         //
-                        QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-                        QtCassandra::QCassandraValue report;
+                        libdbproxy::table::pointer_t emails_table(get_emails_table());
+                        libdbproxy::value report;
                         report.setStringValue(bounce_report);
                         report.setTtl(86400 * 93); // keep for about 3 months
-                        emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED))->cell(key)->setValue(report);
+                        emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED))->getCell(key)->setValue(report);
                     }
                     return;
                     NOTREACHED();
@@ -2392,8 +2392,8 @@ void sendmail::process_bounce_email(QByteArray const & column_key, QString const
     {
         if(!parse_email(bounce_report, em, true))
         {
-            QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-            emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED_FAILED))->cell(column_key)->setValue(bounce_report);
+            libdbproxy::table::pointer_t emails_table(get_emails_table());
+            emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED_FAILED))->getCell(column_key)->setValue(bounce_report);
             return;
         }
         e = &em;
@@ -2470,11 +2470,11 @@ void sendmail::process_bounce_email(QByteArray const & column_key, QString const
     }
     if(notification.isEmpty())
     {
-        QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-        QtCassandra::QCassandraValue report;
+        libdbproxy::table::pointer_t emails_table(get_emails_table());
+        libdbproxy::value report;
         report.setStringValue(bounce_report);
         report.setTtl(86400 * 93); // keep for about 3 months
-        emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED_FAILED))->cell(column_key)->setValue(report);
+        emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED_FAILED))->getCell(column_key)->setValue(report);
         SNAP_LOG_ERROR("could not parse message, it is missing a notification and/or a message identifier.");
         return;
     }
@@ -2482,7 +2482,7 @@ void sendmail::process_bounce_email(QByteArray const & column_key, QString const
     // to keep the last 5 notifications, we copy the first four to the
     // next four and then save the new one as first
     //
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     for(int i(4); i >= 0; --i)
     {
         // notification
@@ -2597,30 +2597,30 @@ void sendmail::process_emails()
     // (see post_email() for proof)
     QString const site_key(f_snap->get_site_key());
 
-    QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-    QtCassandra::QCassandraRow::pointer_t row(emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_NEW)));
+    libdbproxy::table::pointer_t emails_table(get_emails_table());
+    libdbproxy::row::pointer_t row(emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_NEW)));
     row->clearCache();
-    auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     column_predicate->setCount(100); // should this be a parameter?
     column_predicate->setIndex(); // behave like an index
     for(;;)
     {
         row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const cells(row->cells());
+        libdbproxy::cells const cells(row->getCells());
         if(cells.isEmpty())
         {
             break;
         }
         // handle one batch
-        for(QtCassandra::QCassandraCells::const_iterator c(cells.begin());
+        for(libdbproxy::cells::const_iterator c(cells.begin());
                 c != cells.end();
                 ++c)
         {
             // get the email from the database
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
-            QtCassandra::QCassandraCell::pointer_t cell(*c);
-            QtCassandra::QCassandraValue const value(cell->value());
+            libdbproxy::cell::pointer_t cell(*c);
+            libdbproxy::value const value(cell->getValue());
             bool done(false);
             if(!value.nullValue())
             {
@@ -2685,8 +2685,8 @@ void sendmail::attach_email(email const & e)
         return;
     }
 
-    QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-    QtCassandra::QCassandraRow::pointer_t lists(emails_table->row(get_name(name_t::SNAP_NAME_SENDMAIL_LISTS)));
+    libdbproxy::table::pointer_t emails_table(get_emails_table());
+    libdbproxy::row::pointer_t lists(emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_LISTS)));
 
     // read all the emails
     QString const & site_key(e.get_site_key());
@@ -2702,7 +2702,7 @@ void sendmail::attach_email(email const & e)
             {
                 // if the email is a list, we do not directly send to it
                 is_list = true;
-                QtCassandra::QCassandraValue list_value(lists->cell(list_key)->value());
+                libdbproxy::value list_value(lists->getCell(list_key)->getValue());
                 tld_email_list user_list;
                 if(user_list.parse(to.toUtf8().data(), 0) == TLD_RESULT_SUCCESS)
                 {
@@ -2797,8 +2797,8 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
                 (", user_info.get_identifier()=")(user_info.get_identifier())
                 (", the user_key=")(user_key);
 #endif
-    QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-    QtCassandra::QCassandraRow::pointer_t row(emails_table->row(user_key)); // TODO: convert to using user identifier
+    libdbproxy::table::pointer_t emails_table(get_emails_table());
+    libdbproxy::row::pointer_t row(emails_table->getRow(user_key)); // TODO: convert to using user identifier
     if( !user_info.exists() )
     {
         // the user does not yet exist, we only email people who have some
@@ -2842,25 +2842,25 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
     // save the email for that user
     // (i.e. emails can be read from within the website)
     QString const serialized_email(e.serialize());
-    QtCassandra::QCassandraValue email_value;
+    libdbproxy::value email_value;
     email_value.setStringValue(serialized_email);
     QString const unique_key(e.get_email_key());
-    row->cell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_EMAIL))->setValue(email_value);
-    QtCassandra::QCassandraValue status_value;
+    row->getCell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_EMAIL))->setValue(email_value);
+    libdbproxy::value status_value;
     status_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_NEW));
-    row->cell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_STATUS))->setValue(status_value);
-    QtCassandra::QCassandraValue sent_value;
+    row->getCell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_STATUS))->setValue(status_value);
+    libdbproxy::value sent_value;
     sent_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_NEW));
-    row->cell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_SENDING_STATUS))->setValue(sent_value);
+    row->getCell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_SENDING_STATUS))->setValue(sent_value);
     int64_t const start_date(f_snap->get_start_date());
-    row->cell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_CREATED))->setValue(start_date);
+    row->getCell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_CREATED))->setValue(start_date);
 
     // try to retrieve the mail frequency the user likes, but first check
     // whether this email address was assign one because if so it overrides
     // the user's choice; also the programmer can assign one to the email,
     // but that will be ignored if the user defined his own frequency
     //
-    QtCassandra::QCassandraValue freq_value(row->cell(get_name(name_t::SNAP_NAME_SENDMAIL_FREQUENCY))->value());
+    libdbproxy::value freq_value(row->getCell(get_name(name_t::SNAP_NAME_SENDMAIL_FREQUENCY))->getValue());
     if(freq_value.nullValue())
     {
         freq_value = user_info.get_value(get_name(name_t::SNAP_NAME_SENDMAIL_FREQUENCY));
@@ -2972,13 +2972,13 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
         //
         //{
         //    content::content * content_plugin(content::content::instance());
-        //    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+        //    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
 
         //    content::path_info_t user_ipath;
         //    user_ipath.set_path(user_path);
 
-        //    QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(user_ipath.get_revision_key()));
-        //    QString const user_locale(revision_row->cell(get_name(name_t::SNAP_NAME_USERS_LOCALE))->value().stringValue());
+        //    libdbproxy::row::pointer_t revision_row(revision_table->getRow(user_ipath.get_revision_key()));
+        //    QString const user_locale(revision_row->getCell(get_name(name_t::SNAP_NAME_USERS_LOCALE))->getValue().stringValue());
         //    if(!user_locale.isEmpty())
         //    {
         //        locale::locale::instance()->set_current_locale(user_locale);
@@ -2994,15 +2994,15 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
 
     QString const index_key(QString("%1::%2").arg(unix_date, 16, 16, QLatin1Char('0')).arg(user_key));
 
-    QtCassandra::QCassandraValue index_value;
+    libdbproxy::value index_value;
     char const * index(get_name(name_t::SNAP_NAME_SENDMAIL_INDEX));
     if(emails_table->exists(index))
     {
         // the index already exists, check to see whether that cell exists
-        if(emails_table->row(index)->exists(index_key))
+        if(emails_table->getRow(index)->exists(index_key))
         {
             // it exists, we need to concatenate the values
-            index_value = emails_table->row(index)->cell(index_key)->value();
+            index_value = emails_table->getRow(index)->getCell(index_key)->getValue();
         }
     }
     if(!index_value.nullValue())
@@ -3013,7 +3013,7 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
     {
         index_value.setStringValue(unique_key);
     }
-    emails_table->row(index)->cell(index_key)->setValue(index_value);
+    emails_table->getRow(index)->getCell(index_key)->setValue(index_value);
 }
 
 
@@ -3025,11 +3025,11 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
  */
 void sendmail::run_emails()
 {
-    QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
+    libdbproxy::table::pointer_t emails_table(get_emails_table());
     const char * index(get_name(name_t::SNAP_NAME_SENDMAIL_INDEX));
-    QtCassandra::QCassandraRow::pointer_t row(emails_table->row(index));
+    libdbproxy::row::pointer_t row(emails_table->getRow(index));
     row->clearCache();
-    auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     column_predicate->setStartCellKey("0");
     // we use +1 otherwise immediate emails are sent 5 min. later!
     time_t const unix_date(time(nullptr) + 1);
@@ -3040,21 +3040,21 @@ void sendmail::run_emails()
     for(;;)
     {
         row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const cells(row->cells());
+        libdbproxy::cells const cells(row->getCells());
         if(cells.isEmpty())
         {
             break;
         }
         // handle one batch
-        for(QtCassandra::QCassandraCells::const_iterator c(cells.begin());
+        for(libdbproxy::cells::const_iterator c(cells.begin());
                 c != cells.end();
                 ++c)
         {
             // get the email from the database
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
-            QtCassandra::QCassandraCell::pointer_t cell(*c);
-            QtCassandra::QCassandraValue const value(cell->value());
+            libdbproxy::cell::pointer_t cell(*c);
+            libdbproxy::value const value(cell->getValue());
             QString const column_key(cell->columnKey());
             QString const key(column_key.mid(18));
             if(!value.nullValue())
@@ -3161,9 +3161,9 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
                                     .arg(get_name(name_t::SNAP_NAME_SENDMAIL_SENDING_STATUS)));
 
     // first check the status to make sure it is to be sent
-    QtCassandra::QCassandraTable::pointer_t emails_table(get_emails_table());
-    QtCassandra::QCassandraRow::pointer_t row(emails_table->row(key));
-    QtCassandra::QCassandraValue const sent_value(row->cell(sending_status)->value());
+    libdbproxy::table::pointer_t emails_table(get_emails_table());
+    libdbproxy::row::pointer_t row(emails_table->getRow(key));
+    libdbproxy::value const sent_value(row->getCell(sending_status)->getValue());
     QString const sent_status(sent_value.stringValue());
     if(sent_status == get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_SENT)
     || sent_status == get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_FAILED)
@@ -3187,11 +3187,11 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     // used to allow for a retry; if a well defined failure happens,
     // however, the status will change to FAILED and at that point
     // the system stops trying to send the email
-    QtCassandra::QCassandraValue sending_value;
+    libdbproxy::value sending_value;
     sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_LOADING));
-    row->cell(sending_status)->setValue(sending_value);
+    row->getCell(sending_status)->setValue(sending_value);
 
-    QtCassandra::QCassandraValue email_data(row->cell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_EMAIL))->value());
+    libdbproxy::value email_data(row->getCell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_EMAIL))->getValue());
     // we use f_email so that way we can generate the XML data
     // in the on_generate_main_content() function
     f_email = email(); // reset f_email
@@ -3216,7 +3216,7 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
             // as far as we are concerned here it looks invalid.
             //
             sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_INVALID));
-            row->cell(sending_status)->setValue(sending_value);
+            row->getCell(sending_status)->setValue(sending_value);
             SNAP_LOG_INFO("User \"")(to)("\" has an email address, which returned an unrecoverable 5XX error code. Email with key \"")(unique_key)("\" will not be sent.");
             return;
         }
@@ -3310,7 +3310,7 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     {
         // this should never happen since this is tested in the post_email() function
         sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_FAILED));
-        row->cell(sending_status)->setValue(sending_value);
+        row->getCell(sending_status)->setValue(sending_value);
         SNAP_LOG_FATAL("No attachment, not even a body, so email ")(key)("/")(unique_key)(" cannot be sent");
         return;
     }
@@ -3367,7 +3367,7 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     {
         // this should never happen here
         sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_FAILED));
-        row->cell(sending_status)->setValue(sending_value);
+        row->getCell(sending_status)->setValue(sending_value);
         SNAP_LOG_FATAL("To: email address is considered invalid, email ")(key)("/")(unique_key)("  won't get sent");
         return;
     }
@@ -3375,14 +3375,14 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     if(!list.next(m))
     {
         sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_FAILED));
-        row->cell(sending_status)->setValue(sending_value);
+        row->getCell(sending_status)->setValue(sending_value);
         SNAP_LOG_FATAL("To: email address does not return at least one email, email ")(key)("/")(unique_key)(" won't get sent");
         return;
     }
 
     // now we are starting to send the email to the system sendmail tool
     sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_SENDING));
-    row->cell(sending_status)->setValue(sending_value);
+    row->getCell(sending_status)->setValue(sending_value);
 
     QString cmd("sendmail -f ");
     cmd += f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_FROM));
@@ -3580,14 +3580,14 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     if(spipe.close_pipe() != 0)
     {
         sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_FAILED));
-        row->cell(sending_status)->setValue(sending_value);
+        row->getCell(sending_status)->setValue(sending_value);
         SNAP_LOG_FATAL("Pipe to sendmail failed, email ")(key)("/")(unique_key)(" will not get sent.");
         return;
     }
 
     // now it is marked as fully sent
     sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_SENT));
-    row->cell(sending_status)->setValue(sending_value);
+    row->getCell(sending_status)->setValue(sending_value);
 }
 
 

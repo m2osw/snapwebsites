@@ -253,7 +253,7 @@ void locale_widgets::on_prepare_editor_form(editor::editor * e)
  * \param[in] widget  The XML DOM widget.
  * \param[in] row  The row with the saved data.
  */
-void locale_widgets::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t row)
+void locale_widgets::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
     NOTUSED(field_id);
     NOTUSED(row);
@@ -348,10 +348,10 @@ void locale_widgets::on_init_editor_widget(content::path_info_t & ipath, QString
 }
 
 
-/** \brief Transform data to a QCassandraValue.
+/** \brief Transform data to a value.
  *
  * This function transforms a value received from a POST into a
- * QCassandraValue to be saved in the database.
+ * value to be saved in the database.
  *
  * \param[in] value_info  Information about the widget to be checked.
  */

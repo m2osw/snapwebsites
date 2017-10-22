@@ -69,7 +69,7 @@ public:
     virtual int64_t     do_update(int64_t last_updated);
     virtual void        bootstrap(snap_child * snap);
 
-    QtCassandra::QCassandraTable::pointer_t get_shorturl_table();
+    libdbproxy::table::pointer_t get_shorturl_table();
 
     // content signals
     void                on_create_content(content::path_info_t & path, const QString & owner, const QString & type);
@@ -97,7 +97,7 @@ private:
     void                content_update(int64_t variables_timestamp);
 
     snap_child *                            f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t f_shorturl_table;
+    libdbproxy::table::pointer_t f_shorturl_table;
 };
 
 

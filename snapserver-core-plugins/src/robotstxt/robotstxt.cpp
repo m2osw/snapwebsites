@@ -269,7 +269,7 @@ void robotstxt::output() const
         }
     }
 
-    QtCassandra::QCassandraValue test_site(f_snap->get_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_TEST_SITE)));
+    libdbproxy::value test_site(f_snap->get_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_TEST_SITE)));
     if(test_site.safeSignedCharValue(0, 0))
     {
         // test websites just disallow everything and thus here we do
@@ -450,7 +450,7 @@ void robotstxt::define_robots(content::path_info_t & ipath)
 
         // test websites are a special case
         //
-        QtCassandra::QCassandraValue test_site(f_snap->get_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_TEST_SITE)));
+        libdbproxy::value test_site(f_snap->get_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_TEST_SITE)));
         if(test_site.safeSignedCharValue(0, 0))
         {
             // test websites are all completely forbidden from indexing by

@@ -151,7 +151,7 @@ public:
     {
         return f_destination_cell_name;
     }
-    void cell_predicate(QtCassandra::QCassandraCellRangePredicate::pointer_t column_predicate, int const count);
+    void cell_predicate(libdbproxy::cell_range_predicate::pointer_t column_predicate, int const count);
     QString const & key() const
     {
         return f_key;
@@ -234,10 +234,10 @@ private:
 
     snap_child *                                    		f_snap = nullptr;
     link_info                                       		f_info;
-    QtCassandra::QCassandraRow::pointer_t           		f_row;
-    QtCassandra::QCassandraCellRangePredicate::pointer_t    f_column_predicate;
-    QtCassandra::QCassandraCells                    		f_cells;
-    QtCassandra::QCassandraCells::const_iterator    		f_cell_iterator;
+    libdbproxy::row::pointer_t           		f_row;
+    libdbproxy::cell_range_predicate::pointer_t    f_column_predicate;
+    libdbproxy::cells                    		f_cells;
+    libdbproxy::cells::const_iterator    		f_cell_iterator;
     link_info                                       		f_link;
 };
 
@@ -273,7 +273,7 @@ public:
     virtual int64_t                 do_update(int64_t last_updated);
     virtual void                    bootstrap(snap_child * snap);
 
-    QtCassandra::QCassandraTable::pointer_t get_links_table();
+    libdbproxy::table::pointer_t get_links_table();
 
     // server signals
     void                            on_add_snap_expr_functions(snap_expr::functions_t & functions);
@@ -294,8 +294,8 @@ public:
                                                    , int const count = READ_RECORD_COUNT);
     link_info_pair::vector_t        list_of_links(QString const & path);
     void                            adjust_links_after_cloning(QString const & source_key, QString const & destination_key);
-    void                            fix_branch_copy_link(QtCassandra::QCassandraCell::pointer_t source_cell
-                                                       , QtCassandra::QCassandraRow::pointer_t destination_row
+    void                            fix_branch_copy_link(libdbproxy::cell::pointer_t source_cell
+                                                       , libdbproxy::row::pointer_t destination_row
                                                        , snap_version::version_number_t const destination_branch_number);
 
     // links test suite
@@ -315,8 +315,8 @@ private:
     SNAP_TEST_PLUGIN_TEST_DECL(test_multiple_multiple_create_delete)
 
     snap_child *                                    f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t         f_links_table;
-    QtCassandra::QCassandraTable::pointer_t         f_branch_table;
+    libdbproxy::table::pointer_t         f_links_table;
+    libdbproxy::table::pointer_t         f_branch_table;
 };
 
 } // namespace links

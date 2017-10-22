@@ -19,7 +19,7 @@
 
 #include <snapwebsites/snap_thread.h>
 
-#include <QtCassandra/QCassandra.h>
+#include <libdbproxy/libdbproxy.h>
 
 namespace snap
 {

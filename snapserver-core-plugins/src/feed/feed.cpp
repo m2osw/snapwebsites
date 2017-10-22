@@ -281,7 +281,7 @@ void feed::on_generate_page_content(content::path_info_t & ipath, QDomElement & 
     }
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
 
     content::path_info_t attachment_type_ipath;
     attachment_type_ipath.set_path(get_name(name_t::SNAP_NAME_FEED_ATTACHMENT_TYPE));
@@ -293,8 +293,8 @@ void feed::on_generate_page_content(content::path_info_t & ipath, QDomElement & 
         content::path_info_t attachment_ipath;
         attachment_ipath.set_path(feed_child_info.key());
 
-        QtCassandra::QCassandraRow::pointer_t row(revision_table->row(attachment_ipath.get_revision_key()));
-        QString const mimetype(row->cell(get_name(name_t::SNAP_NAME_FEED_MIMETYPE))->value().stringValue());
+        libdbproxy::row::pointer_t row(revision_table->getRow(attachment_ipath.get_revision_key()));
+        QString const mimetype(row->getCell(get_name(name_t::SNAP_NAME_FEED_MIMETYPE))->getValue().stringValue());
 
         FIELD_SEARCH
             (content::field_search::command_t::COMMAND_MODE, content::field_search::mode_t::SEARCH_MODE_EACH)
@@ -329,12 +329,12 @@ void feed::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
     }
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraRow::pointer_t settings_row(revision_table->row(ipath.get_revision_key()));
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::row::pointer_t settings_row(revision_table->getRow(ipath.get_revision_key()));
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
 
-    if(!settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_RSS_XML))->value().safeSignedCharValue(0, 0))
+    if(!settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_RSS_XML))->getValue().safeSignedCharValue(0, 0))
     {
         // if this one is off, then make sure the file is deleted if it exists
         content::path_info_t rss_xml_ipath;
@@ -342,7 +342,7 @@ void feed::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
         content_plugin->trash_page(rss_xml_ipath);
     }
 
-    if(!settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_ATOM_XML))->value().safeSignedCharValue(0, 0))
+    if(!settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_ATOM_XML))->getValue().safeSignedCharValue(0, 0))
     {
         // if this one is off, then make sure the file is deleted if it exists
         content::path_info_t atom_xml_ipath;
@@ -385,8 +385,8 @@ void feed::generate_feeds()
     content::content * content_plugin(content::content::instance());
     layout::layout * layout_plugin(layout::layout::instance());
     path::path * path_plugin(path::path::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
 
     // the children of this location are the XSLT 2.0 files to convert the
     // data to an actual feed file
@@ -398,7 +398,7 @@ void feed::generate_feeds()
 
     content::path_info_t feed_settings_ipath;
     feed_settings_ipath.set_path(get_name(name_t::SNAP_NAME_FEED_SETTINGS_PATH));
-    QtCassandra::QCassandraRow::pointer_t feed_settings_row(revision_table->row(feed_settings_ipath.get_revision_key()));
+    libdbproxy::row::pointer_t feed_settings_row(revision_table->getRow(feed_settings_ipath.get_revision_key()));
 
     // TODO: if a feed has its own definitions for the Teaser Words, Tags,
     //       End Marker, then use the per feed definitions...
@@ -406,18 +406,18 @@ void feed::generate_feeds()
     //       that anchor.)
     //
     filter::filter::filter_teaser_info_t teaser_info;
-    teaser_info.set_max_words (feed_settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_TEASER_WORDS     ))->value().safeInt64Value(0, DEFAULT_TEASER_WORDS));
-    teaser_info.set_max_tags  (feed_settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_TEASER_TAGS      ))->value().safeInt64Value(0, DEFAULT_TEASER_TAGS));
-    teaser_info.set_end_marker(feed_settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_TEASER_END_MARKER))->value().stringValue());
+    teaser_info.set_max_words (feed_settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_TEASER_WORDS     ))->getValue().safeInt64Value(0, DEFAULT_TEASER_WORDS));
+    teaser_info.set_max_tags  (feed_settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_TEASER_TAGS      ))->getValue().safeInt64Value(0, DEFAULT_TEASER_TAGS));
+    teaser_info.set_end_marker(feed_settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_TEASER_END_MARKER))->getValue().stringValue());
 
-    QString default_logo(feed_settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_DEFAULT_LOGO))->value().stringValue());
-    int64_t const top_max_items(feed_settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_TOP_MAXIMUM_NUMBER_OF_ITEMS_IN_ANY_FEED))->value().safeInt64Value(0, 100));
+    QString default_logo(feed_settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_DEFAULT_LOGO))->getValue().stringValue());
+    int64_t const top_max_items(feed_settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_TOP_MAXIMUM_NUMBER_OF_ITEMS_IN_ANY_FEED))->getValue().safeInt64Value(0, 100));
 
     // first loop through the list of feeds defined under /feed
     content::path_info_t ipath;
     ipath.set_path("feed");
     if(!content_table->exists(ipath.get_key())
-    || !content_table->row(ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
+    || !content_table->getRow(ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
     {
         return;
     }
@@ -430,12 +430,12 @@ void feed::generate_feeds()
         content::path_info_t child_ipath;
         child_ipath.set_path(child_info.key());
 
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(child_ipath.get_revision_key()));
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(child_ipath.get_revision_key()));
 
         // TODO: is the page layout directly a feed XSL file or is it
         //       the name to an attachment? (or maybe we should just check
         //       for a specifically named attachment?)
-        QString feed_parser_layout(revision_row->cell(get_name(name_t::SNAP_NAME_FEED_PAGE_LAYOUT))->value().stringValue());
+        QString feed_parser_layout(revision_row->getCell(get_name(name_t::SNAP_NAME_FEED_PAGE_LAYOUT))->getValue().stringValue());
         if(feed_parser_layout.isEmpty())
         {
             // already loaded?
@@ -569,7 +569,7 @@ void feed::generate_feeds()
             QDomXPath::node_vector_t current_description(dom_xpath.apply(result));
             if(current_description.isEmpty())
             {
-                QString const feed_description(revision_row->cell(get_name(name_t::SNAP_NAME_FEED_DESCRIPTION))->value().stringValue());
+                QString const feed_description(revision_row->getCell(get_name(name_t::SNAP_NAME_FEED_DESCRIPTION))->getValue().stringValue());
                 QDomElement desc(result.createElement("desc"));
                 metadata_tag.appendChild(desc);
                 desc.setAttribute("type", "description");
@@ -698,7 +698,7 @@ void feed::generate_feeds()
             }
 
             {
-                QtCassandra::QCassandraValue const ttl(revision_row->cell(get_name(name_t::SNAP_NAME_FEED_TTL))->value());
+                libdbproxy::value const ttl(revision_row->getCell(get_name(name_t::SNAP_NAME_FEED_TTL))->getValue());
                 if(ttl.size() == sizeof(int64_t))
                 {
                     int64_t const ttl_us(ttl.int64Value());
@@ -908,11 +908,11 @@ void feed::generate_feeds()
                         content::path_info_t attachment_ipath;
                         attachment_ipath.set_path(attachment.get_attachment_cpath());
 
-                        QtCassandra::QCassandraRow::pointer_t attachment_row(revision_table->row(attachment_ipath.get_revision_key()));
+                        libdbproxy::row::pointer_t attachment_row(revision_table->getRow(attachment_ipath.get_revision_key()));
 
-                        attachment_row->cell(get_name(name_t::SNAP_NAME_FEED_TITLE))->setValue(title);
-                        attachment_row->cell(get_name(name_t::SNAP_NAME_FEED_EXTENSION))->setValue(extension);
-                        attachment_row->cell(get_name(name_t::SNAP_NAME_FEED_MIMETYPE))->setValue(mimetype);
+                        attachment_row->getCell(get_name(name_t::SNAP_NAME_FEED_TITLE))->setValue(title);
+                        attachment_row->getCell(get_name(name_t::SNAP_NAME_FEED_EXTENSION))->setValue(extension);
+                        attachment_row->getCell(get_name(name_t::SNAP_NAME_FEED_MIMETYPE))->setValue(mimetype);
                     }
 
                     mark_attachment_as_feed(attachment);
@@ -923,7 +923,7 @@ void feed::generate_feeds()
                     //
                     if(attachment.get_attachment_cpath() == "feed/main/main.rss")
                     {
-                        int8_t const rss_xml(feed_settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_RSS_XML))->value().safeSignedCharValue(0, 0));
+                        int8_t const rss_xml(feed_settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_RSS_XML))->getValue().safeSignedCharValue(0, 0));
                         if(rss_xml)
                         {
                             // change filename to "/rss.xml"
@@ -936,7 +936,7 @@ void feed::generate_feeds()
                     }
                     else if(attachment.get_attachment_cpath() == "feed/main/main.atom")
                     {
-                        int8_t const atom_xml(feed_settings_row->cell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_ATOM_XML))->value().safeSignedCharValue(0, 0));
+                        int8_t const atom_xml(feed_settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_ATOM_XML))->getValue().safeSignedCharValue(0, 0));
                         if(atom_xml)
                         {
                             // change filename to "/atom.xml"

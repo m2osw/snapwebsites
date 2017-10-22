@@ -274,7 +274,7 @@ void oauth2::on_create_content(content::path_info_t & ipath, QString const & own
         static void create(name_t n)
         {
             content::content * content_plugin(content::content::instance());
-            QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
+            libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
 
             // make sure the secret does not include a ':' which is not
             // compatible with Basic Auth
@@ -292,7 +292,7 @@ void oauth2::on_create_content(content::path_info_t & ipath, QString const & own
 
             content::path_info_t ipath;
             ipath.set_path("admin/settings/oauth2");
-            secret_table->row(ipath.get_key())->cell(get_name(n))->setValue(secret);
+            secret_table->getRow(ipath.get_key())->getCell(get_name(n))->setValue(secret);
         }
     };
 
@@ -325,11 +325,11 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
     f_snap->set_ignore_cookies();
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
     content::path_info_t settings_ipath;
     settings_ipath.set_path("admin/settings/oauth2");
-    QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(settings_ipath.get_revision_key()));
-    int8_t const enable(revision_row->cell(get_name(name_t::SNAP_NAME_OAUTH2_ENABLE))->value().safeSignedCharValue());
+    libdbproxy::row::pointer_t revision_row(revision_table->getRow(settings_ipath.get_revision_key()));
+    int8_t const enable(revision_row->getCell(get_name(name_t::SNAP_NAME_OAUTH2_ENABLE))->getValue().safeSignedCharValue());
     if(!enable)
     {
         die(snap_child::http_code_t::HTTP_CODE_UNAUTHORIZED,
@@ -341,9 +341,9 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
         NOTREACHED();
     }
 
-    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-    QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(settings_ipath.get_key()));
-    QString email(secret_row->cell(get_name(name_t::SNAP_NAME_OAUTH2_EMAIL))->value().stringValue());
+    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+    libdbproxy::row::pointer_t secret_row(secret_table->getRow(settings_ipath.get_key()));
+    QString email(secret_row->getCell(get_name(name_t::SNAP_NAME_OAUTH2_EMAIL))->getValue().stringValue());
     if(email.isEmpty())
     {
         die(snap_child::http_code_t::HTTP_CODE_UNAUTHORIZED,
@@ -395,8 +395,8 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
     users::users * users_plugin(users::users::instance());
 
     // Check validity (i.e. is the application logged in?)
-    QString identifier(secret_row->cell(get_name(name_t::SNAP_NAME_OAUTH2_IDENTIFIER))->value().stringValue());
-    QString secret(secret_row->cell(get_name(name_t::SNAP_NAME_OAUTH2_SECRET))->value().stringValue());
+    QString identifier(secret_row->getCell(get_name(name_t::SNAP_NAME_OAUTH2_IDENTIFIER))->getValue().stringValue());
+    QString secret(secret_row->getCell(get_name(name_t::SNAP_NAME_OAUTH2_SECRET))->getValue().stringValue());
 
     if(identifier != identifier_secret[0]
     || secret     != identifier_secret[1])
@@ -408,7 +408,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
         //      important when we call the invalid_password() signal below)
         //
         bool invalid(true);
-        int8_t const user_enable(revision_row->cell(get_name(name_t::SNAP_NAME_OAUTH2_USER_ENABLE))->value().safeSignedCharValue());
+        int8_t const user_enable(revision_row->getCell(get_name(name_t::SNAP_NAME_OAUTH2_USER_ENABLE))->getValue().safeSignedCharValue());
         if(user_enable)
         {
             // in this case we need to determine the secret from the user
@@ -418,7 +418,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
             && oauth2_user_info.value_exists(identifier_secret[0]))
             {
                 // change the email to that user's email
-                email = oauth2_user_info.get_value(identifier_secret[0]).stringValue(); //user_row->cell(identifier_secret[0])->value().stringValue();
+                email = oauth2_user_info.get_value(identifier_secret[0]).stringValue(); //user_row->getCell(identifier_secret[0])->getValue().stringValue();
                 users::users::user_info_t user_info( users_plugin->get_user_info_by_email(email) );
                 if(user_info.exists())
                 {

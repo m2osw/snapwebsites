@@ -62,7 +62,7 @@ if(CATCH_FOUND)
     )
     target_link_libraries(${PROJECT_NAME}
         snapwebsites
-        QtCassandra
+        libdbproxy
         ${LOG4CPLUS_LIBRARIES}
         ${LIBTLD_LIBRARIES}
         ${QT_LIBRARIES}
@@ -81,7 +81,7 @@ if(CATCH_FOUND)
     )
     target_link_libraries(${PROJECT_NAME}
         snapwebsites
-        QtCassandra
+        libdbproxy
         ${LOG4CPLUS_LIBRARIES}
         ${LIBTLD_LIBRARIES}
         ${QT_LIBRARIES}

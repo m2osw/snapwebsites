@@ -20,7 +20,7 @@
 #include "snapwebsites/log.h"
 #include "snapwebsites/snapwebsites.h"
 
-#include <QtCassandra/QCassandra.h>
+#include <libdbproxy/libdbproxy.h>
 
 #include <sys/time.h>
 
@@ -230,7 +230,7 @@ http_cookie::http_cookie(snap_child * snap, QString const & name, QString const 
 
     if(f_snap)
     {
-        QtCassandra::QCassandraValue cookie_domain(f_snap->get_site_parameter(snap::get_name(name_t::SNAP_NAME_CORE_COOKIE_DOMAIN)));
+        libdbproxy::value cookie_domain(f_snap->get_site_parameter(snap::get_name(name_t::SNAP_NAME_CORE_COOKIE_DOMAIN)));
         if(cookie_domain.nullValue())
         {
             // use the fully qualified website domain name

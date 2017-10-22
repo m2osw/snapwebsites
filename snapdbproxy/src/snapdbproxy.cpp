@@ -53,7 +53,7 @@
 // 3rd party libs
 //
 #include <QtCore>
-#include <QtCassandra/QCassandra.h>
+#include <libdbproxy/libdbproxy.h>
 #include <advgetopt/advgetopt.h>
 
 // system (C++)

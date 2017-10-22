@@ -249,8 +249,8 @@ void no_iframe::on_generate_header_content(content::path_info_t & ipath, QDomEle
     }
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
 
     content::path_info_t mode_ipath;
     mode_ipath.set_path(get_name(name_t::SNAP_NAME_NO_IFRAME_MODE_PATH));
@@ -267,12 +267,12 @@ void no_iframe::on_generate_header_content(content::path_info_t & ipath, QDomEle
         return;
     }
 
-    QtCassandra::QCassandraRow::pointer_t mode_row(revision_table->row(mode_ipath.get_revision_key()));
+    libdbproxy::row::pointer_t mode_row(revision_table->getRow(mode_ipath.get_revision_key()));
 
     QString mode("always");
     if(mode_row->exists(get_name(name_t::SNAP_NAME_NO_IFRAME_MODE)))
     {
-        mode = mode_row->cell(get_name(name_t::SNAP_NAME_NO_IFRAME_MODE))->value().stringValue();
+        mode = mode_row->getCell(get_name(name_t::SNAP_NAME_NO_IFRAME_MODE))->getValue().stringValue();
     }
 
     if(mode == "never")

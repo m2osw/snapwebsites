@@ -29,7 +29,7 @@
 #include <snapwebsites/plugins.h>
 #include <snapwebsites/qstring_stream.h>
 
-#include <QtCassandra/QCassandraValue.h>
+#include <libdbproxy/value.h>
 
 #include <openssl/rand.h>
 
@@ -43,7 +43,7 @@ namespace details
 {
 
 // cache table from the content plugin
-QtCassandra::QCassandraTable::pointer_t     g_cache_table;
+libdbproxy::table::pointer_t     g_cache_table;
 
 // when client does a reload, we want to regenerate each permissions only
 // once so we save the URIs in this vector (we suspect that we receive
@@ -370,7 +370,7 @@ permissions::sets_t::~sets_t()
     {
         save_to_plugin_cache();
     }
-    catch(QtCassandra::QCassandraException const &)
+    catch(libdbproxy::exception const &)
     {
     }
 }
@@ -587,7 +587,7 @@ bool permissions::sets_t::read_from_user_cache()
     get_cache_table();
 
     if(!details::g_cache_table->exists(cache_ipath.get_key())
-    || !details::g_cache_table->row(cache_ipath.get_key())->exists(cache_key))
+    || !details::g_cache_table->getRow(cache_ipath.get_key())->exists(cache_key))
     {
         f_user_cache_reset = true;
         return false;
@@ -595,12 +595,12 @@ bool permissions::sets_t::read_from_user_cache()
 
     // cache entry exists, read it
     //
-    QtCassandra::QCassandraValue cache_value(details::g_cache_table->row(cache_ipath.get_key())->cell(cache_key)->value());
+    libdbproxy::value cache_value(details::g_cache_table->getRow(cache_ipath.get_key())->getCell(cache_key)->getValue());
 
     // check the timestamp
     //
     int64_t const timestamp(cache_value.safeInt64Value());
-    QtCassandra::QCassandraValue const last_updated_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_PERMISSIONS_LAST_UPDATED)));
+    libdbproxy::value const last_updated_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_PERMISSIONS_LAST_UPDATED)));
     int64_t const last_updated(last_updated_value.safeInt64Value());
     if(timestamp < last_updated)
     {
@@ -699,13 +699,13 @@ void permissions::sets_t::save_to_user_cache()
 
     QByteArray value;
     uint64_t const start_date(f_snap->get_start_date());
-    QtCassandra::setInt64Value(value, start_date);
+    libdbproxy::setInt64Value(value, start_date);
     for(auto const & right : f_user_rights)
     {
-        QtCassandra::appendStringValue(value, QString("%1\n").arg(right));
+        libdbproxy::appendStringValue(value, QString("%1\n").arg(right));
     }
 
-    details::g_cache_table->row(cache_ipath.get_key())->cell(cache_key)->setValue(value);
+    details::g_cache_table->getRow(cache_ipath.get_key())->getCell(cache_key)->setValue(value);
 }
 
 
@@ -805,7 +805,7 @@ bool permissions::sets_t::read_from_plugin_cache()
     get_cache_table();
 
     if(!details::g_cache_table->exists(f_ipath.get_key())
-    || !details::g_cache_table->row(f_ipath.get_key())->exists(cache_key))
+    || !details::g_cache_table->getRow(f_ipath.get_key())->exists(cache_key))
     {
         // no cache available, let the caller compute this one
         f_plugin_cache_reset = true;
@@ -813,11 +813,11 @@ bool permissions::sets_t::read_from_plugin_cache()
     }
 
     // cache entry exists, read it
-    QtCassandra::QCassandraValue cache_value(details::g_cache_table->row(f_ipath.get_key())->cell(cache_key)->value());
+    libdbproxy::value cache_value(details::g_cache_table->getRow(f_ipath.get_key())->getCell(cache_key)->getValue());
 
     // check the timestamp
     int64_t const timestamp(cache_value.safeInt64Value());
-    QtCassandra::QCassandraValue const last_updated_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_PERMISSIONS_LAST_UPDATED)));
+    libdbproxy::value const last_updated_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_PERMISSIONS_LAST_UPDATED)));
     int64_t const last_updated(last_updated_value.safeInt64Value());
     if(timestamp < last_updated)
     {
@@ -928,17 +928,17 @@ void permissions::sets_t::save_to_plugin_cache()
 
     QByteArray value;
     uint64_t const start_date(f_snap->get_start_date());
-    QtCassandra::setInt64Value(value, start_date);
+    libdbproxy::setInt64Value(value, start_date);
     for(req_sets_t::const_iterator it(f_plugin_permissions.begin()); it != f_plugin_permissions.end(); ++it)
     {
-        QtCassandra::appendStringValue(value, QString("*%1\n").arg(it.key()));
+        libdbproxy::appendStringValue(value, QString("*%1\n").arg(it.key()));
         for(auto right : it.value())
         {
-            QtCassandra::appendStringValue(value, QString("%1\n").arg(right));
+            libdbproxy::appendStringValue(value, QString("%1\n").arg(right));
         }
     }
 
-    details::g_cache_table->row(f_ipath.get_key())->cell(cache_key)->setValue(value);
+    details::g_cache_table->getRow(f_ipath.get_key())->getCell(cache_key)->setValue(value);
 }
 
 
@@ -1591,7 +1591,7 @@ bool permissions::get_user_rights_impl(permissions * perms, sets_t & sets)
                 user_ipath.set_path(user_path);
 
                 // add all the groups the user is a member of
-                QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+                libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
                 if(!content_table->exists(user_ipath.get_key()))
                 {
                     // that user is gone, this will generate a 500 by Apache
@@ -1779,7 +1779,7 @@ SNAP_LOG_DEBUG("from ")(user_id)(" -> ");
     // content plugin feature in the permissions
     //
     // this very page may be assigned direct permissions
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     QString const site_key(f_snap->get_site_key_with_slash());
     QString key(ipath.get_parameter("renamed_path"));
     if(!key.isEmpty())
@@ -1788,7 +1788,7 @@ SNAP_LOG_DEBUG("from ")(user_id)(" -> ");
         renamed_ipath.set_path(key);
         key = renamed_ipath.get_key();
         if(!content_table->exists(key)
-        || !content_table->row(key)->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER)))
+        || !content_table->getRow(key)->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER)))
         {
             // we always immediately expect a valid path when a plugin
             // marks a path calling the (see plugin/path/path.h):
@@ -1804,7 +1804,7 @@ SNAP_LOG_DEBUG("from ")(user_id)(" -> ");
     {
         key = ipath.get_key();
         if(!content_table->exists(key)
-        || !content_table->row(key)->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER)))
+        || !content_table->getRow(key)->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER)))
         {
             // if that page does not exist, it may be dynamic, try to go up
             // until we have one name in the path then check that the page
@@ -1828,14 +1828,14 @@ SNAP_LOG_DEBUG("from ")(user_id)(" -> ");
                     break;
                 }
             }
-            QtCassandra::QCassandraRow::pointer_t row(content_table->row(key));
+            libdbproxy::row::pointer_t row(content_table->getRow(key));
             char const * dynamic(get_name(name_t::SNAP_NAME_PERMISSIONS_DYNAMIC));
             if(!row->exists(dynamic))
             {
                 // well, there is a page, but it does not authorize sub-pages
                 return true;
             }
-            QtCassandra::QCassandraValue value(row->cell(dynamic)->value());
+            libdbproxy::value value(row->getCell(dynamic)->getValue());
             if(depth > value.signedCharValue())
             {
                 // there is a page, it gives permissions, but this very
@@ -2147,8 +2147,8 @@ void permissions::on_validate_action(content::path_info_t & ipath, QString const
                 // the page is public, get the title instead
                 //
                 content::content * content_plugin(content::content::instance());
-                QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-                page_title = revision_table->row(ipath.get_revision_key())->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue();
+                libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+                page_title = revision_table->getRow(ipath.get_revision_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue();
             }
 
             // check whether the URL included "hit=transparent"
@@ -2295,7 +2295,7 @@ void permissions::on_check_for_redirect(content::path_info_t & ipath)
         // is this website marked as a secure site?
         // if so then we want to check whether we have to switch or not
         //
-        QtCassandra::QCassandraValue const secure_site(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_PERMISSIONS_SECURE_SITE)));
+        libdbproxy::value const secure_site(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_PERMISSIONS_SECURE_SITE)));
         signed char const secure_mode(secure_site.safeSignedCharValue());
         if(secure_mode != secure_mode_t::SECURE_MODE_NO)
         {
@@ -2481,7 +2481,7 @@ void permissions::on_access_allowed(QString const & user_path, content::path_inf
     {
         // check that the action is defined in the database (i.e. valid)
         //
-        QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+        libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
         QString const site_key(f_snap->get_site_key_with_slash());
         QString const key(QString("%1%2/%3").arg(site_key).arg(get_name(name_t::SNAP_NAME_PERMISSIONS_ACTION_PATH)).arg(action));
         if(!content_table->exists(key))
@@ -2588,13 +2588,13 @@ void permissions::add_user_rights(QString const & group, sets_t & sets)
 void permissions::recursive_add_user_rights(QString const & group, sets_t & sets)
 {
 //SNAP_LOG_DEBUG("*** user right key: [")(group)("]");
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     if(!content_table->exists(group))
     {
         throw permissions_exception_invalid_group_name("caller is trying to access group \"" + group + "\" (user)");
     }
 
-    QtCassandra::QCassandraRow::pointer_t row(content_table->row(group));
+    libdbproxy::row::pointer_t row(content_table->getRow(group));
 
     content::path_info_t group_ipath;
     group_ipath.set_path(group);
@@ -2681,7 +2681,7 @@ void permissions::add_plugin_permissions(QString const & plugin_name, QString co
  */
 void permissions::recursive_add_plugin_permissions(QString const & plugin_name, QString const & group, sets_t & sets)
 {
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     if(!content_table->exists(group))
     {
         throw permissions_exception_invalid_group_name("caller is trying to access group \"" + group + "\" which does not exist (recursive_add_plugin_permissions)");
@@ -2852,7 +2852,7 @@ void permissions::on_backend_action(QString const & action)
             SNAP_LOG_FATAL("error: user \"")(email)("\" was not given an identifier.");
             exit(1);
         }
-        QtCassandra::QCassandraValue identifier_value(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
+        libdbproxy::value identifier_value(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
         if(identifier_value.nullValue() || identifier_value.size() != sizeof(int64_t))
         {
             SNAP_LOG_FATAL("error: user \"")(email)("\" identifier could not be read.");
@@ -2926,7 +2926,7 @@ void permissions::check_permissions(QString const & email, QString const & page,
     if(f_valid_actions.find(action) == f_valid_actions.end())
     {
         // check that the action is defined in the database (i.e. valid)
-        QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+        libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
         QString const site_key(f_snap->get_site_key_with_slash());
         QString const key(QString("%1%2/%3").arg(site_key).arg(get_name(name_t::SNAP_NAME_PERMISSIONS_ACTION_PATH)).arg(action));
         if(!content_table->exists(key))
@@ -3101,7 +3101,7 @@ void permissions::check_permissions(QString const & email, QString const & page,
 void permissions::on_user_verified(content::path_info_t & ipath, int64_t identifier)
 {
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
     uint64_t const created_date(f_snap->get_start_date());
 
     // All users are also given a permission group that can be used to
@@ -3118,11 +3118,11 @@ void permissions::on_user_verified(content::path_info_t & ipath, int64_t identif
         content_plugin->create_content(permission_ipath, get_plugin_name(), "system-page");
 
         // create a default the title and body
-        QtCassandra::QCassandraRow::pointer_t permission_revision_row(revision_table->row(permission_ipath.get_revision_key()));
-        permission_revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(created_date);
+        libdbproxy::row::pointer_t permission_revision_row(revision_table->getRow(permission_ipath.get_revision_key()));
+        permission_revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(created_date);
         // TODO: translate (not too important on this page since it is really not public)
-        permission_revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(QString("User #%1 Private Permission Right").arg(identifier));
-        permission_revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->setValue(QString("This type represents permissions that are 100% specific to this user."));
+        permission_revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(QString("User #%1 Private Permission Right").arg(identifier));
+        permission_revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->setValue(QString("This type represents permissions that are 100% specific to this user."));
     }
 
     // second we create the user specific group
@@ -3136,11 +3136,11 @@ void permissions::on_user_verified(content::path_info_t & ipath, int64_t identif
         content_plugin->create_content(group_ipath, get_plugin_name(), "system-page");
 
         // save the title, description, and link to the type
-        QtCassandra::QCassandraRow::pointer_t group_revision_row(revision_table->row(group_ipath.get_revision_key()));
-        group_revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(created_date);
+        libdbproxy::row::pointer_t group_revision_row(revision_table->getRow(group_ipath.get_revision_key()));
+        group_revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->setValue(created_date);
         // TODO: translate (not too important on this page since it is really not public)
-        group_revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(QString("User #%1 Private Permission Group").arg(identifier));
-        group_revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->setValue(QString("This group represents a user private group."));
+        group_revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->setValue(QString("User #%1 Private Permission Group").arg(identifier));
+        group_revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->setValue(QString("This group represents a user private group."));
     }
 
     // link the permission to the company and the user
@@ -3279,7 +3279,7 @@ void call_perms(snap_expr::variable_t & result, snap_expr::variable_t::variable_
     path::path::instance()->access_allowed(user_path, ipath, action, login_status, allowed);
 
     // save the result
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setBoolValue(allowed.allowed());
     result.set_value(snap_expr::variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     //SNAP_LOG_WARNING("exit call perms \"")(allowed.allowed() ? "allowed!" : "forbidden")("\"");
@@ -3410,7 +3410,7 @@ void permissions::reset_permissions_cache()
     //       on a "large" network
     //
     int64_t const last_updated(f_snap->get_current_date());
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setInt64Value(last_updated + EXPECTED_TIME_ACCURACY_EPSILON);
     f_snap->set_site_parameter(get_name(name_t::SNAP_NAME_PERMISSIONS_LAST_UPDATED), value);
 }

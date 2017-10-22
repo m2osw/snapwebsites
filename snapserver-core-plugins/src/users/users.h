@@ -26,9 +26,9 @@
 #include <QByteArray>
 #include <QString>
 
-#include <QtCassandra/QCassandraRow.h>
-#include <QtCassandra/QCassandraTable.h>
-#include <QtCassandra/QCassandraValue.h>
+#include <libdbproxy/row.h>
+#include <libdbproxy/table.h>
+#include <libdbproxy/value.h>
 
 namespace snap
 {
@@ -234,8 +234,8 @@ public:
     class user_info_t
     {
     public:
-        typedef QtCassandra::QCassandraCell::pointer_t  cell_t;
-        typedef QtCassandra::QCassandraValue            value_t;
+        typedef libdbproxy::cell::pointer_t  cell_t;
+        typedef libdbproxy::value            value_t;
 
                                 user_info_t();
                                 user_info_t( QString      const & email_or_path );
@@ -272,11 +272,11 @@ public:
         bool                    exists() const;
         void                    reset();
 
-        void                    save_user_parameter( QString const & field_name, QtCassandra::QCassandraValue const &  value );
+        void                    save_user_parameter( QString const & field_name, libdbproxy::value const &  value );
         void                    save_user_parameter( QString const & field_name, QString                      const &  value );
         void                    save_user_parameter( QString const & field_name, int64_t                      const &  value );
         //
-        bool                    load_user_parameter( QString const & field_name, QtCassandra::QCassandraValue &        value ) const;
+        bool                    load_user_parameter( QString const & field_name, libdbproxy::value &        value ) const;
         bool                    load_user_parameter( QString const & field_name, QString                      &        value ) const;
         bool                    load_user_parameter( QString const & field_name, int64_t                      &        value ) const;
 
@@ -291,10 +291,10 @@ public:
         snap_child *            get_snap() const;
         void                    init_tables() const;
         void                    get_user_id_by_email();
-        QtCassandra::QCassandraRow::pointer_t get_user_row() const;
+        libdbproxy::row::pointer_t get_user_row() const;
 
         mutable snap_child *    f_snap = nullptr;
-        mutable QtCassandra::QCassandraTable::pointer_t f_users_table;
+        mutable libdbproxy::table::pointer_t f_users_table;
         identifier_t            f_identifier  = IDENTIFIER_INVALID;
         QString                 f_user_email;
         mutable QString         f_user_key;
@@ -430,12 +430,12 @@ public:
     SNAP_SIGNAL_WITH_MODE( user_verified,        (content::path_info_t & ipath, int64_t identifier), (ipath, identifier), NEITHER        );
     SNAP_SIGNAL_WITH_MODE( user_logged_in,       (user_logged_info_t & logged_info),                 (logged_info),       NEITHER        );
     SNAP_SIGNAL_WITH_MODE( logged_in_user_ready, (),                                                 (),                  NEITHER        );
-    //SNAP_SIGNAL_WITH_MODE(save_password, (QtCassandra::QCassandraRow::pointer_t row, QString const & user_password, QString const & policy), (row, user_password, policy), DONE);
+    //SNAP_SIGNAL_WITH_MODE(save_password, (libdbproxy::row::pointer_t row, QString const & user_password, QString const & policy), (row, user_password, policy), DONE);
     SNAP_SIGNAL_WITH_MODE( save_password,        (user_info_t & user_info, QString const & user_password, QString const & policy), (user_info, user_password, policy), DONE    );
     SNAP_SIGNAL_WITH_MODE( invalid_password,     (user_info_t & user_info, QString const & policy),                                (user_info, policy),                NEITHER );
     SNAP_SIGNAL_WITH_MODE( blocked_user,         (user_info_t & user_info, QString const & policy),                                (user_info, policy),                NEITHER );
 
-    QtCassandra::QCassandraTable::pointer_t get_users_table() const;
+    libdbproxy::table::pointer_t get_users_table() const;
 
     int64_t                 get_total_session_duration();
     int64_t                 get_user_session_duration();

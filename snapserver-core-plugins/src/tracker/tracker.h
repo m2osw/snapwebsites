@@ -82,7 +82,7 @@ public:
     virtual int64_t     do_update(int64_t last_updated);
     virtual void        bootstrap(snap_child * snap);
 
-    QtCassandra::QCassandraTable::pointer_t get_tracker_table();
+    libdbproxy::table::pointer_t get_tracker_table();
 
     // server signals
     void                on_attach_to_session();
@@ -98,7 +98,7 @@ private:
     void                on_backend_tracking_data();
 
     snap_child *                            f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t f_tracker_table;
+    libdbproxy::table::pointer_t f_tracker_table;
     QString                                 f_email;
     QDomDocument                            f_doc;
 };

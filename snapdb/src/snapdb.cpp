@@ -414,9 +414,9 @@ void snapdb::info()
             auto q = Query::create( f_session );
             q->query( "SELECT cluster_name,native_protocol_version,partitioner FROM system.local" );
             q->start();
-            std::cout << "Working on Cassandra Cluster Named \""    << q->getStringColumn("cluster_name")            << "\"." << std::endl;
-            std::cout << "Working on Cassandra Protocol Version \"" << q->getStringColumn("native_protocol_version") << "\"." << std::endl;
-            std::cout << "Using Cassandra Partitioner \""           << q->getStringColumn("partitioner")             << "\"." << std::endl;
+            std::cout << "Working on Cassandra Cluster Named \""    << q->getVariantColumn("cluster_name").toString()            << "\"." << std::endl;
+            std::cout << "Working on Cassandra Protocol Version \"" << q->getVariantColumn("native_protocol_version").toString() << "\"." << std::endl;
+            std::cout << "Using Cassandra Partitioner \""           << q->getVariantColumn("partitioner").toString()             << "\"." << std::endl;
             q->end();
 
             // At this time the following does not work, we will need CQL support first
@@ -500,7 +500,7 @@ void snapdb::drop_row() const
                     .arg(f_table)
                     );
         int bind = 0;
-        q->bindString( bind++, row_key );
+        q->bindByteArray( bind++, row_key );
         q->start();
         q->end();
     }

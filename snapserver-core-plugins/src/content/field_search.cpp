@@ -301,7 +301,7 @@ field_search::cmd_info_t::cmd_info_t(command_t cmd, mode_t mode)
  * \param[in] cmd  The search instruction (i.e. SELF, PARENTS, etc.)
  * \param[in] value  The value attached to that instruction.
  */
-field_search::cmd_info_t::cmd_info_t(command_t cmd, QtCassandra::QCassandraValue& value)
+field_search::cmd_info_t::cmd_info_t(command_t cmd, libdbproxy::value& value)
     : f_cmd(cmd)
     , f_value(value)
     //, f_element() -- auto-init
@@ -315,7 +315,7 @@ field_search::cmd_info_t::cmd_info_t(command_t cmd, QtCassandra::QCassandraValue
         break;
 
     default:
-        throw content_exception_type_mismatch(QString("invalid parameter option (command %1) for a QCassandraValue").arg(static_cast<int>(cmd)));
+        throw content_exception_type_mismatch(QString("invalid parameter option (command %1) for a value").arg(static_cast<int>(cmd)));
 
     }
 }
@@ -458,7 +458,7 @@ field_search::~field_search()
     {
         run();
     }
-    catch(QtCassandra::QCassandraException const &)
+    catch(libdbproxy::exception const &)
     {
     }
 }
@@ -595,9 +595,9 @@ field_search & field_search::operator () (command_t cmd, mode_t mode)
 }
 
 
-/** \brief Add a command with a QCassandraValue.
+/** \brief Add a command with a value.
  *
- * The following commands support the QCassandraValue:
+ * The following commands support the value:
  *
  * \li COMMAND_DEFAULT_VALUE
  * \li COMMAND_DEFAULT_VALUE_OR_NULL
@@ -607,7 +607,7 @@ field_search & field_search::operator () (command_t cmd, mode_t mode)
  *
  * \return A reference to the field_search so further () can be used.
  */
-field_search& field_search::operator () (command_t cmd, QtCassandra::QCassandraValue value)
+field_search& field_search::operator () (command_t cmd, libdbproxy::value value)
 {
     cmd_info_t inst(cmd, value);
     f_program.push_back(inst);
@@ -703,7 +703,7 @@ field_search& field_search::operator () (command_t cmd, path_info_t & ipath)
  * the parameter sought. It is possible to transform the search in order
  * to search all the parameters that match.
  *
- * \return An array of QCassandraValue's.
+ * \return An array of value's.
  */
 void field_search::run()
 {
@@ -836,7 +836,7 @@ void field_search::run()
             }
 
             if(f_current_table->exists(self)
-            && f_current_table->row(self)->exists(f_field_name))
+            && f_current_table->getRow(self)->exists(f_field_name))
             {
                 f_found_self = true;
 
@@ -849,7 +849,7 @@ void field_search::run()
                 else
                 {
                     // save the value
-                    f_result.push_back(f_current_table->row(self)->cell(f_field_name)->value());
+                    f_result.push_back(f_current_table->getRow(self)->getCell(f_field_name)->getValue());
                 }
             }
         }
@@ -1023,7 +1023,7 @@ void field_search::run()
             }
         }
 
-        void cmd_default_value(QtCassandra::QCassandraValue const& value, bool keep_null)
+        void cmd_default_value(libdbproxy::value const& value, bool keep_null)
         {
             if(!value.nullValue() || keep_null)
             {
@@ -1132,7 +1132,7 @@ void field_search::run()
             {
                 throw content_exception_invalid_sequence(QString("no result to save in variable \"%1\"").arg(varname));
             }
-            QtCassandra::QCassandraValue value(f_result.last());
+            libdbproxy::value value(f_result.last());
             f_result.pop_back();
             f_variables[varname] = value.stringValue();
         }
@@ -1681,7 +1681,7 @@ void field_search::run()
         QString                                         f_revision_owner;
         QString                                         f_field_name;
         QString                                         f_self;
-        QtCassandra::QCassandraTable::pointer_t         f_current_table;
+        libdbproxy::table::pointer_t         f_current_table;
         QDomElement                                     f_element;
         bool                                            f_found_self = false;
         bool                                            f_saved = false;

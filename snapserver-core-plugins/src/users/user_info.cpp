@@ -210,14 +210,14 @@ void users::user_info_t::change_user_email( QString const & new_user_email )
         QString const history_entry_name( QString("%1_%2").arg(email_history_list_base).arg(i) );
         if( user_row->exists(history_entry_name) )
         {
-            new_history_list << user_row->cell(history_entry_name)->value().stringValue();
+            new_history_list << user_row->getCell(history_entry_name)->getValue().stringValue();
         }
     }
 
     for( int i = 0; i < new_history_list.size(); ++i )
     {
         QString const history_entry_name( QString("%1_%2").arg(email_history_list_base).arg(i) );
-        user_row->cell(history_entry_name)->setValue( new_history_list[i] );
+        user_row->getCell(history_entry_name)->setValue( new_history_list[i] );
     }
 
     // Set the new email address into this object.
@@ -225,14 +225,14 @@ void users::user_info_t::change_user_email( QString const & new_user_email )
     auto const old_user_key( get_user_key() );
     f_user_email = new_user_email;
     f_user_key.clear();
-    user_row->cell(get_name(name_t::SNAP_NAME_USERS_CURRENT_EMAIL))->setValue(f_user_email);
+    user_row->getCell(get_name(name_t::SNAP_NAME_USERS_CURRENT_EMAIL))->setValue(f_user_email);
 
     // Now change the index to match
     //
-    auto index_row( f_users_table->row(get_name(name_t::SNAP_NAME_USERS_INDEX_ROW)) );
+    auto index_row( f_users_table->getRow(get_name(name_t::SNAP_NAME_USERS_INDEX_ROW)) );
     index_row->dropCell( old_user_key );
-    QtCassandra::QCassandraValue id_value( f_identifier );
-    index_row->cell(get_user_key())->setValue( id_value.binaryValue() );
+    libdbproxy::value id_value( f_identifier );
+    index_row->getCell(get_user_key())->setValue( id_value.binaryValue() );
 
     SNAP_LOG_TRACE("user_info_t::change_user_email(): old_user_key=")(old_user_key)(", f_user_email=")(f_user_email)(", f_user_key=")(get_user_key());
 }
@@ -348,8 +348,8 @@ void users::user_info_t::define_user( identifier_t const identifier, QString con
         // we must save the email address in the index because otherwise
         // the lock used in register_user() would not be useful...
         //
-        auto index_row(f_users_table->row(get_name(name_t::SNAP_NAME_USERS_INDEX_ROW)));
-        index_row->cell(get_user_key())->setValue(id_value.binaryValue());
+        auto index_row(f_users_table->getRow(get_name(name_t::SNAP_NAME_USERS_INDEX_ROW)));
+        index_row->getCell(get_user_key())->setValue(id_value.binaryValue());
     }
 }
 
@@ -442,7 +442,7 @@ users::user_info_t::cell_t users::user_info_t::get_cell( QString const & name ) 
     //
     if(is_user())
     {
-        return get_user_row()->cell(name);
+        return get_user_row()->getCell(name);
     }
 
     return cell_t();
@@ -484,7 +484,7 @@ users::user_info_t::value_t const & users::user_info_t::get_value( QString const
     //
     if(is_user())
     {
-        return get_cell(name)->value();
+        return get_cell(name)->getValue();
     }
 
     // since we return a const, the caller "cannot" modify the value
@@ -687,7 +687,7 @@ QString users::user_info_t::get_user_key(QString const & user_email) const
 
     //if(force_lowercase == force_lowercase_t::UNDEFINED) -- not currently required, it will always be true
     {
-        QtCassandra::QCassandraValue const force_lowercase_parameter(get_snap()->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_FORCE_LOWERCASE)));
+        libdbproxy::value const force_lowercase_parameter(get_snap()->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_FORCE_LOWERCASE)));
         if(force_lowercase_parameter.nullValue()
         || force_lowercase_parameter.safeSignedCharValue())
         {
@@ -885,7 +885,7 @@ bool users::user_info_t::exists() const
     }
 
     init_tables();
-    return f_users_table->exists(QtCassandra::QCassandraValue(f_identifier).binaryValue());
+    return f_users_table->exists(libdbproxy::value(f_identifier).binaryValue());
 }
 
 
@@ -954,7 +954,7 @@ void users::user_info_t::init_tables() const
  *
  * \sa load_user_parameter()
  */
-void users::user_info_t::save_user_parameter(QString const & field_name, QtCassandra::QCassandraValue const & value)
+void users::user_info_t::save_user_parameter(QString const & field_name, libdbproxy::value const & value)
 {
     int64_t const start_date(get_snap()->get_start_date());
 
@@ -974,14 +974,14 @@ void users::user_info_t::save_user_parameter(QString const & field_name, QtCassa
 
 void users::user_info_t::save_user_parameter(QString const & field_name, QString const & value)
 {
-    QtCassandra::QCassandraValue v(value);
+    libdbproxy::value v(value);
     save_user_parameter(field_name, v);
 }
 
 
 void users::user_info_t::save_user_parameter(QString const & field_name, int64_t const & value)
 {
-    QtCassandra::QCassandraValue v(value);
+    libdbproxy::value v(value);
     save_user_parameter(field_name, v);
 }
 
@@ -1004,7 +1004,7 @@ void users::user_info_t::save_user_parameter(QString const & field_name, int64_t
  *
  * \sa save_user_parameter()
  */
-bool users::user_info_t::load_user_parameter(QString const & field_name, QtCassandra::QCassandraValue & value) const
+bool users::user_info_t::load_user_parameter(QString const & field_name, libdbproxy::value & value) const
 {
     // reset the input value by default
     value.setNullValue();
@@ -1030,7 +1030,7 @@ bool users::user_info_t::load_user_parameter(QString const & field_name, QtCassa
 
 bool users::user_info_t::load_user_parameter(QString const & field_name, QString & value) const
 {
-    QtCassandra::QCassandraValue v;
+    libdbproxy::value v;
     if(load_user_parameter(field_name, v))
     {
         value = v.stringValue();
@@ -1042,7 +1042,7 @@ bool users::user_info_t::load_user_parameter(QString const & field_name, QString
 
 bool users::user_info_t::load_user_parameter(QString const & field_name, int64_t & value) const
 {
-    QtCassandra::QCassandraValue v;
+    libdbproxy::value v;
     if(load_user_parameter(field_name, v))
     {
         value = v.safeInt64Value();
@@ -1062,13 +1062,13 @@ bool users::user_info_t::load_user_parameter(QString const & field_name, int64_t
 void users::user_info_t::get_user_id_by_email()
 {
     init_tables();
-    auto row( f_users_table->row(get_name(name_t::SNAP_NAME_USERS_INDEX_ROW))  );
+    auto row( f_users_table->getRow(get_name(name_t::SNAP_NAME_USERS_INDEX_ROW))  );
 
     if(row->exists(get_user_key()))
     {
         // found the user, retrieve the current id
         //
-        f_identifier = row->cell(get_user_key())->value().int64Value();
+        f_identifier = row->getCell(get_user_key())->getValue().int64Value();
         if(!is_user())
         {
             // the identifier is unfortunately not correct
@@ -1091,10 +1091,10 @@ void users::user_info_t::get_user_id_by_email()
  * and then retrieves the row corresponding to the current user
  * (which is defined by the f_identifier of the user.)
  */
-QtCassandra::QCassandraRow::pointer_t users::user_info_t::get_user_row() const
+libdbproxy::row::pointer_t users::user_info_t::get_user_row() const
 {
     init_tables();
-    return f_users_table->row(QtCassandra::QCassandraValue(f_identifier).binaryValue());
+    return f_users_table->getRow(libdbproxy::value(f_identifier).binaryValue());
 }
 
 

@@ -81,7 +81,7 @@ void info::init_plugin_selection_editor_widgets(content::path_info_t & ipath, QS
                 //
                 QString const core_last_updated(snap::get_name(snap::name_t::SNAP_NAME_CORE_LAST_UPDATED));
                 QString const param_name(QString("%1::%2").arg(core_last_updated).arg(name));
-                QtCassandra::QCassandraValue plugin_last_updated(f_snap->get_site_parameter(param_name));
+                libdbproxy::value plugin_last_updated(f_snap->get_site_parameter(param_name));
                 int64_t const last_updated(plugin_last_updated.safeInt64Value());
 
                 QDomDocument xml;
@@ -133,7 +133,7 @@ void info::init_plugin_selection_editor_widgets(content::path_info_t & ipath, QS
                     content::path_info_t icon_ipath;
                     icon_ipath.set_path(plugin_icon);
                     content::content * content_plugin(content::content::instance());
-                    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+                    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
                     if(!content_table->exists(icon_ipath.get_key()))
                     {
                         plugin_icon = "/images/snap/plugin-icon-64x64.png";
@@ -284,7 +284,7 @@ bool info::plugin_selection_on_path_execute(content::path_info_t & ipath)
     else
     {
         snap_string_list plugin_list;
-        QtCassandra::QCassandraValue plugins(f_snap->get_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_PLUGINS)));
+        libdbproxy::value plugins(f_snap->get_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_PLUGINS)));
         site_plugins = plugins.stringValue();
         if(site_plugins.isEmpty())
         {

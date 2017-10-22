@@ -17,9 +17,9 @@
 //
 #pragma once
 
-#include <QtCassandra/QCassandraCell.h>
-#include <QtCassandra/QCassandraRow.h>
-#include <QtCassandra/QCassandraTable.h>
+#include <libdbproxy/cell.h>
+#include <libdbproxy/row.h>
+#include <libdbproxy/table.h>
 
 #include <QString>
 #include <QByteArray>
@@ -56,8 +56,8 @@ public:
 
                         dbutils( QString const & table_name, QString const & row_name );
 
-    static void         copy_row(QtCassandra::QCassandraTable::pointer_t ta, QString const & a,  // source
-                                 QtCassandra::QCassandraTable::pointer_t tb, QString const & b); // destination
+    static void         copy_row(libdbproxy::table::pointer_t ta, QString const & a,  // source
+                                 libdbproxy::table::pointer_t tb, QString const & b); // destination
 
     static QString      byte_to_hex            ( char const         byte );
     static QString      key_to_string          ( QByteArray const & key  );
@@ -69,23 +69,23 @@ public:
     void                set_display_len( int const val );
 
     QByteArray          get_row_key() const;
-    QString             get_row_name( QtCassandra::QCassandraRow::pointer_t p_r ) const;
+    QString             get_row_name( libdbproxy::row::pointer_t p_r ) const;
     QString             get_row_name( const QByteArray& key ) const;
 
     QByteArray			set_row_name( const QString& name, const QByteArray& orig_key ) const;
 
-    QString             get_column_name ( QtCassandra::QCassandraCell::pointer_t c ) const;
+    QString             get_column_name ( libdbproxy::cell::pointer_t c ) const;
     QString				get_column_name ( const QByteArray& key ) const;
 
     void                set_column_name ( QByteArray& key, const QString& name ) const;
 
-    QString             get_column_value( QtCassandra::QCassandraCell::pointer_t c, bool const display_only = false ) const;
+    QString             get_column_value( libdbproxy::cell::pointer_t c, bool const display_only = false ) const;
     QString             get_column_value( const QByteArray& key, const QByteArray& value, bool const display_only = false ) const;
 
-    void                set_column_value( QtCassandra::QCassandraCell::pointer_t c, QString const & v ) const;
+    void                set_column_value( libdbproxy::cell::pointer_t c, QString const & v ) const;
     void				set_column_value( const QByteArray& key, QByteArray& value, QString const & v ) const;
 
-    column_type_t       get_column_type( QtCassandra::QCassandraCell::pointer_t c ) const;
+    column_type_t       get_column_type( libdbproxy::cell::pointer_t c ) const;
     column_type_t       get_column_type( const QByteArray& key ) const;
 
     QString             get_column_type_name( const QByteArray& key ) const;
@@ -96,8 +96,8 @@ private:
     QString             f_rowName;
     int                 f_displayLen;
 
-    QString 			get_column_value( const QByteArray& key, const QtCassandra::QCassandraValue& value, bool const display_only ) const;
-    void				set_column_value( const QByteArray& key, QtCassandra::QCassandraValue& cvalue, QString const & v ) const;
+    QString 			get_column_value( const QByteArray& key, const libdbproxy::value& value, bool const display_only ) const;
+    void				set_column_value( const QByteArray& key, libdbproxy::value& cvalue, QString const & v ) const;
 };
 
 }

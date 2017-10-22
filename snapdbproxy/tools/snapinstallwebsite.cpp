@@ -139,9 +139,9 @@ namespace
                 throw snap::snap_exception( QString("An error was detected in your domain rules: %1").arg(domain_rules.errmsg()) );
             }
 
-            auto domain_row( domains_table->row(domain) );
-            domain_row->cell(core_original_rules_name)->setValue(rules.toUtf8());
-            domain_row->cell(core_rules_name)->setValue(compiled_rules);
+            auto domain_row( domains_table->getRow(domain) );
+            domain_row->getCell(core_original_rules_name)->setValue(rules.toUtf8());
+            domain_row->getCell(core_rules_name)->setValue(compiled_rules);
         }
 
         auto websites_table( sc.get_table(websites_table_name) );
@@ -163,9 +163,9 @@ namespace
                 throw snap::snap_exception( QString("An error was detected in your website rules: %1").arg(website_rules.errmsg()) );
             }
 
-            auto website_row( websites_table->row(full_domain) );
-            website_row->cell(core_original_rules_name)->setValue(rules.toUtf8());
-            website_row->cell(core_rules_name)->setValue(compiled_rules);
+            auto website_row( websites_table->getRow(full_domain) );
+            website_row->getCell(core_original_rules_name)->setValue(rules.toUtf8());
+            website_row->getCell(core_rules_name)->setValue(compiled_rules);
         }
     }
 

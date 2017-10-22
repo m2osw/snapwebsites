@@ -140,7 +140,7 @@ public:
     virtual int64_t             do_update(int64_t last_updated);
     virtual void                bootstrap(snap_child * snap);
 
-    QtCassandra::QCassandraTable::pointer_t     get_epayment_paypal_table();
+    libdbproxy::table::pointer_t     get_epayment_paypal_table();
 
     // server signals
     void                        on_table_is_accessible(QString const & table_name, server::accessible_flag_t & accessible);
@@ -170,7 +170,7 @@ private:
     std::string                 create_unique_request_id(QString const  & main_id);
 
     snap_child *                                f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t     f_epayment_paypal_table;
+    libdbproxy::table::pointer_t     f_epayment_paypal_table;
     bool                                        f_debug_defined = false;
     bool                                        f_debug = false;
     bool                                        f_maximum_repeat_failures_defined = false;

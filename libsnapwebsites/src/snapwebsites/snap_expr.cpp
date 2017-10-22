@@ -52,7 +52,7 @@ namespace
  * The pointer is set using the set_cassandra_context() which is a
  * static function and should only be called once.
  */
-QtCassandra::QCassandraContext::pointer_t   g_context;
+libdbproxy::context::pointer_t   g_context;
 } // no name namespace
 
 
@@ -78,13 +78,13 @@ variable_t::variable_type_t variable_t::get_type() const
 }
 
 
-QtCassandra::QCassandraValue const& variable_t::get_value() const
+libdbproxy::value const& variable_t::get_value() const
 {
     return f_value;
 }
 
 
-void variable_t::set_value(variable_type_t type, QtCassandra::QCassandraValue const & value)
+void variable_t::set_value(variable_type_t type, libdbproxy::value const & value)
 {
     f_type = type;
     f_value = value;
@@ -748,7 +748,7 @@ public:
     template<typename F>
     typename enable_if<has_function<F>::has_floating_points>::type do_float(variable_t & result, double a, double b)
     {
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setFloatValue(static_cast<float>(F::floating_points(a, b)));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_FLOAT, value);
     }
@@ -764,7 +764,7 @@ public:
     template<typename F>
     typename enable_if<has_function<F>::has_bool_floating_points>::type do_float_to_bool(variable_t& result, double a, double b)
     {
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setBoolValue(F::floating_points(a, b));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     }
@@ -780,7 +780,7 @@ public:
     template<typename F>
     typename enable_if<has_function<F>::has_floating_points>::type do_double(variable_t& result, double a, double b)
     {
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setDoubleValue(F::floating_points(a, b));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_DOUBLE, value);
     }
@@ -796,7 +796,7 @@ public:
     template<typename F>
     typename enable_if<has_function<F>::has_bool_floating_points>::type do_double_to_bool(variable_t & result, double a, double b)
     {
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setBoolValue(F::floating_points(a, b));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     }
@@ -812,7 +812,7 @@ public:
     template<typename F>
     typename enable_if<has_function<F>::has_string_integer>::type do_string_integer(variable_t & result, QString const & a, int64_t b)
     {
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(F::string_integer(a, b));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
     }
@@ -828,7 +828,7 @@ public:
     template<typename F>
     typename enable_if<has_function<F>::has_bool_string_integer>::type do_string_integer_to_bool(variable_t & result, QString const & a, int64_t b)
     {
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setBoolValue(F::string_integer(a, b));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     }
@@ -844,7 +844,7 @@ public:
     template<typename F>
     typename enable_if<has_function<F>::has_strings>::type do_strings(variable_t & result, QString const & a, QString const & b)
     {
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(F::strings(a, b));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
     }
@@ -860,7 +860,7 @@ public:
     template<typename F>
     typename enable_if<has_function<F>::has_bool_strings>::type do_strings_to_bool(variable_t & result, QString const & a, QString const & b)
     {
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setBoolValue(F::strings(a, b));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     }
@@ -1371,7 +1371,7 @@ public:
     void logical_not(variable_t& result, variable_t::variable_vector_t const& sub_results)
     {
         verify_unary(sub_results);
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL:
@@ -1442,7 +1442,7 @@ public:
     void bitwise_not(variable_t& result, variable_t::variable_vector_t const& sub_results)
     {
         verify_unary(sub_results);
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL:
@@ -1500,7 +1500,7 @@ public:
     void negate(variable_t& result, variable_t::variable_vector_t const& sub_results)
     {
         verify_unary(sub_results);
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_INT8:
@@ -1578,7 +1578,7 @@ public:
                             .arg(table_name).arg(row_name).arg(cell_name));
         }
 
-        QtCassandra::QCassandraValue value(g_context->table(table_name)->row(row_name)->cell(cell_name)->value());
+        libdbproxy::value value(g_context->getTable(table_name)->getRow(row_name)->getCell(cell_name)->getValue());
 //std::cerr << "  -> value size: " << value.size() << "\n";
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BINARY, value);
     }
@@ -1596,8 +1596,8 @@ public:
         QString const table_name(sub_results[0].get_string("cell_exist(1)"));
         QString const row_name(sub_results[1].get_string("cell_exist(2)"));
         QString const cell_name(sub_results[2].get_string("cell_exist(3)"));
-        QtCassandra::QCassandraValue value;
-        value.setBoolValue(g_context->table(table_name)->row(row_name)->exists(cell_name));
+        libdbproxy::value value;
+        value.setBoolValue(g_context->getTable(table_name)->getRow(row_name)->exists(cell_name));
 //SNAP_LOG_WARNING("cell_exists(")(table_name)(", ")(row_name)(", ")(cell_name)(") -> ")(value.boolValue() ? "true" : "false");
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     }
@@ -1623,7 +1623,7 @@ public:
         {
             path = path + "/" + child;
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(path);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
     }
@@ -1650,7 +1650,7 @@ public:
     //    time_info.tm_year = date_str.mid(6, 4).toInt() - 1900;
     //    time_t t(mkgmtime(&time_info));
 
-    //    QtCassandra::QCassandraValue value;
+    //    libdbproxy::value value;
     //    value.setInt64Value(t * 1000000);
     //    result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     //}
@@ -2005,7 +2005,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call int16() expected exactly 1");
         }
         int16_t r(0);
-        QtCassandra::QCassandraValue const& v(sub_results[0].get_value());
+        libdbproxy::value const& v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2065,7 +2065,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setInt16Value(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_INT16, value);
     }
@@ -2077,7 +2077,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call int32() expected exactly 1");
         }
         int32_t r(0);
-        QtCassandra::QCassandraValue const& v(sub_results[0].get_value());
+        libdbproxy::value const& v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2137,7 +2137,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setInt32Value(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_INT32, value);
     }
@@ -2149,7 +2149,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call int64() expected exactly 1");
         }
         int64_t r(0);
-        QtCassandra::QCassandraValue const& v(sub_results[0].get_value());
+        libdbproxy::value const& v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2209,7 +2209,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setInt64Value(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_INT64, value);
     }
@@ -2221,7 +2221,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call int8() expected exactly 1");
         }
         int8_t r(0);
-        QtCassandra::QCassandraValue const & v(sub_results[0].get_value());
+        libdbproxy::value const & v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2281,7 +2281,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setSignedCharValue(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_INT8, value);
     }
@@ -2293,7 +2293,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call is_integer() expected exactly 1");
         }
         bool r(false);
-        QtCassandra::QCassandraValue const & v(sub_results[0].get_value());
+        libdbproxy::value const & v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2320,7 +2320,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setBoolValue(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     }
@@ -2345,7 +2345,7 @@ public:
         {
             path = path.mid(0, pos);
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(path);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
     }
@@ -2381,7 +2381,7 @@ public:
         }
         QRegExp re(pattern, cs, QRegExp::RegExp2);
         str.replace(re, replacement); // this does the replacement in place
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(str);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
     }
@@ -2398,8 +2398,8 @@ public:
         }
         QString const table_name(sub_results[0].get_string("row_exists(1)"));
         QString const row_name(sub_results[1].get_string("row_exists(2)"));
-        QtCassandra::QCassandraValue value;
-        value.setBoolValue(g_context->table(table_name)->exists(row_name));
+        libdbproxy::value value;
+        value.setBoolValue(g_context->getTable(table_name)->exists(row_name));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     }
 
@@ -2430,7 +2430,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call string() expected exactly 1");
         }
         QString str;
-        QtCassandra::QCassandraValue const & v(sub_results[0].get_value());
+        libdbproxy::value const & v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2490,7 +2490,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(str);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
     }
@@ -2502,7 +2502,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call strlen() expected exactly 1");
         }
         QString const str(sub_results[0].get_string("strlen(1)"));
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setInt64Value(str.length());
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_INT64, value);
     }
@@ -2527,7 +2527,7 @@ public:
             cs = Qt::CaseInsensitive;
         }
         QRegExp re(pattern, cs, QRegExp::RegExp2);
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
 //SNAP_LOG_WARNING("exact match pattern: \"")(pattern)("\", str \"")(str)("\".");
         value.setBoolValue(re.exactMatch(str));
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
@@ -2542,7 +2542,7 @@ public:
         }
         QString const str(sub_results[0].get_string("substr(1)"));
         int const start(static_cast<int>(sub_results[1].get_integer("substr(2)")));
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         if(size == 3)
         {
             int const end(static_cast<int>(sub_results[2].get_integer("substr(3)")));
@@ -2566,7 +2566,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call table_exists() expected exactly 1");
         }
         QString const table_name(sub_results[0].get_string("table_exists(1)"));
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setBoolValue(g_context->findTable(table_name) != nullptr);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
     }
@@ -2578,7 +2578,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call tolower() expected exactly 1");
         }
         QString const str(sub_results[0].get_string("tolower(1)"));
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(str.toLower());
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
     }
@@ -2590,7 +2590,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call toupper() expected exactly 1");
         }
         QString const str(sub_results[0].get_string("toupper(1)"));
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setStringValue(str.toUpper());
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
     }
@@ -2602,7 +2602,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call uint16() expected exactly 1");
         }
         uint16_t r(0);
-        QtCassandra::QCassandraValue const & v(sub_results[0].get_value());
+        libdbproxy::value const & v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2662,7 +2662,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setUInt16Value(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_UINT16, value);
     }
@@ -2674,7 +2674,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call uint32() expected exactly 1");
         }
         uint32_t r(0);
-        QtCassandra::QCassandraValue const & v(sub_results[0].get_value());
+        libdbproxy::value const & v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2734,7 +2734,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setUInt32Value(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_UINT32, value);
     }
@@ -2746,7 +2746,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call uint64() expected exactly 1");
         }
         uint64_t r(0);
-        QtCassandra::QCassandraValue const & v(sub_results[0].get_value());
+        libdbproxy::value const & v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2806,7 +2806,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setUInt64Value(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_UINT64, value);
     }
@@ -2818,7 +2818,7 @@ public:
             throw snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call uint8() expected exactly 1");
         }
         uint8_t r(0);
-        QtCassandra::QCassandraValue const & v(sub_results[0].get_value());
+        libdbproxy::value const & v(sub_results[0].get_value());
         switch(sub_results[0].get_type())
         {
         case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_NULL:
@@ -2878,7 +2878,7 @@ public:
             break;
 
         }
-        QtCassandra::QCassandraValue value;
+        libdbproxy::value value;
         value.setUnsignedCharValue(r);
         result.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_UINT8, value);
     }
@@ -2989,7 +2989,7 @@ public:
 
         if(valid)
         {
-            QtCassandra::QCassandraValue value;
+            libdbproxy::value value;
             switch(type)
             {
             case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL:
@@ -3126,7 +3126,7 @@ public:
 
         if(valid)
         {
-            QtCassandra::QCassandraValue value;
+            libdbproxy::value value;
             switch(type)
             {
             case variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL:
@@ -3947,7 +3947,7 @@ void list_expr_true(rule const& r, QSharedPointer<token_node>& t)
     NOTUSED(r);
 
     expr_node::expr_node_pointer_t v(new expr_node(expr_node::node_type_t::NODE_TYPE_LITERAL_BOOLEAN));
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setBoolValue(true);
     variable_t variable;
     variable.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
@@ -3961,7 +3961,7 @@ void list_expr_false(rule const& r, QSharedPointer<token_node>& t)
     NOTUSED(r);
 
     expr_node::expr_node_pointer_t v(new expr_node(expr_node::node_type_t::NODE_TYPE_LITERAL_BOOLEAN));
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setBoolValue(false);
     variable_t variable;
     variable.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_BOOL, value);
@@ -3977,7 +3977,7 @@ void list_expr_string(rule const& r, QSharedPointer<token_node>& t)
     QString const str((*t)[0]->get_value().toString());
 
     expr_node::expr_node_pointer_t v(new expr_node(expr_node::node_type_t::NODE_TYPE_LITERAL_STRING));
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setStringValue(str);
     variable_t variable;
     variable.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_STRING, value);
@@ -3993,7 +3993,7 @@ void list_expr_integer(rule const& r, QSharedPointer<token_node>& t)
     int64_t const integer((*t)[0]->get_value().toLongLong());
 
     expr_node::expr_node_pointer_t v(new expr_node(expr_node::node_type_t::NODE_TYPE_LITERAL_INTEGER));
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setInt64Value(integer);
     variable_t variable;
     variable.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_INT64, value);
@@ -4009,7 +4009,7 @@ void list_expr_float(rule const& r, QSharedPointer<token_node>& t)
     double const floating_point((*t)[0]->get_value().toDouble());
 
     expr_node::expr_node_pointer_t v(new expr_node(expr_node::node_type_t::NODE_TYPE_LITERAL_FLOATING_POINT));
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setDoubleValue(floating_point);
     variable_t variable;
     variable.set_value(variable_t::variable_type_t::EXPR_VARIABLE_TYPE_DOUBLE, value);
@@ -4473,7 +4473,7 @@ void expr::execute(variable_t& result, variable_t::variable_map_t& variables, fu
 }
 
 
-void expr::set_cassandra_context(QtCassandra::QCassandraContext::pointer_t context)
+void expr::set_cassandra_context(libdbproxy::context::pointer_t context)
 {
     g_context = context;
 }

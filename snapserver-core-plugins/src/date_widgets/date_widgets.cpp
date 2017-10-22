@@ -254,10 +254,10 @@ void date_widgets::on_value_to_string(editor::editor::value_to_string_info_t & v
 }
 
 
-/** \brief Transform data to a QCassandraValue.
+/** \brief Transform data to a value.
  *
  * This function transforms a value received from a POST into a
- * QCassandraValue to be saved in the database.
+ * value to be saved in the database.
  *
  * \param[in] value_info  Information about the widget to be checked.
  *
@@ -357,7 +357,7 @@ void date_widgets::on_string_to_value(editor::editor::string_to_value_info_t & v
  * \param[in] widget  The DOM element representing this widget.
  * \param[in] row  The row where the user data is available.
  */
-void date_widgets::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, QtCassandra::QCassandraRow::pointer_t row)
+void date_widgets::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
     NOTUSED(ipath);
     NOTUSED(field_id);

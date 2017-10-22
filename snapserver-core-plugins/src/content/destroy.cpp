@@ -166,7 +166,7 @@ void content::destroy_page_done(path_info_t & ipath)
     // and the main content page
 
     QString const key(ipath.get_key());
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
 
     // if you have problems with the deletion of some parts of that page
     // (i.e. some things did not get deleted) then you will want to use
@@ -189,9 +189,9 @@ void content::destroy_page_done(path_info_t & ipath)
         //          by this is 2 billion revisions...
         //
         snap_string_list revision_keys;
-        QtCassandra::QCassandraTable::pointer_t revision_table(get_revision_table());
+        libdbproxy::table::pointer_t revision_table(get_revision_table());
         revision_table->clearCache();
-        auto row_predicate = std::make_shared<QtCassandra::QCassandraRowPredicate>();
+        auto row_predicate = std::make_shared<libdbproxy::row_predicate>();
         row_predicate->setCount(1000);
         for(;;)
         {
@@ -201,12 +201,12 @@ void content::destroy_page_done(path_info_t & ipath)
                 // no more revisions to process
                 break;
             }
-            QtCassandra::QCassandraRows const rows(revision_table->rows());
-            for(QtCassandra::QCassandraRows::const_iterator o(rows.begin());
+            libdbproxy::rows const rows(revision_table->getRows());
+            for(libdbproxy::rows::const_iterator o(rows.begin());
                     o != rows.end(); ++o)
             {
                 // within each row, check all the columns
-                QtCassandra::QCassandraRow::pointer_t row(*o);
+                libdbproxy::row::pointer_t row(*o);
                 QString const revision_key(QString::fromUtf8(o.key().data()));
                 if(!revision_key.startsWith(key))
                 {
@@ -245,9 +245,9 @@ void content::destroy_page_done(path_info_t & ipath)
         //          by this is 2 billion branches...
         //
         snap_string_list branch_keys;
-        QtCassandra::QCassandraTable::pointer_t branch_table(get_branch_table());
+        libdbproxy::table::pointer_t branch_table(get_branch_table());
         branch_table->clearCache();
-        auto row_predicate = std::make_shared<QtCassandra::QCassandraRowPredicate>();
+        auto row_predicate = std::make_shared<libdbproxy::row_predicate>();
         row_predicate->setCount(1000);
         for(;;)
         {
@@ -257,12 +257,12 @@ void content::destroy_page_done(path_info_t & ipath)
                 // no more revisions to process
                 break;
             }
-            QtCassandra::QCassandraRows const rows(branch_table->rows());
-            for(QtCassandra::QCassandraRows::const_iterator o(rows.begin());
+            libdbproxy::rows const rows(branch_table->getRows());
+            for(libdbproxy::rows::const_iterator o(rows.begin());
                     o != rows.end(); ++o)
             {
                 // within each row, check all the columns
-                QtCassandra::QCassandraRow::pointer_t row(*o);
+                libdbproxy::row::pointer_t row(*o);
                 QString const branch_key(QString::fromUtf8(o.key().data()));
                 if(!branch_key.startsWith(key))
                 {
@@ -302,10 +302,10 @@ void content::destroy_page_done(path_info_t & ipath)
  */
 bool content::destroy_revision_impl(QString const & revision_key)
 {
-    QtCassandra::QCassandraTable::pointer_t revision_table(get_revision_table());
+    libdbproxy::table::pointer_t revision_table(get_revision_table());
 
     // check whether there is an attachment MD5
-    QtCassandra::QCassandraValue const attachment_md5(revision_table->row(revision_key)->cell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT))->value());
+    libdbproxy::value const attachment_md5(revision_table->getRow(revision_key)->getCell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT))->getValue());
     if(attachment_md5.size() == 16)
     {
         // the name of the cell is the content key, which is the
@@ -314,8 +314,8 @@ bool content::destroy_revision_impl(QString const & revision_key)
         int const pos(revision_key.indexOf('#'));
         if(pos > 0)
         {
-            QtCassandra::QCassandraTable::pointer_t branch_table(get_branch_table());
-            QtCassandra::QCassandraTable::pointer_t files_table(get_files_table());
+            libdbproxy::table::pointer_t branch_table(get_branch_table());
+            libdbproxy::table::pointer_t files_table(get_files_table());
             QString const key(revision_key.mid(0, pos));
 
             // remove reference from the "files" table
@@ -323,7 +323,7 @@ bool content::destroy_revision_impl(QString const & revision_key)
             QString const reference_name(QString("%1::%2")
                                     .arg(files_reference)
                                     .arg(key));
-            QtCassandra::QCassandraRow::pointer_t files_row(files_table->row(attachment_md5.binaryValue()));
+            libdbproxy::row::pointer_t files_row(files_table->getRow(attachment_md5.binaryValue()));
             files_row->dropCell(reference_name);
 
             // remove the reference from the "branch" table
@@ -335,14 +335,14 @@ bool content::destroy_revision_impl(QString const & revision_key)
             // check whether this was the last reference, if so, then we can
             // drop the file itself too since it won't be useful anymore
             //
-            auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+            auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
             column_predicate->setCount(1); // if there is 1 or more, we cannot delete
             column_predicate->setIndex(); // behave like an index
             column_predicate->setStartCellKey(files_reference + "::"); // start/end keys are reversed
             column_predicate->setEndCellKey(files_reference + ":;");
             files_row->clearCache();
             files_row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(files_row->cells());
+            libdbproxy::cells const cells(files_row->getCells());
             if(cells.isEmpty())
             {
                 // no more references, get rid of the file itself
@@ -365,7 +365,7 @@ bool content::destroy_revision_impl(QString const & revision_key)
                 pos_dot = revision_key.length();
             }
             QString const branch_key(QString("%1#%2").arg(key).arg(revision_key.mid(pos_slash, pos_dot - pos_slash)));
-            branch_table->row(branch_key)->dropCell(attachment_ref);
+            branch_table->getRow(branch_key)->dropCell(attachment_ref);
         }
     }
 
@@ -384,7 +384,7 @@ bool content::destroy_revision_impl(QString const & revision_key)
  */
 void content::destroy_revision_done(QString const & revision_key)
 {
-    QtCassandra::QCassandraTable::pointer_t revision_table(get_revision_table());
+    libdbproxy::table::pointer_t revision_table(get_revision_table());
 
     // this destroys the rest
     revision_table->dropRow(revision_key);

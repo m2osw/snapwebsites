@@ -54,7 +54,7 @@ if(CATCH_FOUND)
     # while developing you may need to set LD_LIBRARY_PATH
     #target_link_libraries(test_snap_cgi
     #    #${SNAPWEBSITES_LIBRARIES}
-    #    #QtCassandra
+    #    #libdbproxy
     #    #QtCore
     #    #QtXml
     #    #QtNetwork

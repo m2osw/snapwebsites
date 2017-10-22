@@ -65,7 +65,7 @@ public:
     virtual void        bootstrap(snap_child * snap);
 
     // content signals
-    void                on_process_attachment(QtCassandra::QCassandraRow::pointer_t file_row, content::attachment_file const & file);
+    void                on_process_attachment(libdbproxy::row::pointer_t file_row, content::attachment_file const & file);
     void                on_check_attachment_security(content::attachment_file const & file, content::permission_flag & secure, bool const fast);
 
     void                register_dynamic_plugin(javascript_dynamic_plugin *p);

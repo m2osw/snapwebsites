@@ -22,8 +22,8 @@
 
 // libQtCassandra lib
 //
-#include <QtCassandra/QCassandraValue.h>
-#include <QtCassandra/QCassandraContext.h>
+#include <libdbproxy/value.h>
+#include <libdbproxy/context.h>
 
 // C++ lib
 //
@@ -153,8 +153,8 @@ public:
     QString                             get_name() const;
 
     variable_type_t                     get_type() const;
-    QtCassandra::QCassandraValue const & get_value() const;
-    void                                set_value(variable_type_t type, QtCassandra::QCassandraValue const & value);
+    libdbproxy::value const & get_value() const;
+    void                                set_value(variable_type_t type, libdbproxy::value const & value);
     void                                set_value(); // set to NULL
     void                                set_value(bool value);
     void                                set_value(char value);
@@ -185,7 +185,7 @@ public:
 private:
     QString                             f_name;
     variable_type_t                     f_type = variable_type_t::EXPR_VARIABLE_TYPE_NULL;
-    QtCassandra::QCassandraValue        f_value;
+    libdbproxy::value        f_value;
 };
 
 
@@ -272,7 +272,7 @@ public:
     void            execute(variable_t & result, variable_t::variable_map_t & variables, functions_t & functions);
 
     // some Snap! specialization
-    static void     set_cassandra_context(QtCassandra::QCassandraContext::pointer_t context);
+    static void     set_cassandra_context(libdbproxy::context::pointer_t context);
 
 private:
     QSharedPointer<expr_node_base>              f_program_tree;

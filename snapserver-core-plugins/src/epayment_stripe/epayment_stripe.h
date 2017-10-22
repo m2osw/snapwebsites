@@ -138,7 +138,7 @@ public:
     virtual int64_t             do_update(int64_t last_updated);
     virtual void                bootstrap(snap_child * snap);
 
-    QtCassandra::QCassandraTable::pointer_t     get_epayment_stripe_table();
+    libdbproxy::table::pointer_t     get_epayment_stripe_table();
 
     // server signals
     void                        on_table_is_accessible(QString const & table_name, server::accessible_flag_t & accessible);
@@ -169,10 +169,10 @@ private:
     QString                     get_stripe_key(bool const debug);
     int8_t                      get_maximum_repeat_failures();
     std::string                 create_unique_request_id(QString const & main_id);
-    void                        log_error(http_client_server::http_response::pointer_t response, QtCassandra::QCassandraRow::pointer_t row);
+    void                        log_error(http_client_server::http_response::pointer_t response, libdbproxy::row::pointer_t row);
 
     snap_child *                                f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t     f_epayment_stripe_table;
+    libdbproxy::table::pointer_t     f_epayment_stripe_table;
     bool                                        f_debug_defined = false;
     bool                                        f_debug = false;
     bool                                        f_maximum_repeat_failures_defined = false;

@@ -46,7 +46,7 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     snapwebsites
-    QtCassandra
+    libdbproxy
 	${ADVGETOPT_LIBRARIES}
     ${CASSWRAPPER_LIBRARIES}
     ${CASSVALUE_LIBRARIES}

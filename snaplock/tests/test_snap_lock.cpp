@@ -94,6 +94,7 @@
 
 // CassWrapper lib
 //
+#include <casswrapper/query.h>
 #include <casswrapper/session.h>
 
 // C++ lib

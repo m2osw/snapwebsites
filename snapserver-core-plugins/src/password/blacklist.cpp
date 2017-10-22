@@ -36,8 +36,8 @@ SNAP_PLUGIN_EXTENSION_START(password)
 
 void blacklist_t::add_passwords(QString const & passwords)
 {
-    QtCassandra::QCassandraTable::pointer_t table(password::password::instance()->get_password_table());
-    QtCassandra::QCassandraValue value;
+    libdbproxy::table::pointer_t table(password::password::instance()->get_password_table());
+    libdbproxy::value value;
     value.setSignedCharValue(1);
     QString const exists_in_blacklist(get_name(name_t::SNAP_NAME_PASSWORD_EXISTS_IN_BLACKLIST));
 
@@ -55,7 +55,7 @@ void blacklist_t::add_passwords(QString const & passwords)
             // add a new entry
             //
             ++f_count;
-            table->row(user_password)->cell(exists_in_blacklist)->setValue(value);
+            table->getRow(user_password)->getCell(exists_in_blacklist)->setValue(value);
         }
     }
 }
@@ -63,7 +63,7 @@ void blacklist_t::add_passwords(QString const & passwords)
 
 void blacklist_t::remove_passwords(QString const & passwords)
 {
-    QtCassandra::QCassandraTable::pointer_t table(password::password::instance()->get_password_table());
+    libdbproxy::table::pointer_t table(password::password::instance()->get_password_table());
     QString const exists_in_blacklist(get_name(name_t::SNAP_NAME_PASSWORD_EXISTS_IN_BLACKLIST));
 
     passwords_to_list(passwords);

@@ -152,7 +152,7 @@ public:
     void                    on_backend_process();
 
     // content signals
-    void                    on_copy_branch_cells(QtCassandra::QCassandraCells & source_cells, QtCassandra::QCassandraRow::pointer_t destination_row, snap_version::version_number_t const destination_branch);
+    void                    on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch);
 
     // path::path_execute implementation
     virtual bool            on_path_execute(content::path_info_t & ipath);

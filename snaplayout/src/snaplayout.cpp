@@ -41,7 +41,7 @@
 
 #include <advgetopt/advgetopt.h>
 
-#include <QtCassandra/QCassandraValue.h>
+#include <libdbproxy/value.h>
 
 #include <casswrapper/schema.h>
 #include <casswrapper/session.h>
@@ -66,7 +66,7 @@
 #include <snapwebsites/poison.h>
 
 using namespace casswrapper;
-using namespace QtCassandra;
+using namespace libdbproxy;
 
 namespace
 {
@@ -999,15 +999,15 @@ void snap_layout::add_files()
             if( rowExists("layout", row_name.toUtf8()) )
             {
                 // the row already exists, try getting the area
-                //QCassandraValue existing(table->row(row_name)->cell(cell_name)->value());
-                QCassandraValue existing;
+                //value existing(table->getRow(row_name)->getCell(cell_name)->getValue());
+                libdbproxy::value existing;
                 try
                 {
                     auto q( Query::create(f_session) );
                     q->query( QString("SELECT value FROM %1.layout WHERE key = ? and column1 = ?;").arg(context_name) );
                     int bind = 0;
-                    q->bindString( bind++, row_name  );
-                    q->bindString( bind++, cell_name );
+                    q->bindVariant( bind++, row_name  );
+                    q->bindVariant( bind++, cell_name );
                     q->start();
                     if( q->nextRow() )
                     {
@@ -1082,7 +1082,7 @@ void snap_layout::add_files()
             exit(1);
             snap::NOTREACHED();
         }
-        //table->row(row_name)->cell(cell_name)->setValue(content);
+        //table->getRow(row_name)->getCell(cell_name)->setValue(content);
 
         // set last modification time
         if( !mtimes.contains(row_name) || mtimes[row_name] < info.f_filetime )
@@ -1096,7 +1096,7 @@ void snap_layout::add_files()
     {
         // mtimes holds times in seconds, convert to microseconds
         const int64_t last_updated(i.value() * 1000000);
-        QCassandraValue existing_last_updated;
+        libdbproxy::value existing_last_updated;
         try
         {
             auto q( Query::create(f_session) );
@@ -1125,8 +1125,8 @@ void snap_layout::add_files()
                 auto q( Query::create(f_session) );
                 q->query( QString("UPDATE %1.layout SET value = ? WHERE key = ? and column1 = ?;").arg(context_name) );
                 int bind = 0;
-                q->bindInt64    ( bind++, last_updated      );
-                q->bindString   ( bind++, i.key()           );
+                q->bindVariant  ( bind++, static_cast<qulonglong>(last_updated) );
+                q->bindVariant  ( bind++, i.key()           );
                 q->bindByteArray( bind++, last_updated_name );
                 q->start();
                 q->end();
@@ -1139,11 +1139,11 @@ void snap_layout::add_files()
             snap::NOTREACHED();
         }
 #if 0
-        QCassandraValue existing_last_updated(table->row(i.key())->cell(snap::get_name(snap::name_t::SNAP_NAME_CORE_LAST_UPDATED))->value());
+        value existing_last_updated(table->getRow(i.key())->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_LAST_UPDATED))->getValue());
         if(existing_last_updated.nullValue()
         || existing_last_updated.int64Value() < last_updated)
         {
-            table->row(i.key())->cell(snap::get_name(snap::name_t::SNAP_NAME_CORE_LAST_UPDATED))->setValue(last_updated);
+            table->getRow(i.key())->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_LAST_UPDATED))->setValue(last_updated);
         }
 #endif
     }
@@ -1212,12 +1212,12 @@ void snap_layout::set_theme()
         if( theme.isEmpty() )
         {
             // remove the theme definition
-            //table->row(key)->dropCell(field);
+            //table->getRow(key)->dropCell(field);
             auto q( Query::create(f_session) );
             q->query( QString("DELETE FROM %1.content WHERE key = ? AND column1 = ?;").arg(context_name) );
             int bind = 0;
-            q->bindString( bind++, key   );
-            q->bindString( bind++, field );
+            q->bindVariant( bind++, key   );
+            q->bindVariant( bind++, field );
             q->start();
             q->end();
         }
@@ -1228,13 +1228,13 @@ void snap_layout::set_theme()
             //
             // TODO: add a test so we can transform a simple string to a valid
             //       JavaScript string
-            //table->row(key)->cell(field)->setValue(theme);
+            //table->getRow(key)->getCell(field)->setValue(theme);
             auto q( Query::create(f_session) );
             q->query( QString("UPDATE %1.content SET value = ? WHERE key = ? AND column1 = ?;").arg(context_name) );
             int bind = 0;
-            q->bindString( bind++, theme );
-            q->bindString( bind++, key   );
-            q->bindString( bind++, field );
+            q->bindVariant( bind++, theme );
+            q->bindVariant( bind++, key   );
+            q->bindVariant( bind++, field );
             q->start();
             q->end();
         }
@@ -1278,7 +1278,7 @@ void snap_layout::remove_theme()
         snap::NOTREACHED();
     }
 
-    //if(!table->row(row_name)->exists("theme"))
+    //if(!table->getRow(row_name)->exists("theme"))
     if( !cellExists("layout", row_name.toUtf8(), QByteArray("theme")) )
     {
         std::cerr << "warning: it looks like the \"" << row_name << "\" layout does not exist (no \"theme\" found)." << std::endl;
@@ -1293,7 +1293,7 @@ void snap_layout::remove_theme()
         auto q( Query::create(f_session) );
         q->query( QString("DELETE FROM %1.layout WHERE key = ?;").arg(context_name) );
         int bind = 0;
-        q->bindString( bind++, row_name );
+        q->bindVariant( bind++, row_name );
         q->start();
         q->end();
     }
@@ -1341,14 +1341,14 @@ void snap_layout::extract_file()
         snap::NOTREACHED();
     }
 
-    //if(!table->row(row_name)->exists("theme"))
+    //if(!table->getRow(row_name)->exists("theme"))
     if( !cellExists("layout", row_name.toUtf8(), QByteArray("theme")) )
     {
         std::cerr << "warning: it looks like the \"" << row_name << "\" layout does not fully exist (no \"theme\" found)." << std::endl;
         // try to continue anyway
     }
 
-    //Row::pointer_t row(table->row(row_name));
+    //Row::pointer_t row(table->getRow(row_name));
 
     QString const filename( f_opt->get_string( "--", 1 ).c_str() );
     int const slash_pos(filename.lastIndexOf('/'));
@@ -1379,7 +1379,7 @@ void snap_layout::extract_file()
     }
 
     // TODO: if we reach here, the cell may have been dropped earlier...
-    //QCassandraValue value(row->cell(basename)->value());
+    //value value(row->getCell(basename)->getValue());
 
     try
     {

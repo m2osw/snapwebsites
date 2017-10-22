@@ -64,9 +64,9 @@ SNAP_PLUGIN_EXTENSION_START(editor)
 save_info_t::save_info_t(
             content::path_info_t & p_ipath,
             QDomDocument & p_editor_widgets,
-            QtCassandra::QCassandraRow::pointer_t p_revision_row,
-            QtCassandra::QCassandraRow::pointer_t p_secret_row,
-            QtCassandra::QCassandraRow::pointer_t p_draft_row)
+            libdbproxy::row::pointer_t p_revision_row,
+            libdbproxy::row::pointer_t p_secret_row,
+            libdbproxy::row::pointer_t p_draft_row)
     : f_ipath(p_ipath)
     , f_editor_widgets(p_editor_widgets)
     , f_revision_row(p_revision_row)
@@ -112,7 +112,7 @@ QDomDocument & save_info_t::editor_widgets()
  *
  * \return A pointer to the reivision row.
  */
-QtCassandra::QCassandraRow::pointer_t save_info_t::revision_row() const
+libdbproxy::row::pointer_t save_info_t::revision_row() const
 {
     return f_revision_row;
 }
@@ -124,7 +124,7 @@ QtCassandra::QCassandraRow::pointer_t save_info_t::revision_row() const
  *
  * \return A pointer to the secret row.
  */
-QtCassandra::QCassandraRow::pointer_t save_info_t::secret_row() const
+libdbproxy::row::pointer_t save_info_t::secret_row() const
 {
     return f_secret_row;
 }
@@ -136,7 +136,7 @@ QtCassandra::QCassandraRow::pointer_t save_info_t::secret_row() const
  *
  * \return A pointer to the draft row.
  */
-QtCassandra::QCassandraRow::pointer_t save_info_t::draft_row() const
+libdbproxy::row::pointer_t save_info_t::draft_row() const
 {
     return f_draft_row;
 }

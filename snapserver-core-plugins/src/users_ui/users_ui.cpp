@@ -275,14 +275,14 @@ void users_ui::fix_owner_update(int64_t variables_timestamp)
     };
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
     QString const plugin_name(get_plugin_name());
 
     for(auto const & s : paths)
     {
         content::path_info_t ipath;
         ipath.set_path(s);
-        content_table->row(ipath.get_key())->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER))->setValue(plugin_name);
+        content_table->getRow(ipath.get_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER))->setValue(plugin_name);
     }
 }
 
@@ -410,7 +410,7 @@ void users_ui::on_replace_token(content::path_info_t & ipath, QDomDocument & xml
     }
 
     // anything else requires the user to be verified
-    QtCassandra::QCassandraValue const verified_on(user_info.get_value(users::name_t::SNAP_NAME_USERS_VERIFIED_ON));
+    libdbproxy::value const verified_on(user_info.get_value(users::name_t::SNAP_NAME_USERS_VERIFIED_ON));
     if(verified_on.nullValue())
     {
         // not verified yet
@@ -420,7 +420,7 @@ void users_ui::on_replace_token(content::path_info_t & ipath, QDomDocument & xml
     if(token.is_token("users::picture"))
     {
         // make sure that the user created and verified his account
-        QtCassandra::QCassandraValue const value(user_info.get_value(users::name_t::SNAP_NAME_USERS_PICTURE));
+        libdbproxy::value const value(user_info.get_value(users::name_t::SNAP_NAME_USERS_PICTURE));
         if(!value.nullValue())
         {
             SNAP_LOG_TRACE("second is_token(\"users::picture\")");
@@ -562,7 +562,7 @@ void users_ui::on_check_for_redirect(content::path_info_t & ipath)
             {
                 // get the logged in user
                 users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_MODIFIED);
-                //QtCassandra::QCassandraTable::pointer_t users_table(users_plugin->get_users_table());
+                //libdbproxy::table::pointer_t users_table(users_plugin->get_users_table());
                 int64_t const password_last_modification( user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_MODIFIED).safeInt64Value(0, 0) );
                 int64_t const start_date(f_snap->get_start_date());
                 if(password_last_modification + delay * 60LL * 1000000LL > start_date)
@@ -871,7 +871,7 @@ void users_ui::show_user(content::path_info_t & ipath, QDomElement & page, QDomE
             NOTREACHED();
             return;
         }
-        QtCassandra::QCassandraValue value(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
+        libdbproxy::value value(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
         if(value.nullValue())
         {
             messages::messages::instance()->set_error(
@@ -924,7 +924,7 @@ void users_ui::show_user(content::path_info_t & ipath, QDomElement & page, QDomE
                                .arg(users::get_name(users::name_t::SNAP_NAME_USERS_PATH))
                                .arg(user_id)
                                );
-        QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+        libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
         if(!content_table->exists(user_key))
         {
             f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND,
@@ -1052,7 +1052,7 @@ void users_ui::logout_user(content::path_info_t & ipath, QDomElement & page, QDo
         // path (i.e. logout/fantom from the fantom plugin could be used to
         // display a different greating because the user was kicked out by
         // spirits...); if it does not exist, force "logout" as the default
-        QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+        libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
         if(!content_table->exists(ipath.get_key()))
         {
             // forcing to exact /logout page which we know will work
@@ -1198,7 +1198,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
     // TODO: remove the ending characters such as " ", "/", "\" and "|"?
     //       (it happens that people add those by mistake at the end of a URI...)
     session->load_session(session_id, info);
-    QtCassandra::QCassandraValue verify_ignore_user_agent(f_snap->get_site_parameter(users::get_name(users::name_t::SNAP_NAME_USERS_VERIFY_IGNORE_USER_AGENT_FOR_PASSWORD)));
+    libdbproxy::value verify_ignore_user_agent(f_snap->get_site_parameter(users::get_name(users::name_t::SNAP_NAME_USERS_VERIFY_IGNORE_USER_AGENT_FOR_PASSWORD)));
     QString const path(info.get_object_path());
     if( info.get_session_type() != sessions::sessions::session_info::session_info_type_t::SESSION_INFO_VALID
      || ((info.add_check_flags(0) & info.CHECK_HTTP_USER_AGENT) != 0
@@ -1267,7 +1267,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
     }
 
 #if 0
-    QtCassandra::QCassandraValue const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
+    libdbproxy::value const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
     if(user_identifier.nullValue())
     {
         SNAP_LOG_FATAL("users::verify_password() could not load the user identifier, the row exists but the cell did not make it (")
@@ -1409,7 +1409,7 @@ void users_ui::send_to_replace_password_page(QString const & email, bool const s
 
     // Save the date when the user sent the request
     //
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setInt64Value(f_snap->get_start_date());
     user_info.set_value(users::name_t::SNAP_NAME_USERS_FORGOT_PASSWORD_ON, value);
 
@@ -1721,7 +1721,7 @@ void users_ui::process_forgot_password_form()
     {
         // existing users have a unique identifier
         // necessary to create the user key below
-        QtCassandra::QCassandraValue const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
+        libdbproxy::value const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
         if(!user_identifier.nullValue())
         {
             int64_t const identifier(user_identifier.int64Value());
@@ -1847,16 +1847,16 @@ void users_ui::process_replace_password_form()
     QString details;
 
     // replace the password assuming we can find that user information
-    //QtCassandra::QCassandraTable::pointer_t users_table(users_plugin->get_users_table());
+    //libdbproxy::table::pointer_t users_table(users_plugin->get_users_table());
     //if(users_table->exists(f_user_changing_password_key))
     auto user_info(users_plugin->get_user_info_by_email(f_user_changing_password_key));
     if(user_info.exists())
     {
-        //QtCassandra::QCassandraRow::pointer_t row(users_table->row(f_user_changing_password_key));
+        //libdbproxy::row::pointer_t row(users_table->getRow(f_user_changing_password_key));
 
         // existing users have a unique identifier
         // necessary to create the user key below
-        QtCassandra::QCassandraValue const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
+        libdbproxy::value const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
         if(!user_identifier.nullValue())
         {
             int64_t const identifier(user_identifier.int64Value());
@@ -1997,7 +1997,7 @@ void users_ui::process_password_form()
         // We're good, save the new password and remove that link.
         // Existing users have a unique identifier, necessary to create the user key below.
         //
-        QtCassandra::QCassandraValue const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
+        libdbproxy::value const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
         if(!user_identifier.nullValue())
         {
             int64_t const identifier(user_identifier.int64Value());
@@ -2038,7 +2038,7 @@ void users_ui::process_password_form()
             // knows his password
             //
             // (1) get the digest
-            QtCassandra::QCassandraValue value(user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_DIGEST));
+            libdbproxy::value value(user_info.get_value(users::name_t::SNAP_NAME_USERS_PASSWORD_DIGEST));
             QString const old_digest(value.stringValue());
 
             // (2) we need the passord:
@@ -2196,7 +2196,7 @@ void users_ui::process_verify_resend_form()
     {
         // existing users have a unique identifier
         // necessary to create the user key below
-        QtCassandra::QCassandraValue const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
+        libdbproxy::value const user_identifier(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
         if(user_identifier.size() == sizeof(int64_t))
         {
             int64_t const identifier(user_identifier.int64Value());
@@ -2339,7 +2339,7 @@ void users_ui::verify_email(QString const & email)
     // to allow a "resend" without regenerating a new session, we save
     // the session identifier--since those are short lived, it will anyway
     // not be extremely useful, but some plugins may use that once in a while
-    QtCassandra::QCassandraValue session_value(session);
+    libdbproxy::value session_value(session);
     int64_t const ttl(86400 * 3 - 86400 / 2); // keep in the database for a little less than the session itself
     session_value.setTtl(ttl);
     user_info.set_value( users::name_t::SNAP_NAME_USERS_LAST_VERIFICATION_SESSION, session_value );
@@ -2452,7 +2452,7 @@ void users_ui::forgot_password_email(users::users::user_info_t const & user_info
     sendmail::sendmail::email e;
 
     // administrator can define this email address
-    QtCassandra::QCassandraValue from(f_snap->get_site_parameter(get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL)));
+    libdbproxy::value from(f_snap->get_site_parameter(get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL)));
     if(from.nullValue())
     {
         from.setStringValue("contact@snapwebsites.com");
@@ -2526,7 +2526,7 @@ void users_ui::on_init_editor_widget
     , QString const & field_id
     , QString const & field_type
     , QDomElement & widget
-    , QtCassandra::QCassandraRow::pointer_t row
+    , libdbproxy::row::pointer_t row
     )
 {
     NOTUSED(field_type);
@@ -2567,30 +2567,30 @@ void users_ui::on_finish_editor_form_processing(content::path_info_t & ipath, bo
     }
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraRow::pointer_t settings_row(revision_table->row(ipath.get_revision_key()));
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::row::pointer_t settings_row(revision_table->getRow(ipath.get_revision_key()));
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
 
-    value = settings_row->cell(users::get_name(users::name_t::SNAP_NAME_USERS_SOFT_ADMINISTRATIVE_SESSION))->value();
+    value = settings_row->getCell(users::get_name(users::name_t::SNAP_NAME_USERS_SOFT_ADMINISTRATIVE_SESSION))->getValue();
     if(value.size() == sizeof(int8_t))
     {
         f_snap->set_site_parameter(users::get_name(users::name_t::SNAP_NAME_USERS_SOFT_ADMINISTRATIVE_SESSION), value);
     }
 
-    value = settings_row->cell(users::get_name(users::name_t::SNAP_NAME_USERS_ADMINISTRATIVE_SESSION_DURATION))->value();
+    value = settings_row->getCell(users::get_name(users::name_t::SNAP_NAME_USERS_ADMINISTRATIVE_SESSION_DURATION))->getValue();
     if(value.size() == sizeof(int64_t))
     {
         f_snap->set_site_parameter(users::get_name(users::name_t::SNAP_NAME_USERS_ADMINISTRATIVE_SESSION_DURATION), value);
     }
 
-    value = settings_row->cell(users::get_name(users::name_t::SNAP_NAME_USERS_USER_SESSION_DURATION))->value();
+    value = settings_row->getCell(users::get_name(users::name_t::SNAP_NAME_USERS_USER_SESSION_DURATION))->getValue();
     if(value.size() == sizeof(int64_t))
     {
         f_snap->set_site_parameter(users::get_name(users::name_t::SNAP_NAME_USERS_USER_SESSION_DURATION), value);
     }
 
-    value = settings_row->cell(users::get_name(users::name_t::SNAP_NAME_USERS_TOTAL_SESSION_DURATION))->value();
+    value = settings_row->getCell(users::get_name(users::name_t::SNAP_NAME_USERS_TOTAL_SESSION_DURATION))->getValue();
     if(value.size() == sizeof(int64_t))
     {
         f_snap->set_site_parameter(users::get_name(users::name_t::SNAP_NAME_USERS_TOTAL_SESSION_DURATION), value);

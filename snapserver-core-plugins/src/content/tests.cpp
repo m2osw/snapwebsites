@@ -115,9 +115,9 @@ SNAP_TEST_PLUGIN_TEST_IMPL(content, test_journal_list)
         for( auto path : path_list )
         {
             SNAP_TEST_PLUGIN_SUITE_ASSERT( journal_table->exists(path) );
-            auto row( journal_table->row(path) );
-            SNAP_TEST_PLUGIN_SUITE_ASSERT( row->cell(field_timestamp) ->value().int64Value()  != 0LL  );
-            SNAP_TEST_PLUGIN_SUITE_ASSERT( row->cell(field_url)       ->value().stringValue() == path );
+            auto row( journal_table->getRow(path) );
+            SNAP_TEST_PLUGIN_SUITE_ASSERT( row->getCell(field_timestamp) ->getValue().int64Value()  != 0LL  );
+            SNAP_TEST_PLUGIN_SUITE_ASSERT( row->getCell(field_url)       ->getValue().stringValue() == path );
         }
     };
 
@@ -130,7 +130,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(content, test_journal_list)
             ipath.set_path( path );
             SNAP_TEST_PLUGIN_SUITE_ASSERT
                (  !content_table->exists(ipath.get_key())
-               && !content_table->row(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED))
+               && !content_table->getRow(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED))
                );
         }
     };
@@ -139,7 +139,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(content, test_journal_list)
     {
         journal_table->clearCache();
 
-        auto row_predicate = std::make_shared<QtCassandra::QCassandraRowPredicate>();
+        auto row_predicate = std::make_shared<libdbproxy::row_predicate>();
         row_predicate->setCount(100);
 
         uint32_t total_count = 0;

@@ -288,7 +288,7 @@ void cookie_consent_silktide::on_generate_header_content(content::path_info_t & 
     //
     bool has_options(false);
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
     content::path_info_t options_ipath;
     options_ipath.set_path(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_JAVASCRIPT_OPTIONS));
     if(content_table->exists(options_ipath.get_key()))
@@ -335,7 +335,7 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
     // for those we verify the format of which as far as I know is all
     // of them!)
     {
-        temp_str = save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_MESSAGE))->value().stringValue().toUtf8().data();
+        temp_str = save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_MESSAGE))->getValue().stringValue().toUtf8().data();
         if(!temp_str.empty())
         {
             field.reset(new as2js::JSON::JSONValue(pos, temp_str));
@@ -344,7 +344,7 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
     }
 
     {
-        temp_str = save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_LEARN_MORE_LABEL))->value().stringValue().toUtf8().data();
+        temp_str = save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_LEARN_MORE_LABEL))->getValue().stringValue().toUtf8().data();
         if(!temp_str.empty())
         {
             field.reset(new as2js::JSON::JSONValue(pos, temp_str));
@@ -353,7 +353,7 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
     }
 
     {
-        temp_str = save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_LEARN_MORE_URI))->value().stringValue().toUtf8().data();
+        temp_str = save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_LEARN_MORE_URI))->getValue().stringValue().toUtf8().data();
         if(!temp_str.empty())
         {
             field.reset(new as2js::JSON::JSONValue(pos, temp_str));
@@ -362,7 +362,7 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
     }
 
     {
-        temp_str = save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_DISMISS))->value().stringValue().toUtf8().data();
+        temp_str = save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_DISMISS))->getValue().stringValue().toUtf8().data();
         if(!temp_str.empty())
         {
             field.reset(new as2js::JSON::JSONValue(pos, temp_str));
@@ -371,7 +371,7 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
     }
 
     {
-        temp_str = save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_DOMAIN))->value().stringValue().toUtf8().data();
+        temp_str = save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_DOMAIN))->getValue().stringValue().toUtf8().data();
         if(!temp_str.empty())
         {
             field.reset(new as2js::JSON::JSONValue(pos, temp_str));
@@ -380,7 +380,7 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
     }
 
     {
-        int64_t consent_duration(save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_CONSENT_DURATION))->value().safeInt64Value());
+        int64_t consent_duration(save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_CONSENT_DURATION))->getValue().safeInt64Value());
         if(consent_duration > 0)
         {
             as2js::Int64 integer(consent_duration);
@@ -390,7 +390,7 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
     }
 
     {
-        temp_str = save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_THEME))->value().stringValue().toUtf8().data();
+        temp_str = save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_THEME))->getValue().stringValue().toUtf8().data();
         if(!temp_str.empty())
         {
             field.reset(new as2js::JSON::JSONValue(pos, temp_str));
@@ -400,8 +400,8 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
 
     content::path_info_t js_file;
     js_file.set_path(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_JAVASCRIPT_OPTIONS));
-    int64_t const version(save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_JAVASCRIPT_VERSION))->value().safeInt64Value() + 1);
-    save_info.revision_row()->cell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_JAVASCRIPT_VERSION))->setValue(version);
+    int64_t const version(save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_JAVASCRIPT_VERSION))->getValue().safeInt64Value() + 1);
+    save_info.revision_row()->getCell(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_JAVASCRIPT_VERSION))->setValue(version);
 
     QDateTime date;
     date.setMSecsSinceEpoch(f_snap->get_start_date() / 1000); // us to ms
@@ -426,7 +426,7 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
 
     // We could have a copy in the revision table,
     // but I don't think that's useful
-    //save_info.revision_row()->cell(get_name())->setValue(js_options);
+    //save_info.revision_row()->getCell(get_name())->setValue(js_options);
 
     {
         content::attachment_file file(f_snap);

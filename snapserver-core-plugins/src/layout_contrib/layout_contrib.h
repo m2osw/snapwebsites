@@ -61,7 +61,7 @@ private:
     void                generate_boxes(content::path_info_t & ipath, QString const & layout_name, QDomDocument doc);
 
     snap_child *                            f_snap = nullptr;
-    QtCassandra::QCassandraTable::pointer_t f_content_table;
+    libdbproxy::table::pointer_t f_content_table;
     std::vector<QString>                    f_initialized_layout;
 };
 

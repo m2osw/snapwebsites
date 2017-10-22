@@ -625,7 +625,7 @@ bool sitemapxml::on_path_execute(content::path_info_t & ipath)
     //       ...
     //
 
-    QtCassandra::QCassandraValue count_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_SITEMAPXML_COUNT)));
+    libdbproxy::value count_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_SITEMAPXML_COUNT)));
     int const count(count_value.safeInt32Value());
     if(count <= 0)
     {
@@ -634,7 +634,7 @@ bool sitemapxml::on_path_execute(content::path_info_t & ipath)
         return false;
     }
 
-    QtCassandra::QCassandraValue sitemap_data;
+    libdbproxy::value sitemap_data;
     if(count == 1)
     {
         // special case when there is just one file
@@ -765,7 +765,7 @@ bool sitemapxml::generate_sitemapxml_impl(sitemapxml * r)
 {
     NOTUSED(r);
 
-    QtCassandra::QCassandraTable::pointer_t branch_table(content::content::instance()->get_branch_table());
+    libdbproxy::table::pointer_t branch_table(content::content::instance()->get_branch_table());
 
     path::path * path_plugin(path::path::instance());
 
@@ -815,7 +815,7 @@ bool sitemapxml::generate_sitemapxml_impl(sitemapxml * r)
         url.set_uri(page_key);
 
         // use the last modification date from that page
-        QtCassandra::QCassandraValue modified(branch_table->row(page_ipath.get_branch_key())->cell(QString(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED)))->value());
+        libdbproxy::value modified(branch_table->getRow(page_ipath.get_branch_key())->getCell(QString(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED)))->getValue());
         if(!modified.nullValue())
         {
             url.set_last_modification(modified.int64Value() / 1000000L); // micro-seconds -> seconds
@@ -940,7 +940,7 @@ void sitemapxml::on_backend_process()
     // save the number of sitemap.xml files we just generated
     // (this does not count the sitemap index if we createdone)
     //
-    QtCassandra::QCassandraValue count;
+    libdbproxy::value count;
     count.setInt32Value(position);
     f_snap->set_site_parameter(get_name(name_t::SNAP_NAME_SITEMAPXML_COUNT), count);
 
@@ -948,17 +948,17 @@ void sitemapxml::on_backend_process()
     // user does not directly interact with this data and thus
     // content::updated would otherwise never reflect the last changes
     //
-    QtCassandra::QCassandraTable::pointer_t content_table(content::content::instance()->get_content_table());
+    libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     uint64_t const start_date(f_snap->get_start_date());
     QString const site_key(f_snap->get_site_key_with_slash());
     QString const content_updated(content::get_name(content::name_t::SNAP_NAME_CONTENT_UPDATED));
     QString const content_modified(content::get_name(content::name_t::SNAP_NAME_CONTENT_MODIFIED));
     QString const sitemap_xml(site_key + "sitemap.xml");
-    content_table->row(sitemap_xml)->cell(content_updated)->setValue(start_date);
-    content_table->row(sitemap_xml)->cell(content_modified)->setValue(start_date);
+    content_table->getRow(sitemap_xml)->getCell(content_updated)->setValue(start_date);
+    content_table->getRow(sitemap_xml)->getCell(content_modified)->setValue(start_date);
     QString const sitemap_txt(site_key + "sitemap.txt");
-    content_table->row(sitemap_txt)->cell(content_updated)->setValue(start_date);
-    content_table->row(sitemap_txt)->cell(content_modified)->setValue(start_date);
+    content_table->getRow(sitemap_txt)->getCell(content_updated)->setValue(start_date);
+    content_table->getRow(sitemap_txt)->getCell(content_modified)->setValue(start_date);
 
 #ifdef DEBUG
 SNAP_LOG_TRACE() << "Updated [" << sitemap_xml << "]";
@@ -1177,7 +1177,7 @@ void sitemapxml::generate_one_sitemap(int32_t const position, size_t & index)
     if(position == 1 && index >= f_url_info.size())
     {
         // only one sitemap.xml file, save using the "sitemap.xml" filename
-        QtCassandra::QCassandraValue result_value;
+        libdbproxy::value result_value;
         result_value.setStringValue(last_result);
         f_snap->set_site_parameter(get_name(name_t::SNAP_NAME_SITEMAPXML_SITEMAP_XML), result_value);
     }
@@ -1187,12 +1187,12 @@ void sitemapxml::generate_one_sitemap(int32_t const position, size_t & index)
         // set of URLs in a new sitemap
         //
         QString const filename(QString(get_name(name_t::SNAP_NAME_SITEMAPXML_SITEMAP_NUMBER_XML)).arg(position));
-        QtCassandra::QCassandraValue result_value;
+        libdbproxy::value result_value;
         result_value.setStringValue(last_result);
         f_snap->set_site_parameter(filename, result_value);
 
         content::content * content_plugin(content::content::instance());
-        QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+        libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
 
         content::path_info_t ipath;
         ipath.set_path(QString(get_name(name_t::SNAP_NAME_SITEMAPXML_FILENAME_NUMBER_XML)).arg(position));
@@ -1202,7 +1202,7 @@ void sitemapxml::generate_one_sitemap(int32_t const position, size_t & index)
         content_plugin->create_content(ipath, get_plugin_name(), "page/public");
 
         signed char const final_page(1);
-        content_table->row(ipath.get_key())->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_FINAL))->setValue(final_page);
+        content_table->getRow(ipath.get_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_FINAL))->setValue(final_page);
     }
 }
 
@@ -1276,7 +1276,7 @@ void sitemapxml::generate_sitemap_index(int32_t position)
     }
 
     // only one sitemap.xml file, save using the "sitemap.xml" filename
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setStringValue(doc.toString(-1));
     f_snap->set_site_parameter(get_name(name_t::SNAP_NAME_SITEMAPXML_SITEMAP_XML), value);
 }
@@ -1346,7 +1346,7 @@ void sitemapxml::on_allow_shorturl(content::path_info_t & ipath, QString const &
 }
 
 
-void sitemapxml::on_copy_branch_cells(QtCassandra::QCassandraCells& source_cells, QtCassandra::QCassandraRow::pointer_t destination_row, snap_version::version_number_t const destination_branch)
+void sitemapxml::on_copy_branch_cells(libdbproxy::cells& source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
     NOTUSED(destination_branch);
 

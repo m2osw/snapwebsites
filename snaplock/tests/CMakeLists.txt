@@ -43,7 +43,7 @@ if(CATCH_FOUND)
     )
     target_link_libraries(${PROJECT_NAME}
         snapwebsites
-        QtCassandra
+        libdbproxy
         ${CASSVALUE_LIBRARIES}
         ${CASSWRAPPER_LIBRARIES}
         ${LIBEXCEPT_LIBRARIES}

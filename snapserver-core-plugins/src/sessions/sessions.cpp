@@ -166,7 +166,7 @@
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/plugins.h>
 
-#include <QtCassandra/QCassandraValue.h>
+#include <libdbproxy/value.h>
 
 #include <iostream>
 
@@ -1065,7 +1065,7 @@ char const * sessions::session_info::session_type_to_string(session_info_type_t 
 
 /** \brief Define the TTL for a Cassandra value.
  *
- * This function defines the TTL value for a QCassandraValue object.
+ * This function defines the TTL value for a value object.
  *
  * The TTL is calculated from the time limit and the time to live.
  * The time to live has priority and if longer than the time limit,
@@ -1078,7 +1078,7 @@ char const * sessions::session_info::session_type_to_string(session_info_type_t 
  * TTL was setup once. It will be a lot faster than calling this
  * function each time you have to save a new value.
  *
- * \param[in,out] value  The QCassandraValue which TTL will be set.
+ * \param[in,out] value  The value which TTL will be set.
  */
 int32_t sessions::session_info::get_ttl(int64_t now) const
 {
@@ -1272,7 +1272,7 @@ void sessions::bootstrap(snap_child * snap)
  *
  * The field was supposed to be given the TTL of the other fields and
  * thus automatically get dropped with time. However, I used the same
- * QCassandraValue to test whether used_up exists. If not, I would reuse
+ * value to test whether used_up exists. If not, I would reuse
  * that value which had lost its TTL.
  *
  * This upgrade goes through the table and check for sessions that are
@@ -1294,9 +1294,9 @@ void sessions::clean_session_table(int64_t variables_timestamp)
     QString const used_up(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP));
     QString const id(get_name(name_t::SNAP_NAME_SESSIONS_ID));
 
-    QtCassandra::QCassandraTable::pointer_t sessions_table(get_sessions_table());
+    libdbproxy::table::pointer_t sessions_table(get_sessions_table());
     sessions_table->clearCache();
-    auto row_predicate = std::make_shared<QtCassandra::QCassandraRowPredicate>();
+    auto row_predicate = std::make_shared<libdbproxy::row_predicate>();
     row_predicate->setCount(1000);
     for(;;)
     {
@@ -1306,8 +1306,8 @@ void sessions::clean_session_table(int64_t variables_timestamp)
             // no more sessions to process
             break;
         }
-        QtCassandra::QCassandraRows const rows(sessions_table->rows());
-        for(QtCassandra::QCassandraRows::const_iterator o(rows.begin());
+        libdbproxy::rows const rows(sessions_table->getRows());
+        for(libdbproxy::rows::const_iterator o(rows.begin());
                 o != rows.end(); ++o)
         {
             // do not work on standalone websites
@@ -1316,9 +1316,9 @@ void sessions::clean_session_table(int64_t variables_timestamp)
                 if((*o)->exists(id))
                 {
                     // read the value so that way we get the TTL
-                    QtCassandra::QCassandraValue value((*o)->cell(id)->value());
+                    libdbproxy::value value((*o)->getCell(id)->getValue());
                     value.setCharValue(1);
-                    (*o)->cell(used_up)->setValue(value);
+                    (*o)->getCell(used_up)->setValue(value);
                 }
                 else
                 {
@@ -1345,7 +1345,7 @@ void sessions::clean_session_table(int64_t variables_timestamp)
  *
  * \return The pointer to the sessions table.
  */
-QtCassandra::QCassandraTable::pointer_t sessions::get_sessions_table()
+libdbproxy::table::pointer_t sessions::get_sessions_table()
 {
     return f_snap->get_table(get_name(name_t::SNAP_NAME_SESSIONS_TABLE));
 }
@@ -1550,55 +1550,55 @@ void sessions::save_session(session_info & info, bool const new_random)
 
     QString const key(f_snap->get_website_key() + "/" + info.get_session_key());
 
-    QtCassandra::QCassandraTable::pointer_t table(get_sessions_table());
-    QtCassandra::QCassandraRow::pointer_t row(table->row(key));
+    libdbproxy::table::pointer_t table(get_sessions_table());
+    libdbproxy::row::pointer_t row(table->getRow(key));
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setTtl(info.get_ttl(f_snap->get_start_time()));
 
     value.setInt32Value(info.get_session_id());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_ID))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_ID))->setValue(value);
 
     value.setStringValue(info.get_plugin_owner());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_PLUGIN_OWNER))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_PLUGIN_OWNER))->setValue(value);
 
     value.setStringValue(info.get_page_path());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_PAGE_PATH))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_PAGE_PATH))->setValue(value);
 
     value.setStringValue(info.get_object_path());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_OBJECT_PATH))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_OBJECT_PATH))->setValue(value);
 
     value.setStringValue(info.get_user_agent());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_USER_AGENT))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USER_AGENT))->setValue(value);
 
     value.setInt32Value(info.get_time_to_live());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_TIME_TO_LIVE))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_TIME_TO_LIVE))->setValue(value);
 
     value.setInt64Value(info.get_time_limit());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_TIME_LIMIT))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_TIME_LIMIT))->setValue(value);
 
     value.setInt64Value(info.get_administrative_login_limit());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_LOGIN_LIMIT))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_LOGIN_LIMIT))->setValue(value);
 
     value.setInt64Value(f_snap->get_start_date());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_DATE))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_DATE))->setValue(value);
 
     if(info.get_creation_date() == 0)
     {
         // save it in the info structure as well
         info.set_creation_date(f_snap->get_start_time());
         value.setInt64Value(f_snap->get_start_date());
-        row->cell(get_name(name_t::SNAP_NAME_SESSIONS_CREATION_DATE))->setValue(value);
+        row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_CREATION_DATE))->setValue(value);
     }
 
     value.setStringValue(f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_REMOTE_ADDR)));
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_REMOTE_ADDR))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_REMOTE_ADDR))->setValue(value);
 
     value.setInt32Value(info.get_session_random());
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_RANDOM))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_RANDOM))->setValue(value);
 
     value.setInt64Value(info.add_check_flags(0));
-    row->cell(get_name(name_t::SNAP_NAME_SESSIONS_CHECK_FLAGS))->setValue(value);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_CHECK_FLAGS))->setValue(value);
 }
 
 
@@ -1655,7 +1655,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
 
     QString const key(f_snap->get_website_key() + "/" + session_key);
 
-    QtCassandra::QCassandraTable::pointer_t table(get_sessions_table());
+    libdbproxy::table::pointer_t table(get_sessions_table());
     if(!table->exists(key))
     {
         // if the key does not exist it was either tempered with
@@ -1664,7 +1664,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
         return;
     }
 
-    QtCassandra::QCassandraRow::pointer_t row(table->row(key));
+    libdbproxy::row::pointer_t row(table->getRow(key));
     if(!row)
     {
         // XXX
@@ -1677,9 +1677,9 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     // save the key as it is not unlikely that the rest will work
     info.set_session_key(session_key);
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_ID))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_ID))->getValue();
     if(value.size() != sizeof(int32_t))
     {
         // row timed out between calls
@@ -1688,7 +1688,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     info.set_session_id(value.int32Value());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_PLUGIN_OWNER))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_PLUGIN_OWNER))->getValue();
     if(value.nullValue())
     {
         // row timed out between calls
@@ -1697,19 +1697,19 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     info.set_plugin_owner(value.stringValue());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_PAGE_PATH))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_PAGE_PATH))->getValue();
     info.set_page_path(value.stringValue());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_OBJECT_PATH))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_OBJECT_PATH))->getValue();
     info.set_object_path(value.stringValue());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_USER_AGENT))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USER_AGENT))->getValue();
     info.set_user_agent(value.stringValue());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_REMOTE_ADDR))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_REMOTE_ADDR))->getValue();
     info.set_remote_addr(value.stringValue());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_CHECK_FLAGS))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_CHECK_FLAGS))->getValue();
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
@@ -1718,7 +1718,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     info.set_check_flags(value.int64Value());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_TIME_TO_LIVE))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_TIME_TO_LIVE))->getValue();
     if(value.size() != sizeof(int32_t))
     {
         // row timed out between calls
@@ -1727,7 +1727,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     info.set_time_to_live(value.int32Value());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_TIME_LIMIT))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_TIME_LIMIT))->getValue();
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
@@ -1736,7 +1736,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     info.set_time_limit(value.int64Value());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_LOGIN_LIMIT))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_LOGIN_LIMIT))->getValue();
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
@@ -1745,7 +1745,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     info.set_administrative_login_limit(value.int64Value());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_DATE))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_DATE))->getValue();
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
@@ -1754,7 +1754,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     info.set_date(value.int64Value());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_CREATION_DATE))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_CREATION_DATE))->getValue();
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
@@ -1763,7 +1763,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     info.set_creation_date(value.int64Value());
 
-    value = row->cell(get_name(name_t::SNAP_NAME_SESSIONS_RANDOM))->value();
+    value = row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_RANDOM))->getValue();
     if(value.size() != sizeof(int32_t))
     {
         // row timed out between calls
@@ -1778,7 +1778,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     //          we will destroy the Cassandra TTL used when saving the
     //          used up below
     //
-    QtCassandra::QCassandraValue used_up_value(row->cell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->value());
+    libdbproxy::value used_up_value(row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->getValue());
     if(!used_up_value.nullValue())
     {
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_USED_UP);
@@ -1792,7 +1792,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
         // As a side effect, since we just read values with a TTL
         // this 'value' variable already has the expected TTL!
         value.setCharValue(1);
-        row->cell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->setValue(value);
+        row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->setValue(value);
     }
 
     // a session has three time limits:
@@ -1858,7 +1858,7 @@ bool sessions::session_exists(QString const & website_key, QString const & sessi
                      + "/"
                      + session_key);
 
-    QtCassandra::QCassandraTable::pointer_t table(get_sessions_table());
+    libdbproxy::table::pointer_t table(get_sessions_table());
     return table->exists(key);
 }
 
@@ -1895,23 +1895,23 @@ void sessions::attach_to_session(session_info const & info, QString const & name
 
     SNAP_LOG_DEBUG("sessions::attach_to_session(), key = ")(key)(", name = ")(name)(", data = ")(data);
 
-    QtCassandra::QCassandraTable::pointer_t table(get_sessions_table());
+    libdbproxy::table::pointer_t table(get_sessions_table());
     if(!table->exists(key))
     {
         return;
     }
 
-    QtCassandra::QCassandraRow::pointer_t row(table->row(key));
+    libdbproxy::row::pointer_t row(table->getRow(key));
     if(!row)
     {
         return;
     }
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setTtl(info.get_ttl(f_snap->get_start_time()));
 
     value.setStringValue(data);
-    row->cell(name)->setValue(value);
+    row->getCell(name)->setValue(value);
 }
 
 
@@ -1934,20 +1934,20 @@ QString sessions::detach_from_session(session_info const & info, QString const &
 {
     QString const key(f_snap->get_website_key() + "/" + info.get_session_key());
 
-    QtCassandra::QCassandraTable::pointer_t table(get_sessions_table());
+    libdbproxy::table::pointer_t table(get_sessions_table());
     if(!table->exists(key))
     {
         return "";
     }
 
-    QtCassandra::QCassandraRow::pointer_t row(table->row(key));
+    libdbproxy::row::pointer_t row(table->getRow(key));
     if(!row)
     {
         return "";
     }
 
     // if not defined, we will get an empty string which is what we expect
-    QtCassandra::QCassandraValue value(row->cell(name)->value());
+    libdbproxy::value value(row->getCell(name)->getValue());
 
     // used once, so delete
     row->dropCell(name);
@@ -1971,20 +1971,20 @@ QString sessions::get_from_session(session_info const & info, QString const & na
 {
     QString key(f_snap->get_website_key() + "/" + info.get_session_key());
 
-    QtCassandra::QCassandraTable::pointer_t table(get_sessions_table());
+    libdbproxy::table::pointer_t table(get_sessions_table());
     if(!table->exists(key))
     {
         return "";
     }
 
-    QtCassandra::QCassandraRow::pointer_t row(table->row(key));
+    libdbproxy::row::pointer_t row(table->getRow(key));
     if(!row)
     {
         return "";
     }
 
     // if not defined, we will get an empty string which is what is expected
-    QtCassandra::QCassandraValue value(row->cell(name)->value());
+    libdbproxy::value value(row->getCell(name)->getValue());
 
     return value.stringValue();
 }

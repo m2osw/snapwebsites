@@ -282,7 +282,7 @@ public:
     // content signals
     void                on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type);
     void                on_modified_content(content::path_info_t & ipath);
-    void                on_copy_branch_cells(QtCassandra::QCassandraCells & source_cells, QtCassandra::QCassandraRow::pointer_t destination_row, snap_version::version_number_t const destination_branch);
+    void                on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch);
     void                on_modified_link(links::link_info const & link, bool const created);
 
     // filter signals

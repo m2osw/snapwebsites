@@ -178,12 +178,12 @@ void content::backend_action_reset_status(bool const force)
 {
     SNAP_LOG_TRACE("content::backend_action_reset_status(): Content status reset status.");
 
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
     content_table->clearCache();
 
     // TODO: use the '*index*' row instead of the entire content table
 
-    auto row_predicate = std::make_shared<QtCassandra::QCassandraRowPredicate>();
+    auto row_predicate = std::make_shared<libdbproxy::row_predicate>();
     QString const site_key(f_snap->get_site_key_with_slash());
     // process 100 in a row
     row_predicate->setCount(100);
@@ -195,8 +195,8 @@ void content::backend_action_reset_status(bool const force)
             // no more pages to process
             break;
         }
-        QtCassandra::QCassandraRows const rows(content_table->rows());
-        for(QtCassandra::QCassandraRows::const_iterator o(rows.begin());
+        libdbproxy::rows const rows(content_table->getRows());
+        for(libdbproxy::rows::const_iterator o(rows.begin());
                 o != rows.end(); ++o)
         {
             QString const key(QString::fromUtf8(o.key().data()));
@@ -204,16 +204,16 @@ void content::backend_action_reset_status(bool const force)
             {
                 path_info_t ipath;
                 ipath.set_path(key);
-                if(content_table->row(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_STATUS)))
+                if(content_table->getRow(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_STATUS)))
                 {
                     // do not use the normal interface, force any normal (something) to normal (normal)
-                    QtCassandra::QCassandraValue status(content_table->row(ipath.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->value());
+                    libdbproxy::value status(content_table->getRow(ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->getValue());
                     if(status.nullValue())
                     {
                         // no valid status, mark the page as normal
                         int32_t s(static_cast<unsigned char>(static_cast<int>(path_info_t::status_t::state_t::NORMAL)));
                         status.setInt32Value(s);
-                        content_table->row(ipath.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->setValue(status);
+                        content_table->getRow(ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->setValue(status);
                     }
                     else
                     {
@@ -241,7 +241,7 @@ void content::backend_action_reset_status(bool const force)
                         if(force || s != current_status)
                         {
                             status.setInt32Value(s);
-                            content_table->row(ipath.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->setValue(status);
+                            content_table->getRow(ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->setValue(status);
                         }
                     }
                 }
@@ -325,21 +325,21 @@ void content::backend_action_destroy_page()
  */
 void content::backend_action_new_file()
 {
-    QtCassandra::QCassandraTable::pointer_t files_table(get_files_table());
-    QtCassandra::QCassandraRow::pointer_t new_row(files_table->row(get_name(name_t::SNAP_NAME_CONTENT_FILES_NEW)));
+    libdbproxy::table::pointer_t files_table(get_files_table());
+    libdbproxy::row::pointer_t new_row(files_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_FILES_NEW)));
 
     QString const md5(f_snap->get_server_parameter("MD5"));
     QByteArray const key(dbutils::string_to_key(md5));
     unsigned char const changed(1);
-    new_row->cell(key)->setValue(changed);
+    new_row->getCell(key)->setValue(changed);
 
     // we also have to reset all the reference back to 1 instead of 2
     // otherwise nothing happens...
     //
-    QtCassandra::QCassandraRow::pointer_t file_row(files_table->row(key));
+    libdbproxy::row::pointer_t file_row(files_table->getRow(key));
     file_row->clearCache();
 
-    auto reference_column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+    auto reference_column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     reference_column_predicate->setStartCellKey(get_name(name_t::SNAP_NAME_CONTENT_FILES_REFERENCE));
     reference_column_predicate->setEndCellKey(get_name(name_t::SNAP_NAME_CONTENT_FILES_REFERENCE) + QString(";"));
     reference_column_predicate->setCount(100);
@@ -348,20 +348,20 @@ void content::backend_action_new_file()
     for(;;)
     {
         file_row->readCells(reference_column_predicate);
-        QtCassandra::QCassandraCells const content_cells(file_row->cells());
+        libdbproxy::cells const content_cells(file_row->getCells());
         if(content_cells.isEmpty())
         {
             break;
         }
         // handle one batch
-        for(QtCassandra::QCassandraCells::const_iterator cc(content_cells.begin());
+        for(libdbproxy::cells::const_iterator cc(content_cells.begin());
                 cc != content_cells.end();
                 ++cc)
         {
             // get the email from the database
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
-            QtCassandra::QCassandraCell::pointer_t content_cell(*cc);
+            libdbproxy::cell::pointer_t content_cell(*cc);
             content_cell->setValue(one);
         }
     }
@@ -391,7 +391,7 @@ void content::backend_action_new_file()
  */
 void content::backend_action_rebuild_index()
 {
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
 
     // first loop: check whether some entries in the content table were
     //             not properly defined in the index
@@ -405,12 +405,12 @@ void content::backend_action_rebuild_index()
     //       to destroy the intermediate/invalid page.)
     //
     {
-        QtCassandra::QCassandraValue ready;
+        libdbproxy::value ready;
         ready.setSignedCharValue(1);
 
         content_table->clearCache();
 
-        auto row_predicate = std::make_shared<QtCassandra::QCassandraRowPredicate>();
+        auto row_predicate = std::make_shared<libdbproxy::row_predicate>();
         // process 100 in a row
         row_predicate->setCount(100);
         for(;;)
@@ -421,8 +421,8 @@ void content::backend_action_rebuild_index()
                 // no more lists to process
                 break;
             }
-            QtCassandra::QCassandraRows const rows(content_table->rows());
-            for(QtCassandra::QCassandraRows::const_iterator o(rows.begin());
+            libdbproxy::rows const rows(content_table->getRows());
+            for(libdbproxy::rows::const_iterator o(rows.begin());
                     o != rows.end(); ++o)
             {
                 QString const key(QString::fromUtf8(o.key().data()));
@@ -441,9 +441,9 @@ void content::backend_action_rebuild_index()
                 //
                 path_info_t ipath;
                 ipath.set_path(key);
-                if(content_table->row(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
+                if(content_table->getRow(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
                 {
-                    content_table->row(get_name(name_t::SNAP_NAME_CONTENT_INDEX))->cell(ipath.get_key())->setValue(ready);
+                    content_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_INDEX))->getCell(ipath.get_key())->setValue(ready);
                 }
                 //else -- should we put those pages in a '*broken*' row
                 //        so we can run another process to clean up the
@@ -457,21 +457,21 @@ void content::backend_action_rebuild_index()
     //              destroy_page() signal)
     //
     {
-        QtCassandra::QCassandraRow::pointer_t row(content_table->row(get_name(name_t::SNAP_NAME_CONTENT_INDEX)));
+        libdbproxy::row::pointer_t row(content_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_INDEX)));
         row->clearCache();
 
-        auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+        auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
         column_predicate->setCount(100);
         column_predicate->setIndex(); // behave like an index
         for(;;)
         {
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.isEmpty())
             {
                 break;
             }
-            for(QtCassandra::QCassandraCells::const_iterator c(cells.begin());
+            for(libdbproxy::cells::const_iterator c(cells.begin());
                     c != cells.end();
                     ++c)
             {
@@ -479,7 +479,7 @@ void content::backend_action_rebuild_index()
 
                 path_info_t ipath;
                 ipath.set_path(key);
-                if(!content_table->row(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
+                if(!content_table->getRow(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
                 {
                     row->dropCell(ipath.get_key());
                 }
@@ -546,8 +546,8 @@ void content::backend_process_status()
 {
     SNAP_LOG_TRACE("content::backend_process_status(): Content status auto adjustments.");
 
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
-    QtCassandra::QCassandraTable::pointer_t processing_table(get_processing_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t processing_table(get_processing_table());
     processing_table->clearCache();
 
     // any page with this start date or less gets its processing state
@@ -558,11 +558,11 @@ void content::backend_process_status()
     // TODO: use the '*index*' row instead of the entire content table
 
     // only process files for the website currently being processed
-    auto row_predicate = std::make_shared<QtCassandra::QCassandraRowPredicate>();
+    auto row_predicate = std::make_shared<libdbproxy::row_predicate>();
     QString const site_key(f_snap->get_site_key_with_slash());
     // These are not defined in alphabetical order, unfortunately
     //row_predicate->setStartRowName(site_key);
-    //row_predicate->setEndRowName(site_key + QtCassandra::QCassandraCellPredicate::last_char);
+    //row_predicate->setEndRowName(site_key + libdbproxy::cell_predicate::last_char);
     // process 100 in a row
     row_predicate->setCount(100);
     for(;;)
@@ -573,8 +573,8 @@ void content::backend_process_status()
             // no more lists to process
             break;
         }
-        QtCassandra::QCassandraRows const rows(processing_table->rows());
-        for(QtCassandra::QCassandraRows::const_iterator o(rows.begin());
+        libdbproxy::rows const rows(processing_table->getRows());
+        for(libdbproxy::rows::const_iterator o(rows.begin());
                 o != rows.end(); ++o)
         {
             // TODO: we need to change this algorithm to run ONCE
@@ -587,9 +587,9 @@ void content::backend_process_status()
                 path_info_t ipath;
                 ipath.set_path(key);
                 if(content_table->exists(ipath.get_key())
-                && content_table->row(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_STATUS_CHANGED)))
+                && content_table->getRow(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_STATUS_CHANGED)))
                 {
-                    int64_t const last_changed(content_table->row(ipath.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS_CHANGED))->value().safeInt64Value());
+                    int64_t const last_changed(content_table->getRow(ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS_CHANGED))->getValue().safeInt64Value());
                     if(last_changed < start_date)
                     {
                         // we are done with that page since we just reset the
@@ -600,7 +600,7 @@ void content::backend_process_status()
 
                         // it has been more than 10 minutes, reset the state
                         path_info_t::status_t status(ipath.get_status());
-                        status.set_status(static_cast<path_info_t::status_t::status_type>(content_table->row(ipath.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->value().uint32Value()));
+                        status.set_status(static_cast<path_info_t::status_t::status_type>(content_table->getRow(ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->getValue().uint32Value()));
                         if(status.get_state() == path_info_t::status_t::state_t::CREATE)
                         {
                             // a create failed, set it to normal...
@@ -683,31 +683,31 @@ void content::backend_process_files()
     QByteArray const site_key_buffer(site_key.toUtf8());
     char const * site_key_utf8(site_key_buffer.data());
 
-    QtCassandra::QCassandraTable::pointer_t files_table(get_files_table());
-    QtCassandra::QCassandraRow::pointer_t new_row(files_table->row(get_name(name_t::SNAP_NAME_CONTENT_FILES_NEW)));
+    libdbproxy::table::pointer_t files_table(get_files_table());
+    libdbproxy::row::pointer_t new_row(files_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_FILES_NEW)));
     new_row->clearCache();
 
 // test this file over and over again until it worked
-//new_row->cell(QByteArray::fromHex("1f2bcb1bd25c07eb88373f7c9f50adb6"))->setValue(true);
+//new_row->getCell(QByteArray::fromHex("1f2bcb1bd25c07eb88373f7c9f50adb6"))->setValue(true);
 //signed char const ref(1);
-//files_table->row(QByteArray::fromHex("1f2bcb1bd25c07eb88373f7c9f50adb6"))->cell("content::files::reference::http://csnap.m2osw.com/css/finball/style.css")->setValue(ref);
+//files_table->getRow(QByteArray::fromHex("1f2bcb1bd25c07eb88373f7c9f50adb6"))->getCell("content::files::reference::http://csnap.m2osw.com/css/finball/style.css")->setValue(ref);
 //std::cerr << "-------------------------------------- backend_process_files() START\n";
 
     QString const file_reference(QString::fromUtf8(get_name(name_t::SNAP_NAME_CONTENT_FILES_REFERENCE)));
 
-    auto column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+    auto column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
     column_predicate->setCount(100); // should this be a parameter?
     column_predicate->setIndex(); // behave like an index
     for(;;)
     {
         new_row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const new_cells(new_row->cells());
+        libdbproxy::cells const new_cells(new_row->getCells());
         if(new_cells.isEmpty())
         {
             break;
         }
         // handle one batch
-        for(QtCassandra::QCassandraCells::const_iterator nc(new_cells.begin());
+        for(libdbproxy::cells::const_iterator nc(new_cells.begin());
                 nc != new_cells.end();
                 ++nc)
         {
@@ -715,15 +715,15 @@ void content::backend_process_files()
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
             bool drop_row(true);
-            QtCassandra::QCassandraCell::pointer_t new_cell(*nc);
-            if(!new_cell->value().nullValue())
+            libdbproxy::cell::pointer_t new_cell(*nc);
+            if(!new_cell->getValue().nullValue())
             {
                 QByteArray file_key(new_cell->columnKey());
 
-                QtCassandra::QCassandraRow::pointer_t file_row(files_table->row(file_key));
+                libdbproxy::row::pointer_t file_row(files_table->getRow(file_key));
                 file_row->clearCache();
 
-                auto reference_column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+                auto reference_column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
                 reference_column_predicate->setStartCellKey(file_reference);
                 reference_column_predicate->setEndCellKey(file_reference + ";");
                 reference_column_predicate->setCount(100);
@@ -733,23 +733,23 @@ void content::backend_process_files()
                 for(;;)
                 {
                     file_row->readCells(reference_column_predicate);
-                    QtCassandra::QCassandraCells const content_cells(file_row->cells());
+                    libdbproxy::cells const content_cells(file_row->getCells());
                     if(content_cells.isEmpty())
                     {
                         break;
                     }
                     // handle one batch
-                    for(QtCassandra::QCassandraCells::const_iterator cc(content_cells.begin());
+                    for(libdbproxy::cells::const_iterator cc(content_cells.begin());
                             cc != content_cells.end();
                             ++cc)
                     {
                         // get the email from the database
                         // we expect empty values once in a while because a dropCell() is
                         // not exactly instantaneous in Cassandra
-                        QtCassandra::QCassandraCell::pointer_t content_cell(*cc);
-                        if(!content_cell->value().nullValue())
+                        libdbproxy::cell::pointer_t content_cell(*cc);
+                        if(!content_cell->getValue().nullValue())
                         {
-                            int8_t const reference_value(content_cell->value().signedCharValue());
+                            int8_t const reference_value(content_cell->getValue().signedCharValue());
                             if(reference_value == 1)
                             {
                                 QByteArray attachment_key(content_cell->columnKey().data() + (strlen(get_name(name_t::SNAP_NAME_CONTENT_FILES_REFERENCE)) + 2),
@@ -769,9 +769,9 @@ void content::backend_process_files()
                                             // always save the secure flag
                                             //
                                             signed char const sflag(CONTENT_SECURE_UNDEFINED);
-                                            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->setValue(sflag);
-                                            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE_LAST_CHECK))->setValue(f_snap->get_start_date());
-                                            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURITY_REASON))->setValue(QString("Attachment could not be loaded from database."));
+                                            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->setValue(sflag);
+                                            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE_LAST_CHECK))->setValue(f_snap->get_start_date());
+                                            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURITY_REASON))->setValue(QString("Attachment could not be loaded from database."));
 
                                             // TODO generate a message about the error...
                                         }
@@ -782,9 +782,9 @@ void content::backend_process_files()
                                             // always save the secure flag
                                             //
                                             signed char const sflag(secure.allowed() ? CONTENT_SECURE_SECURE : CONTENT_SECURE_INSECURE);
-                                            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->setValue(sflag);
-                                            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE_LAST_CHECK))->setValue(f_snap->get_start_date());
-                                            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURITY_REASON))->setValue(secure.reason());
+                                            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->setValue(sflag);
+                                            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE_LAST_CHECK))->setValue(f_snap->get_start_date());
+                                            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURITY_REASON))->setValue(secure.reason());
 
                                             if(secure.allowed())
                                             {
@@ -869,7 +869,7 @@ void content::backend_process_journal( int64_t const age_in_minutes )
     auto field_timestamp ( get_name(name_t::SNAP_NAME_CONTENT_JOURNAL_TIMESTAMP)  );
     auto field_url       ( get_name(name_t::SNAP_NAME_CONTENT_JOURNAL_URL)        );
 
-    auto row_predicate( std::make_shared<QtCassandra::QCassandraRowPredicate>() );
+    auto row_predicate( std::make_shared<libdbproxy::row_predicate>() );
     row_predicate->setCount(100);
 
     // five minutes in the past
@@ -888,12 +888,12 @@ void content::backend_process_journal( int64_t const age_in_minutes )
         }
 
         QStringList pages_to_destroy;
-        auto row_list(journal_table->rows());
+        auto row_list(journal_table->getRows());
         for( QByteArray const & row_key : row_list.keys() )
         {
             auto row( row_list[row_key] );
-            QString const url       ( row->cell(field_url)->value().stringValue()      );
-            int64_t const timestamp ( row->cell(field_timestamp)->value().int64Value() );
+            QString const url       ( row->getCell(field_url)->getValue().stringValue()      );
+            int64_t const timestamp ( row->getCell(field_timestamp)->getValue().int64Value() );
             SNAP_LOG_DEBUG("++++ row_key=")(row_key.data())(", url=")(url);
             SNAP_LOG_DEBUG("++++++ timestamp = ")(timestamp)(", aged_out_time = ")(aged_out_time);
             if( timestamp < aged_out_time )
@@ -950,7 +950,7 @@ void content::backend_process_journal( int64_t const age_in_minutes )
  * \param[in] file_row  The row to the new file being processed.
  * \param[in] file  The file being processed.
  */
-bool content::process_attachment_impl(QtCassandra::QCassandraRow::pointer_t file_row, attachment_file const & file)
+bool content::process_attachment_impl(libdbproxy::row::pointer_t file_row, attachment_file const & file)
 {
     backend_compressed_file(file_row, file);
     backend_minify_css_file(file_row, file);
@@ -980,7 +980,7 @@ bool content::process_attachment_impl(QtCassandra::QCassandraRow::pointer_t file
  * \param[in] file_row  The row to the new file being processed.
  * \param[in] file  The file being processed.
  */
-void content::backend_compressed_file(QtCassandra::QCassandraRow::pointer_t file_row, attachment_file const & file)
+void content::backend_compressed_file(libdbproxy::row::pointer_t file_row, attachment_file const & file)
 {
     if(!file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_GZIP_COMPRESSED)))
     {
@@ -989,15 +989,15 @@ void content::backend_compressed_file(QtCassandra::QCassandraRow::pointer_t file
         if(compressor_name == "gzip")
         {
             // compression succeeded
-            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA_GZIP_COMPRESSED))->setValue(compressed_file);
+            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA_GZIP_COMPRESSED))->setValue(compressed_file);
             uint32_t const compressed_size(compressed_file.size());
-            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_GZIP_COMPRESSED))->setValue(compressed_size);
+            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_GZIP_COMPRESSED))->setValue(compressed_size);
         }
         else
         {
             // no better when compressed, mark such with a size of zero
             uint32_t const empty_size(0);
-            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_GZIP_COMPRESSED))->setValue(empty_size);
+            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_GZIP_COMPRESSED))->setValue(empty_size);
         }
     }
 }
@@ -1021,7 +1021,7 @@ void content::backend_compressed_file(QtCassandra::QCassandraRow::pointer_t file
  * \param[in] file_row  The row to the new file being processed.
  * \param[in] file  The file being processed.
  */
-void content::backend_minify_css_file(QtCassandra::QCassandraRow::pointer_t file_row, attachment_file const & file)
+void content::backend_minify_css_file(libdbproxy::row::pointer_t file_row, attachment_file const & file)
 {
     bool const is_css(file.get_parent_cpath().startsWith("css/"));
     if(is_css)
@@ -1069,9 +1069,9 @@ void content::backend_minify_css_file(QtCassandra::QCassandraRow::pointer_t file
                     // (the filename should be <filename>.min.css for this specific entry)
                     std::string const result(out.str());
                     QByteArray minified(result.c_str(), result.length());
-                    file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA_MINIFIED))->setValue(minified);
+                    file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA_MINIFIED))->setValue(minified);
                     uint32_t const minified_size(minified.size());
-                    file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_MINIFIED))->setValue(minified_size);
+                    file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_MINIFIED))->setValue(minified_size);
 
                     // now attempt to compress (it should pretty much always
                     // get compressed since it is text)
@@ -1080,15 +1080,15 @@ void content::backend_minify_css_file(QtCassandra::QCassandraRow::pointer_t file
                     if(compressor_name == "gzip")
                     {
                         // compression succeeded
-                        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA_MINIFIED_GZIP_COMPRESSED))->setValue(compressed_file);
+                        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA_MINIFIED_GZIP_COMPRESSED))->setValue(compressed_file);
                         uint32_t const compressed_size(compressed_file.size());
-                        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_MINIFIED_GZIP_COMPRESSED))->setValue(compressed_size);
+                        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_MINIFIED_GZIP_COMPRESSED))->setValue(compressed_size);
                     }
                     else
                     {
                         // no better when compressed, mark such with a size of zero
                         uint32_t const empty_size(0);
-                        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_MINIFIED_GZIP_COMPRESSED))->setValue(empty_size);
+                        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE_MINIFIED_GZIP_COMPRESSED))->setValue(empty_size);
                     }
                 }
             }

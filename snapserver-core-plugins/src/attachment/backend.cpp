@@ -94,11 +94,11 @@ void attachment::backend_action_extract_file()
     ipath.set_path(f_snap->get_server_parameter("FILE_URL"));
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
 
     // main page exists
     if(!content_table->exists(ipath.get_key())
-    || !content_table->row(ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
+    || !content_table->getRow(ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
     {
         SNAP_LOG_ERROR("Page for attachment \"")(ipath.get_key())("\" does not exist.");
         return;
@@ -110,8 +110,8 @@ void attachment::backend_action_extract_file()
 
 
     // retrieve MD5
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraValue const attachment_key(revision_table->row(ipath.get_revision_key())->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT))->value());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::value const attachment_key(revision_table->getRow(ipath.get_revision_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT))->getValue());
     if(attachment_key.nullValue())
     {
         SNAP_LOG_ERROR("Attachment MD5 number in page \"")(ipath.get_key())("\" is not defined.");
@@ -133,16 +133,16 @@ void attachment::backend_action_extract_file()
         return;
     }
 
-    QtCassandra::QCassandraTable::pointer_t files_table(content_plugin->get_files_table());
+    libdbproxy::table::pointer_t files_table(content_plugin->get_files_table());
     if(!files_table->exists(attachment_key.binaryValue())
-    || !files_table->row(attachment_key.binaryValue())->exists(field_name))
+    || !files_table->getRow(attachment_key.binaryValue())->exists(field_name))
     {
         // somehow the file data is not available
         SNAP_LOG_ERROR("Attachment \"")(ipath.get_key())("\" was not found.");
         return;
     }
 
-    QtCassandra::QCassandraValue data(files_table->row(attachment_key.binaryValue())->cell(field_name)->value());
+    libdbproxy::value data(files_table->getRow(attachment_key.binaryValue())->getCell(field_name)->getValue());
 
     QString const filename(f_snap->get_server_parameter("FILENAME"));
     QFile out(filename);

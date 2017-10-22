@@ -37,8 +37,8 @@
 // contrib lib
 //
 #include <advgetopt/advgetopt.h>
-#include <QtCassandra/QCassandraContext.h>
-#include <QtCassandra/QCassandraTable.h>
+#include <libdbproxy/context.h>
+#include <libdbproxy/table.h>
 
 // Qt lib
 //
@@ -295,9 +295,9 @@ void snap_bounce::store_email()
 
     // Send f_email_body's contents to cassandra, specifically in the "emails/bounced" table/row.
     //
-    QtCassandra::QCassandraContext::pointer_t context( f_cassandra.get_snap_context() );
+    libdbproxy::context::pointer_t context( f_cassandra.get_snap_context() );
 
-    QtCassandra::QCassandraTable::pointer_t table(context->findTable("emails"));
+    libdbproxy::table::pointer_t table(context->findTable("emails"));
     if(!table)
     {
         // We do not want to bother with trying to create the "emails" table.
@@ -308,7 +308,7 @@ void snap_bounce::store_email()
     QByteArray key;
     // get current time first so rows get sorted by date
     int64_t now(snap::snap_child::get_current_date());
-    QtCassandra::appendInt64Value(key, now); // warning: use our append function so the int is inserted in big endian
+    libdbproxy::appendInt64Value(key, now); // warning: use our append function so the int is inserted in big endian
     // make sure it is unique
     uuid_t uuid;
     uuid_generate_random( uuid );

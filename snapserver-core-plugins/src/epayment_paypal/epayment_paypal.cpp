@@ -396,7 +396,7 @@ void epayment_paypal::bootstrap(snap_child * snap)
  *
  * \return The pointer to the epayment_paypal table.
  */
-QtCassandra::QCassandraTable::pointer_t epayment_paypal::get_epayment_paypal_table()
+libdbproxy::table::pointer_t epayment_paypal::get_epayment_paypal_table()
 {
     if(!f_epayment_paypal_table)
     {
@@ -475,8 +475,8 @@ void epayment_paypal::on_generate_header_content(content::path_info_t & ipath, Q
     settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_SETTINGS_PATH));
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-    QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(settings_ipath.get_key()));
+    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+    libdbproxy::row::pointer_t secret_row(secret_table->getRow(settings_ipath.get_key()));
 
     bool const debug(get_debug());
 
@@ -486,14 +486,14 @@ void epayment_paypal::on_generate_header_content(content::path_info_t & ipath, Q
     if(debug)
     {
         // User setup debug mode for now
-        client_id = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SANDBOX_CLIENT_ID))->value().stringValue();
-        secret = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SANDBOX_SECRET))->value().stringValue();
+        client_id = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SANDBOX_CLIENT_ID))->getValue().stringValue();
+        secret = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SANDBOX_SECRET))->getValue().stringValue();
     }
     else
     {
         // Normal user settings
-        client_id = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CLIENT_ID))->value().stringValue();
-        secret = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SECRET))->value().stringValue();
+        client_id = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CLIENT_ID))->getValue().stringValue();
+        secret = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SECRET))->getValue().stringValue();
     }
 
     if(!client_id.isEmpty()
@@ -549,7 +549,7 @@ SNAP_LOG_DEBUG() << "epayment_paypal::on_path_execute() cpath = [" << cpath << "
     if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_CANCEL_URL)
     || cpath == get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_CANCEL_PLAN_URL))
     {
-        QtCassandra::QCassandraTable::pointer_t epayment_paypal_table(get_epayment_paypal_table());
+        libdbproxy::table::pointer_t epayment_paypal_table(get_epayment_paypal_table());
 
         // the user canceled that invoice...
         //
@@ -579,7 +579,7 @@ SNAP_LOG_DEBUG() << "epayment_paypal::on_path_execute() cpath = [" << cpath << "
     }
     else if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_RETURN_URL))
     {
-        QtCassandra::QCassandraTable::pointer_t epayment_paypal_table(get_epayment_paypal_table());
+        libdbproxy::table::pointer_t epayment_paypal_table(get_epayment_paypal_table());
 
         for(;;)
         {
@@ -603,7 +603,7 @@ SNAP_LOG_DEBUG() << "epayment_paypal::on_path_execute() cpath = [" << cpath << "
 
             QString const id(main_uri.query_option("paymentId"));
 SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() << "]";
-            QString const date_invoice(epayment_paypal_table->row(main_uri.full_domain())->cell("id/" + id)->value().stringValue());
+            QString const date_invoice(epayment_paypal_table->getRow(main_uri.full_domain())->getCell("id/" + id)->getValue().stringValue());
             int const pos(date_invoice.indexOf(','));
             if(pos < 1)
             {
@@ -667,12 +667,12 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             QString const payer_id(main_uri.query_option("PayerID"));
 
             content::content *content_plugin(content::content::instance());
-            QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-            QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-            QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(invoice_ipath.get_key()));
+            libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+            libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+            libdbproxy::row::pointer_t secret_row(secret_table->getRow(invoice_ipath.get_key()));
 
             // save the PayerID value
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PAYER_ID))->setValue(payer_id);
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PAYER_ID))->setValue(payer_id);
 
             // Optionally, we may get a token that we check, just in case
             // (for PayPal payments this token is not used at this time)
@@ -680,7 +680,7 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             {
                 // do we have a match?
                 QString const token(main_uri.query_option("token"));
-                QString const expected_token(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PAYMENT_TOKEN))->value().stringValue());
+                QString const expected_token(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PAYMENT_TOKEN))->getValue().stringValue());
                 if(expected_token != token)
                 {
                     messages::messages::instance()->set_error(
@@ -724,7 +724,7 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
 
             // the URL to send the execute request to PayPal is saved in the
             // invoice secret area
-            QString const execute_url(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTE_PAYMENT))->value().stringValue());
+            QString const execute_url(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTE_PAYMENT))->getValue().stringValue());
 
             http_client_server::http_client http;
             //http.set_keep_alive(true); -- this is the default
@@ -860,8 +860,8 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             execute_request.set_data(body.toUtf8().data());
             http_client_server::http_response::pointer_t response(http.send_request(execute_request));
 
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_PAYMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_PAYMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_PAYMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_PAYMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
 
             // looks pretty good, check the actual answer...
             as2js::JSON::pointer_t json(new as2js::JSON);
@@ -951,11 +951,11 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
                 break;
             }
 
-            QtCassandra::QCassandraTable::pointer_t epayment_paypal_table(get_epayment_paypal_table());
+            libdbproxy::table::pointer_t epayment_paypal_table(get_epayment_paypal_table());
 
             QString const token(main_uri.query_option("token"));
 SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
-            QString const date_invoice(epayment_paypal_table->row(main_uri.full_domain())->cell("agreement/" + token)->value().stringValue());
+            QString const date_invoice(epayment_paypal_table->getRow(main_uri.full_domain())->getCell("agreement/" + token)->getValue().stringValue());
             int const pos(date_invoice.indexOf(','));
             if(pos < 1)
             {
@@ -1007,9 +1007,9 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
             }
 
             content::content * content_plugin(content::content::instance());
-            QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-            QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-            QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(invoice_ipath.get_key()));
+            libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+            libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+            libdbproxy::row::pointer_t secret_row(secret_table->getRow(invoice_ipath.get_key()));
 
             // No saved ID for agreements...
             //
@@ -1046,7 +1046,7 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
 
             // the URL to send the execute request to PayPal is saved in the
             // invoice secret area
-            QString const execute_url(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTE_AGREEMENT))->value().stringValue());
+            QString const execute_url(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTE_AGREEMENT))->getValue().stringValue());
 
             http_client_server::http_client http;
             //http.set_keep_alive(true) -- this is the default;
@@ -1098,8 +1098,8 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
             //SNAP_LOG_INFO("Request: ")(execute_request.get_request());
             http_client_server::http_response::pointer_t response(http.send_request(execute_request));
 
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_AGREEMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_AGREEMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_AGREEMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_AGREEMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
 
             // we need a successful response
             if(response->get_response_code() != 200
@@ -1155,7 +1155,7 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
                 throw epayment_paypal_exception_io_error("'id' missing in 'execute' response");
             }
             QString const execute_id(QString::fromUtf8(object.at("id")->get_string().to_utf8().c_str()));
-            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_ID))->setValue(execute_id);
+            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_ID))->setValue(execute_id);
 
             // LINKS / SELF
             //
@@ -1198,7 +1198,7 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
                         }
                         as2js::String const & plan_url_str(link_object.at("href")->get_string());
                         agreement_url = QString::fromUtf8(plan_url_str.to_utf8().c_str());
-                        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_URL))->setValue(agreement_url);
+                        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_URL))->setValue(agreement_url);
                     }
                 }
             }
@@ -1232,9 +1232,9 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
 
 void epayment_paypal::cancel_invoice(QString const & token)
 {
-    QtCassandra::QCassandraTable::pointer_t epayment_paypal_table(get_epayment_paypal_table());
+    libdbproxy::table::pointer_t epayment_paypal_table(get_epayment_paypal_table());
     snap_uri const main_uri(f_snap->get_uri());
-    QString const invoice(epayment_paypal_table->row(main_uri.full_domain())->cell("token/" + token)->value().stringValue());
+    QString const invoice(epayment_paypal_table->getRow(main_uri.full_domain())->getCell("token/" + token)->getValue().stringValue());
     content::path_info_t invoice_ipath;
     invoice_ipath.set_path(invoice);
 
@@ -1283,13 +1283,13 @@ bool epayment_paypal::get_debug()
         settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_SETTINGS_PATH));
 
         content::content *content_plugin(content::content::instance());
-        QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(settings_ipath.get_revision_key()));
+        libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(settings_ipath.get_revision_key()));
 
         // TODO: if backends require it, we want to add a reset of the
         //       revision_row before re-reading the debug flag here
 
-        QtCassandra::QCassandraValue debug_value(revision_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_DEBUG))->value());
+        libdbproxy::value debug_value(revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_DEBUG))->getValue());
         f_debug = !debug_value.nullValue() && debug_value.signedCharValue();
 
         f_debug_defined = true;
@@ -1322,10 +1322,10 @@ int8_t epayment_paypal::get_maximum_repeat_failures()
         settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_SETTINGS_PATH));
 
         content::content *content_plugin(content::content::instance());
-        QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-        QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(settings_ipath.get_revision_key()));
+        libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+        libdbproxy::row::pointer_t revision_row(revision_table->getRow(settings_ipath.get_revision_key()));
 
-        QtCassandra::QCassandraValue maximum_repeat_failures_value(revision_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_MAXIMUM_REPEAT_FAILURES))->value());
+        libdbproxy::value maximum_repeat_failures_value(revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_MAXIMUM_REPEAT_FAILURES))->getValue());
         if(maximum_repeat_failures_value.size() == sizeof(int8_t))
         {
             f_maximum_repeat_failures = maximum_repeat_failures_value.signedCharValue();
@@ -1375,10 +1375,10 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     settings_ipath.set_path(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_SETTINGS_PATH));
 
     content::content *content_plugin(content::content::instance());
-    //QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    //QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(settings_ipath.get_revision_key()));
-    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-    QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(settings_ipath.get_key()));
+    //libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    //libdbproxy::row::pointer_t revision_row(revision_table->getRow(settings_ipath.get_revision_key()));
+    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+    libdbproxy::row::pointer_t secret_row(secret_table->getRow(settings_ipath.get_key()));
 
     bool const debug(get_debug());
 
@@ -1389,17 +1389,17 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     snap_lock lock(settings_ipath.get_key());
 
     // If there is a saved OAuth2 which is not out of date, use that
-    QtCassandra::QCassandraValue secret_debug_value(secret_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_DEBUG))->value());
+    libdbproxy::value secret_debug_value(secret_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_DEBUG))->getValue());
     if(!secret_debug_value.nullValue()
     && (secret_debug_value.signedCharValue() != 0) == debug) // if debug flag changed, it's toasted
     {
-        QtCassandra::QCassandraValue expires_value(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_EXPIRES))->value());
+        libdbproxy::value expires_value(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_EXPIRES))->getValue());
         int64_t const current_date(f_snap->get_current_date());
         if(expires_value.size() == sizeof(int64_t)
         && expires_value.int64Value() > current_date) // we do not use 'start date' here because it could be wrong if the process was really slow
         {
-            token_type = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_TOKEN_TYPE))->value().stringValue().toUtf8().data();
-            access_token = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_ACCESS_TOKEN))->value().stringValue().toUtf8().data();
+            token_type = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_TOKEN_TYPE))->getValue().stringValue().toUtf8().data();
+            access_token = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_ACCESS_TOKEN))->getValue().stringValue().toUtf8().data();
             return true;
         }
     }
@@ -1410,14 +1410,14 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     if(debug)
     {
         // User setup debug mode for now
-        client_id = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SANDBOX_CLIENT_ID))->value().stringValue();
-        secret = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SANDBOX_SECRET))->value().stringValue();
+        client_id = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SANDBOX_CLIENT_ID))->getValue().stringValue();
+        secret = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SANDBOX_SECRET))->getValue().stringValue();
     }
     else
     {
         // Normal user settings
-        client_id = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CLIENT_ID))->value().stringValue();
-        secret = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SECRET))->value().stringValue();
+        client_id = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CLIENT_ID))->getValue().stringValue();
+        secret = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_SECRET))->getValue().stringValue();
     }
 
     if(client_id.isEmpty()
@@ -1486,9 +1486,9 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     // save that info in case of failure we may have a chance to check
     // what went wrong
     signed char const debug_flag(debug ? 1 : 0);
-    secret_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_DEBUG))->setValue(debug_flag);
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_DATA))->setValue(QString::fromUtf8(response->get_response().c_str()));
+    secret_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_DEBUG))->setValue(debug_flag);
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_DATA))->setValue(QString::fromUtf8(response->get_response().c_str()));
 
     // looks pretty good...
     as2js::JSON::pointer_t json(new as2js::JSON);
@@ -1511,7 +1511,7 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     // at this point we expect "Bearer", but we assume it could change
     // since they are sending us a copy of that string
     token_type = object.at("token_type")->get_string().to_utf8();
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_TOKEN_TYPE))->setValue(QString::fromUtf8(token_type.c_str()));
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_TOKEN_TYPE))->setValue(QString::fromUtf8(token_type.c_str()));
 
     // ACCESS TOKEN
     // we should always have an access token
@@ -1521,7 +1521,7 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
         throw epayment_paypal_exception_io_error("oauth access_token missing");
     }
     access_token = object.at("access_token")->get_string().to_utf8();
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_ACCESS_TOKEN))->setValue(QString::fromUtf8(access_token.c_str()));
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_ACCESS_TOKEN))->setValue(QString::fromUtf8(access_token.c_str()));
 
     // EXPIRES IN
     // get the amount of time the token will last in seconds
@@ -1534,14 +1534,14 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     int64_t const expires(object.at("expires_in")->get_int64().get());
     int64_t const start_date(f_snap->get_start_date());
     // we save an absolute time limit instead of a "meaningless" number of seconds
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_EXPIRES))->setValue(start_date + expires * 1000000);
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_EXPIRES))->setValue(start_date + expires * 1000000);
 
     // SCOPE
     // get the scope if available (for info at this point)
     if(object.find("scope") != object.end())
     {
         QString const scope(QString::fromUtf8(object.at("scope")->get_string().to_utf8().c_str()));
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_SCOPE))->setValue(scope);
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_SCOPE))->setValue(scope);
     }
 
     // APP ID
@@ -1549,7 +1549,7 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     if(object.find("app_id") != object.end())
     {
         QString const app_id(QString::fromUtf8(object.at("app_id")->get_string().to_utf8().c_str()));
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_APP_ID))->setValue(app_id);
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_OAUTH2_APP_ID))->setValue(app_id);
     }
 
     return true;
@@ -1592,24 +1592,24 @@ QString epayment_paypal::get_product_plan(http_client_server::http_client & http
     product_ipath.set_path(guid);
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraRow::pointer_t row(revision_table->row(product_ipath.get_revision_key()));
-    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-    QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(product_ipath.get_key()));
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::row::pointer_t row(revision_table->getRow(product_ipath.get_revision_key()));
+    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+    libdbproxy::row::pointer_t secret_row(secret_table->getRow(product_ipath.get_key()));
 
     // This entire job may be used by any user of the system so it has to
     // be done while locked; it should not add much downtime to the end
     // user since users subscribe just once for a while in general
     snap_lock lock(product_ipath.get_key());
 
-    plan_id = secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_ID))->value().stringValue();
+    plan_id = secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_ID))->getValue().stringValue();
     if(!plan_id.isEmpty())
     {
         // although if the name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_ID is
         // properly setup, we should always have a valid URL, but just
         // in case, we verify that; if it is not valid, we create a
         // new plan...
-        QString const plan_url(secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_URL))->value().stringValue());
+        QString const plan_url(secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_URL))->getValue().stringValue());
         if(!plan_url.isEmpty())
         {
             return plan_url;
@@ -1743,7 +1743,7 @@ QString epayment_paypal::get_product_plan(http_client_server::http_client & http
     as2js::JSON::JSONValue::pointer_t body(new as2js::JSON::JSONValue(pos, empty_object));
 
     // NAME
-    QString subscription_name(row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue());
+    QString subscription_name(row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue());
     if(subscription_name.isEmpty())
     {
         // setup to a default name although all products should have
@@ -1757,7 +1757,7 @@ QString epayment_paypal::get_product_plan(http_client_server::http_client & http
     }
 
     // DESCRIPTION
-    QString const subscription_description(row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->value().stringValue());
+    QString const subscription_description(row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->getValue().stringValue());
     {
         if(subscription_description.isEmpty())
         {
@@ -1939,8 +1939,8 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
     create_plan_request.set_data(body->to_string().to_utf8());
     http_client_server::http_response::pointer_t response(http.send_request(create_plan_request));
 
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
 
     // we need a successful response (it should always be 201)
     if(response->get_response_code() != 200
@@ -1995,12 +1995,12 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
     }
     as2js::String const id_string(object.at("id")->get_string());
     plan_id = QString::fromUtf8(id_string.to_utf8().c_str());
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_ID))->setValue(plan_id);
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_ID))->setValue(plan_id);
 
     // save a back reference in the epayment_paypal table
-    QtCassandra::QCassandraTable::pointer_t epayment_paypal_table(get_epayment_paypal_table());
+    libdbproxy::table::pointer_t epayment_paypal_table(get_epayment_paypal_table());
     snap_uri const main_uri(f_snap->get_uri());
-    epayment_paypal_table->row(main_uri.full_domain())->cell("plan/" + plan_id)->setValue(product_ipath.get_key());
+    epayment_paypal_table->getRow(main_uri.full_domain())->getCell("plan/" + plan_id)->setValue(product_ipath.get_key());
 
     // LINKS / SELF
     //
@@ -2043,7 +2043,7 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
                 }
                 as2js::String const & plan_url_str(link_object.at("href")->get_string());
                 plan_url = QString::fromUtf8(plan_url_str.to_utf8().c_str());
-                secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_URL))->setValue(plan_url);
+                secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PLAN_URL))->setValue(plan_url);
             }
         }
     }
@@ -2116,8 +2116,8 @@ SNAP_LOG_DEBUG() << "ACTIVATED PLAN JSON BODY: [" << body->to_string().to_utf8()
     activate_plan_request.set_data(body->to_string().to_utf8());
     response = http.send_request(activate_plan_request);
 
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_ACTIVATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-    secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_ACTIVATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_ACTIVATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+    secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_ACTIVATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
 SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().c_str()) << "]";
 
     // we need a successful response (according to the documentation,
@@ -2189,9 +2189,9 @@ void epayment_paypal::on_process_post(QString const & uri_path)
             content::content * content_plugin(content::content::instance());
             users::users * users_plugin(users::users::instance());
 
-            QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
-            QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(invoice_ipath.get_key()));
-            QtCassandra::QCassandraTable::pointer_t epayment_paypal_table(get_epayment_paypal_table());
+            libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
+            libdbproxy::row::pointer_t secret_row(secret_table->getRow(invoice_ipath.get_key()));
+            libdbproxy::table::pointer_t epayment_paypal_table(get_epayment_paypal_table());
 
             // TODO: this will not work, it has to be in the epayment plugin because
             //       if we are to allow users to come back to view one of their
@@ -2205,8 +2205,8 @@ void epayment_paypal::on_process_post(QString const & uri_path)
             //{
             //    throw epayment_paypal_exception_io_error("RAND_bytes() could not generate a random number.");
             //}
-            //QtCassandra::QCassandraValue rnd_value(reinterpret_cast<char const *>(rnd), static_cast<int>(sizeof(rnd)));
-            //secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_INVOICE_SECRET_ID))->setValue(rnd_value);
+            //libdbproxy::value rnd_value(reinterpret_cast<char const *>(rnd), static_cast<int>(sizeof(rnd)));
+            //secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_INVOICE_SECRET_ID))->setValue(rnd_value);
             //QString const rnd_hex(rnd_value.binaryValue().toHex());
             //users_plugin->attach_to_session(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_INVOICE_SECRET_ID), rnd_hex);
             //http_cookie cookie(f_snap, "snap_epayment_paypal", rnd_hex);
@@ -2424,9 +2424,9 @@ void epayment_paypal::on_process_post(QString const & uri_path)
                 QString const guid(recurring_product->get_string_property(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_PRODUCT)));
                 content::path_info_t product_ipath;
                 product_ipath.set_path(guid);
-                QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-                QtCassandra::QCassandraRow::pointer_t revision_row(revision_table->row(product_ipath.get_revision_key()));
-                QString subscription_name(revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->value().stringValue());
+                libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+                libdbproxy::row::pointer_t revision_row(revision_table->getRow(product_ipath.get_revision_key()));
+                QString subscription_name(revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_TITLE))->getValue().stringValue());
                 if(subscription_name.isEmpty())
                 {
                     // setup to a default name although all products should have
@@ -2440,7 +2440,7 @@ void epayment_paypal::on_process_post(QString const & uri_path)
                 }
 
                 // DESCRIPTION
-                QString const subscription_description(revision_row->cell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->value().stringValue());
+                QString const subscription_description(revision_row->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_BODY))->getValue().stringValue());
                 {
                     if(subscription_description.isEmpty())
                     {
@@ -2511,9 +2511,9 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                 create_agreement_request.set_data(body->to_string().to_utf8());
                 http_client_server::http_response::pointer_t response(http.send_request(create_agreement_request));
 
-                secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_AGREEMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-                secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_AGREEMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
-                secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_INVOICE_NUMBER))->setValue(invoice_number);
+                secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_AGREEMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+                secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_AGREEMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
+                secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_INVOICE_NUMBER))->setValue(invoice_number);
 
                 // we need a successful response (it should always be 201)
                 if(response->get_response_code() != 200
@@ -2627,8 +2627,8 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                             // not the payment identifier!
                             QString const token(redirect_uri.query_option("token"));
                             QString const date_invoice(QString("%1,%2").arg(f_snap->get_start_date()).arg(invoice_ipath.get_key()));
-                            epayment_paypal_table->row(main_uri.full_domain())->cell("agreement/" + token)->setValue(date_invoice);
-                            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_TOKEN))->setValue(token);
+                            epayment_paypal_table->getRow(main_uri.full_domain())->getCell("agreement/" + token)->setValue(date_invoice);
+                            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_TOKEN))->setValue(token);
                         }
                         else if(rel == "execute")
                         {
@@ -2653,7 +2653,7 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                                 throw epayment_paypal_exception_io_error("PayPal link \"execute\" has no \"href\" parameter");
                             }
                             as2js::String const & href(link_object.at("href")->get_string());
-                            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTE_AGREEMENT))->setValue(QString::fromUtf8(href.to_utf8().c_str()));
+                            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTE_AGREEMENT))->setValue(QString::fromUtf8(href.to_utf8().c_str()));
                             found_execute = true;
                         }
                     }
@@ -2991,8 +2991,8 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 payment_request.set_data(body->to_string().to_utf8());
                 http_client_server::http_response::pointer_t response(http.send_request(payment_request));
 
-                secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_PAYMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-                secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_PAYMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
+                secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_PAYMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+                secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CREATED_PAYMENT))->setValue(QString::fromUtf8(response->get_response().c_str()));
 
                 // we need a successful response
                 if(response->get_response_code() != 200
@@ -3066,11 +3066,11 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 }
                 as2js::String const & id_string(object.at("id")->get_string());
                 QString const id(QString::fromUtf8(id_string.to_utf8().c_str()));
-                secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PAYMENT_ID))->setValue(id);
+                secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PAYMENT_ID))->setValue(id);
 
                 // save a back reference in the epayment_paypal table
                 QString const date_invoice(QString("%1,%2").arg(f_snap->get_start_date()).arg(invoice_ipath.get_key()));
-                epayment_paypal_table->row(main_uri.full_domain())->cell("id/" + id)->setValue(date_invoice);
+                epayment_paypal_table->getRow(main_uri.full_domain())->getCell("id/" + id)->setValue(date_invoice);
 
                 // we need a way to verify that the user coming back is indeed the
                 // user who started the process so the thank you page can show the
@@ -3138,8 +3138,8 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                             // The Cancel URL only receives the token,
                             // not the payment identifier!
                             QString const token(redirect_uri.query_option("token"));
-                            epayment_paypal_table->row(main_uri.full_domain())->cell("token/" + token)->setValue(invoice_ipath.get_key());
-                            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PAYMENT_TOKEN))->setValue(token);
+                            epayment_paypal_table->getRow(main_uri.full_domain())->getCell("token/" + token)->setValue(invoice_ipath.get_key());
+                            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_PAYMENT_TOKEN))->setValue(token);
                         }
                         else if(rel == "execute")
                         {
@@ -3164,7 +3164,7 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                                 throw epayment_paypal_exception_io_error("PayPal link \"execute\" has no \"href\" parameter");
                             }
                             as2js::String const & href(link_object.at("href")->get_string());
-                            secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTE_PAYMENT))->setValue(QString::fromUtf8(href.to_utf8().c_str()));
+                            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTE_PAYMENT))->setValue(QString::fromUtf8(href.to_utf8().c_str()));
                             found_execute = true;
                         }
                     }
@@ -3240,9 +3240,9 @@ void epayment_paypal::on_replace_token(content::path_info_t & ipath, QDomDocumen
         snap_uri const main_uri(f_snap->get_uri());
         if(main_uri.has_query_option("paymentId"))
         {
-            QtCassandra::QCassandraTable::pointer_t epayment_paypal_table(get_epayment_paypal_table());
+            libdbproxy::table::pointer_t epayment_paypal_table(get_epayment_paypal_table());
             QString const id(main_uri.query_option("paymentId"));
-            QString const invoice(epayment_paypal_table->row(main_uri.full_domain())->cell("id/" + id)->value().stringValue());
+            QString const invoice(epayment_paypal_table->getRow(main_uri.full_domain())->getCell("id/" + id)->getValue().stringValue());
             content::path_info_t invoice_ipath;
             invoice_ipath.set_path(invoice);
 
@@ -3304,11 +3304,11 @@ void epayment_paypal::on_repeat_payment(content::path_info_t & first_invoice_ipa
     NOTUSED(previous_invoice_ipath);
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t revision_table(content_plugin->get_revision_table());
-    QtCassandra::QCassandraTable::pointer_t secret_table(content_plugin->get_secret_table());
+    libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
+    libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
 
-    QtCassandra::QCassandraRow::pointer_t first_secret_row(secret_table->row(first_invoice_ipath.get_key()));
-    QtCassandra::QCassandraValue const agreement_id(first_secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_ID))->value());
+    libdbproxy::row::pointer_t first_secret_row(secret_table->getRow(first_invoice_ipath.get_key()));
+    libdbproxy::value const agreement_id(first_secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_ID))->getValue());
     if(agreement_id.nullValue())
     {
         // no PayPal agreement, we cannot repeat this payment in this
@@ -3316,7 +3316,7 @@ void epayment_paypal::on_repeat_payment(content::path_info_t & first_invoice_ipa
         return;
     }
 
-    QtCassandra::QCassandraRow::pointer_t new_invoice_revision_row(revision_table->row(new_invoice_ipath.get_revision_key()));
+    libdbproxy::row::pointer_t new_invoice_revision_row(revision_table->getRow(new_invoice_ipath.get_revision_key()));
     if(!new_invoice_revision_row)
     {
         // we have a big problem it looks like!
@@ -3324,7 +3324,7 @@ void epayment_paypal::on_repeat_payment(content::path_info_t & first_invoice_ipa
     }
 
     // make sure we do not try too many times in a row
-    int64_t const last_attempt(new_invoice_revision_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_LAST_ATTEMPT))->value().safeInt64Value());
+    int64_t const last_attempt(new_invoice_revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_LAST_ATTEMPT))->getValue().safeInt64Value());
     int64_t const start_date(f_snap->get_start_date());
     if(last_attempt + 24LL * 60LL * 60LL * 1000000LL > start_date)
     {
@@ -3336,9 +3336,9 @@ void epayment_paypal::on_repeat_payment(content::path_info_t & first_invoice_ipa
         SNAP_LOG_DEBUG("The PayPal recurring payment facility will not attempt plan processing of the same invoice (")(new_invoice_ipath.get_key())(") more than once a day.");
         return;
     }
-    new_invoice_revision_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_LAST_ATTEMPT))->setValue(start_date);
+    new_invoice_revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_LAST_ATTEMPT))->setValue(start_date);
 
-    QtCassandra::QCassandraRow::pointer_t secret_row(secret_table->row(new_invoice_ipath.get_key()));
+    libdbproxy::row::pointer_t secret_row(secret_table->getRow(new_invoice_ipath.get_key()));
     if(!secret_row)
     {
         // we have a big problem it looks like!
@@ -3362,7 +3362,7 @@ void epayment_paypal::on_repeat_payment(content::path_info_t & first_invoice_ipa
         return;
     }
 
-    QString const agreement_url(first_secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_URL))->value().stringValue());
+    QString const agreement_url(first_secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_URL))->getValue().stringValue());
 
     // check this agreement; if payment owed is still zero, just return
     // and try again tomorrow
@@ -3385,8 +3385,8 @@ SNAP_LOG_DEBUG() << "agreement URL is [" << agreement_url << "]";
         //paypal_agreement_request.set_header("PayPal-Request-Id", new_invoice_ipath.get_key().toUtf8().data());
         http_client_server::http_response::pointer_t response(http.send_request(paypal_agreement_request));
 
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CHECK_BILL_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CHECK_BILL_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CHECK_BILL_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CHECK_BILL_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
 SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().c_str()) << "]";
 
         // we need a successful response (according to the documentation,
@@ -3574,7 +3574,7 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
 
     int64_t failures(0);
     {
-        QtCassandra::QCassandraValue failures_value(new_invoice_revision_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_MAXIMUM_REPEAT_FAILURES))->value());
+        libdbproxy::value failures_value(new_invoice_revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_MAXIMUM_REPEAT_FAILURES))->getValue());
         if(failures_value.size() == sizeof(int8_t))
         {
             failures = failures_value.signedCharValue();
@@ -3682,14 +3682,14 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         bill_outstanding_agreement_amounts_request.set_data(body->to_string().to_utf8());
         http_client_server::http_response::pointer_t response(http.send_request(bill_outstanding_agreement_amounts_request));
 
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_ID))->setValue(agreement_id);
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_URL))->setValue(agreement_url);
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_ID))->setValue(agreement_id);
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_AGREEMENT_URL))->setValue(agreement_url);
         uint8_t const true_value(1);
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_REPEAT_PAYMENT))->setValue(true_value);
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_BILL_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_BILL_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_BILL_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
-        secret_row->cell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_INVOICE_NUMBER))->setValue(invoice_number);
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_REPEAT_PAYMENT))->setValue(true_value);
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_BILL_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_BILL_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_BILL_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
+        secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_INVOICE_NUMBER))->setValue(invoice_number);
 SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().c_str()) << "]";
 
         // parse the response which is always JSON even on errors
@@ -3707,7 +3707,7 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
             //       FAILED once the maximum number of failures is reached.
             //
             ++failures;
-            new_invoice_revision_row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_MAXIMUM_REPEAT_FAILURES))->setValue(failures);
+            new_invoice_revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_MAXIMUM_REPEAT_FAILURES))->setValue(failures);
 
             // in this case we mark the invoice paymnet as failed unless
             // we recognize the error and can use a different status

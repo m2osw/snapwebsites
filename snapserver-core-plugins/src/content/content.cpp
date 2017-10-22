@@ -582,10 +582,10 @@ void content::remove_files_compressor(int64_t variables_timestamp)
 {
     NOTUSED(variables_timestamp);
 
-    QtCassandra::QCassandraTable::pointer_t files_table(get_files_table());
+    libdbproxy::table::pointer_t files_table(get_files_table());
     files_table->clearCache();
 
-    auto row_predicate = std::make_shared<QtCassandra::QCassandraRowPredicate>();
+    auto row_predicate = std::make_shared<libdbproxy::row_predicate>();
     QString const site_key(f_snap->get_site_key_with_slash());
     // process 100 in a row
     row_predicate->setCount(100);
@@ -597,8 +597,8 @@ void content::remove_files_compressor(int64_t variables_timestamp)
             // no more files to process
             break;
         }
-        QtCassandra::QCassandraRows const rows(files_table->rows());
-        for(QtCassandra::QCassandraRows::const_iterator o(rows.begin());
+        libdbproxy::rows const rows(files_table->getRows());
+        for(libdbproxy::rows::const_iterator o(rows.begin());
                 o != rows.end(); ++o)
         {
             QString const key(QString::fromUtf8(o.key().data()));
@@ -682,7 +682,7 @@ void content::bootstrap(snap_child * snap)
  *
  * \return The pointer to the content table.
  */
-QtCassandra::QCassandraTable::pointer_t content::get_content_table()
+libdbproxy::table::pointer_t content::get_content_table()
 {
     if(!f_content_table)
     {
@@ -725,7 +725,7 @@ QtCassandra::QCassandraTable::pointer_t content::get_content_table()
  *
  * \return The pointer to the secret table.
  */
-QtCassandra::QCassandraTable::pointer_t content::get_secret_table()
+libdbproxy::table::pointer_t content::get_secret_table()
 {
     if(!f_secret_table)
     {
@@ -751,7 +751,7 @@ QtCassandra::QCassandraTable::pointer_t content::get_secret_table()
  *
  * \return The pointer to the content table.
  */
-QtCassandra::QCassandraTable::pointer_t content::get_processing_table()
+libdbproxy::table::pointer_t content::get_processing_table()
 {
     if(!f_processing_table)
     {
@@ -780,7 +780,7 @@ QtCassandra::QCassandraTable::pointer_t content::get_processing_table()
  *
  * \return The pointer to the content table.
  */
-QtCassandra::QCassandraTable::pointer_t content::get_cache_table()
+libdbproxy::table::pointer_t content::get_cache_table()
 {
     if(!f_cache_table)
     {
@@ -838,7 +838,7 @@ QtCassandra::QCassandraTable::pointer_t content::get_cache_table()
  *
  * \return The pointer to the branch table.
  */
-QtCassandra::QCassandraTable::pointer_t content::get_branch_table()
+libdbproxy::table::pointer_t content::get_branch_table()
 {
     if(!f_branch_table)
     {
@@ -882,7 +882,7 @@ QtCassandra::QCassandraTable::pointer_t content::get_branch_table()
  *
  * \return The pointer to the revision table.
  */
-QtCassandra::QCassandraTable::pointer_t content::get_revision_table()
+libdbproxy::table::pointer_t content::get_revision_table()
 {
     if(!f_revision_table)
     {
@@ -911,7 +911,7 @@ QtCassandra::QCassandraTable::pointer_t content::get_revision_table()
  *
  * \return The pointer to the files table.
  */
-QtCassandra::QCassandraTable::pointer_t content::get_files_table()
+libdbproxy::table::pointer_t content::get_files_table()
 {
     if(!f_files_table)
     {
@@ -981,14 +981,14 @@ snap_child * content::get_snap()
  */
 bool content::create_content_impl(path_info_t & ipath, QString const & owner, QString const & type)
 {
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
-    QtCassandra::QCassandraTable::pointer_t branch_table(get_branch_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t branch_table(get_branch_table());
     QString const site_key(f_snap->get_site_key_with_slash());
     QString const key(ipath.get_key());
 
     // create the row
     QString const primary_owner(get_name(name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER));
-    QtCassandra::QCassandraRow::pointer_t row(content_table->row(key));
+    libdbproxy::row::pointer_t row(content_table->getRow(key));
     if(row->exists(primary_owner))
     {
         // it already exists, but it could have been deleted or moved before
@@ -1053,7 +1053,7 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
     //ipath.set_status(status);
 
     // save the owner
-    row->cell(primary_owner)->setValue(owner);
+    row->getCell(primary_owner)->setValue(owner);
 
     SNAP_LOG_DEBUG("Started creation of page \"")(ipath.get_key())("\".");
 
@@ -1079,11 +1079,11 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
 
     // add the different basic content dates setup
     int64_t const start_date(f_snap->get_start_date());
-    row->cell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
+    row->getCell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
 
-    QtCassandra::QCassandraRow::pointer_t branch_row(branch_table->row(ipath.get_branch_key()));
-    branch_row->cell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
-    branch_row->cell(get_name(name_t::SNAP_NAME_CONTENT_MODIFIED))->setValue(start_date);
+    libdbproxy::row::pointer_t branch_row(branch_table->getRow(ipath.get_branch_key()));
+    branch_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
+    branch_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_MODIFIED))->setValue(start_date);
 
     // link the page to its type (very important for permissions)
     links::links * links_plugin(links::links::instance());
@@ -1170,10 +1170,10 @@ void content::create_content_done(path_info_t & ipath, QString const & owner, QS
     // the page now exists and is considered valid so add it to the content
     // index for all the have access to
     //
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
-    QtCassandra::QCassandraValue ready;
+    libdbproxy::table::pointer_t content_table(get_content_table());
+    libdbproxy::value ready;
     ready.setSignedCharValue(1);
-    content_table->row(get_name(name_t::SNAP_NAME_CONTENT_INDEX))->cell(ipath.get_key())->setValue(ready);
+    content_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_INDEX))->getCell(ipath.get_key())->setValue(ready);
 
     SNAP_LOG_DEBUG("Page \"")(ipath.get_key())("\" creation was completed.");
 }
@@ -1314,7 +1314,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
 
     // verify that the row specified by file::get_cpath() exists
     //
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
     QString const site_key(f_snap->get_site_key_with_slash());
     QString const parent_key(site_key + file.get_parent_cpath());
     if(!content_table->exists(parent_key))
@@ -1531,7 +1531,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
     QByteArray const md5(reinterpret_cast<char const *>(md), sizeof(md));
 
     // check whether the file already exists in the database
-    QtCassandra::QCassandraTable::pointer_t files_table(get_files_table());
+    libdbproxy::table::pointer_t files_table(get_files_table());
     bool file_exists(files_table->exists(md5));
     if(!file_exists)
     {
@@ -1539,13 +1539,13 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
         //
         // 1. create the row with the file data, the compression used,
         //    and size; also add it to the list of new cells
-        files_table->row(md5)->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA))->setValue(post_file.get_data());
+        files_table->getRow(md5)->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA))->setValue(post_file.get_data());
         signed char const new_file(1);
-        files_table->row(get_name(name_t::SNAP_NAME_CONTENT_FILES_NEW))->cell(md5)->setValue(new_file);
+        files_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_FILES_NEW))->getCell(md5)->setValue(new_file);
 
-        QtCassandra::QCassandraRow::pointer_t file_row(files_table->row(md5));
+        libdbproxy::row::pointer_t file_row(files_table->getRow(md5));
 
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE))->setValue(static_cast<int32_t>(post_file.get_size()));
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE))->setValue(static_cast<int32_t>(post_file.get_size()));
 
         // Note we save the following mainly for completness because it is
         // not really usable (i.e. two people who are to upload the same file
@@ -1553,39 +1553,39 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
         // creation/modification dates... close to impossible!)
         //
         // 2. link back to the row where the file is saved in the content table
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_FILENAME))->setValue(attachment_filename);
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_FILENAME))->setValue(attachment_filename);
 
         // 3. save the computed MIME type
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_MIME_TYPE))->setValue(post_file.get_mime_type());
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_MIME_TYPE))->setValue(post_file.get_mime_type());
 
         // 4. save the original MIME type
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_ORIGINAL_MIME_TYPE))->setValue(post_file.get_original_mime_type());
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_ORIGINAL_MIME_TYPE))->setValue(post_file.get_original_mime_type());
 
         // 5. save the creation date if available (i.e. if not zero)
         if(post_file.get_creation_time() != 0)
         {
-            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATION_TIME))->setValue(static_cast<int64_t>(post_file.get_creation_time()));
+            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATION_TIME))->setValue(static_cast<int64_t>(post_file.get_creation_time()));
         }
 
         // 6. save the modification date if available (i.e. if not zero)
         if(post_file.get_modification_time() != 0)
         {
-            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_MODIFICATION_TIME))->setValue(static_cast<int64_t>(post_file.get_modification_time()));
+            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_MODIFICATION_TIME))->setValue(static_cast<int64_t>(post_file.get_modification_time()));
         }
 
         // 7. save the date when the file was uploaded
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATED))->setValue(f_snap->get_start_date());
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATED))->setValue(f_snap->get_start_date());
 
         // 8. save the date when the file was last updated
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_UPDATED))->setValue(f_snap->get_start_date());
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_UPDATED))->setValue(f_snap->get_start_date());
 
         // 9. if the file is an image save the width & height
         int32_t width(post_file.get_image_width());
         int32_t height(post_file.get_image_height());
         if(width > 0 && height > 0)
         {
-            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_WIDTH))->setValue(width);
-            file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_HEIGHT))->setValue(height);
+            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_WIDTH))->setValue(width);
+            file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_HEIGHT))->setValue(height);
         }
 
         // 10. save the description
@@ -1598,9 +1598,9 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
 
         // 11. Some additional fields
         signed char sflag(CONTENT_SECURE_UNDEFINED);
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->setValue(sflag);
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE_LAST_CHECK))->setValue(static_cast<int64_t>(0));
-        file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURITY_REASON))->setValue(QString());
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->setValue(sflag);
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE_LAST_CHECK))->setValue(static_cast<int64_t>(0));
+        file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURITY_REASON))->setValue(QString());
 
         // 12. save dependencies
         {
@@ -1638,7 +1638,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                     {
                         // save the canonicalized version of the dependency in the database
                         found[full_name] = true;
-                        file_row->cell(QString("%1::%2").arg(get_name(name_t::SNAP_NAME_CONTENT_FILES_DEPENDENCY)).arg(full_name))->setValue(d.get_dependency_string());
+                        file_row->getCell(QString("%1::%2").arg(get_name(name_t::SNAP_NAME_CONTENT_FILES_DEPENDENCY)).arg(full_name))->setValue(d.get_dependency_string());
                     }
                 }
             }
@@ -1647,7 +1647,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
 // for test purposes to check a file over and over again
 //{
 //signed char const new_file(1);
-//files_table->row(get_name(name_t::SNAP_NAME_CONTENT_FILES_NEW))->cell(md5)->setValue(new_file);
+//files_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_FILES_NEW))->getCell(md5)->setValue(new_file);
 //}
 
     // make a full reference back to the attachment (which may not yet
@@ -1677,23 +1677,23 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
             // if we do, make sure it is one to one equivalent to what we
             // just generated
             //
-            auto references_column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+            auto references_column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
             references_column_predicate->setCount(10);
             references_column_predicate->setIndex(); // behave like an index
             QString const start_ref(QString("%1::%2").arg(get_name(name_t::SNAP_NAME_CONTENT_FILES_REFERENCE)).arg(site_key));
             references_column_predicate->setStartCellKey(start_ref);
-            references_column_predicate->setEndCellKey(start_ref + QtCassandra::QCassandraCellPredicate::last_char);
+            references_column_predicate->setEndCellKey(start_ref + libdbproxy::cell_predicate::last_char);
 
-            files_table->row(md5)->clearCache();
-            files_table->row(md5)->readCells(references_column_predicate);
-            QtCassandra::QCassandraCells const ref_cells(files_table->row(md5)->cells());
+            files_table->getRow(md5)->clearCache();
+            files_table->getRow(md5)->readCells(references_column_predicate);
+            libdbproxy::cells const ref_cells(files_table->getRow(md5)->getCells());
             if(!ref_cells.isEmpty())
             {
                 if(ref_cells.size() > 1)
                 {
                     throw snap_logic_exception(QString("JavaScript or CSS file \"%1\" has more than one reference to this website...").arg(post_file.get_filename()));
                 }
-                QtCassandra::QCassandraCell::pointer_t ref_cell(*ref_cells.begin());
+                libdbproxy::cell::pointer_t ref_cell(*ref_cells.begin());
                 if(ref_cell->columnName() != ref_cell_name)
                 {
                     // this could be an error, but we can just refresh the
@@ -1707,7 +1707,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                             ("\" which is not equal to the expected string \"")
                             (ref_cell_name)
                             ("\"...");
-                    files_table->row(md5)->dropCell(ref_cell->columnName());
+                    files_table->getRow(md5)->dropCell(ref_cell->columnName());
                 }
             }
         }
@@ -1719,7 +1719,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                             .arg(attachment_ipath.get_key());
     }
     signed char const ref(1);
-    files_table->row(md5)->cell(ref_cell_name)->setValue(ref);
+    files_table->getRow(md5)->getCell(ref_cell_name)->setValue(ref);
 
     QByteArray attachment_ref;
     attachment_ref.append(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT_REFERENCE));
@@ -1732,8 +1732,8 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
     // this may be a new content row, that is, it may still be empty so we
     // have to test several things before we can call create_content()...
 
-    QtCassandra::QCassandraTable::pointer_t branch_table(get_branch_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(get_revision_table());
+    libdbproxy::table::pointer_t branch_table(get_branch_table());
+    libdbproxy::table::pointer_t revision_table(get_revision_table());
 
     bool remove_old_revisions(false);
 
@@ -1757,14 +1757,14 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
             // instantly find those!)
             //QString const attachment_ref(QString("%1::%2").arg(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT_REFERENCE)).arg(md5));
             file_exists = branch_table->exists(attachment_ipath.get_branch_key())
-                       && branch_table->row(attachment_ipath.get_branch_key())->exists(attachment_ref);
+                       && branch_table->getRow(attachment_ipath.get_branch_key())->exists(attachment_ref);
             if(file_exists)
             {
                 // the reference row exists!
                 file_exists = true; // avoid generation of a new revision!
-                revision_number = branch_table->row(attachment_ipath.get_branch_key())->cell(attachment_ref)->value().int64Value();
+                revision_number = branch_table->getRow(attachment_ipath.get_branch_key())->getCell(attachment_ref)->getValue().int64Value();
                 attachment_ipath.force_revision(revision_number);
-                //content_table->row(attachment_ipath.get_key())->cell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT_REVISION_CONTROL_CURRENT_WORKING_VERSION))->setValue(revision);
+                //content_table->getRow(attachment_ipath.get_key())->getCell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT_REVISION_CONTROL_CURRENT_WORKING_VERSION))->setValue(revision);
             }
         }
 
@@ -1835,7 +1835,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
         set_revision_key(attachment_ipath.get_key(), branch_number, revision_number, locale, false);
 
         // back reference for quick search
-        branch_table->row(attachment_ipath.get_branch_key())->cell(attachment_ref)->setValue(static_cast<int64_t>(revision_number));
+        branch_table->getRow(attachment_ipath.get_branch_key())->getCell(attachment_ref)->setValue(static_cast<int64_t>(revision_number));
 
         revision = QString("%1.%2").arg(branch_number).arg(revision_number);
     }
@@ -1874,11 +1874,11 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
     // this name is "content::attachment::<plugin owner>::<field name>::path" (unique)
     //           or "content::attachment::<plugin owner>::<field name>::path::<server name>_<unique number>" (multiple)
     QString const name(file.get_name());
-    QtCassandra::QCassandraRow::pointer_t parent_row(content_table->row(parent_key));
+    libdbproxy::row::pointer_t parent_row(content_table->getRow(parent_key));
 
-    QtCassandra::QCassandraRow::pointer_t content_attachment_row(content_table->row(attachment_ipath.get_key()));
-    //QtCassandra::QCassandraRow::pointer_t branch_attachment_row(branch_table->row(attachment_ipath.get_branch_key()));
-    QtCassandra::QCassandraRow::pointer_t revision_attachment_row(revision_table->row(attachment_ipath.get_revision_key()));
+    libdbproxy::row::pointer_t content_attachment_row(content_table->getRow(attachment_ipath.get_key()));
+    //libdbproxy::row::pointer_t branch_attachment_row(branch_table->getRow(attachment_ipath.get_branch_key()));
+    libdbproxy::row::pointer_t revision_attachment_row(revision_table->getRow(attachment_ipath.get_revision_key()));
 
     // We depend on the JavaScript plugin so we have to do some of its
     // work here...
@@ -1905,12 +1905,12 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
             int const vmax(version.size());
             for(int v(0); v < vmax; ++v)
             {
-                QtCassandra::appendUInt32Value(jskey, version[v]);
+                libdbproxy::appendUInt32Value(jskey, version[v]);
             }
-            files_table->row(is_css
+            files_table->getRow(is_css
                     ? get_name(name_t::SNAP_NAME_CONTENT_FILES_CSS)
                     : get_name(name_t::SNAP_NAME_CONTENT_FILES_JAVASCRIPTS))
-                            ->cell(jskey)->setValue(md5);
+                            ->getCell(jskey)->setValue(md5);
             if(!all)
             {
                 // TODO: need to parse the script for this specific browser
@@ -1930,7 +1930,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
             if(parent_row->exists(name))
             {
                 // get the filename (attachment key)
-                QString const old_attachment_key(parent_row->cell(name)->value().stringValue());
+                QString const old_attachment_key(parent_row->getCell(name)->getValue().stringValue());
                 if(!old_attachment_key.isEmpty() && old_attachment_key != attachment_ipath.get_key())
                 {
                     // that is not the same filename, trash the old one
@@ -1957,7 +1957,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
         if(revision_attachment_row->exists(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT)))
         {
             // the MD5 is saved in there, get it and compare
-            QtCassandra::QCassandraValue const existing_ref(revision_attachment_row->cell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT))->value());
+            libdbproxy::value const existing_ref(revision_attachment_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT))->getValue());
             if(existing_ref.size() == 16)
             {
                 if(existing_ref.binaryValue() == md5)
@@ -1965,7 +1965,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                     // this is the exact same file, do nearly nothing
                     // (i.e. the file may already exist but the path
                     //       may not be there anymore)
-                    parent_row->cell(name)->setValue(attachment_ipath.get_key());
+                    parent_row->getCell(name)->setValue(attachment_ipath.get_key());
 
                     path_info_t::status_t status(attachment_ipath.get_status());
                     if(status.get_state() == path_info_t::status_t::state_t::DELETED
@@ -2002,7 +2002,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                 //       not even have to drop this cell at all because
                 //       it will remain there, only under a different
                 //       name...
-                files_table->row(existing_ref.binaryValue())->dropCell(attachment_ipath.get_cpath());
+                files_table->getRow(existing_ref.binaryValue())->dropCell(attachment_ipath.get_cpath());
             }
         }
 
@@ -2012,7 +2012,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
         //       one of them is the same file (i.e. user uploading the
         //       same file twice with two different file names...)
 
-        files_table->row(md5)->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_UPDATED))->setValue(f_snap->get_start_date());
+        files_table->getRow(md5)->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_UPDATED))->setValue(f_snap->get_start_date());
     }
 
     // yes that path may already exists, no worries since the create_content()
@@ -2020,25 +2020,25 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
     create_content(attachment_ipath, file.get_attachment_owner(), file.get_attachment_type());
 
     // if it is already filename it won't hurt too much to set it again
-    parent_row->cell(name)->setValue(attachment_ipath.get_key());
+    parent_row->getCell(name)->setValue(attachment_ipath.get_key());
 
     // mark all attachments as final (i.e. cannot create children below an attachment)
     signed char const final_page(1);
-    content_attachment_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FINAL))->setValue(final_page);
+    content_attachment_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FINAL))->setValue(final_page);
 
     // in this case 'post' represents the filename as sent by the
     // user, the binary data is in the corresponding file
-    revision_attachment_row->cell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT_FILENAME))->setValue(attachment_filename);
+    revision_attachment_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT_FILENAME))->setValue(attachment_filename);
 
     // save the file reference
-    revision_attachment_row->cell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT))->setValue(md5);
+    revision_attachment_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT))->setValue(md5);
 
     // save the MIME type (this is the one returned by the magic library)
-    revision_attachment_row->cell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT_MIME_TYPE))->setValue(post_file.get_mime_type());
+    revision_attachment_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT_MIME_TYPE))->setValue(post_file.get_mime_type());
 
     // the date when it was created
     int64_t const start_date(f_snap->get_start_date());
-    revision_attachment_row->cell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
+    revision_attachment_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
 
     // XXX we could also save the modification and creation dates, but the
     //     likelihood that these exist is so small that I'll skip at this
@@ -2079,7 +2079,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
             //
             // TODO: write said backend which should run about once a month
             //
-            content_attachment_row->cell(get_name(name_t::SNAP_NAME_CONTENT_REVISION_LIMITS))->setValue(revision_limits);
+            content_attachment_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_REVISION_LIMITS))->setValue(revision_limits);
 
             snap_version::version_number_t const revision_number(attachment_ipath.get_revision());
             if(revision_number >= static_cast<snap_version::version_number_t>(revision_limits))
@@ -2154,13 +2154,13 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
  */
 bool content::is_final(QString const& key)
 {
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
     if(content_table->exists(key))
     {
-        QtCassandra::QCassandraRow::pointer_t parent_row(content_table->row(key));
+        libdbproxy::row::pointer_t parent_row(content_table->getRow(key));
         if(parent_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FINAL)))
         {
-            QtCassandra::QCassandraValue final_value(parent_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FINAL))->value());
+            libdbproxy::value final_value(parent_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FINAL))->getValue());
             if(!final_value.nullValue())
             {
                 if(final_value.signedCharValue())
@@ -2208,7 +2208,7 @@ bool content::load_attachment(QString const & key, attachment_file & file, bool 
         }
     }
 
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
     if(!content_table->exists(ipath.get_key()))
     {
         // the row does not even exist yet...
@@ -2218,17 +2218,17 @@ bool content::load_attachment(QString const & key, attachment_file & file, bool 
     // TODO: select the WORKING_VERSION if the user is logged in and can
     //       edit this attachment
     //
-    QtCassandra::QCassandraTable::pointer_t revision_table(get_revision_table());
-    QtCassandra::QCassandraRow::pointer_t revision_attachment_row(revision_table->row(ipath.get_revision_key()));
-    QtCassandra::QCassandraValue md5_value(revision_attachment_row->cell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT))->value());
+    libdbproxy::table::pointer_t revision_table(get_revision_table());
+    libdbproxy::row::pointer_t revision_attachment_row(revision_table->getRow(ipath.get_revision_key()));
+    libdbproxy::value md5_value(revision_attachment_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_ATTACHMENT))->getValue());
 
-    QtCassandra::QCassandraTable::pointer_t files_table(get_files_table());
+    libdbproxy::table::pointer_t files_table(get_files_table());
     if(!files_table->exists(md5_value.binaryValue()))
     {
         // file not available?!
         return false;
     }
-    QtCassandra::QCassandraRow::pointer_t file_row(files_table->row(md5_value.binaryValue()));
+    libdbproxy::row::pointer_t file_row(files_table->getRow(md5_value.binaryValue()));
 
     if(!file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA)))
     {
@@ -2243,7 +2243,7 @@ bool content::load_attachment(QString const & key, attachment_file & file, bool 
 
     if(load_data)
     {
-        file.set_file_data(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA))->value().binaryValue());
+        file.set_file_data(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_DATA))->getValue().binaryValue());
 
         // TODO if compressed, we may have (want) to decompress here?
     }
@@ -2255,48 +2255,48 @@ bool content::load_attachment(QString const & key, attachment_file & file, bool 
         {
             // This one gets set automatically when we set the data so we only
             // load it if the data is not getting loaded
-            file.set_file_mime_type(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_MIME_TYPE))->value().stringValue());
+            file.set_file_mime_type(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_MIME_TYPE))->getValue().stringValue());
         }
         if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE)))
         {
             // since we're not loading the data, we get the size parameter
             // like this (later we may want to always do that once we save
             // files compressed in the database!)
-            file.set_file_size(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE))->value().int32Value());
+            file.set_file_size(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SIZE))->getValue().int32Value());
         }
     }
 
     if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_FILENAME)))
     {
-        file.set_file_filename(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_FILENAME))->value().stringValue());
+        file.set_file_filename(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_FILENAME))->getValue().stringValue());
     }
     if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_ORIGINAL_MIME_TYPE)))
     {
-        file.set_file_original_mime_type(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_ORIGINAL_MIME_TYPE))->value().stringValue());
+        file.set_file_original_mime_type(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_ORIGINAL_MIME_TYPE))->getValue().stringValue());
     }
     if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATION_TIME)))
     {
-        file.set_file_creation_time(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATION_TIME))->value().int64Value());
+        file.set_file_creation_time(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATION_TIME))->getValue().int64Value());
     }
     if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_MODIFICATION_TIME)))
     {
-        file.set_file_creation_time(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_MODIFICATION_TIME))->value().int64Value());
+        file.set_file_creation_time(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_MODIFICATION_TIME))->getValue().int64Value());
     }
     if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATED)))
     {
-        file.set_creation_time(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATED))->value().int64Value());
+        file.set_creation_time(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_CREATED))->getValue().int64Value());
     }
     if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_UPDATED)))
     {
-        file.set_update_time(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_UPDATED))->value().int64Value());
+        file.set_update_time(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_UPDATED))->getValue().int64Value());
     }
     if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_WIDTH)))
     {
-        file.set_file_image_width(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_WIDTH))->value().int32Value());
+        file.set_file_image_width(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_WIDTH))->getValue().int32Value());
     }
     if(file_row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_HEIGHT)))
     {
-        file.set_file_image_height(file_row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_HEIGHT))->value().int32Value());
+        file.set_file_image_height(file_row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_IMAGE_HEIGHT))->getValue().int32Value());
     }
 
     return true;
@@ -2353,7 +2353,7 @@ bool content::modified_content_impl(path_info_t & ipath)
         // always the current revision); also if data in the branch changes,
         // we get here too and that would have nothing to do with the last revision
         //
-        QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+        libdbproxy::table::pointer_t content_table(get_content_table());
         QString const key(ipath.get_key());
         if(!content_table->exists(key))
         {
@@ -2361,12 +2361,12 @@ bool content::modified_content_impl(path_info_t & ipath)
             SNAP_LOG_WARNING("Page \"")(key)("\" does not exist. We cannot do anything about it being modified.");
             return false;
         }
-        QtCassandra::QCassandraRow::pointer_t row(content_table->row(key));
-        row->cell(QString(get_name(name_t::SNAP_NAME_CONTENT_MODIFIED)))->setValue(start_date);
+        libdbproxy::row::pointer_t row(content_table->getRow(key));
+        row->getCell(QString(get_name(name_t::SNAP_NAME_CONTENT_MODIFIED)))->setValue(start_date);
     }
 
     {
-        QtCassandra::QCassandraTable::pointer_t branch_table(get_branch_table());
+        libdbproxy::table::pointer_t branch_table(get_branch_table());
         QString const branch_key(ipath.get_branch_key());
         if(!branch_table->exists(branch_key))
         {
@@ -2374,8 +2374,8 @@ bool content::modified_content_impl(path_info_t & ipath)
             SNAP_LOG_WARNING("Page \"")(branch_key)("\" does not exist. We cannot do anything about it being modified.");
             return false;
         }
-        QtCassandra::QCassandraRow::pointer_t row(branch_table->row(branch_key));
-        row->cell(QString(get_name(name_t::SNAP_NAME_CONTENT_MODIFIED)))->setValue(start_date);
+        libdbproxy::row::pointer_t row(branch_table->getRow(branch_key));
+        row->getCell(QString(get_name(name_t::SNAP_NAME_CONTENT_MODIFIED)))->setValue(start_date);
     }
 
     return true;
@@ -2408,53 +2408,53 @@ bool content::modified_content_impl(path_info_t & ipath)
  *
  * \return The content of the row as a Cassandra value.
  */
-QtCassandra::QCassandraValue content::get_content_parameter(path_info_t & ipath, QString const & param_name, param_revision_t revision)
+libdbproxy::value content::get_content_parameter(path_info_t & ipath, QString const & param_name, param_revision_t revision)
 {
     switch(revision)
     {
     case param_revision_t::PARAM_REVISION_GLOBAL:
         {
-            QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+            libdbproxy::table::pointer_t content_table(get_content_table());
 
             if(!content_table->exists(ipath.get_key())
-            || !content_table->row(ipath.get_key())->exists(param_name))
+            || !content_table->getRow(ipath.get_key())->exists(param_name))
             {
                 // an empty value is considered to be a null value
-                QtCassandra::QCassandraValue value;
+                libdbproxy::value value;
                 return value;
             }
 
-            return content_table->row(ipath.get_key())->cell(param_name)->value();
+            return content_table->getRow(ipath.get_key())->getCell(param_name)->getValue();
         }
 
     case param_revision_t::PARAM_REVISION_BRANCH:
         {
-            QtCassandra::QCassandraTable::pointer_t branch_table(get_branch_table());
+            libdbproxy::table::pointer_t branch_table(get_branch_table());
 
             if(!branch_table->exists(ipath.get_branch_key())
-            || !branch_table->row(ipath.get_branch_key())->exists(param_name))
+            || !branch_table->getRow(ipath.get_branch_key())->exists(param_name))
             {
                 // an empty value is considered to be a null value
-                QtCassandra::QCassandraValue value;
+                libdbproxy::value value;
                 return value;
             }
 
-            return branch_table->row(ipath.get_branch_key())->cell(param_name)->value();
+            return branch_table->getRow(ipath.get_branch_key())->getCell(param_name)->getValue();
         }
 
     case param_revision_t::PARAM_REVISION_REVISION:
         {
-            QtCassandra::QCassandraTable::pointer_t revision_table(get_revision_table());
+            libdbproxy::table::pointer_t revision_table(get_revision_table());
 
             if(!revision_table->exists(ipath.get_revision_key())
-            || !revision_table->row(ipath.get_revision_key())->exists(param_name))
+            || !revision_table->getRow(ipath.get_revision_key())->exists(param_name))
             {
                 // an empty value is considered to be a null value
-                QtCassandra::QCassandraValue value;
+                libdbproxy::value value;
                 return value;
             }
 
-            return revision_table->row(ipath.get_revision_key())->cell(param_name)->value();
+            return revision_table->getRow(ipath.get_revision_key())->getCell(param_name)->getValue();
         }
 
     default:
@@ -3483,9 +3483,9 @@ void content::on_save_content()
     // same time... note that this is one lock per website)
     snap_lock lock(QString("%1#updating").arg(site_key));
 
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
-    QtCassandra::QCassandraTable::pointer_t branch_table(get_branch_table());
-    QtCassandra::QCassandraTable::pointer_t revision_table(get_revision_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t branch_table(get_branch_table());
+    libdbproxy::table::pointer_t revision_table(get_revision_table());
     for(content_block_map_t::iterator d(f_blocks.begin());
             d != f_blocks.end(); ++d)
     {
@@ -3521,7 +3521,7 @@ void content::on_save_content()
             path_info_t parent_ipath;
             ipath.get_parent(parent_ipath);
             if(!content_table->exists(parent_ipath.get_key())
-            || !content_table->row(parent_ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
+            || !content_table->getRow(parent_ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
             {
                 // we do not allow a parent to got missing, the programmer
                 // has to fix his deal here!
@@ -3546,7 +3546,7 @@ void content::on_save_content()
                 // we only set the primary owner on creation, which means
                 // a plugin can take over the ownership of a page and we
                 // do not reset that ownership on updates
-                content_table->row(d->f_path)->cell(primary_owner)->setValue(d->f_owner);
+                content_table->getRow(d->f_path)->getCell(primary_owner)->setValue(d->f_owner);
             }
             else
             {
@@ -3564,10 +3564,10 @@ void content::on_save_content()
 
         // make sure we have our different basic content dates setup
         int64_t const start_date(f_snap->get_start_date());
-        if(content_table->row(d->f_path)->cell(QString(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))->value().nullValue())
+        if(content_table->getRow(d->f_path)->getCell(QString(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))->getValue().nullValue())
         {
             // do not overwrite the created date
-            content_table->row(d->f_path)->cell(QString(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))->setValue(start_date);
+            content_table->getRow(d->f_path)->getCell(QString(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))->setValue(start_date);
         }
 
         // TODO: fix the locale... actually the revision for English is
@@ -3593,12 +3593,12 @@ void content::on_save_content()
         QString const branch_key(QString("%1#%2").arg(d->f_path).arg(static_cast<snap_version::basic_version_number_t>(snap_version::SPECIAL_VERSION_SYSTEM_BRANCH)));
 
         // do not overwrite the created date
-        if(branch_table->row(branch_key)->cell(QString(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))->value().nullValue())
+        if(branch_table->getRow(branch_key)->getCell(QString(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))->getValue().nullValue())
         {
-            branch_table->row(branch_key)->cell(QString(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))->setValue(start_date);
+            branch_table->getRow(branch_key)->getCell(QString(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))->setValue(start_date);
         }
         // always overwrite the modified date
-        branch_table->row(branch_key)->cell(QString(get_name(name_t::SNAP_NAME_CONTENT_MODIFIED)))->setValue(start_date);
+        branch_table->getRow(branch_key)->getCell(QString(get_name(name_t::SNAP_NAME_CONTENT_MODIFIED)))->setValue(start_date);
 
         // save the parameters (i.e. cells of data defined by the developer)
         std::map<QString, bool> use_new_revision;
@@ -3620,7 +3620,7 @@ void content::on_save_content()
             QString const priority_field_name(QString("%1::%2")
                                 .arg(get_name(name_t::SNAP_NAME_CONTENT_FIELD_PRIORITY))
                                 .arg(p->f_name));
-            param_priority_t const priority(content_table->row(d->f_path)->cell(priority_field_name)->value().safeUInt64Value());
+            param_priority_t const priority(content_table->getRow(d->f_path)->getCell(priority_field_name)->getValue().safeUInt64Value());
             if(p->f_priority < priority)
             {
                 // ignore entries with smaller priorities, they were
@@ -3641,7 +3641,7 @@ void content::on_save_content()
                 //       useful and would really add tons of useless fields
                 //       to the database
                 //
-                content_table->row(d->f_path)->cell(priority_field_name)->setValue(p->f_priority);
+                content_table->getRow(d->f_path)->getCell(priority_field_name)->setValue(p->f_priority);
             }
 
             for(QMap<QString, QString>::const_iterator data(p->f_data.begin());
@@ -3650,7 +3650,7 @@ void content::on_save_content()
                 QString const locale(data.key());
 
                 // define the key and table affected
-                QtCassandra::QCassandraTable::pointer_t param_table;
+                libdbproxy::table::pointer_t param_table;
                 QString row_key;
                 switch(p->f_revision_type)
                 {
@@ -3689,7 +3689,7 @@ void content::on_save_content()
                         //
                         if(!p->f_remove)
                         {
-                            revision_table->row(row_key)->cell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
+                            revision_table->getRow(row_key)->getCell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
                         }
                     }
                     break;
@@ -3709,33 +3709,33 @@ void content::on_save_content()
                 {
                     // make sure the cell does not exist
                     //
-                    param_table->row(row_key)->dropCell(p->f_name);
+                    param_table->getRow(row_key)->dropCell(p->f_name);
 
                     // TBD: if this was the last cell, the "content::created"
                     //      should also be removed... that would also include
                     //      the "content::prevent_delete"
                 }
                 else if(p->f_overwrite
-                || param_table->row(row_key)->cell(p->f_name)->value().nullValue())
+                || param_table->getRow(row_key)->getCell(p->f_name)->getValue().nullValue())
                 {
                     bool ok(true);
                     switch(p->f_type)
                     {
                     case param_type_t::PARAM_TYPE_STRING:
-                        param_table->row(row_key)->cell(p->f_name)->setValue(*data);
+                        param_table->getRow(row_key)->getCell(p->f_name)->setValue(*data);
                         break;
 
                     case param_type_t::PARAM_TYPE_FLOAT32:
                         {
                             float const v(data->toFloat(&ok));
-                            param_table->row(row_key)->cell(p->f_name)->setValue(v);
+                            param_table->getRow(row_key)->getCell(p->f_name)->setValue(v);
                         }
                         break;
 
                     case param_type_t::PARAM_TYPE_FLOAT64:
                         {
                             double const v(data->toDouble(&ok));
-                            param_table->row(row_key)->cell(p->f_name)->setValue(v);
+                            param_table->getRow(row_key)->getCell(p->f_name)->setValue(v);
                         }
                         break;
 
@@ -3743,16 +3743,16 @@ void content::on_save_content()
                         {
                             int const v(data->toInt(&ok));
                             ok = ok && v >= -128 && v <= 127; // verify overflows
-                            param_table->row(row_key)->cell(p->f_name)->setValue(static_cast<signed char>(v));
+                            param_table->getRow(row_key)->getCell(p->f_name)->setValue(static_cast<signed char>(v));
                         }
                         break;
 
                     case param_type_t::PARAM_TYPE_INT32:
-                        param_table->row(row_key)->cell(p->f_name)->setValue(static_cast<int32_t>(data->toInt(&ok)));
+                        param_table->getRow(row_key)->getCell(p->f_name)->setValue(static_cast<int32_t>(data->toInt(&ok)));
                         break;
 
                     case param_type_t::PARAM_TYPE_INT64:
-                        param_table->row(row_key)->cell(p->f_name)->setValue(static_cast<int64_t>(data->toLongLong(&ok)));
+                        param_table->getRow(row_key)->getCell(p->f_name)->setValue(static_cast<int64_t>(data->toLongLong(&ok)));
                         break;
 
                     }
@@ -3774,7 +3774,7 @@ void content::on_save_content()
         {
             path_info_t moved_from_ipath;
             moved_from_ipath.set_path(d->f_moved_from);
-            QtCassandra::QCassandraRow::pointer_t row(content_table->row(moved_from_ipath.get_key()));
+            libdbproxy::row::pointer_t row(content_table->getRow(moved_from_ipath.get_key()));
             if(row->exists(primary_owner))
             {
                 // it already exists, but it could have been deleted or moved before
@@ -3834,7 +3834,7 @@ void content::on_save_content()
             path_info_t dst_ipath;
             dst_ipath.set_path(dst);
             if(!content_table->exists(dst_ipath.get_key())
-            || !content_table->row(dst_ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
+            || !content_table->getRow(dst_ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_CREATED)))
             {
                 // we do not allow a parent to got missing, the programmer
                 // has to fix his deal here!
@@ -4031,7 +4031,7 @@ void content::on_save_content()
  */
 void content::on_save_links(content_block_links_offset_t list, bool const create)
 {
-    QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+    libdbproxy::table::pointer_t content_table(get_content_table());
     QString const last_branch_key(QString("%1::%2")
                     .arg(get_name(name_t::SNAP_NAME_CONTENT_REVISION_CONTROL))
                     .arg(get_name(name_t::SNAP_NAME_CONTENT_REVISION_CONTROL_LAST_BRANCH)));
@@ -4056,7 +4056,7 @@ void content::on_save_links(content_block_links_offset_t list, bool const create
                 // get the end from the database
                 path_info_t ipath;
                 ipath.set_path(l->f_source.key());
-                end_source = content_table->row(ipath.get_key())->cell(last_branch_key)->value().safeUInt32Value();
+                end_source = content_table->getRow(ipath.get_key())->getCell(last_branch_key)->getValue().safeUInt32Value();
             }
 
             if(start_destination == snap_version::SPECIAL_VERSION_ALL)
@@ -4066,7 +4066,7 @@ void content::on_save_links(content_block_links_offset_t list, bool const create
                 // get the end from the database
                 path_info_t ipath;
                 ipath.set_path(l->f_destination.key());
-                end_destination = content_table->row(ipath.get_key())->cell(last_branch_key)->value().safeUInt32Value();
+                end_destination = content_table->getRow(ipath.get_key())->getCell(last_branch_key)->getValue().safeUInt32Value();
             }
 
             for(snap_version::version_number_t i(start_source); i <= end_source; ++i)
@@ -4136,7 +4136,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
     }
     f_added_javascripts[name] = true;
 
-    QtCassandra::QCassandraTable::pointer_t files_table(get_files_table());
+    libdbproxy::table::pointer_t files_table(get_files_table());
     if(!files_table->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_JAVASCRIPTS)))
     {
         // absolutely no JavaScripts available!
@@ -4145,7 +4145,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
                 "A JavaScript was requested in the \"files\" table before it was inserted under /js/...");
         NOTREACHED();
     }
-    QtCassandra::QCassandraRow::pointer_t javascript_row(files_table->row(get_name(name_t::SNAP_NAME_CONTENT_FILES_JAVASCRIPTS)));
+    libdbproxy::row::pointer_t javascript_row(files_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_FILES_JAVASCRIPTS)));
     javascript_row->clearCache();
 
     // TODO: at this point I read all the entries with "name_..."
@@ -4159,7 +4159,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
     //       the whole process fails even if by not using the latest
     //       would have worked
     //
-    auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     column_predicate->setCount(10); // small because we generally really only are interested by the first 1 unless marked as insecure or not yet updated on that website
     column_predicate->setIndex(); // behave like an index
     column_predicate->setStartCellKey(name + "_"); // start/end keys not reversed since using CQL...
@@ -4168,7 +4168,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
     for(;;)
     {
         javascript_row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const cells(javascript_row->cells());
+        libdbproxy::cells const cells(javascript_row->getCells());
         if(cells.isEmpty())
         {
             // no script found, error appears at the end of the function
@@ -4180,7 +4180,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
         //          maps are sorted "in the wrong direction" for a reverse
         //          read...
         //
-        QMapIterator<QByteArray, QtCassandra::QCassandraCell::pointer_t> c(cells);
+        QMapIterator<QByteArray, libdbproxy::cell::pointer_t> c(cells);
         c.toBack();
         while(c.hasPrevious())
         {
@@ -4189,8 +4189,8 @@ void content::add_javascript(QDomDocument doc, QString const & name)
             // get the email from the database
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
-            QtCassandra::QCassandraCell::pointer_t cell(c.value());
-            QtCassandra::QCassandraValue const file_md5(cell->value());
+            libdbproxy::cell::pointer_t cell(c.value());
+            libdbproxy::value const file_md5(cell->getValue());
             if(file_md5.size() != 16)
             {
                 // cell is invalid?
@@ -4208,14 +4208,14 @@ void content::add_javascript(QDomDocument doc, QString const & name)
                 SNAP_LOG_ERROR("JavaScript for \"")(name)("\" could not be found with its MD5 \"")(dbutils::key_to_string(key))("\".");
                 continue;
             }
-            QtCassandra::QCassandraRow::pointer_t row(files_table->row(key));
+            libdbproxy::row::pointer_t row(files_table->getRow(key));
             if(!row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE)))
             {
                 // secure field missing?! (file was probably deleted)
                 SNAP_LOG_ERROR("file referenced as JavaScript \"")(name)("\" does not have a ")(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))(" field.");
                 continue;
             }
-            QtCassandra::QCassandraValue const secure(row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->value());
+            libdbproxy::value const secure(row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->getValue());
             if(secure.nullValue())
             {
                 // secure field missing?!
@@ -4240,17 +4240,17 @@ void content::add_javascript(QDomDocument doc, QString const & name)
             // TODO: allow for remote paths by checking a flag in the file
             //       saying "remote" (i.e. to use Google Store and alike)
             //
-            auto references_column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+            auto references_column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
             references_column_predicate->setCount(1);
             references_column_predicate->setIndex(); // behave like an index
             QString const site_key(f_snap->get_site_key_with_slash());
             QString const start_ref(QString("%1::%2").arg(get_name(name_t::SNAP_NAME_CONTENT_FILES_REFERENCE)).arg(site_key));
             references_column_predicate->setStartCellKey(start_ref);
-            references_column_predicate->setEndCellKey(start_ref + QtCassandra::QCassandraCellPredicate::last_char);
+            references_column_predicate->setEndCellKey(start_ref + libdbproxy::cell_predicate::last_char);
 
             row->clearCache();
             row->readCells(references_column_predicate);
-            QtCassandra::QCassandraCells const ref_cells(row->cells());
+            libdbproxy::cells const ref_cells(row->getCells());
             if(ref_cells.isEmpty())
             {
                 // this is not an error, it happens that a website is not
@@ -4263,8 +4263,8 @@ void content::add_javascript(QDomDocument doc, QString const & name)
                 continue;
             }
             // the key of this cell is the path we want to use to the file
-            QtCassandra::QCassandraCell::pointer_t ref_cell(*ref_cells.begin());
-            QtCassandra::QCassandraValue const ref_string(ref_cell->value());
+            libdbproxy::cell::pointer_t ref_cell(*ref_cells.begin());
+            libdbproxy::value const ref_string(ref_cell->getValue());
             if(ref_string.nullValue()) // bool true cannot be empty
             {
                 SNAP_LOG_ERROR("file referenced as JavaScript \"")(name)("\" has an invalid reference back to ")(site_key)(" (empty).");
@@ -4278,7 +4278,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
             // note that all of those must be loaded first but the order
             // we read them as does not matter
             row->clearCache();
-            auto dependencies_column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+            auto dependencies_column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
             dependencies_column_predicate->setCount(100);
             dependencies_column_predicate->setIndex(); // behave like an index
             QString const start_dep(QString("%1:").arg(get_name(name_t::SNAP_NAME_CONTENT_FILES_DEPENDENCY)));
@@ -4287,21 +4287,21 @@ void content::add_javascript(QDomDocument doc, QString const & name)
             for(;;)
             {
                 row->readCells(dependencies_column_predicate);
-                QtCassandra::QCassandraCells const dep_cells(row->cells());
+                libdbproxy::cells const dep_cells(row->getCells());
                 if(dep_cells.isEmpty())
                 {
                     break;
                 }
                 // handle one batch
-                for(QtCassandra::QCassandraCells::const_iterator dc(dep_cells.begin());
+                for(libdbproxy::cells::const_iterator dc(dep_cells.begin());
                         dc != dep_cells.end();
                         ++dc)
                 {
                     // get the email from the database
                     // we expect empty values once in a while because a dropCell() is
                     // not exactly instantaneous in Cassandra
-                    QtCassandra::QCassandraCell::pointer_t dep_cell(*dc);
-                    QtCassandra::QCassandraValue const dep_string(dep_cell->value());
+                    libdbproxy::cell::pointer_t dep_cell(*dc);
+                    libdbproxy::value const dep_string(dep_cell->getValue());
                     if(!dep_string.nullValue())
                     {
                         snap_version::dependency dep;
@@ -4480,7 +4480,7 @@ void content::add_css(QDomDocument doc, QString const & name)
     }
     f_added_css[name] = true;
 
-    QtCassandra::QCassandraTable::pointer_t files_table(get_files_table());
+    libdbproxy::table::pointer_t files_table(get_files_table());
     if(!files_table->exists("css"))
     {
         // absolutely no CSS available!
@@ -4489,7 +4489,7 @@ void content::add_css(QDomDocument doc, QString const & name)
                 "A CSS was requested in the \"files\" table before it was inserted under /css/...");
         NOTREACHED();
     }
-    QtCassandra::QCassandraRow::pointer_t css_row(files_table->row("css"));
+    libdbproxy::row::pointer_t css_row(files_table->getRow("css"));
     css_row->clearCache();
 
     // TODO: at this point I read all the entries with "name_..."
@@ -4502,7 +4502,7 @@ void content::add_css(QDomDocument doc, QString const & name)
     //       makes uses of the latest and if a file does not match
     //       the whole process fails even if by not using the latest
     //       would have worked
-    auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     column_predicate->setCount(10); // small because we are really only interested by the first 1 unless marked as insecure
     column_predicate->setIndex(); // behave like an index
     column_predicate->setStartCellKey(name + "_"); // start/end keys not reversed since using CQL
@@ -4511,13 +4511,13 @@ void content::add_css(QDomDocument doc, QString const & name)
     for(;;)
     {
         css_row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const cells(css_row->cells());
+        libdbproxy::cells const cells(css_row->getCells());
         if(cells.isEmpty())
         {
             break;
         }
         // handle one batch
-        QMapIterator<QByteArray, QtCassandra::QCassandraCell::pointer_t> c(cells);
+        QMapIterator<QByteArray, libdbproxy::cell::pointer_t> c(cells);
         c.toBack();
         while(c.hasPrevious())
         {
@@ -4526,8 +4526,8 @@ void content::add_css(QDomDocument doc, QString const & name)
             // get the email from the database
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
-            QtCassandra::QCassandraCell::pointer_t cell(c.value());
-            QtCassandra::QCassandraValue const file_md5(cell->value());
+            libdbproxy::cell::pointer_t cell(c.value());
+            libdbproxy::value const file_md5(cell->getValue());
             if(file_md5.nullValue())
             {
                 // cell is invalid?
@@ -4542,14 +4542,14 @@ void content::add_css(QDomDocument doc, QString const & name)
                 SNAP_LOG_ERROR("CSS for \"")(name)("\" could not be found with its MD5");
                 continue;
             }
-            QtCassandra::QCassandraRow::pointer_t row(files_table->row(key));
+            libdbproxy::row::pointer_t row(files_table->getRow(key));
             if(!row->exists(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE)))
             {
                 // secure field missing?! (file was probably deleted)
                 SNAP_LOG_ERROR("file referenced as CSS \"")(name)("\" does not have a ")(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))(" field");
                 continue;
             }
-            QtCassandra::QCassandraValue const secure(row->cell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->value());
+            libdbproxy::value const secure(row->getCell(get_name(name_t::SNAP_NAME_CONTENT_FILES_SECURE))->getValue());
             if(secure.nullValue())
             {
                 // secure field missing?!
@@ -4573,25 +4573,25 @@ void content::add_css(QDomDocument doc, QString const & name)
             //
             // TODO: allow for remote paths by checking a flag in the file
             //       saying "remote" (i.e. to use Google Store and alike)
-            auto references_column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+            auto references_column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
             references_column_predicate->setCount(1);
             references_column_predicate->setIndex(); // behave like an index
             QString const site_key(f_snap->get_site_key_with_slash());
             QString const start_ref(QString("%1::%2").arg(get_name(name_t::SNAP_NAME_CONTENT_FILES_REFERENCE)).arg(site_key));
             references_column_predicate->setStartCellKey(start_ref);
-            references_column_predicate->setEndCellKey(start_ref + QtCassandra::QCassandraCellPredicate::last_char);
+            references_column_predicate->setEndCellKey(start_ref + libdbproxy::cell_predicate::last_char);
 
             row->clearCache();
             row->readCells(references_column_predicate);
-            QtCassandra::QCassandraCells const ref_cells(row->cells());
+            libdbproxy::cells const ref_cells(row->getCells());
             if(ref_cells.isEmpty())
             {
                 SNAP_LOG_ERROR("file referenced as CSS \"")(name)("\" has no reference back to ")(site_key);
                 continue;
             }
             // the key of this cell is the path we want to use to the file
-            QtCassandra::QCassandraCell::pointer_t ref_cell(*ref_cells.begin());
-            QtCassandra::QCassandraValue const ref_string(ref_cell->value());
+            libdbproxy::cell::pointer_t ref_cell(*ref_cells.begin());
+            libdbproxy::value const ref_string(ref_cell->getValue());
             if(ref_string.nullValue()) // bool true cannot be empty
             {
                 SNAP_LOG_ERROR("file referenced as CSS \"")(name)("\" has an invalid reference back to ")(site_key)(" (empty)");
@@ -4605,30 +4605,30 @@ void content::add_css(QDomDocument doc, QString const & name)
             // note that all of those must be loaded first but the order
             // we read them as does not matter
             row->clearCache();
-            auto dependencies_column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+            auto dependencies_column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
             dependencies_column_predicate->setCount(100);
             dependencies_column_predicate->setIndex(); // behave like an index
             QString const start_dep(QString("%1::").arg(get_name(name_t::SNAP_NAME_CONTENT_FILES_DEPENDENCY)));
             dependencies_column_predicate->setStartCellKey(start_dep);
-            dependencies_column_predicate->setEndCellKey(start_dep + QtCassandra::QCassandraCellPredicate::last_char);
+            dependencies_column_predicate->setEndCellKey(start_dep + libdbproxy::cell_predicate::last_char);
             for(;;)
             {
                 row->readCells(dependencies_column_predicate);
-                QtCassandra::QCassandraCells const dep_cells(row->cells());
+                libdbproxy::cells const dep_cells(row->getCells());
                 if(dep_cells.isEmpty())
                 {
                     break;
                 }
                 // handle one batch
-                for(QtCassandra::QCassandraCells::const_iterator dc(dep_cells.begin());
+                for(libdbproxy::cells::const_iterator dc(dep_cells.begin());
                         dc != dep_cells.end();
                         ++dc)
                 {
                     // get the email from the database
                     // we expect empty values once in a while because a dropCell() is
                     // not exactly instantaneous in Cassandra
-                    QtCassandra::QCassandraCell::pointer_t dep_cell(*dc);
-                    QtCassandra::QCassandraValue const dep_string(dep_cell->value());
+                    libdbproxy::cell::pointer_t dep_cell(*dc);
+                    libdbproxy::value const dep_string(dep_cell->getValue());
                     if(!dep_string.nullValue())
                     {
                         snap_version::dependency dep;
@@ -4735,9 +4735,9 @@ void content::on_load_file(snap_child::post_file_t& file, bool& found)
             filename = filename.mid(i);
             path_info_t ipath;
             ipath.set_path(filename);
-            QtCassandra::QCassandraTable::pointer_t content_table(get_content_table());
+            libdbproxy::table::pointer_t content_table(get_content_table());
             if(content_table->exists(ipath.get_key())
-            && content_table->row(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER)))
+            && content_table->getRow(ipath.get_key())->exists(get_name(name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER)))
             {
                 // set the default filename, the load_attachment() is likely
                 // going to set the filename as defined when uploading the

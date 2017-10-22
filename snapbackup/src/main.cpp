@@ -43,7 +43,7 @@
 
 #include <QCoreApplication>
 
-#include <QtCassandra/QStringStream.h>
+#include <libdbproxy/qstring_stream.h>
 
 #include <exception>
 #include <iostream>

@@ -378,7 +378,7 @@ bool epayment_product::verify_guid() const
         {
             return false;
         }
-        f_revision_row = f_revision_table->row(f_product_ipath.get_revision_key());
+        f_revision_row = f_revision_table->getRow(f_product_ipath.get_revision_key());
         if(!f_revision_row->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
         {
             return false;
@@ -556,7 +556,7 @@ bool epayment_product::has_property(QString const & name) const
         {
             // this is a GUID, try to get the info from the product
             // page first, if that fails, we will use a default below
-            QString const recurring(f_revision_row->cell(name)->value().stringValue());
+            QString const recurring(f_revision_row->getCell(name)->getValue().stringValue());
             if(!recurring.isEmpty())
             {
                 value_t r(recurring);
@@ -688,7 +688,7 @@ double epayment_product::get_float_property(QString const & name) const
             {
                 // this is a GUID, try to get the info from the product
                 // page first, if that fails, we will use a default below
-                QtCassandra::QCassandraValue value(f_revision_row->cell(name)->value());
+                libdbproxy::value value(f_revision_row->getCell(name)->getValue());
                 if(value.size() == sizeof(double))
                 {
                     double floating_point(value.doubleValue());
@@ -1700,9 +1700,9 @@ void epayment::on_generate_header_content(content::path_info_t & ipath, QDomElem
 name_t epayment::get_invoice_status(content::path_info_t& invoice_ipath)
 {
     content::content *content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraRow::pointer_t row(content_table->row(invoice_ipath.get_key()));
-    QString const status(row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS))->value().stringValue());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::row::pointer_t row(content_table->getRow(invoice_ipath.get_key()));
+    QString const status(row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS))->getValue().stringValue());
 
     // convert string to ID, makes it easier to test the status
     if(status == get_name(name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_ABANDONED))
@@ -1803,16 +1803,16 @@ bool epayment::set_invoice_status_impl(content::path_info_t& invoice_ipath, name
     }
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
-    QtCassandra::QCassandraRow::pointer_t row(content_table->row(invoice_ipath.get_key()));
-    QString const current_status(row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS))->value().stringValue());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::row::pointer_t row(content_table->getRow(invoice_ipath.get_key()));
+    QString const current_status(row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS))->getValue().stringValue());
     QString const new_status(get_name(status));
     if(current_status == new_status)
     {
         // status not changing, avoid any additional work
         return false;
     }
-    row->cell(get_name(name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS))->setValue(new_status);
+    row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS))->setValue(new_status);
 
     return true;
 }
@@ -1854,7 +1854,7 @@ bool epayment::set_invoice_status_impl(content::path_info_t& invoice_ipath, name
 bool epayment::repeat_payment_impl(content::path_info_t & first_invoice_ipath, content::path_info_t & previous_invoice_ipath, content::path_info_t & new_invoice_ipath)
 {
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t content_table(content_plugin->get_content_table());
+    libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
 
     switch(get_invoice_status(new_invoice_ipath))
     {

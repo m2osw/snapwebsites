@@ -26,7 +26,7 @@
 
 #include <snapwebsites/log.h>
 
-#include <QtCassandra/QCassandraTable.h>
+#include <libdbproxy/table.h>
 
 #include <snapwebsites/poison.h>
 
@@ -490,14 +490,14 @@ path_info_t::status_t path_info_t::get_status() const
 
     // we set the consistency of the cell to QUORUM to make sure
     // we read the last written value
-    QtCassandra::QCassandraCell::pointer_t cell(f_content_table->row(f_key)->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS)));
-    cell->setConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
-    QtCassandra::QCassandraValue const & value(cell->value());
+    libdbproxy::cell::pointer_t cell(f_content_table->getRow(f_key)->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS)));
+    cell->setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
+    libdbproxy::value const & value(cell->getValue());
     if(value.size() != sizeof(uint32_t))
     {
         // this case can be legal, it happens when creating a new page
         //
-        QString const primary_owner(f_content_table->row(f_key)->cell(get_name(name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER))->value().stringValue());
+        QString const primary_owner(f_content_table->getRow(f_key)->getCell(get_name(name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER))->getValue().stringValue());
         if(primary_owner.isEmpty())
         {
             // page not being created yet
@@ -577,9 +577,9 @@ void path_info_t::set_status(status_t const & status)
 
     //if(status.is_working())
     //{
-    //    QtCassandra::QCassandraTable::pointer_t processing_table(f_content_plugin->get_processing_table());
+    //    libdbproxy::table::pointer_t processing_table(f_content_plugin->get_processing_table());
     //    signed char const one_byte(1);
-    //    processing_table->row(f_key)->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS_CHANGED))->setValue(one_byte);
+    //    processing_table->getRow(f_key)->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS_CHANGED))->setValue(one_byte);
     //}
 
     // we use QUORUM in the consistency level to make sure that information
@@ -596,16 +596,16 @@ void path_info_t::set_status(status_t const & status)
     // since we do not have a 'working' status and the processing table
     // is not assigned anything anymore!
     //
-    QtCassandra::QCassandraValue changed;
+    libdbproxy::value changed;
     int64_t const start_date(f_snap->get_start_date());
     changed.setInt64Value(start_date);
-    changed.setConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
-    f_content_table->row(f_key)->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS_CHANGED))->setValue(changed);
+    changed.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
+    f_content_table->getRow(f_key)->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS_CHANGED))->setValue(changed);
 
-    QtCassandra::QCassandraValue value;
+    libdbproxy::value value;
     value.setUInt32Value(status.get_status());
-    value.setConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_QUORUM);
-    f_content_table->row(f_key)->cell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->setValue(value);
+    value.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
+    f_content_table->getRow(f_key)->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS))->setValue(value);
 }
 
 
@@ -873,9 +873,9 @@ QString path_info_t::get_revision_key() const
                 }
 
                 if(f_content_table->exists(f_key)
-                && f_content_table->row(f_key)->exists(field))
+                && f_content_table->getRow(f_key)->exists(field))
                 {
-                    QtCassandra::QCassandraValue value(f_content_table->row(f_key)->cell(field)->value());
+                    libdbproxy::value value(f_content_table->getRow(f_key)->getCell(field)->getValue());
                     f_revision_key = value.stringValue();
                 }
                 // else -- no default revision...
@@ -990,19 +990,19 @@ bool path_info_t::content_key_exists()  const   { return f_content_table ->exist
 bool path_info_t::branch_key_exists()   const   { return f_branch_table  ->exists(get_key()); }
 bool path_info_t::revision_key_exists() const   { return f_revision_table->exists(get_key()); }
 
-bool path_info_t::content_value_exists ( QString const& name ) const  { return f_content_table->row(f_key)->exists(name);                }
-bool path_info_t::branch_value_exists  ( QString const& name ) const  { return f_branch_table->row(get_branch_key())->exists(name);      }
-bool path_info_t::revision_value_exists( QString const& name ) const  { return f_revision_table->row(get_revision_key())->exists(name);  }
+bool path_info_t::content_value_exists ( QString const& name ) const  { return f_content_table->getRow(f_key)->exists(name);                }
+bool path_info_t::branch_value_exists  ( QString const& name ) const  { return f_branch_table->getRow(get_branch_key())->exists(name);      }
+bool path_info_t::revision_value_exists( QString const& name ) const  { return f_revision_table->getRow(get_revision_key())->exists(name);  }
 
-const QtCassandra::QCassandraValue& path_info_t::get_content_value ( QString const& name ) const                                      { return f_content_table->row(f_key)->cell(name)->value();                }
-const QtCassandra::QCassandraValue& path_info_t::get_branch_value  ( QString const& name ) const                                      { return f_branch_table->row(get_branch_key())->cell(name)->value();      }
-const QtCassandra::QCassandraValue& path_info_t::get_revision_value( QString const& name ) const                                      { return f_revision_table->row(get_revision_key())->cell(name)->value();  }
-void                                path_info_t::set_content_value ( QString const& name, const QtCassandra::QCassandraValue& val )   { f_content_table->row(f_key)->cell(name)->setValue( val );               }
-void                                path_info_t::set_branch_value  ( QString const& name, const QtCassandra::QCassandraValue& val )   { f_branch_table->row(get_branch_key())->cell(name)->setValue( val );     }
-void                                path_info_t::set_revision_value( QString const& name, const QtCassandra::QCassandraValue& val )   { f_revision_table->row(get_revision_key())->cell(name)->setValue( val ); }
-void                                path_info_t::drop_content_cell ( QString const& name )                                            { f_content_table->row(f_key)->dropCell(name);                            }
-void                                path_info_t::drop_branch_cell  ( QString const& name )                                            { f_branch_table->row(get_branch_key())->dropCell(name);                  }
-void                                path_info_t::drop_revision_cell( QString const& name )                                            { f_revision_table->row(get_revision_key())->dropCell(name);              }
+const libdbproxy::value& path_info_t::get_content_value ( QString const& name ) const                                      { return f_content_table->getRow(f_key)->getCell(name)->getValue();                }
+const libdbproxy::value& path_info_t::get_branch_value  ( QString const& name ) const                                      { return f_branch_table->getRow(get_branch_key())->getCell(name)->getValue();      }
+const libdbproxy::value& path_info_t::get_revision_value( QString const& name ) const                                      { return f_revision_table->getRow(get_revision_key())->getCell(name)->getValue();  }
+void                                path_info_t::set_content_value ( QString const& name, const libdbproxy::value& val )   { f_content_table->getRow(f_key)->getCell(name)->setValue( val );               }
+void                                path_info_t::set_branch_value  ( QString const& name, const libdbproxy::value& val )   { f_branch_table->getRow(get_branch_key())->getCell(name)->setValue( val );     }
+void                                path_info_t::set_revision_value( QString const& name, const libdbproxy::value& val )   { f_revision_table->getRow(get_revision_key())->getCell(name)->setValue( val ); }
+void                                path_info_t::drop_content_cell ( QString const& name )                                            { f_content_table->getRow(f_key)->dropCell(name);                            }
+void                                path_info_t::drop_branch_cell  ( QString const& name )                                            { f_branch_table->getRow(get_branch_key())->dropCell(name);                  }
+void                                path_info_t::drop_revision_cell( QString const& name )                                            { f_revision_table->getRow(get_revision_key())->dropCell(name);              }
 
 
 void path_info_t::clear(bool keep_parameters)

@@ -443,7 +443,7 @@ QString link_info::cell_name(link_info const & dst, QString const & unique_numbe
  *
  * \param[in] column_predicate  Column
  */
-void link_info::cell_predicate(QtCassandra::QCassandraCellRangePredicate::pointer_t column_predicate, int const count)
+void link_info::cell_predicate(libdbproxy::cell_range_predicate::pointer_t column_predicate, int const count)
 {
     // validate parameter
     //
@@ -903,7 +903,7 @@ link_context::link_context(snap_child * snap
     : f_snap(snap)
     , f_info(info)
     //, f_row() -- auto-init
-    , f_column_predicate( std::make_shared<QtCassandra::QCassandraCellRangePredicate>() )
+    , f_column_predicate( std::make_shared<libdbproxy::cell_range_predicate>() )
     //, f_link() -- auto-init
 {
     // TODO: verify that unicity is defined as expected in info and the db?
@@ -919,11 +919,11 @@ link_context::link_context(snap_child * snap
         // TODO: we have to somehow remove this content dependency (circular
         //       dependency), or move the content and links together
         //
-        QtCassandra::QCassandraTable::pointer_t branch_table(content::content::instance()->get_branch_table());
+        libdbproxy::table::pointer_t branch_table(content::content::instance()->get_branch_table());
 
         if(branch_table->exists(f_info.row_key()))
         {
-            f_row = branch_table->row(f_info.row_key());
+            f_row = branch_table->getRow(f_info.row_key());
             // WARNING: Here the column names are the keys, not the link names...
             f_info.cell_predicate(f_column_predicate, count);
 
@@ -949,7 +949,7 @@ link_context::link_context(snap_child * snap
             // we MUST clear the cache in case we read the same list of links twice
             f_row->clearCache();
             // at this point begin() == end()
-            f_cells = f_row->cells(); // <- this is VERY important in case someone wants to delete cells
+            f_cells = f_row->getCells(); // <- this is VERY important in case someone wants to delete cells
             f_cell_iterator = f_cells.begin();
 
             // now depending on the user's choice, we want to either
@@ -971,7 +971,7 @@ link_context::link_context(snap_child * snap
                 while(f_row != nullptr)
                 {
                     f_row->readCells(f_column_predicate);
-                    f_cells = f_row->cells();
+                    f_cells = f_row->getCells();
                     f_cell_iterator = f_cells.begin();
                     if(f_cell_iterator == f_cells.end())
                     {
@@ -987,7 +987,7 @@ link_context::link_context(snap_child * snap
                         //key_name = QString::fromUtf8(f_cell_iterator.key());
 
                         link_info in;
-                        in.from_data(f_cell_iterator.value()->value().stringValue());
+                        in.from_data(f_cell_iterator.value()->getValue().stringValue());
 
                         if(!last_info.is_defined())
                         {
@@ -1118,7 +1118,7 @@ link_context::link_context(snap_child * snap
         // since we are loading these links from the links index we do
         // not need to specify the column names in the column predicate
         // it will automatically read all the data from that row
-        QtCassandra::QCassandraTable::pointer_t links_table(links::links::instance()->get_links_table());
+        libdbproxy::table::pointer_t links_table(links::links::instance()->get_links_table());
         QString const link_key(f_info.link_key());
         if(links_table->exists(link_key))
         {
@@ -1127,14 +1127,14 @@ link_context::link_context(snap_child * snap
                 throw snap_logic_exception(QString("link_context::link_context(): a count of %1 to read links is not valid, expected 10 or more").arg(count));
             }
 
-            f_row = links_table->row(link_key);
+            f_row = links_table->getRow(link_key);
             // WARNING: Here the column names are the keys, not the link names...
             f_column_predicate->setCount(count);
             f_column_predicate->setIndex(); // behave like an index
             // we MUST clear the cache in case we read the same list of links twice
             f_row->clearCache();
             // at this point begin() == end()
-            f_cells = f_row->cells(); // <- this is VERY important in case someone wants to delete cells
+            f_cells = f_row->getCells(); // <- this is VERY important in case someone wants to delete cells
             f_cell_iterator = f_cells.begin();
         }
         //else -- this is the default so we do not need to reset f_row
@@ -1181,7 +1181,7 @@ bool link_context::next_link(link_info & info)
                 // no more cells available in f_cells, try to read more
                 //
                 f_row->readCells(f_column_predicate);
-                f_cells = f_row->cells();
+                f_cells = f_row->getCells();
                 f_cell_iterator = f_cells.begin();
                 if(f_cell_iterator == f_cells.end())
                 {
@@ -1195,7 +1195,7 @@ bool link_context::next_link(link_info & info)
             // the result is at the current iterator
             //
             QString const link_name(QString::fromUtf8(f_cell_iterator.key()));
-            QString const link_data(f_cell_iterator.value()->value().stringValue());
+            QString const link_data(f_cell_iterator.value()->getValue().stringValue());
 
             ++f_cell_iterator;
 
@@ -1233,7 +1233,7 @@ bool link_context::next_link(link_info & info)
                 // no more cells available in f_cells, try to read more
                 //
                 f_row->readCells(f_column_predicate);
-                f_cells = f_row->cells();
+                f_cells = f_row->getCells();
                 f_cell_iterator = f_cells.begin();
                 if(f_cell_iterator == f_cells.end())
                 {
@@ -1250,7 +1250,7 @@ bool link_context::next_link(link_info & info)
             // which does not matter as the name is f_info.name() anyway
             //
             QString const link_key_and_branch(QString::fromUtf8(f_cell_iterator.key()));
-            QString const link_name(f_cell_iterator.value()->value().stringValue());
+            QString const link_name(f_cell_iterator.value()->getValue().stringValue());
             if(!link_name.startsWith(links_namespace))
             {
                 throw links_exception_invalid_name(QString("link name \"%1\" does not start with \"%2\"")
@@ -1463,7 +1463,7 @@ int64_t links::do_update(int64_t last_updated)
  *
  * \return The pointer to the links table.
  */
-QtCassandra::QCassandraTable::pointer_t links::get_links_table()
+libdbproxy::table::pointer_t links::get_links_table()
 {
     // retrieve links index table if not there yet
     if(!f_links_table)
@@ -1477,7 +1477,7 @@ QtCassandra::QCassandraTable::pointer_t links::get_links_table()
 /** \brief Initialize the content and links table.
  *
  * The first time one of the functions that require the links and contents
- * table runs, it calls this function to get the QCassandraTable.
+ * table runs, it calls this function to get the table.
  */
 void links::init_tables()
 {
@@ -1643,7 +1643,7 @@ void links::create_link(link_info const & src, link_info const & dst)
         // not unique, first check whether it was already created
         //
         QString const key_with_branch(dst.key_with_branch());
-        QtCassandra::QCassandraValue value(f_links_table->row(src.link_key())->cell(key_with_branch)->value());
+        libdbproxy::value value(f_links_table->getRow(src.link_key())->getCell(key_with_branch)->getValue());
         if(value.nullValue())
         {
             // it does not exist, create a unique number
@@ -1652,7 +1652,7 @@ void links::create_link(link_info const & src, link_info const & dst)
 
             // save in the index table
             //
-            (*f_links_table)[src.link_key()][key_with_branch] = QtCassandra::QCassandraValue(src_col);
+            (*f_links_table)[src.link_key()][key_with_branch] = libdbproxy::value(src_col);
         }
         else
         {
@@ -1671,7 +1671,7 @@ void links::create_link(link_info const & src, link_info const & dst)
         // not unique, first check whether it was already created
         //
         QString const key_with_branch(src.key_with_branch());
-        QtCassandra::QCassandraValue value(f_links_table->row(dst.link_key())->cell(key_with_branch)->value());
+        libdbproxy::value value(f_links_table->getRow(dst.link_key())->getCell(key_with_branch)->getValue());
         if(value.nullValue())
         {
             // it does not exist, create a unique number
@@ -1680,7 +1680,7 @@ void links::create_link(link_info const & src, link_info const & dst)
 
             // save in the index table
             //
-            (*f_links_table)[dst.link_key()][key_with_branch] = QtCassandra::QCassandraValue(dst_col);
+            (*f_links_table)[dst.link_key()][key_with_branch] = libdbproxy::value(dst_col);
         }
         else
         {
@@ -1695,10 +1695,10 @@ void links::create_link(link_info const & src, link_info const & dst)
     //
     if(src.is_unique())
     {
-        if(f_branch_table->row(src.row_key())->exists(src_col))
+        if(f_branch_table->getRow(src.row_key())->exists(src_col))
         {
             link_info existing_dst;
-            existing_dst.from_data(f_branch_table->row(src.row_key())->cell(src_col)->value().stringValue());
+            existing_dst.from_data(f_branch_table->getRow(src.row_key())->getCell(src_col)->getValue().stringValue());
             if(existing_dst.key() == dst.key()
             && existing_dst.is_unique() == dst.is_unique()
             && existing_dst.name() == dst.name())
@@ -1715,10 +1715,10 @@ void links::create_link(link_info const & src, link_info const & dst)
     }
     if(dst.is_unique())
     {
-        if(f_branch_table->row(dst.row_key())->exists(dst_col))
+        if(f_branch_table->getRow(dst.row_key())->exists(dst_col))
         {
             link_info existing_src;
-            existing_src.from_data(f_branch_table->row(dst.row_key())->cell(dst_col)->value().stringValue());
+            existing_src.from_data(f_branch_table->getRow(dst.row_key())->getCell(dst_col)->getValue().stringValue());
             if(existing_src.key() == src.key()
             && existing_src.is_unique() == src.is_unique()
             && existing_src.name() == src.name())
@@ -1797,16 +1797,16 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
     ipath.set_path(path);
 
     content::content * content_plugin(content::content::instance());
-    QtCassandra::QCassandraTable::pointer_t branch_table(content_plugin->get_branch_table());
+    libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
 
-    QtCassandra::QCassandraRow::pointer_t row(branch_table->row(ipath.get_branch_key()));
+    libdbproxy::row::pointer_t row(branch_table->getRow(ipath.get_branch_key()));
     row->clearCache();
 
     QString const links_namespace_start(QString("%1::").arg(get_name(name_t::SNAP_NAME_LINKS_NAMESPACE)));
     QString const links_namespace_end(QString("%1:;").arg(get_name(name_t::SNAP_NAME_LINKS_NAMESPACE)));
     int const start_pos(links_namespace_start.length());
 
-    auto column_predicate = std::make_shared<QtCassandra::QCassandraCellRangePredicate>();
+    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     column_predicate->setCount(100);
     column_predicate->setIndex(); // behave like an index
     column_predicate->setStartCellKey(links_namespace_start); // limit the loading to links at least
@@ -1816,7 +1816,7 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
     for(;;)
     {
         row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const cells(row->cells());
+        libdbproxy::cells const cells(row->getCells());
         if(cells.isEmpty())
         {
             // no more cells
@@ -1824,11 +1824,11 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
         }
 
         // handle one batch
-        for(QtCassandra::QCassandraCells::const_iterator c(cells.begin());
+        for(libdbproxy::cells::const_iterator c(cells.begin());
                 c != cells.end();
                 ++c)
         {
-            QtCassandra::QCassandraCell::pointer_t cell(*c);
+            libdbproxy::cell::pointer_t cell(*c);
 
             link_info src;
             src.set_key(ipath.get_key());
@@ -1863,7 +1863,7 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
 
             // this one we have all the data in the cell's value
             link_info dst;
-            dst.from_data(cell->value().stringValue());
+            dst.from_data(cell->getValue().stringValue());
 
             link_info_pair pair(src, dst);
             results.push_back(pair);
@@ -1926,7 +1926,7 @@ void links::delete_link(link_info const & info, int const delete_record_count)
     //       to be the source; obviously, as a result, the other one will
     //       be the destination
     //
-    QtCassandra::QCassandraRow::pointer_t src_row(f_branch_table->row(info.row_key()));
+    libdbproxy::row::pointer_t src_row(f_branch_table->getRow(info.row_key()));
 
     // check if the link is defined as is (i.e. this info represents
     // a unique link, a "1")
@@ -1958,7 +1958,7 @@ void links::delete_link(link_info const & info, int const delete_record_count)
                                 ("\" (destination row missing in \"branch\" table).");
                 continue;
             }
-            QtCassandra::QCassandraRow::pointer_t dst_row(f_branch_table->row(destination.row_key()));
+            libdbproxy::row::pointer_t dst_row(f_branch_table->getRow(destination.row_key()));
 
             // to delete the link on the other side, we have to test whether
             // it is unique (1:1) or multiple (1:*)
@@ -1999,7 +1999,7 @@ void links::delete_link(link_info const & info, int const delete_record_count)
                                     ("\" (destination row missing in \"links\" table)).");
                     continue;
                 }
-                QtCassandra::QCassandraRow::pointer_t dst_multi_row(f_links_table->row(destination.link_key()));
+                libdbproxy::row::pointer_t dst_multi_row(f_links_table->getRow(destination.link_key()));
                 QString const key_with_branch(info.key_with_branch());
                 if(!dst_multi_row->exists(key_with_branch))
                 {
@@ -2022,7 +2022,7 @@ void links::delete_link(link_info const & info, int const delete_record_count)
                 // one destination that correspond to the (1:...) and thus only
                 // one link that we need to load here
                 //
-                QtCassandra::QCassandraValue destination_link(dst_multi_row->cell(key_with_branch)->value());
+                libdbproxy::value destination_link(dst_multi_row->getCell(key_with_branch)->getValue());
 
                 // we can drop that link immediately, since we got the information we needed
                 // (this is a drop in the "links" table)
@@ -2077,10 +2077,10 @@ void links::delete_link(link_info const & info, int const delete_record_count)
 
         // here we get the row, we do not delete it yet because we need
         // to go through the whole list first
-        QtCassandra::QCassandraRow::pointer_t row(f_links_table->row(info.link_key()));
+        libdbproxy::row::pointer_t row(f_links_table->getRow(info.link_key()));
         row->clearCache();
 
-        auto column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+        auto column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
         // The columns names are keys (i.e. http://snap.m2osw.com/...)
         //column_predicate->setStartCellKey(QString("%1::").arg(get_name(name_t::SNAP_NAME_LINKS_NAMESPACE)));
         //column_predicate->setEndCellKey(QString("%1;").arg(get_name(name_t::SNAP_NAME_LINKS_NAMESPACE)));
@@ -2091,20 +2091,20 @@ void links::delete_link(link_info const & info, int const delete_record_count)
         {
             // we MUST clear the cache in case we read the same list of links twice
             row->readCells(column_predicate);
-            QtCassandra::QCassandraCells const cells(row->cells());
+            libdbproxy::cells const cells(row->getCells());
             if(cells.empty())
             {
                 // all columns read
                 break;
             }
             modified = true;
-            for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+            for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
             //for(auto cell_iterator : cells) -- cannot use that one because we need the key
             {
                 // from the cell key and value we compute the list info
                 // from the destination of this link
                 QString const key(QString::fromUtf8(cell_iterator.key()));
-                QString const field_name(cell_iterator.value()->value().stringValue());
+                QString const field_name(cell_iterator.value()->getValue().stringValue());
 
                 if(!src_row->exists(field_name))
                 {
@@ -2118,7 +2118,7 @@ void links::delete_link(link_info const & info, int const delete_record_count)
                 else
                 {
                     link_info destination_info;
-                    destination_info.from_data(src_row->cell(field_name)->value().stringValue());
+                    destination_info.from_data(src_row->getCell(field_name)->getValue().stringValue());
 
                     // drop the branch cell in the source page
                     src_row->dropCell(field_name);
@@ -2130,20 +2130,20 @@ void links::delete_link(link_info const & info, int const delete_record_count)
                     if(destination_info.is_unique())
                     {
                         // here we have a "*:1"
-                        f_branch_table->row(destination_info.row_key())->dropCell(destination_info.cell_name(info));
+                        f_branch_table->getRow(destination_info.row_key())->dropCell(destination_info.cell_name(info));
 
                         // let others know that a link changed on a page
                         modified_link(destination_info, false);
                     }
                     else
                     {
-                        QtCassandra::QCassandraRow::pointer_t dst_row(f_links_table->row(destination_info.link_key()));
+                        libdbproxy::row::pointer_t dst_row(f_links_table->getRow(destination_info.link_key()));
                         QString const key_with_branch(info.key_with_branch());
                         if(dst_row->exists(key_with_branch)) // should always be true
                         {
-                            QString const dst_key(dst_row->cell(key_with_branch)->value().stringValue());
+                            QString const dst_key(dst_row->getCell(key_with_branch)->getValue().stringValue());
                             dst_row->dropCell(key_with_branch);
-                            f_branch_table->row(destination_info.row_key())->dropCell(dst_key);
+                            f_branch_table->getRow(destination_info.row_key())->dropCell(dst_key);
 
                             // let others know that a link changed on a page
                             modified_link(destination_info, false);
@@ -2212,25 +2212,25 @@ void links::delete_this_link(link_info const & source, link_info const & destina
     init_tables();
 
     // drop the source info
-    QtCassandra::QCassandraRow::pointer_t src_row(f_links_table->row(source.link_key()));
+    libdbproxy::row::pointer_t src_row(f_links_table->getRow(source.link_key()));
     QString const destination_key_with_branch(destination.key_with_branch());
     if(src_row->exists(destination_key_with_branch)) // should always be true
     {
-        QString const src_key(src_row->cell(destination_key_with_branch)->value().stringValue());
+        QString const src_key(src_row->getCell(destination_key_with_branch)->getValue().stringValue());
         src_row->dropCell(destination_key_with_branch);
-        f_branch_table->row(source.row_key())->dropCell(src_key);
+        f_branch_table->getRow(source.row_key())->dropCell(src_key);
 
         modified_link(source, false);
     }
 
     // drop the destination info
-    QtCassandra::QCassandraRow::pointer_t dst_row(f_links_table->row(destination.link_key()));
+    libdbproxy::row::pointer_t dst_row(f_links_table->getRow(destination.link_key()));
     QString const source_key_with_branch(source.key_with_branch());
     if(dst_row->exists(source_key_with_branch)) // should always be true
     {
-        QString const dst_key(dst_row->cell(source_key_with_branch)->value().stringValue());
+        QString const dst_key(dst_row->getCell(source_key_with_branch)->getValue().stringValue());
         dst_row->dropCell(source_key_with_branch);
-        f_branch_table->row(destination.row_key())->dropCell(dst_key);
+        f_branch_table->getRow(destination.row_key())->dropCell(dst_key);
 
         modified_link(destination, false);
     }
@@ -2251,16 +2251,16 @@ void links::adjust_links_after_cloning(QString const & source_branch, QString co
 {
     init_tables();
 
-    QtCassandra::QCassandraRow::pointer_t source_row(f_branch_table->row(source_branch));
+    libdbproxy::row::pointer_t source_row(f_branch_table->getRow(source_branch));
     source_row->clearCache();
 
-    //QtCassandra::QCassandraRow::pointer_t destination_row(f_branch_table->row(destination_branch));
+    //libdbproxy::row::pointer_t destination_row(f_branch_table->getRow(destination_branch));
 
     int const dst_branch_pos(destination_branch.indexOf('#'));
     QString const destination_uri(destination_branch.mid(0, dst_branch_pos));
     snap_version::version_number_t const dst_branch_number(destination_branch.mid(dst_branch_pos + 1).toULong());
 
-    auto column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+    auto column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
     column_predicate->setStartCellKey(QString("%1::").arg(get_name(name_t::SNAP_NAME_LINKS_NAMESPACE)));
     column_predicate->setEndCellKey(QString("%1;").arg(get_name(name_t::SNAP_NAME_LINKS_NAMESPACE)));
     column_predicate->setCount(100);
@@ -2271,19 +2271,19 @@ void links::adjust_links_after_cloning(QString const & source_branch, QString co
     {
         // we MUST clear the cache in case we read the same list of links twice
         source_row->readCells(column_predicate);
-        QtCassandra::QCassandraCells const cells(source_row->cells());
+        libdbproxy::cells const cells(source_row->getCells());
         if(cells.empty())
         {
             // all columns read
             break;
         }
-        for(QtCassandra::QCassandraCells::const_iterator cell_iterator(cells.begin());
+        for(libdbproxy::cells::const_iterator cell_iterator(cells.begin());
                                                          cell_iterator != cells.end();
                                                          ++cell_iterator)
         {
             QString const key(QString::fromUtf8(cell_iterator.key()));
 
-            QString const dst_link(source_row->cell(key)->value().stringValue());
+            QString const dst_link(source_row->getCell(key)->getValue().stringValue());
             link_info dst_li;
             dst_li.from_data(dst_link);
 
@@ -2302,10 +2302,10 @@ void links::adjust_links_after_cloning(QString const & source_branch, QString co
                 else
                 {
                     // in this case the info is in the links table
-                    cell_name = f_links_table->row(dst_li.link_key())->cell(source_branch)->value().stringValue();
+                    cell_name = f_links_table->getRow(dst_li.link_key())->getCell(source_branch)->getValue().stringValue();
                 }
-                QtCassandra::QCassandraRow::pointer_t dst_row(f_branch_table->row(other_row));
-                QString const src_link(dst_row->cell(cell_name)->value().stringValue());
+                libdbproxy::row::pointer_t dst_row(f_branch_table->getRow(other_row));
+                QString const src_link(dst_row->getCell(cell_name)->getValue().stringValue());
                 link_info src_li;
                 src_li.from_data(src_link);
 
@@ -2328,12 +2328,12 @@ void links::adjust_links_after_cloning(QString const & source_branch, QString co
 }
 
 
-void links::fix_branch_copy_link(QtCassandra::QCassandraCell::pointer_t source_cell, QtCassandra::QCassandraRow::pointer_t destination_row, snap_version::version_number_t const destination_branch_number)
+void links::fix_branch_copy_link(libdbproxy::cell::pointer_t source_cell, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch_number)
 {
     init_tables();
 
     // the source data is the destination link information
-    QString const dst_link(source_cell->value().stringValue());
+    QString const dst_link(source_cell->getValue().stringValue());
     link_info dst_li;
     dst_li.from_data(dst_link);
     QString const destination_key(destination_row->rowName());
@@ -2341,7 +2341,7 @@ void links::fix_branch_copy_link(QtCassandra::QCassandraCell::pointer_t source_c
     QString const destination_uri(destination_key.mid(0, destination_branch_pos));
     //snap_version::version_number_t const dst_branch_number(destination_key.mid(destination_branch_pos + 1).toULong());
 
-    QtCassandra::QCassandraRow::pointer_t source_row(source_cell->parentRow());
+    libdbproxy::row::pointer_t source_row(source_cell->parentRow());
     QString const source_key(source_row->rowName());
     int const source_branch_pos(source_key.indexOf('#'));
     snap_version::version_number_t const src_branch_number(source_key.mid(source_branch_pos + 1).toULong());
@@ -2362,10 +2362,10 @@ void links::fix_branch_copy_link(QtCassandra::QCassandraCell::pointer_t source_c
         else
         {
             // in this case the info is in the links table
-            cell_name = f_links_table->row(dst_li.link_key())->cell(source_key)->value().stringValue();
+            cell_name = f_links_table->getRow(dst_li.link_key())->getCell(source_key)->getValue().stringValue();
         }
-        QtCassandra::QCassandraRow::pointer_t dst_row(f_branch_table->row(other_row));
-        QString const src_link(dst_row->cell(cell_name)->value().stringValue());
+        libdbproxy::row::pointer_t dst_row(f_branch_table->getRow(other_row));
+        QString const src_link(dst_row->getCell(cell_name)->getValue().stringValue());
         link_info src_li;
         src_li.from_data(src_link);
 

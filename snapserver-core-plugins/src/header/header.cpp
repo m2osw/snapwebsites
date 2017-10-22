@@ -240,7 +240,7 @@ void header::on_generate_header_content(content::path_info_t & ipath, QDomElemen
     {   // snap/head/metadata/generator
         QDomElement created(doc.createElement("generator"));
         metadata.appendChild(created);
-        QtCassandra::QCassandraValue generator(content_plugin->get_content_parameter(ipath, get_name(name_t::SNAP_NAME_HEADER_GENERATOR), content::content::param_revision_t::PARAM_REVISION_BRANCH));
+        libdbproxy::value generator(content_plugin->get_content_parameter(ipath, get_name(name_t::SNAP_NAME_HEADER_GENERATOR), content::content::param_revision_t::PARAM_REVISION_BRANCH));
         if(!generator.nullValue())
         {
             // also save that one as a header

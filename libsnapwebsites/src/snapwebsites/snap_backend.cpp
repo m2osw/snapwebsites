@@ -687,7 +687,7 @@ class child_connection
 public:
     typedef std::shared_ptr<child_connection>   pointer_t;
 
-                                child_connection(snap_backend * sb, QtCassandra::QCassandraContext::pointer_t & context);
+                                child_connection(snap_backend * sb, libdbproxy::context::pointer_t & context);
     virtual                     ~child_connection() override {}
 
     bool                        lock(QString const & uri);
@@ -698,7 +698,7 @@ public:
 
 private:
     snap_backend *                              f_snap_backend = nullptr;
-    QtCassandra::QCassandraContext::pointer_t   f_context;
+    libdbproxy::context::pointer_t   f_context;
     snap_lock::pointer_t                        f_lock;
 };
 
@@ -723,7 +723,7 @@ child_connection::pointer_t g_child_connection;
  * \param[in] sb  The snap backend pointer.
  * \param[in] uri  The URI the child process is going to work on.
  */
-child_connection::child_connection(snap_backend * sb, QtCassandra::QCassandraContext::pointer_t & context)
+child_connection::child_connection(snap_backend * sb, libdbproxy::context::pointer_t & context)
     : f_snap_backend(sb)
     , f_context(context)
     //, f_lock(nullptr)
@@ -877,11 +877,11 @@ bool snap_backend::add_uri_for_processing(QString const & action, int64_t date, 
     try
     {
         QString const action_reference(QString("*%1*").arg(action));
-        int64_t const previous_entry(f_backend_table->row(action_reference)->cell(website_uri)->value().safeInt64Value(0, -1));
+        int64_t const previous_entry(f_backend_table->getRow(action_reference)->getCell(website_uri)->getValue().safeInt64Value(0, -1));
         if(previous_entry != -1)
         {
             QByteArray column_key;
-            QtCassandra::appendInt64Value(column_key, previous_entry);
+            libdbproxy::appendInt64Value(column_key, previous_entry);
 
             // is entry already outdated and thus still effective?
             //
@@ -892,7 +892,7 @@ bool snap_backend::add_uri_for_processing(QString const & action, int64_t date, 
                 // and a "return" here would prevent further work on any
                 // backend processing
                 //
-                if(f_backend_table->row(action)->exists(column_key))
+                if(f_backend_table->getRow(action)->exists(column_key))
                 {
                     // we already have that entry at the same date or earlier
                     //
@@ -903,16 +903,16 @@ bool snap_backend::add_uri_for_processing(QString const & action, int64_t date, 
             // make sure we drop the other reference to avoid
             // (generally useless) duplicates
             //
-            f_backend_table->row(action)->dropCell(column_key);
+            f_backend_table->getRow(action)->dropCell(column_key);
         }
 
         QByteArray date_key;
-        QtCassandra::appendInt64Value(date_key, date);
-        f_backend_table->row(action)->cell(date_key)->setValue(website_uri);
+        libdbproxy::appendInt64Value(date_key, date);
+        f_backend_table->getRow(action)->getCell(date_key)->setValue(website_uri);
 
         // save a reference so we can drop the entry as required
         //
-        f_backend_table->row(action_reference)->cell(website_uri)->setValue(date);
+        f_backend_table->getRow(action_reference)->getCell(website_uri)->setValue(date);
 
         return true;
     }
@@ -951,24 +951,24 @@ bool snap_backend::remove_processed_uri(QString const & action, QByteArray const
     try
     {
         QString const action_reference(QString("*%1*").arg(action));
-        int64_t const previous_entry(f_backend_table->row(action_reference)->cell(website_uri)->value().safeInt64Value(0, -1));
+        int64_t const previous_entry(f_backend_table->getRow(action_reference)->getCell(website_uri)->getValue().safeInt64Value(0, -1));
         if(previous_entry != -1)
         {
             // drop the actual entry and the reference
             QByteArray column_key;
-            QtCassandra::appendInt64Value(column_key, previous_entry);
-            f_backend_table->row(action)->dropCell(column_key);
+            libdbproxy::appendInt64Value(column_key, previous_entry);
+            f_backend_table->getRow(action)->dropCell(column_key);
         }
 
         // just in case, alway sforce a drop on this cell (it should not
         // exist if previous_entry was -1)
         //
-        f_backend_table->row(action_reference)->dropCell(website_uri);
+        f_backend_table->getRow(action_reference)->dropCell(website_uri);
 
         // also remove the processed entry (which is the one we really use
         // to find what has to be worked on)
         //
-        f_backend_table->row(action)->dropCell(key);
+        f_backend_table->getRow(action)->dropCell(key);
 
         return true;
     }
@@ -1260,9 +1260,9 @@ void snap_backend::process_tick()
             // if a site exists then it has a "core::last_updated" entry
             //
             f_sites_table->clearCache(); // just in case, make sure we do not have a query still laying around
-            auto column_predicate(std::make_shared<QtCassandra::QCassandraCellKeyPredicate>());
+            auto column_predicate(std::make_shared<libdbproxy::cell_key_predicate>());
             column_predicate->setCellKey(get_name(name_t::SNAP_NAME_CORE_LAST_UPDATED));
-            auto row_predicate(std::make_shared<QtCassandra::QCassandraRowPredicate>());
+            auto row_predicate(std::make_shared<libdbproxy::row_predicate>());
             row_predicate->setCellPredicate(column_predicate);
             for(;;)
             {
@@ -1285,8 +1285,8 @@ void snap_backend::process_tick()
 
                 // got some websites
                 //
-                QtCassandra::QCassandraRows const rows(f_sites_table->rows());
-                for(QtCassandra::QCassandraRows::const_iterator it(rows.begin());
+                libdbproxy::rows const rows(f_sites_table->getRows());
+                for(libdbproxy::rows::const_iterator it(rows.begin());
                                                                 it != rows.end();
                                                                 ++it)
                 {
@@ -1366,15 +1366,15 @@ bool snap_backend::process_timeout()
             // if the user did not give us a specific website to work on
             // we want to check for the next entry in our backend table
             //
-            QtCassandra::QCassandraRow::pointer_t row(f_backend_table->row(f_action));
+            libdbproxy::row::pointer_t row(f_backend_table->getRow(f_action));
             row->clearCache(); // just in case, make sure we do not have a query laying around
-            auto column_predicate(std::make_shared<QtCassandra::QCassandraCellRangePredicate>());
+            auto column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
             column_predicate->setCount(1); // read only the first row -- WARNING: if you increase that number you MUST add a sub-loop
             column_predicate->setIndex(); // behave like an index
             for(;;)
             {
                 row->readCells(column_predicate);
-                QtCassandra::QCassandraCells const cells(row->cells());
+                libdbproxy::cells const cells(row->getCells());
                 if(cells.isEmpty())
                 {
                     // it looks like we are done
@@ -1386,7 +1386,7 @@ bool snap_backend::process_timeout()
                 // processing that website now
                 //
                 QByteArray const key(cells.begin().key());
-                int64_t const time_limit(QtCassandra::safeInt64Value(key, 0, 0));
+                int64_t const time_limit(libdbproxy::safeInt64Value(key, 0, 0));
                 if(time_limit <= get_current_date() + 10000LL)
                 {
                     // note how we remove the URI from the backend table before
@@ -1394,8 +1394,8 @@ bool snap_backend::process_timeout()
                     // (currently) has a problem, then we just end up skipping
                     // it and we will just try again later.
                     //
-                    QtCassandra::QCassandraCell::pointer_t cell(*cells.begin());
-                    QString const website_uri(cell->value().stringValue());
+                    libdbproxy::cell::pointer_t cell(*cells.begin());
+                    QString const website_uri(cell->getValue().stringValue());
                     remove_processed_uri(f_action, key, website_uri);
                     if(process_backend_uri(website_uri))
                     {
@@ -2169,8 +2169,8 @@ bool snap_backend::is_ready(QString const & uri)
             //       read/write type of semaphore which will resolve that
             //       problem once and for all
             //
-            return f_sites_table->row(uri)->exists(get_name(name_t::SNAP_NAME_CORE_LAST_UPDATED))
-                && f_sites_table->row(uri)->exists(get_name(name_t::SNAP_NAME_CORE_PLUGIN_THRESHOLD));
+            return f_sites_table->getRow(uri)->exists(get_name(name_t::SNAP_NAME_CORE_LAST_UPDATED))
+                && f_sites_table->getRow(uri)->exists(get_name(name_t::SNAP_NAME_CORE_PLUGIN_THRESHOLD));
         }
 
         if(!f_cron_action)
@@ -2411,7 +2411,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
         snap_expr::expr::set_cassandra_context(nullptr);
         f_sites_table.reset();
         f_backend_table.reset();
-        f_cassandra.reset(); // here all the remaining QCassandra objects should all get deleted
+        f_cassandra.reset(); // here all the remaining libdbproxy objects should all get deleted
         NOTUSED(connect_cassandra(true)); // since we pass 'true', the function either dies or returns true
 
         if(!is_ready(uri))
