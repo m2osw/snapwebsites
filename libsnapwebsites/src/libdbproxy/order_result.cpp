@@ -39,9 +39,9 @@
 //#include <sys/time.h>
 //#pragma GCC pop
 
-#include "QtCassandra/QCassandraException.h"
-#include "QtCassandra/QCassandraProxy.h"
-#include "QtCassandra/QCassandraValue.h"
+#include "libdbproxy/exception.h"
+#include "libdbproxy/proxy.h"
+#include "libdbproxy/value.h"
 
 #include <QtCore>
 
@@ -51,7 +51,7 @@
 #include <unistd.h>
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 
@@ -64,7 +64,7 @@ namespace QtCassandra
  *
  * \return true if the order was successful.
  */
-bool QCassandraOrderResult::succeeded() const
+bool order_result::succeeded() const
 {
     return f_succeeded;
 }
@@ -78,7 +78,7 @@ bool QCassandraOrderResult::succeeded() const
  *
  * \param[in] success  The new value of the succeeded flag.
  */
-void QCassandraOrderResult::setSucceeded(bool success)
+void order_result::setSucceeded(bool success)
 {
     f_succeeded = success;
 }
@@ -93,7 +93,7 @@ void QCassandraOrderResult::setSucceeded(bool success)
  *
  * \sa result()
  */
-size_t QCassandraOrderResult::resultCount() const
+size_t order_result::resultCount() const
 {
     return f_result.size();
 }
@@ -103,7 +103,7 @@ size_t QCassandraOrderResult::resultCount() const
  *
  * This function is used to read back a resulting blob.
  *
- * \exception QCassandraOverflowException
+ * \exception overflow_exception
  * The index must be between 0 and resultCount() - 1 or the
  * function raises this exception.
  *
@@ -111,11 +111,11 @@ size_t QCassandraOrderResult::resultCount() const
  *
  * \sa resultCount()
  */
-QByteArray const & QCassandraOrderResult::result(int index) const
+QByteArray const & order_result::result(int index) const
 {
     if(static_cast<size_t>(index) >= f_result.size())
     {
-        throw QCassandraOverflowException("QCassandraOrderResult::result() called with an index too large.");
+        throw overflow_exception("order_result::result() called with an index too large.");
     }
     return f_result[index];
 }
@@ -127,7 +127,7 @@ QByteArray const & QCassandraOrderResult::result(int index) const
  *
  * \param[in] data  A blob representing a result (i.e. maybe a cell).
  */
-void QCassandraOrderResult::addResult(QByteArray const & data)
+void order_result::addResult(QByteArray const & data)
 {
     f_result.push_back(data);
 }
@@ -140,11 +140,11 @@ void QCassandraOrderResult::addResult(QByteArray const & data)
  *
  * \return A blob that the snapdbproxy can send to the client.
  */
-QByteArray QCassandraOrderResult::encodeResult() const
+QByteArray order_result::encodeResult() const
 {
     if(f_result.size() > 65535)
     {
-        throw QCassandraException("result has too make values, limit is 64Kb - 1 value (a maximum of about 20,000 rows in one go)");
+        throw exception("result has too make values, limit is 64Kb - 1 value (a maximum of about 20,000 rows in one go)");
     }
 
     // the expected size of the final buffer, to avoid realloc() calls,
@@ -195,7 +195,7 @@ QByteArray QCassandraOrderResult::encodeResult() const
 #ifdef _DEBUG
     if(encoder.size() != expected_size)
     {
-        throw QCassandraLogicException( "QCassandraOrderResult::encodeResult(): the expected and encoded sizes do not match..." );
+        throw logic_exception( "order_result::encodeResult(): the expected and encoded sizes do not match..." );
     }
 #endif
 
@@ -209,7 +209,7 @@ QByteArray QCassandraOrderResult::encodeResult() const
  * used by the client to decode results sent to it by the snapdbproxy
  * daemon.
  *
- * \exception QCassandraException
+ * \exception exception
  * If the buffer is of the wrong size, the reading of the data will
  * fail raising this exception. We may later add a try/catch within
  * this function to return false instead. Yet, if the order is wrong
@@ -223,11 +223,11 @@ QByteArray QCassandraOrderResult::encodeResult() const
  *
  * \return true if the function worked successfully.
  */
-bool QCassandraOrderResult::decodeResult(unsigned char const * encoded_result, size_t size)
+bool order_result::decodeResult(unsigned char const * encoded_result, size_t size)
 {
     // WARNING: Here I use the horrible fromRawData() function which does
     //          NOT copy the data to be checked here. However, that gives
-    //          me full access to the QCassandraValue functions against
+    //          me full access to the value functions against
     //          QByteArray which is practical.
     //
     //          Just make sure to only use that 'decoder' buffer in this
@@ -251,7 +251,7 @@ bool QCassandraOrderResult::decodeResult(unsigned char const * encoded_result, s
 }
 
 
-void QCassandraOrderResult::swap(QCassandraOrderResult& rhs)
+void order_result::swap(order_result& rhs)
 {
     std::swap(f_succeeded, rhs.f_succeeded);
     f_result.swap(rhs.f_result);
@@ -259,5 +259,5 @@ void QCassandraOrderResult::swap(QCassandraOrderResult& rhs)
 
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

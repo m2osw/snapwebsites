@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraProxy.h
+ *      src/libdbproxy/proxy.h
  *
  * Description:
  *      Handling of a data between libQtCassandra and our snapdbproxy
@@ -39,12 +39,12 @@
 
 // ourselves
 //
-#include "QtCassandra/QCassandraOrder.h"
-#include "QtCassandra/QCassandraOrderResult.h"
+#include "libdbproxy/order.h"
+#include "libdbproxy/order_result.h"
 
 // our lib
 //
-#include "QtCassandra/QCassandraConsistencyLevel.h"
+#include "libdbproxy/consistency_level.h"
 
 //#include <QString>
 //#include <QByteArray>
@@ -60,30 +60,30 @@
 
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
-class QCassandraProxyIO
+class proxy_io
 {
 public:
-    virtual                 ~QCassandraProxyIO() {}
+    virtual                 ~proxy_io() {}
 
     virtual ssize_t         read(void * buf, size_t count) = 0;
     virtual ssize_t         write(void const * buf, size_t count) = 0;
 };
 
 
-class QCassandraProxy
+class proxy
 {
 public:
-    typedef std::shared_ptr<QCassandraProxy>    pointer_t;
+    typedef std::shared_ptr<proxy>    pointer_t;
 
-                            QCassandraProxy();  // server
-                            QCassandraProxy(QString const & host, int port);  // client
+                            proxy();  // server
+                            proxy(QString const & host, int port);  // client
 
-    QCassandraOrderResult   sendOrder(QCassandraOrder const & order);
-    QCassandraOrder         receiveOrder(QCassandraProxyIO & reader);
-    bool                    sendResult(QCassandraProxyIO & reader, QCassandraOrderResult const & result);
+    order_result   sendOrder(order const & order);
+    order         receiveOrder(proxy_io & reader);
+    bool                    sendResult(proxy_io & reader, order_result const & result);
 
     bool                    isConnected() const;
 
@@ -100,5 +100,5 @@ private:
 };
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

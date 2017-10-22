@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/QCassandraTable.cpp
+ *      src/table.cpp
  *
  * Description:
  *      Handling of cassandra tables (Column Families).
@@ -34,9 +34,9 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "QtCassandra/QCassandra.h"
-#include "QtCassandra/QCassandraTable.h"
-#include "QtCassandra/QCassandraContext.h"
+#include "libdbproxy/libdbproxy.h"
+#include "libdbproxy/table.h"
+#include "libdbproxy/context.h"
 
 #include <casswrapper/schema.h>
 
@@ -51,11 +51,11 @@
 #include <unistd.h>
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 
-/** \class QCassandraTable
+/** \class table
  * \brief Defines a table and may hold a Cassandra column family definition.
  *
  * In Cassandra, a table is called a column family. Mainly because
@@ -87,7 +87,7 @@ namespace QtCassandra
  */
 
 
-/** \var QCassandraTable::f_from_cassandra
+/** \var table::f_from_cassandra
  * \brief Whether the table is a memory table or a server table.
  *
  * A table read from the Cassandra server or created with the
@@ -103,7 +103,7 @@ namespace QtCassandra
  * in the future though.)
  */
 
-/** \var QCassandraTable::f_schema
+/** \var table::f_schema
  * \brief The table private data: CfDef
  *
  * A table is always part of a specific context. You can only create a
@@ -113,7 +113,7 @@ namespace QtCassandra
  * the table remains (i.e. when the context goes, the table goes!)
  */
 
-/** \var QCassandraTable::f_context
+/** \var table::f_context
  * \brief The context that created this table.
  *
  * A table is always part of a specific context. You can only create a
@@ -127,16 +127,16 @@ namespace QtCassandra
  * being raised.
  */
 
-/** \var QCassandraTable::f_rows
+/** \var table::f_rows
  * \brief Set of rows.
  *
  * The system caches rows in this map. The map index is the row key. You can
  * clear the table using the clearCache() function.
  */
 
-/** \brief Initialize a QCassandraTable object.
+/** \brief Initialize a table object.
  *
- * This function initializes a QCassandraTable object.
+ * This function initializes a table object.
  *
  * All the parameters are set to the defaults as defined in the Cassandra
  * definition of the CfDef message. You can use the different functions to
@@ -157,10 +157,10 @@ namespace QtCassandra
  * \param[in] context  The context where this table definition is created.
  * \param[in] table_name  The name of the table definition being created.
  */
-QCassandraTable::QCassandraTable(QCassandraContext::pointer_t context, const QString& table_name)
-    : f_schema(std::make_shared<casswrapper::schema::SessionMeta::KeyspaceMeta::TableMeta>())
+table::table(context::pointer_t context, const QString& table_name)
+    //: f_schema() -- auto-init
     //f_from_cassandra(false) -- auto-init
-    , f_context(context)
+    : f_context(context)
     //f_rows() -- auto-init
 {
     // cache the name because we need it for each other we send
@@ -192,14 +192,14 @@ QCassandraTable::QCassandraTable(QCassandraContext::pointer_t context, const QSt
             {
                 if(!has_quotes)
                 {
-                    throw QCassandraException(QString("'%1' is not a valid table name (it cannot end with a double quote (\") if it does not start with a double quote.)")
+                    throw exception(QString("'%1' is not a valid table name (it cannot end with a double quote (\") if it does not start with a double quote.)")
                             .arg(table_name).toUtf8().data());
                 }
                 quotes_are_valid = true;
             }
             else
             {
-                throw QCassandraException(QString("'%1' is not a valid table name (a table name can be surrounded by double quotes, but it cannot itself include a double quote.)")
+                throw exception(QString("'%1' is not a valid table name (a table name can be surrounded by double quotes, but it cannot itself include a double quote.)")
                             .arg(table_name).toUtf8().data());
             }
             break;
@@ -218,7 +218,7 @@ QCassandraTable::QCassandraTable(QCassandraContext::pointer_t context, const QSt
             if(idx == 0
             || (idx == 1 && has_quotes))
             {
-                throw QCassandraException(QString("'%1' is not a valid table name (a table name cannot start with a digit or an underscore (_), even when quoted.)")
+                throw exception(QString("'%1' is not a valid table name (a table name cannot start with a digit or an underscore (_), even when quoted.)")
                             .arg(table_name).toUtf8().data());
             }
             break;
@@ -238,13 +238,13 @@ QCassandraTable::QCassandraTable(QCassandraContext::pointer_t context, const QSt
             // quotes must not appear at all or be defined at the start AND
             // the end
             //
-            throw QCassandraException(QString("'%1' is an invalid table name (does not match \"?[a-zA-Z][a-zA-Z0-9_]*\"?)").arg(table_name).toUtf8().data());
+            throw exception(QString("'%1' is an invalid table name (does not match \"?[a-zA-Z][a-zA-Z0-9_]*\"?)").arg(table_name).toUtf8().data());
 
         }
     }
     if(has_quotes && !quotes_are_valid)
     {
-        throw QCassandraException(QString("'%1' is not a valid table name (it cannot start with a double quote (\") if it does not end with a double quote.)")
+        throw exception(QString("'%1' is not a valid table name (it cannot start with a double quote (\") if it does not end with a double quote.)")
                 .arg(table_name).toUtf8().data());
     }
 
@@ -257,19 +257,19 @@ QCassandraTable::QCassandraTable(QCassandraContext::pointer_t context, const QSt
     {
         f_table_name = table_name;
     }
-    f_proxy = context->parentCassandra()->proxy();
+    f_proxy = context->parentCassandra()->getProxy();
 }
 
 
-/** \brief Clean up the QCassandraTable object.
+/** \brief Clean up the table object.
  *
  * This function ensures that all resources allocated by the
- * QCassandraTable are released.
+ * table are released.
  *
  * Note that does not in any way destroy the table in the
  * Cassandra cluster.
  */
-QCassandraTable::~QCassandraTable()
+table::~table()
 {
     try
     {
@@ -278,7 +278,7 @@ QCassandraTable::~QCassandraTable()
         //
         clearCache();
     }
-    catch(const QCassandraException&)
+    catch(const exception&)
     {
         // ignore, not much else we can do in a destructor
     }
@@ -299,7 +299,7 @@ QCassandraTable::~QCassandraTable()
  *
  * \return The name of the context this table definition is defined in.
  */
-const QString& QCassandraTable::contextName() const
+const QString& table::contextName() const
 {
     return f_context_name;
 }
@@ -312,7 +312,7 @@ const QString& QCassandraTable::contextName() const
  *
  * \return The table name.
  */
-QString QCassandraTable::tableName() const
+QString table::tableName() const
 {
     if(f_table_name[0] == '"')
     {
@@ -323,13 +323,13 @@ QString QCassandraTable::tableName() const
 }
 
 
-const casswrapper::schema::Value::map_t& QCassandraTable::fields() const
+const casswrapper::schema::Value::map_t& table::fields() const
 {
     return f_schema->getFields();
 }
 
 
-casswrapper::schema::Value::map_t& QCassandraTable::fields()
+casswrapper::schema::Value::map_t& table::fields()
 {
     return f_schema->getFields();
 }
@@ -338,13 +338,13 @@ casswrapper::schema::Value::map_t& QCassandraTable::fields()
 /** \brief Mark this table as from Cassandra.
  *
  * This very case happens when the user creates a new context that,
- * at the time of calling QCassandraContext::create(), includes
+ * at the time of calling context::create(), includes
  * a list of table definitions.
  *
  * In that case we know that the context is being created, but not
  * the tables because the server does it transparently in one go.
  */
-void QCassandraTable::setFromCassandra()
+void table::setFromCassandra()
 {
     f_from_cassandra = true;
 }
@@ -352,11 +352,11 @@ void QCassandraTable::setFromCassandra()
 /** \brief This is an internal function used to parse a CfDef structure.
  *
  * This function is called internally to parse a CfDef object.
- * The data is saved in this QCassandraTable.
+ * The data is saved in this table.
  *
  * \param[in] data  The pointer to the CfDef object.
  */
-void QCassandraTable::parseTableDefinition( casswrapper::schema::SessionMeta::KeyspaceMeta::TableMeta::pointer_t table_meta )
+void table::parseTableDefinition( casswrapper::schema::TableMeta::pointer_t table_meta )
 {
     f_schema         = table_meta;
     f_from_cassandra = true;
@@ -365,7 +365,7 @@ void QCassandraTable::parseTableDefinition( casswrapper::schema::SessionMeta::Ke
 #if 0
 /** \brief Prepare a table definition.
  *
- * This function transforms a QCassandra table definition into
+ * This function transforms a libdbproxy table definition into
  * a Cassandra CfDef structure.
  *
  * The parameter is passed as a void * because we do not want to define
@@ -373,7 +373,7 @@ void QCassandraTable::parseTableDefinition( casswrapper::schema::SessionMeta::Ke
  *
  * \param[in] data  The CfDef were the table is to be saved.
  */
-void QCassandraTable::prepareTableDefinition( CfDef* cf ) const
+void table::prepareTableDefinition( CfDef* cf ) const
 {
     *cf = *f_private;
 
@@ -410,7 +410,7 @@ namespace
 }
 
 
-QString QCassandraTable::getTableOptions() const
+QString table::getTableOptions() const
 {
     QString query_string;
     for( const auto& pair : f_schema->getFields() )
@@ -428,7 +428,7 @@ QString QCassandraTable::getTableOptions() const
 /** \brief Create a Cassandra table.
  *
  * This function creates a Cassandra table in the context as specified
- * when you created the QCassandraTable object.
+ * when you created the table object.
  *
  * If you want to declare a set of columns, this is a good time to do
  * it too (there is not QColumnDefinition::create() function!) By
@@ -443,13 +443,13 @@ QString QCassandraTable::getTableOptions() const
  * function instead.
  *
  * Note that when you create a new context, you can create its tables
- * at once by defining tables before calling the QCassandraContext::create()
+ * at once by defining tables before calling the context::create()
  * function.
  *
- * Creating a new QCassandraTable:
+ * Creating a new table:
  *
  * \code
- * QtCassandra::QCassandraTable::pointer_t table(context->table("qt_cassandra_test_table"));
+ * libdbproxy::table::pointer_t table(context->table("qt_cassandra_test_table"));
  * table->setComment("Our test table.");
  * table->setColumnType("Standard"); // Standard or Super
  * table->setKeyValidationClass("BytesType");
@@ -475,9 +475,9 @@ QString QCassandraTable::getTableOptions() const
  * to finish, but now with modern versions, that is no longer and issue.
  *
  * \sa update()
- * \sa QCassandraContext::create()
+ * \sa context::create()
  */
-void QCassandraTable::create()
+void table::create()
 {
     // TODO: this is actually wrong because it only creates the table
     //       it should be capable of either creating the table or altering
@@ -501,14 +501,14 @@ void QCassandraTable::create()
     // 2) Create the table using the query string,
     // 3) Add this object into the list.
     //
-    QCassandraOrder create_table;
-    create_table.setCql(query_string, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS);
+    order create_table;
+    create_table.setCql(query_string, order::type_of_result_t::TYPE_OF_RESULT_SUCCESS);
     create_table.setTimeout(5 * 60 * 1000);
     create_table.setClearClusterDescription(true);
-    QCassandraOrderResult const create_table_result(f_proxy->sendOrder(create_table));
+    order_result const create_table_result(f_proxy->sendOrder(create_table));
     if(!create_table_result.succeeded())
     {
-        throw QCassandraException("table creation failed");
+        throw exception("table creation failed");
     }
 
     f_from_cassandra = true;
@@ -524,12 +524,12 @@ void QCassandraTable::create()
  * the Cassandra server.
  *
  * If you want to keep a copy of the cache, you will have to retrieve a
- * copy of the rows map using the rows() function.
+ * copy of the rows map using the getRows() function.
  *
- * \sa rows()
+ * \sa getRows()
  * \sa clearCache()
  */
-void QCassandraTable::truncate()
+void table::truncate()
 {
     if( !f_from_cassandra )
     {
@@ -542,13 +542,13 @@ void QCassandraTable::truncate()
             .arg(f_table_name)
             );
 
-    QCassandraOrder truncate_table;
-    truncate_table.setCql(query_string, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS);
+    order truncate_table;
+    truncate_table.setCql(query_string, order::type_of_result_t::TYPE_OF_RESULT_SUCCESS);
     truncate_table.setClearClusterDescription(true);
-    QCassandraOrderResult const truncate_table_result(f_proxy->sendOrder(truncate_table));
+    order_result const truncate_table_result(f_proxy->sendOrder(truncate_table));
     if(!truncate_table_result.succeeded())
     {
-        throw QCassandraException("table truncation failed");
+        throw exception("table truncation failed");
     }
 
     clearCache();
@@ -567,7 +567,7 @@ void QCassandraTable::truncate()
  * Note that if you kept shared pointers to rows and cells defined in
  * this table, accessing those is likely going to generate an exception.
  */
-void QCassandraTable::clearCache()
+void table::clearCache()
 {
     closeCursor();
 
@@ -580,30 +580,30 @@ void QCassandraTable::clearCache()
  * This function closes the current cursor (i.e. the cursor used
  * to gather a set of rows and their data from a table.)
  */
-void QCassandraTable::closeCursor()
+void table::closeCursor()
 {
     if(f_cursor_index >= 0)
     {
         // Note: the "CLOSE" CQL string is ignored
         //
-        QCassandraOrder close_cursor;
-        close_cursor.setCql("CLOSE", QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_CLOSE);
+        order close_cursor;
+        close_cursor.setCql("CLOSE", order::type_of_result_t::TYPE_OF_RESULT_CLOSE);
         close_cursor.setCursorIndex(f_cursor_index);
         f_cursor_index = -1;
-        QCassandraOrderResult close_cursor_result(f_proxy->sendOrder(close_cursor));
+        order_result close_cursor_result(f_proxy->sendOrder(close_cursor));
         if(!close_cursor_result.succeeded())
         {
-            throw QCassandraException("QCassandraTable::closeCursor(): closing cursor failed.");
+            throw exception("table::closeCursor(): closing cursor failed.");
         }
     }
 }
 
 
-void QCassandraTable::addRow( const QByteArray& row_key, const QByteArray& column_key, const QByteArray& data )
+void table::addRow( const QByteArray& row_key, const QByteArray& column_key, const QByteArray& data )
 {
-    QCassandraRow::pointer_t  new_row  ( new QCassandraRow( shared_from_this(), row_key ) );
-    QCassandraCell::pointer_t new_cell ( new_row->cell( column_key ) );
-    new_cell->assignValue( QCassandraValue(data) );
+    row::pointer_t  new_row  ( new row( shared_from_this(), row_key ) );
+    cell::pointer_t new_cell ( new_row->getCell( column_key ) );
+    new_cell->assignValue( value(data) );
 
     // Now add to the map.
     //
@@ -611,57 +611,57 @@ void QCassandraTable::addRow( const QByteArray& row_key, const QByteArray& colum
 }
 
 
-void QCassandraTable::startBatch()
+void table::startBatch()
 {
-    QCassandraOrder start_batch;
-    start_batch.setCql("START_BATCH", QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_BATCH_DECLARE);
+    order start_batch;
+    start_batch.setCql("START_BATCH", order::type_of_result_t::TYPE_OF_RESULT_BATCH_DECLARE);
 
-    QCassandraOrderResult start_batch_result(f_proxy->sendOrder(start_batch));
+    order_result start_batch_result(f_proxy->sendOrder(start_batch));
     start_batch_result.swap(start_batch_result);
     if(!start_batch_result.succeeded())
     {
-        throw QCassandraException("start batch failed");
+        throw exception("start batch failed");
     }
 
     f_batch_index = int32Value(start_batch_result.result(0));
     if(f_batch_index < 0)
     {
-        throw QCassandraLogicException("received a negative number as batch index!");
+        throw logic_exception("received a negative number as batch index!");
     }
 }
 
 
-void QCassandraTable::commitBatch()
+void table::commitBatch()
 {
     if(f_batch_index >= 0)
     {
         // Note: the "CLOSE" CQL string is ignored
         //
-        QCassandraOrder commit_batch;
-        commit_batch.setCql("COMMIT_BATCH", QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_BATCH_COMMIT);
+        order commit_batch;
+        commit_batch.setCql("COMMIT_BATCH", order::type_of_result_t::TYPE_OF_RESULT_BATCH_COMMIT);
         commit_batch.setBatchIndex(f_batch_index);
         f_batch_index = -1;
-        QCassandraOrderResult commit_batch_result(f_proxy->sendOrder(commit_batch));
+        order_result commit_batch_result(f_proxy->sendOrder(commit_batch));
         if(!commit_batch_result.succeeded())
         {
-            throw QCassandraException("QCassandraTable::commitBatch(): batch submission failed.");
+            throw exception("table::commitBatch(): batch submission failed.");
         }
     }
 }
 
 
-void QCassandraTable::rollbackBatch()
+void table::rollbackBatch()
 {
     if(f_batch_index >= 0)
     {
-        QCassandraOrder batch;
-        batch.setCql("ROLLBACK_BATCH", QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_BATCH_ROLLBACK);
+        order batch;
+        batch.setCql("ROLLBACK_BATCH", order::type_of_result_t::TYPE_OF_RESULT_BATCH_ROLLBACK);
         batch.setBatchIndex(f_batch_index);
         f_batch_index = -1;
-        QCassandraOrderResult batch_result(f_proxy->sendOrder(batch));
+        order_result batch_result(f_proxy->sendOrder(batch));
         if(!batch_result.succeeded())
         {
-            throw QCassandraException("QCassandraTable::commitBatch(): batch submission failed.");
+            throw exception("table::commitBatch(): batch submission failed.");
         }
     }
 }
@@ -672,7 +672,7 @@ void QCassandraTable::rollbackBatch()
  * This function reads a set of rows as defined by the row predicate.
  *
  * To change the consistency for this read, check out the
- * QCassandraCellPredicate::setConsistencyLevel() function.
+ * cell_predicate::setConsistencyLevel() function.
  *
  * If the table is not connected to Cassandra (i.e. the table is
  * a memory table) then nothing happens.
@@ -702,19 +702,19 @@ void QCassandraTable::rollbackBatch()
  *
  * \return The number of rows read.
  *
- * \sa QCassandraRowPredicate (see detailed description of row predicate for an example)
- * \sa QCassandraCellPredicate::setConsistencyLevel()
+ * \sa row_predicate (see detailed description of row predicate for an example)
+ * \sa cell_predicate::setConsistencyLevel()
  * \sa dropRow()
  */
-uint32_t QCassandraTable::readRows( QCassandraRowPredicate::pointer_t row_predicate )
+uint32_t table::readRows( row_predicate::pointer_t row_predicate )
 {
     if( !row_predicate )
     {
-        throw QCassandraException("row_predicate is nullptr!");
+        throw exception("row_predicate is nullptr!");
     }
 
     size_t idx(0);
-    QCassandraOrderResult selected_rows_result;
+    order_result selected_rows_result;
 
     f_rows.clear();
 
@@ -722,14 +722,14 @@ uint32_t QCassandraTable::readRows( QCassandraRowPredicate::pointer_t row_predic
     {
         // Note: the "FETCH" is ignored, only the type is used in this case
         //
-        QCassandraOrder select_more_rows;
-        select_more_rows.setCql("FETCH", QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_FETCH);
+        order select_more_rows;
+        select_more_rows.setCql("FETCH", order::type_of_result_t::TYPE_OF_RESULT_FETCH);
         select_more_rows.setCursorIndex(f_cursor_index);
-        QCassandraOrderResult select_more_rows_result(f_proxy->sendOrder(select_more_rows));
+        order_result select_more_rows_result(f_proxy->sendOrder(select_more_rows));
         selected_rows_result.swap(select_more_rows_result);
         if(!selected_rows_result.succeeded())
         {
-            throw QCassandraException("select rows failed");
+            throw exception("select rows failed");
         }
 
         if(selected_rows_result.resultCount() == 0)
@@ -770,8 +770,8 @@ uint32_t QCassandraTable::readRows( QCassandraRowPredicate::pointer_t row_predic
         }
 
         // create a CURSOR
-        QCassandraOrder select_rows;
-        select_rows.setCql(query_string, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_DECLARE);
+        order select_rows;
+        select_rows.setCql(query_string, order::type_of_result_t::TYPE_OF_RESULT_DECLARE);
         select_rows.setColumnCount(3);
         select_rows.setConsistencyLevel(consistency_level);
 
@@ -779,21 +779,21 @@ uint32_t QCassandraTable::readRows( QCassandraRowPredicate::pointer_t row_predic
         row_predicate->bindOrder( select_rows );
         select_rows.setPagingSize( row_predicate->count() );
 
-        QCassandraOrderResult select_rows_result(f_proxy->sendOrder(select_rows));
+        order_result select_rows_result(f_proxy->sendOrder(select_rows));
         selected_rows_result.swap(select_rows_result);
         if(!selected_rows_result.succeeded())
         {
-            throw QCassandraException("select rows failed");
+            throw exception("select rows failed");
         }
 
         if(selected_rows_result.resultCount() < 1)
         {
-            throw QCassandraException("select rows did not return a cursor index");
+            throw exception("select rows did not return a cursor index");
         }
         f_cursor_index = int32Value(selected_rows_result.result(0));
         if(f_cursor_index < 0)
         {
-            throw QCassandraLogicException("received a negative number as cursor index");
+            throw logic_exception("received a negative number as cursor index");
         }
 //std::cerr << "got a cursor = " << f_cursor_index << "\n";
 
@@ -810,7 +810,7 @@ uint32_t QCassandraTable::readRows( QCassandraRowPredicate::pointer_t row_predic
         // the number of results must be a multiple of 3, although on
         // the SELECT (first time in) we expect one additional result
         // which represents the cursor index
-        throw QCassandraLogicException("the number of results must be an exact multipled of 3!");
+        throw logic_exception("the number of results must be an exact multipled of 3!");
     }
 #endif
     size_t result_size = 0;
@@ -837,9 +837,9 @@ uint32_t QCassandraTable::readRows( QCassandraRowPredicate::pointer_t row_predic
 }
 
 
-QCassandraRow::pointer_t QCassandraTable::row(const char* row_name)
+row::pointer_t table::getRow(const char* row_name)
 {
-    return row( QByteArray(row_name,qstrlen(row_name)) );
+    return getRow( QByteArray(row_name,qstrlen(row_name)) );
 }
 
 
@@ -857,9 +857,9 @@ QCassandraRow::pointer_t QCassandraTable::row(const char* row_name)
  *
  * \return A shared pointer to the matching row or a null pointer.
  */
-QCassandraRow::pointer_t QCassandraTable::row(const QString& row_name)
+row::pointer_t table::getRow(const QString& row_name)
 {
-    return row(row_name.toUtf8());
+    return getRow(row_name.toUtf8());
 }
 
 /** \brief Search for a row or create a new one.
@@ -878,17 +878,17 @@ QCassandraRow::pointer_t QCassandraTable::row(const QString& row_name)
  *
  * \sa readRows()
  */
-QCassandraRow::pointer_t QCassandraTable::row(const QByteArray& row_key)
+row::pointer_t table::getRow(const QByteArray& row_key)
 {
     // row already exists?
-    QCassandraRows::iterator ri(f_rows.find(row_key));
+    rows::iterator ri(f_rows.find(row_key));
     if(ri != f_rows.end())
     {
         return ri.value();
     }
 
     // this is a new row, allocate it
-    QCassandraRow::pointer_t c(new QCassandraRow(shared_from_this(), row_key));
+    row::pointer_t c(new row(shared_from_this(), row_key));
     f_rows.insert(row_key, c);
     return c;
 }
@@ -904,7 +904,7 @@ QCassandraRow::pointer_t QCassandraTable::row(const QByteArray& row_key)
  *
  * \return A constant reference to a map of rows. Throws if readRows() has not first been called.
  */
-const QCassandraRows& QCassandraTable::rows()
+const rows& table::getRows()
 {
     return f_rows;
 }
@@ -930,9 +930,9 @@ const QCassandraRows& QCassandraTable::rows()
  * \return A shared pointer to the row, may be NULL (operator bool() returning true)
  *
  * \sa exists()
- * \sa row()
+ * \sa getRow()
  */
-QCassandraRow::pointer_t QCassandraTable::findRow(const char* row_name) const
+row::pointer_t table::findRow(const char* row_name) const
 {
     return findRow( QByteArray(row_name, qstrlen(row_name)) );
 }
@@ -958,9 +958,9 @@ QCassandraRow::pointer_t QCassandraTable::findRow(const char* row_name) const
  * \return A shared pointer to the row, may be NULL (operator bool() returning true)
  *
  * \sa exists()
- * \sa row()
+ * \sa getRow()
  */
-QCassandraRow::pointer_t QCassandraTable::findRow(const QString& row_name) const
+row::pointer_t table::findRow(const QString& row_name) const
 {
     return findRow( row_name.toUtf8() );
 }
@@ -986,14 +986,14 @@ QCassandraRow::pointer_t QCassandraTable::findRow(const QString& row_name) const
  * \return A shared pointer to the row, may be NULL (operator bool() returning true)
  *
  * \sa exists()
- * \sa row()
+ * \sa getRow()
  */
-QCassandraRow::pointer_t QCassandraTable::findRow(const QByteArray& row_key) const
+row::pointer_t table::findRow(const QByteArray& row_key) const
 {
     auto ri(f_rows.find(row_key));
     if(ri == f_rows.end())
     {
-        QCassandraRow::pointer_t null;
+        row::pointer_t null;
         return null;
     }
     return *ri;
@@ -1008,7 +1008,7 @@ QCassandraRow::pointer_t QCassandraTable::findRow(const QByteArray& row_key) con
  *
  * \return true if the row exists in memory or the Cassandra database.
  */
-bool QCassandraTable::exists(const char *row_name) const
+bool table::exists(const char *row_name) const
 {
     return exists(QByteArray(row_name, qstrlen(row_name)));
 }
@@ -1022,7 +1022,7 @@ bool QCassandraTable::exists(const char *row_name) const
  *
  * \return true if the row exists in memory or the Cassandra database.
  */
-bool QCassandraTable::exists(const QString& row_name) const
+bool table::exists(const QString& row_name) const
 {
     return exists(row_name.toUtf8());
 }
@@ -1054,13 +1054,13 @@ bool QCassandraTable::exists(const QString& row_name) const
  *
  * \todo
  * At this time there isn't a way to specify the consistency level of the
- * calls used by this function. The QCassandra default is used.
+ * calls used by this function. The libdbproxy default is used.
  *
  * \param[in] row_key  The binary key of the row to check for.
  *
  * \return true if the row exists in memory or in Cassandra.
  */
-bool QCassandraTable::exists(const QByteArray& row_key) const
+bool table::exists(const QByteArray& row_key) const
 {
     // an empty key cannot represent a valid row
     if(row_key.size() == 0)
@@ -1075,14 +1075,14 @@ bool QCassandraTable::exists(const QByteArray& row_key) const
         return true;
     }
 
-    auto row_predicate( std::make_shared<QCassandraRowKeyPredicate>() );
-    row_predicate->setRowKey(row_key);
-    row_predicate->setCount(1); // read as little as possible (TBD verify that works even with many tombstones)
+    auto pred( std::make_shared<row_key_predicate>() );
+    pred->setRowKey(row_key);
+    pred->setCount(1); // read as little as possible (TBD verify that works even with many tombstones)
 
     class save_current_cursor_index_t
     {
     public:
-        save_current_cursor_index_t(QCassandraTable *table, int32_t& cursor_index)
+        save_current_cursor_index_t(table *table, int32_t& cursor_index)
             : f_table(table)
             , f_cursor_index_ref(cursor_index)
             , f_saved_cursor_index(cursor_index)
@@ -1098,7 +1098,7 @@ bool QCassandraTable::exists(const QByteArray& row_key) const
             {
                 f_table->closeCursor();
             }
-            catch(const QCassandraException&)
+            catch(const exception&)
             {
                 // not muc we can do here (destructor and exceptions do not
                 // work together)
@@ -1110,11 +1110,11 @@ bool QCassandraTable::exists(const QByteArray& row_key) const
         }
 
     private:
-        QCassandraTable *   f_table = nullptr;
+        table *   f_table = nullptr;
         int32_t &           f_cursor_index_ref;
         int32_t             f_saved_cursor_index;
     };
-    save_current_cursor_index_t save_cursor_index(const_cast<QCassandraTable *>(this), const_cast<QCassandraTable *>(this)->f_cursor_index);
+    save_current_cursor_index_t save_cursor_index(const_cast<table *>(this), const_cast<table *>(this)->f_cursor_index);
 
     // TODO: we should be able to do that without using the full fledge
     //       readRows() with a cursor + fetch etc. since we just want to
@@ -1122,8 +1122,8 @@ bool QCassandraTable::exists(const QByteArray& row_key) const
     //       SELECT and save its result; then we would avoid the
     //       "save_current_cursor_index_t" problem
     //
-    return const_cast<QCassandraTable *>(this)
-            ->readRows( std::static_pointer_cast<QCassandraRowPredicate>(row_predicate) ) != 0;
+    return const_cast<table *>(this)
+            ->readRows( std::static_pointer_cast<row_predicate>(pred) ) != 0;
 }
 
 /** \brief Retrieve a table row.
@@ -1137,12 +1137,12 @@ bool QCassandraTable::exists(const QByteArray& row_key) const
  *
  * \param[in] row_name  The name of the row to retrieve.
  *
- * \return A reference to a QCassandraRow.
+ * \return A reference to a row.
  */
-QCassandraRow& QCassandraTable::operator [] (const char *row_name)
+row& table::operator [] (const char *row_name)
 {
     // in this case we may create the row and that's fine!
-    return *row(row_name);
+    return *getRow(row_name);
 }
 
 /** \brief Retrieve a table row.
@@ -1156,12 +1156,12 @@ QCassandraRow& QCassandraTable::operator [] (const char *row_name)
  *
  * \param[in] row_name  The name of the row to retrieve.
  *
- * \return A reference to a QCassandraRow.
+ * \return A reference to a row.
  */
-QCassandraRow& QCassandraTable::operator [] (const QString& row_name)
+row& table::operator [] (const QString& row_name)
 {
     // in this case we may create the row and that's fine!
-    return *row(row_name);
+    return *getRow(row_name);
 }
 
 /** \brief Retrieve a table row.
@@ -1175,12 +1175,12 @@ QCassandraRow& QCassandraTable::operator [] (const QString& row_name)
  *
  * \param[in] row_key  The binary key of the row to retrieve.
  *
- * \return A reference to a QCassandraRow.
+ * \return A reference to a row.
  */
-QCassandraRow& QCassandraTable::operator[] (const QByteArray& row_key)
+row& table::operator[] (const QByteArray& row_key)
 {
     // in this case we may create the row and that's fine!
-    return *row(row_key);
+    return *getRow(row_key);
 }
 
 /** \brief Retrieve a table row.
@@ -1194,19 +1194,19 @@ QCassandraRow& QCassandraTable::operator[] (const QByteArray& row_key)
  * This function accepts a name as the row reference. The name is viewed as
  * a UTF-8 string.
  *
- * \exception QCassandraException
+ * \exception exception
  * The function checks whether the named row exists. If not, then this error
  * is raised because the function is constant and cannot create a new row.
  *
  * \param[in] row_name  The name of the row to retrieve.
  *
- * \return A constant reference to a QCassandraRow.
+ * \return A constant reference to a row.
  */
-const QCassandraRow& QCassandraTable::operator[] (const char *row_name) const
+const row& table::operator[] (const char *row_name) const
 {
-    const QCassandraRow::pointer_t p_row(findRow(row_name));
+    const row::pointer_t p_row(findRow(row_name));
     if(!p_row) {
-        throw QCassandraException("row does not exist so it cannot be read from");
+        throw exception("row does not exist so it cannot be read from");
     }
     return *p_row;
 }
@@ -1221,19 +1221,19 @@ const QCassandraRow& QCassandraTable::operator[] (const char *row_name) const
  *
  * This function accepts a name as the row reference.
  *
- * \exception QCassandraException
+ * \exception exception
  * The function checks whether the named row exists. If not, then this error
  * is raised because the function is constant and cannot create a new row.
  *
  * \param[in] row_name  The name of the row to retrieve.
  *
- * \return A constant reference to a QCassandraRow.
+ * \return A constant reference to a row.
  */
-const QCassandraRow& QCassandraTable::operator[] (const QString& row_name) const
+const row& table::operator[] (const QString& row_name) const
 {
-    const QCassandraRow::pointer_t p_row(findRow(row_name));
+    const row::pointer_t p_row(findRow(row_name));
     if( !p_row ) {
-        throw QCassandraException("row does not exist so it cannot be read from");
+        throw exception("row does not exist so it cannot be read from");
     }
     return *p_row;
 }
@@ -1248,19 +1248,19 @@ const QCassandraRow& QCassandraTable::operator[] (const QString& row_name) const
  *
  * This function accepts a binary key as the row reference.
  *
- * \exception QCassandraException
+ * \exception exception
  * The function checks whether the named row exists. If not, then this error
  * is raised because the function is constant and cannot create a new row.
  *
  * \param[in] row_key  The binary key of the row to retrieve.
  *
- * \return A constant reference to a QCassandraRow.
+ * \return A constant reference to a row.
  */
-const QCassandraRow& QCassandraTable::operator[] (const QByteArray& row_key) const
+const row& table::operator[] (const QByteArray& row_key) const
 {
-    const QCassandraRow::pointer_t p_row(findRow(row_key));
+    const row::pointer_t p_row(findRow(row_key));
     if(!p_row) {
-        throw QCassandraException("row does not exist so it cannot be read from");
+        throw exception("row does not exist so it cannot be read from");
     }
     return *p_row;
 }
@@ -1274,7 +1274,7 @@ const QCassandraRow& QCassandraTable::operator[] (const QByteArray& row_key) con
  *
  * \param[in] row_name  Specify the name of the row to drop.
  */
-void QCassandraTable::dropRow(const char *row_name)
+void table::dropRow(const char *row_name)
 {
     dropRow( QByteArray(row_name, qstrlen(row_name)) );
 }
@@ -1288,7 +1288,7 @@ void QCassandraTable::dropRow(const char *row_name)
  *
  * \param[in] row_name  Specify the name of the row to drop.
  */
-void QCassandraTable::dropRow(const QString& row_name)
+void table::dropRow(const QString& row_name)
 {
     dropRow(row_name.toUtf8());
 }
@@ -1305,7 +1305,7 @@ void QCassandraTable::dropRow(const QString& row_name)
  * \code
  * ...
  * {
- *     QWeakPointer<QtCassandra::QCassandraRow> row(table.row(row_key)));
+ *     QWeakPointer<libdbproxy::row> getRow(table.getRow(row_key)));
  *     ...
  *     table.dropRow(row_key);
  * }
@@ -1316,18 +1316,18 @@ void QCassandraTable::dropRow(const QString& row_name)
  * the next time it does a garbage collection. Still, if there is a row you do
  * not need, drop it.
  *
- * The timestamp \p mode can be set to QCassandraValue::TIMESTAMP_MODE_DEFINED
+ * The timestamp \p mode can be set to value::TIMESTAMP_MODE_DEFINED
  * in which case the value defined in the \p timestamp parameter is used by the
  * Cassandra remove() function.
  *
  * By default the \p mode parameter is set to
- * QCassandraValue::TIMESTAMP_MODE_AUTO which means that we'll make use of
+ * value::TIMESTAMP_MODE_AUTO which means that we'll make use of
  * the current time (i.e. only a row created after this call will exist.)
  *
  * The consistency level is set to CONSISTENCY_LEVEL_ALL since you are likely
  * willing to delete the row on all the nodes. However, I'm not certain this
  * is the best choice here. So the default may change in the future. You
- * may specify CONSISTENCY_LEVEL_DEFAULT in which case the QCassandra object
+ * may specify CONSISTENCY_LEVEL_DEFAULT in which case the libdbproxy object
  * default is used.
  *
  * \warning
@@ -1348,7 +1348,7 @@ void QCassandraTable::dropRow(const QString& row_name)
  *
  * \param[in] row_key  Specify the key of the row.
  */
-void QCassandraTable::dropRow(const QByteArray& row_key)
+void table::dropRow(const QByteArray& row_key)
 {
     remove( row_key );
     f_rows.remove( row_key );
@@ -1359,9 +1359,9 @@ void QCassandraTable::dropRow(const QByteArray& row_key)
  *
  * \return Shared pointer to the cassandra object.
  */
-QCassandraContext::pointer_t QCassandraTable::parentContext() const
+context::pointer_t table::parentContext() const
 {
-    QCassandraContext::pointer_t context(f_context.lock());
+    context::pointer_t context(f_context.lock());
     if(context == nullptr)
     {
         throw std::runtime_error("this table was dropped and is not attached to a context anymore");
@@ -1381,7 +1381,7 @@ QCassandraContext::pointer_t QCassandraTable::parentContext() const
  * \param[in] column_key  The key used to identify the column.
  * \param[in] value       The new value of the cell.
  */
-void QCassandraTable::insertValue( const QByteArray& row_key, const QByteArray& column_key, const QCassandraValue& value )
+void table::insertValue( const QByteArray& row_key, const QByteArray& column_key, const value& value )
 {
     if( !f_from_cassandra )
     {
@@ -1393,7 +1393,7 @@ void QCassandraTable::insertValue( const QByteArray& row_key, const QByteArray& 
     // TIMESTAMP parameter. This also means a DROP may have problems
     // and it adds some slowness.
     //
-    int64_t const timestamp(QCassandra::timeofday());
+    int64_t const timestamp(libdbproxy::timeofday());
     QString query_string(QString("INSERT INTO %1.%2(key,column1,value)VALUES(?,?,?)USING TIMESTAMP %3")
         .arg(f_context_name)
         .arg(f_table_name)
@@ -1411,15 +1411,15 @@ void QCassandraTable::insertValue( const QByteArray& row_key, const QByteArray& 
     // undefined and that's probably better than having either a really large
     // value or 0 if that would work as 'permanent' in Cassandra.)
     //
-    if(value.ttl() != QCassandraValue::TTL_PERMANENT)
+    if(value.ttl() != value::TTL_PERMANENT)
     {
         query_string += QString(" AND TTL %1").arg(value.ttl());
     }
 
-    QCassandraOrder insert_value;
+    order insert_value;
     insert_value.setCql( query_string, (f_batch_index == -1)
-                         ? QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS
-                         : QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_BATCH_ADD
+                         ? order::type_of_result_t::TYPE_OF_RESULT_SUCCESS
+                         : order::type_of_result_t::TYPE_OF_RESULT_BATCH_ADD
                        );
     insert_value.setConsistencyLevel( consistency_level );
     insert_value.setBatchIndex(f_batch_index);
@@ -1428,11 +1428,11 @@ void QCassandraTable::insertValue( const QByteArray& row_key, const QByteArray& 
     insert_value.addParameter( column_key );
     insert_value.addParameter( value.binaryValue() );
 
-    QCassandraOrderResult const insert_value_result(f_proxy->sendOrder(insert_value));
+    order_result const insert_value_result(f_proxy->sendOrder(insert_value));
     if(!insert_value_result.succeeded())
     {
         SNAP_LOG_ERROR("unable to insert a value into the table for query: '")(query_string)("'");
-        throw QCassandraException("inserting a value failed");
+        throw exception("inserting a value failed");
     }
 }
 
@@ -1454,7 +1454,7 @@ void QCassandraTable::insertValue( const QByteArray& row_key, const QByteArray& 
  *
  * \return false when the value was not found in the database, true otherwise
  */
-bool QCassandraTable::getValue(const QByteArray& row_key, const QByteArray& column_key, QCassandraValue& value)
+bool table::getValue(const QByteArray& row_key, const QByteArray& column_key, value& value)
 {
     const QString query_string( QString("SELECT value FROM %1.%2 WHERE key=? AND column1=?")
                          .arg(f_context_name)
@@ -1467,17 +1467,17 @@ bool QCassandraTable::getValue(const QByteArray& row_key, const QByteArray& colu
         consistency_level = parentContext()->parentCassandra()->defaultConsistencyLevel();
     }
 
-    QCassandraOrder get_value;
-    get_value.setCql(query_string, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_ROWS);
+    order get_value;
+    get_value.setCql(query_string, order::type_of_result_t::TYPE_OF_RESULT_ROWS);
     get_value.setConsistencyLevel( consistency_level );
 
     get_value.addParameter( row_key );
     get_value.addParameter( column_key );
 
-    QCassandraOrderResult const get_value_result(f_proxy->sendOrder(get_value));
+    order_result const get_value_result(f_proxy->sendOrder(get_value));
     if(!get_value_result.succeeded())
     {
-        throw QCassandraException("retrieving a value failed");
+        throw exception("retrieving a value failed");
     }
 
     if(get_value_result.resultCount() == 0)
@@ -1505,9 +1505,9 @@ bool QCassandraTable::getValue(const QByteArray& row_key, const QByteArray& colu
  *
  * \return The number of columns in this row.
  */
-int32_t QCassandraTable::getCellCount
+int32_t table::getCellCount
     ( const QByteArray& row_key
-    , QCassandraCellPredicate::pointer_t column_predicate
+    , cell_predicate::pointer_t column_predicate
     )
 {
     if( f_rows.find( row_key ) == f_rows.end() )
@@ -1526,22 +1526,22 @@ int32_t QCassandraTable::getCellCount
             consistency_level = parentContext()->parentCassandra()->defaultConsistencyLevel();
         }
 
-        QCassandraOrder cell_count;
-        cell_count.setCql(query_string, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_ROWS);
+        order cell_count;
+        cell_count.setCql(query_string, order::type_of_result_t::TYPE_OF_RESULT_ROWS);
         cell_count.setPagingSize(column_predicate ? column_predicate->count() : 100);
         cell_count.setConsistencyLevel(consistency_level);
-        QCassandraOrderResult cell_count_result(f_proxy->sendOrder(cell_count));
+        order_result cell_count_result(f_proxy->sendOrder(cell_count));
         if(!cell_count_result.succeeded()
         || cell_count_result.resultCount() != 1)
         {
-            throw QCassandraException("cell count failed");
+            throw exception("cell count failed");
         }
 
         return int32Value(cell_count_result.result(0));
     }
 
     // return the count from the memory cache
-    return f_rows[row_key]->cells().size();
+    return f_rows[row_key]->getCells().size();
 }
 
 /** \brief Delete a Cell from a table row.
@@ -1553,7 +1553,7 @@ int32_t QCassandraTable::getCellCount
  * \param[in] column_key        The cell to be removed.
  * \param[in] consistency_level The consistency level to specify when dropping the row with respect to other data centers.
  */
-void QCassandraTable::remove
+void table::remove
     ( const QByteArray& row_key
     , const QByteArray& column_key
     , consistency_level_t consistency_level
@@ -1570,20 +1570,20 @@ void QCassandraTable::remove
             .arg(f_table_name)
             );
 
-    QCassandraOrder drop_cell;
+    order drop_cell;
     drop_cell.setCql( query_string, (f_batch_index == -1)
-                         ? QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS
-                         : QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_BATCH_ADD
+                         ? order::type_of_result_t::TYPE_OF_RESULT_SUCCESS
+                         : order::type_of_result_t::TYPE_OF_RESULT_BATCH_ADD
                        );
     drop_cell.setBatchIndex(f_batch_index);
     drop_cell.setConsistencyLevel(consistency_level);
-    drop_cell.setTimestamp(QCassandra::timeofday()); // make sure it gets deleted no matter when it was created
+    drop_cell.setTimestamp(libdbproxy::timeofday()); // make sure it gets deleted no matter when it was created
     drop_cell.addParameter(row_key);
     drop_cell.addParameter(column_key);
-    QCassandraOrderResult const drop_cell_result(f_proxy->sendOrder(drop_cell));
+    order_result const drop_cell_result(f_proxy->sendOrder(drop_cell));
     if(!drop_cell_result.succeeded())
     {
-        throw QCassandraException("drop cell failed");
+        throw exception("drop cell failed");
     }
 }
 
@@ -1594,7 +1594,7 @@ void QCassandraTable::remove
  *
  * \param[in] row_key           The row in which the cell is to be removed.
  */
-void QCassandraTable::remove( const QByteArray& row_key )
+void table::remove( const QByteArray& row_key )
 {
     if( !f_from_cassandra || !f_proxy )
     {
@@ -1607,22 +1607,22 @@ void QCassandraTable::remove( const QByteArray& row_key )
             .arg(f_table_name)
             );
 
-    QCassandraOrder drop_cell;
+    order drop_cell;
     drop_cell.setCql( query_string, (f_batch_index == -1)
-                         ? QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS
-                         : QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_BATCH_ADD
+                         ? order::type_of_result_t::TYPE_OF_RESULT_SUCCESS
+                         : order::type_of_result_t::TYPE_OF_RESULT_BATCH_ADD
                        );
     drop_cell.setBatchIndex(f_batch_index);
     drop_cell.setConsistencyLevel(parentContext()->parentCassandra()->defaultConsistencyLevel());
-    drop_cell.setTimestamp(QCassandra::timeofday()); // make sure it gets deleted no matter when it was created
+    drop_cell.setTimestamp(libdbproxy::timeofday()); // make sure it gets deleted no matter when it was created
     drop_cell.addParameter(row_key);
-    QCassandraOrderResult const drop_cell_result(f_proxy->sendOrder(drop_cell));
+    order_result const drop_cell_result(f_proxy->sendOrder(drop_cell));
     if(!drop_cell_result.succeeded())
     {
-        throw QCassandraException("drop cell failed");
+        throw exception("drop cell failed");
     }
 }
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 
 // vim: ts=4 sw=4 et

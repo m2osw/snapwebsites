@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/QCassandraCell.cpp
+ *      src/cell.cpp
  *
  * Description:
  *      Handling of cell. There is no class representing a row in Cassandra.
@@ -36,18 +36,18 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "QtCassandra/QCassandraCell.h"
-#include "QtCassandra/QCassandraException.h"
-#include "QtCassandra/QCassandraRow.h"
+#include "libdbproxy/cell.h"
+#include "libdbproxy/exception.h"
+#include "libdbproxy/row.h"
 
 #include <stdexcept>
 #include <iostream>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 
-/** \class QCassandraCell
+/** \class cell
  * \brief A cell holds a name and value pair.
  *
  * A cell represents the value of a column in a row. The name of a cell
@@ -72,7 +72,7 @@ namespace QtCassandra
  */
 
 
-/** \var QCassandraCell::f_row
+/** \var cell::f_row
  * \brief A pointer back to the row onwer.
  *
  * This bare pointer back to the row owner is used whenever the value is
@@ -81,7 +81,7 @@ namespace QtCassandra
  */
 
 
-/** \var QCassandraCell::f_key
+/** \var cell::f_key
  * \brief The column name of this cell.
  *
  * This cell has a name paired with its value. This is the name part.
@@ -89,7 +89,7 @@ namespace QtCassandra
  */
 
 
-/** \var QCassandraCell::f_cached
+/** \var cell::f_cached
  * \brief Whether a cell is a cache.
  *
  * This flag mark the cell as being a cache for the value defined in it.
@@ -102,7 +102,7 @@ namespace QtCassandra
  */
 
 
-/** \var QCassandraCell::f_value
+/** \var cell::f_value
  * \brief A cell value.
  *
  * This member represents the value of this cell.
@@ -113,9 +113,9 @@ namespace QtCassandra
  */
 
 
-/** \brief Initialize a QCassandraRow object.
+/** \brief Initialize a row object.
  *
- * This function initializes a QCassandraCell object. You must specify the
+ * This function initializes a cell object. You must specify the
  * key of the column.
  *
  * In this case, the key of the cell is a binary buffer of data. Remember
@@ -124,33 +124,33 @@ namespace QtCassandra
  *
  * A cell is set to the NULL value by default.
  *
- * \exception QCassandraException
+ * \exception exception
  * The key of the column cannot be empty or more than 64Kb. If that happens,
  * this exception is raised.
  *
  * \param[in] row  The parent row of this cell.
  * \param[in] column_key  The binary key of this cell.
  */
-QCassandraCell::QCassandraCell(QCassandraRow::pointer_t row, const QByteArray& column_key)
+cell::cell(row::pointer_t row, const QByteArray& column_key)
     : f_row(row)
     , f_key(column_key)
     //, f_value() -- auto-init to "NULL" (nullValue() == true)
 {
     if(f_key.size() == 0) {
-        throw QCassandraException("the cell binary column key cannot be empty");
+        throw exception("the cell binary column key cannot be empty");
     }
     if(f_key.size() > 65535) {
-        throw QCassandraException("the cell binary column key is more than 64Kb");
+        throw exception("the cell binary column key is more than 64Kb");
     }
 }
 
 
-/** \brief Clean up the QCassandraCell object.
+/** \brief Clean up the cell object.
  *
  * This function ensures that all resources allocated by the
- * QCassandraCell are released.
+ * cell are released.
  */
-QCassandraCell::~QCassandraCell()
+cell::~cell()
 {
 }
 
@@ -166,7 +166,7 @@ QCassandraCell::~QCassandraCell()
  * QByteArray parameter) then you CANNOT retrieve the column name.
  * Instead, use the columnKey() function.
  *
- * \exception QCassandraException
+ * \exception exception
  * This function raises an exception if the cell was created with
  * a binary key.
  *
@@ -174,7 +174,7 @@ QCassandraCell::~QCassandraCell()
  *
  * \sa rowKey()
  */
-QString QCassandraCell::columnName() const
+QString cell::columnName() const
 {
     return QString::fromUtf8(f_key.data());
 }
@@ -193,7 +193,7 @@ QString QCassandraCell::columnName() const
  *
  * \sa columnName()
  */
-const QByteArray& QCassandraCell::columnKey() const
+const QByteArray& cell::columnKey() const
 {
     return f_key;
 }
@@ -214,11 +214,11 @@ const QByteArray& QCassandraCell::columnKey() const
  * \sa clearCache()
  * \sa setValue()
  */
-const QCassandraValue& QCassandraCell::value() const
+const value& cell::getValue() const
 {
     if(!f_cached)
     {
-        parentRow()->getValue( f_key, const_cast<QCassandraValue&>(f_value) );
+        parentRow()->getValue( f_key, const_cast<value&>(f_value) );
         f_cached = true;
     }
     return f_value;
@@ -245,7 +245,7 @@ const QCassandraValue& QCassandraCell::value() const
  *
  * \param[in] value  The new value for this cell.
  */
-void QCassandraCell::setValue(const QCassandraValue& val)
+void cell::setValue(const value& val)
 {
     if(!f_cached || f_value != val)
     {
@@ -268,33 +268,33 @@ void QCassandraCell::setValue(const QCassandraValue& val)
  * the Cassandra database.
  *
  * This generally happens when you call value(). There is a simplified
- * view of what happens (without the QCassandraRow, QCassandraTable,
- * QCassandra, and Thrift shown):
+ * view of what happens (without the row, table,
+ * libdbproxy, and Thrift shown):
  *
  * \msc
  * width=900;
- * QCassandraCell,QCassandraContext,QCassandraPrivate,Cassandra;
- * QCassandraCell:>QCassandraContext [label="getValue()"];
- * QCassandraContext=>QCassandraPrivate [label="getValue()"];
+ * cell,context,QCassandraPrivate,Cassandra;
+ * cell:>context [label="getValue()"];
+ * context=>QCassandraPrivate [label="getValue()"];
  * QCassandraPrivate->Cassandra [label="get()"];
  * ...;
  * Cassandra->QCassandraPrivate [label="return"];
  * |||;
- * QCassandraCell abox QCassandraPrivate [label="if value returned from last get()"];
- * QCassandraPrivate=>QCassandraCell [label="getValue()", linecolor="red"];
- * QCassandraCell>>QCassandraPrivate [label="return"];
- * QCassandraCell abox QCassandraPrivate [label="end if"];
+ * cell abox QCassandraPrivate [label="if value returned from last get()"];
+ * QCassandraPrivate=>cell [label="getValue()", linecolor="red"];
+ * cell>>QCassandraPrivate [label="return"];
+ * cell abox QCassandraPrivate [label="end if"];
  * |||;
- * QCassandraPrivate>>QCassandraContext [label="return"];
- * QCassandraContext:>QCassandraCell [label="return"];
+ * QCassandraPrivate>>context [label="return"];
+ * context:>cell [label="return"];
  * \endmsc
  *
- * Note that similar calls happen whenever you call QCassandraRow::readCells()
- * and QCassandraTable::readRows().
+ * Note that similar calls happen whenever you call row::readCells()
+ * and table::readRows().
  *
  * \param[in] value  The new value to assign to this cell.
  */
-void QCassandraCell::assignValue(const QCassandraValue& val)
+void cell::assignValue(const value& val)
 {
     f_value = val;
     f_cached = true;
@@ -322,7 +322,7 @@ void QCassandraCell::assignValue(const QCassandraValue& val)
  * \sa clearCache()
  * \sa setValue()
  */
-QCassandraCell& QCassandraCell::operator = (const QCassandraValue& val)
+cell& cell::operator = (const value& val)
 {
     setValue(val);
     return *this;
@@ -335,7 +335,7 @@ QCassandraCell& QCassandraCell::operator = (const QCassandraValue& val)
  * database using the array syntax such as:
  *
  * \code
- * QCassandraValue value = cluster["context"]["table"]["row"]["column"];
+ * value value = cluster["context"]["table"]["row"]["column"];
  * \endcode
  *
  * Note that the value gets cached. That means if you call the function
@@ -349,7 +349,7 @@ QCassandraCell& QCassandraCell::operator = (const QCassandraValue& val)
  * \sa clearCache()
  * \sa setValue()
  */
-QCassandraCell::operator QCassandraValue () const
+cell::operator value () const
 {
     return value();
 }
@@ -367,7 +367,7 @@ QCassandraCell::operator QCassandraValue () const
  *
  * \return The expected value defined in the cell.
  */
-void QCassandraCell::add(int64_t val)
+void cell::add(int64_t val)
 {
     // if cached, we update the value in memory as it is expected to be
     if(!f_value.nullValue())
@@ -394,7 +394,7 @@ void QCassandraCell::add(int64_t val)
             break;
 
         default:
-            throw QCassandraException("a counter cell is expected to be an 8, 16, 32, or 64 bit value");
+            throw exception("a counter cell is expected to be an 8, 16, 32, or 64 bit value");
 
         }
         f_value.setInt64Value(r);
@@ -428,7 +428,7 @@ void QCassandraCell::add(int64_t val)
  * \sa clearCache()
  * \sa add()
  */
-QCassandraCell& QCassandraCell::operator += (int64_t val)
+cell& cell::operator += (int64_t val)
 {
     add(val);
     return *this;
@@ -448,7 +448,7 @@ QCassandraCell& QCassandraCell::operator += (int64_t val)
  * \sa add()
  * \sa operator + ()
  */
-QCassandraCell& QCassandraCell::operator ++ ()
+cell& cell::operator ++ ()
 {
     add(1);
     return *this;
@@ -464,7 +464,7 @@ QCassandraCell& QCassandraCell::operator ++ ()
  * \endcode
  *
  * \warning
- * Note that this operator returns this QCassandraCell and not
+ * Note that this operator returns this cell and not
  * a copy because we cannot create a copy of the cell.
  *
  * \return A reference to this Cassandra cell.
@@ -472,7 +472,7 @@ QCassandraCell& QCassandraCell::operator ++ ()
  * \sa add()
  * \sa operator + ()
  */
-QCassandraCell& QCassandraCell::operator ++ (int)
+cell& cell::operator ++ (int)
 {
     add(1);
     return *this;
@@ -502,7 +502,7 @@ QCassandraCell& QCassandraCell::operator ++ (int)
  * \sa clearCache()
  * \sa add()
  */
-QCassandraCell& QCassandraCell::operator -= (int64_t val)
+cell& cell::operator -= (int64_t val)
 {
     add(-val);
     return *this;
@@ -522,7 +522,7 @@ QCassandraCell& QCassandraCell::operator -= (int64_t val)
  * \sa add()
  * \sa operator - ()
  */
-QCassandraCell& QCassandraCell::operator -- ()
+cell& cell::operator -- ()
 {
     add(-1);
     return *this;
@@ -538,7 +538,7 @@ QCassandraCell& QCassandraCell::operator -- ()
  * \endcode
  *
  * \warning
- * Note that this operator returns this QCassandraCell and not
+ * Note that this operator returns this cell and not
  * a copy because we cannot create a copy of the cell.
  *
  * \return A reference to this Cassandra cell.
@@ -546,7 +546,7 @@ QCassandraCell& QCassandraCell::operator -- ()
  * \sa add()
  * \sa operator - ()
  */
-QCassandraCell& QCassandraCell::operator -- (int)
+cell& cell::operator -- (int)
 {
     add(-1);
     return *this;
@@ -563,9 +563,9 @@ QCassandraCell& QCassandraCell::operator -- (int)
  * \return The consistency level of this value.
  *
  * \sa setConsistencyLevel()
- * \sa QCassandraValue::consistencyLevel()
+ * \sa value::consistencyLevel()
  */
-consistency_level_t QCassandraCell::consistencyLevel() const
+consistency_level_t cell::consistencyLevel() const
 {
     return f_value.consistencyLevel();
 }
@@ -579,16 +579,16 @@ consistency_level_t QCassandraCell::consistencyLevel() const
  * parameter. For a read this is the only way to specify the consistency.
  *
  * By default, the consistency level is set to CONSISTENCY_LEVEL_DEFAULT
- * which means: use the consistency level defined in the QCassandra object
+ * which means: use the consistency level defined in the libdbproxy object
  * linked with this cell. It is possible to set the consistency level
  * back to CONSISTENCY_LEVEL_DEFAULT.
  *
  * \param[in] level  The new consistency level for this cell next read.
  *
  * \sa consistencyLevel()
- * \sa QCassandraValue::setConsistencyLevel()
+ * \sa value::setConsistencyLevel()
  */
-void QCassandraCell::setConsistencyLevel(consistency_level_t level)
+void cell::setConsistencyLevel(consistency_level_t level)
 {
     f_value.setConsistencyLevel(level);
 }
@@ -597,7 +597,7 @@ void QCassandraCell::setConsistencyLevel(consistency_level_t level)
 /** \brief The value of a cell is automatically cached in memory.
  *
  * This function can be used to mark that the currently cached
- * value need to be reset on the next call to the QCassandraValue
+ * value need to be reset on the next call to the value
  * casting operator.
  *
  * However, note that the data of the cell is NOT released by this
@@ -609,9 +609,9 @@ void QCassandraCell::setConsistencyLevel(consistency_level_t level)
  * clear the data in the Cassandra database too. So don't use that
  * function to clear the data from memory!
  *
- * \sa QCassandraRow::clearCache()
+ * \sa row::clearCache()
  */
-void QCassandraCell::clearCache()
+void cell::clearCache()
 {
     f_cached = false;
     f_value.setNullValue();
@@ -628,9 +628,9 @@ void QCassandraCell::clearCache()
  * \return The timestamp 64bit value.
  *
  * \sa setTimestamp()
- * \sa QCassandraValue::timestamp()
+ * \sa value::timestamp()
  */
-int64_t QCassandraCell::timestamp() const
+int64_t cell::timestamp() const
 {
     return f_value.timestamp();
 }
@@ -642,9 +642,9 @@ int64_t QCassandraCell::timestamp() const
  * \param[in] timestamp  The time used to mark this value.
  *
  * \sa timestamp()
- * \sa QCassandraValue::setTimestamp()
+ * \sa value::setTimestamp()
  */
-void QCassandraCell::setTimestamp(int64_t val)
+void cell::setTimestamp(int64_t val)
 {
     f_value.setTimestamp(val);
 }
@@ -655,17 +655,17 @@ void QCassandraCell::setTimestamp(int64_t val)
  *
  * \return Shared pointer to the cassandra object.
  */
-QCassandraRow::pointer_t QCassandraCell::parentRow() const
+row::pointer_t cell::parentRow() const
 {
-    QCassandraRow::pointer_t row(f_row.lock());
+    row::pointer_t row(f_row.lock());
     if(row == nullptr)
     {
-        throw QCassandraException("this cell was dropped and is not attached to a row anymore");
+        throw exception("this cell was dropped and is not attached to a row anymore");
     }
 
     return row;
 }
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

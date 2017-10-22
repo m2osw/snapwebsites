@@ -1,9 +1,9 @@
 /*
  * Text:
- *      src/QCassandraException.cpp
+ *      src/exception.cpp
  *
  * Description:
- *      Declaration of QCassandra exceptions.
+ *      Declaration of libdbproxy exceptions.
  *
  * Documentation:
  *      See each function below.
@@ -33,33 +33,33 @@
  *      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include "QtCassandra/QCassandraException.h"
+#include "libdbproxy/exception.h"
 
 #include <sstream>
 
 #include <execinfo.h>
 #include <unistd.h>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 
-QCassandraException::QCassandraException( const QString&     what ) : std::runtime_error(what.toUtf8().data()) {}
-QCassandraException::QCassandraException( const std::string& what ) : std::runtime_error(what.c_str())         {}
-QCassandraException::QCassandraException( const char*        what ) : std::runtime_error(what)                 {}
+exception::exception( const QString&     what ) : std::runtime_error(what.toUtf8().data()) {}
+exception::exception( const std::string& what ) : std::runtime_error(what.c_str())         {}
+exception::exception( const char*        what ) : std::runtime_error(what)                 {}
 
 
-QCassandraLogicException::QCassandraLogicException( const QString&     what ) : QCassandraException(what.toUtf8().data()) {}
-QCassandraLogicException::QCassandraLogicException( const std::string& what ) : QCassandraException(what.c_str())         {}
-QCassandraLogicException::QCassandraLogicException( const char*        what ) : QCassandraException(what)                 {}
+logic_exception::logic_exception( const QString&     what ) : exception(what.toUtf8().data()) {}
+logic_exception::logic_exception( const std::string& what ) : exception(what.c_str())         {}
+logic_exception::logic_exception( const char*        what ) : exception(what)                 {}
 
 
-QCassandraOverflowException::QCassandraOverflowException( const QString&     what ) : QCassandraException(what.toUtf8().data()) {}
-QCassandraOverflowException::QCassandraOverflowException( const std::string& what ) : QCassandraException(what.c_str())         {}
-QCassandraOverflowException::QCassandraOverflowException( const char*        what ) : QCassandraException(what)                 {}
+overflow_exception::overflow_exception( const QString&     what ) : exception(what.toUtf8().data()) {}
+overflow_exception::overflow_exception( const std::string& what ) : exception(what.c_str())         {}
+overflow_exception::overflow_exception( const char*        what ) : exception(what)                 {}
 
 
 }
-// namespace QtCassandra
+// namespace libdbproxy
 
 // vim: ts=4 sw=4 et

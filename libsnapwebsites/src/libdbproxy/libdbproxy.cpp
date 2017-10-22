@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/QCassandra.cpp
+ *      src/libdbproxy.cpp
  *
  * Description:
  *      Handling of the cassandra session.
@@ -39,7 +39,7 @@
 #include <sys/time.h>
 #pragma GCC pop
 
-#include "QtCassandra/QCassandra.h"
+#include "libdbproxy/libdbproxy.h"
 
 #include <casswrapper/schema.h>
 
@@ -51,22 +51,22 @@
 #include <unistd.h>
 
 
-/** \brief The QtCassandra namespace includes all the Cassandra extensions.
+/** \brief The libdbproxy namespace includes all the Cassandra extensions.
  *
  * This namespace includes all the Cassandra extensions in Qt. Note that we
  * suggest that you try to avoid using this namespace as in:
  *
  * \code
- * using namespace QtCassandra;
+ * using namespace libdbproxy;
  * \endcode
  *
  * Yet... in older C++ compilers, without using the namespace, all
  * the [] operators are not accessible so the advanced C++ syntax is
  * not available to you. In other words, you should have such statements
- * wherever you want to access the QtCassandra data with the advanced
+ * wherever you want to access the libdbproxy data with the advanced
  * C++ syntax.
  */
-namespace QtCassandra
+namespace libdbproxy
 {
 
 /** \mainpage
@@ -150,7 +150,7 @@ namespace QtCassandra
  *
  * \li Cluster
  *
- * The cluster is defined in a QCassandra object. At the time you call connect()
+ * The cluster is defined in a libdbproxy object. At the time you call connect()
  * you get a connection to the Cassandra server and you can start using the
  * other functions.
  *
@@ -227,14 +227,14 @@ namespace QtCassandra
  * \code
  * // add the value "X" to row "3" in table "Page"
  * int64_t row_number = 3;
- * QCassandraValue row_id;
+ * value row_id;
  * row_id = row_number;
- * QCassandraValue value;
+ * value value;
  * value = "X";
  * context["Page"][row_id]["Path"] = value;
  *
  * // "simultaneously," create an index from value to row identifier
- * QCassandraValue empty;
+ * value empty;
  * context["Page_Path_Index"][value.binaryValue()][row_id] = empty;
  *
  * // search rows in pages that have a path set to value
@@ -254,14 +254,14 @@ namespace QtCassandra
  * expected to use that consistency level in the majority of places.
  * Otherwise, you can also set the consistency level on a cell. Remember
  * that this is used for reads only. There are additional details in the
- * QCassandraCell::setConsistencyLevel() function
+ * cell::setConsistencyLevel() function
  *
  * Cell names can use UUIDs, in that case use a QUuid object and directly call
  * the different row functions that accept a cell key name.
  *
  * \li Values
  *
- * The cells are set to a specific value using the QCassandraValue class.
+ * The cells are set to a specific value using the value class.
  * Beside their binary data, values have a timestamp that represents the time
  * and date when they were created and a TTL (time to live) value in seconds.
  * By default the timestamp is set to gettimeofday() and the TTL is set to 0
@@ -270,7 +270,7 @@ namespace QtCassandra
  * The values are cached in memory by the libQtCassandra library. Not only
  * that, multiple write of the same value to the same cell will generate a
  * single write to the Cassandra database (i.e. the timestamp is ignored in
- * this case, see the QCassandraCell class for more info.)
+ * this case, see the cell class for more info.)
  *
  * Values also include a consistency level. By default this is set to ONE
  * which may not be what you want to have... (in many cases QUORUM is
@@ -278,9 +278,9 @@ namespace QtCassandra
  * then easily be propagated when using the array syntax.
  *
  * \code
- * QCassandraValue v;
+ * value v;
  * v.setDoubleValue(3.14159);
- * v.setConsistencyLevel(QtCassandra::CONSISTENCY_LEVEL_EACH_QUORUM);
+ * v.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_EACH_QUORUM);
  * v.setTimestamp(counter);
  * v.setTtl(60 * 60 * 24);  // live for 1 day
  * ...
@@ -296,60 +296,60 @@ namespace QtCassandra
  * in the parents and calling functions in cascade.
  *
  * The simplest message sent to the Cassandra server comes from the connect()
- * which is the first time happen. It starts from the QCassandra object and
+ * which is the first time happen. It starts from the libdbproxy object and
  * looks something like this:
  *
  * \msc
- * QCassandra,QCassandraPrivate,Thrift,Cassandra;
- * QCassandra=>QCassandraPrivate [label="connect()"];
+ * libdbproxy,QCassandraPrivate,Thrift,Cassandra;
+ * libdbproxy=>QCassandraPrivate [label="connect()"];
  * QCassandraPrivate=>Thrift [label="connect()"];
  * Thrift->Cassandra [label="[RPC Call]"];
  * ...;
  * Cassandra->Thrift [label="[RPC Reply]"];
  * Thrift>>QCassandraPrivate [label="return"];
- * QCassandraPrivate>>QCassandra [label="return"];
+ * QCassandraPrivate>>libdbproxy [label="return"];
  * \endmsc
  *
- * When you save a QCassandraValue in a QCassandraCell, then the cell calls
+ * When you save a value in a cell, then the cell calls
  * the row, which calls the table, which calls the context which has access
  * to the QCassandraPrivate:
  *
  * \msc
  * width=900;
- * QCassandraCell,QCassandraRow,QCassandraTable,QCassandraContext,QCassandra,QCassandraPrivate,Thrift,Cassandra;
- * QCassandraCell=>QCassandraRow [label="insertValue()"];
- * QCassandraRow=>QCassandraTable [label="insertValue()"];
- * QCassandraTable=>QCassandraContext [label="insertValue()"];
- * QCassandraContext=>QCassandra [label="makeCurrent()", linecolor="red"];
- * QCassandra abox Cassandra [label="if context is not already current"];
- * QCassandra=>QCassandraPrivate [label="setContext()"];
+ * cell,row,table,context,libdbproxy,QCassandraPrivate,Thrift,Cassandra;
+ * cell=>row [label="insertValue()"];
+ * row=>table [label="insertValue()"];
+ * table=>context [label="insertValue()"];
+ * context=>libdbproxy [label="makeCurrent()", linecolor="red"];
+ * libdbproxy abox Cassandra [label="if context is not already current"];
+ * libdbproxy=>QCassandraPrivate [label="setContext()"];
  * QCassandraPrivate=>Thrift [label="set_keyspace()"];
  * Thrift->Cassandra [label="[RPC Call]"];
  * ...;
  * Cassandra->Thrift [label="[RPC Reply]"];
  * Thrift>>QCassandraPrivate [label="return"];
- * QCassandraPrivate>>QCassandra [label="return"];
- * QCassandra abox Cassandra [label="end if"];
- * QCassandra>>QCassandraContext [label="return"];
- * QCassandraContext=>QCassandra [label="getPrivate()"];
- * QCassandra>>QCassandraContext [label="return"];
- * QCassandraContext=>QCassandraPrivate [label="insertValue()"];
+ * QCassandraPrivate>>libdbproxy [label="return"];
+ * libdbproxy abox Cassandra [label="end if"];
+ * libdbproxy>>context [label="return"];
+ * context=>libdbproxy [label="getPrivate()"];
+ * libdbproxy>>context [label="return"];
+ * context=>QCassandraPrivate [label="insertValue()"];
  * QCassandraPrivate=>Thrift [label="insert()"];
  * Thrift->Cassandra [label="[RPC Call]"];
  * ...;
  * Cassandra->Thrift [label="[RPC Reply]"];
  * Thrift>>QCassandraPrivate [label="return"];
- * QCassandraPrivate>>QCassandraContext [label="return"];
- * QCassandraContext>>QCassandraTable [label="return"];
- * QCassandraTable>>QCassandraRow [label="return"];
- * QCassandraRow>>QCassandraCell [label="return"];
+ * QCassandraPrivate>>context [label="return"];
+ * context>>table [label="return"];
+ * table>>row [label="return"];
+ * row>>cell [label="return"];
  * \endmsc
  *
  * As you can see the context makes itself current as required. This ensures
  * that the correct context is current when a Cassandra RPC event is sent.
  * This is completely automatic so you do not need to know whether the
  * context is current. Note that the function is optimized (i.e. the pointer
- * of the current context is saved in the QCassandra object so if it doesn't
+ * of the current context is saved in the libdbproxy object so if it doesn't
  * change we avoid the set_keyspace() call.)
  *
  * Messages from rows, tables, and contexts work the same way, only they do
@@ -367,7 +367,7 @@ namespace QtCassandra
  * doesn't save you anything.)
  *
  * If you plan to have multiple threads, I currently suggest you create one
- * QCassandra object per thread. The results will be similar, although it will
+ * libdbproxy object per thread. The results will be similar, although it will
  * make use of more memory and more accesses to the Cassandra server (assuming
  * each thread accesses the common data, in that case you probably want to
  * manage
@@ -393,7 +393,7 @@ namespace QtCassandra
  * write will require a copy of the data buffer.
  *
  * Many of the classes in the libQtCassandra derive from the QObject class.
- * This means they cannot be copied. Especially, the QCassandra object
+ * This means they cannot be copied. Especially, the libdbproxy object
  * which includes the socket connection to the Cassandra server (on top of
  * the contexts, tables, rows, cells, column definitions... and since they
  * all have a parent/child scheme!)
@@ -452,7 +452,7 @@ namespace QtCassandra
  * Although the libQtCassandra library 100% hides the current context
  * calls since it knows when a context or another needs to be curent,
  * switching between contexts can be costly. Instead you may want to
- * look into using two QCassandra objects each with a different context.
+ * look into using two libdbproxy objects each with a different context.
  *
  * Different contexts are useful in case you want to use one context for
  * statistic data or other data that are not required to be read as
@@ -514,7 +514,7 @@ namespace QtCassandra
  * quickly exhaust and the processes will fail.) It is strongly
  * advised that you limit your values to Mb instead.
  *
- * By default, the QCassandra object checks the size with a much
+ * By default, the libdbproxy object checks the size with a much
  * small limit (64Mb) to prevent problems. At a later time, we may
  * offer a blob handling that will save large files by breaking
  * them up in small parts saved in the Cassandra database.
@@ -527,9 +527,9 @@ namespace QtCassandra
  * Cassandra system up front to start using it in C++ with this
  * library.
  *
- * For example, the QCassandraTable::dropRow() function works.
+ * For example, the table::dropRow() function works.
  * The row doesn't disappear immediately from the database, but
- * all the cells are. The QCassandraTable::readRows() function
+ * all the cells are. The table::readRows() function
  * will correctly skip the row as long as you include at least
  * one column in your predicate. All of these details are found
  * in the corresponding function documentation.
@@ -564,7 +564,7 @@ namespace QtCassandra
  */
 
 
-/** \class QCassandra
+/** \class libdbproxy
  * \brief The Cassandra class definition.
  *
  * This class is used to handle a Cassandra connection and read/write data
@@ -574,40 +574,40 @@ namespace QtCassandra
  */
 
 
-/** \var const int QT_CASSANDRA_LIBRARY_VERSION_MAJOR;
+/** \var const int LIBDBPROXY_LIBRARY_VERSION_MAJOR;
  * \brief The major library version.
  *
  * This value represents the major library version at the time you
  * compile your program. To get the library you are linked to at
- * runtime use QCassandra::versionMajor().
+ * runtime use libdbproxy::versionMajor().
  *
  * \sa versionMajor()
  */
 
 
-/** \var const int QT_CASSANDRA_LIBRARY_VERSION_MINOR;
+/** \var const int LIBDBPROXY_LIBRARY_VERSION_MINOR;
  * \brief The minor library version.
  *
  * This value represents the minor library version at the time you
  * compile your program. To get the library you are linked to at
- * runtime use QCassandra::versionMinor().
+ * runtime use libdbproxy::versionMinor().
  *
  * \sa versionMinor()
  */
 
 
-/** \var const int QT_CASSANDRA_LIBRARY_VERSION_PATCH;
+/** \var const int LIBDBPROXY_LIBRARY_VERSION_PATCH;
  * \brief The patch library version.
  *
  * This value represents the patch library version at the time you
  * compile your program. To get the library you are linked to at
- * runtime use QCassandra::versionPatch().
+ * runtime use libdbproxy::versionPatch().
  *
  * \sa versionPatch()
  */
 
 
-/** \var QCassandra::f_current_context
+/** \var libdbproxy::f_current_context
  * \brief A pointer to the current context.
  *
  * The current context has to be set once. We save the pointer that way
@@ -615,11 +615,11 @@ namespace QtCassandra
  * trying to make current already is current.
  *
  * The libQtCassandra library does not give you access to the
- * QCassandraContext::makeCurrent() function
+ * context::makeCurrent() function
  */
 
 
-/** \var QCassandra::f_contexts_read
+/** \var libdbproxy::f_contexts_read
  * \brief Whether the map of contexts were read from Cassandra.
  *
  * This flag defines whether the f_contexts was already initialized or
@@ -628,7 +628,7 @@ namespace QtCassandra
  */
 
 
-/** \var QCassandra::f_contexts
+/** \var libdbproxy::f_contexts
  * \brief The map of contexts defined in memory.
  *
  * This variable holds the list of contexts defined in memory.
@@ -642,25 +642,25 @@ namespace QtCassandra
  */
 
 
-/** \var QCassandra::f_cluster_name
+/** \var libdbproxy::f_cluster_name
  * \brief The name of the cluster we're connected to.
  *
- * This variable holds the name of the cluster the QCassandra object
+ * This variable holds the name of the cluster the libdbproxy object
  * is connected to. This variable caches the cluster name so we don't
  * have to query the cluster about its name more than once.
  */
 
 
-/** \var QCassandra::f_protocol_version
+/** \var libdbproxy::f_protocol_version
  * \brief The version of the protocol we're connected to.
  *
- * This variable holds the version of the protocol the QCassandra object
+ * This variable holds the version of the protocol the libdbproxy object
  * is connected to. This variable caches the protocol version so we don't
  * have to query the cluster about its protocol version more than once.
  */
 
 
-/** \var QCassandra::f_partitioner
+/** \var libdbproxy::f_partitioner
  * \brief The partitioner available in this Cassandra cluster.
  *
  * This variable caches the name of the partitioner as read from the
@@ -668,7 +668,7 @@ namespace QtCassandra
  */
 
 
-/** \var QCassandra::f_snitch
+/** \var libdbproxy::f_snitch
  * \brief The snitch used by this Cassandra cluster.
  *
  * This variable caches the name of the snitch as read from the
@@ -676,12 +676,12 @@ namespace QtCassandra
  */
 
 
-/** \brief Initialize the QCassandra object.
+/** \brief Initialize the libdbproxy object.
  *
- * This function makes the QCassandra object ready.
+ * This function makes the libdbproxy object ready.
  *
  * Mainly, it allocates a QCassandraPrivate object that handles all
- * the necessary data transfers between the QCassandra object and the
+ * the necessary data transfers between the libdbproxy object and the
  * Cassandra server.
  *
  * Next you are expected to connect to the server and eventually
@@ -690,7 +690,7 @@ namespace QtCassandra
  * \sa connect()
  * \sa setDefaultConsistencyLevel()
  */
-QCassandra::QCassandra()
+libdbproxy::libdbproxy()
     // f_proxy( nullptr )
     // f_current_context(nullptr) -- auto-init
     // f_contexts() -- auto-init
@@ -703,27 +703,27 @@ QCassandra::QCassandra()
 }
 
 
-/** \brief Create the QCassandra instance.
+/** \brief Create the libdbproxy instance.
  *
  * This factory creates a new object wrapped in a shared pointer. The contructor
  * is private, so this function must be used.
  *
- * \sa QCassandra()
+ * \sa libdbproxy()
  */
-QCassandra::pointer_t QCassandra::create()
+libdbproxy::pointer_t libdbproxy::create()
 {
-    return pointer_t( new QCassandra );
+    return pointer_t( new libdbproxy );
 }
 
 
 /** \brief Cleanup the Cassandra object.
  *
- * This function cleans up the QCassandra object.
+ * This function cleans up the libdbproxy object.
  *
  * This includes disconnecting from the Cassandra server and release
  * memory resources tight to this object.
  */
-QCassandra::~QCassandra()
+libdbproxy::~libdbproxy()
 {
     disconnect();
 }
@@ -767,7 +767,7 @@ QCassandra::~QCassandra()
  * way than the old connection: if we lose the connection, the proxy tries
  * to reconnect, automatically.
  *
- * \exception QCassandraException
+ * \exception exception
  * If the function cannot gather the cluster information, then it raises
  * this exception.
  *
@@ -777,7 +777,7 @@ QCassandra::~QCassandra()
  *
  * \return true if the connection succeeds, throws otherwise
  */
-bool QCassandra::connect( const QString& host, const int port )
+bool libdbproxy::connect( const QString& host, const int port )
 {
     // disconnect any existing connection
     //
@@ -785,27 +785,27 @@ bool QCassandra::connect( const QString& host, const int port )
 
     // connect to snapdbproxy
     //
-    f_proxy.reset(new QCassandraProxy(host, port));
+    f_proxy.reset(new proxy(host, port));
 
     // get cluster information
     //
-    QCassandraOrder local_table;
-    local_table.setCql( "SELECT cluster_name,native_protocol_version,partitioner FROM system.local", QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_ROWS );
+    order local_table;
+    local_table.setCql( "SELECT cluster_name,native_protocol_version,partitioner FROM system.local", order::type_of_result_t::TYPE_OF_RESULT_ROWS );
     local_table.setColumnCount(3);
-    QCassandraOrderResult const local_table_result(f_proxy->sendOrder(local_table));
+    order_result const local_table_result(f_proxy->sendOrder(local_table));
 
     // even just cluster info cannot be retrieved, forget it
     //
     if( !local_table_result.succeeded() )
     {
-        throw QCassandraException( "Error reading database table system.local!" );
+        throw exception( "Error reading database table system.local!" );
     }
 
     // got success but not data?!
     //
     if( local_table_result.resultCount() != 3 )
     {
-        throw QCassandraException( "Somehow system.local could not return the Cassandra cluster name, native protocol and partitioner information" );
+        throw exception( "Somehow system.local could not return the Cassandra cluster name, native protocol and partitioner information" );
     }
 
     // save data here
@@ -825,7 +825,7 @@ bool QCassandra::connect( const QString& host, const int port )
  * This function has the side effect of clearing the cluster name,
  * protocol version, and current context.
  */
-void QCassandra::disconnect()
+void libdbproxy::disconnect()
 {
     // TBD: should we send a "CLOSE" to the proxy?
     //      (the socket should receive the HUP signal anyway)
@@ -851,7 +851,7 @@ void QCassandra::disconnect()
  *
  * \return true if connect() was called and succeeded.
  */
-bool QCassandra::isConnected() const
+bool libdbproxy::isConnected() const
 {
     if(!f_proxy)
     {
@@ -867,7 +867,7 @@ bool QCassandra::isConnected() const
  * change unless you renew the connection to a different Cassandra
  * cluster.
  *
- * The QCassandra object remembers the name. Calling this function
+ * The libdbproxy object remembers the name. Calling this function
  * more than once is very fast.
  *
  * You must be connected for this function to work.
@@ -879,7 +879,7 @@ bool QCassandra::isConnected() const
  *
  * \return The name of the cluster.
  */
-const QString& QCassandra::clusterName() const
+const QString& libdbproxy::clusterName() const
 {
     return f_cluster_name;
 }
@@ -891,7 +891,7 @@ const QString& QCassandra::clusterName() const
  * cannot change unless you renew the connection to a different
  * Cassandra cluster.
  *
- * The QCassandra object remembers the version. Calling this function
+ * The libdbproxy object remembers the version. Calling this function
  * more than once is very fast.
  *
  * You must be connected for this function to work.
@@ -903,7 +903,7 @@ const QString& QCassandra::clusterName() const
  *
  * \return The version of the protocol.
  */
-const QString& QCassandra::protocolVersion() const
+const QString& libdbproxy::protocolVersion() const
 {
     return f_protocol_version;
 }
@@ -924,7 +924,7 @@ const QString& QCassandra::protocolVersion() const
  *
  * \sa readRows()
  */
-const QString& QCassandra::partitioner() const
+const QString& libdbproxy::partitioner() const
 {
     return f_partitioner;
 }
@@ -959,20 +959,20 @@ const QString& QCassandra::partitioner() const
  *
  * \return A shared pointer to a cassandra context.
  */
-QCassandraContext::pointer_t QCassandra::context( const QString& context_name )
+context::pointer_t libdbproxy::getContext( const QString& context_name )
 {
     // get the list of existing contexts
-    const QCassandraContexts& cs(contexts());
+    const contexts& cs(getContexts());
 
     // already exists?
-    QCassandraContexts::const_iterator ci(cs.find( context_name ));
+    contexts::const_iterator ci(cs.find( context_name ));
     if ( ci != cs.end() )
     {
         return ci.value();
     }
 
     // otherwise create a new one
-    QCassandraContext::pointer_t c( new QCassandraContext( shared_from_this(), context_name ) );
+    context::pointer_t c( new context( shared_from_this(), context_name ) );
     f_contexts.insert( context_name, c );
     retrieveContextMeta( c, context_name );
 
@@ -987,20 +987,20 @@ QCassandraContext::pointer_t QCassandra::context( const QString& context_name )
  *
  * \return A shared pointer to a cassandra context.
  */
-QCassandraContext::pointer_t QCassandra::context( casswrapper::schema::SessionMeta::KeyspaceMeta::pointer_t keyspace_meta )
+context::pointer_t libdbproxy::getContext( casswrapper::schema::KeyspaceMeta::pointer_t keyspace_meta )
 {
     // get the list of existing contexts
-    const QCassandraContexts& cs(contexts());
+    const contexts& cs(getContexts());
 
     // already exists?
-    QCassandraContexts::const_iterator ci(cs.find( keyspace_meta->getName() ));
+    contexts::const_iterator ci(cs.find( keyspace_meta->getName() ));
     if ( ci != cs.end() )
     {
         return ci.value();
     }
 
     // otherwise create a new one
-    QCassandraContext::pointer_t c( new QCassandraContext( shared_from_this(), keyspace_meta->getName() ) );
+    context::pointer_t c( new context( shared_from_this(), keyspace_meta->getName() ) );
     f_contexts.insert( keyspace_meta->getName(), c );
     //retrieveContextMeta( context_name ); -- we have the keyspace meta data, just use it
     c->parseContextDefinition( keyspace_meta );
@@ -1018,8 +1018,8 @@ QCassandraContext::pointer_t QCassandra::context( casswrapper::schema::SessionMe
  * to a database. This defines what we call a context. The
  * setCurrentContext() function defines the active context.
  *
- * If the QCassandra object is not yet connected, the context is saved
- * as the current context of the QCassandra object, but it gets lost
+ * If the libdbproxy object is not yet connected, the context is saved
+ * as the current context of the libdbproxy object, but it gets lost
  * once you connect.
  *
  * The only way to make a context not the current one is by setting
@@ -1032,17 +1032,17 @@ QCassandraContext::pointer_t QCassandra::context( casswrapper::schema::SessionMe
  * automatically when you use a context.
  *
  * \note
- * It is wiser to create multiple QCassandra objects than to swap contexts all
+ * It is wiser to create multiple libdbproxy objects than to swap contexts all
  * the time. Note that even if you do not explicitly call this function, using
- * multiple contexts from the same QCassandra object will be slower as the
+ * multiple contexts from the same libdbproxy object will be slower as the
  * context has to be switched each time.
  *
  * \param[in] c  The context to set as current.
  *
  * \sa currentContext()
- * \sa QCassandraContext::makeCurrent()
+ * \sa context::makeCurrent()
  */
-void QCassandra::setCurrentContext( QCassandraContext::pointer_t c )
+void libdbproxy::setCurrentContext( context::pointer_t c )
 {
     // emit the change only if not the same context
     if ( f_current_context != c )
@@ -1062,7 +1062,7 @@ void QCassandra::setCurrentContext( QCassandraContext::pointer_t c )
  *
  * \param[in] c  The context that is about to be dropped.
  */
-void QCassandra::clearCurrentContextIf( const QCassandraContext& c )
+void libdbproxy::clearCurrentContextIf( const context& c )
 {
     if ( f_current_context.get() == &c )
     {
@@ -1075,31 +1075,31 @@ void QCassandra::clearCurrentContextIf( const QCassandraContext& c )
  *
  * This function creates a new context by name. It first searches the
  * list of existing keyspaces, if it finds one with the specified name,
- * then it creates a corresponding QCassandraContext.
+ * then it creates a corresponding context.
  *
  * \param[in] context_name  The name of the context to create in memory.
  */
-void QCassandra::retrieveContextMeta( QCassandraContext::pointer_t c, const QString& context_name ) const
+void libdbproxy::retrieveContextMeta( context::pointer_t c, const QString& context_name ) const
 {
     if(!f_proxy)
     {
-        throw QCassandraException( "QCassandra::retrieveContextMeta(): called when not connected" );
+        throw exception( "libdbproxy::retrieveContextMeta(): called when not connected" );
     }
 
     // note: the "DESCRIBE CLUSTER" is ignored
     //
-    QCassandraOrder describe_cluster;
-    describe_cluster.setCql( "DESCRIBE CLUSTER", QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_DESCRIBE );
-    QCassandraOrderResult const describe_cluster_result(f_proxy->sendOrder(describe_cluster));
+    order describe_cluster;
+    describe_cluster.setCql( "DESCRIBE CLUSTER", order::type_of_result_t::TYPE_OF_RESULT_DESCRIBE );
+    order_result const describe_cluster_result(f_proxy->sendOrder(describe_cluster));
 
     if(!describe_cluster_result.succeeded())
     {
-        throw QCassandraException( "QCassandra::retrieveContextMeta(): DESCRIBE CLUSTER failed" );
+        throw exception( "libdbproxy::retrieveContextMeta(): DESCRIBE CLUSTER failed" );
     }
 
     if(describe_cluster_result.resultCount() != 1)
     {
-        throw QCassandraException( "QCassandra::retrieveContextMeta(): result does not have one blob as expected" );
+        throw exception( "libdbproxy::retrieveContextMeta(): result does not have one blob as expected" );
     }
 
     casswrapper::schema::SessionMeta::pointer_t session_meta(new casswrapper::schema::SessionMeta);
@@ -1130,11 +1130,11 @@ void QCassandra::retrieveContextMeta( QCassandraContext::pointer_t c, const QStr
  *
  * \return A reference to the internal map of contexts.
  */
-const QCassandraContexts& QCassandra::contexts() const
+const contexts& libdbproxy::getContexts() const
 {
     if(!f_proxy)
     {
-        throw QCassandraException( "QCassandra::contexts(): called when not connected" );
+        throw exception( "libdbproxy::contexts(): called when not connected" );
     }
 
     if( !f_contexts_read )
@@ -1142,18 +1142,18 @@ const QCassandraContexts& QCassandra::contexts() const
         // note: the "DESCRIBE CLUSTER" is ignored
         //
 //int64_t n(timeofday());
-        QCassandraOrder describe_cluster;
-        describe_cluster.setCql( "DESCRIBE CLUSTER", QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_DESCRIBE );
-        QCassandraOrderResult const describe_cluster_result(f_proxy->sendOrder(describe_cluster));
+        order describe_cluster;
+        describe_cluster.setCql( "DESCRIBE CLUSTER", order::type_of_result_t::TYPE_OF_RESULT_DESCRIBE );
+        order_result const describe_cluster_result(f_proxy->sendOrder(describe_cluster));
 
         if(!describe_cluster_result.succeeded())
         {
-            throw QCassandraException( "QCassandra::contexts(): DESCRIBE CLUSTER failed" );
+            throw exception( "libdbproxy::contexts(): DESCRIBE CLUSTER failed" );
         }
 
         if(describe_cluster_result.resultCount() != 1)
         {
-            throw QCassandraException( "QCassandra::contexts(): result does not have one blob as expected" );
+            throw exception( "libdbproxy::contexts(): result does not have one blob as expected" );
         }
 
         // WARNING: the location where this flag is set to true is very
@@ -1170,7 +1170,7 @@ const QCassandraContexts& QCassandra::contexts() const
 
         for( auto keyspace : session_meta->getKeyspaces() )
         {
-            const_cast<QCassandra *>(this)->context(keyspace.second);
+            const_cast<libdbproxy *>(this)->getContext(keyspace.second);
         }
 //std::cerr << "[" << getpid() << "] DESCRIBE CLUSTER: completed in " << (timeofday() - n) << " us.\n";
     }
@@ -1198,14 +1198,14 @@ const QCassandraContexts& QCassandra::contexts() const
  * \return A shared pointer to the context.
  *
  * \sa contexts()
- * \sa QCassandraContext::create()
+ * \sa context::create()
  */
-QCassandraContext::pointer_t QCassandra::findContext( const QString& context_name ) const
+context::pointer_t libdbproxy::findContext( const QString& context_name ) const
 {
-    QCassandraContexts::const_iterator ci( contexts().find( context_name ) );
+    contexts::const_iterator ci( contexts().find( context_name ) );
     if ( ci == f_contexts.end() )
     {
-        return QCassandraContext::pointer_t();
+        return context::pointer_t();
     }
     return *ci;
 }
@@ -1220,7 +1220,7 @@ QCassandraContext::pointer_t QCassandra::findContext( const QString& context_nam
  * cluster[context_name][table_name][column_name] = value;
  * \endcode
  *
- * \exception QCassandraException
+ * \exception exception
  * If the context doesn't exist, this function raises an exception
  * since otherwise the reference would be a NULL pointer.
  *
@@ -1228,12 +1228,12 @@ QCassandraContext::pointer_t QCassandra::findContext( const QString& context_nam
  *
  * \return A reference to the named context.
  */
-QCassandraContext& QCassandra::operator[]( const QString &context_name )
+context& libdbproxy::operator[]( const QString &context_name )
 {
-    QCassandraContext::pointer_t context_obj( findContext( context_name ) );
+    context::pointer_t context_obj( findContext( context_name ) );
     if ( !context_obj )
     {
-        throw QCassandraException(
+        throw exception(
             "named context was not found, cannot return a reference" );
     }
 
@@ -1250,7 +1250,7 @@ QCassandraContext& QCassandra::operator[]( const QString &context_name )
  * value = cluster[context_name][table_name][column_name];
  * \endcode
  *
- * \exception QCassandraException
+ * \exception exception
  * If the context doesn't exist, this function raises an exception
  * since otherwise the reference would be a NULL pointer.
  *
@@ -1258,14 +1258,14 @@ QCassandraContext& QCassandra::operator[]( const QString &context_name )
  *
  * \return A constant reference to the named context.
  */
-const QCassandraContext &QCassandra::
+const context &libdbproxy::
 operator[]( const QString& context_name ) const
 {
-    const QCassandraContext::pointer_t context_obj(
+    const context::pointer_t context_obj(
         findContext( context_name ) );
     if ( !context_obj )
     {
-        throw QCassandraException(
+        throw exception(
             "named context was not found, cannot return a reference" );
     }
 
@@ -1289,16 +1289,16 @@ operator[]( const QString& context_name ) const
  *
  * \param[in] context_name  The name of the context to drop.
  *
- * \sa QCassandraContext::drop()
+ * \sa context::drop()
  */
-void QCassandra::dropContext( const QString& context_name )
+void libdbproxy::dropContext( const QString& context_name )
 {
-    QCassandraContext::pointer_t c( context( context_name ) );
+    context::pointer_t c( getContext( context_name ) );
 
     // first do the context drop in Cassandra
     c->drop();
 
-    // forget about this context in the QCassandra object
+    // forget about this context in the libdbproxy object
     f_contexts.remove( context_name );
 }
 
@@ -1315,7 +1315,7 @@ void QCassandra::dropContext( const QString& context_name )
  *
  * \return The current default consistency level.
  */
-consistency_level_t QCassandra::defaultConsistencyLevel() const
+consistency_level_t libdbproxy::defaultConsistencyLevel() const
 {
     return f_default_consistency_level;
 }
@@ -1335,13 +1335,13 @@ consistency_level_t QCassandra::defaultConsistencyLevel() const
  * This function does not accept the CONSISTENCY_LEVEL_DEFAULT since
  * that is not a valid Cassandra consistency level.
  *
- * \exception QCassandraException
+ * \exception exception
  * This exception is raised if the value passed to this function is not
  * a valid consistency level.
  *
  * \param[in] default_consistency_level  The new default consistency level.
  */
-void QCassandra::setDefaultConsistencyLevel(
+void libdbproxy::setDefaultConsistencyLevel(
     consistency_level_t default_consistency_level )
 {
     // make sure the consistency level exists
@@ -1354,7 +1354,7 @@ void QCassandra::setDefaultConsistencyLevel(
          default_consistency_level != CONSISTENCY_LEVEL_TWO &&
          default_consistency_level != CONSISTENCY_LEVEL_THREE )
     {
-        throw QCassandraException( "invalid default server consistency level" );
+        throw exception( "invalid default server consistency level" );
     }
 
     f_default_consistency_level = default_consistency_level;
@@ -1366,9 +1366,9 @@ void QCassandra::setDefaultConsistencyLevel(
  *
  * \return The major version number.
  */
-int QCassandra::versionMajor()
+int libdbproxy::versionMajor()
 {
-    return QT_CASSANDRA_LIBRARY_VERSION_MAJOR;
+    return LIBDBPROXY_LIBRARY_VERSION_MAJOR;
 }
 
 /** \brief Retrieve the minor version number.
@@ -1377,9 +1377,9 @@ int QCassandra::versionMajor()
  *
  * \return The minor version number.
  */
-int QCassandra::versionMinor()
+int libdbproxy::versionMinor()
 {
-    return QT_CASSANDRA_LIBRARY_VERSION_MINOR;
+    return LIBDBPROXY_LIBRARY_VERSION_MINOR;
 }
 
 /** \brief Retrieve the patch version number.
@@ -1388,9 +1388,9 @@ int QCassandra::versionMinor()
  *
  * \return The patch version number.
  */
-int QCassandra::versionPatch()
+int libdbproxy::versionPatch()
 {
-    return QT_CASSANDRA_LIBRARY_VERSION_PATCH;
+    return LIBDBPROXY_LIBRARY_VERSION_PATCH;
 }
 
 /** \brief Retrieve the library version number in the form of a string.
@@ -1401,9 +1401,9 @@ int QCassandra::versionPatch()
  *
  * \return The patch version number.
  */
-const char *QCassandra::version()
+const char *libdbproxy::version()
 {
-    return QT_CASSANDRA_LIBRARY_VERSION_STRING;
+    return LIBDBPROXY_LIBRARY_VERSION_STRING;
 }
 
 /** \brief Get the time of day.
@@ -1414,19 +1414,19 @@ const char *QCassandra::version()
  *
  * \return The time of day in microseconds.
  */
-int64_t QCassandra::timeofday()
+int64_t libdbproxy::timeofday()
 {
     struct timeval tv;
 
     // we ignore timezone as it can also generate an error
     if(gettimeofday( &tv, NULL ) != 0)
     {
-        throw QCassandraException("gettimeofday() failed.");
+        throw exception("gettimeofday() failed.");
     }
 
     return static_cast<int64_t>( tv.tv_sec ) * 1000000 +
            static_cast<int64_t>( tv.tv_usec );
 }
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

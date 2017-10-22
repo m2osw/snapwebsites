@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraOrder.h
+ *      src/libdbproxy/order.h
  *
  * Description:
  *      Manager an order to be sent to the snapdbproxy daemon.
@@ -35,15 +35,15 @@
  */
 #pragma once
 
-#include "QtCassandra/QCassandraConsistencyLevel.h"
+#include "libdbproxy/consistency_level.h"
 
 #include <vector>
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
-class QCassandraOrder
+class order
 {
 public:
     enum type_of_result_t
@@ -107,7 +107,7 @@ private:
     bool                            f_blocking = true;
     bool                            f_clear_cluster_description = false;
     type_of_result_t                f_type_of_result = type_of_result_t::TYPE_OF_RESULT_SUCCESS;
-    consistency_level_t             f_consistency_level = CONSISTENCY_LEVEL_ONE; // TBD: can we get the QCassandra default automatically?
+    consistency_level_t             f_consistency_level = CONSISTENCY_LEVEL_ONE; // TBD: can we get the libdbproxy default automatically?
     int64_t                         f_timestamp = 0;
     int32_t                         f_timeout_ms = 0;
     int8_t                          f_column_count = 1;
@@ -118,5 +118,5 @@ private:
 };
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

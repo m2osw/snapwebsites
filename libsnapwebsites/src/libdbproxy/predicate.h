@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraPredicate.h
+ *      src/libdbproxy/predicate.h
  *
  * Description:
  *      Handling of Cassandra Predicates to retrieve a set of columns
@@ -36,8 +36,8 @@
  */
 #pragma once
 
-#include "QtCassandra/QCassandraConsistencyLevel.h"
-#include "QtCassandra/QCassandraOrder.h"
+#include "libdbproxy/consistency_level.h"
+#include "libdbproxy/order.h"
 
 #include <QByteArray>
 #include <QRegExp>
@@ -45,18 +45,18 @@
 
 #include <memory>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 typedef int32_t cassandra_count_t; // usually defaults to 100
 
-class QCassandraPredicate
+class predicate
 {
 public:
-    typedef std::shared_ptr<QCassandraPredicate> pointer_t;
+    typedef std::shared_ptr<predicate> pointer_t;
 
-                        QCassandraPredicate() : f_count(100), f_consistency_level(CONSISTENCY_LEVEL_DEFAULT) {}
-    virtual             ~QCassandraPredicate() {}
+                        predicate() : f_count(100), f_consistency_level(CONSISTENCY_LEVEL_DEFAULT) {}
+    virtual             ~predicate() {}
 
     int32_t             count() const                       { return f_count; }
     void                setCount( const int32_t val = 100 ) { f_count = val;  }
@@ -73,14 +73,14 @@ protected:
     bool                f_allow_filtering = true; // this should probably be false by default, but at this point we do not have time to test which orders would need to set it to true...
 
     virtual void        appendQuery( QString& query, int& bind_count ) = 0;
-    virtual void        bindOrder( QCassandraOrder& order ) = 0;
+    virtual void        bindOrder( order& order ) = 0;
 };
 
 
-class QCassandraCellPredicate : public QCassandraPredicate
+class cell_predicate : public predicate
 {
 public:
-    typedef std::shared_ptr<QCassandraCellPredicate> pointer_t;
+    typedef std::shared_ptr<cell_predicate> pointer_t;
 
     // The name predicates can have any character from \0 to \uFFFD
     // (although in full Unicode, you may want to use \U10FFFD but at this
@@ -92,25 +92,25 @@ public:
     static const QChar first_char;
     static const QChar last_char;
 
-    QCassandraCellPredicate() {}
-    virtual ~QCassandraCellPredicate() {}
+    cell_predicate() {}
+    virtual ~cell_predicate() {}
 
 protected:
-    friend class QCassandraRowPredicate;
-    friend class QCassandraRowKeyPredicate;
-    friend class QCassandraRowRangePredicate;
+    friend class row_predicate;
+    friend class row_key_predicate;
+    friend class row_range_predicate;
 
     virtual void appendQuery( QString& /*query*/, int& /*bind_count*/               ) {}
-    virtual void bindOrder( QCassandraOrder& /*order*/                              ) {}
+    virtual void bindOrder( order& /*order*/                              ) {}
 };
 
 
-class QCassandraCellKeyPredicate : public QCassandraCellPredicate
+class cell_key_predicate : public cell_predicate
 {
 public:
-    typedef std::shared_ptr<QCassandraCellKeyPredicate> pointer_t;
+    typedef std::shared_ptr<cell_key_predicate> pointer_t;
 
-    QCassandraCellKeyPredicate() {}
+    cell_key_predicate() {}
 
     const QByteArray& cellKey() const                        { return f_cellKey; }
     void              setCellKey(const QByteArray& cell_key) { f_cellKey = cell_key; }
@@ -119,16 +119,16 @@ protected:
     QByteArray  f_cellKey;
 
     virtual void appendQuery( QString& query, int& bind_count );
-    virtual void bindOrder( QCassandraOrder& order );
+    virtual void bindOrder( order& order );
 };
 
 
-class QCassandraCellRangePredicate : public QCassandraCellPredicate
+class cell_range_predicate : public cell_predicate
 {
 public:
-    typedef std::shared_ptr<QCassandraCellRangePredicate> pointer_t;
+    typedef std::shared_ptr<cell_range_predicate> pointer_t;
 
-    QCassandraCellRangePredicate() {}
+    cell_range_predicate() {}
 
     const QByteArray& startCellKey() const                        { return f_startCellKey;     }
     void              setStartCellKey(const char* cell_key)       { setStartCellKey(QByteArray(cell_key,qstrlen(cell_key))); }
@@ -153,58 +153,58 @@ protected:
     bool                        f_index = false; // whether predicate is used as an index
 
     virtual void appendQuery( QString& query, int& bind_count );
-    virtual void bindOrder( QCassandraOrder& order );
+    virtual void bindOrder( order& order );
 };
 
 
-class QCassandraRowPredicate : public QCassandraPredicate
+class row_predicate : public predicate
 {
 public:
-    typedef std::shared_ptr<QCassandraRowPredicate> pointer_t;
+    typedef std::shared_ptr<row_predicate> pointer_t;
 
-                    QCassandraRowPredicate() : f_cell_pred( new QCassandraCellPredicate )   {}
-    virtual         ~QCassandraRowPredicate()                                               {}
+                    row_predicate() : f_cell_pred( new cell_predicate )   {}
+    virtual         ~row_predicate()                                               {}
 
     QRegExp         rowNameMatch() const                { return f_row_name_match; }
     void            setRowNameMatch(QRegExp const& re)  { f_row_name_match = re; }
 
-    QCassandraCellPredicate::pointer_t  cellPredicate() const                                       { return f_cell_pred; }
-    void                                setCellPredicate( QCassandraCellPredicate::pointer_t pred ) { f_cell_pred = pred; }
+    cell_predicate::pointer_t  cellPredicate() const                                       { return f_cell_pred; }
+    void                                setCellPredicate( cell_predicate::pointer_t pred ) { f_cell_pred = pred; }
 
     virtual void    appendQuery( QString& /*query*/, int& /*bind_count*/               ) {}
-    virtual void    bindOrder( QCassandraOrder& /*order*/                              ) {}
+    virtual void    bindOrder( order& /*order*/                              ) {}
 
 protected:
-    QCassandraCellPredicate::pointer_t      f_cell_pred;
+    cell_predicate::pointer_t      f_cell_pred;
     QRegExp                                 f_row_name_match;
 };
 
 
-class QCassandraRowKeyPredicate : public QCassandraRowPredicate
+class row_key_predicate : public row_predicate
 {
 public:
-    typedef std::shared_ptr<QCassandraRowKeyPredicate> pointer_t;
+    typedef std::shared_ptr<row_key_predicate> pointer_t;
 
-                        QCassandraRowKeyPredicate() {}
-    virtual             ~QCassandraRowKeyPredicate() {}
+                        row_key_predicate() {}
+    virtual             ~row_key_predicate() {}
 
     const QByteArray&   rowKey() const                       { return f_rowKey;   }
     void                setRowKey(const QByteArray& row_key) { f_rowKey = row_key; }
 
     virtual void        appendQuery( QString& query, int& bind_count );
-    virtual void        bindOrder( QCassandraOrder& order );
+    virtual void        bindOrder( order& order );
 
 protected:
     QByteArray          f_rowKey;
 };
 
 
-class QCassandraRowRangePredicate : public QCassandraRowPredicate
+class row_range_predicate : public row_predicate
 {
 public:
-    typedef std::shared_ptr<QCassandraRowRangePredicate> pointer_t;
+    typedef std::shared_ptr<row_range_predicate> pointer_t;
 
-    QCassandraRowRangePredicate() {}
+    row_range_predicate() {}
 
     const QByteArray& startRowKey() const                       { return f_startRowKey;    }
     void              setStartRowKey(const QByteArray& row_key) { f_startRowKey = row_key; }
@@ -213,7 +213,7 @@ public:
     void              setEndRowKey(const QByteArray& row_key)   { f_endRowKey = row_key;   }
 
     virtual void appendQuery( QString& query, int& bind_count );
-    virtual void bindOrder( QCassandraOrder& order );
+    virtual void bindOrder( order& order );
 
 protected:
     QByteArray  f_startRowKey;
@@ -221,6 +221,6 @@ protected:
 };
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 
 // vim: ts=4 sw=4 et

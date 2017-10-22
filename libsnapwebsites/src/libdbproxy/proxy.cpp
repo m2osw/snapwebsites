@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/QCassandraProxy.cpp
+ *      src/proxy.cpp
  *
  * Description:
  *      Handle sending CQL orders to the snapproxy and receiving the
@@ -37,8 +37,8 @@
 
 // ourselves
 //
-#include "QtCassandra/QCassandraProxy.h"
-#include "QtCassandra/QCassandra.h"
+#include "libdbproxy/proxy.h"
+#include "libdbproxy/libdbproxy.h"
 
 #include <snapwebsites/log.h>
 
@@ -57,7 +57,7 @@
 #include <unistd.h>
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 
@@ -168,30 +168,30 @@ private:
 }
 
 
-/** \brief Creating a QCassandraProxy from the daemon.
+/** \brief Creating a proxy from the daemon.
  *
- * This constructor is used whenever we build the QCassandraProxy
+ * This constructor is used whenever we build the proxy
  * object from the daemon side. In that case the daemon calls
  * the receiveOrder() and sendResult() with a socket as one of
  * the parameters.
  */
-QCassandraProxy::QCassandraProxy()
+proxy::proxy()
 {
 }
 
 
-QCassandraProxy::QCassandraProxy(QString const & host, int port)
+proxy::proxy(QString const & host, int port)
     : f_host(host)
     , f_port(port)
 {
 }
 
 
-QCassandraOrderResult QCassandraProxy::sendOrder(QCassandraOrder const & order)
+order_result proxy::sendOrder(order const & order)
 {
     // Note: by default result is marked as "failed"
     //
-    QCassandraOrderResult result;
+    order_result result;
 
     QByteArray const encoded(order.encodeOrder());
 
@@ -209,7 +209,7 @@ QCassandraOrderResult QCassandraProxy::sendOrder(QCassandraOrder const & order)
     {
         // results are very similar to what we send: 4 bytes of
         // what we are receiving, a size, and the result buffer
-        // of data encoded as per the QCassandraOrderResult scheme
+        // of data encoded as per the order_result scheme
         //
         unsigned char buf[8];
         if(bio_read(buf, 8) != 8) // 4 letters + 4 bytes for size
@@ -269,22 +269,22 @@ QCassandraOrderResult QCassandraProxy::sendOrder(QCassandraOrder const & order)
  * sockets, but right now we expect the snapdbproxy to use one
  * thread per socket...
  *
- * \param[in] reader  A QCassandraProxyIO implementation that can
+ * \param[in] reader  A proxy_io implementation that can
  *                    read data from somewhere.
  *
  * \return The order just read, or an invalid order.
  */
-QCassandraOrder QCassandraProxy::receiveOrder(QCassandraProxyIO & io)
+order proxy::receiveOrder(proxy_io & io)
 {
     if(!f_host.isEmpty())
     {
         SNAP_LOG_DEBUG("++++ receiveOrder(): f_host is not empty!");
-        throw QCassandraException("QCassandraProxy::receiveOrder() called from the client...");
+        throw exception("proxy::receiveOrder() called from the client...");
     }
 
     // create an invalid order by default
     //
-    QCassandraOrder order;
+    order order;
     order.setValidOrder(false);
 
     // each order starts with a 4 letter command
@@ -347,11 +347,11 @@ QCassandraOrder QCassandraProxy::receiveOrder(QCassandraProxyIO & io)
  *
  * \return true if the message is sent as expected, false otherwise.
  */
-bool QCassandraProxy::sendResult(QCassandraProxyIO & io, QCassandraOrderResult const & result)
+bool proxy::sendResult(proxy_io & io, order_result const & result)
 {
     if(!f_host.isEmpty())
     {
-        throw QCassandraException("QCassandraProxy::sendResult() called from the client...");
+        throw exception("proxy::sendResult() called from the client...");
     }
 
     QByteArray const encoded(result.encodeResult());
@@ -369,19 +369,19 @@ bool QCassandraProxy::sendResult(QCassandraProxyIO & io, QCassandraOrderResult c
 }
 
 
-bool QCassandraProxy::isConnected() const
+bool proxy::isConnected() const
 {
     return f_bio != nullptr;
 }
 
 
-void QCassandraProxy::bio_get()
+void proxy::bio_get()
 {
     if(!f_bio)
     {
         if(f_host.isEmpty())
         {
-            throw QCassandraException("QCassandraProxy::bio_get(): server cannot call bio_get()...");
+            throw exception("proxy::bio_get(): server cannot call bio_get()...");
         }
 
         bio_initialize();
@@ -391,7 +391,7 @@ void QCassandraProxy::bio_get()
         if(!bio)
         {
             ERR_print_errors_fp(stderr);
-            throw QCassandraException("QCassandraProxy::bio_get(): failed initializing a BIO object");
+            throw exception("proxy::bio_get(): failed initializing a BIO object");
         }
 
         // it is supposed to be non-blocking by default, but just in case,
@@ -413,7 +413,7 @@ void QCassandraProxy::bio_get()
         if(BIO_do_connect(bio.get()) <= 0)
         {
             ERR_print_errors_fp(stderr);
-            throw QCassandraException("QCassandraProxy::bio_get(): failed connecting BIO object to server");
+            throw exception("proxy::bio_get(): failed connecting BIO object to server");
         }
 
         // it worked, save the results
@@ -422,13 +422,13 @@ void QCassandraProxy::bio_get()
 }
 
 
-void QCassandraProxy::bio_reset()
+void proxy::bio_reset()
 {
     f_bio.reset();
 }
 
 
-int QCassandraProxy::bio_read(void * buf, size_t size)
+int proxy::bio_read(void * buf, size_t size)
 {
     if(size == 0)
     {
@@ -476,7 +476,7 @@ int QCassandraProxy::bio_read(void * buf, size_t size)
 }
 
 
-int QCassandraProxy::bio_write(void const * buf, size_t size)
+int proxy::bio_write(void const * buf, size_t size)
 {
     if(size == 0)
     {
@@ -533,5 +533,5 @@ int QCassandraProxy::bio_write(void const * buf, size_t size)
 }
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

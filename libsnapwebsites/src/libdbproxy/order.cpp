@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/QCassandraOrder.cpp
+ *      src/order.cpp
  *
  * Description:
  *      Manager an order to be sent to the snapdbproxy daemon.
@@ -39,10 +39,10 @@
 //#include <sys/time.h>
 //#pragma GCC pop
 
-#include "QtCassandra/QCassandraOrder.h"
+#include "libdbproxy/order.h"
 
-#include "QtCassandra/QCassandraException.h"
-#include "QtCassandra/QCassandraValue.h"
+#include "libdbproxy/exception.h"
+#include "libdbproxy/value.h"
 
 #include "snapwebsites/log.h"
 
@@ -51,12 +51,12 @@
 #include <iostream>
 #include <sstream>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 
 
-QCassandraOrder::type_of_result_t QCassandraOrder::get_type_of_result() const
+order::type_of_result_t order::get_type_of_result() const
 {
     return f_type_of_result;
 }
@@ -69,13 +69,13 @@ QCassandraOrder::type_of_result_t QCassandraOrder::get_type_of_result() const
  *
  * \return The CQL order converted to a QString.
  */
-QString QCassandraOrder::cql() const
+QString order::cql() const
 {
     return f_cql;
 }
 
 
-void QCassandraOrder::setCql(QString const & cql_string, type_of_result_t const result_type)
+void order::setCql(QString const & cql_string, type_of_result_t const result_type)
 {
     f_cql = cql_string;
     f_type_of_result = result_type;
@@ -90,7 +90,7 @@ void QCassandraOrder::setCql(QString const & cql_string, type_of_result_t const 
  *
  * \return true if the order is considered valid, false otherwise.
  */
-bool QCassandraOrder::validOrder() const
+bool order::validOrder() const
 {
     return f_valid;
 }
@@ -107,7 +107,7 @@ bool QCassandraOrder::validOrder() const
  *
  * \return true if the order is considered valid, false otherwise.
  */
-void QCassandraOrder::setValidOrder(bool const valid)
+void order::setValidOrder(bool const valid)
 {
     f_valid = valid;
 }
@@ -120,7 +120,7 @@ void QCassandraOrder::setValidOrder(bool const valid)
  *
  * \return The order consistency level.
  */
-consistency_level_t QCassandraOrder::consistencyLevel() const
+consistency_level_t order::consistencyLevel() const
 {
     return f_consistency_level;
 }
@@ -132,125 +132,125 @@ consistency_level_t QCassandraOrder::consistencyLevel() const
  *
  * \param[in] consistency_level  The new consistency level.
  */
-void QCassandraOrder::setConsistencyLevel(consistency_level_t consistency_level)
+void order::setConsistencyLevel(consistency_level_t consistency_level)
 {
     f_consistency_level = consistency_level;
 }
 
 
-int64_t QCassandraOrder::timestamp() const
+int64_t order::timestamp() const
 {
     return f_timestamp;
 }
 
 
-void QCassandraOrder::setTimestamp(int64_t const user_timestamp)
+void order::setTimestamp(int64_t const user_timestamp)
 {
     f_timestamp = user_timestamp;
 }
 
 
-int32_t QCassandraOrder::timeout() const
+int32_t order::timeout() const
 {
     return f_timeout_ms;
 }
 
 
-void QCassandraOrder::setTimeout(int32_t const statement_timeout_ms)
+void order::setTimeout(int32_t const statement_timeout_ms)
 {
     f_timeout_ms = statement_timeout_ms;
 }
 
 
-int8_t QCassandraOrder::columnCount() const
+int8_t order::columnCount() const
 {
     return f_column_count;
 }
 
 
-void QCassandraOrder::setColumnCount(int8_t const column_count)
+void order::setColumnCount(int8_t const column_count)
 {
     f_column_count = column_count;
 }
 
 
-int32_t QCassandraOrder::pagingSize() const
+int32_t order::pagingSize() const
 {
     return f_paging_size;
 }
 
 
-void QCassandraOrder::setPagingSize(int32_t const paging_size)
+void order::setPagingSize(int32_t const paging_size)
 {
     f_paging_size = paging_size;
 }
 
 
-int32_t QCassandraOrder::cursorIndex() const
+int32_t order::cursorIndex() const
 {
     return f_cursor_index;
 }
 
 
-void QCassandraOrder::setCursorIndex(int32_t const cursor_index)
+void order::setCursorIndex(int32_t const cursor_index)
 {
     f_cursor_index = cursor_index;
 }
 
 
-int32_t QCassandraOrder::batchIndex() const
+int32_t order::batchIndex() const
 {
     return f_batch_index;
 }
 
 
-void QCassandraOrder::setBatchIndex(int32_t const batch_index)
+void order::setBatchIndex(int32_t const batch_index)
 {
     f_batch_index = batch_index;
 }
 
 
-bool QCassandraOrder::clearClusterDescription() const
+bool order::clearClusterDescription() const
 {
     return f_clear_cluster_description;
 }
 
 
-void QCassandraOrder::setClearClusterDescription(bool const clear)
+void order::setClearClusterDescription(bool const clear)
 {
     f_clear_cluster_description = clear;
 }
 
 
-bool QCassandraOrder::blocking() const
+bool order::blocking() const
 {
     return f_blocking;
 }
 
 
-void QCassandraOrder::setBlocking(bool const block)
+void order::setBlocking(bool const block)
 {
     f_blocking = block;
 }
 
 
-size_t QCassandraOrder::parameterCount() const
+size_t order::parameterCount() const
 {
     return f_parameter.size();
 }
 
 
-QByteArray const & QCassandraOrder::parameter(int index) const
+QByteArray const & order::parameter(int index) const
 {
     if(static_cast<size_t>(index) >= f_parameter.size())
     {
-        throw QCassandraOverflowException("QCassandraOrderOrder::parameter() called with an index too large.");
+        throw overflow_exception("QCassandraOrderOrder::parameter() called with an index too large.");
     }
     return f_parameter[index];
 }
 
 
-void QCassandraOrder::addParameter(QByteArray const & data)
+void order::addParameter(QByteArray const & data)
 {
     f_parameter.push_back(data);
 }
@@ -283,7 +283,7 @@ void QCassandraOrder::addParameter(QByteArray const & data)
  *
  * \return A blob one can send to the snapdbproxy daemon.
  */
-QByteArray QCassandraOrder::encodeOrder() const
+QByteArray order::encodeOrder() const
 {
     // Size of an order:
     //    4     tag (CQLP)
@@ -423,7 +423,7 @@ QByteArray QCassandraOrder::encodeOrder() const
 
 /** \brief Decode an order that was encoded with encodeOrder().
  *
- * snapdbproxy calls this function to get a QCassandraOrder from
+ * snapdbproxy calls this function to get a order from
  * data received from a client.
  *
  * \exception runtime_error
@@ -439,11 +439,11 @@ QByteArray QCassandraOrder::encodeOrder() const
  *
  * \return true if the buffer looked proper and can be processed further.
  */
-bool QCassandraOrder::decodeOrder(unsigned char const * encoded_order, size_t size)
+bool order::decodeOrder(unsigned char const * encoded_order, size_t size)
 {
     // WARNING: Here I use the horrible fromRawData() function which does
     //          NOT copy the data to be checked here. However, that gives
-    //          me full access to the QCassandraValue functions against
+    //          me full access to the value functions against
     //          QByteArray which is practical.
     //
     //          Just make sure to only use that 'encoded' buffer in this
@@ -571,5 +571,5 @@ bool QCassandraOrder::decodeOrder(unsigned char const * encoded_order, size_t si
 
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

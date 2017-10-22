@@ -1,19 +1,19 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraVersion.h
+ *      src/libdbproxy/exception.h
  *
  * Description:
- *      Stores the current version. This file is generated from QCassandraVersion.h.in.
+ *      Declare libdbproxy exceptions.
  *
  * Documentation:
  *      See the corresponding .cpp file.
  *
  * License:
  *      Copyright (c) 2011-2017 Made to Order Software Corp.
- * 
+ *
  *      http://snapwebsites.org/
  *      contact@m2osw.com
- * 
+ *
  *      Permission is hereby granted, free of charge, to any person obtaining a
  *      copy of this software and associated documentation files (the
  *      "Software"), to deal in the Software without restriction, including
@@ -35,28 +35,47 @@
  */
 #pragma once
 
-namespace QtCassandra
+#include <libexcept/exception.h>
+
+#include <stdexcept>
+#include <string>
+#include <QString>
+#include <QStringList>
+
+
+namespace libdbproxy
 {
 
-static const int   QT_CASSANDRA_LIBRARY_VERSION_MAJOR  = @SNAPWEBSITES_VERSION_MAJOR@;
-static const int   QT_CASSANDRA_LIBRARY_VERSION_MINOR  = @SNAPWEBSITES_VERSION_MINOR@;
-static const int   QT_CASSANDRA_LIBRARY_VERSION_PATCH  = @SNAPWEBSITES_VERSION_PATCH@;
 
-/** \brief The library version as a string.
- *
- * This variable represents the full library version at the time
- * you compile your program. To get the library you are linked
- * to at runtime use QCassandra::version().
- *
- * \warning
- * This variable uses an attribute supported by the GNU C++ compiler
- * which prevents Doxygen from finding this help block if declared
- * in the .cpp file. This is why it is in the header.
- *
- * \sa version()
- */
-static const char *QT_CASSANDRA_LIBRARY_VERSION_STRING __attribute__((unused)) = "@SNAPWEBSITES_VERSION_MAJOR@.@SNAPWEBSITES_VERSION_MINOR@.@SNAPWEBSITES_VERSION_PATCH@";
 
-} // namespace QtCassandra
+class exception : public std::runtime_error, public libexcept::exception_base_t
+{
+public:
+    exception( const QString&     what );
+    exception( const std::string& what );
+    exception( const char*        what );
+};
+
+
+class logic_exception : public exception
+{
+public:
+    logic_exception( const QString&     what );
+    logic_exception( const std::string& what );
+    logic_exception( const char*        what );
+};
+
+
+class overflow_exception : public exception
+{
+public:
+    overflow_exception( const QString&     what );
+    overflow_exception( const std::string& what );
+    overflow_exception( const char*        what );
+};
+
+
+}
+// namespace casswrapper
 
 // vim: ts=4 sw=4 et

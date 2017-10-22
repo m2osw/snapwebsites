@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraTable.h
+ *      src/libdbproxy/table.h
  *
  * Description:
  *      Handling of Cassandra Tables.
@@ -35,33 +35,33 @@
  */
 #pragma once
 
-#include "QtCassandra/QCassandraConsistencyLevel.h"
-#include "QtCassandra/QCassandraPredicate.h"
-#include "QtCassandra/QCassandraProxy.h"
-#include "QtCassandra/QCassandraRow.h"
+#include "libdbproxy/consistency_level.h"
+#include "libdbproxy/predicate.h"
+#include "libdbproxy/proxy.h"
+#include "libdbproxy/row.h"
 
 #include <casswrapper/schema.h>
 
 #include <cstdint>
 #include <memory>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
-class QCassandraContext;
+class context;
 
 
 // Cassandra Column Family
-class QCassandraTable
+class table
     : public QObject
-    , public std::enable_shared_from_this<QCassandraTable>
+    , public std::enable_shared_from_this<table>
 {
 public:
-    typedef std::shared_ptr<QCassandraTable> pointer_t;
+    typedef std::shared_ptr<table> pointer_t;
 
-    virtual ~QCassandraTable();
+    virtual ~table();
 
-    QCassandraProxy::pointer_t proxy() const { return f_proxy; }
+    proxy::pointer_t getProxy() const { return f_proxy; }
 
     // context name
     const QString&  contextName() const;
@@ -79,45 +79,45 @@ public:
     void clearCache();
 
     // row handling
-    uint32_t readRows(QCassandraRowPredicate::pointer_t row_predicate );
+    uint32_t readRows(row_predicate::pointer_t row_predicate );
 
-    QCassandraRow::pointer_t    row(const char*       row_name);
-    QCassandraRow::pointer_t    row(const QString&    row_name);
-    QCassandraRow::pointer_t    row(const QByteArray& row_name);
-    const QCassandraRows&       rows();
+    row::pointer_t    getRow(const char*       row_name);
+    row::pointer_t    getRow(const QString&    row_name);
+    row::pointer_t    getRow(const QByteArray& row_name);
+    const rows&       getRows();
 
-    QCassandraRow::pointer_t    findRow(const char* row_name) const;
-    QCassandraRow::pointer_t    findRow(const QString& row_name) const;
-    QCassandraRow::pointer_t    findRow(const QByteArray& row_name) const;
+    row::pointer_t    findRow(const char* row_name) const;
+    row::pointer_t    findRow(const QString& row_name) const;
+    row::pointer_t    findRow(const QByteArray& row_name) const;
     bool                        exists(const char* row_name) const;
     bool                        exists(const QString& row_name) const;
     bool                        exists(const QByteArray& row_name) const;
-    QCassandraRow&              operator[] (const char* row_name);
-    QCassandraRow&              operator[] (const QString& row_name);
-    QCassandraRow&              operator[] (const QByteArray& row_name);
-    const QCassandraRow&        operator[] (const char* row_name) const;
-    const QCassandraRow&        operator[] (const QString& row_name) const;
-    const QCassandraRow&        operator[] (const QByteArray& row_name) const;
+    row&              operator[] (const char* row_name);
+    row&              operator[] (const QString& row_name);
+    row&              operator[] (const QByteArray& row_name);
+    const row&        operator[] (const char* row_name) const;
+    const row&        operator[] (const QString& row_name) const;
+    const row&        operator[] (const QByteArray& row_name) const;
 
     void dropRow(const char *      row_name);
     void dropRow(const QString&    row_name);
     void dropRow(const QByteArray& row_name);
 
-    std::shared_ptr<QCassandraContext> parentContext() const;
+    std::shared_ptr<context> parentContext() const;
 
     void        startBatch();
     void        commitBatch();
     void        rollbackBatch();
 
 private:
-    QCassandraTable(std::shared_ptr<QCassandraContext> context, const QString& table_name);
+    table(std::shared_ptr<context> context, const QString& table_name);
 
     void        setFromCassandra();
-    void        parseTableDefinition( casswrapper::schema::SessionMeta::KeyspaceMeta::TableMeta::pointer_t table_meta );
-    void        insertValue(const QByteArray& row_key, const QByteArray& column_key, const QCassandraValue& value);
-    bool        getValue(const QByteArray& row_key, const QByteArray& column_key, QCassandraValue& value);
-    void        assignRow(const QByteArray& row_key, const QByteArray& column_key, const QCassandraValue& value);
-    int32_t     getCellCount(const QByteArray& row_key, QCassandraCellPredicate::pointer_t column_predicate);
+    void        parseTableDefinition( casswrapper::schema::TableMeta::pointer_t table_meta );
+    void        insertValue(const QByteArray& row_key, const QByteArray& column_key, const value& value);
+    bool        getValue(const QByteArray& row_key, const QByteArray& column_key, value& value);
+    void        assignRow(const QByteArray& row_key, const QByteArray& column_key, const value& value);
+    int32_t     getCellCount(const QByteArray& row_key, cell_predicate::pointer_t column_predicate);
     void        remove
                     ( const QByteArray& row_key
                     , const QByteArray& column_key
@@ -133,25 +133,25 @@ private:
 
     QString     getTableOptions() const;
 
-    friend class QCassandraContext;
-    friend class QCassandraRow;
+    friend class context;
+    friend class row;
 
-    casswrapper::schema::SessionMeta::KeyspaceMeta::TableMeta::pointer_t   f_schema;
+    casswrapper::schema::TableMeta::pointer_t   f_schema;
 
-    bool                                f_from_cassandra = false;
-    std::weak_ptr<QCassandraContext>    f_context;
-    QString                             f_context_name;
-    QString                             f_table_name;
-    QCassandraRows                      f_rows;
+    bool                      f_from_cassandra = false;
+    std::weak_ptr<context>    f_context;
+    QString                   f_context_name;
+    QString                   f_table_name;
+    rows                      f_rows;
 
-    QCassandraProxy::pointer_t          f_proxy;
-    int32_t                             f_cursor_index = -1;
-    int32_t                             f_batch_index  = -1;
+    proxy::pointer_t          f_proxy;
+    int32_t                   f_cursor_index = -1;
+    int32_t                   f_batch_index  = -1;
 };
 
 // list of table definitions mapped against their name (see tableName())
-typedef QMap<QString, QCassandraTable::pointer_t > QCassandraTables;
+typedef QMap<QString, table::pointer_t > tables;
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 
 // vim: ts=4 sw=4 et

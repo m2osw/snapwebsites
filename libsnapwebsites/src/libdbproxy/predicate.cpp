@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/QCassandraPredicate.cpp
+ *      src/predicate.cpp
  *
  * Description:
  *      Handling of CQL query string manipulation.
@@ -34,11 +34,11 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "QtCassandra/QCassandraPredicate.h"
+#include "libdbproxy/predicate.h"
 
 #include <iostream>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 /** \brief Define the first possible character in a column key.
@@ -50,7 +50,7 @@ namespace QtCassandra
  *
  * The first character is '\0'.
  */
-const QChar QCassandraCellPredicate::first_char = QChar('\0');
+const QChar cell_predicate::first_char = QChar('\0');
 
 
 /** \brief Define the last possible character in a column key.
@@ -63,25 +63,25 @@ const QChar QCassandraCellPredicate::first_char = QChar('\0');
  * \note
  * This character can also be used in row predicates.
  */
-const QChar QCassandraCellPredicate::last_char = QChar(L'\uFFFD');
+const QChar cell_predicate::last_char = QChar(L'\uFFFD');
 
 
 /// \brief Cell predicate query handlers
-void QCassandraCellKeyPredicate::appendQuery( QString& query, int& bind_count )
+void cell_key_predicate::appendQuery( QString& query, int& bind_count )
 {
     query += " AND column1 == ?";
     bind_count++;
 }
 
 
-void QCassandraCellKeyPredicate::bindOrder( QCassandraOrder& order )
+void cell_key_predicate::bindOrder( order& order )
 {
     order.addParameter( f_cellKey );
 }
 
 
 /// \brief Cell range predicate query handlers
-void QCassandraCellRangePredicate::appendQuery( QString& query, int& bind_count )
+void cell_range_predicate::appendQuery( QString& query, int& bind_count )
 {
     if(!f_startCellKey.isEmpty())
     {
@@ -103,7 +103,7 @@ void QCassandraCellRangePredicate::appendQuery( QString& query, int& bind_count 
 }
 
 
-void QCassandraCellRangePredicate::bindOrder( QCassandraOrder& order )
+void cell_range_predicate::bindOrder( order& order )
 {
     if(!f_startCellKey.isEmpty())
     {
@@ -118,7 +118,7 @@ void QCassandraCellRangePredicate::bindOrder( QCassandraOrder& order )
 
 
 /// \brief Row key predicate query handlers
-void QCassandraRowKeyPredicate::appendQuery( QString& query, int& bind_count )
+void row_key_predicate::appendQuery( QString& query, int& bind_count )
 {
     query += " WHERE key=?";
     ++bind_count;
@@ -126,7 +126,7 @@ void QCassandraRowKeyPredicate::appendQuery( QString& query, int& bind_count )
 }
 
 
-void QCassandraRowKeyPredicate::bindOrder( QCassandraOrder& order)
+void row_key_predicate::bindOrder( order& order)
 {
     order.addParameter( f_rowKey );
     f_cell_pred->bindOrder( order );
@@ -134,7 +134,7 @@ void QCassandraRowKeyPredicate::bindOrder( QCassandraOrder& order)
 
 
 /// \brief Row range predicate query handlers
-void QCassandraRowRangePredicate::appendQuery( QString& query, int& bind_count )
+void row_range_predicate::appendQuery( QString& query, int& bind_count )
 {
     query += " WHERE token(key) >= token(?) AND token(key) <= token(?)";
     bind_count += 2;
@@ -142,7 +142,7 @@ void QCassandraRowRangePredicate::appendQuery( QString& query, int& bind_count )
 }
 
 
-void QCassandraRowRangePredicate::bindOrder( QCassandraOrder& order )
+void row_range_predicate::bindOrder( order& order )
 {
     order.addParameter( f_startRowKey );
     order.addParameter( f_endRowKey );
@@ -150,6 +150,6 @@ void QCassandraRowRangePredicate::bindOrder( QCassandraOrder& order )
 }
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 
 // vim: ts=4 sw=4 et

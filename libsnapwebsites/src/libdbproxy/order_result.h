@@ -1,19 +1,19 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraException.h
+ *      src/libdbproxy/QCassandraResult.h
  *
  * Description:
- *      Declare QtCassandra exceptions.
+ *      Handle receiving results from a CQL order sent to snapdbproxy.
  *
  * Documentation:
  *      See the corresponding .cpp file.
  *
  * License:
  *      Copyright (c) 2011-2017 Made to Order Software Corp.
- *
+ * 
  *      http://snapwebsites.org/
  *      contact@m2osw.com
- *
+ * 
  *      Permission is hereby granted, free of charge, to any person obtaining a
  *      copy of this software and associated documentation files (the
  *      "Software"), to deal in the Software without restriction, including
@@ -35,47 +35,36 @@
  */
 #pragma once
 
-#include <libexcept/exception.h>
+#include "libdbproxy/consistency_level.h"
 
-#include <stdexcept>
-#include <string>
-#include <QString>
-#include <QStringList>
+#include <vector>
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 
 
-class QCassandraException : public std::runtime_error, public libexcept::exception_base_t
+class order_result
 {
 public:
-    QCassandraException( const QString&     what );
-    QCassandraException( const std::string& what );
-    QCassandraException( const char*        what );
+    bool                succeeded() const;
+    void                setSucceeded(bool success);
+
+    size_t              resultCount() const;
+    const QByteArray &  result(int index) const;
+    void                addResult(QByteArray const & data);
+
+    QByteArray          encodeResult() const;
+    bool                decodeResult(unsigned char const * encoded_result, size_t size);
+
+    void                swap(order_result& rhs);
+
+private:
+    bool                        f_succeeded = false;
+    std::vector<QByteArray>     f_result;
 };
 
 
-class QCassandraLogicException : public QCassandraException
-{
-public:
-    QCassandraLogicException( const QString&     what );
-    QCassandraLogicException( const std::string& what );
-    QCassandraLogicException( const char*        what );
-};
-
-
-class QCassandraOverflowException : public QCassandraException
-{
-public:
-    QCassandraOverflowException( const QString&     what );
-    QCassandraOverflowException( const std::string& what );
-    QCassandraOverflowException( const char*        what );
-};
-
-
-}
-// namespace casswrapper
-
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraCell.h
+ *      src/libdbproxy/cell.h
  *
  * Description:
  *      Handling of a cell to access data in columns within the
@@ -36,8 +36,8 @@
  */
 #pragma once
 
-#include "QCassandraValue.h"
-#include "QCassandraConsistencyLevel.h"
+#include "value.h"
+#include "consistency_level.h"
 
 #include <QObject>
 #include <QMap>
@@ -45,64 +45,64 @@
 #include <memory>
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
-class QCassandraRow;
+class row;
 
 // Cassandra Cell
-class QCassandraCell
+class cell
     : public QObject
-    , public std::enable_shared_from_this<QCassandraCell>
+    , public std::enable_shared_from_this<cell>
 {
 public:
-    typedef std::shared_ptr<QCassandraCell> pointer_t;
+    typedef std::shared_ptr<cell> pointer_t;
 
-    virtual ~QCassandraCell();
+    virtual ~cell();
 
     QString columnName() const;
     const QByteArray& columnKey() const;
 
-    const QCassandraValue& value() const;
-    void setValue(const QCassandraValue& value);
+    const value& getValue() const;
+    void setValue(const value& value);
 
-    QCassandraCell& operator = (const QCassandraValue& value);
-    operator QCassandraValue () const;
+    cell& operator = (const value& value);
+    operator value () const;
 
     // for counters handling
     void add(int64_t value);
-    QCassandraCell& operator += (int64_t value);
-    QCassandraCell& operator ++ ();
-    QCassandraCell& operator ++ (int);
-    QCassandraCell& operator -= (int64_t value);
-    QCassandraCell& operator -- ();
-    QCassandraCell& operator -- (int);
+    cell& operator += (int64_t value);
+    cell& operator ++ ();
+    cell& operator ++ (int);
+    cell& operator -= (int64_t value);
+    cell& operator -- ();
+    cell& operator -- (int);
 
     void clearCache();
 
     consistency_level_t consistencyLevel() const;
     void setConsistencyLevel(consistency_level_t level);
 
-    std::shared_ptr<QCassandraRow> parentRow() const;
+    std::shared_ptr<row> parentRow() const;
 
 private:
-    QCassandraCell(std::shared_ptr<QCassandraRow> row, const QByteArray& column_key);
-    void assignValue(const QCassandraValue& value);
+    cell(std::shared_ptr<row> row, const QByteArray& column_key);
+    void assignValue(const value& value);
 
-    friend class QCassandraRow;
-    friend class QCassandraTable;
+    friend class row;
+    friend class table;
 
-    std::weak_ptr<QCassandraRow>        f_row;
+    std::weak_ptr<row>        f_row;
     QByteArray                          f_key;
     mutable bool                        f_cached = false;
-    QCassandraValue                     f_value;
+    value                     f_value;
 };
 
 // array of rows
-typedef QMap<QByteArray, QCassandraCell::pointer_t> QCassandraCells;
+typedef QMap<QByteArray, cell::pointer_t> cells;
 
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 
 // vim: ts=4 sw=4 et

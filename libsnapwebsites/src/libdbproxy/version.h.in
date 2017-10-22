@@ -1,19 +1,19 @@
 /*
  * Header:
- *      src/QtCassandra/QStringStream.h
+ *      src/libdbproxy/QCassandraVersion.h
  *
  * Description:
- *      Handling of QString with standard C++ streams.
+ *      Stores the current version. This file is generated from QCassandraVersion.h.in.
  *
  * Documentation:
  *      See the corresponding .cpp file.
  *
  * License:
  *      Copyright (c) 2011-2017 Made to Order Software Corp.
- *
+ * 
  *      http://snapwebsites.org/
  *      contact@m2osw.com
- *
+ * 
  *      Permission is hereby granted, free of charge, to any person obtaining a
  *      copy of this software and associated documentation files (the
  *      "Software"), to deal in the Software without restriction, including
@@ -35,68 +35,28 @@
  */
 #pragma once
 
-#include <iostream>
-
-#include <QString>
-
-inline std::ostream & operator << ( std::ostream & str, QByteArray const & qarray )
+namespace libdbproxy
 {
-    str << qarray.data();
-    return str;
-}
 
+static const int   LIBDBPROXY_LIBRARY_VERSION_MAJOR  = @SNAPWEBSITES_VERSION_MAJOR@;
+static const int   LIBDBPROXY_LIBRARY_VERSION_MINOR  = @SNAPWEBSITES_VERSION_MINOR@;
+static const int   LIBDBPROXY_LIBRARY_VERSION_PATCH  = @SNAPWEBSITES_VERSION_PATCH@;
 
-inline std::ostream & operator << ( std::ostream & str, QString const & qstr )
-{
-    str << qstr.toUtf8();
-    return str;
-}
+/** \brief The library version as a string.
+ *
+ * This variable represents the full library version at the time
+ * you compile your program. To get the library you are linked
+ * to at runtime use QCassandra::version().
+ *
+ * \warning
+ * This variable uses an attribute supported by the GNU C++ compiler
+ * which prevents Doxygen from finding this help block if declared
+ * in the .cpp file. This is why it is in the header.
+ *
+ * \sa version()
+ */
+static const char *LIBDBPROXY_LIBRARY_VERSION_STRING __attribute__((unused)) = "@SNAPWEBSITES_VERSION_MAJOR@.@SNAPWEBSITES_VERSION_MINOR@.@SNAPWEBSITES_VERSION_PATCH@";
 
-
-inline std::ostream & operator << ( std::ostream & str, QStringRef const & qstr )
-{
-    str << qstr.toString();
-    return str;
-}
-
-
-inline std::string operator + ( std::string const & str, QByteArray const & qarray )
-{
-    return str + qarray.data();
-}
-
-
-inline std::string operator + ( std::string const & str, QString const & qstr )
-{
-    return str + qstr.toUtf8();
-}
-
-
-inline std::string operator + ( std::string const & str, QStringRef const & qstr )
-{
-    return str + qstr.toString();
-}
-
-
-inline std::string & operator += ( std::string & str, QByteArray const & qarray )
-{
-    str = str + qarray;
-    return str;
-}
-
-
-inline std::string & operator += ( std::string & str, QString const & qstr )
-{
-    str = str + qstr;
-    return str;
-}
-
-
-inline std::string & operator += ( std::string & str, QStringRef const & qstr )
-{
-    str = str + qstr;
-    return str;
-}
-
+} // namespace libdbproxy
 
 // vim: ts=4 sw=4 et

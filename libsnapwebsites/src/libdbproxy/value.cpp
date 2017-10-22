@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/QCassandraValue.cpp
+ *      src/value.cpp
  *
  * Description:
  *      Handling of a cell value.
@@ -34,14 +34,14 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "QtCassandra/QCassandraValue.h"
-#include "QtCassandra/QCassandraException.h"
+#include "libdbproxy/value.h"
+#include "libdbproxy/exception.h"
 #include <stdexcept>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
-/** \class QCassandraValue
+/** \class value
  * \brief Holds a cell value.
  *
  * This class defines a value that is saved in a cell in the Cassandra
@@ -63,11 +63,11 @@ namespace QtCassandra
  * buffer to the std::string of the Column structure defined in
  * the Cassandra thrift code before sending it to Cassandra. In other
  * words, you may end up with one copy that you could otherwise have
- * avoided. On the other hand, many times just the QCassandraValue
+ * avoided. On the other hand, many times just the value
  * objects will be copied between each others.
  */
 
-/** \var QCassandraValue::f_ttl
+/** \var value::f_ttl
  * \brief The TTL of this value.
  *
  * The TTL represents the number of seconds this value will be kept in the
@@ -78,7 +78,7 @@ namespace QtCassandra
  * is permanent.
  */
 
-/** \var QCassandraValue::timestamp_mode_t
+/** \var value::timestamp_mode_t
  * \brief A timestamp mode.
  *
  * The timestamp can be defined in multiple ways. This mode specifies which
@@ -91,45 +91,45 @@ namespace QtCassandra
  * \li TIMESTAMP_MODE_AUTO -- the libQtCassandra library defines the timestamp
  * \li TIMESTAMP_MODE_DEFINED -- the user defined the timestamp
  *
- * \sa QCassandraValue::f_timestamp_mode
+ * \sa value::f_timestamp_mode
  */
 
-/** \var QCassandraValue::f_timestamp_mode
+/** \var value::f_timestamp_mode
  * \brief The timestamp mode.
  *
  * This variable member defines how the timestamp value is used. It can
  * be set to any one of the timestamp_mode_t values.
  */
 
-/** \var QCassandraValue::f_timestamp
+/** \var value::f_timestamp
  * \brief The timestamp for this value.
  *
  * This variable member holds the timestamp of this value, however it is
- * used only if the QCassandraValue::f_timestamp_mode is set to
+ * used only if the value::f_timestamp_mode is set to
  * CASSANDRA_VALUE_TIMESTAMP. In all other cases it is ignored.
  */
 
-/** \brief Initialize a QCassandraValue object.
+/** \brief Initialize a value object.
  *
- * This function initializes a QCassandraRow object to NULL. This is
+ * This function initializes a row object to NULL. This is
  * an equivalent to a BINARY with a size of 0.
  */
-QCassandraValue::QCassandraValue(                       )    : cassvalue::Value()      {}
-QCassandraValue::QCassandraValue(bool              value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(char              value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(signed char       value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(unsigned char     value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(int16_t           value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(uint16_t          value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(int32_t           value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(uint32_t          value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(int64_t           value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(uint64_t          value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(float             value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(double            value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(const QString&    value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(const QByteArray& value)    : cassvalue::Value(value) {}
-QCassandraValue::QCassandraValue(const char *data, int size) : cassvalue::Value(data, size) {}
+value::value(                     )      : cassvalue::Value()      {}
+value::value(bool              val)      : cassvalue::Value(val)   {}
+value::value(char              val)      : cassvalue::Value(val)   {}
+value::value(signed char       val)      : cassvalue::Value(val)   {}
+value::value(unsigned char     val)      : cassvalue::Value(val)   {}
+value::value(int16_t           val)      : cassvalue::Value(val)   {}
+value::value(uint16_t          val)      : cassvalue::Value(val)   {}
+value::value(int32_t           val)      : cassvalue::Value(val)   {}
+value::value(uint32_t          val)      : cassvalue::Value(val)   {}
+value::value(int64_t           val)      : cassvalue::Value(val)   {}
+value::value(uint64_t          val)      : cassvalue::Value(val)   {}
+value::value(float             val)      : cassvalue::Value(val)   {}
+value::value(double            val)      : cassvalue::Value(val)   {}
+value::value(const QString&    val)      : cassvalue::Value(val)   {}
+value::value(const QByteArray& val)      : cassvalue::Value(val)   {}
+value::value(const char *data, int size) : cassvalue::Value(data, size) {}
 
 
 /** \brief Compare this and rhs values for equality.
@@ -144,7 +144,7 @@ QCassandraValue::QCassandraValue(const char *data, int size) : cassvalue::Value(
  *
  * \return true if both values are considered equal, false otherwise.
  */
-bool QCassandraValue::operator == (const QCassandraValue& rhs)
+bool value::operator == (const value& rhs)
 {
     if(f_ttl != rhs.f_ttl) {
         return false;
@@ -165,7 +165,7 @@ bool QCassandraValue::operator == (const QCassandraValue& rhs)
  *
  * \return true if both values are considered inequal, false otherwise.
  */
-bool QCassandraValue::operator != (const QCassandraValue& rhs)
+bool value::operator != (const value& rhs)
 {
     if(f_ttl != rhs.f_ttl) {
         return true;
@@ -198,7 +198,7 @@ bool QCassandraValue::operator != (const QCassandraValue& rhs)
  *
  * \return The number of seconds the cell will live.
  */
-int32_t QCassandraValue::ttl() const
+int32_t value::ttl() const
 {
     return f_ttl;
 }
@@ -219,10 +219,10 @@ int32_t QCassandraValue::ttl() const
  *
  * \param[in] ttl  The new time to live of this value.
  */
-void QCassandraValue::setTtl(int32_t ttl_val)
+void value::setTtl(int32_t ttl_val)
 {
     if(ttl_val < 0) {
-        throw QCassandraException("the TTL value cannot be negative");
+        throw exception("the TTL value cannot be negative");
     }
 
     f_ttl = ttl_val;
@@ -238,9 +238,9 @@ void QCassandraValue::setTtl(int32_t ttl_val)
  * \return The consistency level of this value.
  *
  * \sa setConsistencyLevel()
- * \sa QCassandraCell::consistencyLevel()
+ * \sa cell::consistencyLevel()
  */
-consistency_level_t QCassandraValue::consistencyLevel() const
+consistency_level_t value::consistencyLevel() const
 {
     return f_consistency_level;
 }
@@ -248,13 +248,13 @@ consistency_level_t QCassandraValue::consistencyLevel() const
 /** \brief Define the consistency level of this value.
  *
  * This function defines the consistency level of this value. The level is
- * defined as a static value in the QCassandraValue.
+ * defined as a static value in the value.
  *
  * Note that this value is mandatory so defining the right value is probably
  * often a good idea. The default is set to one which means the data is only
  * saved on that one cluster you are connected to. One of the best value is
- * QUORUM. The default can be changed in your QCassandra object, set it with
- * your QCassandra::setDefaultConsistencyLevel() function.
+ * QUORUM. The default can be changed in your libdbproxy object, set it with
+ * your libdbproxy::setDefaultConsistencyLevel() function.
  *
  * The available values are:
  *
@@ -273,10 +273,10 @@ consistency_level_t QCassandraValue::consistencyLevel() const
  * \param[in] level  The new consistency level for this cell.
  *
  * \sa consistencyLevel()
- * \sa QCassandra::setDefaultConsistencyLevel()
- * \sa QCassandraCell::setConsistencyLevel()
+ * \sa libdbproxy::setDefaultConsistencyLevel()
+ * \sa cell::setConsistencyLevel()
  */
-void QCassandraValue::setConsistencyLevel(consistency_level_t level)
+void value::setConsistencyLevel(consistency_level_t level)
 {
     // we cannot use a switch because these are not really
     // constants (i.e. these are pointers to values); although
@@ -291,12 +291,12 @@ void QCassandraValue::setConsistencyLevel(consistency_level_t level)
     && level != CONSISTENCY_LEVEL_ANY
     && level != CONSISTENCY_LEVEL_TWO
     && level != CONSISTENCY_LEVEL_THREE) {
-        throw QCassandraException("invalid consistency level");
+        throw exception("invalid consistency level");
     }
 
     f_consistency_level = level;
 }
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

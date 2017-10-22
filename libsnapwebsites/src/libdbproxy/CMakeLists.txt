@@ -34,7 +34,7 @@
 #      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-project( QtCassandra )
+project( libdbproxy )
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -44,41 +44,41 @@ include_directories(
 )
 
 configure_file(
-		QCassandraVersion.h.in
-		${PROJECT_BINARY_DIR}/QCassandraVersion.h
+		version.h.in
+		${PROJECT_BINARY_DIR}/version.h
 		)
 
 set( HEADER_FILES
-    QCassandra.h
-    QCassandraCell.h
-    QCassandraConsistencyLevel.h
-    QCassandraContext.h
-    QCassandraException.h
-    QCassandraOrder.h
-    QCassandraOrderResult.h
-    QCassandraPredicate.h
-    QCassandraProxy.h
-    QCassandraRow.h
-    QCassandraTable.h
-    QCassandraValue.h
-    QCassandraVersion.h.in
-    QStringStream.h
-    ${PROJECT_BINARY_DIR}/QCassandraVersion.h
+    libdbproxy.h
+    cell.h
+    consistency_level.h
+    context.h
+    exception.h
+    order.h
+    order_result.h
+    predicate.h
+    proxy.h
+    row.h
+    table.h
+    value.h
+    version.h.in
+    qstring_stream.h
+    ${PROJECT_BINARY_DIR}/version.h
 )
 
 add_library(${PROJECT_NAME} SHARED
     ${HEADER_FILES}
-    QCassandra.cpp
-    QCassandraCell.cpp
-    QCassandraContext.cpp
-    QCassandraException.cpp
-    QCassandraOrder.cpp
-    QCassandraOrderResult.cpp
-    QCassandraPredicate.cpp
-    QCassandraProxy.cpp
-    QCassandraRow.cpp
-    QCassandraTable.cpp
-    QCassandraValue.cpp
+    libdbproxy.cpp
+    cell.cpp
+    context.cpp
+    exception.cpp
+    order.cpp
+    order_result.cpp
+    predicate.cpp
+    proxy.cpp
+    row.cpp
+    table.cpp
+    value.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -101,12 +101,12 @@ install(
 
 install(
 	FILES ${HEADER_FILES}
-    DESTINATION include/QtCassandra
+    DESTINATION include/libdbproxy
 )
 
 install(
-	FILES ${PROJECT_BINARY_DIR}/QCassandraVersion.h
-    DESTINATION include/QtCassandra
+	FILES ${PROJECT_BINARY_DIR}/version.h
+    DESTINATION include/libdbproxy
 )
 
 # vim: ts=4 sw=4 et

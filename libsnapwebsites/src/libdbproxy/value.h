@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraValue.h
+ *      src/libdbproxy/value.h
  *
  * Description:
  *      Handling of a cell value to access data within the Cassandra database.
@@ -35,7 +35,7 @@
  */
 #pragma once
 
-#include "QtCassandra/QCassandraConsistencyLevel.h"
+#include "libdbproxy/consistency_level.h"
 
 #include <cassvalue/encoder.h>
 #include <cassvalue/value.h>
@@ -49,7 +49,7 @@
 #include <iostream>
 #include <memory>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 /*******************************************************************************
@@ -436,11 +436,11 @@ public:
 
 
 /*******************************************************************************
- * QCassandraValue
+ * value
  *******************************************************************************/
 
 
-class QCassandraValue : public cassvalue::Value
+class value : public cassvalue::Value
 {
 public:
     static const int32_t    TTL_PERMANENT = 0;
@@ -455,33 +455,33 @@ public:
     };
 
     // CASSANDRA_VALUE_TYPE_BINARY (empty buffer)
-    QCassandraValue();
+    value();
 
     // CASSANDRA_VALUE_TYPE_INTEGER
-    QCassandraValue(bool value);
-    QCassandraValue(char value);
-    QCassandraValue(signed char value);
-    QCassandraValue(unsigned char value);
-    QCassandraValue(int16_t value);
-    QCassandraValue(uint16_t value);
-    QCassandraValue(int32_t value);
-    QCassandraValue(uint32_t value);
-    QCassandraValue(int64_t value);
-    QCassandraValue(uint64_t value);
+    value(bool value);
+    value(char value);
+    value(signed char value);
+    value(unsigned char value);
+    value(int16_t value);
+    value(uint16_t value);
+    value(int32_t value);
+    value(uint32_t value);
+    value(int64_t value);
+    value(uint64_t value);
 
     // CASSANDRA_VALUE_TYPE_FLOAT
-    QCassandraValue(float value);
-    QCassandraValue(double value);
+    value(float value);
+    value(double value);
 
     // CASSANDRA_VALUE_TYPE_STRING
-    QCassandraValue(const QString& value);
+    value(const QString& value);
 
     // CASSANDRA_VALUE_TYPE_BINARY
-    QCassandraValue(const QByteArray& value);
-    QCassandraValue(const char *data, int size);
+    value(const QByteArray& value);
+    value(const char *data, int size);
 
-    bool operator == (const QCassandraValue& rhs);
-    bool operator != (const QCassandraValue& rhs);
+    bool operator == (const value& rhs);
+    bool operator != (const value& rhs);
 
     int32_t ttl() const;
     void setTtl(int32_t ttl = TTL_PERMANENT);
@@ -498,5 +498,5 @@ private:
 
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

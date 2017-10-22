@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/QCassandraContext.cpp
+ *      src/context.cpp
  *
  * Description:
  *      Handling of Cassandra Keyspace which is a context.
@@ -34,8 +34,8 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "QtCassandra/QCassandraContext.h"
-#include "QtCassandra/QCassandra.h"
+#include "libdbproxy/context.h"
+#include "libdbproxy/libdbproxy.h"
 
 #include <casswrapper/schema.h>
 
@@ -48,10 +48,10 @@
 //#include <QDebug>
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
-/** \class QCassandraContext
+/** \class context
  * \brief Hold a Cassandra keyspace definition.
  *
  * This class defines objects that can hold all the necessary information
@@ -68,7 +68,7 @@ namespace QtCassandra
  * you have used OpenGL, this is very similar to the OpenGL context.
  */
 
-/** \typedef QCassandraContext::QCassandraContextOptions
+/** \typedef context::QCassandraContextOptions
  * \brief A map of context options.
  *
  * This map defines options as name / value pairs.
@@ -76,7 +76,7 @@ namespace QtCassandra
  * Only known otion names should be used or a protocol error may result.
  */
 
-/** \var QCassandraContext::f_schema
+/** \var context::f_schema
  * \brief The pointer to the casswrapper::schema meta object.
  *
  * This pointer is a shared pointer to the private definition of
@@ -85,15 +85,15 @@ namespace QtCassandra
  * The pointer is created at the time the context is created.
  */
 
-/** \var QCassandraContext::f_cassandra
- * \brief A pointer back to the QCassandra object.
+/** \var context::f_cassandra
+ * \brief A pointer back to the libdbproxy object.
  *
  * The bare pointer is used by the context to access the cassandra
  * private object and make the context the current context. It is
- * a bare pointer because the QCassandra object cannot be deleted
+ * a bare pointer because the libdbproxy object cannot be deleted
  * without the context getting deleted first.
  *
- * Note that when deleting a QCassandraContext object, you may still
+ * Note that when deleting a context object, you may still
  * have a shared pointer referencing the object. This means the
  * object itself will not be deleted. In that case, the f_cassandra
  * parameter becomes NULL and calling functions that make use of
@@ -105,7 +105,7 @@ namespace QtCassandra
  * functions don't actually test the pointer.
  */
 
-/** \var QCassandraContext::f_tables
+/** \var context::f_tables
  * \brief List of tables.
  *
  * A list of the tables defined in this context. The tables may be created
@@ -114,12 +114,12 @@ namespace QtCassandra
  * The list is a map using the table binary key as the its own key.
  */
 
-/** \brief Initialize a QCassandraContext object.
+/** \brief Initialize a context object.
  *
- * This function initializes a QCassandraContext object.
+ * This function initializes a context object.
  *
  * Note that the constructor is private. To create a new context, you must
- * use the QCassandra::context() function.
+ * use the libdbproxy::context() function.
  *
  * All the parameters are set to the defaults as defined in the Cassandra
  * definition of the KsDef message. You can use the different functions to
@@ -134,14 +134,14 @@ namespace QtCassandra
  * functions return once the Cassandra instance with which you are
  * connected is ready.
  *
- * \param[in] cassandra  The QCassandra object owning this context.
+ * \param[in] cassandra  The libdbproxy object owning this context.
  * \param[in] context_name  The name of the Cassandra context.
  *
  * \sa contextName()
- * \sa QCassandra::context()
+ * \sa libdbproxy::context()
  */
-QCassandraContext::QCassandraContext(QCassandra::pointer_t cassandra, const QString& context_name)
-    //: f_schema(std::make_shared<casswrapper::schema::SessionMeta::KeyspaceMeta>())
+context::context(libdbproxy::pointer_t cassandra, const QString& context_name)
+    //: f_schema() -- auto-init
     : f_cassandra(cassandra)
     , f_context_name(context_name)
       //f_tables() -- auto-init
@@ -150,28 +150,28 @@ QCassandraContext::QCassandraContext(QCassandra::pointer_t cassandra, const QStr
     QRegExp re("[A-Za-z][A-Za-z0-9_]*");
     if(!re.exactMatch(context_name))
     {
-        throw QCassandraException("invalid context name (does not match [A-Za-z][A-Za-z0-9_]*)");
+        throw exception("invalid context name (does not match [A-Za-z][A-Za-z0-9_]*)");
     }
 
     resetSchema();
 }
 
-/** \brief Clean up the QCassandraContext object.
+/** \brief Clean up the context object.
  *
  * This function ensures that all resources allocated by the
- * QCassandraContext are released.
+ * context are released.
  *
  * Note that does not in any way destroy the context in the
  * Cassandra cluster.
  */
-QCassandraContext::~QCassandraContext()
+context::~context()
 {
 }
 
 
-void QCassandraContext::resetSchema()
+void context::resetSchema()
 {
-    f_schema = std::make_shared<casswrapper::schema::SessionMeta::KeyspaceMeta>();
+    f_schema = std::make_shared<casswrapper::schema::KeyspaceMeta>( f_context_name );
 
     casswrapper::schema::Value replication;
     auto& replication_map(replication.map());
@@ -189,23 +189,23 @@ void QCassandraContext::resetSchema()
  * This function returns the name of this context.
  *
  * Note that the name cannot be modified. It is set by the constructor as
- * you create a QCassandraContext.
+ * you create a context.
  *
  * \return A QString with the context name.
  */
-const QString& QCassandraContext::contextName() const
+const QString& context::contextName() const
 {
     return f_context_name;
 }
 
 
-const casswrapper::schema::Value::map_t& QCassandraContext::fields() const
+const casswrapper::schema::Value::map_t& context::fields() const
 {
     return f_schema->getFields();
 }
 
 
-casswrapper::schema::Value::map_t& QCassandraContext::fields()
+casswrapper::schema::Value::map_t& context::fields()
 {
     return f_schema->getFields();
 }
@@ -219,7 +219,7 @@ casswrapper::schema::Value::map_t& QCassandraContext::fields()
  * Note that if the context is just a memory context (i.e. it does not yet
  * exist in the Cassandra cluster,) then the table is just created in memory.
  * This is useful to create a new context with all of its tables all at
- * once. The process is to call the QCassandra::context() function to get
+ * once. The process is to call the libdbproxy::context() function to get
  * an in memory context, and then call this table() function for each one of
  * the table you want to create. Finally, to call the create() function to
  * actually create the context and its table in the Cassandra cluster.
@@ -231,16 +231,16 @@ casswrapper::schema::Value::map_t& QCassandraContext::fields()
  *
  * \return A shared pointer to the table definition found or a null shared pointer.
  */
-QCassandraTable::pointer_t QCassandraContext::table(const QString& table_name)
+table::pointer_t context::getTable(const QString& table_name)
 {
-    QCassandraTable::pointer_t t( findTable( table_name ) );
-    if( t != QCassandraTable::pointer_t() )
+    table::pointer_t t( findTable( table_name ) );
+    if( t != table::pointer_t() )
     {
         return t;
     }
 
     // this is a new table, allocate it
-    t.reset( new QCassandraTable(shared_from_this(), table_name) );
+    t.reset( new table(shared_from_this(), table_name) );
     f_tables.insert( table_name, t );
     return t;
 }
@@ -255,7 +255,7 @@ QCassandraTable::pointer_t QCassandraContext::table(const QString& table_name)
  *
  * \return A reference to the table definitions of this context.
  */
-const QCassandraTables& QCassandraContext::tables()
+const tables& context::getTables()
 {
 #if 0
     if( f_tables.empty() )
@@ -281,7 +281,7 @@ const QCassandraTables& QCassandraContext::tables()
  *
  * \return A shared pointer to the table.
  */
-QCassandraTable::pointer_t QCassandraContext::findTable(const QString& table_name)
+table::pointer_t context::findTable(const QString& table_name)
 {
 #if 0
     if( f_tables.empty() )
@@ -290,9 +290,9 @@ QCassandraTable::pointer_t QCassandraContext::findTable(const QString& table_nam
     }
 #endif
 
-    QCassandraTables::const_iterator it(f_tables.find(table_name));
+    tables::const_iterator it(f_tables.find(table_name));
     if(it == f_tables.end()) {
-        QCassandraTable::pointer_t null;
+        table::pointer_t null;
         return null;
     }
     return *it;
@@ -308,7 +308,7 @@ QCassandraTable::pointer_t QCassandraContext::findTable(const QString& table_nam
  * context[table_name][column_name] = value;
  * \endcode
  *
- * \exception QCassandraException
+ * \exception exception
  * If the table doesn't exist, this function raises an exception
  * since otherwise the reference would be a NULL pointer.
  *
@@ -316,11 +316,11 @@ QCassandraTable::pointer_t QCassandraContext::findTable(const QString& table_nam
  *
  * \return A reference to the named table.
  */
-QCassandraTable& QCassandraContext::operator [] (const QString& table_name)
+table& context::operator [] (const QString& table_name)
 {
-    QCassandraTable::pointer_t ptable( findTable(table_name) );
+    table::pointer_t ptable( findTable(table_name) );
     if( !ptable ) {
-        throw QCassandraException("named table was not found, cannot return a reference");
+        throw exception("named table was not found, cannot return a reference");
     }
 
     return *ptable;
@@ -343,7 +343,7 @@ QCassandraTable& QCassandraContext::operator [] (const QString& table_name)
  *
  * \param[in] factor  The new replication factor.
  */
-void QCassandraContext::setReplicationFactor(int32_t factor)
+void context::setReplicationFactor(int32_t factor)
 {
     // since version 1.1 of Cassandra, the replication factor
     // defined in the structure is ignored
@@ -358,7 +358,7 @@ void QCassandraContext::setReplicationFactor(int32_t factor)
  * are initializing a new context and you want to make sure that
  * the default replication factor is used.
  */
-void QCassandraContext::unsetReplicationFactor()
+void context::unsetReplicationFactor()
 {
     eraseDescriptionOption("replication_factor");
 }
@@ -369,7 +369,7 @@ void QCassandraContext::unsetReplicationFactor()
  *
  * \return True if the replication factor parameter is defined.
  */
-bool QCassandraContext::hasReplicationFactor() const
+bool context::hasReplicationFactor() const
 {
     return f_private->__isset.replication_factor;
 }
@@ -383,7 +383,7 @@ bool QCassandraContext::hasReplicationFactor() const
  *
  * \return The current replication factor.
  */
-int32_t QCassandraContext::replicationFactor() const
+int32_t context::replicationFactor() const
 {
     if(f_private->__isset.replication_factor) {
         return f_private->replication_factor;
@@ -399,7 +399,7 @@ int32_t QCassandraContext::replicationFactor() const
  *
  * \param[in] durable_writes  Set whether writes are durable.
  */
-void QCassandraContext::setDurableWrites(bool durable_writes)
+void context::setDurableWrites(bool durable_writes)
 {
     f_private->__set_durable_writes(durable_writes);
 }
@@ -410,7 +410,7 @@ void QCassandraContext::setDurableWrites(bool durable_writes)
  * not otherwise change the flag. It will just not be sent over the
  * network and the default will be used when required.
  */
-void QCassandraContext::unsetDurableWrites()
+void context::unsetDurableWrites()
 {
     f_private->__isset.durable_writes = false;
 }
@@ -421,7 +421,7 @@ void QCassandraContext::unsetDurableWrites()
  *
  * \return True if the durable writes parameter is defined.
  */
-bool QCassandraContext::hasDurableWrites() const
+bool context::hasDurableWrites() const
 {
     return f_private->__isset.durable_writes;
 }
@@ -433,7 +433,7 @@ bool QCassandraContext::hasDurableWrites() const
  *
  * \return The current durable writes flag status.
  */
-bool QCassandraContext::durableWrites() const
+bool context::durableWrites() const
 {
     if(f_private->__isset.durable_writes) {
         return f_private->durable_writes;
@@ -459,7 +459,7 @@ bool QCassandraContext::durableWrites() const
  *
  * \sa parseContextDefinition()
  */
-void QCassandraContext::prepareContextDefinition(KsDef *ks) const
+void context::prepareContextDefinition(KsDef *ks) const
 {
     *ks = *f_private;
 
@@ -494,7 +494,7 @@ void QCassandraContext::prepareContextDefinition(KsDef *ks) const
 
 /** \brief Generate the replication stanza for the CQL keyspace schema.
  */
-QString QCassandraContext::generateReplicationStanza() const
+QString context::generateReplicationStanza() const
 {
     QString replication_stanza;
     if( f_private->strategy_class == "SimpleStrategy" )
@@ -521,7 +521,7 @@ QString QCassandraContext::generateReplicationStanza() const
     {
         std::stringstream ss;
         ss << "This strategy class, '" << f_private->strategy_class << "', is not currently supported!";
-        throw QCassandraException( ss.str().c_str() );
+        throw exception( ss.str().c_str() );
     }
 
     return replication_stanza;
@@ -537,12 +537,12 @@ QString QCassandraContext::generateReplicationStanza() const
  *
  * \sa prepareContextDefinition()
  */
-void QCassandraContext::parseContextDefinition( casswrapper::schema::SessionMeta::KeyspaceMeta::pointer_t keyspace_meta )
+void context::parseContextDefinition( casswrapper::schema::KeyspaceMeta::pointer_t keyspace_meta )
 {
     f_schema = keyspace_meta;
     for( const auto pair : keyspace_meta->getTables() )
     {
-        QCassandraTable::pointer_t t(table(pair.first));
+        table::pointer_t t(getTable(pair.first));
         t->parseTableDefinition(pair.second);
     }
 }
@@ -558,15 +558,15 @@ void QCassandraContext::parseContextDefinition( casswrapper::schema::SessionMeta
  * already the current context, then no message is sent to the Cassandra
  * server.
  *
- * \sa QCassandra::setContext()
+ * \sa libdbproxy::setContext()
  */
-void QCassandraContext::makeCurrent()
+void context::makeCurrent()
 {
     parentCassandra()->setCurrentContext( shared_from_this() );
 }
 
 
-QString QCassandraContext::getKeyspaceOptions()
+QString context::getKeyspaceOptions()
 {
     QString q_str;
     for( const auto& pair : f_schema->getFields() )
@@ -602,7 +602,7 @@ QString QCassandraContext::getKeyspaceOptions()
  * There is an example on how to create a new context with this library:
  *
  * \code
- * QtCassandra::QCassandraContext context("qt_cassandra_test_context");
+ * libdbproxy::context context("qt_cassandra_test_context");
  * // default strategy is LocalStrategy which you usually do not want
  * context.setStrategyClass("org.apache.cassandra.locator.SimpleStrategy");
  * context.setDurableWrites(true); // by default this is 'true'
@@ -632,20 +632,20 @@ QString QCassandraContext::getKeyspaceOptions()
  * of 3 for the replication factor, and you probably want a minimum of
  * 3 nodes in any live cluster.
  *
- * \sa QCassandraTable::create()
+ * \sa table::create()
  */
-void QCassandraContext::create()
+void context::create()
 {
     QString q_str( QString("CREATE KEYSPACE IF NOT EXISTS %1").arg(f_context_name) );
     q_str += getKeyspaceOptions();
 
-    QCassandraOrder create_keyspace;
-    create_keyspace.setCql( q_str, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS );
+    order create_keyspace;
+    create_keyspace.setCql( q_str, order::type_of_result_t::TYPE_OF_RESULT_SUCCESS );
     create_keyspace.setClearClusterDescription(true);
-    QCassandraOrderResult const create_keyspace_result(parentCassandra()->proxy()->sendOrder(create_keyspace));
+    order_result const create_keyspace_result(parentCassandra()->getProxy()->sendOrder(create_keyspace));
     if(!create_keyspace_result.succeeded())
     {
-        throw QCassandraException("keyspace creation failed");
+        throw exception("keyspace creation failed");
     }
 
     for( auto t : f_tables )
@@ -660,18 +660,18 @@ void QCassandraContext::create()
  * In general, the context will be searched in the cluster definitions,
  * updated in memory then this function called.
  */
-void QCassandraContext::update()
+void context::update()
 {
     QString q_str( QString("ALTER KEYSPACE %1").arg(f_context_name) );
     q_str += getKeyspaceOptions();
 
-    QCassandraOrder alter_keyspace;
-    alter_keyspace.setCql( q_str, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS );
+    order alter_keyspace;
+    alter_keyspace.setCql( q_str, order::type_of_result_t::TYPE_OF_RESULT_SUCCESS );
     alter_keyspace.setClearClusterDescription(true);
-    QCassandraOrderResult const alter_keyspace_result(parentCassandra()->proxy()->sendOrder(alter_keyspace));
+    order_result const alter_keyspace_result(parentCassandra()->getProxy()->sendOrder(alter_keyspace));
     if(!alter_keyspace_result.succeeded())
     {
-        throw QCassandraException("keyspace creation failed");
+        throw exception("keyspace creation failed");
     }
 }
 
@@ -683,7 +683,7 @@ void QCassandraContext::update()
  * Note that contexts are dropped by name so we really only use the name of
  * the context in this case.
  *
- * The QCassandraContext object is still valid afterward, although, obviously
+ * The context object is still valid afterward, although, obviously
  * no data can be read from or written to the Cassandra server since the
  * context is gone from the cluster.
  *
@@ -694,23 +694,23 @@ void QCassandraContext::update()
  * If the context does not exist in Cassandra, this function call
  * raises an exception in newer versions of the Cassandra system
  * (in version 0.8 it would just return silently.) You may want to
- * call the QCassandra::findContext() function first to know whether
+ * call the libdbproxy::findContext() function first to know whether
  * the context exists before calling this function.
  *
- * \sa QCassandra::dropContext()
- * \sa QCassandra::findContext()
+ * \sa libdbproxy::dropContext()
+ * \sa libdbproxy::findContext()
  */
-void QCassandraContext::drop()
+void context::drop()
 {
     QString q_str(QString("DROP KEYSPACE IF EXISTS %1").arg(f_context_name));
 
-    QCassandraOrder drop_keyspace;
-    drop_keyspace.setCql( q_str, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS );
+    order drop_keyspace;
+    drop_keyspace.setCql( q_str, order::type_of_result_t::TYPE_OF_RESULT_SUCCESS );
     drop_keyspace.setClearClusterDescription(true);
-    QCassandraOrderResult const drop_keyspace_result(parentCassandra()->proxy()->sendOrder(drop_keyspace));
+    order_result const drop_keyspace_result(parentCassandra()->getProxy()->sendOrder(drop_keyspace));
     if(!drop_keyspace_result.succeeded())
     {
-        throw QCassandraException("drop keyspace failed");
+        throw exception("drop keyspace failed");
     }
 
     resetSchema();
@@ -733,7 +733,7 @@ void QCassandraContext::drop()
  *
  * \param[in] table_name  The name of the table to drop.
  */
-void QCassandraContext::dropTable(const QString& table_name)
+void context::dropTable(const QString& table_name)
 {
     if(f_tables.find(table_name) == f_tables.end())
     {
@@ -741,21 +741,21 @@ void QCassandraContext::dropTable(const QString& table_name)
     }
 
     // keep a shared pointer on the table
-    QCassandraTable::pointer_t t(table(table_name));
+    table::pointer_t t(getTable(table_name));
 
     // remove from the Cassandra database
     makeCurrent();
 
     QString q_str(QString("DROP TABLE IF EXISTS %1.%2").arg(f_context_name).arg(table_name));
 
-    QCassandraOrder drop_table;
-    drop_table.setCql( q_str, QCassandraOrder::type_of_result_t::TYPE_OF_RESULT_SUCCESS );
+    order drop_table;
+    drop_table.setCql( q_str, order::type_of_result_t::TYPE_OF_RESULT_SUCCESS );
     drop_table.setTimeout(5 * 60 * 1000);
     drop_table.setClearClusterDescription(true);
-    QCassandraOrderResult const drop_table_result(parentCassandra()->proxy()->sendOrder(drop_table));
+    order_result const drop_table_result(parentCassandra()->getProxy()->sendOrder(drop_table));
     if(!drop_table_result.succeeded())
     {
-        throw QCassandraException("drop table failed");
+        throw exception("drop table failed");
     }
 
     // disconnect all the cached data from this table
@@ -770,7 +770,7 @@ void QCassandraContext::dropTable(const QString& table_name)
  * used after this call even if you kept a shared pointer to any of these
  * objects.
  */
-void QCassandraContext::clearCache()
+void context::clearCache()
 {
     f_tables.clear();
     parentCassandra()->retrieveContextMeta( shared_from_this(), f_context_name );
@@ -781,17 +781,17 @@ void QCassandraContext::clearCache()
  *
  * \return Shared pointer to the cassandra object.
  */
-QCassandra::pointer_t QCassandraContext::parentCassandra() const
+libdbproxy::pointer_t context::parentCassandra() const
 {
-    QCassandra::pointer_t cassandra(f_cassandra.lock());
+    libdbproxy::pointer_t cassandra(f_cassandra.lock());
     if(cassandra == nullptr)
     {
-        throw QCassandraException("this context was dropped and is not attached to a cassandra cluster anymore");
+        throw exception("this context was dropped and is not attached to a cassandra cluster anymore");
     }
 
     return cassandra;
 }
 
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 // vim: ts=4 sw=4 et

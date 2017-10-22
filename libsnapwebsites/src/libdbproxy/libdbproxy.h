@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandra.h
+ *      src/libdbproxy/libdbproxy.h
  *
  * Description:
  *      Handling of the cassandra::CassandraClient and corresponding transports,
@@ -36,15 +36,15 @@
  */
 #pragma once
 
-#include "QtCassandra/QCassandraContext.h"
-#include "QtCassandra/QCassandraException.h"
-#include "QtCassandra/QCassandraVersion.h"
+#include "libdbproxy/context.h"
+#include "libdbproxy/exception.h"
+#include "libdbproxy/version.h"
 
 #include <casswrapper/schema.h>
 
 #include <memory>
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 class KsDef;
@@ -52,15 +52,15 @@ class CfDef;
 class ColumnDef;
 
 // Handling of the transport and CassandraClient objects
-class QCassandra
+class libdbproxy
     : public QObject
-    , public std::enable_shared_from_this<QCassandra>
+    , public std::enable_shared_from_this<libdbproxy>
 {
 public:
-    typedef std::shared_ptr<QCassandra> pointer_t;
+    typedef std::shared_ptr<libdbproxy> pointer_t;
 
     static pointer_t create();
-    virtual ~QCassandra();
+    virtual ~libdbproxy();
 
     static int versionMajor();
     static int versionMinor();
@@ -76,16 +76,16 @@ public:
     //const QCassandraClusterInformation& clusterInformation() const;
     const QString& partitioner() const;
 
-    QCassandraProxy::pointer_t      proxy() const { return f_proxy; }
+    proxy::pointer_t      getProxy() const { return f_proxy; }
 
     // context functions (the database [Cassandra keyspace])
-    QCassandraContext::pointer_t currentContext() const { return f_current_context; }
-    QCassandraContext::pointer_t context(const QString& context_name);
-    const QCassandraContexts& contexts() const;
+    context::pointer_t currentContext() const { return f_current_context; }
+    context::pointer_t getContext(const QString& context_name);
+    const contexts& getContexts() const;
 
-    QCassandraContext::pointer_t findContext(const QString& context_name) const;
-    QCassandraContext& operator[] (const QString& context_name);
-    const QCassandraContext& operator[] (const QString& context_name) const;
+    context::pointer_t findContext(const QString& context_name) const;
+    context& operator[] (const QString& context_name);
+    const context& operator[] (const QString& context_name) const;
 
     void dropContext(const QString& context_name);
 
@@ -97,27 +97,27 @@ public:
     static int64_t timeofday();
 
 private:
-    QCassandra();
+    libdbproxy();
 
-    //QCassandraContext::pointer_t currentContext() const;
-    void setCurrentContext(QCassandraContext::pointer_t c);
-    void clearCurrentContextIf(const QCassandraContext& c);
+    //context::pointer_t currentContext() const;
+    void setCurrentContext(context::pointer_t c);
+    void clearCurrentContextIf(const context& c);
 
-    QCassandraContext::pointer_t context( casswrapper::schema::SessionMeta::KeyspaceMeta::pointer_t keyspace_meta );
-    void retrieveContextMeta( QCassandraContext::pointer_t c, const QString& context_name ) const;
+    context::pointer_t getContext( casswrapper::schema::KeyspaceMeta::pointer_t keyspace_meta );
+    void retrieveContextMeta( context::pointer_t c, const QString& context_name ) const;
 
-    friend class QCassandraContext;
+    friend class context;
 
-    QCassandraProxy::pointer_t              f_proxy;
-    QCassandraContext::pointer_t            f_current_context;
-    mutable bool                            f_contexts_read = false;
-    QCassandraContexts                      f_contexts;
-    QString                                 f_cluster_name;
-    QString                                 f_protocol_version;
-    QString                                 f_partitioner;
-    consistency_level_t                     f_default_consistency_level = CONSISTENCY_LEVEL_ONE;
+    proxy::pointer_t              f_proxy;
+    context::pointer_t            f_current_context;
+    mutable bool                  f_contexts_read = false;
+    contexts                      f_contexts;
+    QString                       f_cluster_name;
+    QString                       f_protocol_version;
+    QString                       f_partitioner;
+    consistency_level_t           f_default_consistency_level = CONSISTENCY_LEVEL_ONE;
 };
 
-} // namespace QtCassandra
+} // namespace libdbproxy
 
 // vim: ts=4 sw=4 et

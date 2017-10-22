@@ -1,9 +1,9 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraConsistencyLevel.h
+ *      src/libdbproxy/consistency_level.h
  *
  * Description:
- *      Redefinition of the Cassandra consistency levels in the QtCassandra
+ *      Redefinition of the Cassandra consistency levels in the libdbproxy
  *      library.
  *
  * Documentation:
@@ -42,7 +42,7 @@
 #include <stdint.h>
 
 
-namespace QtCassandra
+namespace libdbproxy
 {
 
 
@@ -68,11 +68,11 @@ const consistency_level_t CONSISTENCY_LEVEL_THREE         = 8;
 
 /** \brief Ask the system to use the default consistency level.
  *
- * It is possible to setup a consistency level in your QCassandra object.
+ * It is possible to setup a consistency level in your libdbproxy object.
  * That is viewed as the default consistency level. To help you avoid
  * having to define the consistency level in each object used to access
  * the database, you can leave the consistency level to the default and
- * then the QCassandra object consistency level will be used.
+ * then the libdbproxy object consistency level will be used.
  *
  * Details http://www.datastax.com/docs/1.0/dml/data_consistency
  */
@@ -129,6 +129,6 @@ const consistency_level_t CONSISTENCY_LEVEL_THREE         = 8;
 
 
 }
-// namespace QtCassandra
+// namespace libdbproxy
 
 // vim: ts=4 sw=4 et

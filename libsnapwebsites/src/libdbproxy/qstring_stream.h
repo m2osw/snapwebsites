@@ -1,19 +1,19 @@
 /*
  * Header:
- *      src/QtCassandra/QCassandraResult.h
+ *      src/libdbproxy/qstring_stream.h
  *
  * Description:
- *      Handle receiving results from a CQL order sent to snapdbproxy.
+ *      Handling of QString with standard C++ streams.
  *
  * Documentation:
  *      See the corresponding .cpp file.
  *
  * License:
  *      Copyright (c) 2011-2017 Made to Order Software Corp.
- * 
+ *
  *      http://snapwebsites.org/
  *      contact@m2osw.com
- * 
+ *
  *      Permission is hereby granted, free of charge, to any person obtaining a
  *      copy of this software and associated documentation files (the
  *      "Software"), to deal in the Software without restriction, including
@@ -35,36 +35,68 @@
  */
 #pragma once
 
-#include "QtCassandra/QCassandraConsistencyLevel.h"
+#include <iostream>
 
-#include <vector>
+#include <QString>
 
-
-namespace QtCassandra
+inline std::ostream & operator << ( std::ostream & str, QByteArray const & qarray )
 {
+    str << qarray.data();
+    return str;
+}
 
 
-
-class QCassandraOrderResult
+inline std::ostream & operator << ( std::ostream & str, QString const & qstr )
 {
-public:
-    bool                succeeded() const;
-    void                setSucceeded(bool success);
-
-    size_t              resultCount() const;
-    const QByteArray &  result(int index) const;
-    void                addResult(QByteArray const & data);
-
-    QByteArray          encodeResult() const;
-    bool                decodeResult(unsigned char const * encoded_result, size_t size);
-
-    void                swap(QCassandraOrderResult& rhs);
-
-private:
-    bool                        f_succeeded = false;
-    std::vector<QByteArray>     f_result;
-};
+    str << qstr.toUtf8();
+    return str;
+}
 
 
-} // namespace QtCassandra
+inline std::ostream & operator << ( std::ostream & str, QStringRef const & qstr )
+{
+    str << qstr.toString();
+    return str;
+}
+
+
+inline std::string operator + ( std::string const & str, QByteArray const & qarray )
+{
+    return str + qarray.data();
+}
+
+
+inline std::string operator + ( std::string const & str, QString const & qstr )
+{
+    return str + qstr.toUtf8();
+}
+
+
+inline std::string operator + ( std::string const & str, QStringRef const & qstr )
+{
+    return str + qstr.toString();
+}
+
+
+inline std::string & operator += ( std::string & str, QByteArray const & qarray )
+{
+    str = str + qarray;
+    return str;
+}
+
+
+inline std::string & operator += ( std::string & str, QString const & qstr )
+{
+    str = str + qstr;
+    return str;
+}
+
+
+inline std::string & operator += ( std::string & str, QStringRef const & qstr )
+{
+    str = str + qstr;
+    return str;
+}
+
+
 // vim: ts=4 sw=4 et
