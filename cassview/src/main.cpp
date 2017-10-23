@@ -24,7 +24,7 @@
 
 // libQtCassandra lib
 //
-#include <QtCassandra/QStringStream.h>
+#include <libdbproxy/qstring_stream.h>
 
 using namespace casswrapper;
 

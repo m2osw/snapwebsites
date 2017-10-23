@@ -803,15 +803,17 @@ void snap_manager::startQuery()
  * This method adds a line to the output area indicating that the query has completed.
  * If there was an error, it is logged and the user is notified by message box.
  */
-bool snap_manager::getQueryResult( Query::pointer_t q )
+bool snap_manager::getQueryResult( Query::pointer_t /*q*/ )
 {
     try
     {
         //console->addItem( QString("[%1] has finished!").arg(q->description()) );
+#if 0
         if( !q->queryActive() )
         {
             q->getQueryResult();
         }
+#endif
         return true;
     }
     catch( const std::exception& ex )
