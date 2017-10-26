@@ -1,2 +1,2 @@
-debian/tmp/usr/lib/libsnapwebsites.so.* debian/tmp/usr/lib/libQtCassandra.so.*  usr/lib/
-debian/tmp/usr/lib/snapwebsites/tables/core-tables.xml                          usr/lib/snapwebsites/tables/
+debian/tmp/usr/lib/libsnapwebsites.so.* debian/tmp/usr/lib/libdbproxy.so.*  usr/lib/
+debian/tmp/usr/lib/snapwebsites/tables/core-tables.xml                      usr/lib/snapwebsites/tables/

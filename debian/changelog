@@ -1,3 +1,9 @@
+snapwebsites (1.5.27.0~xenial) xenial; urgency=high
+
+  * Fixed PPA build. Packaging was still installing the old libQtCassandra.
+
+ -- Doug Barbieri <doug@dooglio.net>  Wed, 25 Oct 2017 17:01:11 -0700
+
 snapwebsites (1.5.26.3~xenial) xenial; urgency=high
 
   * Nightly build.
