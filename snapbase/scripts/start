@@ -2,7 +2,7 @@
 #
 # This script is often softlinked just outside the snapcpp directory:
 #
-#      git clone .../snapcpp
+#      git clone --recursive https://github.com/m2osw/snapcpp
 #      snapcpp/bin/snap-ubuntu-packages
 #      snapcpp/bin/build-snap
 #      ln -s snapcpp/snapwebsites/snapbase/script/start .
@@ -37,7 +37,7 @@ DAEMON7="BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action images::im
 DAEMON8="BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action list::listjournal"
 DAEMON9="BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action list::pagelist"
 DAEMON10="BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action sendmail::sendmail --param GLOBAL_LOCK=1"
-DAEMON11="BUILD/snapwebsites/snapmanagercgi/daemon/snapmanagerdaemon"
+DAEMON11="BUILD/snapwebsites/snapmanager/daemon/snapmanagerdaemon"
 DAEMON12="BUILD/snapwebsites/snapwatchdog/src/snapwatchdogserver"
 DAEMON13="BUILD/snapwebsites/snaplistd/src/snaplistd"
 
@@ -109,7 +109,7 @@ while true
 do
 	sleep 300
 
-	# Run this one blocking to avoid having to instances running
+	# Run this one blocking to avoid having two instances running
 	# simultaneously
 	#
 	BUILD/snapwebsites/snapbackend/src/snapbackend

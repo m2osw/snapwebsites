@@ -4602,11 +4602,16 @@ bool snap_child::connect_cassandra(bool child)
 
     // connect to Cassandra
     f_cassandra = libdbproxy::libdbproxy::create();
-    f_cassandra->setDefaultConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
     bool connected(false);
     try
     {
         connected = f_cassandra->connect(snapdbproxy_addr, snapdbproxy_port);
+
+        // the connet() calls disconnect() which resets the consistency so
+        // if we really want QUORUM we have to set it again after the
+        // connect() call
+        //
+        f_cassandra->setDefaultConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
     }
     catch(std::exception const & e)
     {

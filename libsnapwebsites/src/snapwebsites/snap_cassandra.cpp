@@ -62,6 +62,13 @@ void snap_cassandra::connect()
         throw snap_cassandra_not_available_exception(msg);
     }
 
+    if( !f_cassandra->connect(f_snapdbproxy_addr, f_snapdbproxy_port) )
+    {
+        QString const msg("could not connect libdbproxy to snapdbproxy.");
+        SNAP_LOG_FATAL(msg);
+        throw snap_cassandra_not_available_exception(msg);
+    }
+
     // everything setup to QUORUM or we get really strange errors when under
     // load (without much load, it works like a charm with ONE).
     //
@@ -69,13 +76,6 @@ void snap_cassandra::connect()
     //       this call is not really useful as it stands.
     //
     f_cassandra->setDefaultConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
-
-    if( !f_cassandra->connect(f_snapdbproxy_addr, f_snapdbproxy_port) )
-    {
-        QString const msg("could not connect libdbproxy to snapdbproxy.");
-        SNAP_LOG_FATAL(msg);
-        throw snap_cassandra_not_available_exception(msg);
-    }
 }
 
 

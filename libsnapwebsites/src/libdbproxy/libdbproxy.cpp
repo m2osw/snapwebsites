@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/libdbproxy.cpp
+ *      libsnapwebsites/src/libdbproxy/libdbproxy.cpp
  *
  * Description:
  *      Handling of the cassandra session.
@@ -40,6 +40,8 @@
 #pragma GCC pop
 
 #include "libdbproxy/libdbproxy.h"
+
+#include "snapwebsites/log.h"
 
 #include <casswrapper/schema.h>
 
@@ -777,7 +779,7 @@ libdbproxy::~libdbproxy()
  *
  * \return true if the connection succeeds, throws otherwise
  */
-bool libdbproxy::connect( const QString& host, const int port )
+bool libdbproxy::connect( QString const & host, int const port )
 {
     // disconnect any existing connection
     //
@@ -789,10 +791,12 @@ bool libdbproxy::connect( const QString& host, const int port )
 
     // get cluster information
     //
+    f_default_consistency_level = CONSISTENCY_LEVEL_QUORUM;
     order local_table;
     local_table.setCql( "SELECT cluster_name,native_protocol_version,partitioner FROM system.local", order::type_of_result_t::TYPE_OF_RESULT_ROWS );
     local_table.setColumnCount(3);
     order_result const local_table_result(f_proxy->sendOrder(local_table));
+    f_default_consistency_level = CONSISTENCY_LEVEL_ONE; // reset back to the default
 
     // even just cluster info cannot be retrieved, forget it
     //
@@ -834,9 +838,9 @@ void libdbproxy::disconnect()
 
     f_current_context.reset();
     f_contexts.clear();
-    f_cluster_name = "";
-    f_protocol_version = "";
-    f_partitioner = "";
+    f_cluster_name.clear();
+    f_protocol_version.clear();
+    f_partitioner.clear();
     f_default_consistency_level = CONSISTENCY_LEVEL_ONE;
 }
 
@@ -879,7 +883,7 @@ bool libdbproxy::isConnected() const
  *
  * \return The name of the cluster.
  */
-const QString& libdbproxy::clusterName() const
+QString const & libdbproxy::clusterName() const
 {
     return f_cluster_name;
 }
@@ -903,7 +907,7 @@ const QString& libdbproxy::clusterName() const
  *
  * \return The version of the protocol.
  */
-const QString& libdbproxy::protocolVersion() const
+QString const & libdbproxy::protocolVersion() const
 {
     return f_protocol_version;
 }
@@ -924,7 +928,7 @@ const QString& libdbproxy::protocolVersion() const
  *
  * \sa readRows()
  */
-const QString& libdbproxy::partitioner() const
+QString const & libdbproxy::partitioner() const
 {
     return f_partitioner;
 }
@@ -959,10 +963,10 @@ const QString& libdbproxy::partitioner() const
  *
  * \return A shared pointer to a cassandra context.
  */
-context::pointer_t libdbproxy::getContext( const QString& context_name )
+context::pointer_t libdbproxy::getContext( QString const & context_name )
 {
     // get the list of existing contexts
-    const contexts& cs(getContexts());
+    contexts const & cs(getContexts());
 
     // already exists?
     contexts::const_iterator ci(cs.find( context_name ));
@@ -990,7 +994,7 @@ context::pointer_t libdbproxy::getContext( const QString& context_name )
 context::pointer_t libdbproxy::getContext( casswrapper::schema::KeyspaceMeta::pointer_t keyspace_meta )
 {
     // get the list of existing contexts
-    const contexts& cs(getContexts());
+    contexts const & cs(getContexts());
 
     // already exists?
     contexts::const_iterator ci(cs.find( keyspace_meta->getName() ));
@@ -1062,7 +1066,7 @@ void libdbproxy::setCurrentContext( context::pointer_t c )
  *
  * \param[in] c  The context that is about to be dropped.
  */
-void libdbproxy::clearCurrentContextIf( const context& c )
+void libdbproxy::clearCurrentContextIf( context const & c )
 {
     if ( f_current_context.get() == &c )
     {
@@ -1079,7 +1083,7 @@ void libdbproxy::clearCurrentContextIf( const context& c )
  *
  * \param[in] context_name  The name of the context to create in memory.
  */
-void libdbproxy::retrieveContextMeta( context::pointer_t c, const QString& context_name ) const
+void libdbproxy::retrieveContextMeta( context::pointer_t c, QString const & context_name ) const
 {
     if(!f_proxy)
     {
@@ -1104,7 +1108,7 @@ void libdbproxy::retrieveContextMeta( context::pointer_t c, const QString& conte
 
     casswrapper::schema::SessionMeta::pointer_t session_meta(new casswrapper::schema::SessionMeta);
     session_meta->decodeSessionMeta(describe_cluster_result.result(0));
-    const auto & keyspaces(session_meta->getKeyspaces());
+    auto const & keyspaces(session_meta->getKeyspaces());
     auto iter(keyspaces.find(context_name));
     if( iter != keyspaces.end() )
     {
@@ -1130,11 +1134,11 @@ void libdbproxy::retrieveContextMeta( context::pointer_t c, const QString& conte
  *
  * \return A reference to the internal map of contexts.
  */
-const contexts& libdbproxy::getContexts() const
+contexts const & libdbproxy::getContexts() const
 {
     if(!f_proxy)
     {
-        throw exception( "libdbproxy::contexts(): called when not connected" );
+        throw exception( "libdbproxy::getContexts(): called when not connected" );
     }
 
     if( !f_contexts_read )
@@ -1148,12 +1152,12 @@ const contexts& libdbproxy::getContexts() const
 
         if(!describe_cluster_result.succeeded())
         {
-            throw exception( "libdbproxy::contexts(): DESCRIBE CLUSTER failed" );
+            throw exception( "libdbproxy::getContexts(): DESCRIBE CLUSTER failed" );
         }
 
         if(describe_cluster_result.resultCount() != 1)
         {
-            throw exception( "libdbproxy::contexts(): result does not have one blob as expected" );
+            throw exception( "libdbproxy::getContexts(): result does not have one blob as expected" );
         }
 
         // WARNING: the location where this flag is set to true is very
@@ -1161,7 +1165,7 @@ const contexts& libdbproxy::getContexts() const
         //          we throw and never actually initialize any contexts
         //          and we do not want to have it after the following
         //          for() statement because otherwise we get a looping
-        //          call to contexts()
+        //          call to getContexts()
         //
         f_contexts_read = true;
 
@@ -1197,12 +1201,12 @@ const contexts& libdbproxy::getContexts() const
  *
  * \return A shared pointer to the context.
  *
- * \sa contexts()
+ * \sa getContexts()
  * \sa context::create()
  */
-context::pointer_t libdbproxy::findContext( const QString& context_name ) const
+context::pointer_t libdbproxy::findContext( QString const & context_name ) const
 {
-    contexts::const_iterator ci( contexts().find( context_name ) );
+    contexts::const_iterator ci( getContexts().find( context_name ) );
     if ( ci == f_contexts.end() )
     {
         return context::pointer_t();
@@ -1228,7 +1232,7 @@ context::pointer_t libdbproxy::findContext( const QString& context_name ) const
  *
  * \return A reference to the named context.
  */
-context& libdbproxy::operator[]( const QString &context_name )
+context& libdbproxy::operator[]( QString const & context_name )
 {
     context::pointer_t context_obj( findContext( context_name ) );
     if ( !context_obj )
@@ -1258,10 +1262,10 @@ context& libdbproxy::operator[]( const QString &context_name )
  *
  * \return A constant reference to the named context.
  */
-const context &libdbproxy::
-operator[]( const QString& context_name ) const
+context const & libdbproxy::
+operator[]( QString const & context_name ) const
 {
-    const context::pointer_t context_obj(
+    context::pointer_t const context_obj(
         findContext( context_name ) );
     if ( !context_obj )
     {
@@ -1291,7 +1295,7 @@ operator[]( const QString& context_name ) const
  *
  * \sa context::drop()
  */
-void libdbproxy::dropContext( const QString& context_name )
+void libdbproxy::dropContext( QString const & context_name )
 {
     context::pointer_t c( getContext( context_name ) );
 
@@ -1401,7 +1405,7 @@ int libdbproxy::versionPatch()
  *
  * \return The patch version number.
  */
-const char *libdbproxy::version()
+char const * libdbproxy::version()
 {
     return LIBDBPROXY_LIBRARY_VERSION_STRING;
 }

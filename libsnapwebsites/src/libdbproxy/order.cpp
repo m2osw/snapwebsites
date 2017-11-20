@@ -1,6 +1,6 @@
 /*
  * Text:
- *      src/order.cpp
+ *      libsnapwebsites/src/libdbproxy/order.cpp
  *
  * Description:
  *      Manager an order to be sent to the snapdbproxy daemon.
@@ -33,11 +33,6 @@
  *      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-//#pragma GCC push
-//#pragma GCC diagnostic ignored "-Wundef"
-//#include <sys/time.h>
-//#pragma GCC pop
 
 #include "libdbproxy/order.h"
 
@@ -555,7 +550,7 @@ bool order::decodeOrder(unsigned char const * encoded_order, size_t size)
             f_parameter.push_back(decoder.binaryValue());
         }
     }
-    catch( std::exception const& x )
+    catch( std::exception const & x )
     {
         SNAP_LOG_ERROR("decodeOrder(): exception! what=")(x.what());
         throw;

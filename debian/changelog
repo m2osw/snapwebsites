@@ -1,3 +1,16 @@
+snapwebsites (1.5.28.0~xenial) xenial; urgency=high
+
+  * Fixed bug in libdbproxy, a contexts() call was not changed to getContexts()
+  * Fixed the bug with consistency levels: the disconnect() resets it back to
+    ONE and so if we want to use QUORUM it has to be set after. Note that
+    QUORUM is currently forced because I missed that bug before! It is also
+    safer with QUORUM always...
+  * Applied various clean ups to the libdbproxy.
+  * Updated the INSTALL file, although it should really be fixed 100%...
+  * Fixed my start script since snapmanagerdaemon is now in .../snapmanager/.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Nov 2018 16:31:56 -0700
+
 snapwebsites (1.5.27.0~xenial) xenial; urgency=high
 
   * Fixed PPA build. Packaging was still installing the old libQtCassandra.
