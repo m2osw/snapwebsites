@@ -1,4 +1,4 @@
-snapwebsites (1.5.29~xenial) xenial; urgency=high
+snapwebsites (1.5.29.1~xenial) xenial; urgency=high
 
   * Fixed the e-store settings, only the store_name field would get saved.
   * In the Stripe implementation, if store_name is not defined, cleanly
