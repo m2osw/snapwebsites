@@ -1,3 +1,11 @@
+snapwebsites (1.5.29~xenial) xenial; urgency=high
+
+  * Fixed the e-store settings, only the store_name field would get saved.
+  * In the Stripe implementation, if store_name is not defined, cleanly
+    generate an error (we may want to do that much earlier, though.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 07 Dec 2017 01:43:17 -0700
+
 snapwebsites (1.5.28.1~xenial) xenial; urgency=high
 
   * Fixed bug in libdbproxy, a contexts() call was not changed to getContexts()
@@ -9,7 +17,7 @@ snapwebsites (1.5.28.1~xenial) xenial; urgency=high
   * Updated the INSTALL file, although it should really be fixed 100%...
   * Fixed my start script since snapmanagerdaemon is now in .../snapmanager/.
 
- -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Nov 2018 16:31:56 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Nov 2017 16:31:56 -0700
 
 snapwebsites (1.5.27.0~xenial) xenial; urgency=high
 

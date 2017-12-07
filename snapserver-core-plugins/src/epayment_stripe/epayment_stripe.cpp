@@ -2334,17 +2334,36 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         //stripe_charge_request.set_post("source[...]", ...); -- the customer information is enough, they will use the default source though
         //                                                       once we support selecting any source, this will change with the source 'id'
 
+        http_client_server::http_response::pointer_t charge_response(http.send_request(stripe_charge_request));
+
         // Description appearing on the credit card bank statements
         //
         content::path_info_t epayment_settings;
         epayment_settings.set_path("admin/settings/epayment/store");
         libdbproxy::row::pointer_t epayment_settings_row(revision_table->getRow(epayment_settings.get_revision_key()));
         QString const store_name(epayment_settings_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_STORE_NAME))->getValue().stringValue());
+        if(store_name.isEmpty())
+        {
+            // the name of the store is required or the POST will fail
+            // so we generate a clear error instead
+            //
+            charge_response->set_response_code(static_cast<int>(snap_child::http_code_t::HTTP_CODE_INTERNAL_SERVER_ERROR));
+            charge_response->set_response(
+                    "{\n"
+                    "  \"error\": {\n"
+                    "    \"type\": \"invalid_request_error\",\n"
+                    "    \"message\": \"The name of the e-Store was not yet defined. We cannot proceed with a payment at the moment.\",\n"
+                    "    \"param\": \"statement_descriptor\"\n"
+                    "  }\n"
+                    "}\n"
+                );
+
+            log_error(charge_response, secret_row);
+            return;
+        }
         QString const invoice_number(revision_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER))->getValue().stringValue());
         QString const statement(QString("%1 #%2").arg(store_name).arg(invoice_number));
         stripe_charge_request.set_post("statement_descriptor", statement.toUtf8().data());
-
-        http_client_server::http_response::pointer_t charge_response(http.send_request(stripe_charge_request));
 
         // we can save the reply header as is
         //
@@ -3129,14 +3148,33 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             //stripe_charge_request.set_post("source[...]", ...); -- the customer information is enough, they will use the default source though
             //                                                       once we support selecting any source, this will change with the source 'id'
 
+            http_client_server::http_response::pointer_t charge_response(http.send_request(stripe_charge_request));
+
             // Description appearing on the credit card bank statements
             //
             QString const store_name(epayment_settings_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_STORE_NAME))->getValue().stringValue());
+            if(store_name.isEmpty())
+            {
+                // the name of the store is required or the POST will fail
+                // so we generate a clear error instead
+                //
+                charge_response->set_response_code(static_cast<int>(snap_child::http_code_t::HTTP_CODE_INTERNAL_SERVER_ERROR));
+                charge_response->set_response(
+                        "{\n"
+                        "  \"error\": {\n"
+                        "    \"type\": \"invalid_request_error\",\n"
+                        "    \"message\": \"The name of the e-Store was not yet defined. We cannot proceed with a payment at the moment.\",\n"
+                        "    \"param\": \"statement_descriptor\"\n"
+                        "  }\n"
+                        "}\n"
+                    );
+
+                log_error(charge_response, secret_row);
+                return false;
+            }
             QString const invoice_number(revision_row->getCell(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER))->getValue().stringValue());
             QString const statement(QString("%1 #%2").arg(store_name).arg(invoice_number));
             stripe_charge_request.set_post("statement_descriptor", statement.toUtf8().data());
-
-            http_client_server::http_response::pointer_t charge_response(http.send_request(stripe_charge_request));
 
             // we can save the reply header as is
             //

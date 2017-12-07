@@ -55,35 +55,35 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     <background-value>store name</background-value>
     <required>required</required>
   </widget>
-  <widget id="store_address1" type="line-edit" path="epayment/store_address1" no-toolbar="no-toolbar" auto-save="no">
+  <widget id="store_address1" type="line-edit" field="epayment::store_address1" path="epayment/store_address1" no-toolbar="no-toolbar" auto-save="plain">
     <tooltip>First line of the address of your business.</tooltip>
     <help>Enter the first line of your business address. This information is required.</help>
     <background-value>address line 1</background-value>
     <required>required</required>
   </widget>
-  <widget id="store_address2" type="line-edit" path="epayment/store_address2" no-toolbar="no-toolbar" auto-save="no">
+  <widget id="store_address2" type="line-edit" field="epayment::store_address2" path="epayment/store_address2" no-toolbar="no-toolbar" auto-save="plain">
     <tooltip>Second line of the address of your business.</tooltip>
     <help>Enter the second line of your business address. This information is optional.</help>
     <background-value>address line 2</background-value>
   </widget>
-  <widget id="store_city" type="line-edit" path="epayment/store_city" no-toolbar="no-toolbar" auto-save="no">
+  <widget id="store_city" type="line-edit" field="epayment::store_city" path="epayment/store_city" no-toolbar="no-toolbar" auto-save="plain">
     <tooltip>The name of the city of your business.</tooltip>
     <help>Enter the city name of your business address. This information is required.</help>
     <background-value>city</background-value>
     <required>required</required>
   </widget>
-  <widget id="store_province" type="line-edit" path="epayment/store_province" no-toolbar="no-toolbar" auto-save="no">
+  <widget id="store_province" type="line-edit" field="epayment::store_province" path="epayment/store_province" no-toolbar="no-toolbar" auto-save="plain">
     <tooltip>The name of the province of your business.</tooltip>
     <help>Enter the name of the province of your business address. This information is optional for most countries.</help>
     <background-value>province or state</background-value>
   </widget>
-  <widget id="store_postal_code" type="line-edit" path="epayment/store_postal_code" no-toolbar="no-toolbar" auto-save="no">
+  <widget id="store_postal_code" type="line-edit" field="epayment::store_code" path="epayment/store_postal_code" no-toolbar="no-toolbar" auto-save="plain">
     <tooltip>The postal code of your business.</tooltip>
     <help>Enter the postal code of your business address. This information is required.</help>
     <background-value>postal code</background-value>
     <required>required</required>
   </widget>
-  <widget id="store_country" type="line-edit" path="epayment/store_country" no-toolbar="no-toolbar" auto-save="no">
+  <widget id="store_country" type="line-edit" field="epayment::store_country" path="epayment/store_country" no-toolbar="no-toolbar" auto-save="plain">
     <tooltip>The name of the country of your business.</tooltip>
     <help>Enter the name of the country of your business address. This field is required.</help>
     <background-value>province or state</background-value>
