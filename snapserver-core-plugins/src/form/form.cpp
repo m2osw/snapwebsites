@@ -2159,7 +2159,7 @@ void form::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, fi
     {
         token.f_error = true;
         token.f_replacement = "<span class=\"filter-error\"><span class=\"filter-error-word\">error:</span> Could not determine a valid resource path.</span>";
-        SNAP_LOG_ERROR("form::on_replace_token() could not determine a valid resource path (empty) for token \"")(token.f_name)("\" and owner \"")(plugin_owner)("\".");
+        SNAP_LOG_ERROR("form::on_replace_token() could not determine a valid resource path (empty) for token \"")(token.f_name)("\" and owner \"")(plugin_owner)("\" on path \"")(ipath.get_key())("\".");
         return;
     }
 

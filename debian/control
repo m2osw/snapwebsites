@@ -38,7 +38,7 @@ Build-Depends: catch (>= 1.0),
     zip
 Standards-Version: 3.9.4
 Section: libs
-Homepage: http://www.snapwebsites.org/
+Homepage: https://www.snapwebsites.org/
 Vcs-Git: https://github.com/m2osw/snapcpp.git
 Vcs-Browser: https://github.com/m2osw/snapcpp
 

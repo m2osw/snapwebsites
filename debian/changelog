@@ -1,3 +1,15 @@
+snapwebsites (1.5.30.0~xenial) xenial; urgency=high
+
+  * Fixed the path to the snapwebsites.org, it's HTTPS now.
+  * Enhanced the --save-cell description in snapdb.
+  * Use the pointer_t for advgetopt in snapdb.h instead of redefining it.
+  * Added a parameter to the form error log for easier debugging.
+  * Removed the WARNING of the server manager about typing the wrong name
+    since Doug added a drop down and thus you can't make such a mistake.
+  * Fixed a few #include for advgetopt which should always have used the path.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 07 Dec 2017 01:43:17 -0700
+
 snapwebsites (1.5.29.1~xenial) xenial; urgency=high
 
   * Fixed the e-store settings, only the store_name field would get saved.

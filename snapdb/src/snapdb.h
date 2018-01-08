@@ -66,8 +66,6 @@ public:
     void exec();
 
 private:
-    typedef std::shared_ptr<advgetopt::getopt>    getopt_ptr_t;
-
     bool confirm_drop_check()    const;
     void drop_context()          const;
     void drop_table()            const;
@@ -92,7 +90,7 @@ private:
     QString                                     f_row;
     QString                                     f_cell;
     QString                                     f_value;
-    getopt_ptr_t                                f_opt;
+    advgetopt::getopt::pointer_t                f_opt;
     snap::snap_config                           f_config;
 };
 

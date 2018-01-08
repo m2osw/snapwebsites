@@ -30,7 +30,7 @@
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/qdomxpath.h>
 
-#include <advgetopt.h>
+#include <advgetopt/advgetopt.h>
 
 #include <iostream>
 

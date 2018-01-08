@@ -1,6 +1,6 @@
 #
 # File:
-#      snapmanager/CMakeLists.txt
+#      snapmanager/gui/CMakeLists.txt
 #
 # Description:
 #      The Snap! Manager to edit data in the Cassandra cluster

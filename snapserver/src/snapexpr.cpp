@@ -31,7 +31,7 @@
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snapwebsites.h>
 
-#include <advgetopt.h>
+#include <advgetopt/advgetopt.h>
 
 #include <libdbproxy/libdbproxy.h>
 #include <libdbproxy/context.h>

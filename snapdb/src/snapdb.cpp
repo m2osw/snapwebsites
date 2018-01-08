@@ -220,7 +220,7 @@ namespace
             0,
             "save-cell",
             nullptr,
-            "save the specified cell (specify table, row, and cell)",
+            "save the contents of the specified cell to a file named <arg> (specify table, row, and cell)",
             advgetopt::getopt::argument_mode_t::required_argument
         },
         {

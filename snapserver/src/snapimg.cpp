@@ -40,7 +40,7 @@
 
 // advgetopt lib
 //
-#include <advgetopt.h>
+#include <advgetopt/advgetopt.h>
 
 // Qt lib
 //

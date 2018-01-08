@@ -952,7 +952,7 @@ void filter::on_token_filter(content::path_info_t & ipath, QDomDocument & xml)
         {
             if(f_state.isEmpty())
             {
-                throw snap_logic_exception("filter state stack empty on a path() call");
+                throw snap_logic_exception("filter state stack empty on a ipath() call");
             }
 
             content::path_info_t & last_ipath(const_cast<content::path_info_t &>(f_state.last().f_ipath));
