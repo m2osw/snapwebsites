@@ -1,9 +1,13 @@
 # Snap Bounce
 
-# The log files get moved to a sub-folder so we are responsible
+# The mail log files get moved to a sub-folder so we are responsible
 # for rotating them
 #
-/var/log/mail/mail.* {
+/var/log/mail/mail.info
+/var/log/mail/mail.warn
+/var/log/mail/mail.err
+/var/log/mail/mail.log
+{
     rotate 4
     weekly
     missingok
