@@ -1,3 +1,12 @@
+snapwebsites (1.5.31.0~xenial) xenial; urgency=high
+
+  * Added the dispatcher template and sub-class.
+  * Removed the process_message() from the 
+    `snap_tcp_blocking_client_message_connection` class, it's not required
+    since we have on in the `snap_tcp_client_message_connection`
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 11 Jan 2018 08:58:17 -0700
+
 snapwebsites (1.5.30.0~xenial) xenial; urgency=high
 
   * Fixed the path to the snapwebsites.org, it's HTTPS now.

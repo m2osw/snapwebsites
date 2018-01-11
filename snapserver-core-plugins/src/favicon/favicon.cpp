@@ -279,6 +279,7 @@ bool favicon::on_path_execute(content::path_info_t & ipath)
 {
     // favicon.ico happens all the time so it is much faster to test here
     // like this...
+    //
     QString const cpath(ipath.get_cpath());
     if(cpath == "favicon.ico"
     || cpath == "default-favicon.ico"
@@ -286,6 +287,7 @@ bool favicon::on_path_execute(content::path_info_t & ipath)
     {
         // got to use the master favorite icon or a page specific icon
         // either way we search using the get_icon() function
+        //
         output(ipath);
         return true;
     }
@@ -536,10 +538,12 @@ void favicon::on_generate_page_content(content::path_info_t & ipath, QDomElement
     get_icon(ipath, result);
 
     // add the favicon.ico name at the end of the path we have found
+    //
     QString icon_path;
     if(result.isEmpty())
     {
         // use the default if no other entries was found
+        //
         icon_path = f_snap->get_site_key_with_slash() + "favicon.ico";
     }
     else
@@ -633,7 +637,7 @@ void favicon::on_can_handle_dynamic_path(content::path_info_t & ipath, path::dyn
 }
 
 
-/** \brief Improves the error signature.
+/** \brief Improves the error signature with the favicon.
  *
  * This function adds the favicon link to the header.
  *

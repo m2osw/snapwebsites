@@ -1177,6 +1177,57 @@ void snap_communicator_message::verify_name(QString const & name, bool can_be_em
 
 
 
+
+/////////////////////////////
+// Snap Dispatcher Support //
+/////////////////////////////
+
+
+
+/** \brief The destuctor.
+ *
+ * This cleans up the dispatcher support object.
+ */
+snap_communicator::snap_dispatcher_support::~snap_dispatcher_support()
+{
+}
+
+
+/** \brief Define a dispatcher to execute your functions.
+ *
+ * This dispatcher function 
+ */
+void snap_communicator::snap_dispatcher_support::set_dispatcher(dispatcher_base::pointer_t d)
+{
+    f_dispatcher = d;
+}
+
+
+/** \brief Define a dispatcher to execute your functions.
+ *
+ * This dispatcher function 
+ */
+bool snap_communicator::snap_dispatcher_support::try_dispatching_message(snap::snap_communicator_message & msg)
+{
+    if(f_dispatcher)
+    {
+        // we have a dispatcher installed, try to dispatch that message
+        //
+        if(f_dispatcher->dispatch(msg))
+        {
+            return true;
+        }
+    }
+
+    // either there was not dispatcher installed or the message is
+    // not in the list of the dispatcher
+    //
+    return false;
+}
+
+
+
+
 /////////////////////
 // Snap Connection //
 /////////////////////
@@ -3409,7 +3460,10 @@ void snap_communicator::snap_pipe_message_connection::process_line(QString const
     snap_communicator_message message;
     if(message.from_message(line))
     {
-        process_message(message);
+        if(!try_dispatching_message(message))
+        {
+            process_message(message);
+        }
     }
     else
     {
@@ -4397,7 +4451,10 @@ void snap_communicator::snap_tcp_client_message_connection::process_line(QString
     snap_communicator_message message;
     if(message.from_message(line))
     {
-        process_message(message);
+        if(!try_dispatching_message(message))
+        {
+            process_message(message);
+        }
     }
     else
     {
@@ -5229,7 +5286,10 @@ void snap_communicator::snap_tcp_server_client_message_connection::process_line(
     snap_communicator_message message;
     if(message.from_message(line))
     {
-        process_message(message);
+        if(!try_dispatching_message(message))
+        {
+            process_message(message);
+        }
     }
     else
     {
@@ -5358,7 +5418,14 @@ public:
         // snap_tcp_server_client_message_connection implementation
         virtual void process_message(snap_communicator_message const & message)
         {
-            f_parent->process_message(message);
+            // We call the dispatcher from our parent since the child
+            // (this messenger) is not given a dispatcher
+            //
+            snap_communicator_message copy(message);
+            if(!f_parent->try_dispatching_message(copy))
+            {
+                f_parent->process_message(copy);
+            }
         }
 
     private:
@@ -6490,7 +6557,10 @@ void snap_communicator::snap_udp_server_message_connection::process_read()
         if(message.from_message(udp_message))
         {
             // we received a valid message, process it
-            process_message(message);
+            if(!try_dispatching_message(message))
+            {
+                process_message(message);
+            }
         }
         else
         {
@@ -6878,6 +6948,7 @@ bool snap_communicator::add_connection(snap_connection::pointer_t connection)
         // already added, can be added only once but we allow multiple
         // calls (however, we do not count those calls, so first call
         // to the remove_connection() does remove it!)
+        //
         return false;
     }
 
