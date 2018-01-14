@@ -70,6 +70,13 @@ install(
         bin
 )
 
+install(
+    PROGRAMS
+        scripts/cass-stop
+    DESTINATION
+        bin
+)
+
 snap_build_xml_targets()
 
 # vim: ts=4 sw=4 et

@@ -1,0 +1,14 @@
+#!/bin/bash
+HOSTIP=$1
+
+if test -z "$HOSTIP"
+then
+	echo "error: IP address missing."
+	echo "Usage: $0 <cassandra-ip>"
+	exit 1;
+fi
+
+for cmd in disablegossip disablethrift disablebinary drain
+do
+	nodetool -h ${HOSTIP} $cmd
+done

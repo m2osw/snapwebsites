@@ -1,3 +1,10 @@
+snapwebsites (1.5.34.0~xenial) xenial; urgency=high
+
+  * Added Doug's script to stop Cassandra. It's working way better than just
+    rebooting without first running that script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 13 Jan 2018 22:48:01 -0700
+
 snapwebsites (1.5.33.0~xenial) xenial; urgency=high
 
   * Added the snapmessage command line tool to test messaging between
