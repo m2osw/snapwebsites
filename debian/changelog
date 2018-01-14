@@ -1,3 +1,9 @@
+snapwebsites (1.5.35.0~xenial) xenial; urgency=high
+
+  * Added the libreadline-dev as a build dependency.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 Jan 2018 04:13:01 -0700
+
 snapwebsites (1.5.34.0~xenial) xenial; urgency=high
 
   * Added Doug's script to stop Cassandra. It's working way better than just
