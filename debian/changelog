@@ -1,3 +1,11 @@
+snapwebsites (1.5.33.0~xenial) xenial; urgency=high
+
+  * Added the snapmessage command line tool to test messaging between
+    services from the command line (could use scripts, probably).
+  * Allow for add_connection() to be called with a null pointer.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 13 Jan 2018 22:48:01 -0700
+
 snapwebsites (1.5.32.0~xenial) xenial; urgency=high
 
   * Moved the backend-status.txt file to /var/lib/... instead of the cache.
