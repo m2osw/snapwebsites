@@ -89,6 +89,33 @@ install(
 
 
 #################################################################################
+## A tool used mainly to help debug sending/receiving messages between services
+##
+project(snapmessage)
+
+add_executable(${PROJECT_NAME}
+    snapmessage.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+    snapwebsites
+    libdbproxy
+    readline
+    ${LIBTLD_LIBRARIES}
+    ${LOG4CPLUS_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${QTSERIALIZATION_LIBRARIES}
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+    RUNTIME DESTINATION
+        bin
+)
+
+
+#################################################################################
 ## Snap send SIGINT to stop a daemon
 ##
 project(snapstop)

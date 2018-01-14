@@ -6926,6 +6926,11 @@ snap_communicator::snap_connection::vector_t const & snap_communicator::get_conn
  * events are received asynchronously so do not expect callbacks to be
  * called in any specific order.
  *
+ * You may call this function with a null pointer. It simply returns
+ * false immediately. This makes it easy to eventually allocate a
+ * new connection and then use the return value of this function
+ * to know whether the two step process worked or not.
+ *
  * \note
  * A connection can only be added once to a snap_communicator object.
  * Also it cannot be shared between multiple communicator objects.
@@ -6937,6 +6942,11 @@ snap_communicator::snap_connection::vector_t const & snap_communicator::get_conn
  */
 bool snap_communicator::add_connection(snap_connection::pointer_t connection)
 {
+    if(connection == nullptr)
+    {
+        return false;
+    }
+
     if(!connection->valid_socket())
     {
         throw snap_communicator_parameter_error("snap_communicator::add_connection(): connection without a socket cannot be added to a snap_communicator object.");
@@ -7160,6 +7170,7 @@ bool snap_communicator::run()
         }
 
 //SNAP_LOG_TRACE("snap_communicator::run(): ")
+//              ("count ")(fds.size())
 //              ("timeout ")(timeout)
 //              (" (next was: ")(next_timeout_timestamp)
 //              (", current ~ ")(get_current_date())
