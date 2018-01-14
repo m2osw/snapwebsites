@@ -237,7 +237,7 @@ public:
 
 private:
     std::map<QString,QString>   f_map;
-    QString const               f_filename = "/var/cache/snapwebsites/backend-status.txt";
+    QString const               f_filename = "/var/lib/snapwebsites/snapbackend/backend-status.txt";
 
     void load_file()
     {
@@ -307,14 +307,14 @@ void backend::on_retrieve_status(snap_manager::server_status & server_status)
         if( !sf.is_empty() )
         {
             SNAP_LOG_DEBUG("backend::on_retrieve_status(): snapbackend::all_services, sf[\"disabled\"]=")(sf["disabled"]);
-            bool const disabled_mode(sf["disabled"]=="true");
+            bool const disabled_mode(sf["disabled"] == "true");
             snap_manager::status_t const all_status_widget(
                         disabled_mode
                             ? snap_manager::status_t::state_t::STATUS_STATE_WARNING
                             : snap_manager::status_t::state_t::STATUS_STATE_INFO,
                         get_plugin_name(),
                         "snapbackend::all_services",
-                        disabled_mode? "disabled" : "enabled");
+                        disabled_mode ? "disabled" : "enabled");
             server_status.set_field(all_status_widget);
         }
     }

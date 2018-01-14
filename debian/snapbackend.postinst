@@ -8,14 +8,20 @@
 
 if [ "$1" = "configure" ]
 then
+    # Create a directory where snapbackend saves various files
+    #
+    SNAPBACKEND_DATA_PATH=/var/lib/snapwebsites/snapbackend
+    mkdir -p ${SNAPBACKEND_DATA_PATH}
+    chown -R snapwebsites:snapwebsites ${SNAPBACKEND_DATA_PATH}
+
     # Create files representing each service offered by this package
     #
     SERVICES_DIR=/usr/share/snapwebsites/services
-    touch $SERVICES_DIR/snapbackend.service
-    touch $SERVICES_DIR/images.service
-    touch $SERVICES_DIR/pagelist.service
-    touch $SERVICES_DIR/sendmail.service
-    touch $SERVICES_DIR/listjournal.service
+    touch ${SERVICES_DIR}/snapbackend.service
+    touch ${SERVICES_DIR}/images.service
+    touch ${SERVICES_DIR}/pagelist.service
+    touch ${SERVICES_DIR}/sendmail.service
+    touch ${SERVICES_DIR}/listjournal.service
 
     # Signal snapdbproxy since we just added new tables
     #
