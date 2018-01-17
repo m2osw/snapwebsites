@@ -1,5 +1,5 @@
 // Snap Communicator -- classes to ease handling communication between processes
-// Copyright (C) 2012-2017  Made to Order Software Corp.
+// Copyright (C) 2012-2018  Made to Order Software Corp.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -3960,6 +3960,113 @@ snap_communicator::snap_file_changed::event_mask_t snap_communicator::snap_file_
 
     return events;
 }
+
+
+
+
+
+
+
+/////////////////////////////////////
+// Snap File Descriptor Connection //
+/////////////////////////////////////
+
+
+/** \brief Initializes the file descriptor connection.
+ *
+ * This function creates a connection based on an existing file descriptor.
+ * This is a class used to handle existing pipes or socket (opposed to other
+ * implementations which create a pipe, open a socket, etc.) It is especially
+ * useful if you want to listen to stdin and stdout. Use the `fileno()`
+ * function to get the file descriptor and create a `snap_fd_connection`
+ * object what that descriptor.
+ *
+ * The mode parameter defines how you are to use the file descriptor. In
+ * other words, a socket that is read/write could be added to two different
+ * `snap_fd_connection` objects: one to read and one to write, instead of
+ * a single read/write object.
+ *
+ * Note that although you can say it's only going to be used in READ or
+ * in WRITE mode, in all cases, make sure that the file is readable before
+ * specifying READ or RW, and make sure that the file is writable before
+ * specifying WRITE or RW.
+ *
+ * \note
+ * It is important to note that the lifetime of the file desriptor is
+ * not managed by this object. You are responsible for the descriptor to
+ * stay valid as long as the connection is added to the snap_communicator
+ * list of connections. If you want to close the connection, please first
+ * remove the connection from the snap_communicator, destroy the connection,
+ * then close the file descriptor.
+ *
+ * \note
+ * It is possible to pass -1 (or any negative number) as the file
+ * descriptor. In that case it is interpreted as "not a valid
+ * file descriptor."
+ *
+ * \warning
+ * If you are to use a read() or a write() that may block, make sure to
+ * first set your file descriptor in non-blocking mode. If that's not
+ * possible, then make sure to read or write only one byte at a time.
+ * The loop will be slower, but you will avoid blocks which would
+ * prevent the rest of the software from getting their own events.
+ *
+ * \param[in] fd  The file descriptor to handle.
+ * \param[in] mode  The mode this descriptor is to be used by the connection.
+ */
+snap_communicator::snap_fd_connection::snap_fd_connection(int fd, mode_t mode)
+    : f_fd(fd)
+    , f_mode(mode)
+{
+}
+
+
+/** \brief Check whether this connection is a reader.
+ *
+ * If you created this file descriptor connection as a reader, then this
+ * function returns true.
+ *
+ * A reader has a mode of FD_MODE_READ or FD_MODE_RW.
+ *
+ * \return true if the connection is considered to be a reader.
+ */
+bool snap_communicator::snap_fd_connection::is_reader() const
+{
+    return f_mode != mode_t::FD_MODE_WRITE;
+}
+
+
+/** \brief Check whether this connection is a writer.
+ *
+ * If you created this file descriptor connection as a writer, then this
+ * function returns true.
+ *
+ * A writer has a mode of FD_MODE_WRITE or FD_MODE_RW.
+ *
+ * \return true if the connection is considered to be a writer.
+ */
+bool snap_communicator::snap_fd_connection::is_writer() const
+{
+    return f_mode != mode_t::FD_MODE_READ;
+}
+
+
+/** \brief Return the file descriptor ("socket").
+ *
+ * This function returns the file descriptor specified in the constructor.
+ *
+ * The current naming convention comes from the fact that the library
+ * was first created for sockets.
+ *
+ * \return The connection file descriptor.
+ */
+int snap_communicator::snap_fd_connection::get_socket() const
+{
+    return f_fd;
+}
+
+
+
 
 
 

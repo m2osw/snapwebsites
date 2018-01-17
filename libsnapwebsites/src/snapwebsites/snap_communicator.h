@@ -795,6 +795,31 @@ public:
         watch_t::map_t              f_watches;
     };
 
+    class snap_fd_connection
+        : public snap_connection
+    {
+    public:
+        typedef std::shared_ptr<snap_fd_connection>         pointer_t;
+
+        enum class mode_t
+        {
+            FD_MODE_READ,
+            FD_MODE_WRITE,
+            FD_MODE_RW
+        };
+
+                                    snap_fd_connection(int fd, mode_t mode);
+
+        // snap_connection implementation
+        virtual bool                is_reader() const override;
+        virtual bool                is_writer() const override;
+        virtual int                 get_socket() const override;
+
+    private:
+        int                         f_fd;
+        mode_t                      f_mode;
+    };
+
     class snap_tcp_client_connection
         : public snap_connection
         , public tcp_client_server::bio_client
@@ -998,7 +1023,6 @@ public:
                                     f_impl;
         int64_t                     f_pause = 0;
         bool const                  f_use_thread = true;
-        bool                        f_done = false;
     };
 
     class snap_udp_server_connection

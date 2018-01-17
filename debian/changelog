@@ -1,3 +1,13 @@
+snapwebsites (1.5.36.0~xenial) xenial; urgency=high
+
+  * Added the snap_console objects and the snapmessage tool.
+  * Added libncurses and libreadline as dependencies.
+  * Added a snap_fd_connection to snap_communicator.
+  * Removed an unused flag in snap_communicator.
+  * From my first commit, I redesigned snapmessage to use snap_console.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 17 Jan 2018 00:29:11 -0700
+
 snapwebsites (1.5.35.0~xenial) xenial; urgency=high
 
   * Added the libreadline-dev as a build dependency.

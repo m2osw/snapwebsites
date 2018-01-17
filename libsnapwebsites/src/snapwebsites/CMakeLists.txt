@@ -105,6 +105,7 @@ set( HEADERS
     snap_child.h
     snap_communicator.h
     snap_config.h
+    snap_console.h
     snap_exception.h
     snap_expr.h
     snap_image.h
@@ -166,6 +167,7 @@ add_library( ${PROJECT_NAME} SHARED
     snap_cassandra.cpp                          # encapuslate initiating a connection to the database.
     snap_communicator.cpp                       # handle any number of sockets with a single process.
     snap_config.cpp                             # class to read in configuration
+    snap_console.cpp                            # a CUI helper with two panels: Input and Output so the output can be asynchronous
     snap_child.cpp                              # requests processing
     snap_child_cache_control.cpp                # manage cache controls in the snap_child class
     snap_exception.cpp                          # exception stack backtrack
@@ -201,6 +203,8 @@ target_link_libraries( ${PROJECT_NAME}
     ${LIBPROCPS_LIBRARIES}
     ${OPENSSL_LIBRARIES}
     ${UUID}
+    ncurses
+    readline
     pthread
     dl
 )

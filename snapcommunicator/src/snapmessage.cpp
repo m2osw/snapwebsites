@@ -20,7 +20,7 @@
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qstring_stream.h>
-#include <snapwebsites/snap_communicator.h>
+#include <snapwebsites/snap_console.h>
 #include <snapwebsites/snapwebsites.h>
 
 // advgetopt library
@@ -37,9 +37,47 @@
 #include <readline/history.h>
 
 
+
+/** \file
+ * \brief A tool to send and receive messages to services to test them.
+ *
+ * This tool can be used to test various services and make sure they
+ * work as expected, at least for their control feed. If they have
+ * network connections that have nothing to do with snap_communicator
+ * messaging feeds, then it won't work well.
+ *
+ * The organization of this file is as follow:
+ *
+ * +------------------------+
+ * |                        |
+ * |        Base            |
+ * |      (Connection)      |
+ * |                        |
+ * +------------------------+
+ *        ^              ^
+ *        |              |
+ *        |              +----------------------------+
+ *        |              |                            |
+ *        |   +----------+-------------+   +----------+-------------+
+ *        |   |                        |   |                        |
+ *        |   |      GUI Object        |   |     CUI Object         |
+ *        |   |                        |   |                        |
+ *        |   +------------------------+   +------------------------+
+ *        |        ^                                   ^
+ *        |        |                                   |
+ *        |        |       +---------------------------+
+ *        |        |       |
+ *     +--+--------+-------+----+
+ *     |                        |
+ *     |  Snap Message Obj.     |
+ *     |                        |
+ *     +------------------------+
+ */
+
+
 namespace
 {
-    char const * history_file = ".snapmessage_history";
+    char const * history_file = "~/.snapmessage_history";
 
     const std::vector<std::string> g_configuration_files
     {
@@ -164,6 +202,10 @@ namespace
 //namespace
 
 
+
+
+
+
 class tcp_message_connection
     : public snap::snap_communicator::snap_tcp_client_message_connection
 {
@@ -211,9 +253,12 @@ private:
 };
 
 
-class snapmessage
+
+class connection
 {
 public:
+    typedef std::shared_ptr<connection>     pointer_t;
+
     enum class connection_t
     {
         NONE,
@@ -221,216 +266,382 @@ public:
         UDP
     };
 
-    class connection_handler
+    void disconnect()
     {
-    public:
-        typedef std::shared_ptr<connection_handler>     pointer_t;
+        snap::snap_communicator::instance()->remove_connection(f_tcp_connection);
+        f_tcp_connection = nullptr;
+        f_connection_type = connection_t::NONE;
+    }
 
-        class connection_runner
-            : public snap::snap_thread::snap_runner
-            , public snap::snap_communicator::snap_signal
-            //, public std::enable_shared_from_this<connection_runner> -- already defined in snap_connection
+    void set_address(std::string const & addr)
+    {
+        f_address = addr;
+    }
+
+    void create_tcp_connection()
+    {
+        // clear old connection first, just in case
+        //
+        disconnect();
+
+        // determine the IP address and port
+        //
+        f_addr = "127.0.0.1";
+        f_port = 4041;
+        tcp_client_server::get_addr_port(QString::fromUtf8(f_address.c_str()), f_addr, f_port, "tcp");
+
+        // create new connection
+        //
+        f_tcp_connection = std::make_shared<tcp_message_connection>(f_addr.toUtf8().data(), f_port, f_mode);
+
+        if(snap::snap_communicator::instance()->add_connection(f_tcp_connection))
         {
-        public:
-            typedef std::shared_ptr<connection_runner>  pointer_t;
+            f_connection_type = connection_t::TCP;
+        }
+        else
+        {
+            // keep NONE (not connected)
+            std::cerr << "error: could not connect--verify the IP, the port, and make sure that do or do not need to use the --ssl flag." << std::endl;
+        }
+    }
 
-            enum class event
-            {
-                EVENT_NONE,         // no specific event
+    void create_udp_connection()
+    {
+        // clear old connection first, just in case
+        //
+        disconnect();
 
-                EVENT_DISCONNECT,   // disconnect current TCP connection
-                EVENT_MESSAGE,      // send specified message
-                EVENT_PLAIN,        // switch to non-SSL
-                EVENT_QUIT,         // request thread to quit
-                EVENT_SECURE,       // switch to SSL
-                EVENT_TCP,          // switch to TCP
-                EVENT_UDP           // switch to UDP
-            };
+        // determine the IP address and port
+        //
+        f_addr = "127.0.0.1";
+        f_port = 4041;
+        tcp_client_server::get_addr_port(QString::fromUtf8(f_address.c_str()), f_addr, f_port, "udp");
 
-            class thread_message
-            {
-            public:
-                static int const        MESSAGE_SIGNAL = SIGUSR1;
+        // create new connection
+        // -- at this point we only deal with client connections here
+        //    and this is a UDP server; to send data we just use the
+        //    send_message() which is static
+        //
+        //f_tcp_connection = std::make_shared<snap::snap_communicator::snap_udp_server_message_connection>(addr, port, f_mode);
 
-                thread_message(event e, std::string const & p = std::string())
-                    : f_event(e)
-                    , f_param(p)
-                {
-                }
+        f_connection_type = connection_t::UDP;
+    }
 
-                event get_event() const
-                {
-                    return f_event;
-                }
-
-                std::string const & get_param() const
-                {
-                    return f_param;
-                }
-
-            private:
-                event               f_event;
-                std::string         f_param;
-            };
-
-            connection_runner(snapmessage * sm)
-                : snap_runner("connection_runner")
-                , snap_signal(thread_message::MESSAGE_SIGNAL)
-                , f_snapmessage(sm)
-            {
-            }
-
-            //virtual bool is_ready() const override
-            //{
-            //    return true;
-            //}
-
-            //virtual bool continue_running() const override
-            //{
-            //    return true;
-            //}
-
-            virtual void run() override
-            {
-                // before we block we want to make sure our message FIFO
-                // is empty
-                //
-std::cerr << "thread started...\n";
-                process_messages();
-
-std::cerr << "thread block on connections...\n";
-                snap::snap_communicator::instance()->run();
-            }
-
-            void process_messages()
-            {
-                thread_message msg(event::EVENT_NONE);
-                while(f_thread_messages.pop_front(msg, 0))
-                {
-                    switch(msg.get_event())
-                    {
-                    case event::EVENT_NONE:
-                        break;
-
-                    case event::EVENT_DISCONNECT:
-                        f_snapmessage->switch_connection_type(connection_t::NONE);
-                        //f_snapmessage->disconnect(); -- don't call directly, just in case
-                        break;
-
-                    case event::EVENT_MESSAGE:
-                        snap::NOTUSED(f_snapmessage->send_message(msg.get_param()));
-                        break;
-
-                    case event::EVENT_PLAIN:
-                        f_snapmessage->switch_mode(tcp_client_server::bio_client::mode_t::MODE_PLAIN);
-                        break;
-
-                    case event::EVENT_QUIT:
-                        // remove the runner (signal)
-                        //
-                        snap::snap_communicator::instance()->remove_connection(shared_from_this());
-
-                        // remove the TCP connection if still there
-                        //
-                        f_snapmessage->disconnect();
-                        break;
-
-                    case event::EVENT_SECURE:
-                        f_snapmessage->switch_mode(tcp_client_server::bio_client::mode_t::MODE_SECURE);
-                        break;
-
-                    case event::EVENT_TCP:
-                        f_snapmessage->switch_connection_type(connection_t::TCP);
-                        break;
-
-                    case event::EVENT_UDP:
-                        f_snapmessage->switch_connection_type(connection_t::UDP);
-                        break;
-
-                    }
-                }
-            }
-
-            // the parent thread added a message to our FIFO and then
-            // called kill() on our thread
+    // if not yet connected, attempt a connection
+    bool connect()
+    {
+        // currently disconnected?
+        //
+        if(f_connection_type == connection_t::NONE)
+        {
+            // connect as selected by user
             //
-            virtual void process_signal() override
+            if(f_selected_connection_type == connection_t::TCP)
             {
-std::cerr << "received signal...\n";
-                process_messages();
+                create_tcp_connection();
+            }
+            else
+            {
+                create_udp_connection();
             }
 
-            void new_message(thread_message const & msg)
+            if(f_connection_type == connection_t::NONE)
             {
-                // note: the push_back() is thread safe already so we do
-                // not have to use a mutex here
-                //
-                f_thread_messages.push_back(msg);
-                snap::snap_thread * parent(get_thread());
-                if(parent != nullptr)
-                {
-                    // if the thread returned before we could send
-                    // the signal, it does not matter much to us at
-                    // this point
-                    //
-                    snap::NOTUSED(parent->kill(thread_message::MESSAGE_SIGNAL));
-std::cerr << "signaling new data...\n";
-                }
-            }
-
-        private:
-            snapmessage *                                   f_snapmessage = nullptr;
-            snap::snap_thread::snap_fifo<thread_message>    f_thread_messages;
-        };
-
-        class connection_thread
-            : public snap::snap_thread
-        {
-        public:
-            connection_thread(connection_runner * runner)
-                : snap_thread("connection_thread", runner)
-            {
-            }
-
-        };
-
-        connection_handler(snapmessage * sm)
-            : f_runner(new connection_runner(sm))
-            , f_thread(new connection_thread(f_runner.get()))
-        {
-            // f_runner is also a snap_signal connection which we
-            // use to wake the thread up and process additional
-            // messages
-            //
-            snap::snap_communicator::instance()->add_connection(f_runner);
-
-            if(!f_thread->start())
-            {
-                std::cerr << "error: could not start the connection thread.\n";
-                exit(1);
+                std::cerr << "error: could not connect, can't send message." << std::endl;
+                return false;
             }
         }
 
-        ~connection_handler()
-        {
-            connection_runner::thread_message msg(connection_runner::event::EVENT_QUIT);
-            new_message(msg);
+        return true;
+    }
 
-            // make sure the thread is stopped first
+    bool send_message(std::string const & message)
+    {
+        // are we or can we connect?
+        //
+        if(!connect())
+        {
+            return false;
+        }
+
+        QString qmessage(QString::fromUtf8(message.c_str()));
+        snap::snap_communicator_message msg;
+        if(!msg.from_message(qmessage))
+        {
+            std::cerr << "error: message \"" << message << "\" is invalid. It won't be sent." << std::endl;
+            return false;
+        }
+
+        switch(f_connection_type)
+        {
+        case connection_t::NONE:
+std::cout << "not connected, not sending message [" << message << "]\n";
+            return false;
+
+        case connection_t::TCP:
+std::cout << "sending TCP message [" << message << "]\n";
+            f_tcp_connection->send_message(msg);
+            break;
+
+        case connection_t::UDP:
+std::cout << "sending UDP message [" << message << "]\n";
+            snap::snap_communicator::snap_udp_server_message_connection::send_message(f_addr.toUtf8().data(), f_port, msg);
+            break;
+
+        }
+
+        return true;
+    }
+
+    // only use at initialization time, otherwise use switch_mode()
+    void set_mode(tcp_client_server::bio_client::mode_t mode)
+    {
+        f_mode = mode;
+    }
+
+    void switch_mode(tcp_client_server::bio_client::mode_t mode)
+    {
+        if(f_mode != mode)
+        {
+            disconnect();
+            f_mode = mode;
+        }
+    }
+
+    // call when you do /tcp and /udp in CUI/GUI
+    void set_selected_connection_type(connection_t type)
+    {
+        if(f_selected_connection_type != type)
+        {
+            disconnect();
+            f_selected_connection_type = type;
+        }
+    }
+
+    void switch_connection_type(connection_t type)
+    {
+        if(f_connection_type != type)
+        {
+            switch(type)
+            {
+            case connection_t::NONE:
+                disconnect();
+                break;
+
+            case connection_t::TCP:
+                create_tcp_connection();
+                break;
+
+            case connection_t::UDP:
+                create_udp_connection();
+                break;
+
+            }
+        }
+    }
+
+    std::string define_prompt() const
+    {
+        std::string prompt;
+        if(f_selected_connection_type == connection_t::TCP)
+        {
+            prompt = "tcp";
+        }
+        else
+        {
+            prompt = "udp";
+        }
+        if(f_mode == tcp_client_server::bio_client::mode_t::MODE_SECURE)
+        {
+            prompt += "(ssl)";
+        }
+        prompt += "> ";
+        return prompt;
+    }
+
+private:
+    // WARNING: The following variables are accessed by another process
+    //          when running in GUI or CUI mode (i.e. we do a `fork()`.)
+    //
+    //          The only way to modify those values once the fork() happened
+    //          is by sending messages to the child process.
+    //
+    std::string                             f_address;
+    QString                                 f_addr;
+    int                                     f_port                      = 0;
+    tcp_client_server::bio_client::mode_t   f_mode                      { tcp_client_server::bio_client::mode_t::MODE_PLAIN };
+    connection_t                            f_selected_connection_type  { connection_t::UDP }; // never set to NONE; default to UDP unless user uses --tcp on command line
+    connection_t                            f_connection_type           { connection_t::NONE };
+    tcp_message_connection::pointer_t       f_tcp_connection;
+};
+
+
+
+
+
+
+class cui_connection
+    : public snap::snap_console
+{
+public:
+    typedef std::shared_ptr<cui_connection>     pointer_t;
+
+    cui_connection(connection::pointer_t connection)
+        : snap_console(history_file)
+        , f_connection(connection)
+    {
+    }
+
+    virtual ~cui_connection()
+    {
+    }
+
+    void reset_prompt()
+    {
+        set_prompt(f_connection->define_prompt());
+    }
+
+    virtual void process_command(std::string const & command) override
+    {
+        if(execute_command(command))
+        {
+            // reset the prompt
             //
-            f_thread->stop();
+            reset_prompt();
         }
+    }
 
-        void new_message(connection_runner::thread_message const & msg)
+    virtual void process_quit() override
+    {
+        f_connection->disconnect();
+        snap::snap_communicator::instance()->remove_connection(shared_from_this());
+    }
+
+    bool execute_command(std::string const & command)
+    {
+        // /quit
+        //
+        // request to quit the process, equivalent to Ctrl-D
+        //
+// that should be a statistic in a stats window...
+//output("# of con: " + std::to_string(snap::snap_communicator::instance()->get_connections().size()));
+        if(command == "/quit")
         {
-            f_runner->new_message(msg);
+            // the "/quit" internal command
+            //
+            process_quit();
+            return false;
         }
 
-    private:
-        connection_runner::pointer_t    f_runner;
-        connection_thread::pointer_t    f_thread;
-    };
+        // /help
+        //
+        // print out help screen
+        //
+        if(command == "/help"
+        || command == "/?"
+        || command == "?")
+        {
+            output("Help:");
+            output("Internal commands start with a  slash (/). Supported commands:");
+            output("  /connect <ip>:<port> -- connect to specified IP and port");
+            output("  /disconnect -- explicitly disconnect any existing connection");
+            output("  /help or /? or ? -- print this help screen");
+            output("  /plain -- get a plain connection");
+            output("  /quit -- leave snapmessage");
+            output("  /tcp -- send messages using our TCP connectionse");
+            output("  /udp -- send messages using our UDP connectionse");
+            output("  /ssl -- get an SSL connection");
+            return false;
+        }
 
+        // /connect <IP>:<port>
+        //
+        // connect to service listening at <IP> on port <port>
+        //
+        if(command.compare(0, 9, "/connect ") == 0)
+        {
+            f_connection->set_address(command.substr(9));
+            f_connection->connect();
+            return false;
+        }
+
+        // /disconnect
+        //
+        // remove the existing connection
+        //
+        if(command == "/disconnect")
+        {
+            f_connection->disconnect();
+            return false;
+        }
+
+        // /tcp
+        //
+        // switch to TCP
+        //
+        if(command == "/tcp")
+        {
+            f_connection->set_selected_connection_type(connection::connection_t::TCP);
+            return true;
+        }
+
+        // /udp
+        //
+        // switch to UDP
+        //
+        if(command == "/udp")
+        {
+            f_connection->set_selected_connection_type(connection::connection_t::UDP);
+            return true;
+        }
+
+        // /plain
+        //
+        // switch to plain mode (opposed to SSL)
+        //
+        if(command == "/plain")
+        {
+            f_connection->switch_mode(tcp_client_server::bio_client::mode_t::MODE_PLAIN);
+            return true;
+        }
+
+        // /ssl
+        //
+        // switch to SSL mode (opposed to plain, unencrypted)
+        //
+        if(command == "/ssl")
+        {
+            f_connection->switch_mode(tcp_client_server::bio_client::mode_t::MODE_SECURE);
+            return true;
+        }
+
+        // "/.*" is not a valid message beginning, we suspect that the user
+        // misstyped a command and thus generate an error instead
+        //
+        if(command[0] == '/')
+        {
+            output("error: unknown command: \"" + command + "\".");
+            return false;
+        }
+
+        // by default, if not an internal command, we consider the command
+        // to be the content a message and therefore we just send it
+        //
+        f_connection->send_message(command);
+        return false;
+    }
+
+private:
+    connection::pointer_t                   f_connection;
+};
+
+
+
+
+
+class snapmessage
+{
+public:
     snapmessage(int argc, char * argv[])
         : f_opt(argc, argv, g_command_line_options, g_configuration_files, "")
     {
@@ -490,14 +701,18 @@ std::cerr << "signaling new data...\n";
             snap::NOTREACHED();
         }
 
+        f_connection = std::make_shared<connection>();
+
         if(f_opt.is_defined("address"))
         {
-            f_address = f_opt.get_string("address");
+            f_connection->set_address(f_opt.get_string("address"));
         }
 
-        f_mode = f_opt.is_defined("ssl")
+        f_connection->set_mode(f_opt.is_defined("ssl")
                 ? tcp_client_server::bio_client::mode_t::MODE_SECURE
-                : tcp_client_server::bio_client::mode_t::MODE_PLAIN;
+                : tcp_client_server::bio_client::mode_t::MODE_PLAIN);
+
+        f_connection->set_selected_connection_type(f_opt.is_defined("tcp") ? connection::connection_t::TCP : connection::connection_t::UDP);
     }
 
     int run()
@@ -512,14 +727,10 @@ std::cerr << "signaling new data...\n";
             return enter_cui();
         }
 
-        if(f_opt.is_defined("tcp"))
+        if(f_opt.is_defined("tcp")
+        || f_opt.is_defined("udp"))
         {
-            return send_message_with_tcp();
-        }
-
-        if(f_opt.is_defined("udp"))
-        {
-            return send_message_with_udp();
+            return f_connection->send_message(f_opt.get_string("message")) ? 0 : 1;
         }
 
         std::cerr << "error: no command specified, one of --gui, --cui, --tcp, --udp is required." << std::endl;
@@ -533,399 +744,54 @@ std::cerr << "signaling new data...\n";
         return 1;
     }
 
-    void start_connection_thread()
-    {
-        f_connection_handler.reset(new connection_handler(this));
-    }
-
-    void end_connection_thread()
-    {
-        if(f_connection_handler)
-        {
-            f_connection_handler.reset();
-        }
-    }
-
     int enter_cui()
     {
-        f_selected_connection_type = f_opt.is_defined("tcp") ? connection_t::TCP : connection_t::UDP;
-
-        start_connection_thread();
-
-        using_history();
-
-        std::string history_filename;
-        char * home = getenv("HOME");
-        if(home != nullptr)
-        {
-            history_filename = home;
-            history_filename += "/";
-            history_filename += history_file;
-        }
-        if(!history_filename.empty())
-        {
-            read_history(history_filename.c_str());
-        }
-
-        for(;;)
-        {
-            // read a line
-            //
-            std::string prompt(f_selected_connection_type == connection_t::TCP ? "tcp" : "udp");
-            if(f_mode == tcp_client_server::bio_client::mode_t::MODE_SECURE)
-            {
-                prompt += "(ssl)";
-            }
-            // if the current connection type is not NONE then we consider
-            // that we are connected; checking that variable is safe since
-            // it is atomic
-            //
-            if(f_connection_type != connection_t::NONE)
-            {
-                prompt += "*";
-            }
-            prompt += "> ";
-            char * l(readline(prompt.c_str()));
-            if(l == nullptr
-            || *l == '\0')
-            {
-                // skip empty lines
-                //
-                continue;
-            }
-            add_history(l);
-            if(!history_filename.empty())
-            {
-                write_history(history_filename.c_str()); // TODO: make it every X commands and on /quit only?
-            }
-            std::string line(l);
-            free(l);
-
-            if(line == "/quit")
-            {
-                // the "/quit" internal command
-                //
-                end_connection_thread();
-                return 0;
-            }
-
-            if(line == "/help"
-            || line == "/?"
-            || line == "?")
-            {
-                std::cout << "Help:" << std::endl;
-                std::cout << "Internal commands start with a  slash (/). Supported commands:" << std::endl;
-                std::cout << "  /connect <ip>:<port> -- connect to specified IP and port" << std::endl;
-                std::cout << "  /disconnect -- explicitly disconnect any existing connection" << std::endl;
-                std::cout << "  /help or /? or ? -- print this help screen" << std::endl;
-                std::cout << "  /plain -- get a plain connection" << std::endl;
-                std::cout << "  /quit -- leave snapmessage" << std::endl;
-                std::cout << "  /tcp -- send messages using our TCP connectionse" << std::endl;
-                std::cout << "  /udp -- send messages using our UDP connectionse" << std::endl;
-                std::cout << "  /ssl -- get an SSL connection" << std::endl;
-                //std::cout << "  /wait -- wait for a reply" << std::endl;
-            }
-            else if(line.compare(0, 9, "/connect ") == 0)
-            {
-                f_address = line.substr(9);
-
-                if(f_selected_connection_type == connection_t::TCP)
-                {
-                    connection_handler::connection_runner::thread_message msg(connection_handler::connection_runner::event::EVENT_TCP);
-                    f_connection_handler->new_message(msg);
-                }
-                else
-                {
-                    connection_handler::connection_runner::thread_message msg(connection_handler::connection_runner::event::EVENT_UDP);
-                    f_connection_handler->new_message(msg);
-                }
-            }
-            else if(line == "/disconnect")
-            {
-                connection_handler::connection_runner::thread_message msg(connection_handler::connection_runner::event::EVENT_DISCONNECT);
-                f_connection_handler->new_message(msg);
-            }
-            else if(line == "/tcp")
-            {
-                f_selected_connection_type = connection_t::TCP;
-                connection_handler::connection_runner::thread_message msg(connection_handler::connection_runner::event::EVENT_TCP);
-                f_connection_handler->new_message(msg);
-            }
-            else if(line == "/udp")
-            {
-                f_selected_connection_type = connection_t::UDP;
-                connection_handler::connection_runner::thread_message msg(connection_handler::connection_runner::event::EVENT_UDP);
-                f_connection_handler->new_message(msg);
-            }
-            else if(line == "/plain")
-            {
-                connection_handler::connection_runner::thread_message msg(connection_handler::connection_runner::event::EVENT_PLAIN);
-                f_connection_handler->new_message(msg);
-            }
-            else if(line == "/ssl")
-            {
-                connection_handler::connection_runner::thread_message msg(connection_handler::connection_runner::event::EVENT_SECURE);
-                f_connection_handler->new_message(msg);
-            }
-            //else if(line == "/wait")
-            //{
-            //    if(f_connection_type == connection_t::NONE)
-            //    {
-            //        std::cerr << "error: can't wait as you do not seem to currently have a connection." << std::endl;
-            //    }
-            //}
-            else if(line[0] == '/')
-            {
-                std::cerr << "error: unknown command: \"" << line << "\"." << std::endl;
-            }
-            else
-            {
-                // by default, if not an internal command, we consider the
-                // content a message and therefore we just send it
-                //
-                connection_handler::connection_runner::thread_message msg(connection_handler::connection_runner::event::EVENT_MESSAGE, line);
-                f_connection_handler->new_message(msg);
-            }
-        }
-
-        return 0;
-    }
-
-    int send_message_with_tcp()
-    {
-        int result(send_message(f_opt.get_string("message")) ? 0 : 1);
-        if(f_opt.is_defined("wait"))
-        {
-            // wait for a reply
-            //
-        }
-        return result;
-    }
-
-    int send_message_with_udp()
-    {
-        return send_message(f_opt.get_string("message")) ? 0 : 1;
-    }
-
-    void disconnect()
-    {
-        snap::snap_communicator::instance()->remove_connection(f_tcp_connection);
-        f_tcp_connection = nullptr;
-        f_connection_type = connection_t::NONE;
-    }
-
-    void create_tcp_connection()
-    {
-std::cerr << "trying to connect with TCP...\n";
-        // clear old connection first, just in case
+        // add a CUI connection to the snap_communicator
         //
-        disconnect();
-
-        // determine the IP address and port
-        //
-        f_addr = "127.0.0.1";
-        f_port = 4041;
-        tcp_client_server::get_addr_port(QString::fromUtf8(f_address.c_str()), f_addr, f_port, "tcp");
-
-        // create new connection
-        //
-        f_tcp_connection = std::make_shared<tcp_message_connection>(f_addr.toUtf8().data(), f_port, f_mode);
-
-        if(snap::snap_communicator::instance()->add_connection(f_tcp_connection))
         {
-std::cerr << "connected with TCP!\n";
-            f_connection_type = connection_t::TCP;
-        }
-        else
-        {
-            // keep NONE (not connected)
-            std::cerr << "error: could not connect--make sure that do or do not need to use the --ssl flag." << std::endl;
-        }
-    }
-
-    void create_udp_connection()
-    {
-        // clear old connection first, just in case
-        //
-        disconnect();
-
-        // determine the IP address and port
-        //
-        f_addr = "127.0.0.1";
-        f_port = 4041;
-        tcp_client_server::get_addr_port(QString::fromUtf8(f_address.c_str()), f_addr, f_port, "udp");
-
-        // create new connection
-        // -- at this point we only deal with client connections here
-        //    and this is a UDP server; to send data we just use the
-        //    send_message() which is static
-        //
-        //f_tcp_connection = std::make_shared<snap::snap_communicator::snap_udp_server_message_connection>(addr, port, f_mode);
-
-        f_connection_type = connection_t::UDP;
-    }
-
-    bool send_message(std::string const & message)
-    {
-        // currently disconnected?
-        //
-        if(f_connection_type == connection_t::NONE)
-        {
-            // connect as selected by user
-            //
-            if(f_selected_connection_type == connection_t::TCP)
+            cui_connection::pointer_t cui(std::make_shared<cui_connection>(f_connection));
+            cui->reset_prompt();
+            if(!snap::snap_communicator::instance()->add_connection(cui))
             {
-                create_tcp_connection();
-            }
-            else
-            {
-                create_udp_connection();
-            }
-
-            if(f_connection_type == connection_t::NONE)
-            {
-                std::cerr << "error: could not connect, can't send message." << std::endl;
-                return false;
+                std::cerr << "error: could not add CUI snap_console to list of snap_communicator connections." << std::endl;
+                return 1;
             }
         }
 
-        QString qmessage(QString::fromUtf8(message.c_str()));
-        snap::snap_communicator_message msg;
-        if(!msg.from_message(qmessage))
+        // run until we are asked to exit
+        //
+        if(snap::snap_communicator::instance()->run())
         {
-            std::cerr << "error: message \"" << message << "\" is invalid. It won't be sent." << std::endl;
-            return false;
+            return 0;
         }
 
-        switch(f_connection_type)
-        {
-        case connection_t::NONE:
-std::cout << "not connected, not sending message [" << message << "]\n";
-            return false;
-
-        case connection_t::TCP:
-std::cout << "sending TCP message [" << message << "]\n";
-            f_tcp_connection->send_message(msg);
-            break;
-
-        case connection_t::UDP:
-std::cout << "sending UDP message [" << message << "]\n";
-            snap::snap_communicator::snap_udp_server_message_connection::send_message(f_addr.toUtf8().data(), f_port, msg);
-            break;
-
-        }
-
-        return true;
-    }
-
-    void switch_mode(tcp_client_server::bio_client::mode_t mode)
-    {
-        if(f_mode != mode)
-        {
-            disconnect();
-            f_mode = mode;
-        }
-    }
-
-    void switch_connection_type(connection_t type)
-    {
-        if(f_connection_type != type)
-        {
-            switch(type)
-            {
-            case connection_t::NONE:
-                disconnect();
-                break;
-
-            case connection_t::TCP:
-                create_tcp_connection();
-                break;
-
-            case connection_t::UDP:
-                create_udp_connection();
-                break;
-
-            }
-        }
+        // run() returned with an error
+        //
+        std::cerr << "error: something went wrong in the snap_communicator run() loop." << std::endl;
+        return 1;
     }
 
 private:
     advgetopt::getopt                       f_opt;
-    bool                                    f_gui                       = false;
-    bool                                    f_cui                       = false;
-    connection_handler::pointer_t           f_connection_handler;
-
-    // WARNING: ALL of the following variables are accessed by another thread
-    //          when running in GUI or CUI mode
-    //
-    //          note that the f_connection_handler is not really used by
-    //          the thread itself even though it itself carries that thread
-    //
-    //          a few that we want to use in the main thread are marked
-    //          as atomic that way we avoid having to handle our own mutex
-    //          all over the place
-    //
-    std::string                             f_address                   = "127.0.0.1:4041";
-    QString                                 f_addr                      = "127.0.0.1";
-    int                                     f_port                      = 4041;
-    std::atomic<tcp_client_server::bio_client::mode_t>  f_mode          { tcp_client_server::bio_client::mode_t::MODE_PLAIN };
-    std::atomic<connection_t>               f_selected_connection_type  { connection_t::UDP }; // never set to NONE; default to UDP unless user uses --tcp on command line
-    std::atomic<connection_t>               f_connection_type           { connection_t::NONE };
-    tcp_message_connection::pointer_t       f_tcp_connection;
+    bool                                    f_gui = false;
+    bool                                    f_cui = false;
+    connection::pointer_t                   f_connection;
+    //connection_handler::pointer_t           f_connection_handler;
 };
 
 
 int main(int argc, char *argv[])
 {
-    snapmessage sm(argc, argv);
-
-    return sm.run();
-
     try
     {
-        // create a server object
-        snap::server::pointer_t s( snap::server::instance() );
-        s->setup_as_backend();
+        snapmessage sm(argc, argv);
 
-        // parse the command line arguments (this also brings in the .conf params)
-        s->config(argc, argv);
-
-        // Now create the qt application instance
-        //
-        s->prepare_qtapp( argc, argv );
-
-        // get the message (Excuse the naming convension...)
-        //
-        QString const msg(s->get_parameter("__BACKEND_URI"));
-
-        // the message is expected to be a complete message as defined in
-        // our snap_communicator system, something like:
-        //
-        //    <service>/<COMMAND> param=value;...
-        //
-        snap::snap_communicator_message message;
-        message.from_message(msg);
-
-        // get the snap communicator signal IP and port (UDP)
-        //
-        QString addr("127.0.0.1");
-        int port(4041);
-        snap::snap_config config("snapcommunicator");
-        tcp_client_server::get_addr_port(QString::fromUtf8(config.get_parameter("signal").c_str()), addr, port, "udp");
-
-        // now send the message
-        //
-        snap::snap_communicator::snap_udp_server_message_connection::send_message(addr.toUtf8().data(), port, message);
-
-        // exit via the server so the server can clean itself up properly
-        s->exit(0);
-        snap::NOTREACHED();
-
-        return 0;
+        return sm.run();
     }
     catch(std::exception const & e)
     {
         // clean error on exception
+        //
         std::cerr << "snapsignal: exception: " << e.what() << std::endl;
         return 1;
     }
