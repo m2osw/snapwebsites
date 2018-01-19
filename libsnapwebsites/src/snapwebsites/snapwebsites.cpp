@@ -1,5 +1,5 @@
 // Snap Websites Server -- snap websites server
-// Copyright (C) 2011-2017  Made to Order Software Corp.
+// Copyright (C) 2011-2018  Made to Order Software Corp.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -1132,7 +1132,8 @@ void server::config(int argc, char * argv[])
 
     if( f_debug )
     {
-        // Force the logger level to DEBUG or TRACE
+        // Force the logger level to DEBUG
+        // If the current level is already lower, leave it as is
         //
         logging::reduce_log_output_level( logging::log_level_t::LOG_LEVEL_DEBUG );
     }
@@ -2110,7 +2111,8 @@ void messenger::process_connected()
  */
 void server::process_message(snap_communicator_message const & message)
 {
-    if(!g_connection || !g_connection->f_communicator)
+    if(g_connection == nullptr
+    || g_connection->f_communicator == nullptr)
     {
         SNAP_LOG_WARNING("received message after the g_connection or g_connection->f_communicator variables were cleared.");
         return;
@@ -2298,7 +2300,8 @@ void server::stop(bool quitting)
 {
     SNAP_LOG_INFO("Stopping server.");
 
-    if(g_connection->f_messenger != nullptr)
+    if(g_connection != nullptr
+    && g_connection->f_messenger != nullptr)
     {
         messenger::pointer_t msg(std::dynamic_pointer_cast<messenger>(g_connection->f_messenger));
         if(quitting || (msg && !msg->is_connected()))
@@ -2501,6 +2504,13 @@ void listener_impl::process_accept()
  */
 void server::create_messenger_instance( bool const use_thread )
 {
+    if(g_connection == nullptr
+    || g_connection->f_communicator == nullptr)
+    {
+        SNAP_LOG_WARNING("attempt to create messenger after the g_connection or g_connection->f_communicator variables were cleared.");
+        return;
+    }
+
     // Remove the old connection (ignored if not connected)
     //
     g_connection->f_communicator->remove_connection( g_connection->f_messenger );

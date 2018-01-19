@@ -17,6 +17,7 @@
 
 // snapwebsites library
 //
+#include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qstring_stream.h>
@@ -245,8 +246,9 @@ public:
     virtual void process_message(snap::snap_communicator_message const & message) override
     {
         std::cout << std::endl
-                  << "Received message:" << std::endl
-                  << "  " << message.to_message() << std::endl;
+                  << "Received message: "
+                  << message.to_message()
+                  << std::endl;
     }
 
 private:
@@ -301,6 +303,8 @@ public:
         else
         {
             // keep NONE (not connected)
+            //
+            f_tcp_connection.reset();
             std::cerr << "error: could not connect--verify the IP, the port, and make sure that do or do not need to use the --ssl flag." << std::endl;
         }
     }
@@ -379,8 +383,7 @@ std::cout << "not connected, not sending message [" << message << "]\n";
             return false;
 
         case connection_t::TCP:
-std::cout << "sending TCP message [" << message << "]\n";
-            f_tcp_connection->send_message(msg);
+            f_tcp_connection->send_message(msg, false);
             break;
 
         case connection_t::UDP:
@@ -782,6 +785,9 @@ private:
 
 int main(int argc, char *argv[])
 {
+    snap::logging::set_progname("snapmessage");
+    snap::logging::configure_conffile("/etc/snapwebsites/logger/log.properties");
+
     try
     {
         snapmessage sm(argc, argv);

@@ -1,5 +1,6 @@
 // Snap Communicator -- classes to ease handling communication between processes
-// Copyright (C) 2012-2017  Made to Order Software Corp.
+
+// Copyright (C) 2012-2018  Made to Order Software Corp.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,6 +21,8 @@
 #include "snapwebsites/snap_thread.h"
 #include "snapwebsites/tcp_client_server.h"
 #include "snapwebsites/udp_client_server.h"
+#include "snapwebsites/not_used.h"
+//#include "snapwebsites/log.h" -- not sensible here at this time because log.h includes snap_communicator.h -- See Jira SNAP-623
 
 #include <QMap>
 
@@ -36,6 +39,14 @@ public:
     snap_communicator_parameter_error(char const *        what_msg) : snap_logic_exception("snap_communicator", what_msg) {}
     snap_communicator_parameter_error(std::string const & what_msg) : snap_logic_exception("snap_communicator", what_msg) {}
     snap_communicator_parameter_error(QString const &     what_msg) : snap_logic_exception("snap_communicator", what_msg) {}
+};
+
+class snap_communicator_implementation_error : public snap_logic_exception
+{
+public:
+    snap_communicator_implementation_error(char const *        what_msg) : snap_logic_exception("snap_communicator", what_msg) {}
+    snap_communicator_implementation_error(std::string const & what_msg) : snap_logic_exception("snap_communicator", what_msg) {}
+    snap_communicator_implementation_error(QString const &     what_msg) : snap_logic_exception("snap_communicator", what_msg) {}
 };
 
 class snap_communicator_exception : public snap_exception
@@ -137,274 +148,6 @@ private:
 };
 
 
-/** \brief A template to create a list of messages to dispatch on receival.
- *
- * Whenever you receive messages, they can automatically get dispatched to
- * various functions using the dispatcher.
- *
- * You define a dispatcher_match vector and then add a dispatcher to
- * your connection object.
- *
- * \code
- *      snap::dispatcher<my_connection>::dispatcher_match const my_messages[] =
- *      {
- *          {
- *              "HELP"
- *            , &my_connection::msg_help
- *            //, &dispatcher<preferences_service_connection>::dispatcher_match::one_to_one_match -- use default
- *          },
- *          {
- *              "STATUS"
- *            , &my_connection::msg_status
- *            //, &dispatcher<preferences_service_connection>::dispatcher_match::one_to_one_match -- use default
- *          },
- *          ...
- *      };
- * \endcode
- *
- * In most cases you do not need to specify the matching function. It will
- * use the default which is a one to one match. So in the example above,
- * for "HELP", only a message with the command set to "HELP" will match.
- * When a match is found, the correcsponding function (msg_help() here)
- * gets called.
- *
- * Note that "functions" are actually offsets. You will get `this` defined
- * as expected when your function gets called. The one drawback is that
- * only a function of the connection you attach the dispatcher to can
- * be called from the dispatcher. This is because we want to have a
- * static table instead of a dynamic one created each time we start
- * a process (in a website server, many processes get started again and
- * again.)
- *
- * \note
- * This is documented here because it is a template and we can't do
- * that in the .cpp (at least older versions of doxygen could not.)
- */
-template<typename T>
-class dispatcher
-    : public dispatcher_base
-{
-public:
-    /** \brief A smart pointer of the dispatcher.
-     *
-     * Although we expect the array of `dispatcher_match` to be
-     * statically defined, the `dispatcher`, on the other hand,
-     * is quite dynamic and needs to be allocated in a smart
-     * pointer then added to your connection.
-     */
-    typedef std::shared_ptr<dispatcher> pointer_t;
-
-    /** \brief This structure is used to define the list of supported messages.
-     *
-     * Whenever you create an array of messages, you use this structure.
-     *
-     * The structure takes a few parameters as follow:
-     *
-     * \li f_expr -- the "expression" to be matched to the command name
-     *               for example "HELP".
-     * \li f_execute -- the function offset to execute on a match.
-     * \li f_match -- the function to check whether the expression is a match.
-     *
-     * The command name is called "f_expr" but some matching functions may
-     * make use of the "f_expr" parameter as an expression such as a
-     * regular expression. (such function will be added with time.)
-     */
-    struct dispatcher_match
-    {
-        /** \brief The execution function.
-         *
-         * This type defines the execution function. We give it the message
-         * on a match. If the command name is not a match, it is ignored.
-         */
-        typedef void (T::*execute_func_t)(snap_communicator_message & msg);
-
-        /** \brief The match function.
-         *
-         * This type defines the match function. We give it the message
-         * which has the command name, although specialized matching
-         * function could test other parameters from the message such
-         * as the origination of the message.
-         */
-        typedef bool (*match_func_t)(QString const & expr, snap_communicator_message & msg);
-
-        /** \brief A vector of dispatcher_match types.
-         *
-         * The vector
-         */
-        //typedef std::vector<dispatcher_match>  vector_t;
-
-        /** \brief The default matching function.
-         *
-         * This function checks the command one to one to the expression.
-         * The word in the expression is compared as is to the command
-         * name:
-         *
-         * \code
-         *          return expr == msg.get_command();
-         * \endcode
-         *
-         * We will add other matching functions with time
-         * (start_with_match(), regex_match(), etc.)
-         *
-         * \note
-         * It is permissible to use a match function to modify the
-         * message in some way, however, it is not recommended.
-         *
-         * \param[in] expr  The expression to compare the command against.
-         * \param[in] msg  The message to match against this expression.
-         *
-         * \return true if it is a match, false otherwise.
-         */
-        static bool one_to_one_match(QString const & expr, snap_communicator_message & msg)
-        {
-            return expr == msg.get_command();
-        }
-
-        /** \brief The expression to compare against.
-         *
-         * The expression is most often going to be the exact command name
-         * which will be matched with the one_to_one_match() function.
-         *
-         * For other match functions, this would be whatever type of
-         * expression supported by those other functions.
-         */
-        char const *        f_expr;
-
-        /** \brief The execute function.
-         *
-         * This is an offset in your connection class. We do not allow
-         * std::bind() because we do not want the array of messages to be
-         * dynamic (that way it is created at compile time and loaded as
-         * ready/prepared data on load.)
-         *
-         * The functions called have `this` defined so you can access
-         * your connection data and other functions. It requires the
-         * `&` and the class name to define the pointer, like this:
-         *
-         * \code
-         *      &MyClass::my_message_function
-         * \endcode
-         *
-         * The execution is started by calling the run() function.
-         */
-        execute_func_t      f_execute;
-
-        /** \brief The match function.
-         *
-         * The match function is used to know whether that command
-         * dispatch function was found.
-         *
-         * By default this parameter is set to one_to_one_match().
-         * This means the command has to be one to one equal to
-         * the f_expr string.
-         *
-         * The matching is done in the match() function.
-         */
-        match_func_t        f_match = &dispatcher<T>::dispatcher_match::one_to_one_match;
-
-        /** \brief Run the execution function if this is a match.
-         *
-         * First this function checks whether the command of the message
-         * in \p msg matches this `dispatcher_match` expression. In
-         * most cases the match function is going to be
-         * one_on_one_match() which means it has to be exactly equal.
-         *
-         * If it is a match, this function runs your connection execution
-         * function (i.e. the message gets dispatched) and then it returns
-         * true.
-         *
-         * If the message is not a match, then the function returns false
-         * and only the matching function was called. In this case the
-         * connection does not get used.
-         *
-         * \param[in] connection  The connection attached to that
-         *                        `dispatcher_match`.
-         * \param[in] msg  The message that matched.
-         */
-        bool execute(T * connection, snap::snap_communicator_message & msg) const
-        {
-            if(f_match(f_expr, msg))
-            {
-                (connection->*f_execute)(msg);
-                return true;
-            }
-
-            return false;
-        }
-    };
-
-private:
-    /** \brief The connection pointer.
-     *
-     * This parameter is set by the constructor.
-     */
-    T *                         f_connection = nullptr;
-
-    /** \brief The array of possible matches.
-     *
-     * This is the array of your messages with the corresponding
-     * match and execute functions. This is used to go through
-     * the matches and execute (dispatch) as required.
-     */
-    dispatcher_match const *    f_matches = nullptr;
-
-    /** \brief Defines the number of matches in the f_matches array.
-     *
-     * Since we pass a static array (opposed to a vector because the
-     * vector needs to be dynamically allocated, as far as I know),
-     * we want to know the size of the array, which we get in the
-     * constructor.
-     *
-     * The value here is already divided by the size of the
-     * `dispatcher_match` structure size.
-     */
-    size_t                      f_matches_count = 0;
-
-public:
-
-    /** \brief Initialize the dispatcher with your connection and messages.
-     *
-     * This function takes a pointer to your connection and an array
-     * of matches.
-     */
-    dispatcher<T>(T * connection, dispatcher_match const * matches, size_t matches_size)
-        : f_connection(connection)
-        , f_matches(matches)
-        , f_matches_count(matches_size / sizeof(dispatcher_match))
-    {
-    }
-
-    /** \brief The dispatch function.
-     *
-     * This is the function your message system will call whenever
-     * the system receives a message.
-     *
-     * The function returns true if the message was dispatched.
-     * When that happen, the process_message() function of the
-     * connection does not get called.
-     *
-     * You may not include a message in the array of `dispatch_match`
-     * if it is too complicated to match or too many variables are
-     * necessary then you will probably want to use your
-     * process_message().
-     *
-     * \param[in] msg  The message to be dispatched.
-     *
-     * \return true if the message was dispatched, false otherwise.
-     */
-    virtual bool dispatch(snap::snap_communicator_message & msg) override
-    {
-        for(size_t i(0); i < f_matches_count; ++i)
-        {
-            if(f_matches[i].execute(f_connection, msg))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-};
 
 
 
@@ -437,6 +180,9 @@ public:
 
         void                        set_dispatcher(dispatcher_base::pointer_t d);
         bool                        try_dispatching_message(snap::snap_communicator_message & msg);
+
+        // new callback
+        virtual void                process_message(snap_communicator_message const & message);
 
     private:
         dispatcher_base::pointer_t  f_dispatcher;
@@ -528,6 +274,15 @@ public:
         int                         f_fds_position = -1;
     };
 
+    class connection_with_send_message
+    {
+    public:
+        // new callback
+        virtual bool                send_message(snap_communicator_message const & message, bool cache = false) = 0;
+
+        virtual void                msg_reply_with_unknown(snap_communicator_message & message);
+    };
+
     class snap_timer
         : public snap_connection
     {
@@ -597,6 +352,7 @@ public:
 
     class snap_inter_thread_message_connection
         : public snap_connection
+        , public connection_with_send_message
     {
     public:
         typedef std::shared_ptr<snap_inter_thread_message_connection>    pointer_t;
@@ -615,7 +371,8 @@ public:
         virtual int                 get_socket() const override;
         virtual void                process_read() override;
 
-        void                        send_message(snap_communicator_message const & message);
+        // connection_with_send_message
+        virtual bool                send_message(snap_communicator_message const & message, bool cache = false) override;
 
         // new callback
         virtual void                process_message_a(snap_communicator_message const & message) = 0;
@@ -684,17 +441,16 @@ public:
     class snap_pipe_message_connection
         : public snap_pipe_buffer_connection
         , public snap_dispatcher_support
+        , public connection_with_send_message
     {
     public:
         typedef std::shared_ptr<snap_pipe_message_connection>    pointer_t;
 
-        void                        send_message(snap_communicator_message const & message);
+        // connection_with_send_message
+        virtual bool                send_message(snap_communicator_message const & message, bool cache = false) override;
 
         // snap_tcp_server_client_buffer_connection implementation
         virtual void                process_line(QString const & line) override;
-
-        // new callback
-        virtual void                process_message(snap_communicator_message const & message) = 0;
     };
 
     class snap_file_changed
@@ -922,20 +678,20 @@ public:
     class snap_tcp_server_client_message_connection
         : public snap_tcp_server_client_buffer_connection
         , public snap_dispatcher_support
+        , public connection_with_send_message
     {
     public:
         typedef std::shared_ptr<snap_tcp_server_client_message_connection>    pointer_t;
 
                                     snap_tcp_server_client_message_connection(tcp_client_server::bio_client::pointer_t client);
 
-        void                        send_message(snap_communicator_message const & message);
         QString const &             get_remote_address() const;
+
+        // connection_with_send_message
+        virtual bool                send_message(snap_communicator_message const & message, bool cache = false) override;
 
         // snap_tcp_server_client_buffer_connection implementation
         virtual void                process_line(QString const & line) override;
-
-        // new callback
-        virtual void                process_message(snap_communicator_message const & message) = 0;
 
     private:
         QString                     f_remote_address;
@@ -971,24 +727,24 @@ public:
     class snap_tcp_client_message_connection
         : public snap_tcp_client_buffer_connection
         , public snap_dispatcher_support
+        , public connection_with_send_message
     {
     public:
         typedef std::shared_ptr<snap_tcp_client_message_connection>    pointer_t;
 
                                     snap_tcp_client_message_connection(std::string const & addr, int port, mode_t const mode = mode_t::MODE_PLAIN, bool const blocking = false);
 
-        void                        send_message(snap_communicator_message const & message);
+        // connection_with_send_message
+        virtual bool                send_message(snap_communicator_message const & message, bool cache = false) override;
 
         // snap_tcp_client_reader_connection implementation
         virtual void                process_line(QString const & line) override;
-
-        // new callback
-        virtual void                process_message(snap_communicator_message const & message) = 0;
     };
 
     class snap_tcp_client_permanent_message_connection
         : public snap_timer
         , public snap_dispatcher_support
+        , public connection_with_send_message
     {
     public:
         typedef std::shared_ptr<snap_tcp_client_permanent_message_connection>    pointer_t;
@@ -998,13 +754,15 @@ public:
                                     snap_tcp_client_permanent_message_connection(std::string const & address, int port, tcp_client_server::bio_client::mode_t mode = tcp_client_server::bio_client::mode_t::MODE_PLAIN, int64_t const pause = DEFAULT_PAUSE_BEFORE_RECONNECTING, bool const use_thread = true);
                                     ~snap_tcp_client_permanent_message_connection();
 
-        bool                        send_message(snap_communicator_message const & message, bool cache = false);
         bool                        is_connected() const;
         void                        disconnect();
         void                        mark_done();
         void                        mark_done(bool messenger);
         size_t                      get_client_address(struct sockaddr_storage & address) const;
         std::string                 get_client_addr() const;
+
+        // connection_with_send_message
+        virtual bool                send_message(snap_communicator_message const & message, bool cache = false) override;
 
         // snap_connection implementation
         virtual void                process_timeout() override;
@@ -1014,7 +772,6 @@ public:
         virtual void                connection_removed() override;
 
         // new callbacks
-        virtual void                process_message(snap_communicator_message const & message) = 0;
         virtual void                process_connection_failed(std::string const & error_message);
         virtual void                process_connected();
 
@@ -1055,9 +812,6 @@ public:
         // snap_connection implementation
         virtual void                process_read() override;
 
-        // new callback
-        virtual void                process_message(snap_communicator_message const & message) = 0;
-
     private:
     };
 
@@ -1069,7 +823,8 @@ public:
 
         void                        run();
 
-        bool                        send_message(snap_communicator_message const & message);
+        // connection_with_send_message
+        virtual bool                send_message(snap_communicator_message const & message, bool cache = false) override;
 
         // snap_connection callback
         virtual void                process_error() override;

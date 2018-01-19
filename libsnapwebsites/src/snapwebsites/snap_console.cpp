@@ -90,7 +90,6 @@ public:
             //
             p->open_ncurse();
             p->open_readline();
-            p->redirect_output();
             p->ready();
         }
         return ce->f_impl;

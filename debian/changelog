@@ -1,3 +1,20 @@
+snapwebsites (1.5.37.0~xenial) xenial; urgency=high
+
+  * Added libncurse and libreadline as Source dependencies.
+  * Moved the snapcommunicator dispatcher in its own file so it can use the
+    logger (they currently inter include each others...)
+  * process_message() is now defined in a separate class so we can have a
+    default that throws if called. Useful if your dispatcher has a last entry
+    which is a catch-all.
+  * Added an always_match() function for the dispatcher catch-all entry.
+  * Added a "reply with UNKNOWN" function.
+  * Made all the send_message() functions return true or false.
+  * Added logging in the snapmessage tool since we don't always get all the
+    messages on screen (especially on a crash/quit situation.)
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 18 Jan 2018 22:27:39 -0700
+
 snapwebsites (1.5.36.0~xenial) xenial; urgency=high
 
   * Added the snap_console objects and the snapmessage tool.

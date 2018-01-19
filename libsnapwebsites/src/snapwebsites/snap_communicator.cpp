@@ -1177,7 +1177,6 @@ void snap_communicator_message::verify_name(QString const & name, bool can_be_em
 
 
 
-
 /////////////////////////////
 // Snap Dispatcher Support //
 /////////////////////////////
@@ -1226,9 +1225,46 @@ bool snap_communicator::snap_dispatcher_support::try_dispatching_message(snap::s
 }
 
 
+/** \brief A default implementation of the process_message() function.
+ *
+ * This function is adefault fallback for the process_message()
+ * functionality. If you define a dispatcher, then you probably
+ * won't need to define a process_message() which in most cases
+ * would do the exact same thing but it would be called.
+ *
+ * This is especially true if you finish your list of matches
+ * with the always_match() function and msg_reply_with_unknown()
+ * as the function to run when that entry is hit.
+ *
+ * \code
+ *      {
+ *          nullptr
+ *        , &dispatcher<my_connection>::dispatcher_match::msg_reply_with_unknown
+ *        , &dispatcher<my_connection>::dispatcher_match::always_match
+ *      },
+ * \endcode
+ *
+ * \param[in] message  The message to be processed.
+ */
+void snap_communicator::snap_dispatcher_support::process_message(snap_communicator_message const & message)
+{
+    SNAP_LOG_FATAL("process_message() with message \"")
+                  (message.to_message())
+                  ("\" was not reimplemented in your class and the always_match() was not used in your dispatcher matches");
+
+    throw snap_communicator_implementation_error("your class is not reimplementing the process_message() virtual function and your dispatcher did not catch mnessage \""
+                + message.to_message()
+                + "\".");
+}
 
 
-/////////////////////
+
+
+
+
+
+
+ /////////////////////
 // Snap Connection //
 /////////////////////
 
@@ -2181,6 +2217,57 @@ void snap_communicator::snap_connection::connection_removed()
 
 
 
+//////////////////////////////////
+// Connection With Send Message //
+//////////////////////////////////
+
+
+
+/** \brief Send the UNKNOWN message as a reply.
+ *
+ * This function replies to the \p message with the UNKNOWN message as
+ * expected by all our `snap_connection`'s when a service receives a
+ * message it does not know how to handle.
+ *
+ * It is expected to be used in your dispatcher_match array.
+ *
+ * \note
+ * This function is virtual which allows you to add it to your array of
+ * of dispatcher_match items. The following shows an example of what that
+ * can look like.
+ *
+ * \code
+ *      ...
+ *
+ *      // ALWAYS LAST
+ *      {
+ *          nullptr
+ *        , &my_service_connection::msg_reply_with_unknown
+ *        , &snap::dispatcher<my_service_connection>::dispatcher_match::always_match
+ *      }
+ *  };
+ * \endcode
+ *
+ * \param[in] message  The messageto reply to.
+ */
+void snap_communicator::connection_with_send_message::msg_reply_with_unknown(snap_communicator_message & message)
+{
+    snap::snap_communicator_message unknown;
+    unknown.reply_to(message);
+    unknown.set_command("UNKNOWN");
+    unknown.add_parameter("command", message.get_command());
+    if(!send_message(unknown, false))
+    {
+        SNAP_LOG_WARNING("could not reply with UNKNOWN message to \"")(message.get_command())("\"");
+    }
+}
+
+
+
+
+
+
+
 ////////////////
 // Snap Timer //
 ////////////////
@@ -2957,6 +3044,10 @@ int snap_communicator::snap_inter_thread_message_connection::get_socket() const
  * Just like the system write(2) function, errno is set to the error
  * that happened when the function returns -1.
  *
+ * \warning
+ * At the moment this class does not support the dispatcher
+ * extension.
+ *
  * \return The number of bytes written to this pipe socket, or -1 on errors.
  */
 void snap_communicator::snap_inter_thread_message_connection::process_read()
@@ -3018,26 +3109,25 @@ void snap_communicator::snap_inter_thread_message_connection::process_read()
  * get tested well...
  *
  * \param[in] message  The message to send to the other side.
+ * \param[in] cache  These messages are always cached so this is ignored.
+ *
+ * \return true of the message was sent, false if it was cached or failed.
  */
-void snap_communicator::snap_inter_thread_message_connection::send_message(snap_communicator_message const & message)
+bool snap_communicator::snap_inter_thread_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
+    NOTUSED(cache);
+
     if(f_creator_id == gettid())
     {
         f_message_b.push_back(message);
         uint64_t const value(1);
-        if(write(*f_thread_b, &value, sizeof(value)) != sizeof(value))
-        {
-            throw snap_communicator_runtime_error("an error occurred while writing to inter-thread eventfd description (thread B)");
-        }
+        return write(*f_thread_b, &value, sizeof(value)) == sizeof(value);
     }
     else
     {
         f_message_a.push_back(message);
         uint64_t const value(1);
-        if(write(*f_thread_a, &value, sizeof(value)) != sizeof(value))
-        {
-            throw snap_communicator_runtime_error("an error occurred while writing to inter-thread eventfd description (thread B)");
-        }
+        return write(*f_thread_a, &value, sizeof(value)) == sizeof(value);
     }
 }
 
@@ -3427,10 +3517,22 @@ void snap_communicator::snap_pipe_buffer_connection::process_hup()
  * This function sends a message to the process on the other side
  * of this pipe connection.
  *
+ * \exception snap_communicator_runtime_error
+ * This function throws this exception if the write() to the pipe
+ * fails to write the entire message. This should only happen if
+ * the pipe gets severed.
+ *
  * \param[in] message  The message to be sent.
+ * \param[in] cache  Whether to cache the message if there is no connection.
+ *                   (Ignore because a pipe has to always be there until
+ *                   closed and then it can't be reopened.)
+ *
+ * \return Always true, although if an error occurs the function throws.
  */
-void snap_communicator::snap_pipe_message_connection::send_message(snap_communicator_message const & message)
+bool snap_communicator::snap_pipe_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
+    NOTUSED(cache);
+
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
     // and transferred only later when the run() loop is hit again
@@ -3439,7 +3541,7 @@ void snap_communicator::snap_pipe_message_connection::send_message(snap_communic
     QByteArray const utf8(msg.toUtf8());
     std::string buf(utf8.data(), utf8.size());
     buf += "\n";
-    write(buf.c_str(), buf.length());
+    return write(buf.c_str(), buf.length()) == static_cast<ssize_t>(buf.length());
 }
 
 
@@ -4578,10 +4680,20 @@ void snap_communicator::snap_tcp_client_message_connection::process_line(QString
  * This function sends a message to the client on the other side
  * of this connection.
  *
+ * \exception snap_communicator_runtime_error
+ * This function throws this exception if the write() to the pipe
+ * fails to write the entire message. This should only happen if
+ * the pipe gets severed.
+ *
  * \param[in] message  The message to be sent.
+ * \param[in] cache  Whether to cache the message if there is no connection.
+ *
+ * \return Always true, although if an error occurs the function throws.
  */
-void snap_communicator::snap_tcp_client_message_connection::send_message(snap_communicator_message const & message)
+bool snap_communicator::snap_tcp_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
+    NOTUSED(cache);
+
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
     // and transferred only later when the run() loop is hit again
@@ -4590,7 +4702,7 @@ void snap_communicator::snap_tcp_client_message_connection::send_message(snap_co
     QByteArray const utf8(msg.toUtf8());
     std::string buf(utf8.data(), utf8.size());
     buf += "\n";
-    write(buf.c_str(), buf.length());
+    return write(buf.c_str(), buf.length()) == static_cast<ssize_t>(buf.length());
 }
 
 
@@ -5413,10 +5525,22 @@ void snap_communicator::snap_tcp_server_client_message_connection::process_line(
  * This function sends a message to the client on the other side
  * of this connection.
  *
+ * \exception snap_communicator_runtime_error
+ * This function throws this exception if the write() to the pipe
+ * fails to write the entire message. This should only happen if
+ * the pipe gets severed.
+ *
  * \param[in] message  The message to be processed.
+ * \param[in] cache  Whether to cache the message if there is no connection.
+ *                   (Ignore because a client socket has to be there until
+ *                   closed and then it can't be reopened by the server.)
+ *
+ * \return Always true, although if an error occurs the function throws.
  */
-void snap_communicator::snap_tcp_server_client_message_connection::send_message(snap_communicator_message const & message)
+bool snap_communicator::snap_tcp_server_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
+    NOTUSED(cache);
+
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
     // and transferred only later when the run() loop is hit again
@@ -5425,7 +5549,7 @@ void snap_communicator::snap_tcp_server_client_message_connection::send_message(
     QByteArray const utf8(msg.toUtf8());
     std::string buf(utf8.data(), utf8.size());
     buf += "\n";
-    write(buf.c_str(), buf.length());
+    return write(buf.c_str(), buf.length()) == static_cast<ssize_t>(buf.length());
 }
 
 
@@ -5998,8 +6122,7 @@ public:
     {
         if(f_messenger != nullptr)
         {
-            f_messenger->send_message(message);
-            return true;
+            return f_messenger->send_message(message);
         }
 
         if(cache && !f_done)
@@ -6092,6 +6215,12 @@ public:
     void mark_done()
     {
         f_done = true;
+
+        // once done we don't attempt to reconnect so we can as well
+        // get rid of our existing cache immediately to save some
+        // memory
+        //
+        f_message_cache.clear();
 
         if(f_messenger != nullptr)
         {
@@ -6725,6 +6854,9 @@ void snap_communicator::snap_udp_server_message_connection::process_read()
  *              blocking_connection.send_message(unregister_message);
  *          }
  *
+ *          // now that we have a dispatcher, this  would probably use
+ *          // that mechanism instead of a list of if()/else if()
+ *          //
  *          virtual void process_message(snap_communicator_message const & message)
  *          {
  *              QString const command(message.get_command());
@@ -6756,7 +6888,6 @@ void snap_communicator::snap_udp_server_message_connection::process_read()
  *          }
  *      };
  *      my_blocking_connection blocking_connection("127.0.0.1", 4040);
- *
  *
  *      // then we can send a message to the service we are interested in
  *      blocking_connection.send_message(my_message);
@@ -6925,11 +7056,15 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::run()
  * socket.
  *
  * \param[in] message  The message to send to the connection.
+ * \param[in] cache  Whether to cache the message if it cannot be sent
+ *                   immediately (ignored at the moment.)
  *
  * \return true if the message was sent succesfully, false otherwise.
  */
-bool snap_communicator::snap_tcp_blocking_client_message_connection::send_message(snap_communicator_message const & message)
+bool snap_communicator::snap_tcp_blocking_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
+    NOTUSED(cache);
+
     int const s(get_socket());
     if(s >= 0)
     {
@@ -7296,7 +7431,6 @@ bool snap_communicator::run()
             {
                 throw snap_communicator_runtime_error("poll() returned a number larger than the input");
             }
-//std::cerr << getpid() << ": ------------------- new set of " << r << " events to handle\n";
             //SNAP_LOG_TRACE("tid=")(gettid())(", snap_communicator::run(): ------------------- new set of ")(r)(" events to handle");
 
             // check each connection one by one for:
@@ -7476,6 +7610,7 @@ int64_t snap_communicator::get_current_date()
     return static_cast<int64_t>(tv.tv_sec) * static_cast<int64_t>(1000000)
          + static_cast<int64_t>(tv.tv_usec);
 }
+
 
 
 
