@@ -566,14 +566,50 @@ public:
 
                                     snap_fd_connection(int fd, mode_t mode);
 
+        void                        close();
+        void                        mark_closed();
+
         // snap_connection implementation
         virtual bool                is_reader() const override;
         virtual bool                is_writer() const override;
         virtual int                 get_socket() const override;
 
+        // new callbacks
+        virtual ssize_t             read(void * buf, size_t count);
+        virtual ssize_t             write(void const * buf, size_t count);
+
     private:
         int                         f_fd;
         mode_t                      f_mode;
+    };
+
+    class snap_fd_buffer_connection
+        : public snap_fd_connection
+    {
+    public:
+        typedef std::shared_ptr<snap_fd_buffer_connection>    pointer_t;
+
+                                    snap_fd_buffer_connection(int fd, mode_t mode);
+
+        bool                        has_input() const;
+        bool                        has_output() const;
+        virtual bool                is_writer() const override;
+
+        // snap_fd_connection implementation
+        virtual ssize_t             write(void const * data, size_t const length) override;
+
+        // snap_connection implementation
+        virtual void                process_read() override;
+        virtual void                process_write() override;
+        virtual void                process_hup() override;
+
+        // new callback
+        virtual void                process_line(QString const & line) = 0;
+
+    private:
+        std::string                 f_line; // input -- do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
+        std::vector<char>           f_output;
+        size_t                      f_position = 0;
     };
 
     class snap_tcp_client_connection

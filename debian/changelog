@@ -1,3 +1,23 @@
+snapwebsites (1.5.38.0~xenial) xenial; urgency=high
+
+  * Enhanced some error messages for invalid calls to get_parameters() so
+    we know which command and parameter generated the error.
+  * Added a close() function on the snap_fd_connection.
+  * Added a mark_close() function so we can let snap_fd_connection know.
+  * Also check get_socket() in is_writer()/is_reader() if closed that's not
+    a writer or a reader.
+  * Added a set of read/write function to the snap_fd_connection.
+  * Added the Snap FD Buffer Connection which reads lines of data coming in
+    the fd and sends them through the process_line() callback.
+  * Enhanced the console implementation to redirect the stdout and stderr
+    to the output area instead of anywhere on the screen.
+  * Added a process_help() callback so when F1 is pressed, it gets called.
+  * Added an implementation of process_quit() to restore the FD as required
+    (i.e. stdout and stderr).
+  * Started on a message dialog to help create messages.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 22 Jan 2018 02:25:10 -0700
+
 snapwebsites (1.5.37.0~xenial) xenial; urgency=high
 
   * Added libncurse and libreadline as Source dependencies.

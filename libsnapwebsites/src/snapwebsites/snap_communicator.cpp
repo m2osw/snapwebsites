@@ -1035,7 +1035,7 @@ QString const snap_communicator_message::get_parameter(QString const & name) con
         return f_parameters[name];
     }
 
-    throw snap_communicator_invalid_message("snap_communicator_message::get_parameter(): parameter not defined, try has_parameter() before calling a get_parameter() function.");
+    throw snap_communicator_invalid_message(QString("snap_communicator_message::get_parameter(): parameter \"%1\" of command \"%2\" not defined, try has_parameter() before calling a get_parameter() function.").arg(name).arg(f_command));
 }
 
 
@@ -1066,12 +1066,12 @@ int64_t snap_communicator_message::get_integer_parameter(QString const & name) c
         int64_t const r(f_parameters[name].toLongLong(&ok, 10));
         if(!ok)
         {
-            throw snap_communicator_invalid_message("snap_communicator_message::get_integer_parameter(): message expected integer could not be converted.");
+            throw snap_communicator_invalid_message(QString("snap_communicator_message::get_integer_parameter(): command \"%1\" expected integer for \"%2\" but it could not be converted.").arg(f_command).arg(name));
         }
         return r;
     }
 
-    throw snap_communicator_invalid_message("snap_communicator_message::get_integer_parameter(): parameter not defined, try has_parameter() before calling a get_integer_parameter() function.");
+    throw snap_communicator_invalid_message(QString("snap_communicator_message::get_integer_parameter(): parameter \"%1\" of command \"%2\" not defined, try has_parameter() before calling a get_integer_parameter() function.").arg(name).arg(f_command));
 }
 
 
@@ -4123,6 +4123,57 @@ snap_communicator::snap_fd_connection::snap_fd_connection(int fd, mode_t mode)
 }
 
 
+/** \brief Used to close the file descriptor.
+ *
+ * This function closes the file descript of this connection.
+ *
+ * The function is not called automatically as we mention in the
+ * constructor, the function cannot just close the file descriptor
+ * on its own so it is up to you to call this function or not.
+ * It is not mandatory.
+ *
+ * The function does not verify to know whether the file descriptor
+ * was already closed outside of this function. Although it is safe
+ * to call this function multiple times, if you close the file
+ * descriptor with other means, then calling this function may
+ * end up closing another file...
+ */
+void snap_communicator::snap_fd_connection::close()
+{
+    if(f_fd != -1)
+    {
+        ::close(f_fd);
+        f_fd = -1;
+    }
+}
+
+
+/** \brief Used to mark the file descriptor as closed.
+ *
+ * This function marks the file descriptor as closed. Whether it is,
+ * is your own concern. This is used to avoid a double close in
+ * case some other function ends up calling close() and yet you
+ * somehow closed the file descriptor (i.e. fclose(f) will do that
+ * on you...)
+ *
+ * \code
+ *      ...
+ *      fclose(f);
+ *      // tell connection that we've close the connection fd
+ *      c->mark_closed();
+ *      ...
+ * \endcode
+ *
+ * Note that if you do not have any other copy of the file descriptor
+ * and you call mark_closed() instead of close(), you will leak that
+ * file descriptor.
+ */
+void snap_communicator::snap_fd_connection::mark_closed()
+{
+    f_fd = -1;
+}
+
+
 /** \brief Check whether this connection is a reader.
  *
  * If you created this file descriptor connection as a reader, then this
@@ -4134,7 +4185,7 @@ snap_communicator::snap_fd_connection::snap_fd_connection(int fd, mode_t mode)
  */
 bool snap_communicator::snap_fd_connection::is_reader() const
 {
-    return f_mode != mode_t::FD_MODE_WRITE;
+    return f_mode != mode_t::FD_MODE_WRITE && get_socket() != -1;
 }
 
 
@@ -4149,7 +4200,7 @@ bool snap_communicator::snap_fd_connection::is_reader() const
  */
 bool snap_communicator::snap_fd_connection::is_writer() const
 {
-    return f_mode != mode_t::FD_MODE_READ;
+    return f_mode != mode_t::FD_MODE_READ && get_socket() != -1;
 }
 
 
@@ -4165,6 +4216,343 @@ bool snap_communicator::snap_fd_connection::is_writer() const
 int snap_communicator::snap_fd_connection::get_socket() const
 {
     return f_fd;
+}
+
+
+/** \brief Read up data from the file descriptor.
+ *
+ * This function attempts to read up to \p count bytes of data from
+ * this file descriptor. If that works to some extend, then the
+ * data read will be saved in \p buf and the function returns
+ * the number of bytes read.
+ *
+ * If no data can be read, the function may return -1 or 0.
+ *
+ * The file descriptor must be a reader or the function will always fail.
+ *
+ * \param[in] buf  The buffer where the data read is saved.
+ * \param[in] count  The maximum number of bytes to read at once.
+ */
+ssize_t snap_communicator::snap_fd_connection::read(void * buf, size_t count)
+{
+    if(!snap_fd_connection::is_reader())
+    {
+        errno = EBADF;
+        return -1;
+    }
+
+    return ::read(f_fd, buf, count);
+}
+
+
+/** \brief Write buffer data to the file descriptor.
+ *
+ * This function writes \p count bytes of data from \p buf to
+ * the file descriptor attached to this connection.
+ *
+ * If the file descriptor is closed, then an error occurs and
+ * the function returns -1.
+ *
+ * \note
+ * If you setup the file descriptor in non-blocking mode, then the
+ * function will return early if it cannot cache or immediately
+ * send the specified data.
+ *
+ * \param[in] buf  A pointer to a buffer of data to write to the file.
+ * \param[in] count  The number of bytes to write to the file.
+ *
+ * \return The number of bytes written to the file.
+ */
+ssize_t snap_communicator::snap_fd_connection::write(void const * buf, size_t count)
+{
+    if(!snap_fd_connection::is_writer())
+    {
+        errno = EBADF;
+        return -1;
+    }
+
+    return ::write(f_fd, buf, count);
+}
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////
+// Snap FD Buffer Connection //
+///////////////////////////////
+
+/** \brief Initialize an fd connection with a buffer.
+ *
+ * The connection is initialized with the specified fd parameter.
+ *
+ * This initialization, so things work as expected in our environment,
+ * marks the file descriptor as non-blocking. This is important for
+ * the reader and writer capabilities.
+ *
+ * \param[in] fd  The file descriptor (often a pipe).
+ * \param[in] mode  The mode describing the file descriptor (i.e. read-only
+ *                  write-only, or read/write.)
+ */
+snap_communicator::snap_fd_buffer_connection::snap_fd_buffer_connection(int fd, mode_t mode)
+    : snap_fd_connection(fd, mode)
+{
+    non_blocking();
+}
+
+
+/** \brief Check whether this file descriptor still has some buffered input.
+ *
+ * This function returns true if there is partial incoming data in this
+ * object's buffer.
+ *
+ * \return true if some buffered input is waiting for completion.
+ */
+bool snap_communicator::snap_fd_buffer_connection::has_input() const
+{
+    return !f_line.empty();
+}
+
+
+
+/** \brief Check whether this file descriptor still has some buffered output.
+ *
+ * This function returns true if there is still some output data in the
+ * output cache buffer. Output is added by the write() function, which is
+ * called, for example, by the send_message() function.
+ *
+ * Note that if the fd was already closed, this function may still return
+ * true in the event we have some cached data.
+ *
+ * \return true if some buffered output is waiting to be sent out.
+ */
+bool snap_communicator::snap_fd_buffer_connection::has_output() const
+{
+    return !f_output.empty();
+}
+
+
+
+/** \brief Tells that this file descriptor is a writer when we have data.
+ *
+ * This function checks to know whether there is output data to be writen
+ * to this file descriptor. If so then the function returns true. Otherwise
+ * it just returns false.
+ *
+ * This happens whenever you called the write() function and the connection
+ * cache is not empty yet.
+ *
+ * Note that if the connection was closed or it not writable (as per the
+ * fd mode specified when creating this connection) then this function
+ * returns false.
+ *
+ * \return true if there is data to write to the fd, false otherwise.
+ */
+bool snap_communicator::snap_fd_buffer_connection::is_writer() const
+{
+    return !f_output.empty() && snap_fd_connection::is_writer();
+}
+
+
+/** \brief Write data to the connection.
+ *
+ * This function can be used to send data to this file descriptor.
+ * The data is bufferized and as soon as the connection file descriptor
+ * can accept more data it gets written there. In other words, we cannot
+ * just sleep and wait for an answer. The transfer of the data is therefore
+ * asynchroneous.
+ *
+ * \todo
+ * Determine whether we may end up with really large buffers that
+ * grow for a long time. This function only inserts and the
+ * process_signal() function only reads some of the bytes but it
+ * does not reduce the size of the buffer until all the data was
+ * sent.
+ *
+ * \note
+ * The function returns -1 and sets errno to EBADF if the file
+ * descriptor was closed (-1) or if it is not marked as a writer.
+ *
+ * \param[in] data  The pointer to the buffer of data to be sent.
+ * \param[out] length  The number of bytes to send.
+ *
+ * \return The number of bytes written, either -1, 0, or \p length
+ */
+ssize_t snap_communicator::snap_fd_buffer_connection::write(void const * data, size_t const length)
+{
+    if(get_socket() == -1
+    || !snap_fd_connection::is_writer()) // WARNING: We MUST call the snap_fd_connection version of the is_write(), our version tests the f_output which is an unwanted side effect here
+    {
+        errno = EBADF;
+        return -1;
+    }
+
+    if(data != nullptr
+    && length > 0)
+    {
+        char const * d(reinterpret_cast<char const *>(data));
+        f_output.insert(f_output.end(), d, d + length);
+        return length;
+    }
+
+    return 0;
+}
+
+
+/** \brief Read and process as much data as possible.
+ *
+ * This function reads as much incoming data as possible and processes
+ * it.
+ *
+ * If the input includes a newline character ('\n') then this function
+ * calls the process_line() callback which can further process that
+ * line of data.
+ *
+ * \todo
+ * Look into a way, if possible, to have a single instantiation since
+ * as far as I know this code matches the one written in the
+ * process_read() of the snap_tcp_client_buffer_connection and
+ * the snap_pipe_buffer_connection classes (and now snap_fd_buffer_connection).
+ */
+void snap_communicator::snap_fd_buffer_connection::process_read()
+{
+    // we read one character at a time until we get a '\n'
+    // since we have a non-blocking socket we can read as
+    // much as possible and then check for a '\n' and keep
+    // any extra data in a cache.
+    //
+    if(get_socket() != -1)
+    {
+        int count_lines(0);
+        int64_t const date_limit(snap_communicator::get_current_date() + f_processing_time_limit);
+        std::vector<char> buffer;
+        buffer.resize(1024);
+        for(;;)
+        {
+            errno = 0;
+            ssize_t const r(read(&buffer[0], buffer.size()));
+            if(r > 0)
+            {
+                for(ssize_t position(0); position < r; )
+                {
+                    std::vector<char>::const_iterator it(std::find(buffer.begin() + position, buffer.begin() + r, '\n'));
+                    if(it == buffer.begin() + r)
+                    {
+                        // no newline, just add the whole thing
+                        f_line += std::string(&buffer[position], r - position);
+                        break; // do not waste time, we know we are done
+                    }
+
+                    // retrieve the characters up to the newline
+                    // character and process the line
+                    //
+                    f_line += std::string(&buffer[position], it - buffer.begin() - position);
+                    process_line(QString::fromUtf8(f_line.c_str()));
+                    ++count_lines;
+
+                    // done with that line
+                    //
+                    f_line.clear();
+
+                    // we had a newline, we may still have some data
+                    // in that buffer; (+1 to skip the '\n' itself)
+                    //
+                    position = it - buffer.begin() + 1;
+                }
+
+                // when we reach here all the data read in `buffer` is
+                // now either fully processed or in f_line
+                //
+                // TODO: change the way this works so we can test the
+                //       limit after each process_line() call
+                //
+                if(count_lines >= f_event_limit
+                || snap_communicator::get_current_date() >= date_limit)
+                {
+                    // we reach one or both limits, stop processing so
+                    // the other events have a chance to run
+                    //
+                    break;
+                }
+            }
+            else if(r == 0 || errno == 0 || errno == EAGAIN || errno == EWOULDBLOCK)
+            {
+                // no more data available at this time
+                break;
+            }
+            else //if(r < 0)
+            {
+                int const e(errno);
+                SNAP_LOG_WARNING("an error occurred while reading from socket (errno: ")(e)(" -- ")(strerror(e))(").");
+                process_error();
+                return;
+            }
+        }
+    }
+
+    // process next level too
+    snap_fd_connection::process_read();
+}
+
+
+/** \brief Write to the connection's socket.
+ *
+ * This function implementation writes as much data as possible to the
+ * connection's socket.
+ *
+ * This function calls the process_empty_buffer() callback whenever the
+ * output buffer goes empty.
+ */
+void snap_communicator::snap_fd_buffer_connection::process_write()
+{
+    if(get_socket() != -1)
+    {
+        errno = 0;
+        ssize_t const r(snap_fd_connection::write(&f_output[f_position], f_output.size() - f_position));
+        if(r > 0)
+        {
+            // some data was written
+            f_position += r;
+            if(f_position >= f_output.size())
+            {
+                f_output.clear();
+                f_position = 0;
+                process_empty_buffer();
+            }
+        }
+        else if(r != 0 && errno != 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+        {
+            // connection is considered bad, get rid of it
+            //
+            int const e(errno);
+            SNAP_LOG_ERROR("an error occurred while writing to socket of \"")(f_name)("\" (errno: ")(e)(" -- ")(strerror(e))(").");
+            process_error();
+            return;
+        }
+    }
+
+    // process next level too
+    snap_fd_connection::process_write();
+}
+
+
+/** \brief The remote used hanged up.
+ *
+ * This function makes sure that the connection gets closed properly.
+ */
+void snap_communicator::snap_fd_buffer_connection::process_hup()
+{
+    // this connection is dead...
+    //
+    //close(); -- we are not currently responsible for closing this FD
+
+    snap_fd_connection::process_hup();
 }
 
 

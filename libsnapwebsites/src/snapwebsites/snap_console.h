@@ -42,6 +42,7 @@ public:
 
     void            output(std::string const & line);
     void            clear_output();
+    void            refresh();
     void            set_prompt(std::string const & prompt);
 
     // implementation of snap_communicator::snap_fd_connection
@@ -59,7 +60,8 @@ public:
     // that callback in account
     //
     virtual void    process_command(std::string const & command) = 0;
-    virtual void    process_quit() = 0;
+    virtual void    process_quit();
+    virtual void    process_help();
 
 private:
     friend ncurses_impl;

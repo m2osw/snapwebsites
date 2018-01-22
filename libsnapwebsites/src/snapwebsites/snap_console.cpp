@@ -19,6 +19,7 @@
 
 // our lib
 //
+#include "snapwebsites/log.h"
 #include "snapwebsites/not_used.h"
 
 // C++ lib
@@ -28,9 +29,11 @@
 
 // C lib
 //
+#include <fcntl.h>
 #include <ncurses.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <unistd.h>
 
 
 namespace snap
@@ -65,6 +68,25 @@ class ncurses_impl
 public:
     typedef std::shared_ptr<ncurses_impl>    pointer_t;
 
+    class io_pipe_connection
+        : public snap_communicator::snap_fd_buffer_connection
+    {
+    public:
+        io_pipe_connection(int fd, ncurses_impl * impl)
+            : snap_fd_buffer_connection(fd, snap_communicator::snap_fd_connection::mode_t::FD_MODE_READ)
+            , f_impl(impl)
+        {
+        }
+
+        virtual void process_line(QString const & line) override
+        {
+            f_impl->output(line.toUtf8().data());
+        }
+
+    private:
+        ncurses_impl *      f_impl;
+    };
+
     static pointer_t ptr()
     {
         if(f_snap_console->f_impl == nullptr)
@@ -97,12 +119,10 @@ public:
 
     ~ncurses_impl()
     {
-        // shouldn't these close() be called backward?
-        //
-        close_ncurse();
         close_readline();
+        close_ncurse();
 
-        f_snap_console = nullptr;
+        f_snap_console = nullptr; // let the user create a new console later
     }
 
     bool process_read()
@@ -156,6 +176,35 @@ public:
         }
 
         return f_should_exit; // always true here at the moment
+    }
+
+    void restore_fd(FILE * f, FILE *& n, io_pipe_connection::pointer_t& c)
+    {
+        // this is the pipe (read-side), we can just close everything
+        //
+        // WARNING: the "socket" (file descriptor) does not get closed
+        //          automatically by the snap_fd_connection so we do
+        //          that here "manually"
+        //
+        c->close();
+        snap::snap_communicator::instance()->remove_connection(c);
+        c.reset();
+
+        // f is the pipe (write-side) and it can directly be replaced
+        // by the old stdout or stderr file descriptor
+        //
+        dup2(fileno(n), fileno(f));
+
+        // and for the new file descriptor we do not need it anymore
+        //
+        fclose(n);
+        n = nullptr;
+    }
+
+    void process_quit()
+    {
+        restore_fd(stdout, f_ncurses_stdout, f_stdout_pipe);
+        restore_fd(stderr, f_ncurses_stderr, f_stderr_pipe);
     }
 
     void output(std::string const & line)
@@ -213,12 +262,96 @@ public:
         resize();
     }
 
+    void refresh()
+    {
+        wrefresh(f_win_output);
+        wrefresh(f_win_input);
+    }
+
     void set_prompt(std::string const & prompt)
     {
         rl_callback_handler_install(prompt.c_str(), got_command);
     }
 
 private:
+    /** \brief Duplicate one of stdout or stderr and create a pipe instead.
+     *
+     * For the rest of the software to be able to write to stdout and
+     * stderr without having to overhaul the whole entire thing, we
+     * want to hijack the stdout and stderr file descriptor and
+     * replace it with a pipe.
+     *
+     * This function does that, but first it saves the existing stdout
+     * and stderr in a new FILE object so that way we can still access
+     * our terminal in ncurses.
+     *
+     * \warning
+     * The pipe under Linux is limited to 64Kb. If we reach that limit
+     * before we can read the data, then anything more  will be lost.
+     * (because we make the pipe non-block, if too much data is written,
+     * it will fail.) It should not happen with the existing code, but
+     * that's something to keep in mind.
+     *
+     * \param[in] f  The file being updated (stdout or stderr).
+     * \param[out] n  Where the new ncurses terminal file descriptor gets
+     *                saved (so we transfer stdout or stderr to this FILE *
+     *                which this function creates and saves in this variable)
+     * \param[out] c  Where the new connection gets saved.
+     */
+    void initialize_fd(FILE * f, FILE * & n, io_pipe_connection::pointer_t & c)
+    {
+        // copy the existing fd
+        //
+        int const d(dup(fileno(f)));
+        if(d == -1)
+        {
+            fatal_error("Could not duplicate file descriptor");
+        }
+
+        // create a new FILE object with that fd
+        // ncurses will be using that fd for output/errors
+        //
+        n = fdopen(d, "a");
+        if(n == nullptr)
+        {
+            fatal_error("Could not create FILE from new descriptor");
+        }
+
+        // create a pipe for the old stdout/stderr
+        //
+        int p[2]{0, 0};
+        int const r(pipe2(p, O_NONBLOCK));
+        if(r != 0)
+        {
+            fatal_error("Could not create a pipe to replace stdout or stderr");
+        }
+
+        // replace the stdout/stderr fd here
+        // then close the duplicate pipe
+        // note that this way the replacement is done atomically
+        //
+        int const fd(dup2(p[1], fileno(f))); // replace stdout or stderr here
+        if(fd == -1)
+        {
+            fatal_error("Could not replace stdout or stderr with new fd from pipe");
+        }
+        if(::close(p[1]) == -1)
+        {
+            SNAP_LOG_WARNING("could not close pipe ")(p[1])(" after dup2() to ")(fileno(f));
+        }
+
+        // create a communicator connection with the other side of the pipe
+        // (note that in effect we are writing to ourselves, which means
+        // the stdout and stderr streams must not be given more than 64Kb
+        // in a row or the process will block/fail in weird ways.)
+        //
+        c = std::make_shared<io_pipe_connection>(p[0], this);
+        if(!snap_communicator::instance()->add_connection(c))
+        {
+            fatal_error("could not add stdout/stderr stream replacement");
+        }
+    }
+
     void open_ncurse()
     {
         // setup locale
@@ -228,9 +361,51 @@ private:
             fatal_error("Failed to set locale attributes from environment");
         }
 
-        // initialize screen
+        // transform the I/O organization so we can capture stdout and
+        // stderr data and print it cleanly in the output window (otherwise
+        // it appears wherever and the screen looks like crap.)
         //
-        f_win_main = initscr();
+        // so... we do the following steps:
+        //
+        //     duplicate stdout
+        //     fdopen with duplicate of stdout
+        //
+        //     create pipe A
+        //     dup2 pipe output (write-side) to stdout
+        //     create an fd connection with input (read-side)
+        //     add connection to communicator
+        //
+        //     duplicate stderr
+        //     fdopen with duplicate of stderr
+        //
+        //     create pipe B
+        //     dup2 pipe output (write-side) to stderr
+        //     create an fd connection with input (read-side)
+        //     add connection to communicator
+        //
+        // after that, the two new connections we created out pipes will
+        // be able to read anything that gets written to stdout and stderr
+        // (and we can have something in our connections telling us which
+        // color to use so we can very easily distinguish both types)
+        //
+        // the duplicates of stdout and stdin are to be used in the
+        // newterm() function when initializing our ncurses environment
+        // which is why we do that work before initializing ncurses
+        //
+        initialize_fd(stdout, f_ncurses_stdout, f_stdout_pipe);
+        initialize_fd(stderr, f_ncurses_stderr, f_stderr_pipe);
+
+        // initialize screen with our moved terminal
+        // (we don't actually need f_ncurses_stderr)
+        //
+        f_term = newterm(nullptr, f_ncurses_stdout, stdin);
+        if(f_term == nullptr)
+        {
+            fatal_error("newterm() failed to initialize ncurses");
+        }
+        set_term(f_term);
+
+        f_win_main = stdscr;
         if(f_win_main == nullptr)
         {
             fatal_error("initscr() failed to initialize ncurses");
@@ -349,6 +524,14 @@ private:
                 f_win_input = nullptr;
             }
 
+            // f_win_main -- this is handled by f_term
+
+            if(f_term != nullptr)
+            {
+                delscreen(f_term);
+                f_term = nullptr;
+            }
+
             // make sure endwin() is only called in visual mode.
             //
             // Note: calling it twice does not seem to be supported
@@ -360,6 +543,17 @@ private:
         }
     }
 
+    static int show_help(int count, int c)
+    {
+        NOTUSED(count);
+        NOTUSED(c);
+
+        f_snap_console->process_help();
+
+        // it worked, return 0
+        return 0;
+    }
+
     void open_readline()
     {
         // disable auto-completion
@@ -367,6 +561,11 @@ private:
         if(rl_bind_key('\t', rl_insert) != 0)
         {
             fatal_error("invalid key passed to rl_bind_key()");
+        }
+
+        if(rl_bind_keyseq("\\eOP" /* F1 */, &show_help) != 0)
+        {
+            fatal_error("invalid key (^[OP a.k.a. F1) sequence passed to rl_bind_keyseq");
         }
 
         // TODO: allow for not using history
@@ -416,7 +615,7 @@ private:
 
     void ready()
     {
-        output("Ready.\nType /help for help screen.");
+        output("Ready.\nType /help or F1 for help screen.");
     }
 
     void draw_borders()
@@ -677,6 +876,7 @@ private:
             f_snap_console->f_impl->close_ncurse();
             f_snap_console->f_impl.reset();
         }
+        SNAP_LOG_FATAL(msg);
         std::cerr << msg << std::endl;
         exit(1);
     }
@@ -807,7 +1007,12 @@ private:
 
     //static ncurses_impl::pointer_t  f_nc;
     static snap_console *           f_snap_console; // initialized below (because it is static)
+    FILE *                          f_ncurses_stdout;
+    FILE *                          f_ncurses_stderr;
+    io_pipe_connection::pointer_t   f_stdout_pipe;
+    io_pipe_connection::pointer_t   f_stderr_pipe;
     std::string                     f_history_filename = "~/.snap_history";
+    SCREEN *                        f_term = nullptr;
     WINDOW *                        f_win_main = nullptr;
     WINDOW *                        f_win_output = nullptr;
     WINDOW *                        f_win_input = nullptr;
@@ -853,6 +1058,11 @@ void snap_console::clear_output()
     f_impl->clear_output();
 }
 
+void snap_console::refresh()
+{
+    f_impl->refresh();
+}
+
 void snap_console::set_prompt(std::string const & prompt)
 {
     f_impl->set_prompt(prompt);
@@ -866,6 +1076,35 @@ void snap_console::process_read()
         //
         mark_done();
     }
+}
+
+
+/** \brief Close the stdout and stderr connections.
+ *
+ * You must call this function whenever yours gets called.
+ *
+ * Whenever you create a console, it redirects the stdout and stderr
+ * to a couple of connections (using pipes). This is used to send
+ * the output to out output console instead of wherever on the screen.
+ *
+ * The quit must be called if you want to get rid of those two
+ * connections and thus have the snap_communicator::run() function
+ * returns as expected.
+ */
+void snap_console::process_quit()
+{
+    f_impl->process_quit();
+}
+
+
+/** \brief Called whenever the Help key is hit.
+ *
+ * This callback gives you the opportunity to implement a function
+ * whenever the help key is hit. You may ignore that key entirely
+ * by not implementing this callback.
+ */
+void snap_console::process_help()
+{
 }
 
 }

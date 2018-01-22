@@ -1,5 +1,5 @@
 // Snap Websites Server -- to send UDP signals to backends
-// Copyright (C) 2011-2017  Made to Order Software Corp.
+// Copyright (C) 2018  Made to Order Software Corp.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,6 +31,10 @@
 // C++ library
 //
 #include <atomic>
+
+// ncurses
+//
+#include <ncurses.h>
 
 // readline library
 //
@@ -379,7 +383,6 @@ public:
         switch(f_connection_type)
         {
         case connection_t::NONE:
-std::cout << "not connected, not sending message [" << message << "]\n";
             return false;
 
         case connection_t::TCP:
@@ -387,7 +390,6 @@ std::cout << "not connected, not sending message [" << message << "]\n";
             break;
 
         case connection_t::UDP:
-std::cout << "sending UDP message [" << message << "]\n";
             snap::snap_communicator::snap_udp_server_message_connection::send_message(f_addr.toUtf8().data(), f_port, msg);
             break;
 
@@ -493,6 +495,7 @@ public:
         : snap_console(history_file)
         , f_connection(connection)
     {
+        f_console = this;
     }
 
     virtual ~cui_connection()
@@ -502,6 +505,63 @@ public:
     void reset_prompt()
     {
         set_prompt(f_connection->define_prompt());
+    }
+
+    static int create_message(int count, int c)
+    {
+        snap::NOTUSED(count);
+        snap::NOTUSED(c);
+
+        f_console->open_message_dialog();
+        return 0;
+    }
+
+    void open_message_dialog()
+    {
+        if(f_win_message != nullptr)
+        {
+            delwin(f_win_message);
+            f_win_message = nullptr;
+            refresh();
+            return;
+        }
+
+        // Note:
+        // We probably want to use the `dialog` library.
+        // Try `man 3 dialog` for details about that library.
+        // There is also an online version of that manual page:
+        // https://www.freebsd.org/cgi/man.cgi?query=dialog&sektion=3
+
+        // TODO: create function to gather the screen size
+        int width = 80;
+        int height = 15;
+        f_win_message = newwin(height - 4, width - 4, 2, 2);
+        if(f_win_message == nullptr)
+        {
+            std::cerr << "couldn't create message window." << std::endl;
+            exit(1);
+        }
+
+        wborder(f_win_message, 0, 0, 0, 0, 0, 0, 0, 0);
+        mvwprintw(f_win_message, 0, 2, " Create Message ");
+
+        // TODO message...
+        mvwprintw(f_win_message, 2, 2, "TODO: implement popup dialog to help creating a message without");
+        mvwprintw(f_win_message, 3, 2, "      having to know the exact syntax.");
+
+        if(wrefresh(f_win_message) != OK)
+        {
+            std::cerr << "wrefresh() to output message window failed." << std::endl;
+            exit(1);
+        }
+    }
+
+    void set_message_dialog_key_binding()
+    {
+        if(rl_bind_keyseq("\\eOQ" /* F2 */, &create_message) != 0)
+        {
+            std::cerr << "invalid key (^[OQ a.k.a. F2) sequence passed to rl_bind_keyseq";
+        }
     }
 
     virtual void process_command(std::string const & command) override
@@ -518,6 +578,19 @@ public:
     {
         f_connection->disconnect();
         snap::snap_communicator::instance()->remove_connection(shared_from_this());
+
+        // remove the pipes for stdout and stderr
+        //
+        // WARNING: this must be done AFTER we disconnected from the
+        //          ncurses which is done above (at this point the
+        //          connection was deleted though! weird...)
+        //
+        snap_console::process_quit(); 
+    }
+
+    virtual void process_help() override
+    {
+        help();
     }
 
     bool execute_command(std::string const & command)
@@ -544,16 +617,7 @@ public:
         || command == "/?"
         || command == "?")
         {
-            output("Help:");
-            output("Internal commands start with a  slash (/). Supported commands:");
-            output("  /connect <ip>:<port> -- connect to specified IP and port");
-            output("  /disconnect -- explicitly disconnect any existing connection");
-            output("  /help or /? or ? -- print this help screen");
-            output("  /plain -- get a plain connection");
-            output("  /quit -- leave snapmessage");
-            output("  /tcp -- send messages using our TCP connectionse");
-            output("  /udp -- send messages using our UDP connectionse");
-            output("  /ssl -- get an SSL connection");
+            help();
             return false;
         }
 
@@ -635,8 +699,27 @@ public:
     }
 
 private:
-    connection::pointer_t                   f_connection;
+    void help()
+    {
+        output("Help:");
+        output("Internal commands start with a  slash (/). Supported commands:");
+        output("  /connect <ip>:<port> -- connect to specified IP and port");
+        output("  /disconnect -- explicitly disconnect any existing connection");
+        output("  /help or /? or ? or F1 key -- print this help screen");
+        output("  /plain -- get a plain connection");
+        output("  /quit -- leave snapmessage");
+        output("  /tcp -- send messages using our TCP connectionse");
+        output("  /udp -- send messages using our UDP connectionse");
+        output("  /ssl -- get an SSL connection");
+        output("  F2 -- create a message in a popup window");
+    }
+
+    static cui_connection * f_console /* = nullptr; done below because it's static */;
+    connection::pointer_t   f_connection;
+    WINDOW *                f_win_message = nullptr;
 };
+
+cui_connection * cui_connection::f_console = nullptr;
 
 
 
@@ -754,6 +837,7 @@ public:
         {
             cui_connection::pointer_t cui(std::make_shared<cui_connection>(f_connection));
             cui->reset_prompt();
+            cui->set_message_dialog_key_binding();
             if(!snap::snap_communicator::instance()->add_connection(cui))
             {
                 std::cerr << "error: could not add CUI snap_console to list of snap_communicator connections." << std::endl;
