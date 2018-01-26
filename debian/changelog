@@ -1,3 +1,16 @@
+snapwebsites (1.5.39.0~xenial) xenial; urgency=high
+
+  * Enhanced the console in various ways.
+  * Fixed closing the console, it now calls endwin() in the right place.
+  * Fixed some old comments in snap_communicator so they match current status.
+  * Moved the restore_fd() calls to the close_ncurse() because it has to be
+    done at the right location (i.e. after the delscreen().)
+  * Applied a fix to the console so the pointer appears at the correct
+    location after output() was called.
+  * Use a weak pointer in one location that would lock up the snap_console.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 22 Jan 2018 02:25:10 -0700
+
 snapwebsites (1.5.38.0~xenial) xenial; urgency=high
 
   * Enhanced some error messages for invalid calls to get_parameters() so

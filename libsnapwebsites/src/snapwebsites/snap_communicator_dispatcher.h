@@ -28,7 +28,7 @@ namespace snap
  * Whenever you receive messages, they can automatically get dispatched to
  * various functions using the dispatcher.
  *
- * You define a dispatcher_match vector and then add a dispatcher to
+ * You define a dispatcher_match array and then add a dispatcher to
  * your connection object.
  *
  * \code
@@ -73,7 +73,7 @@ namespace snap
  * again.)
  *
  * \note
- * This is documented here because it is a template and we can't do
+ * This is documented here because it is a template and we cannot do
  * that in the .cpp (at least older versions of doxygen could not.)
  */
 template<typename T>
@@ -122,12 +122,6 @@ public:
          * as the origination of the message.
          */
         typedef bool (*match_func_t)(QString const & expr, snap_communicator_message & msg);
-
-        /** \brief A vector of dispatcher_match types.
-         *
-         * The vector
-         */
-        //typedef std::vector<dispatcher_match>  vector_t;
 
         /** \brief The default matching function.
          *
@@ -223,17 +217,32 @@ public:
          * most cases the match function is going to be
          * one_on_one_match() which means it has to be exactly equal.
          *
-         * If it is a match, this function runs your connection execution
+         * If it is a match, this function runs your \p connection execution
          * function (i.e. the message gets dispatched) and then it returns
          * true.
          *
          * If the message is not a match, then the function returns false
          * and only the matching function was called. In this case the
-         * connection does not get used.
+         * \p connection does not get used.
+         *
+         * When this function returns true, you should not call the
+         * process_message() function since that was already taken care
+         * of. The process_message() function should only be called
+         * if the message was not yet dispatched. When the list of
+         * matches includes a catch all at the end, the process_message()
+         * will never be called.
+         *
+         * \note
+         * Note that we do not offer two functions, one to run the match
+         * function and one to execute the match because you could otherwise
+         * end up calling the execute function (dispatch) on any
+         * `dispatcher_match` entry and we did not want that to happen.
          *
          * \param[in] connection  The connection attached to that
          *                        `dispatcher_match`.
          * \param[in] msg  The message that matched.
+         *
+         * \return true if the connection execute function was called.
          */
         bool execute(T * connection, snap::snap_communicator_message & msg) const
         {
@@ -250,7 +259,9 @@ public:
 private:
     /** \brief The connection pointer.
      *
-     * This parameter is set by the constructor.
+     * This parameter is set by the constructor. It represents the
+     * connection this dispatcher was added to (a form of parent of
+     * this dispatcher object.)
      */
     T *                         f_connection = nullptr;
 
@@ -259,6 +270,9 @@ private:
      * This is the array of your messages with the corresponding
      * match and execute functions. This is used to go through
      * the matches and execute (dispatch) as required.
+     *
+     * The number of items is calculated in the constructor
+     * and saved in the f_matches_count parameter.
      */
     dispatcher_match const *    f_matches = nullptr;
 
@@ -292,6 +306,15 @@ public:
      *
      * This function takes a pointer to your connection and an array
      * of matches.
+     *
+     * Whenever a message is received by one of your connections, the
+     * dispatch() function gets called which checks the message against
+     * each entry in this array of \p matches.
+     *
+     * \param[in] connection  The connection for which this dispatcher is
+     *                        created.
+     * \param[in] matches  The array of dispatch keywords and functions.
+     * \param[in] matches_size  The sizeof() of the matches array.
      */
     dispatcher<T>(T * connection, dispatcher_match const * matches, size_t matches_size)
         : f_connection(connection)
@@ -307,12 +330,18 @@ public:
      *
      * The function returns true if the message was dispatched.
      * When that happen, the process_message() function of the
-     * connection does not get called.
+     * connection should not be called.
      *
      * You may not include a message in the array of `dispatch_match`
      * if it is too complicated to match or too many variables are
      * necessary then you will probably want to use your
      * process_message().
+     *
+     * By adding a catch-all at the end of your list of matches, you
+     * can easily have one function called for any message. By default
+     * the dispatcher environment offers such a match function and
+     * it also includes a function that sends the UNKNOWN message as
+     * an immediate reply to a received message.
      *
      * \param[in] msg  The message to be dispatched.
      *
@@ -343,7 +372,14 @@ public:
      * By default, the f_trace flag is set to false. You can change it to
      * true while debugging. You should remember to turn it back off once
      * you make an official version of your service to avoid the possibly
-     * huge overhead of sending all those messages.
+     * huge overhead of sending all those log messages. One way to do so
+     * is to place the code within #ifdef/#endif as in:
+     *
+     * \code
+     *     #ifdef _DEBUG
+     *         my_dispatcher->set_trace();
+     *     #endif
+     * \endcode
      *
      * \param[in] trace  Set to true to get SNAP_LOG_TRACE() of each message.
      */

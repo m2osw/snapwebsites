@@ -249,8 +249,7 @@ public:
 
     virtual void process_message(snap::snap_communicator_message const & message) override
     {
-        std::cout << std::endl
-                  << "Received message: "
+        std::cout << "Received message: "
                   << message.to_message()
                   << std::endl;
     }
@@ -264,6 +263,7 @@ class connection
 {
 public:
     typedef std::shared_ptr<connection>     pointer_t;
+    typedef std::weak_ptr<connection>       weak_pointer_t;
 
     enum class connection_t
     {
@@ -271,6 +271,11 @@ public:
         TCP,
         UDP
     };
+
+    ~connection()
+    {
+        disconnect();
+    }
 
     void disconnect()
     {
@@ -372,7 +377,7 @@ public:
             return false;
         }
 
-        QString qmessage(QString::fromUtf8(message.c_str()));
+        QString const qmessage(QString::fromUtf8(message.c_str()));
         snap::snap_communicator_message msg;
         if(!msg.from_message(qmessage))
         {
@@ -498,13 +503,13 @@ public:
         f_console = this;
     }
 
-    virtual ~cui_connection()
-    {
-    }
-
     void reset_prompt()
     {
-        set_prompt(f_connection->define_prompt());
+        connection::pointer_t c(f_connection.lock());
+        if(c != nullptr)
+        {
+            set_prompt(c->define_prompt());
+        }
     }
 
     static int create_message(int count, int c)
@@ -576,7 +581,8 @@ public:
 
     virtual void process_quit() override
     {
-        f_connection->disconnect();
+        f_connection.reset();
+
         snap::snap_communicator::instance()->remove_connection(shared_from_this());
 
         // remove the pipes for stdout and stderr
@@ -621,14 +627,21 @@ public:
             return false;
         }
 
+        connection::pointer_t c(f_connection.lock());
+        if(c == nullptr)
+        {
+            output("You are disconnected. Most commands will not work anymore.");
+            return false;
+        }
+
         // /connect <IP>:<port>
         //
         // connect to service listening at <IP> on port <port>
         //
         if(command.compare(0, 9, "/connect ") == 0)
         {
-            f_connection->set_address(command.substr(9));
-            f_connection->connect();
+            c->set_address(command.substr(9));
+            c->connect();
             return false;
         }
 
@@ -638,7 +651,7 @@ public:
         //
         if(command == "/disconnect")
         {
-            f_connection->disconnect();
+            c->disconnect();
             return false;
         }
 
@@ -648,7 +661,7 @@ public:
         //
         if(command == "/tcp")
         {
-            f_connection->set_selected_connection_type(connection::connection_t::TCP);
+            c->set_selected_connection_type(connection::connection_t::TCP);
             return true;
         }
 
@@ -658,7 +671,7 @@ public:
         //
         if(command == "/udp")
         {
-            f_connection->set_selected_connection_type(connection::connection_t::UDP);
+            c->set_selected_connection_type(connection::connection_t::UDP);
             return true;
         }
 
@@ -668,7 +681,7 @@ public:
         //
         if(command == "/plain")
         {
-            f_connection->switch_mode(tcp_client_server::bio_client::mode_t::MODE_PLAIN);
+            c->switch_mode(tcp_client_server::bio_client::mode_t::MODE_PLAIN);
             return true;
         }
 
@@ -678,7 +691,7 @@ public:
         //
         if(command == "/ssl")
         {
-            f_connection->switch_mode(tcp_client_server::bio_client::mode_t::MODE_SECURE);
+            c->switch_mode(tcp_client_server::bio_client::mode_t::MODE_SECURE);
             return true;
         }
 
@@ -694,7 +707,7 @@ public:
         // by default, if not an internal command, we consider the command
         // to be the content a message and therefore we just send it
         //
-        f_connection->send_message(command);
+        c->send_message(command);
         return false;
     }
 
@@ -714,9 +727,9 @@ private:
         output("  F2 -- create a message in a popup window");
     }
 
-    static cui_connection * f_console /* = nullptr; done below because it's static */;
-    connection::pointer_t   f_connection;
-    WINDOW *                f_win_message = nullptr;
+    static cui_connection *     f_console /* = nullptr; done below because it's static */;
+    connection::weak_pointer_t  f_connection;
+    WINDOW *                    f_win_message = nullptr;
 };
 
 cui_connection * cui_connection::f_console = nullptr;

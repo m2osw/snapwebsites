@@ -178,7 +178,7 @@ public:
         return f_should_exit; // always true here at the moment
     }
 
-    void restore_fd(FILE * f, FILE *& n, io_pipe_connection::pointer_t& c)
+    void restore_fd(FILE * f, FILE * & n, io_pipe_connection::pointer_t & c)
     {
         // this is the pipe (read-side), we can just close everything
         //
@@ -203,8 +203,6 @@ public:
 
     void process_quit()
     {
-        restore_fd(stdout, f_ncurses_stdout, f_stdout_pipe);
-        restore_fd(stderr, f_ncurses_stderr, f_stderr_pipe);
     }
 
     void output(std::string const & line)
@@ -237,6 +235,16 @@ public:
             fatal_error("wrefresh() to output window failed");
         }
         f_first_line = false;
+
+        // TODO: we could use a timer on this object that will
+        //       instantly timeout on the next run() loop so that
+        //       that way the cursor gets set only once
+        //
+        set_cursor();
+        if(wrefresh(f_win_input) != OK)
+        {
+            fatal_error("wrefresh() failed");
+        }
     }
 
     void clear_output()
@@ -402,6 +410,7 @@ private:
         if(f_term == nullptr)
         {
             fatal_error("newterm() failed to initialize ncurses");
+            NOTREACHED();
         }
         set_term(f_term);
 
@@ -409,6 +418,7 @@ private:
         if(f_win_main == nullptr)
         {
             fatal_error("initscr() failed to initialize ncurses");
+            NOTREACHED();
         }
 
         // we've got a screen, we're in visual mode now
@@ -438,18 +448,22 @@ private:
         if(cbreak() != OK)
         {
             fatal_error("cbreak() failed");
+            NOTREACHED();
         }
         if(noecho() != OK)
         {
             fatal_error("noecho() failed");
+            NOTREACHED();
         }
         if(nonl() != OK)
         {
             fatal_error("nonl() failed");
+            NOTREACHED();
         }
         if(intrflush(nullptr, false) != OK)
         {
             fatal_error("intrflush() failed");
+            NOTREACHED();
         }
 
         // IMPORTANT:
@@ -526,20 +540,35 @@ private:
 
             // f_win_main -- this is handled by f_term
 
+            // make sure endwin() is only called in visual mode.
+            //
+            // also, it has to be called before we destroy the terminal
+            // (f_term)
+            //
+            // Note: calling it twice does not seem to be supported
+            //       and messed with the cursor position.
+            //
+            if(endwin() != OK)
+            {
+                SNAP_LOG_WARNING("endwin() failed");
+            }
+
             if(f_term != nullptr)
             {
                 delscreen(f_term);
                 f_term = nullptr;
             }
 
-            // make sure endwin() is only called in visual mode.
-            //
-            // Note: calling it twice does not seem to be supported
-            //       and messed with the cursor position.
-            //
-            endwin();
-
             f_visual_mode = false;
+        }
+
+        if(f_stdout_pipe != nullptr)
+        {
+            restore_fd(stdout, f_ncurses_stdout, f_stdout_pipe);
+        }
+        if(f_stderr_pipe != nullptr)
+        {
+            restore_fd(stderr, f_ncurses_stderr, f_stderr_pipe);
         }
     }
 
@@ -761,15 +790,6 @@ private:
      */
     void win_input_redisplay(bool for_resize)
     {
-        // WARNING: we have two test because if the prompt includes a
-        //          tab then the size is different than without a tab
-        //          in there (at least that's the only thing that could
-        //          affect the calculation done in strnwidth())
-        //
-        size_t const prompt_width = strnwidth(rl_display_prompt, SIZE_MAX, 0);
-        size_t const cursor_col = prompt_width +
-                            strnwidth(rl_line_buffer, rl_point, prompt_width);
-
         if(werase(f_win_input) != OK)
         {
             fatal_error("werase() failed");
@@ -780,23 +800,7 @@ private:
         //
         mvwprintw(f_win_input, 0, 0, "%s%s", rl_display_prompt, rl_line_buffer);
 
-        int x(cursor_col % (f_screen_width - 2));
-        int y(cursor_col / (f_screen_width - 2));
-        if(y >= 4)
-        {
-            // hide the cursor if it lies outside the window
-            // otherwise it breaks the wmove() call
-            //
-            curs_set(0);
-        }
-        else
-        {
-            if(wmove(f_win_input, y, x) != OK)
-            {
-                fatal_error("wmove() failed");
-            }
-            curs_set(2);
-        }
+        set_cursor();
 
         // we batch window updates when resizing
         //
@@ -814,6 +818,42 @@ private:
                 fatal_error("wrefresh() failed");
             }
         }
+    }
+
+    /** \brief Place the cursor.
+     *
+     * The function calculates the position of the cursor in the input
+     * window and then moves the cursor there.
+     */
+    void set_cursor()
+    {
+        // WARNING: we have two test because if the prompt includes a
+        //          tab then the size is different than without a tab
+        //          in there (at least that's the only thing that could
+        //          affect the calculation done in strnwidth())
+        //
+        size_t const prompt_width = strnwidth(rl_display_prompt, SIZE_MAX, 0);
+        size_t const cursor_col = prompt_width +
+                            strnwidth(rl_line_buffer, rl_point, prompt_width);
+
+        int const x(cursor_col % (f_screen_width - 2));
+        int const y(cursor_col / (f_screen_width - 2));
+        if(y >= 4)
+        {
+            // hide the cursor if it lies outside the window
+            // otherwise it breaks the wmove() call
+            //
+            curs_set(0);
+        }
+        else
+        {
+            if(wmove(f_win_input, y, x) != OK)
+            {
+                fatal_error("wmove() failed");
+            }
+            curs_set(2);
+        }
+
     }
 
     /** \brief We got a resize signal, make sure to redraw everything.

@@ -1244,10 +1244,29 @@ bool snap_communicator::snap_dispatcher_support::try_dispatching_message(snap::s
  *      },
  * \endcode
  *
+ * \todo
+ * Look into fixing this function so it can send the UNKNOWN message itself.
+ * That way we'd avoid the last entry in the match array, which would allow
+ * us to have binary search (much faster).
+ *
  * \param[in] message  The message to be processed.
  */
 void snap_communicator::snap_dispatcher_support::process_message(snap_communicator_message const & message)
 {
+    // We don't currently have access to the send_message() function from
+    // here--the snap_inter_thread_message_connection class causes a problem
+    // because it has two process_message() functions: process_message_a()
+    // and process_message_b().
+    //
+    //snap::snap_communicator_message unknown;
+    //unknown.reply_to(message);
+    //unknown.set_command("UNKNOWN");
+    //unknown.add_parameter("command", message.get_command());
+    //if(!send_message(unknown, false))
+    //{
+    //    SNAP_LOG_WARNING("could not reply with UNKNOWN message to \"")(message.get_command())("\"");
+    //}
+
     SNAP_LOG_FATAL("process_message() with message \"")
                   (message.to_message())
                   ("\" was not reimplemented in your class and the always_match() was not used in your dispatcher matches");
@@ -6182,11 +6201,11 @@ public:
 
         /** \brief Retrieve the client allocated and connected by the thread.
          *
-         * This functio returns the TCP connection object resulting from
+         * This function returns the TCP connection object resulting from
          * connection attempts of the background thread.
          *
-         * If the pointer is null, then you may get the error message
-         * using the get_last_error() function.
+         * If the pointer is null, then you may get the corresponding
+         * error message using the get_last_error() function.
          *
          * You can get the client TCP connection pointer once. After that
          * you always get a null pointer.
@@ -7699,6 +7718,12 @@ bool snap_communicator::run()
             c->f_fds_position = -1;
 
             // is the connection enabled?
+            //
+            // note that we save that value for later use in our loop
+            // below because otherwise we will miss many events and
+            // it tends to break things; that means you may get your
+            // callback called even while disabled
+            //
             enabled.push_back(c->is_enabled());
             if(!enabled[idx])
             {
@@ -7817,7 +7842,7 @@ bool snap_communicator::run()
             //
             if(static_cast<size_t>(r) > connections.size())
             {
-                throw snap_communicator_runtime_error("poll() returned a number larger than the input");
+                throw snap_communicator_runtime_error("poll() returned a number of events to handle larger than the input allows");
             }
             //SNAP_LOG_TRACE("tid=")(gettid())(", snap_communicator::run(): ------------------- new set of ")(r)(" events to handle");
 
@@ -7833,11 +7858,15 @@ bool snap_communicator::run()
                 snap_connection::pointer_t c(connections[idx]);
 
                 // is the connection enabled?
-                // TODO: check on whether we should save the enable
-                //       flag from before and not use the current
-                //       one (i.e. a callback could disable something
-                //       that we otherwise would expect to run at least
-                //       once...)
+                //
+                // note that we check whether that connection was enabled
+                // before poll() was called; this is very important because
+                // the last poll() events must be run even if a previous
+                // callback call just disabled this very connection
+                // (i.e. at the time we called poll() the connection was
+                // still enabled and therefore we are expected to call
+                // their callbacks even if it just got disabled by an
+                // earlier callback)
                 //
                 if(!enabled[idx])
                 {
@@ -7914,6 +7943,7 @@ bool snap_communicator::run()
 //    ("', timestamp = ")(timestamp)
 //    (", now = ")(now)
 //    (", now >= timestamp --> ")(now >= timestamp ? "TRUE (timed out!)" : "FALSE");
+
                         // move the timeout as required first
                         // (because the callback may move it again)
                         //
