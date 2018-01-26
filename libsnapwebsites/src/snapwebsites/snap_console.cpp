@@ -80,7 +80,28 @@ public:
 
         virtual void process_line(QString const & line) override
         {
-            f_impl->output(line.toUtf8().data());
+            if(line.indexOf("error:") != -1)
+            {
+                f_impl->output(line.toUtf8().data()
+                             , snap_console::color_t::RED
+                             , snap_console::color_t::WHITE);
+            }
+            else if(line.indexOf("warning:") != -1)
+            {
+                f_impl->output(line.toUtf8().data()
+                             , snap_console::color_t::MAGENTA
+                             , snap_console::color_t::WHITE);
+            }
+            else if(line.indexOf("success:") != -1)
+            {
+                f_impl->output(line.toUtf8().data()
+                             , snap_console::color_t::GREEN
+                             , snap_console::color_t::WHITE);
+            }
+            else
+            {
+                f_impl->output(line.toUtf8().data());
+            }
         }
 
     private:
@@ -205,7 +226,9 @@ public:
     {
     }
 
-    void output(std::string const & line)
+    void output(std::string const & line,
+                snap_console::color_t f = snap_console::color_t::NORMAL,
+                snap_console::color_t b = snap_console::color_t::NORMAL)
     {
         pointer_t p(ptr());
 
@@ -226,15 +249,33 @@ public:
             p->f_output.pop_front();
         }
 
+        // TODO: make this work when one of the colors is not set to NORMAL
+        //
+        if(f != snap_console::color_t::NORMAL
+        || b != snap_console::color_t::NORMAL)
+        {
+            int const pair((static_cast<NCURSES_COLOR_T>(f) | (static_cast<NCURSES_COLOR_T>(b) << 4)) + 1);
+            wattron(f_win_output, COLOR_PAIR(pair));
+        }
+
         if(wprintw(f_win_output, "%s", line.c_str()) != OK)
         {
             fatal_error("wprintw() to output window failed");
+            NOTREACHED();
         }
         if(wrefresh(p->f_win_output) != OK)
         {
             fatal_error("wrefresh() to output window failed");
+            NOTREACHED();
         }
         f_first_line = false;
+
+        if(f != snap_console::color_t::NORMAL
+        || b != snap_console::color_t::NORMAL)
+        {
+            int const pair((static_cast<NCURSES_COLOR_T>(f) | (static_cast<NCURSES_COLOR_T>(b) << 4)) + 1);
+            wattroff(f_win_output, COLOR_PAIR(pair));
+        }
 
         // TODO: we could use a timer on this object that will
         //       instantly timeout on the next run() loop so that
@@ -258,6 +299,7 @@ public:
         if(clearok(curscr, TRUE) != OK)
         {
             fatal_error("clearok() failed in clear_output()");
+            NOTREACHED();
         }
 
         // we will next be writing a first line again
@@ -432,10 +474,25 @@ private:
             if(start_color() != OK)
             {
                 fatal_error("start_color() failed");
+                NOTREACHED();
             }
             if(use_default_colors() != OK)
             {
                 fatal_error("use_default_colors() failed");
+                NOTREACHED();
+            }
+
+            // I'm not too sure how to handle this one...
+            // at this time I create pairs with all the 8 default colors
+            // (so that's 8 x 8 = 64 pairs)
+            //
+            for(NCURSES_COLOR_T f(-1); f < 8; ++f)
+            {
+                for(NCURSES_COLOR_T b(-1); b < 8; ++b)
+                {
+                    int const pair(((f + 1) | ((b + 1) << 4)) + 1);
+                    init_pair(pair, f, b);
+                }
             }
         }
 
@@ -443,6 +500,7 @@ private:
         if(f_screen_height < 5)
         {
             fatal_error("your console is not tall enough for this application");
+            NOTREACHED();
         }
 
         if(cbreak() != OK)
@@ -492,12 +550,14 @@ private:
         if(f_win_output == nullptr)
         {
             fatal_error("could not create output window");
+            NOTREACHED();
         }
 
         f_win_input = newwin(4, f_screen_width - 2, f_screen_height - 5, 1);
         if(f_win_input == nullptr)
         {
             fatal_error("could not create input window");
+            NOTREACHED();
         }
 
         // allow strings longer than the message window and show only the
@@ -506,6 +566,7 @@ private:
         if(scrollok(f_win_output, TRUE) != OK)
         {
             fatal_error("scrollok() failed; could not setup output window to scoll on large lines");
+            NOTREACHED();
         }
         //if(scrollok(f_win_input, TRUE) != OK) -- TBD
         //{
@@ -590,11 +651,13 @@ private:
         if(rl_bind_key('\t', rl_insert) != 0)
         {
             fatal_error("invalid key passed to rl_bind_key()");
+            NOTREACHED();
         }
 
         if(rl_bind_keyseq("\\eOP" /* F1 */, &show_help) != 0)
         {
             fatal_error("invalid key (^[OP a.k.a. F1) sequence passed to rl_bind_keyseq");
+            NOTREACHED();
         }
 
         // TODO: allow for not using history
@@ -733,6 +796,7 @@ private:
         if(werase(f_win_output) != OK)
         {
             fatal_error("werase() of output window failed");
+            NOTREACHED();
         }
 
         draw_borders();
@@ -751,6 +815,7 @@ private:
             if(wprintw(f_win_output, "%s%s", nl, l.c_str()) != OK)
             {
                 fatal_error("wprintw() to output window failed");
+                NOTREACHED();
             }
             nl = "\n";
         }
@@ -762,6 +827,7 @@ private:
             if(wnoutrefresh(f_win_output) != OK)
             {
                 fatal_error("wnoutrefresh() of output window failed");
+                NOTREACHED();
             }
         }
         else
@@ -769,6 +835,7 @@ private:
             if(wrefresh(f_win_output) != OK)
             {
                 fatal_error("wrefresh() of output window failed");
+                NOTREACHED();
             }
         }
     }
@@ -793,6 +860,7 @@ private:
         if(werase(f_win_input) != OK)
         {
             fatal_error("werase() failed");
+            NOTREACHED();
         }
 
         // this might write a string wider than the terminal currently,
@@ -809,6 +877,7 @@ private:
             if(wnoutrefresh(f_win_input) != OK)
             {
                 fatal_error("wnoutrefresh() failed");
+                NOTREACHED();
             }
         }
         else
@@ -816,6 +885,7 @@ private:
             if(wrefresh(f_win_input) != OK)
             {
                 fatal_error("wrefresh() failed");
+                NOTREACHED();
             }
         }
     }
@@ -850,6 +920,7 @@ private:
             if(wmove(f_win_input, y, x) != OK)
             {
                 fatal_error("wmove() failed");
+                NOTREACHED();
             }
             curs_set(2);
         }
@@ -873,20 +944,24 @@ private:
         if(f_screen_height < 5)
         {
             fatal_error("window too small after resize");
+            NOTREACHED();
         }
 
         if(wresize(f_win_output, f_screen_height - 7, f_screen_width - 2) != OK)
         {
             fatal_error("wresize of output window failed");
+            NOTREACHED();
         }
         if(wresize(f_win_input, 4, f_screen_width - 2) != OK)
         {
             fatal_error("wresize of input window failed");
+            NOTREACHED();
         }
 
         if(mvwin(f_win_input, f_screen_height - 5, 1) != OK)
         {
             fatal_error("mvwin of input window failed");
+            NOTREACHED();
         }
 
         // batch refreshes and commit them with doupdate()
@@ -896,6 +971,7 @@ private:
         if(doupdate() != OK)
         {
             fatal_error("doupdate() after wresize() failed");
+            NOTREACHED();
         }
     }
 
@@ -1091,6 +1167,11 @@ snap_console::~snap_console()
 void snap_console::output(std::string const & line)
 {
     f_impl->output(line);
+}
+
+void snap_console::output(std::string const & line, snap_console::color_t f, snap_console::color_t b)
+{
+    f_impl->output(line, f, b);
 }
 
 void snap_console::clear_output()

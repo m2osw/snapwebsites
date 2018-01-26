@@ -36,11 +36,26 @@ class snap_console
 public:
     typedef std::shared_ptr<snap_console>    pointer_t;
 
+    enum class color_t
+    {
+        NORMAL,
+
+        BLACK,
+        RED,
+        GREEN,
+        YELLOW,
+        BLUE,
+        MAGENTA,
+        CYAN,
+        WHITE
+    };
+
                     snap_console(std::string const & history_filename = std::string());
 
     virtual         ~snap_console();
 
     void            output(std::string const & line);
+    void            output(std::string const & line, color_t f, color_t b);
     void            clear_output();
     void            refresh();
     void            set_prompt(std::string const & prompt);

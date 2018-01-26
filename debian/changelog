@@ -1,3 +1,10 @@
+snapwebsites (1.5.40.0~xenial) xenial; urgency=high
+
+  * Fixed the process_quit() to properly kill the f_connection in snapmessage.
+  * Added some color, it's not perfect but will help me.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 26 Jan 2018 01:34:22 -0700
+
 snapwebsites (1.5.39.0~xenial) xenial; urgency=high
 
   * Enhanced the console in various ways.

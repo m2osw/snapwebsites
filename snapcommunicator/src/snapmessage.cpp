@@ -249,7 +249,7 @@ public:
 
     virtual void process_message(snap::snap_communicator_message const & message) override
     {
-        std::cout << "Received message: "
+        std::cout << "success: received message: "
                   << message.to_message()
                   << std::endl;
     }
@@ -274,7 +274,10 @@ public:
 
     ~connection()
     {
-        disconnect();
+        // calling disconnect() is "too late" because the connection is
+        // part of the snap communicator and needs to be removed from
+        // there before the destructor gets called...
+        //disconnect();
     }
 
     void disconnect()
@@ -581,7 +584,12 @@ public:
 
     virtual void process_quit() override
     {
-        f_connection.reset();
+        connection::pointer_t c(f_connection.lock());
+        if(c != nullptr)
+        {
+            c->disconnect();
+            f_connection.reset(); // should be useless
+        }
 
         snap::snap_communicator::instance()->remove_connection(shared_from_this());
 
