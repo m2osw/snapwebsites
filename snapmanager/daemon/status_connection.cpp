@@ -7,7 +7,7 @@
  *      application and the status thread (an inter-thread connection).
  *
  * License:
- *      Copyright (c) 2016-2017 Made to Order Software Corp.
+ *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
  *      http://snapwebsites.org/
  *      contact@m2osw.com

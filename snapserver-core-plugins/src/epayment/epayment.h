@@ -1,5 +1,5 @@
 // Snap Websites Server -- handle electronic and not so electronic payments
-// Copyright (C) 2011-2017  Made to Order Software Corp.
+// Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 //===============================================================================
-// Copyright (c) 2011-2017 by Made to Order Software Corporation
+// Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 // 
 // All Rights Reserved.
 // 

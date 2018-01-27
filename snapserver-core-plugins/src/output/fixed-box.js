@@ -2,7 +2,7 @@
  * Name: fixed-box
  * Version: 0.1.19
  * Browsers: all
- * Copyright: Copyright 2015-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * Copyright: Copyright (c) 2015-2018  Made to Order Software Corp.  All Rights Reserved
  * Depends: output (0.1.5.70)
  * License: GPL 2.0
  */

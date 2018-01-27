@@ -1,5 +1,5 @@
 //===============================================================================
-// Copyright (c) 2017 by Made to Order Software Corporation
+// Copyright (c) 2017-2018  Made to Order Software Corp.  All Rights Reserved
 // 
 // http://snapwebsites.org/
 // contact@m2osw.com

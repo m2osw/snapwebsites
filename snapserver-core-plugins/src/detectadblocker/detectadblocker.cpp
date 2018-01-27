@@ -1,5 +1,5 @@
 // Snap Websites Server -- detectadblocker plugin to know whether we should skip on showing ads
-// Copyright (C) 2013-2017  Made to Order Software Corp.
+// Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 // Snap Websites Servers -- check the MIME type of a file using the magic database
-// Copyright (C) 2013-2017  Made to Order Software Corp.
+// Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

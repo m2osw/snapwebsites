@@ -2,8 +2,7 @@
 // File:        server_status.cpp
 // Object:      Handle the status object, including saving/reading to file.
 //
-// Copyright:   Copyright (c) 2016-2017 Made to Order Software Corp.
-//              All Rights Reserved.
+// Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // http://snapwebsites.org/
 // contact@m2osw.com

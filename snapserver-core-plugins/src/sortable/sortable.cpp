@@ -1,5 +1,5 @@
 // Snap Websites Server -- add a sortable widget so one can sort items in a list
-// Copyright (C) 2016-2017  Made to Order Software Corp.
+// Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

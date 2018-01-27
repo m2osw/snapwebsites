@@ -1,7 +1,5 @@
 //===============================================================================
-// Copyright (c) 2011-2017 by Made to Order Software Corporation
-// 
-// All Rights Reserved.
+// Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 // 
 // The source code in this file ("Source Code") is provided by Made to Order Software Corporation
 // to you under the terms of the GNU General Public License, version 2.0

@@ -1,5 +1,5 @@
 // Snap Lock -- class used to have inter-process locks in a Snap! cluster
-// Copyright (C) 2016-2017  Made to Order Software Corp.
+// Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

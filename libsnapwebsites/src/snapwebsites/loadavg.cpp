@@ -1,5 +1,5 @@
 // Load Balancing -- class used to handle the load average file
-// Copyright (C) 2017  Made to Order Software Corp.
+// Copyright (c) 2017-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

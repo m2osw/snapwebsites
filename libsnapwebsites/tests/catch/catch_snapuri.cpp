@@ -1,5 +1,5 @@
 /* catch_snapuri.cpp
- * Copyright (C) 2011-2017  Made to Order Software Corporation
+ * Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
  *
  * Project: http://snapwebsites.org/project/snapwebsites
  *

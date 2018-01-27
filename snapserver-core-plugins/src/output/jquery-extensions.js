@@ -2,7 +2,7 @@
  * Name: jquery-extensions
  * Version: 1.0.2
  * Browsers: all
- * Copyright: Copyright 2014-2017 (c) Made to Order Software Corporation  All rights reverved.
+ * Copyright: Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
  * Depends: jquery (1.10)
  * License: GPL 2.0
  */

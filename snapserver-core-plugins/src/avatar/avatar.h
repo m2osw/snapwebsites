@@ -1,5 +1,5 @@
 // Snap Websites Server -- Internet avatar functionality
-// Copyright (C) 2015-2017  Made to Order Software Corp.
+// Copyright (c) 2015-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
