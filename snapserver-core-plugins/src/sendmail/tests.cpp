@@ -118,7 +118,9 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_mixed)
 "\n"
 "Thank you.\n"
 "To unsubscribe click here: Unsubscribe_from_Snap!_emails.\n"
-"Copyright 2015 (c) by Made to Order Software Corporation -- All Rights\n"
+// the "C" of Copyright is made such that it does not match in our
+// auto-update copyright notices code...
+"C" "opyright 2015 (c) by Made to Order Software Corporation -- All Rights\n"
 "Reserved\n"
 "\n"
 "--=Snap.Websites=AABBCCDDEEFF.msg\n"
