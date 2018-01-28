@@ -3,8 +3,8 @@ Upstream-Name: snapwebsites
 Source: http://snapwebsites.org/
 
 Files: *
-Copyright: 2011-2017 Alexis Wilke <alexis@m2osw.com>
-           2013-2017 R. Douglas Barbieri <doug@dooglio.net>
+Copyright: 2011-2018 Alexis Wilke <alexis@m2osw.com>
+           2013-2018 R. Douglas Barbieri <doug@dooglio.net>
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
