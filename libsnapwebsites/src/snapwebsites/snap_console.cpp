@@ -1123,8 +1123,8 @@ private:
 
     //static ncurses_impl::pointer_t  f_nc;
     static snap_console *           f_snap_console; // initialized below (because it is static)
-    FILE *                          f_ncurses_stdout;
-    FILE *                          f_ncurses_stderr;
+    FILE *                          f_ncurses_stdout = nullptr;
+    FILE *                          f_ncurses_stderr = nullptr;
     io_pipe_connection::pointer_t   f_stdout_pipe;
     io_pipe_connection::pointer_t   f_stderr_pipe;
     std::string                     f_history_filename = "~/.snap_history";

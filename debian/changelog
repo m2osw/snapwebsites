@@ -1,3 +1,13 @@
+snapwebsites (1.5.41.0~xenial) xenial; urgency=high
+
+  * Added limits so fast_buffer won't allocate a buffer any larger than 200Mb.
+  * Properly initialize the f_ncurses_stdout/stderr
+  * Initialize the f_last_loadavg properly.
+  * try/catch various exceptions in destructors.
+  * Moved the logger initialization of snapmessage inside the try/catch.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 28 Jan 2018 03:45:41 -0700
+
 snapwebsites (1.5.40.1~xenial) xenial; urgency=high
 
   * Fixed one file about a copyright.

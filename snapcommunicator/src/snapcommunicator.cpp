@@ -399,7 +399,7 @@ private:
     snap::snap_communicator::snap_connection::pointer_t f_listener;         // TCP/IP
     snap::snap_communicator::snap_connection::pointer_t f_ping;             // UDP/IP
     snap::snap_communicator::snap_connection::pointer_t f_loadavg_timer;    // a 1 second timer to calculate load (used to load balance)
-    float                                               f_last_loadavg;
+    float                                               f_last_loadavg = 0.0f;
     snap_addr::addr                                     f_my_address;
     QString                                             f_local_services;
     sorted_list_of_strings_t                            f_local_services_list;
@@ -1427,7 +1427,13 @@ public:
         // save when it is ending in case we did not get a DISCONNECT
         // or an UNREGISTER event
         //
-        connection_ended();
+        try
+        {
+            connection_ended();
+        }
+        catch(std::runtime_error const &)
+        {
+        }
 
         // clearly mark this connection as down
         //
@@ -5015,7 +5021,16 @@ remote_snap_communicator::remote_snap_communicator(snap_communicator_server::poi
 
 remote_snap_communicator::~remote_snap_communicator()
 {
-    SNAP_LOG_DEBUG("deleting remote_snap_communicator connection: ")(f_address.get_ipv4or6_string(true, true));
+    try
+    {
+        SNAP_LOG_DEBUG("deleting remote_snap_communicator connection: ")(f_address.get_ipv4or6_string(true, true));
+    }
+    catch(snap_addr::addr_invalid_parameter_exception const &)
+    {
+    }
+    catch(snap_addr::addr_invalid_argument_exception const &)
+    {
+    }
 }
 
 

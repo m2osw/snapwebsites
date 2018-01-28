@@ -458,6 +458,9 @@ field_search::~field_search()
     {
         run();
     }
+    catch(snap::snap_logic_exception const &)
+    {
+    }
     catch(libdbproxy::exception const &)
     {
     }

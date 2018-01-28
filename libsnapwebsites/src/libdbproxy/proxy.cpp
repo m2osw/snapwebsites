@@ -218,13 +218,21 @@ order_result proxy::sendOrder(order const & order)
             return result;
         }
 
-        std::string command(reinterpret_cast<char const *>(buf), 4);
+        std::string const command(reinterpret_cast<char const *>(buf), 4);
 
         uint32_t const reply_size(
                       (buf[4] << 24)
                     | (buf[5] << 16)
                     | (buf[6] <<  8)
                     | (buf[7] <<  0));
+
+        // Coverity says we should have a test for largest size
+        //
+        if(reply_size > 200 * 1024 * 1024 * 1024)
+        {
+            SNAP_LOG_DEBUG("++++ reply_size out of bounds! (max. 200Mb) size=")(reply_size);
+            return result;
+        }
 
         fast_buffer reply(reply_size);
         if(reply_size > 0)
@@ -301,6 +309,14 @@ order proxy::receiveOrder(proxy_io & io)
                 | (buf[5] << 16)
                 | (buf[6] <<  8)
                 | (buf[7] <<  0));
+
+    // Coverity says we should have a test for largest size
+    //
+    if(order_size > 200 * 1024 * 1024 * 1024)
+    {
+        SNAP_LOG_DEBUG("++++ order_size out of bounds! (max. 200Mb) size=")(reply_size);
+        return result;
+    }
 
     std::string const command(reinterpret_cast<char const *>(buf), 4);
     if(command != "CQLP")

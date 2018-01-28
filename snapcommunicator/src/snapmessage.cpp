@@ -890,11 +890,11 @@ private:
 
 int main(int argc, char *argv[])
 {
-    snap::logging::set_progname("snapmessage");
-    snap::logging::configure_conffile("/etc/snapwebsites/logger/log.properties");
-
     try
     {
+        snap::logging::set_progname("snapmessage");
+        snap::logging::configure_conffile("/etc/snapwebsites/logger/log.properties");
+
         snapmessage sm(argc, argv);
 
         return sm.run();

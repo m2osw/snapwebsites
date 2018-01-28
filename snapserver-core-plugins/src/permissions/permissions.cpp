@@ -365,6 +365,9 @@ permissions::sets_t::~sets_t()
     catch(libexcept::exception_t const &)
     {
     }
+    catch(libdbproxy::exception const &)
+    {
+    }
 
     try
     {
