@@ -1,3 +1,9 @@
+snapwebsites (1.5.40.1~xenial) xenial; urgency=high
+
+  * Fixed one file about a copyright.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 27 Jan 2018 19:55:33 -0700
+
 snapwebsites (1.5.40.0~xenial) xenial; urgency=high
 
   * Fixed the process_quit() to properly kill the f_connection in snapmessage.
