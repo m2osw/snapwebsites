@@ -18,4 +18,10 @@ have to verify by hand.
 
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+# Bugs
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

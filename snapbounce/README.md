@@ -1,6 +1,5 @@
 
-
-INTRODUCTION
+Introduction
 ============
 
 The `snapbounce` tool is used to capture bounced emails from a postfix
@@ -9,7 +8,7 @@ the `snapserver` plugins a chance to know what bounced and inform
 the corresponding administrator.
 
 
-COMPILATION
+Compilation
 ===========
 
 Please see the `INSTALL.txt` file for additional information. At this
@@ -34,11 +33,11 @@ The script also creates a `RELEASE` directory so one can also
 compile in RELEASE mode, which once in a while is useful.
 
 
-INSTALLATION
+Installation
 ============
 
 You may install the software with `make install`. However,
-that won't be sufficient in order to get snapbounce to work.
+that won't be sufficient in order to get `snapbounce` to work.
 You also need to setup the postfix environment to recognize
 the tool as follow:
 
@@ -98,4 +97,11 @@ To make sure postfix takes the changes in account, make sure to restart.
     sudo systemctl restart postfix
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

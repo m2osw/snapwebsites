@@ -4,10 +4,10 @@ Client-Server Tests
 
 The binaries generated in this directory are client and server executables.
 The work in pair. In most cases you first start the server, verify that
-the server is in place (i.e. there is a LISTEN in your netstat output),
+the server is in place (i.e. there is a LISTEN in your `netstat` output),
 and then start the client and see what happens.
 
-These tests can be started by a Catch.hpp implementation, but they cannot
+These tests can be started by a `Catch.hpp` implementation, but they cannot
 themselves be part of a catch test because they need to be executables
 (well... the server could run by itself, but at the same time a clean
 client-server test requires both to be standalone executables and not
@@ -41,13 +41,13 @@ with that command. These two files are here for test purposes and should
 not ever be used in a secure manner since (obviously?) the private key
 has been compromised.
 
-To suppose more of the secure ciphers, you will want to use a dhparam.pem
+To suppose more of the secure ciphers, you will want to use a `dhparam.pem`
 file. This file is generated with:
 
     openssl dhparam -outform PEM -out dhparam.pem 1024
 
 When the server is running, you can attempt a connection to the server
-using openssl. This will give you information about what cipher is used
+using OpenSSL. This will give you information about what cipher is used
 to connect, show you the certificate, etc.
 
     > openssl
@@ -63,4 +63,11 @@ The name of the cipher should tell you how strong that connection
 encryption is.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

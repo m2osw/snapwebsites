@@ -5,7 +5,7 @@ User Directory
 This directory is scanned for user versions of configuration files.
 The files here are expected to have the exact same name as those found
 one directory up and their content has priority (i.e. if the same field
-is defined in the .conf one directory up, it will be ignored.)
+is defined in the `.conf` one directory up, it will be ignored.)
 
 So to override a parameter just redefine it in your version here.
 
@@ -49,4 +49,11 @@ having to do a diff against the original settings any time you do an
 upgrade to make sure you are where you want.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

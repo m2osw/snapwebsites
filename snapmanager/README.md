@@ -45,7 +45,7 @@ The structure is just the name of the release you are on (i.e. trusty,
 xenial...) and the complete list of all your .deb. You may also include
 all the source files (all the files that `pbuilder` spits out!)
 
-cd in the folder to run `apt-ftparchive` like so:
+`cd` in the folder to run `apt-ftparchive` like so:
 
     cd /var/www/debian/xenial
     apt-ftparchive packages . > Packages
@@ -77,20 +77,20 @@ it will make it easier to see errors if such occurs when installing snap:
     apt-get autoremove
 
 
-## First VPS Computer: Installing snapmanagercgi
+## First VPS Computer: Installing `snapmanagercgi`
 
 Now you are ready to install `snapmanagercgi`, which is required on at least
 one computer. If you need to install OpenVPN (a bundle which is part of
 `snapmanagercgi`) because, for example, you have access to a private network
 between your VPS servers, but that "private" network is shared between many
 other users that you cannot trust 100%, then you need a VPN tunnel between
-each computer. In that case you want to install snapmanagercgi on each
+each computer. In that case you want to install `snapmanagercgi` on each
 computer and install the OpenVPN, set it up properly and finally connect
-each computer through that VPN (i.e. snapcommunicator neighbors IP addresses
+each computer through that VPN (i.e. `snapcommunicator` neighbors IP addresses
 will be those offered by OpenVPN, not the "physical" private network IP
 addresses.)
 
-Along with snapmanagercgi comes Apache2 which is used to access the CGI.
+Along with `snapmanagercgi` comes Apache2 which is used to access the CGI.
 
 WARNING: the `snapmanagercgi` package is expected to be installed on a
 pristine computer node. It will handle the Apache2 setup automatically,
@@ -100,7 +100,7 @@ that could contradict our own installation features.
     sudo apt-get install snapmanagercgi
 
 
-## Following VPS Computers: Installing snapmanagerdaemon
+## Following VPS Computers: Installing `snapmanagerdaemon`
 
 On the other computers, you want to install the `snapmanagerdaemon` package.
 This starts `snapinit`, `snapcommunicator`, and `snapmanagerdaemon`. By
@@ -114,33 +114,30 @@ By doing so, you automatically create the cluster.
 Other bundles can then be installed from the `snapmanager.cgi` frontend
 screens without having to access your backend servers at any time.
 
-As mentioned in the previous section, you should install snapmanagercgi
+As mentioned in the previous section, you should install `snapmanagercgi`
 on all computers if you need to install OpenVPN before you can add
 the `snapcommunicator` neighbors.
 
 
-
-
-
-# About snapmanager.cgi
+# About `snapmanager.cgi`
 
 The system functions using plugins in order to allow any number of
 features to be added to the manager. This is specifically important
 for some plugins may have some special needs that have to be in
-the snapmanager.cgi instead of /admin/settings/... (i.e. it may
+the `snapmanager.cgi` instead of /admin/settings/... (i.e. it may
 require a root process to handle the settings.)
 
 The manager is composed of:
 
   - snapmanagercgi/lib/* -- a library with common functions and classes
-  - snapmanagercgi/cgi/* -- the snapmanager.cgi binary
+  - snapmanagercgi/cgi/* -- the `snapmanager.cgi` binary
   - snapmanagercgi/daemon/* -- the snapmanagerdaemon binary
   - snapmanagercgi/plugins/*/* -- a set of plugins
   - snapmanagercgi/upgrader/* -- a separate tool to upgrade packages
 
-From the outside the user can access snapmanager.cgi which will run with
+From the outside the user can access `snapmanager.cgi` which will run with
 the same user/group restrictions as Apache (www-data:www-data). It can
-connect to snapmanagerdaemon which accepts messages to act on the system
+connect to `snapmanagerdaemon` which accepts messages to act on the system
 by adding/removing software and tweaking their settings as required.
 
 The `snapmanager.cgi` and `snapmanagerdaemon` are both linked against the
@@ -154,8 +151,8 @@ The plugins are useful for three main tasks:
   - transform the gathered data in HTML for display
   - allow for tweaking the data
 
-The plugin implementation makes use of the libsnapwebsites library to
-handle the loading. Note that the snapmanagercgi system always loads
+The plugin implementation makes use of the `libsnapwebsites` library to
+handle the loading. Note that the `snapmanagercgi` system always loads
 all the plugins available. We think this is important because it always
 installs and removes software and as it does so, adds and removes
 various plugins. For example, the `snapwatchdog` is an optional (although
@@ -200,6 +197,12 @@ Organization:
 
 
 
+# Bugs
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
 vim: ts=4 sw=4 et
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

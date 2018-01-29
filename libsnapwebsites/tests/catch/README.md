@@ -1,3 +1,4 @@
+
 Catch Tests
 ===========
 
@@ -8,4 +9,11 @@ These tests come in all forms. Use the `-l` command line option to see
 the list of tests you can run.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

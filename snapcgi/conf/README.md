@@ -56,10 +56,17 @@ The default User defined security options. Remember that these will
 be included by all the `<VirtualHost ...>` definitions pertaining to
 Snap! (unless you change that scheme.)
 
-By default, there are no additional option for security.
+By default, there are no additional options for security.
 
 Also, if you want specific security for just one website, you will want
 to edit that website settings and not this common security file.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

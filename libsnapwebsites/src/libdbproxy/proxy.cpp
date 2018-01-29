@@ -228,7 +228,7 @@ order_result proxy::sendOrder(order const & order)
 
         // Coverity says we should have a test for largest size
         //
-        if(reply_size > 200 * 1024 * 1024 * 1024)
+        if(reply_size > 200 * 1024 * 1024)
         {
             SNAP_LOG_DEBUG("++++ reply_size out of bounds! (max. 200Mb) size=")(reply_size);
             return result;
@@ -312,10 +312,10 @@ order proxy::receiveOrder(proxy_io & io)
 
     // Coverity says we should have a test for largest size
     //
-    if(order_size > 200 * 1024 * 1024 * 1024)
+    if(order_size > 200 * 1024 * 1024)
     {
-        SNAP_LOG_DEBUG("++++ order_size out of bounds! (max. 200Mb) size=")(reply_size);
-        return result;
+        SNAP_LOG_DEBUG("++++ order_size out of bounds! (max. 200Mb) size=")(order_size);
+        return order;
     }
 
     std::string const command(reinterpret_cast<char const *>(buf), 4);

@@ -1,5 +1,5 @@
 
-Inter Computer List Management
+Inter-Computer List Management
 ==============================
 
 The `snaplistd` daemon is used to manage lists in Snap!
@@ -13,7 +13,7 @@ Processing of Requests that generate list journal entries
 =========================================================
 
 The following is a simplified diagram that shows everything from the client
-to the pagelist backend processes showing how things are handled.
+to the `pagelist` backend processes showing how things are handled.
 
     +----------------+
     |                |
@@ -112,7 +112,7 @@ to generate lists so far.
 
 The `journallist` backend is expected to run on every single middle
 computer (i.e. computers running List Plugin) and gather the journal
-data that needs to be sent to the `snaplistd` deamons.
+data that needs to be sent to the `snaplistd` daemons.
 
 This process constantly runs and expects to receive a UDP PING event once
 in a while to be awaken about having work to do. The `snap_child` process
@@ -148,11 +148,15 @@ as far as MySQL is concerned) so as to avoid the conversion to and
 from a string.
 
 The sorting by domain name allows us to manage multiple domains and
-not reall entries from another domain for nothing.
+not real entries from another domain for nothing.
 
 
+# Bugs
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
 
 
 vim: ts=4 sw=4 et
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

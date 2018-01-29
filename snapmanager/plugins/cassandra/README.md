@@ -1,5 +1,5 @@
 
-ADD NODE TO CLUSTER
+Add Node To Cluster
 ===================
 
 One of the functions in the plugin is to add a node ("this" node) to a
@@ -20,7 +20,7 @@ Steps
     cassandra-topology.properties
     cassandra-rackdc.properties (we use this one by default)
 
-3. Make sure the `auto_bootstrap` parameter is not defined in .yaml
+3. Make sure the `auto_bootstrap` parameter is not defined in `.yaml`
 
 4. Make sure the new node `cluster_name` is the same on both nodes
 
@@ -36,7 +36,7 @@ node--i.e. a larger computer can handle more tokens.)
 from the old nodes (more specifically the `seeds` parameter)
 
 8. Anything else that we would modify needs to be changed in our
-new node (more or less we could get the old node cassandra.yaml
+new node (more or less we could get the old node `cassandra.yaml`
 file and make a few IP changes and call it a day.)
 
 9. Stop Cassandra if running
@@ -52,7 +52,7 @@ file and make a few IP changes and call it a day.)
 13. If attaching multiple new nodes, repeat the process until all the
 nodes were added.
 
-14. Once all the nodes were added, run the clean funtion so the data
+14. Once all the nodes were added, run the clean function so the data
 gets balanced between nodes:
 
     nodetool cleanup
@@ -74,7 +74,7 @@ correct one.)
 
 2. Get a copy of the `- seeds: ...`  parameter from the specified server
 (i.e. we expect the user to give us a point of contact as the name of
-a snapcommunicator, i.e. the same as the `server_name=...` parameter.)
+a `snapcommunicator`, i.e. the same as the `server_name=...` parameter.)
 
 3. Stop Cassandra if running
 
@@ -110,7 +110,7 @@ This message includes the `cluster_name` and `seeds` information that
 we use to properly setup a node to join.
 
 When we receive that message from a joinable node, we can start the
-join process by stoping Cassandra, deleting the existing data,
+join process by stopping Cassandra, deleting the existing data,
 change the fields we just received, and restart:
 
     systemctl stop cassandra
@@ -137,4 +137,11 @@ is running against it:
     nodetool repair
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

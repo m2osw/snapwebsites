@@ -56,7 +56,7 @@ This works in a way which is very similar to the Cassandra consistency
 level named QUORUM. We expect at least `N / 2 + 1` computers to accept
 a message before we can go on. By accepting the message, a computer
 writes the value we sent to it and replies to the message with an
-acknoledgement. Once we get at least `N / 2 + 1` acknowledgement replies,
+acknowledgement. Once we get at least `N / 2 + 1` acknowledgement replies,
 we can move on to the next step.
 
 For example, the `ENTERING` message is sent by the `snaplock` daemon
@@ -131,4 +131,11 @@ Note that this is different from draining a computer from client
 accesses.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

@@ -1,13 +1,13 @@
 
-INTRODUCTION
+Introduction
 ============
 
 The `snaplog` daemon listens to `LOG` messages that are sent by the
 `libsnapwebsites/src/log.cpp` implementation whenever the `MessengerAppender`
-is setup in your log4cplus properties.
+is setup in your `log4cplus` properties.
 
 
-DEFAULT LEVEL
+Default Level
 =============
 
 By default the level used to send logs to the `snaplog` daemon is `INFO`.
@@ -16,7 +16,7 @@ a live cluster as it would adds a lot of traffic on the network, traffic
 that could imper your database accesses, which also uses your network.
 
 
-SETUP
+Setup
 =====
 
 We make use of the bundle installation mechanism to get everything
@@ -24,4 +24,11 @@ installed as required, including the MySQL database system. Everything
 else should be automatic.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

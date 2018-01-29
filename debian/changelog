@@ -1,3 +1,10 @@
+snapwebsites (1.5.42.0~xenial) xenial; urgency=high
+
+  * Fixed limit to 200Mb instead of 200Tb.
+  * Generally enhanced the README.md files.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 29 Jan 2018 00:12:40 -0700
+
 snapwebsites (1.5.41.0~xenial) xenial; urgency=high
 
   * Added limits so fast_buffer won't allocate a buffer any larger than 200Mb.

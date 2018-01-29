@@ -1,5 +1,5 @@
 
-INTRODUCTION
+Introduction
 ============
 
 The `snapwatchdog` daemon runs in the background and check the health
@@ -10,7 +10,7 @@ The data includes basic computer status such as CPU and memory usage as
 well as other data such as how much CPU and memory a `snap_child` process
 used on its run.
 
-TODO
+Todo
 ====
 
 At this point many things are still very much missing: checking whether
@@ -19,3 +19,12 @@ the network is working as expected, checking various high level things
 reporting the info to the administrator in a front end within your
 Snap! website installation.
 
+
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/snapwebsites/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._
