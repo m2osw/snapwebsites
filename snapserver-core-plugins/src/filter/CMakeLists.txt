@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/filter/CMakeLists.txt
+#      snapserver-core-plugins/src/filter/CMakeLists.txt
 #
 # Description:
 #      Plug-in used to filter XML data before sending it to a client. This
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

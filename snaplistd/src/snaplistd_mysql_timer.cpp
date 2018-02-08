@@ -1,13 +1,13 @@
 /*
  * Text:
- *      snapwebsites/snaplistd/src/snaplistd_mysql_timer.cpp
+ *      snaplistd/src/snaplistd_mysql_timer.cpp
  *
  * Description:
  *
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

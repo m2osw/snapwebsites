@@ -1664,7 +1664,7 @@ snapwebsites.EditorToolbar.toolbarButtons_ = // static const
     ["subscript", "Subscript (Ctrl-Shift-B)", 0x10042],
     ["superscript", "Superscript (Ctrl-Shift-P)", 0x10050],
     ["|", "|"],
-    ["createLink", "Manage Link (Ctrl-L)", 0x6004C, "http://snapwebsites.org/" /*, snapwebsites.EditorToolbar.prototype.callbackLinkDialog_*/],
+    ["createLink", "Manage Link (Ctrl-L)", 0x6004C, "https://snapwebsites.org/" /*, snapwebsites.EditorToolbar.prototype.callbackLinkDialog_*/],
     ["unlink", "Remove Link (Ctrl-K)", 0x2004B],
     ["|", "-"],
     ["insertUnorderedList", "Bulleted List (Ctrl-Q)", 0x51],

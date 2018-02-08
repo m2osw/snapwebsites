@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/sendmail/CMakeLists.txt
+#      snapserver-core-plugins/src/sendmail/CMakeLists.txt
 #
 # Description:
 #      Send emails to specified addresses using the system sendmail command
@@ -14,7 +14,7 @@
 # License:
 #      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

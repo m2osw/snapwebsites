@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/tracker/CMakeLists.txt
+#      snapserver-core-plugins/src/tracker/CMakeLists.txt
 #
 # Description:
 #      Plugin used to track all user actions. This is different from the
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

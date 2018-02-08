@@ -3,6 +3,9 @@
 Snap Websites Server == Snap Software Description page data to XML
 Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 
+https://snapwebsites.org/
+contact@m2osw.com
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -53,7 +56,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					<xsl:attribute name="support"><xsl:value-of select="page/body/support/node()"/></xsl:attribute>
 				</xsl:if>
 				<generator>Snap! Websites v<xsl:value-of select="head/metadata/desc[@type='version']/data"/></generator>
-				<specification>http://snapwebsites.org/implementation/feature-requirements/pad-and-snsd-files-feature/snap-software-description</specification>
+				<specification>https://snapwebsites.org/implementation/feature-requirements/pad-and-snsd-files-feature/snap-software-description</specification>
 				<technical-name><xsl:value-of select="page/body/titles/title/node()"/></technical-name>
 				<link><xsl:value-of select="$page_uri"/></link>
 				<description>

@@ -1,6 +1,9 @@
 // Snap Websites Server -- Snap Software Description handling
 // Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -29,7 +32,7 @@
  * Microsoft environment and as such has many limitations.)
  *
  * The format is described on snapwebsites.org:
- * http://snapwebsites.org/implementation/feature-requirements/pad-and-snsd-files-feature/snap-software-description
+ * https://snapwebsites.org/implementation/feature-requirements/pad-and-snsd-files-feature/snap-software-description
  */
 
 #include "snap_software_description.h"
@@ -388,7 +391,7 @@ void snap_software_description::on_allow_shorturl(content::path_info_t & ipath, 
  * Description plugin.
  *
  * The files include tags as described in the documentation:
- * http://snapwebsites.org/implementation/feature-requirements/pad-and-snsd-files-feature/snap-software-description
+ * https://snapwebsites.org/implementation/feature-requirements/pad-and-snsd-files-feature/snap-software-description
  *
  * The backend processing is done with multiple levels as in:
  *

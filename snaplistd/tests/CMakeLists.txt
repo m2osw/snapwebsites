@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwebsites/snaplistd/tests/CMakeLists.txt
+#      snaplistd/tests/CMakeLists.txt
 #
 # Description:
 #      A daemon to gather all the changes to pages so lists can be updated
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/form/CMakeLists.txt
+#      snapserver-core-plugins/src/form/CMakeLists.txt
 #
 # Description:
 #      Plugin used to handle the generate HTML forms from XML data.
@@ -14,7 +14,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

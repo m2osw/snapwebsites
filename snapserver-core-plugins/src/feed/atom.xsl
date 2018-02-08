@@ -3,6 +3,9 @@
 Snap Websites Server == feed page data to Atom XML
 Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 
+https://snapwebsites.org/
+contact@m2osw.com
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -97,7 +100,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<email>abc@example.com</email>
 			</author-->
 			<updated><xsl:value-of select="head/metadata/desc[@type='feed::now']/data/node()"/></updated>
-			<generator uri="http://snapwebsites.org/"><xsl:attribute
+			<generator uri="https://snapwebsites.org/"><xsl:attribute
 					name="version"><xsl:value-of
 					select="head/metadata/desc[@type='version']/data/node()"/></xsl:attribute>Snap! Websites</generator>
 			<xsl:if test="head/metadata/desc[@type='feed::default_logo']/data">

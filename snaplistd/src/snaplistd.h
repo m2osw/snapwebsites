@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapwebsites/snaplistd/src/snaplistd.h
+ *      snaplistd/src/snaplistd.h
  *
  * Description:
  *      A daemon to collect all the changing website pages so the pagelist
@@ -9,7 +9,7 @@
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

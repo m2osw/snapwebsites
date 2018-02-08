@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapbackup.h
+ *      snapbackup/src/snapbackup.h
  *
  * Description:
  *      Dumps and restores the "snap_websites" context to/from a SQLite database.
@@ -8,7 +8,7 @@
  * License:
  *      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

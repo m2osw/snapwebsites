@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwebsites/CMakeLists.txt
+#      libsnapwebsites/src/snapwebsites/CMakeLists.txt
 #
 # Description:
 #      Library used by the Snap! Websites server and plugins. All the functions
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify
@@ -100,6 +100,7 @@ set( HEADERS
     quoted_printable.h
     qxmlmessagehandler.h
     reverse_cstring.h
+    email.h
     snap_backend.h
     snap_cassandra.h
     snap_child.h
@@ -164,6 +165,7 @@ add_library( ${PROJECT_NAME} SHARED
     qhtmlserializer.cpp                         # Qt extension to output HTML as a string
     quoted_printable.cpp                        # to encode / decode data using the quoted printable format
     qxmlmessagehandler.cpp                      # Qt extension for us to capture the QXmlQuery messages
+    email.cpp                                   # create emails and send them
     snap_backend.cpp                            # type of snap_child for backends
     snap_cassandra.cpp                          # encapuslate initiating a connection to the database.
     snap_communicator.cpp                       # handle any number of sockets with a single process.

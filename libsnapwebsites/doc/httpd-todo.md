@@ -474,4 +474,4 @@ changes.
 
 vim: ts=4 sw=4 et
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

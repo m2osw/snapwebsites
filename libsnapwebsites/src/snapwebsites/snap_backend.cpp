@@ -1,6 +1,9 @@
 // Snap Websites Server -- snap websites serving children
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -1165,7 +1168,7 @@ void snap_backend::process_action()
  *
  * \note
  * The direct backend processing (snapbackend) and specific website
- * backend processing (snapbackend http://snapwebsites.org/) are
+ * backend processing (snapbackend https://snapwebsites.org/) are
  * also directed here as both of these are also processed in a
  * similar way.
  */

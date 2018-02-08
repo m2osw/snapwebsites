@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/snap_software_description/CMakeLists.txt
+#      snapserver-core-plugins/src/snap_software_description/CMakeLists.txt
 #
 # Description:
 #      Plug-in generated description files for software available for
@@ -13,7 +13,7 @@
 # License:
 #      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

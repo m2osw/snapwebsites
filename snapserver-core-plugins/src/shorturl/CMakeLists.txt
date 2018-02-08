@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/shorturl/CMakeLists.txt
+#      snapserver-core-plugins/src/shorturl/CMakeLists.txt
 #
 # Description:
 #      Generate a short URL for each page. The module is capable of generate
@@ -13,7 +13,7 @@
 # License:
 #      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

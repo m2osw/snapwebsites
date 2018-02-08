@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/sortable/CMakeLists.txt
+#      snapserver-core-plugins/src/sortable/CMakeLists.txt
 #
 # Description:
 #      Allow for a special widget that gives the end user a way to sort
@@ -13,7 +13,7 @@
 # License:
 #      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

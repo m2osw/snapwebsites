@@ -29,3 +29,4 @@ snapfirewall/conf/snap-jail.conf                               etc/fail2ban/jail
 snapfirewall/conf/snap-recidive-jail.conf                      etc/fail2ban/jail.d/
 snapfirewall/conf/snap-sshd-jail.conf                          etc/fail2ban/jail.d/
 snapfirewall/conf/override.conf                                etc/systemd/system/fail2ban.service.d/
+snapfirewall/conf/watch_firewall_fail2ban_client               usr/share/snapwebsites/snapwatchdog/scripts/

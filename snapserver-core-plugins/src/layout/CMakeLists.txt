@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/layout/CMakeLists.txt
+#      snapserver-core-plugins/src/layout/CMakeLists.txt
 #
 # Description:
 #      Generate a page content. This includes many different type of data such
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

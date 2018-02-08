@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapimg.cpp
+ *      snapserver/src/snapimg.cpp
  *
  * Description:
  *      Get image information and display that on the screen. This is mainly
@@ -10,7 +10,7 @@
  * License:
  *      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
  * 
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  * 
  *      Permission is hereby granted, free of charge, to any person obtaining a

@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/editor/CMakeLists.txt
+#      snapserver-core-plugins/src/editor/CMakeLists.txt
 #
 # Description:
 #      Implementation of a full WYSIWYG editor for our Snap! websites.
@@ -14,7 +14,7 @@
 # License:
 #      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

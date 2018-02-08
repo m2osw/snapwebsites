@@ -1,6 +1,9 @@
 // Snap Websites Server -- advanced handling of lists
 // Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -2136,7 +2139,7 @@ void list::on_modified_link(links::link_info const & link, bool const created)
  * \li The protocol + website complete domain name
  *
  * The "protocol + website complete domain name"
- * (such as "http://snapwebsites.org/") is used to aggregate the data changes
+ * (such as "https://snapwebsites.org/") is used to aggregate the data changes
  * on a per website basis. This is important for the backend processing which
  * happens on one website at a time.
  *

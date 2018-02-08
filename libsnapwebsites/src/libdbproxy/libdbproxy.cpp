@@ -11,7 +11,7 @@
  * License:
  *      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a
@@ -419,7 +419,7 @@ namespace libdbproxy
  * The Cassandra System comes with a terminology that can easily throw off
  * people who are used to more conventional database systems (most of that
  * terminology comes from the
- * <a href="http://snapwebsites.org/book/other-interesting-projects#big_tables">
+ * <a href="https://snapwebsites.org/book/other-interesting-projects#big_tables">
  * Big Table document by Google</a>.)
  *
  * This library attempts to hide some of the Cassandra terminology by offering
@@ -542,7 +542,7 @@ namespace libdbproxy
  *
  * Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
  *
- * http://snapwebsites.org/<br/>
+ * https://snapwebsites.org/<br/>
  * contact@m2osw.com
  *
  * Permission is hereby granted, free of charge, to any person obtaining a

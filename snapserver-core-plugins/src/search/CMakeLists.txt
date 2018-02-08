@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/search/CMakeLists.txt
+#      snapserver-core-plugins/src/search/CMakeLists.txt
 #
 # Description:
 #      Plug-in used to handle the search capability of websites.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

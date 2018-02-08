@@ -1,6 +1,9 @@
 // Snap Websites Server -- read a table XML file and put definitions in structures
 // Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -141,9 +144,9 @@ bool snap_tables::load(QString const & path)
         glob_dir files;
         files.set_path( pattern, GLOB_ERR | GLOB_NOSORT | GLOB_NOESCAPE );
         files.enumerate_glob( [&]( QString the_path )
-        {
-            success = success && load_xml(the_path);
-        });
+            {
+                success = success && load_xml(the_path);
+            });
     }
     catch( std::exception const & x)
     {
@@ -152,7 +155,7 @@ bool snap_tables::load(QString const & path)
     }
     catch( ... )
     {
-        SNAP_LOG_ERROR("could not read \"")(pattern)("\"!");
+        SNAP_LOG_ERROR("could not read \"")(pattern)("\"! (got unknown exception)");
         success = false;
     }
 

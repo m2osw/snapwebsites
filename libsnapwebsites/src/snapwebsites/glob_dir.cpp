@@ -1,6 +1,9 @@
 // Snap Websites Servers -- glob a directory and enumerate the files
 // Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -17,6 +20,9 @@
 //
 #include "glob_dir.h"
 #include "log.h"
+
+
+#include "poison.h"
 
 namespace snap
 {
@@ -39,7 +45,7 @@ glob_dir::glob_dir( QString const & path, int const flags )
 }
 
 
-void glob_dir::set_path( QString const& path, int const flags )
+void glob_dir::set_path( QString const & path, int const flags )
 {
     f_dir = glob_pointer_t( new glob_t );
     *f_dir = glob_t();
@@ -72,16 +78,16 @@ void glob_dir::set_path( QString const& path, int const flags )
 }
 
 
-void glob_dir::enumerate_glob( std::function<void (QString path)> func )
+void glob_dir::enumerate_glob( std::function<void (QString path)> func ) const
 {
     for(size_t idx(0); idx < f_dir->gl_pathc; ++idx)
     {
-        func(f_dir->gl_pathv[idx]);
+        func(QString::fromUtf8(f_dir->gl_pathv[idx]));
     }
 }
 
 
-int glob_dir::glob_err_callback(const char * epath, int eerrno)
+int glob_dir::glob_err_callback(char const * epath, int eerrno)
 {
     SNAP_LOG_ERROR("an error occurred while reading directory under \"")
         (epath)

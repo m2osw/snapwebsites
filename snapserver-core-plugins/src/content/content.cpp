@@ -1,6 +1,9 @@
 // Snap Websites Server -- all the user content and much of the system content
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -1233,7 +1236,7 @@ void content::create_content_done(path_info_t & ipath, QString const & owner, QS
  *
  * \code
  *  // access the file as "editor.js" on the website
- *  http://snapwebsites.org/js/editor/editor.js
+ *  https://snapwebsites.org/js/editor/editor.js
  *
  *  // saved the file as editor_1.2.3.js in files
  *  files["editor_1.2.3.js"]
@@ -1246,22 +1249,22 @@ void content::create_content_done(path_info_t & ipath, QString const & owner, QS
  *
  * \code
  *  // minimized version 1.2.3, current User Agent
- *  http://snapwebsites.org/js/editor/editor_1.2.3.min.js
+ *  https://snapwebsites.org/js/editor/editor_1.2.3.min.js
  *
  *  // original version, compressed, current User Agent
- *  http://snapwebsites.org/js/editor/editor_1.2.3.org.js.gz
+ *  https://snapwebsites.org/js/editor/editor_1.2.3.org.js.gz
  *
  *  // specifically the version for Internet Explorer
- *  http://snapwebsites.org/js/editor/editor_1.2.3_ie.min.js
+ *  https://snapwebsites.org/js/editor/editor_1.2.3_ie.min.js
  *
  *  // the same with query strings
- *  http://snapwebsites.org/js/editor/editor.js?v=1.2.3&b=ie&e=min
+ *  https://snapwebsites.org/js/editor/editor.js?v=1.2.3&b=ie&e=min
  *
  *  // for images, you upload a JPEG and you can access it as a PNG...
- *  http://snapwebsites.org/some/page/image.png
+ *  https://snapwebsites.org/some/page/image.png
  *
  *  // for images, you upload a 300x900 page, and access it as a 100x300 image
- *  http://snapwebsites.org/some/page/image.png?d=100x300
+ *  https://snapwebsites.org/some/page/image.png?d=100x300
  * \endcode
  *
  * The supported fields are: [FIXME--this is not quite true, we still have
@@ -1396,7 +1399,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                     "Invalid File",
                     QString("The attachment \"%1\" does not include a valid C-like comment at the start."
                             " The comment must at least include a <a href=\"See "
-                            "http://snapwebsites.org/implementation/feature-requirements/attachments-core\">Version field</a>.")
+                            "https://snapwebsites.org/implementation/feature-requirements/attachments-core\">Version field</a>.")
                                     .arg(attachment_filename),
                     "The content of this file is not valid for a JavaScript or CSS file (version required).");
             NOTREACHED();

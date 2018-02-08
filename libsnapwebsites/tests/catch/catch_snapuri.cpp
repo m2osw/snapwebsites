@@ -1,7 +1,7 @@
 /* catch_snapuri.cpp
  * Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
  *
- * Project: http://snapwebsites.org/project/snapwebsites
+ * Project: https://snapwebsites.org/project/snapwebsites
  *
  * Permission is hereby granted, free of charge, to any
  * person obtaining a copy of this software and
@@ -32,7 +32,7 @@
 /** \file
  * \brief Verify the snap_uri class.
  *
- * This file implements a tests to verify that the snap_uri
+ * This file implements tests to verify that the snap_uri
  * class functions as expected.
  */
 

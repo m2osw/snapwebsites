@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/output/CMakeLists.txt
+#      snapserver-core-plugins/src/output/CMakeLists.txt
 #
 # Description:
 #      Generate the output of a page. This plugin takes what the content
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

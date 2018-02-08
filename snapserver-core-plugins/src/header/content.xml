@@ -3,6 +3,9 @@
 Snap Websites Server == header plugin database setup
 Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 
+https://snapwebsites.org/
+contact@m2osw.com
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -38,7 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   </content>
   <content path="/types/taxonomy/system/content-types/page/public">
     <!-- the X-XSS-Protection is for IE 8+ to prevent cross site URIs "1; mode=block" means the whole page doesn't get displayed -->
-    <param name="header::internal"><![CDATA[<header type="meta" name="generator">Snap! Websites v[version] (http://snapwebsites.org/)</header>
+    <param name="header::internal"><![CDATA[<header type="meta" name="generator">Snap! Websites v[version] (https://snapwebsites.org/)</header>
     <header type="http" name="X-XSS-Protection">1; mode=block</header>
     <header type="http" name="X-Powered-By">Snap! CGI v[version]</header>
     <header type="http" name="X-Generator">Snap! Websites v[version]</header>]]></param>

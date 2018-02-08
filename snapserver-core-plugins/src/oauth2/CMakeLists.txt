@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/oauth2/CMakeLists.txt
+#      snapserver-core-plugins/src/oauth2/CMakeLists.txt
 #
 # Description:
 #      Plug-in used to handle OAuth2 authorization to application that
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

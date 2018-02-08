@@ -19,4 +19,4 @@ although we do not recommend you edit that other file.)
     ssl_private_key=
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

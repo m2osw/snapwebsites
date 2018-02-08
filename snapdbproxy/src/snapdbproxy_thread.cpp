@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapdbproxy_thread.cpp
+ *      snapdbproxy/src/snapdbproxy_thread.cpp
  *
  * Description:
  *      Handle a thread running a TCP/IP connection used to communicate with
@@ -9,7 +9,7 @@
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

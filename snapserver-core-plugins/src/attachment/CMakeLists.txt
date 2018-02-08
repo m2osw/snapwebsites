@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/attachment/CMakeLists.txt
+#      snapserver-core-plugins/src/attachment/CMakeLists.txt
 #
 # Description:
 #      Handle different aspect of the attachment such as outputing the
@@ -14,7 +14,7 @@
 # License:
 #      Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

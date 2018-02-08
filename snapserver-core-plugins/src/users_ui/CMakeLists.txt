@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/users_ui/CMakeLists.txt
+#      snapserver-core-plugins/src/users_ui/CMakeLists.txt
 #
 # Description:
 #      Plugin used to handle the various forms to handle users on
@@ -13,7 +13,7 @@
 # License:
 #      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/date_widgets/CMakeLists.txt
+#      snapserver-core-plugins/src/date_widgets/CMakeLists.txt
 #
 # Description:
 #      Date widget extensions to the Snap! editor.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

@@ -1,6 +1,6 @@
 /*
  * Text:
- *      manager_status.cpp
+ *      snapmanager/daemon/manager_status.cpp
  *
  * Description:
  *      The implementation of the status gathering thread.
@@ -8,7 +8,7 @@
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

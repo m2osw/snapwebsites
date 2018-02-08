@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snaplock_ticket.cpp
+ *      snaplock/src/snaplock_ticket.cpp
  *
  * Description:
  *      A daemon to synchronize processes between any number of computers
@@ -16,7 +16,7 @@
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a
@@ -224,7 +224,7 @@
  * libQtCassandra library which is fully functional (look
  * at version 0.5.22).
  *
- *   http://snapwebsites.org/project/libqtcassandra
+ *   https://snapwebsites.org/project/libqtcassandra
  *
  *
  * \section Our implementation in snaplock

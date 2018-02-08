@@ -1,6 +1,6 @@
 #
 # File:
-#      snapcpp/libsnapwebsites/tests/catch/CMakeLists.txt
+#      libsnapwebsites/tests/catch/CMakeLists.txt
 #
 # Description:
 #      Build libsnapwebsites catch tests.
@@ -42,6 +42,7 @@ if(CATCH_FOUND)
         catch_tests.h
 
         # actual tests
+        catch_email.cpp
         catch_snapuri.cpp
         catch_weightedhttpstrings.cpp
     )

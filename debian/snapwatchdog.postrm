@@ -13,9 +13,20 @@ rm -f $SERVICES_DIR/${PACKAGENAME}.service
 
 if [ "$1" = "purge" ]
 then
-    # delete the data directory
+    # delete the data directories
     #
-    rm -rf /var/lib/snapwebsites/${PACKAGENAME}
+
+    # remove all the directories that are empty
+    #
+    SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
+    for subdir in data scripts-output
+    do
+        rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}/${subdir}
+    done
+
+    # Just in case, the main directory may be empty now
+    #
+    rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}
 
     # delete all logs
     #

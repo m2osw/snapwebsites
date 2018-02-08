@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/listener/CMakeLists.txt
+#      snapserver-core-plugins/src/listener/CMakeLists.txt
 #
 # Description:
 #      List to the client's polls. This plugin is capable of accepting
@@ -24,7 +24,7 @@
 # License:
 #      Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

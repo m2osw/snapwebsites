@@ -1,6 +1,9 @@
 // Snap Websites Server -- advanced handling of Unix processes
 // Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -115,6 +118,8 @@ public:
     class process_output_callback
     {
     public:
+        virtual                     ~process_output_callback() {}
+
         virtual bool                output_available(process * p, QByteArray const & output) = 0;
     };
 

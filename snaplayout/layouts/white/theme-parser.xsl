@@ -3,6 +3,9 @@
 Snap Websites Server == white layout theme setup
 Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 
+https://snapwebsites.org/
+contact@m2osw.com
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -128,7 +131,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<meta property="og:site_name" content="{$site_name}"/>
 				<meta property="og:type" content="website"/>
 				<!-- generator -->
-				<link rel="bookmark" type="text/html" title="Generator" href="http://snapwebsites.org/"/>
+				<link rel="bookmark" type="text/html" title="Generator" href="https://snapwebsites.org/"/>
 				<meta name="generator" content="Snap! Websites"/>
 				<!-- canonical (must be complete so we do not try to snap:prepend-base()) -->
 				<xsl:if test="$page_uri != ''">

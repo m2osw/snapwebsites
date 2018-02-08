@@ -1,6 +1,9 @@
 // Snap Websites Server -- tests for sendmail
 // Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -88,8 +91,9 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_mixed)
 "To: help@snap.website\n"
 "X-MSMail-Priority: High\n"
 "X-Priority: 4 (High)\n"
-"X-Generated-By: Snap! Websites C++ v0.1.71 (http://snapwebsites.org/)\n"
-"X-Mailer: Snap! Websites C++ v0.1.71 (http://snapwebsites.org/)\n"
+
+"X-Generated-By: Snap! Websites C++ v0.1.71 (https://snapwebsites.org/)\n"
+"X-Mailer: Snap! Websites C++ v0.1.71 (https://snapwebsites.org/)\n"
 "\n"
 "--=Snap.Websites=AABBCCDDEEFF\n"
 "Content-Type: multipart/alternative;\n"
@@ -284,8 +288,8 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_mixed)
     SNAP_TEST_PLUGIN_SUITE_ASSERT(e.get_header("To") == "help@snap.website");
     SNAP_TEST_PLUGIN_SUITE_ASSERT(e.get_header("X-MSMail-Priority") == "High");
     SNAP_TEST_PLUGIN_SUITE_ASSERT(e.get_header("X-Priority") == "4 (High)");
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(e.get_header("X-Generated-By") == "Snap! Websites C++ v0.1.71 (http://snapwebsites.org/)");
-    SNAP_TEST_PLUGIN_SUITE_ASSERT(e.get_header("X-Mailer") == "Snap! Websites C++ v0.1.71 (http://snapwebsites.org/)");
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(e.get_header("X-Generated-By") == "Snap! Websites C++ v0.1.71 (https://snapwebsites.org/)");
+    SNAP_TEST_PLUGIN_SUITE_ASSERT(e.get_header("X-Mailer") == "Snap! Websites C++ v0.1.71 (https://snapwebsites.org/)");
 
     // TODO: test that the HTML is converted back to pure HTML and not quoted data
 }
@@ -360,8 +364,8 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_report)
 "To: invalid@snap.website\n"
 "X-MSMail-Priority: High\n"
 "X-Priority: 4 (High)\n"
-"X-Generated-By: Snap! Websites C++ v0.1.71 (http://snapwebsites.org/)\n"
-"X-Mailer: Snap! Websites C++ v0.1.71 (http://snapwebsites.org/)\n"
+"X-Generated-By: Snap! Websites C++ v0.1.71 (https://snapwebsites.org/)\n"
+"X-Mailer: Snap! Websites C++ v0.1.71 (https://snapwebsites.org/)\n"
 "\n"
 "--E4CA14C03B6.1447229812/halk.m2osw.com--\n"
 "\n"
@@ -392,7 +396,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_report)
     // notification
     //
     {
-        snap::sendmail::sendmail::email::email_attachment & notification(e.get_attachment(0));
+        snap::email::attachment & notification(e.get_attachment(0));
         SNAP_TEST_PLUGIN_SUITE_ASSERT(notification.get_header("Content-Description") == "Notification");
         SNAP_TEST_PLUGIN_SUITE_ASSERT(notification.get_header("Content-Type") == "text/plain; charset=us-ascii");
         QByteArray const data(notification.get_data());
@@ -407,14 +411,14 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_report)
     // delivery report
     //
     {
-        snap::sendmail::sendmail::email::email_attachment & delivery_report(e.get_attachment(1));
+        snap::email::attachment & delivery_report(e.get_attachment(1));
         SNAP_TEST_PLUGIN_SUITE_ASSERT(delivery_report.get_header("Content-Description") == "Delivery report");
         SNAP_TEST_PLUGIN_SUITE_ASSERT(delivery_report.get_header("Content-Type") == "message/delivery-status");
         int const max_related(delivery_report.get_related_count());
         SNAP_TEST_PLUGIN_SUITE_ASSERT(max_related == 2);
 
         {
-            snap::sendmail::sendmail::email::email_attachment related(delivery_report.get_related(0));
+            snap::email::attachment related(delivery_report.get_related(0));
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("Reporting-MTA") == "dns; snap.website");
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("X-Postfix-Queue-ID") == "AABBCCDDEEF");
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("X-Postfix-Sender") == "rfc822; alexis@snap.website");
@@ -422,7 +426,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_report)
         }
 
         {
-            snap::sendmail::sendmail::email::email_attachment related(delivery_report.get_related(1));
+            snap::email::attachment related(delivery_report.get_related(1));
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("Final-Recipient") == "rfc822; invalid@snap.website");
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("Action") == "failed");
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("Status") == "5.7.1");
@@ -434,14 +438,14 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_report)
     // undelivered message
     //
     {
-        snap::sendmail::sendmail::email::email_attachment & undelivered_message_headers(e.get_attachment(2));
+        snap::email::attachment & undelivered_message_headers(e.get_attachment(2));
         SNAP_TEST_PLUGIN_SUITE_ASSERT(undelivered_message_headers.get_header("Content-Description") == "Undelivered Message Headers");
         SNAP_TEST_PLUGIN_SUITE_ASSERT(undelivered_message_headers.get_header("Content-Type") == "text/rfc822-headers");
         int const max_related(undelivered_message_headers.get_related_count());
         SNAP_TEST_PLUGIN_SUITE_ASSERT(max_related == 1);
 
         {
-            snap::sendmail::sendmail::email::email_attachment related(undelivered_message_headers.get_related(0));
+            snap::email::attachment related(undelivered_message_headers.get_related(0));
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("Return-Path") == "<help@snap.website>");
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("Received") == "by snap.website (Postfix, from userid 1000) id AABBCCDDEEF; Wed, 11 Nov 2015 00:16:39 -0800 (PST)");
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("Content-Language") == "en-us");
@@ -457,8 +461,8 @@ SNAP_TEST_PLUGIN_TEST_IMPL(sendmail, test_parse_email_report)
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("To") == "invalid@snap.website");
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("X-MSMail-Priority") == "High");
             SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("X-Priority") == "4 (High)");
-            SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("X-Generated-By") == "Snap! Websites C++ v0.1.71 (http://snapwebsites.org/)");
-            SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("X-Mailer") == "Snap! Websites C++ v0.1.71 (http://snapwebsites.org/)");
+            SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("X-Generated-By") == "Snap! Websites C++ v0.1.71 (https://snapwebsites.org/)");
+            SNAP_TEST_PLUGIN_SUITE_ASSERT(related.get_header("X-Mailer") == "Snap! Websites C++ v0.1.71 (https://snapwebsites.org/)");
         }
     }
 }

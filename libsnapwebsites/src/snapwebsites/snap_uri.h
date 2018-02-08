@@ -1,6 +1,9 @@
 // Snap Websites Server -- path canonicalization
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -191,7 +194,7 @@ private:
 // and websites; the result is a set of regular expressions we can
 // use to parse the URI when we receive a hit
 //
-// See http://snapwebsites.org/implementation/basic-concept-url-website/url-test
+// See https://snapwebsites.org/implementation/basic-concept-url-website/url-test
 class snap_uri_rules
 {
 public:

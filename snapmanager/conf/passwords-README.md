@@ -82,4 +82,4 @@ This means only the password of a login in user will eventually exist in
 `snapmanager.cgi`.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

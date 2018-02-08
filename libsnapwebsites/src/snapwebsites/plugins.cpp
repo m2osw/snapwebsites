@@ -1,6 +1,9 @@
 // Snap Websites Server -- plugin loader
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -669,7 +672,7 @@ QString plugin::plugin_categorization_tags() const
  * define the URL as:
  *
  * \code
- *      http://snapwebsites.org/help/plugin/<plugin-name>
+ *      https://snapwebsites.org/help/plugin/<plugin-name>
  * \endcode
  *
  * If you program your own plugin, you are expected to overload
@@ -679,7 +682,7 @@ QString plugin::plugin_categorization_tags() const
  */
 QString plugin::help_uri() const
 {
-    return QString("http://snapwebsites.org/help/plugin/%1").arg(f_name);
+    return QString("https://snapwebsites.org/help/plugin/%1").arg(f_name);
 }
 
 
@@ -886,7 +889,7 @@ plugin_info::plugin_info(QString const & plugin_paths, QString const & name)
         f_icon =                "/images/snap/snap-logo-64x64.png";
         f_description =         "The Snap! Websites server defines the base plugin used by the snap system.";
         f_categorization_tags = "core";
-        f_help_uri =            "http://snapwebsites.org/help/plugin/server";
+        f_help_uri =            "https://snapwebsites.org/help/plugin/server";
         f_settings_path =       "/admin/plugins";
         f_dependencies =        "";
         f_version_major =       SNAPWEBSITES_VERSION_MAJOR;

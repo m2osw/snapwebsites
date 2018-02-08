@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwebsites/snapfirewall/conf/CMakeLists.txt
+#      snapfirewall/conf/CMakeLists.txt
 #
 # Description:
 #      Install configuration files and samples.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 snap_validate_xml( bundle-firewall.xml bundles.xsd )
 
 
-#################################################################################
+###############################################################################
 ## Config files
 ##
 install(
@@ -46,7 +46,7 @@ install(
 )
 
 
-#################################################################################
+###############################################################################
 ## Logger files
 ##
 install(
@@ -59,16 +59,19 @@ install(
 )
 
 
-#################################################################################
+###############################################################################
 ## Database tables
 ##
 install(
-    FILES "snapfirewall-tables.xml"
-    DESTINATION ${SNAP_TABLE_DESCRIPTION_PATH}
+    FILES
+        snapfirewall-tables.xml
+
+    DESTINATION
+        ${SNAP_TABLE_DESCRIPTION_PATH}
 )
 
 
-#################################################################################
+###############################################################################
 ## Bundles are also saved under a bundle directory for reference
 ##
 install(
@@ -80,7 +83,7 @@ install(
 )
 
 
-#################################################################################
+###############################################################################
 ## fail2ban files
 ##
 install(
@@ -101,6 +104,18 @@ install(
 
     DESTINATION
         share/snapwebsites/fail2ban
+)
+
+
+###############################################################################
+## Scripts to check on various firewall health through our snapwatchdog server
+##
+install(
+    FILES
+        watch_firewall_fail2ban_client
+
+    DESTINATION
+        share/snapwebsites/snapwatchdog/scripts
 )
 
 

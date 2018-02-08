@@ -36,4 +36,4 @@ as the SSL files (keys, certificates...) to load for that one virtual
 host.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._

@@ -1,6 +1,9 @@
 // Snap Websites Server -- users_ui handling
 // Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -173,7 +176,7 @@ QString users_ui::help_uri() const
     //      may not be a good pointer anymore at this time (once we
     //      properly remove plugins that we loaded just to get their info.)
     //
-    return "http://snapwebsites.org/help/plugin/users";
+    return "https://snapwebsites.org/help/plugin/users";
 }
 
 
@@ -2296,10 +2299,10 @@ void users_ui::process_verify_form()
  *
  * \param[in] email  The user email.
  */
-void users_ui::verify_email(QString const & email)
+void users_ui::verify_email(QString const & email_address)
 {
     users::users * users_plugin(users::users::instance());
-    auto user_info(users_plugin->get_user_info_by_email(email));
+    auto user_info(users_plugin->get_user_info_by_email(email_address));
 
     QString current_email( user_info.get_value(users::name_t::SNAP_NAME_USERS_CURRENT_EMAIL).stringValue() );
     if(current_email.isEmpty())
@@ -2308,16 +2311,16 @@ void users_ui::verify_email(QString const & email)
         //       legacy code which may skip on the matter and thus
         //       we want to have this fallback
         //
-        current_email = email;
+        current_email = email_address;
     }
 
-    sendmail::sendmail::email e;
+    email e;
 
     // mark priority as High
-    e.set_priority(sendmail::sendmail::email::email_priority_t::EMAIL_PRIORITY_HIGH);
+    e.set_priority(email::priority_t::EMAIL_PRIORITY_HIGH);
 
     // destination email address
-    e.add_header(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_TO), current_email);
+    e.add_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_TO), current_email);
 
     e.add_parameter(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST), "true");
 
@@ -2373,11 +2376,11 @@ void users_ui::verify_email(QString const & email)
  *
  * \return true if the email was sent, false otherwise.
  */
-bool users_ui::resend_verification_email(QString const & email)
+bool users_ui::resend_verification_email(QString const & email_address)
 {
     users::users * users_plugin(users::users::instance());
 
-    auto user_info(users_plugin->get_user_info_by_email(email));
+    auto user_info(users_plugin->get_user_info_by_email(email_address));
 
     // to allow a "resend" without regenerating a new session, we save
     // the session identifier--since those are short lived, it will anyway
@@ -2390,7 +2393,7 @@ bool users_ui::resend_verification_email(QString const & email)
     if(session.isEmpty())
     {
         // no session, send a brand new verification email
-        verify_email(email);
+        verify_email(email_address);
         return true;
     }
 
@@ -2401,14 +2404,14 @@ bool users_ui::resend_verification_email(QString const & email)
         //       legacy code which may skip on the matter and thus
         //       we want to have this fallback
         //
-        current_email = email;
+        current_email = email_address;
     }
 
-    sendmail::sendmail::email e;
+    email e;
 
     // mark priority as High
     //
-    e.set_priority(sendmail::sendmail::email::email_priority_t::EMAIL_PRIORITY_HIGH);
+    e.set_priority(email::priority_t::EMAIL_PRIORITY_HIGH);
 
     // people would not be able to ever get a verification email without this one
     //
@@ -2416,7 +2419,7 @@ bool users_ui::resend_verification_email(QString const & email)
 
     // destination email address
     //
-    e.add_header(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_TO), current_email);
+    e.add_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_TO), current_email);
 
     // add the email subject and body using a page
     //
@@ -2449,9 +2452,10 @@ bool users_ui::resend_verification_email(QString const & email)
  */
 void users_ui::forgot_password_email(users::users::user_info_t const & user_info)
 {
-    sendmail::sendmail::email e;
+    email e;
 
     // administrator can define this email address
+    //
     libdbproxy::value from(f_snap->get_site_parameter(get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL)));
     if(from.nullValue())
     {
@@ -2460,14 +2464,17 @@ void users_ui::forgot_password_email(users::users::user_info_t const & user_info
     e.set_from(from.stringValue());
 
     // mark priority as High
-    e.set_priority(sendmail::sendmail::email::email_priority_t::EMAIL_PRIORITY_HIGH);
+    //
+    e.set_priority(email::priority_t::EMAIL_PRIORITY_HIGH);
 
     e.add_parameter(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST), "true");
 
     // destination email address
-    e.add_header(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_TO), user_info.get_user_email());
+    //
+    e.add_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_TO), user_info.get_user_email());
 
     // add the email subject and body using a page
+    //
     e.set_email_path("admin/email/users/forgot-password");
 
     // verification makes use of a session identifier
@@ -2486,6 +2493,7 @@ void users_ui::forgot_password_email(users::users::user_info_t const & user_info
     //
     // really this just saves it in the database, the sendmail itself
     // happens on the backend; see sendmail::on_backend_action()
+    //
     sendmail::sendmail::instance()->post_email(e);
 }
 

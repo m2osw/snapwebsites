@@ -1,6 +1,9 @@
 // Snap Websites Server -- handle the theme/layout information
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -2327,7 +2330,7 @@ bool layout::on_improve_signature(QString const & path, QDomDocument doc, QDomEl
         generator.setAttribute("type", "text/html");
         // TODO: translate
         generator.setAttribute("title", "Generator");
-        generator.setAttribute("href", "http://snapwebsites.org/");
+        generator.setAttribute("href", "https://snapwebsites.org/");
         head.appendChild(generator);
 
         QDomElement top(doc.createElement("link"));

@@ -1,6 +1,9 @@
 // Snap Websites Server -- snap exception handling
 // Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -37,10 +40,43 @@ namespace snap
  *
  * Initialize the base exception class. Output a stack trace to the error log.
  *
+ * \param[in] what_msg  The exception message.
+ *
  * \sa output_stack_trace()
  */
-snap_exception_base::snap_exception_base()
+snap_exception_base::snap_exception_base(char const * what_msg)
 {
+    SNAP_LOG_ERROR("snap_exception: ")(what_msg);
+    output_stack_trace();
+}
+
+
+/** \brief Initialize this Snap! exception.
+ *
+ * Initialize the base exception class. Output a stack trace to the error log.
+ *
+ * \param[in] what_msg  The exception message.
+ *
+ * \sa output_stack_trace()
+ */
+snap_exception_base::snap_exception_base(std::string const & what_msg)
+{
+    SNAP_LOG_ERROR("snap_exception: ")(what_msg);
+    output_stack_trace();
+}
+
+
+/** \brief Initialize this Snap! exception.
+ *
+ * Initialize the base exception class. Output a stack trace to the error log.
+ *
+ * \param[in] what_msg  The exception message.
+ *
+ * \sa output_stack_trace()
+ */
+snap_exception_base::snap_exception_base(QString const & what_msg)
+{
+    SNAP_LOG_ERROR("snap_exception: ")(what_msg);
     output_stack_trace();
 }
 

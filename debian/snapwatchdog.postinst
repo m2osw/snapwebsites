@@ -14,11 +14,16 @@ then
     SERVICES_DIR=/usr/share/snapwebsites/services
     touch $SERVICES_DIR/${PACKAGENAME}.service
 
-    # make the snapwatchdog lib folder
+    # make the snapwatchdog lib folders
     #
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
     mkdir -p ${SNAPWATCHDOG_LIB_DIR}
     chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}
+    for subdir in data scripts-output
+    do
+        mkdir -p ${SNAPWATCHDOG_LIB_DIR}/${subdir}
+        chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}/${subdir}
+    done
 
     # Create the logfile because the snapwebsites user may have
     # difficulties with it otherwise during logrotate.

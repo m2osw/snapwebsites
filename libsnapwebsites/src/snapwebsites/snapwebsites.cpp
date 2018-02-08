@@ -1,6 +1,9 @@
 // Snap Websites Server -- snap websites server
 // Copyright (C) 2011-2018  Made to Order Software Corp.
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -146,11 +149,74 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_CORE_CANONICAL_DOMAIN:  // this is only for test websites so search engines know to search on the real site instead
         return "core::canonical_domain";
 
+    case name_t::SNAP_NAME_CORE_CONTENT_DISPOSITION:
+        return "Content-Disposition";
+
+    case name_t::SNAP_NAME_CORE_CONTENT_LANGUAGE:
+        return "Content-Language";
+
     case name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER:
         return "Content-Type";
 
     case name_t::SNAP_NAME_CORE_COOKIE_DOMAIN:
         return "core::cookie_domain";
+
+    case name_t::SNAP_NAME_CORE_DATE:
+        return "Date";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_CONTENT_ENCODING_QUOTED_PRINTABLE:
+        return "quoted-printable";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_CONTENT_TRANSFER_ENCODING:
+        return "Content-Transfer-Encoding";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_FROM:
+        return "From";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_IMPORTANCE:
+        return "Importance";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_LIST_UNSUBSCRIBE:
+        return "List-Unsubscribe";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_MESSAGE_ID:
+        return "Message-ID";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_MIME_VERSION:
+        return "MIME-Version";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_PRECEDENCE:
+        return "Precedence";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_PRIORITY_BULK:
+        return "Bulk";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_PRIORITY_HIGH:
+        return "High";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_PRIORITY_LOW:
+        return "Low";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_PRIORITY_NORMAL:
+        return "Normal";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_PRIORITY_URGENT:
+        return "Urgent";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_REPLY_TO:
+        return "Reply-To";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_SUBJECT:
+        return "Subject";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_TO:
+        return "To";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_X_PRIORITY:
+        return "X-Priority";
+
+    case name_t::SNAP_NAME_CORE_EMAIL_X_MSMAIL_PRIORITY:
+        return "X-MSMail-Priority";
 
     case name_t::SNAP_NAME_CORE_HTTP_LINK_HEADER:
         return "Link";

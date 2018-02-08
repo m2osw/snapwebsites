@@ -1,6 +1,9 @@
 // Snap Websites Server -- Sitemap XML
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -1132,7 +1135,7 @@ void sitemapxml::generate_one_sitemap(int32_t const position, size_t & index)
                     "\n  Generator: sitemapxml plugin"
                     "\n  Creation date: %1"
                     "\n  Sitemap/URL counts: %2/%3"
-                    "\n  System: http://snapwebsites.org/"
+                    "\n  System: https://snapwebsites.org/"
                     "\n")
                 .arg(f_snap->date_to_string(start_date, snap_child::date_format_t::DATE_FORMAT_HTTP))
                 .arg(position)
@@ -1240,7 +1243,7 @@ void sitemapxml::generate_sitemap_index(int32_t position)
                 "\n  Generator: sitemapxml plugin"
                 "\n  Creation date: %1"
                 "\n  Number of sitemaps: %2"
-                "\n  System: http://snapwebsites.org/"
+                "\n  System: https://snapwebsites.org/"
                 "\n")
             .arg(f_snap->date_to_string(start_date, snap_child::date_format_t::DATE_FORMAT_HTTP))
             .arg(position)));

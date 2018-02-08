@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapwebsites/snaplayout/src/snaplayout.cpp
+ *      snaplayout/src/snaplayout.cpp
  *
  * Description:
  *      Save layout files in the Snap database.
@@ -8,7 +8,7 @@
  * License:
  *      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
  * 
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  * 
  *      Permission is hereby granted, free of charge, to any person obtaining a

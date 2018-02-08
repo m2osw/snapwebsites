@@ -1,6 +1,6 @@
 #
 # File:
-#      lib/CMakeLists.txt
+#      snapmanager/lib/CMakeLists.txt
 #
 # Description:
 #      Library used by the Snap! Manager CGI/Daemon server and plugins.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

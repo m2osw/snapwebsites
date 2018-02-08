@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/locale_widgets/CMakeLists.txt
+#      snapserver-core-plugins/src/locale_widgets/CMakeLists.txt
 #
 # Description:
 #      Offer support for various locale widgets taht extend the editor
@@ -13,7 +13,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

@@ -1,6 +1,6 @@
 Our online documentation:
 
-  http://snapwebsites.org/implementation/feature-requirements/email-feature-core/setting-postfix-snapbounce
+  https://snapwebsites.org/implementation/feature-requirements/email-feature-core/setting-postfix-snapbounce
 
 
 1) Create a "snapbounce" user for executing the script

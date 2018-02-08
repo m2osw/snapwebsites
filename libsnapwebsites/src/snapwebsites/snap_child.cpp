@@ -1,6 +1,9 @@
 // Snap Websites Server -- snap websites serving children
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -2831,7 +2834,7 @@ pid_t snap_child::fork_child()
 
     // generate a warning about having more than one thread at this point
     // (it is a huge potential for a crash or lock up, hence the test)
-    // See: http://snapwebsites.org/journal/2015/06/using-threads-server-uses-fork-they-dont-mix-well
+    // See: https://snapwebsites.org/journal/2015/06/using-threads-server-uses-fork-they-dont-mix-well
     // We send the log after we re-established it (See below)
     size_t const count(server->thread_count());
 

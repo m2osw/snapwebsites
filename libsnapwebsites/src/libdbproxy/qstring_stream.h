@@ -1,6 +1,6 @@
 /*
  * Header:
- *      src/libdbproxy/qstring_stream.h
+ *      libsnapwebsites/src/libdbproxy/qstring_stream.h
  *
  * Description:
  *      Handling of QString with standard C++ streams.
@@ -11,7 +11,7 @@
  * License:
  *      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

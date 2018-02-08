@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/header/CMakeLists.txt
+#      snapserver-core-plugins/src/header/CMakeLists.txt
 #
 # Description:
 #      Let the user manage what appears in the HTTP and HTML headers.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

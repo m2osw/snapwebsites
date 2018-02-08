@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/menu/CMakeLists.txt
+#      snapserver-core-plugins/src/menu/CMakeLists.txt
 #
 # Description:
 #      Plugin used to create menus on your website pages. Menus are lists
@@ -14,7 +14,7 @@
 # License:
 #      Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

@@ -1,6 +1,9 @@
 // Snap Websites Server -- server to handle inter-process communication
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -114,7 +117,7 @@
  * us about its capabilities.
  *
  * See also:
- * http://snapwebsites.org/implementation/feature-requirements/inter-process-signalling-core
+ * https://snapwebsites.org/implementation/feature-requirements/inter-process-signalling-core
  */
 
 

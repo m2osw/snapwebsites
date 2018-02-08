@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwebsites/libsnapwebsites/tests/CMakeLists.txt
+#      libsnapwebsites/tests/os/CMakeLists.txt
 #
 # Description:
 #      Various very basic OS tests to verify that we can use such and
@@ -13,7 +13,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

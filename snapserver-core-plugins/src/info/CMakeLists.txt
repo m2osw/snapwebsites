@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/info/CMakeLists.txt
+#      snapserver-core-plugins/src/info/CMakeLists.txt
 #
 # Description:
 #      Basic Information about the website. This module lets administrators
@@ -15,7 +15,7 @@
 # License:
 #      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

@@ -1,3 +1,19 @@
+snapwebsites (1.5.43.0~xenial) xenial; urgency=high
+
+  * Extracted the email class from the sendmail plugin to the library.
+  * Fixed the email serialization.
+  * Implemented a unit test and functional test of the email class.
+  * Added a new directory (mb) for functional tests that change the environment.
+  * Updated plugins to use the new email class environment.
+  * Added a flag to decide whether to output the brand info.
+  * Added a note before the attachments.
+  * Added support for snapwatchdog scripts to check for things like the
+    fail2ban-client getting stuck once in a while and using 100% CPU time.
+  * Fixed a ISP-8859-1 versus UTF-8 bug in glob_dir.cpp.
+  * Fixed URL to snapwebsites, it uses https now.
+  * Enhanced the snap_exception* implementation.
+  * Various cleanups.
+
 snapwebsites (1.5.42.0~xenial) xenial; urgency=high
 
   * Fixed limit to 200Mb instead of 200Tb.

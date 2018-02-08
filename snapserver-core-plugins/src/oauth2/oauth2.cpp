@@ -1,6 +1,9 @@
 // Snap Websites Server -- OAuth2 handling
 // Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -337,7 +340,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                     "Unauthorized Authentication",
                     "This website does not authorize OAuth2 authentications at the moment.",
                     "The OAuth2 system is currently disabled.",
-                    "http://snapwebsites.org/implementation/feature-requirements/oauth2-core");
+                    "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
         NOTREACHED();
     }
 
@@ -351,7 +354,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                     "Invalid Settings",
                     "Your OAuth2 settings do not include a user email for us to log your application in.",
                     "The OAuth2 system is currently \"disabled\" because no user email was specified.",
-                    "http://snapwebsites.org/implementation/feature-requirements/oauth2-core");
+                    "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
         NOTREACHED();
     }
 
@@ -373,7 +376,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                     "We only support the Snap authentication method.",
                     QString("The authorization did not have 2 parts (Snap and Secret) or the first is not \"Snap\" (\"%1\")")
                             .arg(snap_base64.size() == 2 ? snap_base64[0] : "undefined"),
-                    "http://snapwebsites.org/implementation/feature-requirements/oauth2-core");
+                    "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
         NOTREACHED();
     }
 
@@ -388,7 +391,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                     "Invalid Authentication",
                     "The authentication identifier and secret codes are expected to include only one colon character.",
                     "The expected authorization \"id:secret\" not available.",
-                    "http://snapwebsites.org/implementation/feature-requirements/oauth2-core");
+                    "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
         NOTREACHED();
     }
 
@@ -456,7 +459,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                         QString("Invalid%1%2.")
                                 .arg(identifier != identifier_secret[0] ? " identifier" : "")
                                 .arg(secret     != identifier_secret[1] ? " secret"     : ""),
-                        "http://snapwebsites.org/implementation/feature-requirements/oauth2-core");
+                        "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
             NOTREACHED();
         }
     }
@@ -556,7 +559,7 @@ void oauth2::application_login()
                     "Method Not Allowed",
                     "Applications do not accept method HEAD or TRACE.",
                     "Invalid method to access an application page.",
-                    "http://snapwebsites.org/implementation/feature-requirements/oauth2-core");
+                    "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
         NOTREACHED();
     }
 
@@ -576,7 +579,7 @@ void oauth2::application_login()
                 "Permission Denied",
                 "This page requires a Snap-Authorization.",
                 QString("An API page was accessed with any invalid Snap-Authorization field (%1).").arg(authorization),
-                "http://snapwebsites.org/implementation/feature-requirements/oauth2-core");
+                "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
         NOTREACHED();
     }
 
@@ -660,7 +663,7 @@ void oauth2::application_login()
             "Unauthorized",
             "This page requires a valid Snap-Authorization. If you had such, it may have timed out.",
             "The application session information was not valid and the user could not be authenticated properly.",
-            "http://snapwebsites.org/implementation/feature-requirements/oauth2-core");
+            "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
     NOTREACHED();
 }
 

@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapwebsites/snapdb/src/snapdb.cpp
+ *      snapdb/src/snapdb.cpp
  *
  * Description:
  *      Reads and describes a Snap database. This ease checking out the
@@ -13,7 +13,7 @@
  * License:
  *      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

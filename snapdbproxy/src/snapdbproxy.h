@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapwebsites/snapdbproxy/src/snapdbproxy.h
+ *      snapdbproxy/src/snapdbproxy.h
  *
  * Description:
  *      Proxy database access for two main reasons:
@@ -16,7 +16,7 @@
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

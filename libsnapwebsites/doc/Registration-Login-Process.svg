@@ -1401,7 +1401,7 @@
       <g id="id99">
        <path fill="rgb(230,230,230)" stroke="none" d="M 16358,2124 L 12125,2124 12125,1000 20590,1000 20590,2124 16358,2124 Z"/>
        <path fill="none" stroke="rgb(128,128,0)" d="M 16358,2124 L 12125,2124 12125,1000 20590,1000 20590,2124 16358,2124 Z"/>
-       <text class="TextShape"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="494px" font-weight="700"><tspan class="TextPosition" x="12375" y="1574"><tspan fill="rgb(0,0,0)" stroke="none">User Registration / Login Process</tspan></tspan><tspan class="TextPosition" x="14727" y="1938"><tspan font-size="282px" fill="rgb(128,128,128)" stroke="none">http://snapwebsites.org/</tspan></tspan></tspan></text>
+       <text class="TextShape"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="494px" font-weight="700"><tspan class="TextPosition" x="12375" y="1574"><tspan fill="rgb(0,0,0)" stroke="none">User Registration / Login Process</tspan></tspan><tspan class="TextPosition" x="14727" y="1938"><tspan font-size="282px" fill="rgb(128,128,128)" stroke="none">https://snapwebsites.org/</tspan></tspan></tspan></text>
       </g>
      </g>
     </g>

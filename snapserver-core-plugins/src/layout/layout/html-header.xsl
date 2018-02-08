@@ -3,6 +3,9 @@
 Snap Websites Server == system messages XSLT templates
 Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 
+https://snapwebsites.org/
+contact@m2osw.com
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -141,7 +144,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		<meta property="og:type" content="website"/>
 
 		<!-- generator -->
-		<link rel="bookmark" type="text/html" title="Generator" href="http://snapwebsites.org/"/>
+		<link rel="bookmark" type="text/html" title="Generator" href="https://snapwebsites.org/"/>
 		<meta name="generator">
 			<xsl:attribute name="content">Snap! Websites v<xsl:value-of select="head/metadata/desc[@type='version']/data"/></xsl:attribute>
 		</meta>

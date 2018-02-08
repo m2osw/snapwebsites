@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/robotstxt/CMakeLists.txt
+#      snapserver-core-plugins/src/robotstxt/CMakeLists.txt
 #
 # Description:
 #      Generate a robots.txt file so robots know what they can and cannot
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

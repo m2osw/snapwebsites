@@ -33,5 +33,5 @@ certificate, so you get a warning in your browser when accessing the
 page.
 
 
-_This file is part of the [snapcpp project](http://snapwebsites.org/)._
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._
 

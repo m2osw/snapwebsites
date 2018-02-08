@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/flash/CMakeLists.txt
+#      snapserver-core-plugins/src/flash/CMakeLists.txt
 #
 # Description:
 #      Allows for flash animations to be played back from a Snap! Website.
@@ -13,7 +13,7 @@
 # License:
 #      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

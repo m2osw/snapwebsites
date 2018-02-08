@@ -1,6 +1,6 @@
 /*
  * Text:
- *      status_connection.cpp
+ *      snapmanager/daemon/status_connection.cpp
  *
  * Description:
  *      The implementation of the status connection between the main
@@ -9,7 +9,7 @@
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

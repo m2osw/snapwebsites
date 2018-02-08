@@ -1,6 +1,9 @@
 // HTTP Client & Server -- classes to ease handling HTTP protocol
 // Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -228,7 +231,7 @@ std::string http_request::get_request(bool keep_alive) const
  * HTTP accepts full URIs in the GET, POST, etc. line
  * so the following would be valid:
  *
- *    GET http://snapwebsites.org/some/path?a=view HTTP/1.1
+ *    GET https://snapwebsites.org/some/path?a=view HTTP/1.1
  *
  * However, we break it down in a few separate parts instead, because
  * (a) we need the host to connect to the server, (b) we need the port

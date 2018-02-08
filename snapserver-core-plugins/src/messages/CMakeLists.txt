@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/messages/CMakeLists.txt
+#      snapserver-core-plugins/src/messages/CMakeLists.txt
 #
 # Description:
 #      Accumulate and display messages. This includes informational messages
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

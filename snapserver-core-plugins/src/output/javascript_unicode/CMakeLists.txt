@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/output/javascript_unicode/CMakeLists.txt
+#      snapserver-core-plugins/src/output/javascript_unicode/CMakeLists.txt
 #
 # Description:
 #      Generate JavaScript used to help with Unicode handling. We can look
@@ -17,7 +17,7 @@
 # License:
 #      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

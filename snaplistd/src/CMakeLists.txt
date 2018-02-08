@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwebsites/snaplistd/src/CMakeLists.txt
+#      snaplistd/src/CMakeLists.txt
 #
 # Description:
 #      A daemon to duplicate the list data between front ends and the pagelist
@@ -12,7 +12,7 @@
 # License:
 #      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

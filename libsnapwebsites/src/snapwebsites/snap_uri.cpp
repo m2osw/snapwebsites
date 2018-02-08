@@ -1,6 +1,9 @@
 // Snap Websites Server -- URI canonicalization
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -2485,7 +2488,7 @@ void domain_set_start_result(const rule& r, QSharedPointer<token_node>& t)
  * a default value, etc.
  *
  * Details about the domain rule script are found here:
- * http://snapwebsites.org/implementation/basic-concept-url-website/url-test
+ * https://snapwebsites.org/implementation/basic-concept-url-website/url-test
  *
  * start: rule_list
  *
@@ -3189,7 +3192,7 @@ void website_set_start_result(rule const & r, QSharedPointer<token_node> & t)
  * a default value, etc.
  *
  * Details about the website rule script are found here:
- * http://snapwebsites.org/implementation/basic-concept-url-website/url-test
+ * https://snapwebsites.org/implementation/basic-concept-url-website/url-test
  *
  * \code
  * start: rule_list

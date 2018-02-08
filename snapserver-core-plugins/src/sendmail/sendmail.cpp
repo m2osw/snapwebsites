@@ -1,6 +1,9 @@
 // Snap Websites Server -- manage sendmail (record, display)
 // Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -89,24 +92,6 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST:
         return "Bypass-Blacklist";
 
-    case name_t::SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION:
-        return "Content-Disposition";
-
-    case name_t::SNAP_NAME_SENDMAIL_CONTENT_LANGUAGE:
-        return "Content-Language";
-
-    case name_t::SNAP_NAME_SENDMAIL_CONTENT_TRANSFER_ENCODING:
-        return "Content-Transfer-Encoding";
-
-    case name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE:
-        return "Content-Type";
-
-    case name_t::SNAP_NAME_SENDMAIL_CREATED:
-        return "sendmail::created";
-
-    case name_t::SNAP_NAME_SENDMAIL_DATE:
-        return "Date";
-
     case name_t::SNAP_NAME_SENDMAIL_EMAIL:
         return "sendmail::email";
 
@@ -140,12 +125,6 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_SENDMAIL_FREQUENCY_WEEKLY:
         return "weekly";
 
-    case name_t::SNAP_NAME_SENDMAIL_FROM:
-        return "From";
-
-    case name_t::SNAP_NAME_SENDMAIL_IMPORTANT:
-        return "Importance";
-
     case name_t::SNAP_NAME_SENDMAIL_INDEX:
         return "*index*";
 
@@ -170,29 +149,14 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_SENDMAIL_LISTS:
         return "lists";
 
-    case name_t::SNAP_NAME_SENDMAIL_LIST_UNSUBSCRIBE:
-        return "List-Unsubscribe";
-
     case name_t::SNAP_NAME_SENDMAIL_MAXIMUM_TIME:
         return "Maximum-Time";
-
-    case name_t::SNAP_NAME_SENDMAIL_MESSAGE_ID:
-        return "Message-ID";
-
-    case name_t::SNAP_NAME_SENDMAIL_MIME_VERSION:
-        return "MIME-Version";
 
     case name_t::SNAP_NAME_SENDMAIL_MINIMUM_TIME:
         return "Minimum-Time";
 
     case name_t::SNAP_NAME_SENDMAIL_NEW:
         return "new";
-
-    case name_t::SNAP_NAME_SENDMAIL_PRECEDENCE:
-        return "Precedence";
-
-    case name_t::SNAP_NAME_SENDMAIL_REPLY_TO:
-        return "Reply-To";
 
     case name_t::SNAP_NAME_SENDMAIL_SENDING_STATUS:
         return "sendmail::sending_status";
@@ -233,12 +197,6 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_SENDMAIL_STOP:
         return "STOP";
 
-    case name_t::SNAP_NAME_SENDMAIL_SUBJECT:
-        return "Subject";
-
-    case name_t::SNAP_NAME_SENDMAIL_TO:
-        return "To";
-
     case name_t::SNAP_NAME_SENDMAIL_UNSUBSCRIBE_ON:
         return "sendmail::unsubscribe_on";
 
@@ -252,1211 +210,12 @@ char const * get_name(name_t name)
         // it would be better with the version of the sendmail plugin...
         return "Snap! C++ Sendmail User Agent v" SNAPWEBSITES_VERSION_STRING;
 
-    case name_t::SNAP_NAME_SENDMAIL_X_PRIORITY:
-        return "X-Priority";
-
-    case name_t::SNAP_NAME_SENDMAIL_X_MSMAIL_PRIORITY:
-        return "X-MSMail-Priority";
-
     default:
         // invalid index
         throw snap_logic_exception(QString("Invalid name_t::SNAP_NAME_SENDMAIL_...").arg(static_cast<int>(name)));
 
     }
     NOTREACHED();
-}
-
-
-/** \brief Initialize an email attachment object.
- *
- * You can create an email attachment object, initializes it, and then
- * add it to an email object. The number of attachments is not limited
- * although you should remember that most mail servers limit the total
- * size of an email. It may be 5, 10 or 20Mb, but if you go over the
- * email will fail.
- */
-sendmail::email::email_attachment::email_attachment()
-    //: f_header() -- auto-init
-    //, f_data() -- auto-init
-    //, f_is_sub_attachment(false) -- auto-init
-    //, f_sub_attachments() -- auto-init
-{
-}
-
-
-/** \brief Clean up an email attachment.
- *
- * This function is here primarily to have a clean virtual table.
- */
-sendmail::email::email_attachment::~email_attachment()
-{
-}
-
-
-/** \brief The content of the binary file to attach to this email.
- *
- * This function is used to attach one binary file to the email.
- *
- * If you know the MIME type of the data, it is smart to define it when
- * calling this function so that way you avoid asking the magic library
- * for it. This will save time as the magic library is much slower and
- * if you are positive about the type, it will be correct whereas the
- * magic library could return an invalid value.
- *
- * Also, if this is a file attachment, make sure to add a
- * Content-Disposition header to define the filename and
- * modification date as in:
- *
- * \code
- *   Content-Disposition: attachment; filename=my-attachment.pdf;
- *     modification-date="Tue, 29 Sep 2015 16:12:15 -0800";
- * \endcode
- *
- * See the set_content_disposition() function to easily add this
- * field.
- *
- * \param[in] data  The data to attach to this email.
- * \param[in] mime_type  The MIME type of the data if known,
- *                       otherwise leave empty.
- *
- * \sa add_header()
- * \sa get_mime_type()
- * \sa set_content_disposition()
- */
-void sendmail::email::email_attachment::set_data(QByteArray const & data, QString mime_type)
-{
-    f_data = data;
-
-    // if user did not define the MIME type then ask the magic library
-    if(mime_type.isEmpty())
-    {
-        mime_type = get_mime_type(f_data);
-    }
-    f_header[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)] = mime_type;
-}
-
-
-/** \brief The email attachment data.
- *
- * This function retrieves the attachment data from this email attachment
- * object. This is generally UTF-8 characters when we are dealing with
- * text (HTML or plain text.)
- *
- * The data type is defined in the Content-Type header which is automatically
- * defined by the mime_type parameter of the set_data() function call. To
- * retrieve the MIME type, use the following:
- *
- * \code
- * QString mime_type(attachment->get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
- * \endcode
- */
-QByteArray sendmail::email::email_attachment::get_data() const
-{
-    return f_data;
-}
-
-
-/** \brief Retrieve the value of a header.
- *
- * This function returns the value of the named header. If the header
- * is not currently defined, this function returns an empty string.
- *
- * \exception sendmail_exception_invalid_argument
- * The name of a header cannot be empty. This exception is raised if
- * \p name is empty.
- *
- * \param[in] name  A valid header name.
- *
- * \return The current value of that header or an empty string if undefined.
- */
-QString sendmail::email::email_attachment::get_header(const QString& name) const
-{
-    if(name.isEmpty())
-    {
-        throw sendmail_exception_invalid_argument("Cannot retrieve a header with an empty name");
-    }
-    if(f_header.contains(name))
-    {
-        return f_header[name];
-    }
-    return "";
-}
-
-
-/** \brief Add the Content-Disposition field.
- *
- * Helper function to add the Content-Disposition without having to
- * generate the string of the field by hand.
- *
- * The disposition is expected to be of type "attachment" by default.
- * You may change that by changing the last parameter to this function.
- *
- * The function also accepts a filename and a date. If the date is set
- * to zero (default) then time() is used.
- *
- * \code
- *      sendmail::sendmail::email e;
- *      ...
- *      sendmail::sendmail::email::email_attachment a;
- *      a.set_data(some_pdf_buffer, "application/pdf");
- *      a.set_content_disposition("your-file.pdf");
- *      e.add_attachment(a);
- *      ...
- *      sendmail::sendmail::instance()->post_email(e);
- * \endcode
- *
- * \warning
- * The modification_date is a an int64_t type in microsecond
- * as most often used in Snap! Emails only use dates with a
- * one second precision so the milli and micro seconds will
- * generally be ignored.
- *
- * \param[in] filename  The name of this attachment file.
- * \param[in] modification_date  The last modification date of this file.
- *                               Defaults to zero meaning use now.
- *                               Value is in microseconds.
- * \param[in] attachment_type  The type of attachment, defaults to "attachment"
- *                             which is all you need in most cases.
- */
-void sendmail::email::email_attachment::set_content_disposition(QString const & filename, int64_t modification_date, QString const & attachment_type)
-{
-    // TODO: make use of a WeightedHTTPString::to_string() (class to be renamed!)
-
-    // type
-    QString content_disposition(QString("%1;").arg(attachment_type));
-
-    // filename
-    if(!filename.isEmpty())
-    {
-        content_disposition = QString("%1 filename=%2;")
-                .arg(content_disposition)
-                .arg(snap_uri::urlencode(filename));
-    }
-
-    // modificate-date
-    if(modification_date == 0)
-    {
-        modification_date = time(nullptr) * 1000000;
-    }
-    content_disposition = QString("%1 modification-date=\"%2\";")
-            .arg(content_disposition)
-            .arg(content::content::instance()->get_snap()->date_to_string(modification_date, snap_child::date_format_t::DATE_FORMAT_EMAIL));
-
-    // save the result in the headers
-    add_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION), content_disposition);
-}
-
-
-/** \brief Header of this attachment.
- *
- * Each attachment can be assigned a set of headers such as the Content-Type
- * (which is automatically set by the set_data() function.)
- *
- * Headers in an attachment are similar to the headers in the main email
- * only it cannot include certain entries such as the To:, Cc:, etc.
- *
- * In most cases you want to include the filename if the attachment represents
- * a file. Plain text and HTML will generally only need the Content-Type which
- * is already set by a call to the set_data() funciton.
- *
- * Note that the name of a header is case insensitive. So the names
- * "Content-Type" and "content-type" represent the same header. Which
- * one will be used when generating the output is a non-disclosed internal
- * functionality. You probably want to use the SNAP_SENDMAIL_HEADER_...
- * names anyway (at least for those that are defined.)
- *
- * \note
- * The Content-Transfer-Encoding is managed internally and you are not
- * expected to set this value. The Content-Disposition is generally set
- * to "attachment" for files that are attached to the email.
- *
- * \exception sendmail_exception_invalid_argument
- * The name of a header cannot be empty. This exception is raised if the name
- * is empty.
- *
- * \todo
- * As we develop a functioning version of sendmail we want to add tests to
- * prevent a set of fields that we will handle internally and thus we do
- * not want users to be able to set here.
- *
- * \param[in] name  A valid header name.
- * \param[in] value  The value of this header.
- *
- * \sa set_data()
- */
-void sendmail::email::email_attachment::add_header(QString const & name, QString const & value)
-{
-    if(name.isEmpty())
-    {
-        throw sendmail_exception_invalid_argument("When adding a header the name cannot be empty");
-    }
-
-    f_header[name] = value;
-}
-
-
-/** \brief Get all the headers defined in this email attachment.
- *
- * This function returns the map of the headers defined in this email
- * attachment. This can be used to quickly scan all the headers.
- *
- * It is modify-able making it possible for various functions to modify
- * the fields as required by the final send process. It should be used
- * with very high level care. (see function copy_filename_to_content_type()
- * for an example.)
- *
- * \note
- * It is important to remember that since this function returns a reference
- * to the map of headers, it may break if you call add_header() while going
- * through the references.
- *
- * \return A direct reference to the internal header map.
- *
- * \sa copy_filename_to_content_type()
- */
-sendmail::email::header_map_t & sendmail::email::email_attachment::get_all_headers()
-{
-    return f_header;
-}
-
-
-/** \brief Add a related sub-attachment.
- *
- * This function lets you add a related sub-attachment to an email
- * attachment. At this time, this is only accepted on HTML attachments
- * (body) to attach files such as images, CSS, and scripts.
- *
- * \note
- * At this time we prevent you from adding related sub-attachments to
- * already related sub-attachments. Note that emails can have more levels,
- * but we limit the body of the email (very first attachment) to either
- * Text or HTML. If HTML, then the sendmail plugin takes care of
- * adding the Text version. Thus the sendmail email structure is somewhat
- * different from the resulting email.
- *
- * The possible structure of a resulting email is:
- *
- * \code
- * - multipart/mixed
- *   - multipart/alternative
- *     - text/plain
- *     - multipart/related
- *       - text/html
- *       - image/jpg (Images used in text/html)
- *       - image/png
- *       - image/gif
- *       - text/css (the CSS used by the HTML)
- *   - application/pdf (PDF attachment)
- * \endcode
- *
- * The structure of the sendmail attachment for such an email would be:
- *
- * \code
- * - HTML attachment
- *   - image/jpg
- *   - image/png
- *   - image/gif
- *   - text/css
- * - application/pdf
- * \endcode
- *
- * Also, you are much more likely to use the set_email_path() which
- * means you do not have to provide anything more than than the dynamic
- * file attachments (i.e. the application/pdf file in our example here.)
- * Everything else is taken care of by the sendmail plugin.
- *
- * \param[in] data  The attachment to add to this attachment by copy.
- */
-void sendmail::email::email_attachment::add_related(email_attachment const & data)
-{
-    if(f_is_sub_attachment)
-    {
-        throw sendmail_exception_too_many_levels("this attachment is already a related sub-attachment, you cannot add more levels");
-    }
-    if(data.get_related_count() != 0)
-    {
-        throw sendmail_exception_too_many_levels("you cannot add a related sub-attachment to an attachment when that related sub-attachment has itself a related sub-attachment");
-    }
-    QSharedPointer<email_attachment> copy(new email_attachment(data));
-    // mark this as a sub-attachment to prevent users from adding
-    // sub-sub-attachments to those
-    copy->f_is_sub_attachment = true;
-    f_sub_attachments.push_back(copy);
-}
-
-
-/** \brief Return the number of sub-attachments.
- *
- * Attachments can be assigned related sub-attachments. For example, an
- * HTML page can be given images, CSS files, etc.
- *
- * This functio nreturns the number of such sub-attachments that were
- * added with the add_attachment() function. The count can be used to
- * retrieve all the sub-attachments with the get_attachment() function.
- *
- * \return The number of sub-attachments.
- *
- * \sa add_related()
- * \sa get_related()
- */
-int sendmail::email::email_attachment::get_related_count() const
-{
-    return f_sub_attachments.size();
-}
-
-
-/** \brief Get one of the related sub-attachment of this attachment.
- *
- * This function is used to retrieve the related attachments found in
- * another attachment. These are called sub-attachments.
- *
- * These attachments are viewed as related documents to the main
- * attachment. These are used with HTML at this point to add images,
- * CSS files, etc. to the HTML files.
- *
- * \warning
- * The function returns a reference to the internal object. Calling
- * add_attachment() is likely to invalidate that reference.
- *
- * \param[in] index  The attachment index.
- *
- * \return A copy of the attachment.
- *
- * \sa add_related()
- * \sa get_related_count()
- */
-sendmail::email::email_attachment& sendmail::email::email_attachment::get_related(int index) const
-{
-    return *f_sub_attachments[index];
-}
-
-
-/** \brief Unserialize an email attachment.
- *
- * This function unserializes an email attachment that was serialized using
- * the serialize() function. This is considered an internal function as it
- * is called by the unserialize() function of the email object.
- *
- * \param[in] r  The reader used to read the input data.
- *
- * \sa serialize()
- */
-void sendmail::email::email_attachment::unserialize(QtSerialization::QReader& r)
-{
-    QtSerialization::QComposite comp;
-    QtSerialization::QFieldTag tag_header(comp, "header", this);
-    QString attachment_data;
-    QtSerialization::QFieldString tag_data(comp, "data", attachment_data);
-    r.read(comp);
-    f_data = QByteArray::fromBase64(attachment_data.toUtf8().data());
-}
-
-
-/** \brief Read the contents one tag from the reader.
- *
- * This function reads the contents of the attachment tag. It handles
- * the attachment header fields.
- *
- * \param[in] name  The name of the tag being read.
- * \param[in] r  The reader used to read the input data.
- */
-void sendmail::email::email_attachment::readTag(const QString& name, QtSerialization::QReader& r)
-{
-    if(name == "header")
-    {
-        QtSerialization::QComposite comp;
-        QString header_name;
-        QtSerialization::QFieldString tag_name(comp, "name", header_name);
-        QString header_value;
-        QtSerialization::QFieldString tag_value(comp, "value", header_value);
-        r.read(comp);
-        f_header[header_name] = header_value;
-    }
-}
-
-
-/** \brief Serialize an attachment to a writer.
- *
- * This function serialize an attachment so it can be saved in the database
- * in the form of a string.
- *
- * \param[in,out] w  The writer where the data gets saved.
- */
-void sendmail::email::email_attachment::serialize(QtSerialization::QWriter& w) const
-{
-    QtSerialization::QWriter::QTag tag(w, "attachment");
-    for(header_map_t::const_iterator it(f_header.begin()); it != f_header.end(); ++it)
-    {
-        QtSerialization::QWriter::QTag header(w, "header");
-        QtSerialization::writeTag(w, "name", it.key());
-        QtSerialization::writeTag(w, "value", it.value());
-    }
-    // the data may be binary and thus it cannot be saved as is
-    // so we encode it using base64
-    QtSerialization::writeTag(w, "data", f_data.toBase64().data());
-}
-
-
-/** \brief Initialize an email object.
- *
- * This function initializes an email object making it ready to be
- * setup before processing.
- *
- * The function takes no parameter, although a certain number of
- * parameters are required and must be defined before the email
- * can be sent:
- *
- * \li From -- the name/email of the user sending this email.
- * \li To -- the name/email of the user to whom this email is being sent,
- *           there may be multiple recipients and they may be defined
- *           in Cc or Bcc as well as the To list. The To can also be
- *           defined as a list alias name in which case the backend
- *           will send the email to all the subscribers of that list.
- * \li Subject -- the subject must include something.
- * \li Content -- at least one attachment must be added as the body.
- *
- * Attachments support text emails, HTML pages, and any file (image,
- * PDF, etc.). There is no specific limit to the number of attachments
- * or the size per se, although more email systems do limit the size
- * of an email so we do enforce some limit (i.e. 25Mb).
- */
-sendmail::email::email()
-    //: f_cumulative("") -- auto-init
-    //, f_site_key("") -- auto-init, set when posting email
-    //, f_email_path("") -- auto-init
-    //, f_email_key("") -- auto-init, generated when posting email
-    : f_time(static_cast<int64_t>(time(nullptr)))
-    //, f_header() -- auto-init
-    //, f_attachments() -- auto-init, but at least one required
-{
-}
-
-
-/** \brief Clean up the email object.
- *
- * This function ensures that an email object is cleaned up before
- * getting freed.
- */
-sendmail::email::~email()
-{
-}
-
-
-/** \brief Save the name and email address of the sender.
- *
- * This function saves the name and address of the sender. It has to
- * be valid according to RFC 2822.
- *
- * If you are call this function multiple times, only the last \p from
- * information is kept.
- *
- * \note
- * The set_from() function is the same as calling the add_header() with
- * "From" as the field name and \p from as the value. To retrieve that
- * field, you have to use the get_header() function.
- *
- * \exception sendmail_exception_invalid_argument
- * If the \p from parameter is not a valid email address (as per RCF
- * 2822) or there isn't exactly one email address in that parameter,
- * then this exception is raised.
- *
- * \param[in] from  The name and email address of the sender
- */
-void sendmail::email::set_from(QString const & from)
-{
-    tld_email_list emails;
-    if(emails.parse(from.toUtf8().data(), 0) != TLD_RESULT_SUCCESS)
-    {
-        throw sendmail_exception_invalid_argument("invalid From: email");
-    }
-    if(emails.count() != 1)
-    {
-        throw sendmail_exception_invalid_argument("multiple From: emails");
-    }
-    f_header[get_name(name_t::SNAP_NAME_SENDMAIL_FROM)] = from;
-}
-
-
-/** \brief Mark this email as being cumulative.
- *
- * A cumulative email is not sent immediately. Instead it is stored
- * and sent at a later time once certain thresholds are reached.
- * There are two thresholds used at this time: a time threshold, a
- * user may want to receive at most one email every few days; and
- * a count threshold, a user may want to receive an email for every
- * X events.
- *
- * Also, our system is capable to cumulate using an overwrite so
- * the receiver gets one email even if the same object was modified
- * multiple times. For example an administrator may want to know
- * when a type of pages gets modified, but he doesn't want to know
- * of each little change (i.e. the editor may change the page 5
- * times in a row as he/she finds things to tweak over and over
- * again.) The name of the \p object passed as a parameter allows
- * the mail system to cumulate using an overwrite and thus mark
- * that this information should really only be sent once (i.e.
- * instead of saying 10 times that page X changed, the mail system
- * can say it once [although we will include how many edits were
- * made as an additional piece of information.])
- *
- * Note that the user may mark all emails that he/she receives as
- * cumulative or non-cumulative so this flag is useful but it can
- * be ignored by the receivers. The priority can be used by the
- * receiver to decide what to do with an email. (i.e. send urgent
- * emails immediately.)
- *
- * \note
- * You may call the set_cumulative() function with an empty string
- * to turn off the cumulative feature for that email.
- *
- * \param[in] object  The name of the object being worked on.
- */
-void sendmail::email::set_cumulative(const QString& object)
-{
-    f_cumulative = object;
-}
-
-
-/** \brief Set the site key of the site sending this email.
- *
- * The site key is saved in the email whenever the post_email() function
- * is called. You do not have to define it, it will anyway be overwritten.
- *
- * The site key is used to check whether an email is being sent to a group
- * and that group is a mailing list. In that case we've got to have the
- * name of the mailing list defined as "\<site-key>: \<list-name>" thus we
- * need access to the site key that generates the email at the time we
- * manage the email (which is from the backend that has no clue what the
- * site key is when reached).
- *
- * \param[in] site_key  The name (key/URI) of the site being built.
- */
-void sendmail::email::set_site_key(QString const & site_key)
-{
-    f_site_key = site_key;
-}
-
-
-/** \brief Retrieve the site key of the site that generated this email.
- *
- * This function retrieves the value set by the set_site_key() function.
- * It returns an empty string until the post_email() function is called
- * because before that it is not set.
- *
- * The main reason for having the site key is to search the list of
- * email lists when the email gets sent to the end user.
- *
- * \return The site key of the site that generated the email.
- */
-const QString& sendmail::email::get_site_key() const
-{
-    return f_site_key;
-}
-
-
-/** \brief Define the path to the email in the system.
- *
- * This function sets up the path of the email subject, body, and optional
- * attachments.
- *
- * Other attachments can also be added to the email. However, when a path
- * is defined, the title and body of that page are used as the subject and
- * the body of the email.
- *
- * \note
- * At the time an email gets sent, the permissions of a page are not
- * checked.
- *
- * \param[in] email_path  The path to a page that will be used as the email subject, body, and attachments
- */
-void sendmail::email::set_email_path(QString const & email_path)
-{
-    f_email_path = email_path;
-}
-
-
-/** \brief Retrieve the path to the page used to generate the email.
- *
- * This email path is set to a page that represents the subject (title) and
- * body of the email. It may also have attachments linked to it.
- *
- * If the path is empty, then the email is generated using the email object
- * and its attachment, the first attachment being the body of the email.
- *
- * \return The path to the page to be used to generate the email subject and
- *         title.
- */
-QString const & sendmail::email::get_email_path() const
-{
-    return f_email_path;
-}
-
-
-/** \brief Set the email key.
- *
- * When a new email is posted, it is assigned a unique number used as a
- * key in different places.
- *
- * \param[in] email_key  The name (key/URI) of the site being built.
- */
-void sendmail::email::set_email_key(const QString& email_key)
-{
-    f_email_key = email_key;
-}
-
-
-/** \brief Retrieve the email key.
- *
- * This function retrieves the value set by the set_email_key() function.
- *
- * The email key is set when you call the post_email() function. It is a
- * random number that we also save in the email object so we can keep using
- * it as we go.
- *
- * \return The email key.
- */
-const QString& sendmail::email::get_email_key() const
-{
-    return f_email_key;
-}
-
-
-/** \brief Retrieve the time when the email was posted.
- *
- * This function retrieves the time when the email was first posted.
- *
- * \return The time when the email was posted.
- */
-time_t sendmail::email::get_time() const
-{
-    return static_cast<time_t>(f_time);
-}
-
-
-/** \brief The priority is a somewhat arbitrary value defining the email urgency.
- *
- * Many mail system define a priority but it really isn't defined in the
- * RFC 2822 so the value is not well defined.
- *
- * The priority is saved in the X-Priority header.
- *
- * \param[in] priority  The priority of this email.
- */
-void sendmail::email::set_priority(email_priority_t priority)
-{
-    QString name;
-    switch(priority)
-    {
-    case email_priority_t::EMAIL_PRIORITY_BULK:
-        name = "Bulk";
-        break;
-
-    case email_priority_t::EMAIL_PRIORITY_LOW:
-        name = "Low";
-        break;
-
-    case email_priority_t::EMAIL_PRIORITY_NORMAL:
-        name = "Normal";
-        break;
-
-    case email_priority_t::EMAIL_PRIORITY_HIGH:
-        name = "High";
-        break;
-
-    case email_priority_t::EMAIL_PRIORITY_URGENT:
-        name = "Urgent";
-        break;
-
-    default:
-        throw sendmail_exception_invalid_argument("Unknown priority");
-
-    }
-
-    f_header[get_name(name_t::SNAP_NAME_SENDMAIL_X_PRIORITY)] = QString("%1 (%2)").arg(static_cast<int>(priority)).arg(name);
-    f_header[get_name(name_t::SNAP_NAME_SENDMAIL_X_MSMAIL_PRIORITY)] = name;
-    f_header[get_name(name_t::SNAP_NAME_SENDMAIL_IMPORTANT)] = name;
-    f_header[get_name(name_t::SNAP_NAME_SENDMAIL_PRECEDENCE)] = name;
-}
-
-
-/** \brief Set the email subject.
- *
- * This function sets the subject of the email. Anything is permitted although
- * you should not send emails with an empty subject.
- *
- * The system takes care of encoding the subject if required. It will also trim
- * it and remove any unwanted characters (tabs, new lines, etc.)
- *
- * The subject line is also silently truncated to a reasonable size.
- *
- * Note that if the email is setup with a path to a page, the title of that
- * page is used as the default subject. If the set_subject() function is
- * called with a valid subject (not empty) then the page title is ignored.
- *
- * \note
- * The set_subject() function is the same as calling the add_header() with
- * "Subject" as the field name and \p subject as the value.
- *
- * \param[in] subject  The subject of the email.
- */
-void sendmail::email::set_subject(QString const & subject)
-{
-    f_header[get_name(name_t::SNAP_NAME_SENDMAIL_SUBJECT)] = subject;
-}
-
-
-/** \brief Add a header to the email.
- *
- * The system takes care of most of the email headers but this function gives
- * you the possibility to add more.
- *
- * Note that the priority should instead be set with the set_priority()
- * function. This way it is more likely to work in all system that the
- * sendmail plugin supports.
- *
- * The content type should not be set. The system automatically takes care of
- * that for you including required encoding information, attachments, etc.
- *
- * The To, Cc, and Bcc fields are defined in this way. If multiple
- * destinations are defined, you must concatenate them in the
- * \p value parameter before calling this function.
- *
- * Note that the name of a header is case insensitive. So the names
- * "Content-Type" and "content-type" represent the same header. Which
- * one will be used when generating the output is a non-disclosed internal
- * functionality. You probably want to use the SNAP_SENDMAIL_HEADER_...
- * names anyway (at least for those that are defined.)
- *
- * \warning
- * Also the function is called 'add', because you may add as many headers as you
- * need, the function does NOT cumulate data within one field. Instead it
- * overwrites the content of the field. This is one way to replace an unwanted
- * value or force the content of a field for a given email.
- *
- * \exception sendmail_exception_invalid_argument
- * The name of a header cannot be empty. This exception is raised if
- * \p name is empty. The field name is also validated by the TLD library
- * and must be composed of letters, digits, the dash character, and it
- * has to start with a letter. The case is not important, however.
- * Also, if the field represents an email or a list of emails, the
- * value is also checked for validity.
- *
- * \param[in] name  A valid header name.
- * \param[in] value  The value of this header.
- */
-void sendmail::email::add_header(QString const & name, QString const & value)
-{
-    tld_email_field_type type(tld_email_list::email_field_type(name.toUtf8().data()));
-    if(type == TLD_EMAIL_FIELD_TYPE_INVALID)
-    {
-        // this includes the case where the field name is empty
-        throw sendmail_exception_invalid_argument("Invalid header name");
-    }
-    if(type != TLD_EMAIL_FIELD_TYPE_UNKNOWN)
-    {
-        // The Bcc fields may be empty
-        if(type != TLD_EMAIL_FIELD_TYPE_ADDRESS_LIST_OPT
-        || !value.isEmpty())
-        {
-            // if not unknown then we should check the field value
-            // as a list of emails
-            tld_email_list emails;
-            if(emails.parse(value.toUtf8().data(), 0) != TLD_RESULT_SUCCESS)
-            {
-                // TODO: this can happen if a TLD becomes obsolete and
-                //       a user did not update one's email address.
-                throw sendmail_exception_invalid_argument(QString("Invalid emails in header field: \"%1: %2\"").arg(name).arg(value));
-            }
-            if(type == TLD_EMAIL_FIELD_TYPE_MAILBOX
-            && emails.count() != 1)
-            {
-                throw sendmail_exception_invalid_argument(QString("Header field expects exactly one email in: \"%1: %2\"").arg(name).arg(value));
-            }
-        }
-    }
-
-    f_header[name] = value;
-}
-
-
-/** \brief Retrieve the value of a header.
- *
- * This function returns the value of the named header. If the header
- * is not currently defined, this function returns an empty string.
- *
- * \exception sendmail_exception_invalid_argument
- * The name of a header cannot be empty. This exception is raised if
- * \p name is empty.
- *
- * \param[in] name  A valid header name.
- *
- * \return The current value of that header or an empty string if undefined.
- */
-QString sendmail::email::get_header(QString const & name) const
-{
-    if(name.isEmpty())
-    {
-        throw sendmail_exception_invalid_argument("Cannot retrieve a header with an empty name");
-    }
-    if(f_header.contains(name))
-    {
-        return f_header[name];
-    }
-
-    // return f_header[name] -- this would create an entry for f_header[name] for nothing
-    return "";
-}
-
-
-/** \brief Get all the headers defined in this email.
- *
- * This function returns the map of the headers defined in this email. This
- * can be used to quickly scan all the headers.
- *
- * \note
- * It is important to remember that since this function returns a reference
- * to the map of headers, it may break if you call add_header() while going
- * through the references.
- *
- * \return A direct reference to the internal header map.
- */
-const sendmail::email::header_map_t & sendmail::email::get_all_headers() const
-{
-    return f_header;
-}
-
-
-/** \brief Add the body attachment to this email.
- *
- * When creating an email with a path to a page (which is close to mandatory
- * if you want to have translation and let users of your system to be able
- * to edit the email in all languages.)
- *
- * This function should be private because it should only be used internally.
- * Unfortunately, the function is used from the outside. But you've been
- * warn. Really, this is using a push_front() instead of a push_back() it
- * is otherwise the same as the add_attachment() function and you may want
- * to read that function's documentation too.
- *
- * \param[in] data  The attachment to add as the body of this email.
- *
- * \sa email::add_attachment()
- */
-void sendmail::email::set_body_attachment(const email_attachment& data)
-{
-    f_attachment.push_front(data);
-}
-
-
-/** \brief Add an attachment to this email.
- *
- * All data appearing in the body of the email is defined using attachments.
- * This includes the normal plain text body if you use one. See the
- * email_attachment class for details on how to create an attachment
- * for an email.
- *
- * Note that if you want to add a plain text and an HTML version to your
- * email, these are sub-attachments to one attachment of the email defined
- * as alternatives. If only that one attachment is added to an email then
- * it won't be made a sub-attachment in the final email buffer.
- *
- * \b IMPORTANT \b NOTE: the body and subject of emails are most often defined
- * using a path to a page. This means the first attachment is to be viewed
- * as an attachment, not the main body. Also, the attachments of the page
- * are also viewed as attachments of the email and will appear before the
- * attachments added here.
- *
- * \note
- * It is important to note that the attachments are written in the email
- * in the order they are defined here. It is quite customary to add the
- * plain text first, then the HTML version, then the different files to
- * attach to the email.
- *
- * \param[in] data  The email attachment to add by copy.
- *
- * \sa email::set_body_attachment()
- */
-void sendmail::email::add_attachment(const email_attachment& data)
-{
-    f_attachment.push_back(data);
-}
-
-
-/** \brief Retrieve the number of attachments defined in this email.
- *
- * This function defines the number of attachments that were added to this
- * email. This is useful to retrieve the attachments with the
- * get_attachment() function.
- *
- * \return The number of attachments defined in this email.
- *
- * \sa add_attachment()
- * \sa get_attachment()
- */
-int sendmail::email::get_attachment_count() const
-{
-    return f_attachment.count();
-}
-
-
-/** \brief Retrieve the specified attachement.
- *
- * This function gives you a read/write reference to the specified
- * attachment. This is used by plugins that need to access email
- * data to filter it one way or the other (i.e. change all the tags
- * with their corresponding values.)
- *
- * The \p index parameter must be a number between 0 and
- * get_attachment_count() minus one. If no attachments were added
- * then this function cannot be called.
- *
- * \param[in] index  The index of the attachment to retrieve.
- *
- * \return A reference to the corresponding attachment.
- *
- * \sa add_attachment()
- * \sa get_attachment_count()
- */
-sendmail::email::email_attachment& sendmail::email::get_attachment(int index) const
-{
-    // make sure we use the const version of the [] operator so
-    // Qt does not make a deep copy of the element
-    return const_cast<email_attachment&>(f_attachment[index]);
-}
-
-
-/** \brief Add a parameter to the email.
- *
- * Whenever you create an email, you may be able to offer additional
- * parameters that are to be used as token replacement in the email.
- * For example, when creating a new user, we ask the user to verify his
- * email address. This is done by creating a session identifier and then
- * asking the user to go to the special page /verify/\<session>. That
- * way we know that the user received the email (although it may not
- * exactly be the right person...)
- *
- * The name of the parameter should be something like "users::verify",
- * i.e. it should be namespace specific to not clash with sendmail or
- * other plugins parameters.
- *
- * All parameters have case sensitive names. So sendmail and Sendmail
- * are not equal. However, all parameters should use lowercase only
- * to match conventional XML tag and attribute names.
- *
- * \warning
- * Also the function is called 'add', because you may add as many parameters
- * as you have available, the function does NOT cumulate data within one field.
- * Instead it overwrites the content of the field if set more than once. This
- * is one way to replace an unwanted value or force the content of a field
- * for a given email.
- *
- * \exception sendmail_exception_invalid_argument
- * The name of a parameter cannot be empty. This exception is raised if
- * \p name is empty.
- *
- * \param[in] name  A valid parameter name.
- * \param[in] value  The value of this header.
- */
-void sendmail::email::add_parameter(QString const & name, QString const & value)
-{
-    if(name.isEmpty())
-    {
-        throw sendmail_exception_invalid_argument("plugins/sendmail/sendmail.cpp:sendmail::email::add_parameter(): Cannot add a parameter with an empty name.");
-    }
-
-    f_parameter[name] = value;
-}
-
-
-/** \brief Retrieve the value of a named parameter.
- *
- * This function returns the value of the named parameter. If the parameter
- * is not currently defined, this function returns an empty string.
- *
- * \exception sendmail_exception_invalid_argument
- * The name of a parameter cannot be empty. This exception is raised if
- * \p name is empty.
- *
- * \param[in] name  A valid parameter name.
- *
- * \return The current value of that parameter or an empty string if undefined.
- */
-QString sendmail::email::get_parameter(QString const & name) const
-{
-    if(name.isEmpty())
-    {
-        throw sendmail_exception_invalid_argument("plugins/sendmail/sendmail.cpp:sendmail::email::get_parameter(): Cannot retrieve a parameter with an empty name.");
-    }
-    if(f_parameter.contains(name))
-    {
-        return f_parameter[name];
-    }
-
-    return "";
-}
-
-
-/** \brief Get all the parameters defined in this email.
- *
- * This function returns the map of the parameters defined in this email.
- * This can be used to quickly scan all the parameters.
- *
- * \note
- * It is important to remember that since this function returns a reference
- * to the map of parameters, it may break if you call add_parameter() while
- * going through the references.
- *
- * \return A direct reference to the internal parameter map.
- */
-const sendmail::email::parameter_map_t & sendmail::email::get_all_parameters() const
-{
-    return f_parameter;
-}
-
-
-/** \brief Unserialize an email message.
- *
- * This function unserializes an email message that was serialized using
- * the serialize() function.
- *
- * You are expected to first create an email object and then call this
- * function with the data parameter set as the string that the serialize()
- * function returned.
- *
- * You may setup some default headers such as the X-Mailer value in your
- * email object before calling this function. If such header information
- * is defined in the serialized data then it will be overwritten with
- * that data. Otherwise it will remain the same.
- *
- * The function doesn't return anything. Instead it unserializes the
- * \p data directly in this email object.
- *
- * \param[in] data  The serialized email data to transform.
- *
- * \sa serialize()
- */
-void sendmail::email::unserialize(const QString& data)
-{
-    // QBuffer takes a non-const QByteArray so we have to create a copy
-    QByteArray non_const_data(data.toUtf8().data());
-    QBuffer in(&non_const_data);
-    in.open(QIODevice::ReadOnly);
-    QtSerialization::QReader reader(in);
-    QtSerialization::QComposite comp;
-    QtSerialization::QFieldTag rules(comp, "email", this);
-    reader.read(comp);
-}
-
-
-/** \brief Read the contents of one tag from the reader.
- *
- * This function reads the contents of the main email tag. It calls
- * the attachment unserialize() as required whenever an attachment
- * is found in the stream.
- *
- * \param[in] name  The name of the tag being read.
- * \param[in] r  The reader used to read the input data.
- */
-void sendmail::email::readTag(const QString& name, QtSerialization::QReader& r)
-{
-    //if(name == "email")
-    //{
-    //    QtSerialization::QComposite comp;
-    //    QtSerialization::QFieldTag info(comp, "content", this);
-    //    r.read(comp);
-    //}
-    if(name == "email")
-    {
-        QtSerialization::QComposite comp;
-        QtSerialization::QFieldString tag_cumulative(comp, "cumulative", f_cumulative);
-        QtSerialization::QFieldString tag_site_key(comp, "site_key", f_site_key);
-        QtSerialization::QFieldString tag_email_path(comp, "email_path", f_email_path);
-        QtSerialization::QFieldString tag_email_key(comp, "email_key", f_email_key);
-        QtSerialization::QFieldTag tag_header(comp, "header", this);
-        QtSerialization::QFieldTag tag_attachment(comp, "attachment", this);
-        QtSerialization::QFieldTag tag_parameter(comp, "parameter", this);
-        r.read(comp);
-    }
-    else if(name == "header")
-    {
-        QtSerialization::QComposite comp;
-        QString header_name;
-        QtSerialization::QFieldString tag_name(comp, "name", header_name);
-        QString header_value;
-        QtSerialization::QFieldString tag_value(comp, "value", header_value);
-        r.read(comp);
-        f_header[header_name] = header_value;
-    }
-    else if(name == "attachment")
-    {
-        email_attachment attachment;
-        attachment.unserialize(r);
-        add_attachment(attachment);
-    }
-    else if(name == "parameter")
-    {
-        QtSerialization::QComposite comp;
-        QString parameter_name;
-        QtSerialization::QFieldString tag_name(comp, "name", parameter_name);
-        QString parameter_value;
-        QtSerialization::QFieldString tag_value(comp, "value", parameter_value);
-        r.read(comp);
-        f_parameter[parameter_name] = parameter_value;
-    }
-}
-
-
-/** \brief Transform the email in one string.
- *
- * This function transform the email data in one string so it can easily
- * be saved in the Cassandra database. This is done so it can be sent to
- * the recipients using the backend process preferably on a separate
- * computer (i.e. a computer that is not being accessed by your web
- * clients.)
- *
- * The unserialize() function can be used to restore an email that was
- * previously serialized with this function.
- *
- * \return The email object in the form of a string.
- *
- * \sa unserialize()
- */
-QString sendmail::email::serialize() const
-{
-    QByteArray result;
-    QBuffer archive(&result);
-    archive.open(QIODevice::WriteOnly);
-    {
-        QtSerialization::QWriter w(archive, "email", EMAIL_MAJOR_VERSION, EMAIL_MINOR_VERSION);
-        QtSerialization::QWriter::QTag tag(w, "email");
-        if(!f_cumulative.isEmpty())
-        {
-            QtSerialization::writeTag(w, "cumulative", f_cumulative);
-        }
-        QtSerialization::writeTag(w, "site_key", f_site_key);
-        QtSerialization::writeTag(w, "email_path", f_email_path);
-        QtSerialization::writeTag(w, "email_key", f_email_key);
-        for(header_map_t::const_iterator it(f_header.begin()); it != f_header.end(); ++it)
-        {
-            QtSerialization::QWriter::QTag header(w, "header");
-            QtSerialization::writeTag(w, "name", it.key());
-            QtSerialization::writeTag(w, "value", it.value());
-        }
-        const int amax(f_attachment.count());
-        for(int i(0); i < amax; ++i)
-        {
-            f_attachment[i].serialize(w);
-        }
-        for(parameter_map_t::const_iterator it(f_parameter.begin()); it != f_parameter.end(); ++it)
-        {
-            QtSerialization::QWriter::QTag parameter(w, "parameter");
-            QtSerialization::writeTag(w, "name", it.key());
-            QtSerialization::writeTag(w, "value", it.value());
-        }
-        // end the writer so everything gets saved in the buffer (result)
-    }
-
-    return QString::fromUtf8(result.data());
 }
 
 
@@ -1910,16 +669,19 @@ SNAP_LOG_TRACE("arrival_date_us=")(arrival_date_us);
 void sendmail::post_email(email const & e)
 {
     // we do not accept to send an empty email
-    if(e.get_attachment_count() == 0 && e.get_email_path().isEmpty())
+    //
+    if(e.get_attachment_count() == 0
+    && e.get_email_path().isEmpty())
     {
         throw sendmail_exception_invalid_argument("An email must have at least one attachment or the email path defined");
     }
 
     email copy(e);
 
-    // setup the FROM email address if not yet defined
-    // administrator can define this email address
-    if(!copy.get_all_headers().contains(get_name(name_t::SNAP_NAME_SENDMAIL_FROM)))
+    // setup the FROM email address if not yet defined;
+    // administrator can define this email address in "sites" table
+    //
+    if(!copy.has_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_FROM)))
     {
         copy.set_from(default_from());
     }
@@ -1934,6 +696,7 @@ void sendmail::post_email(email const & e)
     emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_NEW))->getCell(key)->setValue(value);
 
     // signal the sendmail backend server with a PING
+    //
     f_snap->udp_ping(get_name(name_t::SNAP_NAME_SENDMAIL));
 }
 
@@ -2207,7 +970,7 @@ void sendmail::reorganize_bounce_email(QByteArray const & column_key, QString co
     int const max_attachment_count(e.get_attachment_count());
     for(int idx(0); idx < max_attachment_count; ++idx)
     {
-        email::email_attachment & attachment(e.get_attachment(idx));
+        email::attachment & attachment(e.get_attachment(idx));
         QCaseInsensitiveString const content_description(attachment.get_header("Content-Description"));
         if(content_description == "Undelivered Message Headers")
         {
@@ -2220,8 +983,8 @@ void sendmail::reorganize_bounce_email(QByteArray const & column_key, QString co
                 //
                 //     '<' <session-id> '.' "snapwebsites" '@' <website> '>'
                 //
-                email::email_attachment const & message_headers(attachment.get_related(0));
-                QString const message_id(message_headers.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_MESSAGE_ID)));
+                email::attachment const & message_headers(attachment.get_related(0));
+                QString const message_id(message_headers.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_MESSAGE_ID)));
                 int const period(message_id.indexOf('.'));
                 int const at(message_id.indexOf('@'));
                 if(period > 1
@@ -2407,7 +1170,7 @@ void sendmail::process_bounce_email(QByteArray const & column_key, QString const
     int const max_attachment_count(e->get_attachment_count());
     for(int idx(0); idx < max_attachment_count; ++idx)
     {
-        email::email_attachment & attachment(e->get_attachment(idx));
+        email::attachment & attachment(e->get_attachment(idx));
         QCaseInsensitiveString const content_description(attachment.get_header("Content-Description"));
         if(content_description == "Notification")
         {
@@ -2416,7 +1179,7 @@ void sendmail::process_bounce_email(QByteArray const & column_key, QString const
             // the email parser will take care of checking the charset and
             // do the necessary conversions and save the result in the
             // string... right now we are good with a QString::fromUtf8()
-            //QString const content_type(attachment.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
+            //QString const content_type(attachment.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
             //snap_string_list content_type_parts(content_type.split(';'));
             //for(int j(1); j < content_type_parts.size(); ++j)
             //{
@@ -2437,12 +1200,12 @@ void sendmail::process_bounce_email(QByteArray const & column_key, QString const
                 // what the order really is...
                 //
                 {
-                    email::email_attachment const & reporting_mta(attachment.get_related(0));
+                    email::attachment const & reporting_mta(attachment.get_related(0));
                     arrival_date = reporting_mta.get_header("Arrival-Date");
                 }
 
                 {
-                    email::email_attachment const & remote_mta(attachment.get_related(1));
+                    email::attachment const & remote_mta(attachment.get_related(1));
                     diagnostic_code = remote_mta.get_header("Diagnostic-Code");
                     if(diagnostic_code.startsWith("smtp;"))
                     {
@@ -2674,14 +1437,16 @@ void sendmail::process_emails()
  */
 void sendmail::attach_email(email const & e)
 {
-    QString const to(e.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_TO)));
+    QString const to(e.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_TO)));
 
     // transform To: ... in a list of emails
+    //
     tld_email_list list;
     if(list.parse(to.toUtf8().data(), 0) != TLD_RESULT_SUCCESS)
     {
         // Nothing we can do with those!? We should have erred when the
         // user specified this email address a long time ago.
+        //
         return;
     }
 
@@ -2689,6 +1454,7 @@ void sendmail::attach_email(email const & e)
     libdbproxy::row::pointer_t lists(emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_LISTS)));
 
     // read all the emails
+    //
     QString const & site_key(e.get_site_key());
     tld_email_list::tld_email_t m;
     bool is_list(false);
@@ -2713,6 +1479,7 @@ void sendmail::attach_email(email const & e)
                         // what if um is the name of a list? We would
                         // have to add that to a list which itself
                         // gets processed (i.e. recursive adds)
+                        //
                         emails.push_back(um);
                     }
                 }
@@ -2731,14 +1498,15 @@ void sendmail::attach_email(email const & e)
         if(!emails.empty())
         {
             // if the list is not empty, handle it!
-            for(std::vector<tld_email_list::tld_email_t>::const_iterator
-                    it(emails.begin()); it != emails.end(); ++it)
+            //for(std::vector<tld_email_list::tld_email_t>::const_iterator
+            //        it(emails.begin()); it != emails.end(); ++it)
+            for(auto const & it : emails)
             {
                 // if groups are specified then the email address can be empty
-                if(!it->f_email_only.empty())
+                if(!it.f_email_only.empty())
                 {
                     email copy(e);
-                    copy.add_header(get_name(name_t::SNAP_NAME_SENDMAIL_TO), it->f_canonicalized_email.c_str());
+                    copy.add_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_TO), it.f_canonicalized_email.c_str());
                     attach_user_email(copy);
                 }
             }
@@ -2769,7 +1537,7 @@ void sendmail::attach_user_email(email const & e)
     //      exists? since we are not about to add it ourselves, I
     //      do not think it is necessary
     //
-    QString const to(e.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_TO)));
+    QString const to(e.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_TO)));
     tld_email_list list;
     if(list.parse(to.toUtf8().data(), 0) != TLD_RESULT_SUCCESS)
     {
@@ -2841,6 +1609,7 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
 
     // save the email for that user
     // (i.e. emails can be read from within the website)
+    //
     QString const serialized_email(e.serialize());
     libdbproxy::value email_value;
     email_value.setStringValue(serialized_email);
@@ -2883,9 +1652,11 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
     }
 
     // default date for immediate emails
+    //
     time_t unix_date(time(nullptr));
 
     // programmer may have added an offset to the default date
+    //
     QString const minimum_time(e.get_parameter(get_name(name_t::SNAP_NAME_SENDMAIL_MINIMUM_TIME)));
     if(!minimum_time.isEmpty())
     {
@@ -2903,6 +1674,7 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
     int const minimum_date(unix_date);
 
     // calculate the maximum time
+    //
     QString const maximum_time(e.get_parameter(get_name(name_t::SNAP_NAME_SENDMAIL_MAXIMUM_TIME)));
     int time_limit(unix_date + 366 * 24 * 60 * 60); // 1 year max. by default
     if(!maximum_time.isEmpty())
@@ -3051,14 +1823,16 @@ void sendmail::run_emails()
                 ++c)
         {
             // get the email from the database
+            //
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
+            //
             libdbproxy::cell::pointer_t cell(*c);
             libdbproxy::value const value(cell->getValue());
             QString const column_key(cell->columnKey());
-            QString const key(column_key.mid(18));
             if(!value.nullValue())
             {
+                QString const key(column_key.mid(18));
                 QString const unique_keys(value.stringValue());
                 snap_string_list const list(unique_keys.split(","));
                 int const max_emails(list.size());
@@ -3067,76 +1841,78 @@ void sendmail::run_emails()
                     sendemail(key, list[i]);
                 }
             }
+
             // we are done with that email, get rid of it from the index
+            //
             row->dropCell(column_key);
         }
     }
 }
 
 
-/** \brief Copy the filename if defined.
- *
- * Check whether the filename is defined in the Content-Disposition
- * or the Content-Type fields and make sure to duplicate it in
- * both fields. This ensures that most email systems have access
- * to the filename.
- *
- * \note
- * The valid location of the filename is the Content-Disposition,
- * but it has been saved in the 'name' sub-field of the Content-Type
- * field and some tools only check that field.
- *
- * \param[in,out] attachment_headers  The headers to be checked for
- *                                    a filename.
- */
-void sendmail::copy_filename_to_content_type(email::header_map_t & attachment_headers)
-{
-    if(attachment_headers.contains(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION))
-    && attachment_headers.contains(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)))
-    {
-        // both fields are defined, copy the filename as required
-        QString content_disposition(attachment_headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION)]);
-        QString content_type(attachment_headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)]);
-
-        http_strings::WeightedHttpString content_disposition_subfields(content_disposition);
-        http_strings::WeightedHttpString content_type_subfields(content_type);
-
-        http_strings::WeightedHttpString::part_t::vector_t & content_disposition_parts(content_disposition_subfields.get_parts());
-        http_strings::WeightedHttpString::part_t::vector_t & content_type_parts(content_type_subfields.get_parts());
-
-        if(content_disposition_parts.size() > 0
-        && content_type_parts.size() > 0)
-        {
-            // we only use part 1 (there should not be more than one though)
-            //
-            QString const filename(content_disposition_parts[0].get_parameter("filename"));
-            if(!filename.isEmpty())
-            {
-                // okay, we found the filename in the Content-Disposition,
-                // copy that to the Content-Type
-                //
-                // Note: we always force the name parameter so if it was
-                //       already defined, we make sure it is the same as
-                //       in the Content-Disposition field
-                //
-                content_type_parts[0].add_parameter("name", filename);
-                attachment_headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)] = content_type_subfields.to_string();
-            }
-            else
-            {
-                QString const name(content_type_parts[0].get_parameter("name"));
-                if(!name.isEmpty())
-                {
-                    // Somehow the filename is defined in the Content-Type field
-                    // so copy it to the Content-Disposition too (where it should be)
-                    //
-                    content_disposition_parts[0].add_parameter("filename", name);
-                    attachment_headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION)] = content_disposition_subfields.to_string();
-                }
-            }
-        }
-    }
-}
+///** \brief Copy the filename if defined.
+// *
+// * Check whether the filename is defined in the Content-Disposition
+// * or the Content-Type fields and make sure to duplicate it in
+// * both fields. This ensures that most email systems have access
+// * to the filename.
+// *
+// * \note
+// * The valid location of the filename is the Content-Disposition,
+// * but it has been saved in the 'name' sub-field of the Content-Type
+// * field and some tools only check that field.
+// *
+// * \param[in,out] attachment_headers  The headers to be checked for
+// *                                    a filename.
+// */
+//void sendmail::copy_filename_to_content_type(email::header_map_t & attachment_headers)
+//{
+//    if(attachment_headers.contains(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION))
+//    && attachment_headers.contains(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)))
+//    {
+//        // both fields are defined, copy the filename as required
+//        QString content_disposition(attachment_headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION)]);
+//        QString content_type(attachment_headers[snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)]);
+//
+//        http_strings::WeightedHttpString content_disposition_subfields(content_disposition);
+//        http_strings::WeightedHttpString content_type_subfields(content_type);
+//
+//        http_strings::WeightedHttpString::part_t::vector_t & content_disposition_parts(content_disposition_subfields.get_parts());
+//        http_strings::WeightedHttpString::part_t::vector_t & content_type_parts(content_type_subfields.get_parts());
+//
+//        if(content_disposition_parts.size() > 0
+//        && content_type_parts.size() > 0)
+//        {
+//            // we only use part 1 (there should not be more than one though)
+//            //
+//            QString const filename(content_disposition_parts[0].get_parameter("filename"));
+//            if(!filename.isEmpty())
+//            {
+//                // okay, we found the filename in the Content-Disposition,
+//                // copy that to the Content-Type
+//                //
+//                // Note: we always force the name parameter so if it was
+//                //       already defined, we make sure it is the same as
+//                //       in the Content-Disposition field
+//                //
+//                content_type_parts[0].add_parameter("name", filename);
+//                attachment_headers[snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)] = content_type_subfields.to_string();
+//            }
+//            else
+//            {
+//                QString const name(content_type_parts[0].get_parameter("name"));
+//                if(!name.isEmpty())
+//                {
+//                    // Somehow the filename is defined in the Content-Type field
+//                    // so copy it to the Content-Disposition too (where it should be)
+//                    //
+//                    content_disposition_parts[0].add_parameter("filename", name);
+//                    attachment_headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION)] = content_disposition_subfields.to_string();
+//                }
+//            }
+//        }
+//    }
+//}
 
 
 /** \brief This function actually sends the email.
@@ -3187,23 +1963,32 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     // used to allow for a retry; if a well defined failure happens,
     // however, the status will change to FAILED and at that point
     // the system stops trying to send the email
+    //
     libdbproxy::value sending_value;
     sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_LOADING));
     row->getCell(sending_status)->setValue(sending_value);
 
     libdbproxy::value email_data(row->getCell(unique_key + "::" + get_name(name_t::SNAP_NAME_SENDMAIL_EMAIL))->getValue());
+
     // we use f_email so that way we can generate the XML data
     // in the on_generate_main_content() function
+    //
     f_email = email(); // reset f_email
     f_email.unserialize(email_data.stringValue());
-    f_email.add_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE), "text/html; charset=\"utf-8\"");
+
+    // force the Content-Type header
+    //
+    // TODO: long term this is probably wrong...
+    //
+    f_email.add_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER), "text/html; charset=\"utf-8\"");
 
     // although we could send emails to unsubscribe in clear (many do it)
     // it can be a privacy issue, so better encrypt the email! however,
     // we do not want to deal with encryption/decryption so instead we
     // use a session ID; the email "unsubscribe" feature will therefore
     // die after about 1 year
-    QString const to(f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_TO)));
+    //
+    QString const to(f_email.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_TO)));
 
     {
         if(!validate_email(to, &f_email))
@@ -3243,7 +2028,8 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
         users::users * users_plugin(users::users::instance());
         bool ok(false);
         users::users::identifier_t const id( to.toLongLong(&ok) );
-        if( !ok || !users_plugin->authenticated_user(id, &info))
+        if(!ok
+        || !users_plugin->authenticated_user(id, &info))
         {
             SNAP_LOG_WARNING("User \"")(to)("\" could not be authenticated. The locale information will be set to the website locale.");
         }
@@ -3282,16 +2068,16 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
             // the output only includes valid ASCII (controls + ' ' to '~')
             std::string const encoded_body(quoted_printable::encode(html_body.toUtf8().data(), quoted_printable::QUOTED_PRINTABLE_FLAG_LFONLY | quoted_printable::QUOTED_PRINTABLE_FLAG_NO_LONE_PERIOD));
 
-            email::email_attachment html_body_attachment;
+            email::attachment html_body_attachment;
             QByteArray body_data;
             body_data.append(encoded_body.c_str(), static_cast<int>(encoded_body.length()));
             html_body_attachment.set_data(body_data, "text/html; charset=\"utf-8\"");
-            html_body_attachment.add_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TRANSFER_ENCODING), "quoted-printable");
+            html_body_attachment.add_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_CONTENT_TRANSFER_ENCODING), "quoted-printable");
             f_email.set_body_attachment(html_body_attachment);
 
             // Use the page title as the subject
             // (TBD: should the page title always overwrite the subject?)
-            if(f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_SUBJECT)).isEmpty())
+            if(f_email.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_SUBJECT)).isEmpty())
             {
                 // TODO: apply safety filters on the subject
                 content::content *c(content::content::instance());
@@ -3316,11 +2102,11 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     }
 
     // we want to transform the body from HTML to text ahead of time
-    email::email_attachment body_attachment(f_email.get_attachment(0));
+    email::attachment body_attachment(f_email.get_attachment(0));
     // TODO: verify that the body is indeed HTML!
     //       although html2text works against plain text but that is a waste
     QString plain_text;
-    QString const body_mime_type(body_attachment.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
+    QString const body_mime_type(body_attachment.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
     if(body_mime_type.mid(0, 9) == "text/html")
     {
         process p("html2text");
@@ -3336,7 +2122,7 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
         std::string html_data;
         QByteArray data(body_attachment.get_data());
         // TODO: support other encoding, err if not supported
-        if(body_attachment.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TRANSFER_ENCODING)) == "quoted-printable")
+        if(body_attachment.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_CONTENT_TRANSFER_ENCODING)) == "quoted-printable")
         {
             // if it was quoted-printable encoded, we have to decode
             // (I know, we encode in this very function and could just
@@ -3381,67 +2167,67 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     }
 
     // now we are starting to send the email to the system sendmail tool
+    //
     sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_SENDING));
     row->getCell(sending_status)->setValue(sending_value);
 
-    QString cmd("sendmail -f ");
-    cmd += f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_FROM));
-    cmd += " ";
-    cmd += m.f_email_only.c_str();
-    //
-    SNAP_LOG_TRACE("sendmail command: [")(cmd)("]");
-
     // XXX: capture the throw in case the pipe cannot be created?
-    snap_pipe spipe(cmd, snap_pipe::mode_t::PIPE_MODE_IN);
-    std::ostream f(&spipe);
+    //
+//    QString cmd("sendmail -f ");
+//    cmd += f_email.get_header(get_name(name_t::SNAP_NAME_CORE_EMAIL_FROM));
+//    cmd += " ";
+//    cmd += m.f_email_only.c_str();
+//    
+//    SNAP_LOG_TRACE("sendmail command: [")(cmd)("]");
+//
+//    snap_pipe spipe(cmd, snap_pipe::mode_t::PIPE_MODE_IN);
+//    std::ostream f(&spipe);
 
     // convert email data to text and send that to the sendmail command line
-    email::header_map_t headers(f_email.get_all_headers());
-    const bool body_only(max_attachments == 1 && plain_text.isEmpty());
-    QString boundary;
-    if(body_only)
-    {
-        // if the body is by itself, then its encoding needs to be transported
-        // to the main set of headers
-        if(body_attachment.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TRANSFER_ENCODING)) == "quoted-printable")
-        {
-            headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TRANSFER_ENCODING)] = "quoted-printable";
-        }
-    }
-    else
-    {
-        // boundary      := 0*69<bchars> bcharsnospace
-        // bchars        := bcharsnospace / " "
-        // bcharsnospace := DIGIT / ALPHA / "'" / "(" / ")" /
-        //                  "+" / "_" / "," / "-" / "." /
-        //                  "/" / ":" / "=" / "?"
-        //
-        // Note: we generate boundaries without special characters
-        //       (and especially no spaces or dashes) to make it simpler
-        //
-        // Note: the boundary starts wity "=S" which is not a valid
-        //       quoted-printable sequence of characters (on purpose)
-        //
-        const char allowed[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; //'()+_,./:=?";
-        boundary = "=Snap.Websites=";
-        for(int i(0); i < 20; ++i)
-        {
-            // this is just for boundaries, so rand() is more than enough
-            // it just needs to be unique
-            int const c(static_cast<int>(rand() % (sizeof(allowed) - 1)));
-            boundary += allowed[c];
-        }
-        headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)] = "multipart/mixed;\n  boundary=\"" + boundary + "\"";
-        headers[get_name(name_t::SNAP_NAME_SENDMAIL_MIME_VERSION)] = "1.0";
-    }
-    if(!headers.contains(get_name(name_t::SNAP_NAME_SENDMAIL_DATE)))
-    {
-        // the date must be specified in English only which prevents us from
-        // using the strftime()
-        //
-        headers[get_name(name_t::SNAP_NAME_SENDMAIL_DATE)] = f_snap->date_to_string(time(nullptr) * 1000000, snap_child::date_format_t::DATE_FORMAT_EMAIL);
-    }
-    if(!headers.contains(get_name(name_t::SNAP_NAME_SENDMAIL_MESSAGE_ID)))
+//    email::header_map_t headers(f_email.get_all_headers());
+
+//    const bool body_only(max_attachments == 1 && plain_text.isEmpty());
+//    QString boundary;
+//    if(body_only)
+//    {
+//        // if the body is by itself, then its encoding needs to be transported
+//        // to the main set of headers
+//        if(body_attachment.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_CONTENT_TRANSFER_ENCODING)) == "quoted-printable")
+//        {
+//            headers[snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_CONTENT_TRANSFER_ENCODING)] = "quoted-printable";
+//        }
+//    }
+//    else
+//    {
+//        // boundary      := 0*69<bchars> bcharsnospace
+//        // bchars        := bcharsnospace / " "
+//        // bcharsnospace := DIGIT / ALPHA / "'" / "(" / ")" /
+//        //                  "+" / "_" / "," / "-" / "." /
+//        //                  "/" / ":" / "=" / "?"
+//        //
+//        // Note: we generate boundaries without special characters
+//        //       (and especially no spaces or dashes) to make it simpler
+//        //
+//        // Note: the boundary starts wity "=S" which is not a valid
+//        //       quoted-printable sequence of characters (on purpose)
+//        //
+//        const char allowed[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; //'()+_,./:=?";
+//        boundary = "=Snap.Websites=";
+//        for(int i(0); i < 20; ++i)
+//        {
+//            // this is just for boundaries, so rand() is more than enough
+//            // it just needs to be unique
+//            int const c(static_cast<int>(rand() % (sizeof(allowed) - 1)));
+//            boundary += allowed[c];
+//        }
+//        headers[snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)] = "multipart/mixed;\n  boundary=\"" + boundary + "\"";
+//        headers[snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_MIME_VERSION)] = "1.0";
+//    }
+
+    // we need the database and pluginsto generate the message ID so we
+    // do it here
+    //
+    if(!f_email.has_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_MESSAGE_ID)))
     {
         // if the message identifier was not created by the user, we want
         // to create it ourselves for tracking purposes (in case we receive
@@ -3464,120 +2250,123 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
         info.set_time_to_live(86400 * 30);  // 30 days
         QString const message_id(sessions::sessions::instance()->create_session(info));
 
-        headers[get_name(name_t::SNAP_NAME_SENDMAIL_MESSAGE_ID)] = QString("<%1.snapwebsites@%2>").arg(message_id).arg(f_snap->get_website_key());
+        f_email.add_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_MESSAGE_ID),
+                           QString("<%1.snapwebsites@%2>")
+                                    .arg(message_id)
+                                    .arg(f_snap->get_website_key()));
     }
-    if(!headers.contains(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_LANGUAGE)))
+
+    // add an unsubscribe link if there isn't one yet
+    //
+    // the email address defines "an account" so we always have a place
+    // where we can write whether the email is unsubscribed or not
+    //
+    if(!f_email.has_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_LIST_UNSUBSCRIBE)))
     {
-        // TODO this needs to be defined as we generate the page
-        // XXX should that be 'block specific' or is email wide okay?
-        headers[get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_LANGUAGE)] = "en-us";
-    }
-    if(!headers.contains(get_name(name_t::SNAP_NAME_SENDMAIL_LIST_UNSUBSCRIBE)))
-    {
-        headers[get_name(name_t::SNAP_NAME_SENDMAIL_LIST_UNSUBSCRIBE)] =
-            QString("%1unsubscribe/%2")
-                    .arg(f_snap->get_site_key_with_slash())
-                    .arg(f_email.get_parameter(get_name(name_t::SNAP_NAME_SENDMAIL_EMAIL_ENCRYPTION)));
+        f_email.add_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_LIST_UNSUBSCRIBE),
+                           QString("%1unsubscribe/%2")
+                                    .arg(f_snap->get_site_key_with_slash())
+                                    .arg(f_email.get_parameter(get_name(name_t::SNAP_NAME_SENDMAIL_EMAIL_ENCRYPTION))));
     }
 
-    for(email::header_map_t::const_iterator it(headers.begin());
-                                            it != headers.end();
-                                            ++it)
-    {
-        // TODO: the it.value() needs to be URI encoded to be valid
-        //       in an email; if some characters appear that need
-        //       encoding, we should err (we probably want to
-        //       capture those in the add_header() though)
-        //
-        f << it.key() << ": " << it.value() << std::endl;
-    }
+//    for(email::header_map_t::const_iterator it(headers.begin());
+//                                            it != headers.end();
+//                                            ++it)
+//    {
+//        // TODO: the it.value() needs to be URI encoded to be valid
+//        //       in an email; if some characters appear that need
+//        //       encoding, we should err (we probably want to
+//        //       capture those in the add_header() though)
+//        //
+//        f << it.key() << ": " << it.value() << std::endl;
+//    }
+//
+//    // XXX: allow administrators to change the `branding` flag?
+//    //
+//    f << "X-Generated-By: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (https://snapwebsites.org/)" << std::endl
+//      << "X-Mailer: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (https://snapwebsites.org/)" << std::endl
+//      << std::endl;
+//
+//    if(body_only)
+//    {
+//        // in this case we only have one entry, probably HTML, and thus we
+//        // can avoid the multi-part headers and attachments
+//        email::email_attachment attachment(f_email.get_attachment(0));
+//        f << attachment.get_data().data() << std::endl;
+//    }
+//    else
+//    {
+//        int i(0);
+//        if(!plain_text.isEmpty())
+//        {
+//            // if we have plain text then we have alternatives
+//            f << "--" << boundary << std::endl
+//              << "Content-Type: multipart/alternative;" << std::endl
+//              << "  boundary=\"" << boundary << ".msg\"" << std::endl
+//              << std::endl
+//              << "--" << boundary << ".msg" << std::endl
+//              << "Content-Type: text/plain; charset=\"utf-8\"" << std::endl
+//              //<< "MIME-Version: 1.0" << std::endl -- only show this one in the main header
+//              << "Content-Transfer-Encoding: quoted-printable" << std::endl
+//              << "Content-Description: Mail message body" << std::endl
+//              << std::endl
+//              << quoted_printable::encode(plain_text.toUtf8().data(), quoted_printable::QUOTED_PRINTABLE_FLAG_NO_LONE_PERIOD) << std::endl;
+//            if(i < max_attachments)
+//            {
+//                // now include the HTML
+//                email::email_attachment html_attachment(f_email.get_attachment(0));
+//                f << "--" << boundary << ".msg" << std::endl;
+//                email::header_map_t attachment_headers(html_attachment.get_all_headers());
+//                for(email::header_map_t::const_iterator it(attachment_headers.begin());
+//                                                        it != attachment_headers.end();
+//                                                        ++it)
+//                {
+//                    f << it.key() << ": " << it.value() << std::endl;
+//                }
+//
+//                // one empty line before the contents
+//                // here the data is already be encoded
+//                f << std::endl
+//                  << html_attachment.get_data().data() << std::endl
+//                  << "--" << boundary << ".msg--" << std::endl
+//                  << std::endl;
+//
+//                // we used "attachment" 0, so print the others starting at 1
+//                i = 1;
+//            }
+//        }
+//        // note that we send ALL the attachments, including attachment 0 since
+//        // if we converted the HTML to plain text, we still want to send the
+//        // HTML to the user
+//        for(; i < max_attachments; ++i)
+//        {
+//            email::email_attachment attachment(f_email.get_attachment(i));
+//            f << "--" << boundary << std::endl;
+//            email::header_map_t & attachment_headers(attachment.get_all_headers());
+//            copy_filename_to_content_type(attachment_headers);
+//            for(email::header_map_t::const_iterator it(attachment_headers.begin());
+//                                                    it != attachment_headers.end();
+//                                                    ++it)
+//            {
+//                f << it.key() << ": " << it.value() << std::endl;
+//            }
+//
+//            // one empty line before the contents
+//            f << std::endl;
+//
+//            // here the data is already be encoded
+//            f << attachment.get_data().data() << std::endl;
+//        }
+//        f << "--" << boundary << "--" << std::endl;
+//    }
+//
+//    // end the message
+//    f << std::endl
+//      << "." << std::endl;
 
-    // XXX: allow administrators to change that info somehow?
-    f << "X-Generated-By: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (http://snapwebsites.org/)" << std::endl
-      << "X-Mailer: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (http://snapwebsites.org/)" << std::endl;
-
-    // one empty line before the contents
-    f << std::endl;
-
-    if(body_only)
-    {
-        // in this case we only have one entry, probably HTML, and thus we
-        // can avoid the multi-part headers and attachments
-        email::email_attachment attachment(f_email.get_attachment(0));
-        f << attachment.get_data().data() << std::endl;
-    }
-    else
-    {
-        int i(0);
-        if(!plain_text.isEmpty())
-        {
-            // if we have plain text then we have alternatives
-            f << "--" << boundary << std::endl
-              << "Content-Type: multipart/alternative;" << std::endl
-              << "  boundary=\"" << boundary << ".msg\"" << std::endl
-              << std::endl
-              << "--" << boundary << ".msg" << std::endl
-              << "Content-Type: text/plain; charset=\"utf-8\"" << std::endl
-              //<< "MIME-Version: 1.0" << std::endl -- only show this one in the main header
-              << "Content-Transfer-Encoding: quoted-printable" << std::endl
-              << "Content-Description: Mail message body" << std::endl
-              << std::endl
-              << quoted_printable::encode(plain_text.toUtf8().data(), quoted_printable::QUOTED_PRINTABLE_FLAG_NO_LONE_PERIOD) << std::endl;
-            if(i < max_attachments)
-            {
-                // now include the HTML
-                email::email_attachment html_attachment(f_email.get_attachment(0));
-                f << "--" << boundary << ".msg" << std::endl;
-                email::header_map_t attachment_headers(html_attachment.get_all_headers());
-                for(email::header_map_t::const_iterator it(attachment_headers.begin());
-                                                        it != attachment_headers.end();
-                                                        ++it)
-                {
-                    f << it.key() << ": " << it.value() << std::endl;
-                }
-
-                // one empty line before the contents
-                // here the data is already be encoded
-                f << std::endl
-                  << html_attachment.get_data().data() << std::endl
-                  << "--" << boundary << ".msg--" << std::endl
-                  << std::endl;
-
-                // we used "attachment" 0, so print the others starting at 1
-                i = 1;
-            }
-        }
-        // note that we send ALL the attachments, including attachment 0 since
-        // if we converted the HTML to plain text, we still want to send the
-        // HTML to the user
-        for(; i < max_attachments; ++i)
-        {
-            email::email_attachment attachment(f_email.get_attachment(i));
-            f << "--" << boundary << std::endl;
-            email::header_map_t & attachment_headers(attachment.get_all_headers());
-            copy_filename_to_content_type(attachment_headers);
-            for(email::header_map_t::const_iterator it(attachment_headers.begin());
-                                                    it != attachment_headers.end();
-                                                    ++it)
-            {
-                f << it.key() << ": " << it.value() << std::endl;
-            }
-
-            // one empty line before the contents
-            f << std::endl;
-
-            // here the data is already be encoded
-            f << attachment.get_data().data() << std::endl;
-        }
-        f << "--" << boundary << "--" << std::endl;
-    }
-
-    // end the message
-    f << std::endl
-      << "." << std::endl;
-
-    // close pipe as soon as we are done writing to it
-    if(spipe.close_pipe() != 0)
+    // send the email now
+    //
+    if(!f_email.send())
     {
         sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_FAILED));
         row->getCell(sending_status)->setValue(sending_value);
@@ -3620,7 +2409,7 @@ void sendmail::on_generate_main_content(content::path_info_t & ipath, QDomElemen
         {
             QDomElement from(doc.createElement("from"));
             sendmail_tag.appendChild(from);
-            QString const from_email(f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_FROM)));
+            QString const from_email(f_email.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_FROM)));
             QDomText from_text(doc.createTextNode(from_email));
             from.appendChild(from_text);
             // TODO: parse the email address with libtld and offer:
@@ -3631,7 +2420,7 @@ void sendmail::on_generate_main_content(content::path_info_t & ipath, QDomElemen
         {
             QDomElement to(doc.createElement("to"));
             sendmail_tag.appendChild(to);
-            QString const to_email(f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_TO)));
+            QString const to_email(f_email.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_TO)));
             QDomText to_text(doc.createTextNode(to_email));
             to.appendChild(to_text);
         }
@@ -3680,16 +2469,16 @@ void sendmail::on_generate_main_content(content::path_info_t & ipath, QDomElemen
             time_tag.appendChild(time_text);
         }
         // /snap/page/body/sendmail/important
-        const QString x_priority(f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_X_PRIORITY)));
         {
             // save the priority as a name
             QDomElement important(doc.createElement("important"));
             sendmail_tag.appendChild(important);
-            const QString important_email(f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_IMPORTANT)));
+            const QString important_email(f_email.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_IMPORTANCE)));
             QDomText important_text(doc.createTextNode(important_email));
             important.appendChild(important_text);
         }
         // /snap/page/body/sendmail/x-priority
+        const QString x_priority(f_email.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_X_PRIORITY)));
         {
             // save the priority as a value + name between parenthesis
             QDomElement priority(doc.createElement("x-priority"));
@@ -3712,13 +2501,14 @@ void sendmail::on_generate_main_content(content::path_info_t & ipath, QDomElemen
         {
             QDomElement parameters_tag(doc.createElement("parameters"));
             sendmail_tag.appendChild(parameters_tag);
-            for(email::parameter_map_t::const_iterator it(parameters.begin());
-                                                    it != parameters.end();
-                                                    ++it)
+            //for(email::parameter_map_t::const_iterator it(parameters.begin());
+            //                                        it != parameters.end();
+            //                                        ++it)
+            for(auto const it : parameters)
             {
                 QDomElement param_tag(doc.createElement("param"));
-                param_tag.setAttribute("name", it.key());
-                param_tag.setAttribute("value", it.value());
+                param_tag.setAttribute("name", it.first);
+                param_tag.setAttribute("value", it.second);
                 parameters_tag.appendChild(param_tag);
             }
         }
@@ -4169,7 +2959,7 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
 
             // determine the type of message from Content-Type
             //
-            QString const content_type(f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
+            QString const content_type(f_email.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
             f_content_type_parameters = split_parameters(content_type);
 
             if(f_bounce_email)
@@ -4265,15 +3055,15 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
                     QString const end_boundary(boundary + "--");
                     do
                     {
-                        sendmail::email::email_attachment report;
+                        email::attachment report;
 
                         // all good, go on with checking the report information
                         //
                         // read one part, no sub-part expected although we
                         // can parse the content
                         //
-                        get_part_header(boundary, report.get_all_headers());
-                        QString const part_type(report.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
+                        get_part_header(boundary, report);
+                        QString const part_type(report.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
                         QVector<QCaseInsensitiveString> part_type_parameters(split_parameters(part_type));
                         part_type_parameters[0] = part_type_parameters[0].toLower();
                         // TBD: should we check Content-Description instead of Content-Type?
@@ -4288,8 +3078,8 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
                             for(++f_line; f_line < f_max_lines && f_lines[f_line] != boundary && f_lines[f_line] != end_boundary;)
                             {
                                 // the MTA report are just headers pre-parsed
-                                sendmail::email::email_attachment mta_report;
-                                if(!get_part_data(boundary, mta_report.get_all_headers()))
+                                email::attachment mta_report;
+                                if(!get_part_data(boundary, mta_report))
                                 {
                                     SNAP_LOG_ERROR("reading MTA report data fields failed");
                                     return false;
@@ -4345,13 +3135,13 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
             QString const end_boundary(boundary + "--");
             do
             {
-                sendmail::email::email_attachment attachment;
-                if(!get_part_header(boundary, attachment.get_all_headers()))
+                email::attachment a;
+                if(!get_part_header(boundary, a))
                 {
                     SNAP_LOG_ERROR("mixed email attachment header failed");
                     return false;
                 }
-                QString const attachment_type(attachment.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
+                QString const attachment_type(a.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
                 QVector<QCaseInsensitiveString> const attachment_type_parameters(split_parameters(attachment_type));
 
                 // mixed is most often coming with alternatives (text and HTML)
@@ -4368,13 +3158,13 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
                     QString const end_alternative_boundary(alternative_boundary + "--");
                     do
                     {
-                        sendmail::email::email_attachment alternative_attachment;
-                        if(!get_part_header(alternative_boundary, alternative_attachment.get_all_headers()))
+                        email::attachment alternative_attachment;
+                        if(!get_part_header(alternative_boundary, alternative_attachment))
                         {
                             SNAP_LOG_ERROR("alternative attachment header failed");
                             return false;
                         }
-                        QString const alternative_type(alternative_attachment.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
+                        QString const alternative_type(alternative_attachment.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
                         QVector<QCaseInsensitiveString> const alternative_type_parameters(split_parameters(alternative_type));
                         if(alternative_type_parameters[0].toLower() == "multipart/related")
                         {
@@ -4390,8 +3180,8 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
                             QString const end_related_boundary(related_boundary + "--");
                             do
                             {
-                                sendmail::email::email_attachment related;
-                                if(!get_part_header(related_boundary, related.get_all_headers()))
+                                email::attachment related;
+                                if(!get_part_header(related_boundary, related))
                                 {
                                     SNAP_LOG_ERROR("related header could not be read");
                                     return false;
@@ -4403,7 +3193,7 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
                                     return false;
                                 }
                                 QByteArray const body(data.join("\n").toUtf8());
-                                related.set_data(body, related.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
+                                related.set_data(body, related.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
                                 alternative_attachment.add_related(related);
 
                                 if(f_line >= f_max_lines)
@@ -4461,8 +3251,8 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
                         return false;
                     }
                     QByteArray const body(data.join("\n").toUtf8());
-                    attachment.set_data(body, attachment_type);
-                    f_email.add_attachment(attachment);
+                    a.set_data(body, attachment_type);
+                    f_email.add_attachment(a);
                 }
 
                 if(f_line >= f_max_lines)
@@ -4479,11 +3269,11 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
 
         bool read_simple_email()
         {
-            QString const content_type(f_email.get_header(get_name(name_t::SNAP_NAME_SENDMAIL_CONTENT_TYPE)));
-            sendmail::email::email_attachment attachment;
+            QString const content_type(f_email.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
+            email::attachment a;
             QByteArray const body(static_cast<QStringList>(f_lines.mid(f_line)).join("\n").toUtf8());
-            attachment.set_data(body, content_type);
-            f_email.add_attachment(attachment);
+            a.set_data(body, content_type);
+            f_email.add_attachment(a);
             return true;
         }
 
@@ -4530,7 +3320,7 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
             return QString();
         }
 
-        bool get_part_header(QString const & boundary, sendmail::email::header_map_t & header)
+        bool get_part_header(QString const & boundary, email::attachment & a)
         {
             // make sure we are on a boundary (the get_boundary() moves the
             // cursor to that location for us)
@@ -4560,13 +3350,13 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
                 QString name;
                 QString value;
                 parse_one_field(name, value);
-                header[name] = value;
+                a.add_header(name, value);
             }
 
             return true;
         }
 
-        bool get_part_data(QString const & boundary, sendmail::email::header_map_t & sub_header)
+        bool get_part_data(QString const & boundary, email::attachment & sub_attachment)
         {
             QString const end_boundary(boundary + "--");
             for(; f_line < f_max_lines; ++f_line)
@@ -4600,7 +3390,7 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
                 QString name;
                 QString value;
                 parse_one_field(name, value);
-                sub_header[name] = value;
+                sub_attachment.add_header(name, value);
             }
 
             // the data block was not ended by boundaries or an empty line...

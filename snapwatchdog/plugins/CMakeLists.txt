@@ -1,6 +1,6 @@
 ################################################################################
 # File:
-#      plugins/CMakeLists.txt
+#      snapwatchdog/plugins/CMakeLists.txt
 #
 # Description:
 #      Set of extensions used by the Snap! Watchdog daemon.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify
@@ -53,6 +53,7 @@ add_subdirectory(disk)
 add_subdirectory(memory)
 add_subdirectory(network)
 add_subdirectory(processes)
+add_subdirectory(watchscripts)
 
 
 # vim: ts=4 sw=4 nocindent

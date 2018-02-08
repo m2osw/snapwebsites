@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapexpr.cpp
+ *      snapserver/src/snapexpr.cpp
  *
  * Description:
  *      Process a C-like expression. This tool is mainly a test to check
@@ -9,7 +9,7 @@
  * License:
  *      Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
  * 
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  * 
  *      This program is free software; you can redistribute it and/or modify

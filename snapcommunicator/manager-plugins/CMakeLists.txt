@@ -1,6 +1,6 @@
 ################################################################################
 # File:
-#      snapwebsites/snapcommunicator/manager-plugins/CMakeLists.txt
+#      snapcommunicator/manager-plugins/CMakeLists.txt
 #
 # Description:
 #      Set of extensions used by the Snap! Manager CGI and daemon.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

@@ -1,6 +1,9 @@
 // Snap Websites Server -- test_plugin to run plugin unit tests from the browser
 // Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -187,7 +190,7 @@ QString test_plugin::help_uri() const
     //      may not be a good pointer anymore at this time (once we
     //      properly remove plugins that we loaded just to get their info.)
     //
-    return "http://snapwebsites.org/help/plugin/test_plugin_suite";
+    return "https://snapwebsites.org/help/plugin/test_plugin_suite";
 }
 
 

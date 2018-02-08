@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/epayment_creditcard/CMakeLists.txt
+#      snapserver-core-plugins/src/epayment_creditcard/CMakeLists.txt
 #
 # Description:
 #      Add one form to request the end user to enter their credit card
@@ -13,7 +13,7 @@
 # License:
 #      Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

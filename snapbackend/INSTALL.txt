@@ -33,6 +33,6 @@ the necessary dependencies.)
 
 Note: to install Java and Cassandra, please check out this page:
 
-   http://snapwebsites.org/journal/2014/10/installation-instructions-get-cassandra-ubuntu
+   https://snapwebsites.org/journal/2014/10/installation-instructions-get-cassandra-ubuntu
 
 

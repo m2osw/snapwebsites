@@ -1,6 +1,6 @@
 #
 # File:
-#      plugins/javascript/CMakeLists.txt
+#      snapserver-core-plugins/src/javascript/CMakeLists.txt
 #
 # Description:
 #      Evaluate JavaScript scripts at runtime using the QtScript environment.
@@ -11,7 +11,7 @@
 # License:
 #      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 #
-#      http://snapwebsites.org/
+#      https://snapwebsites.org/
 #      contact@m2osw.com
 #
 #      This program is free software; you can redistribute it and/or modify

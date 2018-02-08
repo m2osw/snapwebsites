@@ -3,6 +3,9 @@
 Snap Websites Server == bare layout theme setup
 Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 
+https://snapwebsites.org/
+contact@m2osw.com
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -120,7 +123,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         </div>
         <div class="footer">
           <p>Powered by <a href="http://snapwebsites.com/">Snap! C++ Websites</a></p>
-          <p>Copyright (c) 2012-<xsl:value-of select="$year"/> by <a href="http://www.m2osw.com">Made to Order Software Corp.</a> &#8212; All Rights Reserved</p>
+          <p>Copyright (c) 2012-<xsl:value-of select="$year"/> by <a href="https://www.m2osw.com">Made to Order Software Corp.</a> &#8212; All Rights Reserved</p>
         </div>
       </div>
     </body>

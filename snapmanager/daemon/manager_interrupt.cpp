@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapwebsites/snapmanagercgi/daemon/manager_interrupt.cpp
+ *      snapmanager/daemon/manager_interrupt.cpp
  *
  * Description:
  *      A daemon to synchronize processes between any number of computers
@@ -13,7 +13,7 @@
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
  *
- *      http://snapwebsites.org/
+ *      https://snapwebsites.org/
  *      contact@m2osw.com
  *
  *      Permission is hereby granted, free of charge, to any person obtaining a

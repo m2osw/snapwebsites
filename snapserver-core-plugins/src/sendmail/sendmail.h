@@ -1,6 +1,9 @@
 // Snap Websites Server -- queue emails for the backend to send
 // Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -25,7 +28,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/snap_backend.h>
-#include <snapwebsites/qcaseinsensitivestring.h>
+#include <snapwebsites/email.h>
 
 
 namespace snap
@@ -44,12 +47,8 @@ enum class name_t
     SNAP_NAME_SENDMAIL_BOUNCED_NOTIFICATION,
     SNAP_NAME_SENDMAIL_BOUNCED_RAW,
     SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST,
-    SNAP_NAME_SENDMAIL_CONTENT_DISPOSITION,
-    SNAP_NAME_SENDMAIL_CONTENT_LANGUAGE,
-    SNAP_NAME_SENDMAIL_CONTENT_TRANSFER_ENCODING,
     SNAP_NAME_SENDMAIL_CONTENT_TYPE,
     SNAP_NAME_SENDMAIL_CREATED,
-    SNAP_NAME_SENDMAIL_DATE,
     SNAP_NAME_SENDMAIL_EMAIL,
     SNAP_NAME_SENDMAIL_EMAIL_ENCRYPTION,
     SNAP_NAME_SENDMAIL_EMAIL_FREQUENCY,
@@ -61,8 +60,6 @@ enum class name_t
     SNAP_NAME_SENDMAIL_FREQUENCY_IMMEDIATE,
     SNAP_NAME_SENDMAIL_FREQUENCY_MONTHLY,
     SNAP_NAME_SENDMAIL_FREQUENCY_WEEKLY,
-    SNAP_NAME_SENDMAIL_FROM,
-    SNAP_NAME_SENDMAIL_IMPORTANT,
     SNAP_NAME_SENDMAIL_INDEX,
     SNAP_NAME_SENDMAIL_LAYOUT_NAME,
     SNAP_NAME_SENDMAIL_LEVEL_ANGRYLIST,
@@ -71,14 +68,9 @@ enum class name_t
     SNAP_NAME_SENDMAIL_LEVEL_PURPLELIST,
     SNAP_NAME_SENDMAIL_LEVEL_WHITELIST,
     SNAP_NAME_SENDMAIL_LISTS,
-    SNAP_NAME_SENDMAIL_LIST_UNSUBSCRIBE,
     SNAP_NAME_SENDMAIL_MAXIMUM_TIME,
-    SNAP_NAME_SENDMAIL_MESSAGE_ID,
-    SNAP_NAME_SENDMAIL_MIME_VERSION,
     SNAP_NAME_SENDMAIL_MINIMUM_TIME,
     SNAP_NAME_SENDMAIL_NEW,
-    SNAP_NAME_SENDMAIL_PRECEDENCE,
-    SNAP_NAME_SENDMAIL_REPLY_TO,
     SNAP_NAME_SENDMAIL_SENDING_STATUS,
     SNAP_NAME_SENDMAIL_STATUS,
     SNAP_NAME_SENDMAIL_STATUS_DELETED,
@@ -92,14 +84,10 @@ enum class name_t
     SNAP_NAME_SENDMAIL_STATUS_SPAM,
     SNAP_NAME_SENDMAIL_STATUS_UNSUBSCRIBED,
     SNAP_NAME_SENDMAIL_STOP,
-    SNAP_NAME_SENDMAIL_SUBJECT,
-    SNAP_NAME_SENDMAIL_TO,
     SNAP_NAME_SENDMAIL_UNSUBSCRIBE_ON,
     SNAP_NAME_SENDMAIL_UNSUBSCRIBE_PATH,
     SNAP_NAME_SENDMAIL_UNSUBSCRIBE_SELECTION,
     SNAP_NAME_SENDMAIL_USER_AGENT,
-    SNAP_NAME_SENDMAIL_X_MSMAIL_PRIORITY,
-    SNAP_NAME_SENDMAIL_X_PRIORITY
 };
 const char * get_name(name_t name) __attribute__ ((const));
 
@@ -148,93 +136,6 @@ public:
     static const sessions::sessions::session_info::session_id_t SENDMAIL_SESSION_ID_MESSAGE = 1;
     static const sessions::sessions::session_info::session_id_t SENDMAIL_SESSION_EMAIL_ENCRYPTION = 2;
 
-    class email : public QtSerialization::QSerializationObject
-    {
-    public:
-        static const int EMAIL_MAJOR_VERSION = 1;
-        static const int EMAIL_MINOR_VERSION = 0;
-
-        typedef QMap<QCaseInsensitiveString, QString>   header_map_t;
-        typedef QMap<QString, QString>                  parameter_map_t;
-
-        enum class email_priority_t
-        {
-            EMAIL_PRIORITY_BULK = 1,
-            EMAIL_PRIORITY_LOW,
-            EMAIL_PRIORITY_NORMAL,
-            EMAIL_PRIORITY_HIGH,
-            EMAIL_PRIORITY_URGENT
-        };
-
-        class email_attachment : public QtSerialization::QSerializationObject
-        {
-        public:
-                                    email_attachment();
-            virtual                 ~email_attachment();
-
-            void                    set_data(QByteArray const & data, QString mime_type);
-            QByteArray              get_data() const;
-            void                    set_content_disposition(QString const & filename, int64_t modification_date = 0, QString const & attachment_type = "attachment");
-            void                    add_header(QString const & name, QString const & value);
-            QString                 get_header(QString const & name) const;
-            header_map_t &          get_all_headers();
-            void                    add_related(email_attachment const & data);
-            int                     get_related_count() const;
-            email_attachment &      get_related(int index) const;
-
-            // internal functions used to save the data serialized
-            void                    unserialize(QtSerialization::QReader & r);
-            virtual void            readTag(QString const & name, QtSerialization::QReader & r);
-            void                    serialize(QtSerialization::QWriter & w) const;
-
-        private:
-            header_map_t            f_header;
-            QByteArray              f_data;
-            bool                    f_is_sub_attachment = false;
-            QVector<QSharedPointer<email_attachment> >  f_sub_attachments; // for HTML data (images, css, ...)
-        };
-        typedef QVector<email_attachment> attachment_vector_t;
-
-                                email();
-        virtual                 ~email();
-
-        void                    set_from(QString const & from);
-        void                    set_cumulative(QString const & object);
-        void                    set_site_key(QString const & site_key);
-        const QString &         get_site_key() const;
-        void                    set_email_path(QString const & email_path);
-        const QString &         get_email_path() const;
-        void                    set_email_key(QString const & site_key);
-        const QString &         get_email_key() const;
-        time_t                  get_time() const;
-        void                    set_priority(email_priority_t priority = email_priority_t::EMAIL_PRIORITY_NORMAL);
-        void                    set_subject(QString const & subject);
-        void                    add_header(QString const & name, QString  const & value);
-        QString                 get_header(QString const & name) const;
-        header_map_t const &    get_all_headers() const;
-        void                    set_body_attachment(email_attachment const & data);
-        void                    add_attachment(email_attachment const & data);
-        int                     get_attachment_count() const;
-        email_attachment &      get_attachment(int index) const;
-        void                    add_parameter(QString const & name, QString const & value);
-        QString                 get_parameter(QString const & name) const;
-        parameter_map_t const & get_all_parameters() const;
-
-        // internal functions used to save the data serialized
-        void                    unserialize(QString const & data);
-        virtual void            readTag(QString const & name, QtSerialization::QReader & r);
-        QString                 serialize() const;
-
-    private:
-        QString                     f_cumulative;
-        QString                     f_site_key;
-        QString                     f_email_path;
-        QString                     f_email_key; // set on post_email()
-        int64_t                     f_time = -1;
-        header_map_t                f_header;
-        attachment_vector_t         f_attachment;
-        parameter_map_t             f_parameter;
-    };
 
                             sendmail();
                             ~sendmail();
@@ -283,7 +184,6 @@ private:
     void                    attach_user_email(email const & e);
     void                    run_emails();
     void                    sendemail(QString const & key, QString const & unique_key);
-    void                    copy_filename_to_content_type(email::header_map_t & attachment_headers);
 
     // tests
     SNAP_TEST_PLUGIN_TEST_DECL(test_parse_email_basic)
