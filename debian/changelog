@@ -14,6 +14,8 @@ snapwebsites (1.5.43.0~xenial) xenial; urgency=high
   * Enhanced the snap_exception* implementation.
   * Various cleanups.
 
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  8 Feb 2018 01:31:45 -0700
+
 snapwebsites (1.5.42.0~xenial) xenial; urgency=high
 
   * Fixed limit to 200Mb instead of 200Tb.
