@@ -30,5 +30,17 @@
     nomail
     create 600 snapwebsites snapwebsites
 }
+/var/log/snapwebsites/snapwatchdog-output/snapwatchdog-scripts.log {
+    daily
+    maxage 7
+    maxsize 1M
+    su snapwebsites snapwebsites
+    missingok
+    rotate 10
+    compress
+    delaycompress
+    notifempty
+    create 640 snapwebsites snapwebsites
+}
 
 # vim: ts=4 sw=4 et

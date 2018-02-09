@@ -515,8 +515,14 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_WATCHDOG_DATA_PATH:
         return "data_path";
 
+    case name_t::SNAP_NAME_WATCHDOG_DEFAULT_LOG_PATH:
+        return "/var/log/snapwebsites";
+
     case name_t::SNAP_NAME_WATCHDOG_FROM_EMAIL:
         return "from_email";
+
+    case name_t::SNAP_NAME_WATCHDOG_LOG_PATH:
+        return "log_path";
 
     case name_t::SNAP_NAME_WATCHDOG_SERVER_NAME:
         return "server_name";

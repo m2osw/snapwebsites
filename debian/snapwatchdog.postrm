@@ -19,7 +19,7 @@ then
     # remove all the directories that are empty
     #
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
-    for subdir in data scripts-output
+    for subdir in data script-files
     do
         rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}/${subdir}
     done
@@ -32,6 +32,7 @@ then
     #
     rm -f /var/log/snapwebsites/${PACKAGENAME}.log*
     rm -f /var/log/snapwebsites/secure/${PACKAGENAME}.log*
+    rm -rf /var/log/snapwebsites/snapwatchdog-output
 
     # delete the user configuration file
     #

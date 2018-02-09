@@ -19,7 +19,7 @@ then
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
     mkdir -p ${SNAPWATCHDOG_LIB_DIR}
     chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}
-    for subdir in data scripts-output
+    for subdir in data script-files
     do
         mkdir -p ${SNAPWATCHDOG_LIB_DIR}/${subdir}
         chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}/${subdir}
@@ -39,6 +39,16 @@ then
     touch ${SECURELOGFILE}
     chown snapwebsites:snapwebsites ${SECURELOGFILE}
     chmod 640 ${SECURELOGFILE}
+
+    SNAPSCRIPTSLOGDIR=/var/log/snapwebsites/snapwatchdog-output
+    mkdir -p ${SNAPSCRIPTSLOGDIR}
+    chown snapwebsites:snapwebsites ${SNAPSCRIPTSLOGDIR}
+    chmod 770 ${SNAPSCRIPTSLOGDIR}
+
+    SCRIPTSLOGFILE=${SNAPSCRIPTSLOGDIR}/snapwatchdog-scripts.log
+    touch ${SCRIPTSLOGFILE}
+    chown snapwebsites:snapwebsites ${SCRIPTSLOGFILE}
+    chmod 640 ${SCRIPTSLOGFILE}
 
     # Signal snapdbproxy since we just added new tables
     #

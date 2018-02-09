@@ -1,3 +1,19 @@
+snapwebsites (1.5.44.0~xenial) xenial; urgency=high
+
+  * Fixed the name of the script-files
+  * Create the snapwatchdog-output sub-directory for the logs.
+  * Fixed the paths to save the scripts output.
+  * Added a the sub-directory to the logrotate of snapwatchdog.
+  * Made the data path in the script a variable (WATCHDOG_WATCHSCRIPTS_OUTPUT).
+  * Added the new watchscripts plugin to the list snapwatchdog plugins to run.
+  * Added the log_subfolder, from_email, administrator_email variables.
+  * Fixed the loop calling our scripts (the folders were still mixed up.)
+  * Use sh to start our scripts since they won't be "755".
+  * Fixed a bug in defining the `scripts_path`, the wrong variable was used.
+  * Made sending the email dependent on the from/to emails availability.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri,  9 Feb 2018 01:09:45 -0700
+
 snapwebsites (1.5.43.0~xenial) xenial; urgency=high
 
   * Extracted the email class from the sendmail plugin to the library.

@@ -60,12 +60,19 @@ happens, then it generates an error and sends an email.
 
 The scripts will create files under the following directory:
 
-    /var/lib/snapwebsites/snapwatchdog/scripts-output/...
+    /var/lib/snapwebsites/snapwatchdog/script-files/...
 
 This includes files that the scripts use to remember things (i.e. to know
-how long a process has been running, for example) and we also save their
-stdout and stderr streams to a "log" file there. Those logs is what we
-send to the administrator's mailbox.
+how long a process has been running, for example.)
+
+We save the scripts stdout and stderr streams to a "log" file under:
+
+    /var/log/snapwebsites/snapwatchdog-output/snapwatchdog-scripts.log
+
+Note that the content of those logs is also what we send to the
+administrator's mailbox. Hopefully, it won't be too many emails...
+We use a separate directory to be able to run logrotate against
+or even just delete all those files easily.
 
 
 ## Script: `watch_firewall_fail2ban_client` (`fail2ban-client`)

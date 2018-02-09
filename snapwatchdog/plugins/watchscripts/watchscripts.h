@@ -39,6 +39,8 @@ namespace watchscripts
 
 enum class name_t
 {
+    SNAP_NAME_WATCHDOG_WATCHSCRIPTS_DEFAULT_LOG_SUBFOLDER,
+    SNAP_NAME_WATCHDOG_WATCHSCRIPTS_LOG_SUBFOLDER,
     SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT,
     SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT_DEFAULT,
     SNAP_NAME_WATCHDOG_WATCHSCRIPTS_PATH,
@@ -94,6 +96,9 @@ private:
     snap_child *            f_snap = nullptr;
     bool                    f_new_script = false;
     char                    f_last_output_byte = '\n';
+    QString                 f_log_path;
+    QString                 f_log_subfolder;
+    QString                 f_scripts_log;
     QString                 f_script_filename;
     std::shared_ptr<QFile>  f_file;
     time_t                  f_start_date;

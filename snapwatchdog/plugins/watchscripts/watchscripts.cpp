@@ -64,11 +64,17 @@ char const * get_name(name_t name)
 {
     switch(name)
     {
+    case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_DEFAULT_LOG_SUBFOLDER:
+        return "snapwatchdog-output";
+
+    case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_LOG_SUBFOLDER:
+        return "log_subfolder";
+
     case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT:
         return "watchdog_watchscripts_output";
 
     case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT_DEFAULT:
-        return "/var/lib/snapwebsites/snapwatchdog/scripts-output";
+        return "/var/lib/snapwebsites/snapwatchdog/script-files";
 
     case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_PATH:
         return "watchdog_watchscripts_path";
@@ -178,6 +184,46 @@ void watchscripts::bootstrap(snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN(watchscripts, "server", watchdog_server, process_watch, _1);
+
+    // setup a variable that our scripts can use to save data as they
+    // see fit; especially, many scripts need to remember what they've
+    // done before or maybe they don't want to run too often and use a
+    // file to know when to run again
+    //
+    QString const scripts_output([&]()
+        {
+            QString const filename(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT)));
+            if(filename.isEmpty())
+            {
+                return QString::fromUtf8(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT_DEFAULT));
+            }
+            return filename;
+        }());
+    setenv("WATCHDOG_WATCHSCRIPTS_OUTPUT", scripts_output.toUtf8().data(), 1);
+
+    f_log_path = [&]()
+        {
+            QString const path(f_snap->get_server_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_LOG_PATH)));
+            if(path.isEmpty())
+            {
+                return QString::fromUtf8(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_DEFAULT_LOG_PATH));
+            }
+            return path;
+        }();
+    setenv("WATCHDOG_WATCHSCRIPTS_LOG_PATH", f_log_path.toUtf8().data(), 1);
+
+    f_log_subfolder = [&]()
+        {
+            QString const folder(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_LOG_SUBFOLDER)));
+            if(folder.isEmpty())
+            {
+                return QString::fromUtf8(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_DEFAULT_LOG_SUBFOLDER));
+            }
+            return folder;
+        }();
+    setenv("WATCHDOG_WATCHSCRIPTS_LOG_SUBFOLDER", f_log_subfolder.toUtf8().data(), 1);
+
+    f_scripts_log = f_log_path + "/" + f_log_subfolder + "/snapwatchdog-scripts.log";
 }
 
 
@@ -206,21 +252,11 @@ void watchscripts::on_process_watch(QDomDocument doc)
     QString const scripts_path([&]()
         {
             QString const path(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_PATH)));
-            if(scripts_path.isEmpty())
+            if(path.isEmpty())
             {
                 return QString::fromUtf8(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_PATH_DEFAULT));
             }
             return path;
-        }());
-
-    QString const scripts_output([&]()
-        {
-            QString const filename(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT)));
-            if(filename.isEmpty())
-            {
-                return QString::fromUtf8(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT_DEFAULT));
-            }
-            return filename;
         }());
 
     NOTUSED(doc);
@@ -232,7 +268,7 @@ void watchscripts::on_process_watch(QDomDocument doc)
     // allow for failures, admins are responsible for making sure it will
     // work as expected
     //
-    f_file.reset(new QFile(scripts_output));
+    f_file.reset(new QFile(f_scripts_log));
     if(f_file != nullptr
     && !f_file->open(QIODevice::Append))
     {
@@ -250,38 +286,46 @@ void watchscripts::on_process_watch(QDomDocument doc)
         QString const from_email(f_snap->get_server_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_FROM_EMAIL)));
         QString const destination_email(f_snap->get_server_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_ADMINISTRATOR_EMAIL)));
 
-        email e;
-
-        // set "From: ..." header
-        //
-        e.set_from(from_email);
-
-        // set "To: ..." header
-        //
-        e.set_to(destination_email);
-
-        // mark priority as Urgent
-        //
-        e.set_priority(email::priority_t::EMAIL_PRIORITY_URGENT);
-
-        // set the subject
-        //
-        e.set_subject("Snap Watchdog Report: one or more watchdog scripts failed.");
-
-        // prevent blacklisting
-        // (since we won't run the validation, it's not necessary)
-        //e.add_parameter(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST), "true");
-
-        // add the email subject and body using a page
-        email::attachment a;
-        a.set_data(f_email.toUtf8(), "text/plain");
-        e.set_body_attachment(a);
-
-        // send the email
-        //
-        if(!e.send())
+        if(!from_email.isEmpty()
+        && !destination_email.isEmpty())
         {
-            SNAP_LOG_ERROR("could not properly send the watchscript resulting email.");
+            email e;
+
+            // set "From: ..." header
+            //
+            e.set_from(from_email);
+
+            // set "To: ..." header
+            //
+            e.set_to(destination_email);
+
+            // mark priority as Urgent
+            //
+            e.set_priority(email::priority_t::EMAIL_PRIORITY_URGENT);
+
+            // set the subject
+            //
+            e.set_subject("Snap Watchdog Report: one or more watchdog scripts failed.");
+
+            // prevent blacklisting
+            // (since we won't run the validation, it's not necessary)
+            //e.add_parameter(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST), "true");
+
+            // add the email subject and body using a page
+            email::attachment a;
+            a.set_data(f_email.toUtf8(), "text/plain");
+            e.set_body_attachment(a);
+
+            // send the email
+            //
+            if(!e.send())
+            {
+                SNAP_LOG_ERROR("could not properly send the watchscript resulting email.");
+            }
+        }
+        else
+        {
+            SNAP_LOG_ERROR("watchscripts cannot send an email without having 'from_email' and 'administrator_email' defined in your snapwatchdog.conf file.");
         }
     }
 }
@@ -302,7 +346,7 @@ void watchscripts::process_script(QString script_filename)
     //
     process p("watchscript");
     p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
-    p.set_command(script_filename);
+    p.set_command("sh " + script_filename);
     p.set_output_callback(this);
     int const exit_code(p.run());
 
@@ -323,8 +367,8 @@ void watchscripts::process_script(QString script_filename)
     && !f_output.isEmpty())
     {
         // we do not want to send 20 different emails so instead we
-        // generate a journal of all the output and then send that
-        // to the admins once we're done running all the scripts.
+        // generate a digest of all the output and then send that
+        // to the admins once we are done running all the scripts.
         //
         // TODO: we need to cut the data if too large (we need to keep
         //       track of what we already added to f_email)
@@ -350,9 +394,9 @@ bool watchscripts::output_available(process * p, QByteArray const & output)
     QString header;
     if(f_new_script)
     {
-        header = (QString("%1 ---------------------------------------- %2\n")
+        header = QString("%1 ---------------------------------------- %2\n")
                                 .arg(format_date(f_start_date))
-                                .arg(f_script_filename).toUtf8());
+                                .arg(f_script_filename).toUtf8();
 
         // we can immediately add it to the output buffer
         //
