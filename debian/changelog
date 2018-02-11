@@ -1,3 +1,26 @@
+snapwebsites (1.5.45.0~xenial) xenial; urgency=high
+
+  * Finished up the snapwatchdog plugin that runs shell script to test the
+    health of the system.
+  * Added support so we can capture stderr output from processes we start
+    with our snap::process class.
+  * Support two callbacks one for stdout and one for stderr.
+  * Added a test in get_arg() so we throw if you never called get_args_size().
+  * Fixed a bug in the fork() implementation, we had to use dup2() and not
+    close() + dup() because race conditions can always happen.
+  * Actually implemented the find_process tool used in the
+    watch_firewall_fail2ban_client script.
+  * Added a starter script so snapwatchdog scripts get kick started now
+    giving us the /etc/default/snapwatchdog script for user settings.
+  * Fixed the snapwatchdog server, we would add child process to the
+    list of processes even if the fork() failed.
+  * Applied a fix to the statvfs() call which can block if a device is
+    over the network and is failing. It uses an alarm now.
+  * Added a more detailed header so we know which computer is failing.
+  * Various cleanups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 11 Feb 2018 01:21:33 -0700
+
 snapwebsites (1.5.44.0~xenial) xenial; urgency=high
 
   * Fixed the name of the script-files

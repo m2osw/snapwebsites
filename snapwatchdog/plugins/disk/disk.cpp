@@ -25,6 +25,7 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/log.h>
 #include <snapwebsites/mounts.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/not_used.h>
@@ -64,6 +65,133 @@ char const * get_name(name_t name)
     }
     NOTREACHED();
 }
+
+
+
+namespace
+{
+
+/** \brief The alarm handler we use to create a statvfs_try() function.
+ *
+ * This function is a hanlder we use to sound the alarm and prevent
+ * the statvfs() from holding us up forever.
+ */
+void statvfs_alarm_handler(int sig)
+{
+    snap::NOTUSED(sig);
+}
+
+
+/** \brief A statvfs() that times out in case a drive locks us up.
+ *
+ * On Feb 10, 2018, I was testing snapwatchdog and it was getting
+ * stuck on statvfs(). I have keybase installed on my system and
+ * it failed restarting properly. Once restarted, everything worked
+ * as expected.
+ *
+ * The `df` command would also lock up.
+ *
+ * The statvfs() is therefore the culprit. This function is used
+ * in order to time out if the function doesn't return in a speedy
+ * enough period.
+ *
+ * \note
+ * If the function times out, it returns -1 and sets the errno
+ * to EINTR. In other cases, a different errno is set.
+ *
+ * \param[in] path  The name of the file to stat.
+ * \param[in] s  The structure were the results are saved on success.
+ * \param[in] seconds  The number of seconds to wait before we time out.
+ *
+ * \return 0 on success, -1 on error and errno set appropriately.
+ */
+int statvfs_try(char const * path, struct statvfs * s, unsigned int seconds)
+{
+    struct sigaction alarm_action;
+    struct sigaction saved_action;
+
+    memset(&alarm_action, 0, sizeof(alarm_action));
+    memset(&saved_action, 0, sizeof(saved_action));
+
+    // note that the flags do not include SA_RESTART, so
+    // statvfs() should be interrupted on the SIGALRM signal
+    // and not restarted
+    //
+    alarm_action.sa_flags = 0;
+    sigemptyset(&alarm_action.sa_mask);
+    alarm_action.sa_handler = statvfs_alarm_handler;
+
+    // first we setup the alarm handler as setting the alarm before
+    // would mean that we don't get our handler called
+    //
+    if(sigaction(SIGALRM, &alarm_action, &saved_action) != 0)
+    {
+        return -1;
+    }
+
+    // alarm() does not return an errors
+    //
+    unsigned int old_alarm(alarm(seconds));
+    time_t const start_time(time(nullptr));
+
+    // clear errno
+    //
+    errno = 0;
+
+    // do the statvfs() now
+    //
+    int const rc(statvfs(path, s));
+
+    // save the errno value as alarm() and sigaction() might change it
+    //
+    int const saved_errno(errno);
+
+    // make sure our or someone else handler does not get called
+    // (this is if the alarm did not happen)
+    //
+    alarm(0);
+
+    // reset the signal handler
+    //
+    // we have to ignore the error in this case because there is
+    // pretty much nothing we can do about it (throw?!)
+    //
+    snap::NOTUSED(sigaction(SIGALRM, &saved_action, nullptr));
+
+    // reset the alarm if required (if 0, avoid the system call)
+    //
+    if(old_alarm != 0)
+    {
+        // adjust the number of seconds with the number of seconds
+        // that elapsed since we started our own alarm
+        //
+        time_t const elapsed(time(nullptr) - start_time);
+        if(static_cast<unsigned int>(elapsed) >= old_alarm)
+        {
+            // we use this condition in part because the old_alarm
+            // variable is an 'unsigned int'
+            //
+            old_alarm = 1;
+        }
+        else
+        {
+            old_alarm -= elapsed;
+        }
+        alarm(old_alarm);
+    }
+
+    // restore the errno that statvfs() generated
+    //
+    errno = saved_errno;
+
+    // the statvfs() return code
+    //
+    return rc;
+}
+
+
+}
+// no-name namespace
 
 
 
@@ -170,6 +298,8 @@ void disk::bootstrap(snap_child * snap)
  */
 void disk::on_process_watch(QDomDocument doc)
 {
+    SNAP_LOG_TRACE("disk::on_process_watch(): processing");
+
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "disk"));
 
@@ -185,7 +315,7 @@ void disk::on_process_watch(QDomDocument doc)
     {
         struct statvfs s;
         memset(&s, 0, sizeof(s));
-        if(statvfs(m[idx].get_dir().c_str(), &s) == 0)
+        if(statvfs_try(m[idx].get_dir().c_str(), &s, 3) == 0)
         {
             // got an entry, however, we ignore entries that have a number
             // of block equal to zero because those are virtual drives

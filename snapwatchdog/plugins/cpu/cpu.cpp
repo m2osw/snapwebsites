@@ -25,6 +25,7 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/log.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 
@@ -170,6 +171,8 @@ void cpu::bootstrap(snap_child * snap)
  */
 void cpu::on_process_watch(QDomDocument doc)
 {
+    SNAP_LOG_TRACE("cpu::on_process_watch(): processing");
+
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "cpu"));
 

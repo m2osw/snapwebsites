@@ -1,15 +1,16 @@
 #
 # File:
-#      snapwatchdog/plugins/cassandra/CMakeLists.txt
+#      snapwatchdog/tools/CMakeLists.txt
 #
 # Description:
-#      Cassandra watchdog.
+#      Various shell tools used with the watchscript plugin offered by
+#      the snapwatchdog.
 #
 # Documentation:
 #      See the CMake documentation.
 #
 # License:
-#      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
+#      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
 #      https://snapwebsites.org/
 #      contact@m2osw.com
@@ -29,33 +30,35 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_cassandra)
 
-find_package( Qt5Core REQUIRED )
+#######################################
+## find_process
+#######################################
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${snapwatchdog_SOURCE_DIR}
+project(find_process)
+
+add_executable(${PROJECT_NAME}
+    find_process.cpp
 )
 
-
-add_library(cassandra SHARED
-    cassandra.cpp
+target_link_libraries(${PROJECT_NAME}
+    snapwebsites
+    libdbproxy
+    ${ADVGETOPT_LIBRARIES}
+    ${CASSWRAPPER_LIBRARIES}
+    ${LOG4CPLUS_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${LIBTLD_LIBRARIES}
 )
-
 
 install(
     TARGETS
-        cassandra
-    LIBRARY DESTINATION
-        ${PLUGIN_INSTALL_DIR}
+        ${PROJECT_NAME}
+    RUNTIME DESTINATION
+        bin
 )
-file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-install(
-    FILES
-        ${HEADER_FILES}
-    DESTINATION
-        include/snapwatchdog/plugins/cassandra
-)
+
+
+
 
 # vim: ts=4 sw=4 et

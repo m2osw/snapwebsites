@@ -112,7 +112,8 @@ public:
         PROCESS_MODE_INPUT,
         PROCESS_MODE_OUTPUT,
         PROCESS_MODE_INOUT,
-        PROCESS_MODE_INOUT_INTERACTIVE
+        PROCESS_MODE_INOUT_INTERACTIVE,
+        PROCESS_MODE_INOUTERR
     };
 
     class process_output_callback
@@ -121,6 +122,7 @@ public:
         virtual                     ~process_output_callback() {}
 
         virtual bool                output_available(process * p, QByteArray const & output) = 0;
+        virtual bool                error_available(process * p, QByteArray const & error);
     };
 
                                 process(QString const & name);
@@ -128,6 +130,7 @@ public:
     QString const &             get_name() const;
 
     // setup the process
+    //
     void                        set_mode(mode_t mode);
     void                        set_forced_environment(bool forced = true);
 
@@ -138,13 +141,20 @@ public:
     int                         run();
 
     // what is sent to the command stdin
+    //
     void                        set_input(QString const & input);
     void                        set_input(QByteArray const & input);
 
     // what is received from the command stdout
+    //
     QString                     get_output(bool reset = false);
     QByteArray                  get_binary_output(bool reset = false);
     void                        set_output_callback(process_output_callback * callback);
+
+    // what is received from the command stderr
+    //
+    QString                     get_error(bool reset = false);
+    QByteArray                  get_binary_error(bool reset = false);
 
 private:
     // prevent copies
@@ -158,6 +168,7 @@ private:
     environment_map_t           f_environment;
     QByteArray                  f_input;
     QByteArray                  f_output;
+    QByteArray                  f_error;
     bool                        f_forced_environment = false;
     process_output_callback *   f_output_callback = nullptr;
     snap_thread::snap_mutex     f_mutex;
@@ -208,6 +219,7 @@ public:
         long                        get_total_size() const;
         long                        get_resident_size() const;
         std::string                 get_process_name() const;
+        std::string                 get_process_basename() const;
         int                         get_args_size() const;
         std::string                 get_arg(int index) const;
         int                         get_tty() const;

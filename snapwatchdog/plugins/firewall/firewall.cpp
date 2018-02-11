@@ -15,10 +15,21 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// ourselves
+//
 #include "firewall.h"
 
-#include "not_used.h"
+// our lib
+//
+#include "snapwatchdog.h"
 
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
+#include <snapwebsites/not_used.h>
+
+// last entry
+//
 #include "poison.h"
 
 
@@ -163,6 +174,8 @@ void firewall::bootstrap(snap_child * snap)
  */
 void firewall::on_process_watch(QDomDocument doc, QDomElement e)
 {
+    SNAP_LOG_TRACE("firewall::on_process_watch(): processing");
+
     process_list list;
 
     list.set_field(list_process::process_info::field_t::COMMAND_LINE);

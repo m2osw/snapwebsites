@@ -70,4 +70,15 @@ install(
 )
 
 
+#################################################################################
+## The starter script to run a watch script is viewed as a normal binary
+##
+install(
+    PROGRAMS
+        watch_script_starter
+
+    DESTINATION
+        bin
+)
+
 # vim: ts=4 sw=4 et

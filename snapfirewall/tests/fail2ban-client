@@ -1,0 +1,30 @@
+#!/usr/bin/python3
+#
+# The following python script is a test so we can have a pretend
+# fail2ban-client that fails; the real version will use 100% of
+# the CPU when it fails; it seems to happen because it reads a
+# log file at the time it gets rotated; possibly because it is
+# attempting to load data past the new end of file and gets nothing
+# and try again and again (this is my take, the problem may be
+# completely different...)
+#
+# In order to run this script, just make it an executable if not
+# yet and then in your console:
+#
+#     ./fail2ban-client
+#
+
+import time
+import datetime
+import sys
+
+print(datetime.datetime.now());
+print(': fail2ban-client started');
+print('');
+print('waiting...');
+# The watchdog script checks for 3 minutes, you can change this sleep
+# timer to see how things behave. With 5 minutes we at times get one
+# email and at times we get two.
+time.sleep(300);
+print(datetime.datetime.now());
+print(': fail2ban-client ended');

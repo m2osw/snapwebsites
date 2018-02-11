@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# This specifies shell vars defined that the watchscripts
+# plugin from the snapwatchdog uses.
+

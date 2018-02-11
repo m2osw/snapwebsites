@@ -114,8 +114,8 @@ public:
     virtual             ~watchdog_child() override;
 
     bool                is_tick() const;
-    void                run_watchdog_plugins();
-    void                record_usage(snap::snap_communicator_message const & message);
+    bool                run_watchdog_plugins();
+    bool                record_usage(snap::snap_communicator_message const & message);
     virtual void        exit(int code) override;
 
     pid_t               get_child_pid() const;

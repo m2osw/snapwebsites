@@ -142,6 +142,32 @@ namespace snap
  */
 
 
+/** \brief Do nothing implementation of error_avalable()
+ *
+ * By default a process error stream is not used.
+ *
+ * \warning
+ * The error buffer will represent UTF-8 data on Linux, however, when
+ * this callback gets called, the buffer may not yet be complete and
+ * thus attempting to convert to UTF-8 may fail in various ways.
+ *
+ * \todo
+ * What we want to do is send the error output to SNAP_LOG_ERROR().
+ * For that, however, we need to parse strings out of the \p error
+ * parameter which we do not do yet.
+ *
+ * \param[in,out] p  The process that generated this error output.
+ * \param[in] error  The error data, probably UTF-8, but it can be incomplete.
+ */
+bool process::process_output_callback::error_available(process * p, QByteArray const & error)
+{
+    NOTUSED(p);
+    NOTUSED(error);
+
+    return true;
+}
+
+
 /** \brief Initialize the process object.
  *
  * This function saves the name of the process. The name is generally a
@@ -152,15 +178,6 @@ namespace snap
  */
 process::process(QString const & name)
     : f_name(name)
-    //, f_mode(mode_t::PROCESS_MODE_COMMAND) -- auto-init
-    //, f_command("") -- auto-init
-    //, f_arguments() -- auto-init
-    //, f_environment() -- auto-init
-    //, f_input() -- auto-init
-    //, f_output() -- auto-init
-    //, f_forced_environment("") -- auto-init
-    //, f_output_callback(nullptr) -- auto-init
-    //, f_mutex() -- auto-init
 {
 }
 
@@ -404,7 +421,10 @@ int process::run()
                 {
                     // must return -1 on error, ignore pclose() return value
                     int const e(pclose(f_file));
-                    SNAP_LOG_ERROR("pclose() returned ")(e)(", but it will be ignored because the pipe was marked as erroneous.");
+                    if(e != 0)
+                    {
+                        SNAP_LOG_ERROR("pclose() returned ")(e)(", but it will be ignored because the pipe was marked as erroneous.");
+                    }
                     f_file = nullptr;
                 }
                 else
@@ -475,7 +495,8 @@ int process::run()
         }
     }
 
-    if(mode_t::PROCESS_MODE_INOUT_INTERACTIVE == f_mode && !f_output_callback)
+    if(mode_t::PROCESS_MODE_INOUT_INTERACTIVE == f_mode
+    && f_output_callback == nullptr)
     {
         // mode is not compatible with the current setup
         throw snap_process_exception_invalid_mode_error("mode cannot be in/out interactive without a callback");
@@ -487,15 +508,6 @@ int process::run()
     class raii_inout_pipes
     {
     public:
-        raii_inout_pipes()
-            //; f_pipes({0, 0}) -- initialized below
-        {
-            for(int i(0); i < 4; ++i)
-            {
-                f_pipes[i] = -1;
-            }
-        }
-
         ~raii_inout_pipes()
         {
             close();
@@ -503,7 +515,7 @@ int process::run()
 
         void close()
         {
-            for(int i(0); i < 4; ++i)
+            for(int i(0); i < 6; ++i)
             {
                 if(f_pipes[i] != -1)
                 {
@@ -516,14 +528,18 @@ int process::run()
         int open()
         {
             close();
-            if(pipe(f_pipes + 0) != 0)
+            if(pipe(f_pipes + 0) != 0) // for stdin
             {
                 return -1;
             }
-            return pipe(f_pipes + 2);
+            if(pipe(f_pipes + 2) != 0) // for stdout
+            {
+                return -1;
+            }
+            return pipe(f_pipes + 4); // for stderr (conditional)
         }
 
-        int f_pipes[4];
+        int f_pipes[6]{-1, -1, -1, -1, -1, -1};
     };
     raii_inout_pipes inout;
     if(inout.open() == -1)
@@ -535,10 +551,8 @@ int process::run()
     {
     public:
         raii_fork()
-            //: f_child(-1)
-            //, f_exit(-1)
+            : f_child(fork())
         {
-            f_child = fork();
         }
 
         ~raii_fork()
@@ -553,7 +567,10 @@ int process::run()
             // TODO: use wait4() to get usage and save that usage in the log
             if(f_child > 0)
             {
-                int status;
+                // Warning: the W_EXITCODE() macro may not be defined.
+                //          in our case it sets status to 0x0100
+                //
+                int status(W_EXITCODE(1, 0));
                 waitpid( f_child, &status, 0 );
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
@@ -597,6 +614,7 @@ int process::run()
         try
         {
             // convert arguments so we can use them with execvpe()
+            //
             std::vector<char const *> args_strings;
             std::string const cmd(f_command.toUtf8().data());
             args_strings.push_back(strdup(cmd.c_str()));
@@ -605,14 +623,16 @@ int process::run()
             {
                 args_strings.push_back(strdup(f_arguments[i].toUtf8().data()));
             }
-            args_strings.push_back(nullptr);
+            args_strings.push_back(nullptr); // NULL terminated
 
             // convert arguments so we can use them with execvpe()
+            //
             environment_map_t src_envs(f_environment);
             if(!f_forced_environment)
             {
                 // since we do not limit the child to only the specified
                 // environment, add ours but do not overwrite anything
+                //
                 for(char ** env(environ); *env != nullptr; ++env)
                 {
                     char const * s(*env);
@@ -621,11 +641,14 @@ int process::run()
                     {
                         if(*s == '=')
                         {
-                            std::string name(n, s - n);
-                            // do not overwrite
+                            std::string const name(n, s - n);
+
+                            // do not overwrite user overridden values
+                            //
                             if(src_envs.find(name) == src_envs.end())
                             {
                                 // in Linux all is UTF-8 so we are already good here
+                                //
                                 src_envs[name] = s + 1;
                             }
                             break;
@@ -635,30 +658,34 @@ int process::run()
                 }
             }
             std::vector<char const *> envs_strings;
-            for(environment_map_t::const_iterator it(src_envs.begin()); it != src_envs.end(); ++it)
+            for(auto const & it : src_envs)
             {
-                envs_strings.push_back(strdup((it->first + "=" + it->second).c_str()));
+                envs_strings.push_back(strdup((it.first + "=" + it.second).c_str()));
             }
-            envs_strings.push_back(nullptr);
+            envs_strings.push_back(nullptr); // NULL terminated
 
-            // replace the stdin and stdout with the pipes
-            // TODO test result of the dup() command because if -1 things
-            //      fail and we cannot really go on
-            close(0);  // stdin
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-result"
-            if(dup(inout.f_pipes[0]) < 0)
+            // replace the stdin and stdout (and optionally stderr)
+            // with their respective pipes
+            //
+            if(dup2(inout.f_pipes[0], STDIN_FILENO) < 0)  // stdin
             {
-                throw snap_process_exception_initialization_failed("dup() of the stdin pipe failed");
+                throw snap_process_exception_initialization_failed("dup2() of the stdin pipe failed");
             }
-            close(1);  // stdout
-            if(dup(inout.f_pipes[3]) < 0)
+            if(dup2(inout.f_pipes[3], STDOUT_FILENO) < 0)  // stdout
             {
-                throw snap_process_exception_initialization_failed("dup() of the stdout pipe failed");
+                throw snap_process_exception_initialization_failed("dup2() of the stdout pipe failed");
             }
-#pragma GCC diagnostic pop
-            // TODO should we redirect stderr somewhere else?
+            if(mode_t::PROCESS_MODE_INOUTERR == f_mode)
+            {
+                if(dup2(inout.f_pipes[5], STDERR_FILENO) < 0)  // stderr
+                {
+                    throw snap_process_exception_initialization_failed("dup2() of the stderr pipe failed");
+                }
+            }
 
+            // we duplicated those as required, now close all the
+            // other pipes
+            //
             inout.close();
 
             execvpe(
@@ -684,6 +711,7 @@ int process::run()
         {
             SNAP_LOG_FATAL("process::run(): unknown exception caught!");
         }
+        // the child can't safely return from here
         exit(1);
         NOTREACHED();
         return -1;
@@ -692,12 +720,21 @@ int process::run()
         // parent
         {
             // close the sides we do not use here
+            //
             close(inout.f_pipes[0]);
             inout.f_pipes[0] = -1;
             close(inout.f_pipes[3]);
             inout.f_pipes[3] = -1;
+            if(mode_t::PROCESS_MODE_INOUTERR != f_mode)
+            {
+                // we won't be using the stderr pipe at all
+                //
+                close(inout.f_pipes[4]);
+            }
+            close(inout.f_pipes[5]);
 
-            class in_t : public snap_thread::snap_runner
+            class in_t
+                : public snap_thread::snap_runner
             {
             public:
                 in_t(QByteArray const & input, int & pipe)
@@ -739,7 +776,8 @@ int process::run()
                 return -1;
             }
 
-            class out_t : public snap_thread::snap_runner
+            class out_t
+                : public snap_thread::snap_runner
             {
             public:
                 out_t(QByteArray & output)
@@ -774,25 +812,51 @@ int process::run()
                         }
                         QByteArray output(buf, static_cast<int>(l));
                         f_output.append(output);
-                        if(f_callback)
+                        if(f_callback != nullptr)
                         {
-                            f_callback->output_available(f_process, output);
+                            f_callback(f_process, output);
                         }
                     }
                 }
 
                 QByteArray &                    f_output;
                 int32_t                         f_pipe = -1;
-                process_output_callback *       f_callback = nullptr;
+                std::function<bool(process * p, QByteArray const & output)> f_callback;
                 process *                       f_process = nullptr;
             } out(f_output);
             out.f_pipe = inout.f_pipes[2];
-            out.f_callback = f_output_callback;
+            out.f_callback = std::bind(&process_output_callback::output_available
+                                     , f_output_callback
+                                     , std::placeholders::_1
+                                     , std::placeholders::_2);
             out.f_process = this;
             snap_thread out_thread("process::out::thread", &out);
             if(!out_thread.start())
             {
                 return -1;
+            }
+
+            std::unique_ptr<out_t> err;
+            std::unique_ptr<snap_thread> err_thread;
+            if(mode_t::PROCESS_MODE_INOUTERR == f_mode)
+            {
+                err.reset(new out_t(f_error));
+                if(err == nullptr)
+                {
+                    return -1;
+                }
+                err->f_pipe = inout.f_pipes[4];
+                err->f_callback = std::bind(&process_output_callback::error_available
+                                         , f_output_callback
+                                         , std::placeholders::_1
+                                         , std::placeholders::_2);
+                err->f_process = this;
+                err_thread.reset(new snap_thread("process::error::thread", err.get()));
+                if(err_thread == nullptr
+                || !err_thread->start())
+                {
+                    return -1;
+                }
             }
 
             // wait for the child process first
@@ -801,6 +865,10 @@ int process::run()
             // then wait on the two threads
             in_thread.stop();
             out_thread.stop();
+            if(err_thread != nullptr)
+            {
+                err_thread->stop();
+            }
 
             return r;
         }
@@ -922,12 +990,75 @@ QByteArray process::get_binary_output(bool reset)
  * to be called each time data arrives in our input pipe (i.e. stdout
  * or the output pipe of the child process.)
  *
+ * Note that if you set the process to a mode that supports the stderr
+ * pipe, then the error_available() may also get called. Otherwise,
+ * only the output_available() gets called whenever the child process
+ * generates some output.
+ *
  * \param[in] callback  The callback class that is called on output arrival.
  */
 void process::set_output_callback(process_output_callback * callback)
 {
     f_output_callback = callback;
 }
+
+
+/** \brief Read the error output of the command.
+ *
+ * This function reads the error output stream of the process. This
+ * function converts the output to UTF-8. Note that if some bytes are
+ * missing this function is likely to fail. If you are reading the
+ * data little by little as it comes in, you may want to use the
+ * get_binary_output() function instead. That way you can detect
+ * characters such as the "\n" and at that point convert the data
+ * from the previous "\n" you found in the buffer to that new "\n".
+ * This will generate valid UTF-8 strings.
+ *
+ * This function is most often used when stderr is to be saved
+ * in a different file than the default.
+ *
+ * \param[in] reset  Whether the error output so far should be cleared.
+ *
+ * \return The current error output buffer.
+ *
+ * \sa get_binary_error()
+ */
+QString process::get_error(bool reset)
+{
+    QString const error(QString::fromUtf8(f_error));
+    if(reset)
+    {
+        f_error.clear();
+    }
+    return error;
+}
+
+
+/** \brief Read the error output of the command as a binary buffer.
+ *
+ * This function reads the error output of the process in binary (untouched).
+ *
+ * This function does not fail like get_error() which attempts to
+ * convert the output of the function to UTF-8. Also the error output
+ * of the command may not be UTF-8 in which case you would have to use
+ * the binary version and use a different conversion.
+ *
+ * \param[in] reset  Whether the error output so far should be cleared.
+ *
+ * \return The current error output buffer.
+ *
+ * \sa get_error()
+ */
+QByteArray process::get_binary_error(bool reset)
+{
+    QByteArray const error(f_error);
+    if(reset)
+    {
+        f_error.clear();
+    }
+    return error;
+}
+
 
 
 
@@ -1119,6 +1250,12 @@ long process_list::proc_info::get_resident_size() const
  *
  * This field is available only if field_t::COMMAND_LINE was set.
  *
+ * \warning
+ * At this time the process does not attempt to load the `/proc/<pid>/status`
+ * file and as a result the process name may end up being empty because
+ * it was not defined in the command line (this is done quite a bit with
+ * kernel processes.)
+ *
  * \return The process name.
  */
 std::string process_list::proc_info::get_process_name() const
@@ -1130,10 +1267,41 @@ std::string process_list::proc_info::get_process_name() const
 
     if(f_proc->cmdline == nullptr)
     {
-        return "";
+        return std::string();
     }
 
     return f_proc->cmdline[0];
+}
+
+
+/** \brief Get the process (command) basename.
+ *
+ * By default, the process name is the full name used on the command line
+ * to start this process. If that was a full path, then the full pass is
+ * included in the process name.
+ *
+ * This function returns the basename only.
+ *
+ * This field is available only if field_t::COMMAND_LINE was set.
+ *
+ * \return The process name.
+ */
+std::string process_list::proc_info::get_process_basename() const
+{
+    std::string const name(get_process_name());
+
+    std::string::size_type const pos(name.rfind('/'));
+    if(pos == std::string::npos)
+    {
+        // no '/' so there was no path, return name as is
+        //
+        return name;
+    }
+
+    // there is a slash, remove everything before that slash
+    // and the slash itself
+    //
+    return name.substr(pos + 1);
 }
 
 
@@ -1146,6 +1314,8 @@ std::string process_list::proc_info::get_process_name() const
  * line (program name.)
  *
  * \return Count the number of arguments.
+ *
+ * \sa get_arg()
  */
 int process_list::proc_info::get_args_size() const
 {
@@ -1180,9 +1350,25 @@ int process_list::proc_info::get_args_size() const
  * \param[in] index  The index of the argument to retrieve.
  *
  * \return The specified argument.
+ *
+ * \sa get_args_size()
  */
 std::string process_list::proc_info::get_arg(int index) const
 {
+    // the number of arguments must be gathered first: see get_args_size()
+    // that other function defines the `f_count` parameter which then
+    // won't be -1, although it could still be zero and prevent a call
+    // to this function
+    //
+    if(f_count == -1)
+    {
+        // I use a logic exception because I think this one should never
+        // happen, if a programmer gets this error, he/she needs to fix
+        // his/her code immediately
+        //
+        throw snap_logic_exception("process_list::proc_info::get_arg(): get_arg() cannot be called before get_args_size().");
+    }
+
     if(static_cast<uint32_t>(index) >= static_cast<uint32_t>(f_count))
     {
         throw snap_process_exception_data_not_available(QString("process_list::proc_info::get_arg(): index %1 is larger than f_count %1").arg(index).arg(f_count));

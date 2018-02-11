@@ -39,7 +39,10 @@ FAIL2BAN_CLIENT_RUNNING=${WATCHDOG_WATCHSCRIPTS_OUTPUT}/firewall-fail2ban-client
 
 # is the offensive process running?
 #
-if find_process fail2ban-client
+# Note that fail2ban-client is a python script so we have to make sure to
+# test for that special case
+#
+if find_process --regex --script 'python[0-9]*' fail2ban-client
 then
     if test -f ${FAIL2BAN_CLIENT_RUNNING}
     then
@@ -49,6 +52,9 @@ then
         then
             # problem, it has been running for 3 minutes or more
             #
+            echo "warning: we detected the fail2ban-client has been running for 3 or more"
+            echo "minutes in a row. Please check this system as it is likely that the"
+            echo "utility is jammed and needs to be killed."
             exit 2
         fi
     else

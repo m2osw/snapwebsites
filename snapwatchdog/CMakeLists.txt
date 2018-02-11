@@ -92,6 +92,7 @@ add_subdirectory(lib)               # Common code which is too specialized to cr
 add_subdirectory(plugins)           # Plug-ins (i.e. modular functionality)
 add_subdirectory(src)               # Actual Snap! Websites server
 add_subdirectory(manager-plugins)   # Actual Snap! Websites server
+add_subdirectory(tools)             # Various tools offered along the watchscripts plugin
 
 ##
 ## Analyse xml and javascript

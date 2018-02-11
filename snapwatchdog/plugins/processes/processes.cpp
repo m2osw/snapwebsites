@@ -15,16 +15,27 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// ourselves
+//
 #include "processes.h"
 
+// our lib
+//
 #include "snapwatchdog.h"
 
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/process.h>
 #include <snapwebsites/qdomhelpers.h>
 
+// Qt lib
+//
 #include <QRegExp>
 
+// last entry
+//
 #include <snapwebsites/poison.h>
 
 
@@ -162,7 +173,8 @@ void processes::bootstrap(snap_child * snap)
  */
 void processes::on_process_watch(QDomDocument doc)
 {
-//std::cerr << "starting on processes...\n";
+    SNAP_LOG_TRACE("processes::on_process_watch(): processing");
+
     QString process_names(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_PROCESSES)));
     if(process_names.isEmpty())
     {

@@ -15,15 +15,26 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// outselves
+//
 #include "memory.h"
 
+// our lib
+//
 #include "snapwatchdog.h"
 
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/not_used.h>
 
+// C lib
+//
 #include <proc/sysinfo.h>
 
+// last entry
+//
 #include <snapwebsites/poison.h>
 
 
@@ -159,6 +170,8 @@ void memory::bootstrap(snap_child * snap)
  */
 void memory::on_process_watch(QDomDocument doc)
 {
+    SNAP_LOG_TRACE("memory::on_process_watch(): processing");
+
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "memory"));
 

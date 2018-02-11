@@ -671,6 +671,7 @@ void watchdog_server::process_tick()
     //
     if(f_snapdbproxy_addr.isEmpty())
     {
+        SNAP_LOG_TRACE("cannot connect to Cassandra, f_snapdbproxy_addr is undefined.");
         return;
     }
 
@@ -692,12 +693,20 @@ void watchdog_server::process_tick()
         // create a new child object
         //
         watchdog_child::pointer_t child(std::make_shared<watchdog_child>(instance(), true));
-        f_processes.push_back(child);
 
         // start the watchdog plugins (it will fork() and return so we can
         // continue to wait for signals in our run() function.)
         //
-        child->run_watchdog_plugins();
+        if(child->run_watchdog_plugins())
+        {
+            // the fork() succeeded, add to the list of processes
+            //
+            f_processes.push_back(child);
+        }
+    }
+    else
+    {
+        SNAP_LOG_TRACE("previous watchdog_child still running, ignore this tick");
     }
 }
 
@@ -915,6 +924,8 @@ void watchdog_server::process_message(snap::snap_communicator_message const & me
     {
         // TBD: should we wait on this signal before we start the g_tick_timer?
         //      since we do not need the snap communicator, probably not useful
+        //      (however, we want to have Cassandra and we know Cassandra is
+        //      ready only after a we got the CASSANDRAREADY anyway...)
         //
 
         // request snapdbproxy to send us a status signal about
@@ -993,12 +1004,16 @@ void watchdog_server::process_message(snap::snap_communicator_message const & me
         // so we are likely to miss some of those statistics)
         //
         watchdog_child::pointer_t child(std::make_shared<watchdog_child>(instance(), false));
-        f_processes.push_back(child);
 
         // we use a child because we need to connect to the database
         // so that call returns immediately after the fork() call
         //
-        child->record_usage(message);
+        if(child->record_usage(message))
+        {
+            // the fork() succeeded, keep the child as a process
+            //
+            f_processes.push_back(child);
+        }
         return;
     }
 
@@ -1113,13 +1128,14 @@ bool watchdog_child::is_tick() const
  * process if an error occurs. However, problems should get fixed
  * or you will certainly not get the results you are looking for.
  */
-void watchdog_child::run_watchdog_plugins()
+bool watchdog_child::run_watchdog_plugins()
 {
     // create a child process so the data between sites does not get
     // shared (also the Cassandra data would remain in memory increasing
     // the foot print each time we run a new website,) but the worst
     // are the plugins; we can request a plugin to be unloaded but
     // frankly the system is not very well written to handle that case.
+    //
     f_child_pid = fork_child();
     if(f_child_pid != 0)
     {
@@ -1130,9 +1146,13 @@ void watchdog_child::run_watchdog_plugins()
         {
             // we do not try again, we just abandon the whole process
             //
-            SNAP_LOG_ERROR("watchdog_server::run_watchdog_plugins() could not create child process, fork() failed with errno: ")(e)(" -- ")(strerror(e))(".");
+            SNAP_LOG_ERROR("watchdog_child::run_watchdog_plugins() could not create child process, fork() failed with errno: ")(e)(" -- ")(strerror(e))(".");
+            return false;
         }
-        return;
+
+        SNAP_LOG_TRACE("new watchdog_child started, pid = ")(f_child_pid);
+
+        return true;
     }
 
     // we are the child, run the watchdog_process() signal
@@ -1141,12 +1161,16 @@ void watchdog_child::run_watchdog_plugins()
         f_ready = false;
 
         // on fork() we lose the configuration so we have to reload it
+        //
         logging::reconfigure();
 
         init_start_date();
 
         NOTUSED(connect_cassandra(true));
 
+        // the usefulness of the weak pointer is questionable here since
+        // we have it locked for the rest of the child process
+        //
         auto server(std::dynamic_pointer_cast<watchdog_server>(f_server.lock()));
         if(!server)
         {
@@ -1154,15 +1178,21 @@ void watchdog_child::run_watchdog_plugins()
         }
 
         // initialize the plugins
+        //
         init_plugins(false);
 
         f_ready = true;
 
         // create the watchdog document
+        //
         QDomDocument doc("watchdog");
 
         // run each plugin watchdog function
+        //
         server->process_watch(doc);
+
+        // verify and save the results accordingly
+        //
         QString result(doc.toString());
         if(result.isEmpty())
         {
@@ -1176,7 +1206,9 @@ void watchdog_child::run_watchdog_plugins()
         else
         {
             int64_t const start_date(get_start_date());
+
             // round to the minute first, then apply period
+            //
             int64_t const date((start_date / (1000000LL * 60LL) * 60LL) % server->get_statistics_period());
 
             // add the date in ns to this result
@@ -1204,6 +1236,7 @@ void watchdog_child::run_watchdog_plugins()
             // (if the cluster is not available, we still have the files!)
             //
             // retrieve server statistics table
+            //
             QString const table_name(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS));
             libdbproxy::table::pointer_t table(f_context->getTable(table_name));
 
@@ -1221,18 +1254,19 @@ void watchdog_child::run_watchdog_plugins()
     }
     catch(snap_exception const & e)
     {
-        SNAP_LOG_FATAL("watchdog_server::run_watchdog_plugins(): exception caught ")(e.what());
+        SNAP_LOG_FATAL("watchdog_child::run_watchdog_plugins(): exception caught ")(e.what());
     }
     catch(std::exception const & e)
     {
-        SNAP_LOG_FATAL("watchdog_server::run_watchdog_plugins(): exception caught ")(e.what());
+        SNAP_LOG_FATAL("watchdog_child::run_watchdog_plugins(): exception caught ")(e.what());
     }
     catch(...)
     {
-        SNAP_LOG_FATAL("watchdog_server::run_watchdog_plugins(): unknown exception caught!");
+        SNAP_LOG_FATAL("watchdog_child::run_watchdog_plugins(): unknown exception caught!");
     }
     exit(1);
     NOTREACHED();
+    return false; // not reached, true or false is pretty much the same here
 }
 
 
@@ -1244,7 +1278,7 @@ void watchdog_child::run_watchdog_plugins()
  *
  * \param[in] message  The message we just received.
  */
-void watchdog_child::record_usage(snap::snap_communicator_message const & message)
+bool watchdog_child::record_usage(snap::snap_communicator_message const & message)
 {
     // create a child process so the data between sites does not get
     // shared (also the Cassandra data would remain in memory increasing
@@ -1262,9 +1296,10 @@ void watchdog_child::record_usage(snap::snap_communicator_message const & messag
         {
             // we do not try again, we just abandon the whole process
             //
-            SNAP_LOG_ERROR("watchdog_server::record_usage() could not create child process, fork() failed with errno: ")(e)(" -- ")(strerror(e))(".");
+            SNAP_LOG_ERROR("watchdog_child::record_usage() could not create child process, fork() failed with errno: ")(e)(" -- ")(strerror(e))(".");
+            return false;
         }
-        return;
+        return true;
     }
 
     // we are the child, run the watchdog_process() signal
@@ -1317,18 +1352,19 @@ void watchdog_child::record_usage(snap::snap_communicator_message const & messag
     }
     catch(snap_exception const & e)
     {
-        SNAP_LOG_FATAL("watchdog_server::run_watchdog_plugins(): exception caught ")(e.what());
+        SNAP_LOG_FATAL("watchdog_child::record_usage(): exception caught ")(e.what());
     }
     catch(std::exception const & e)
     {
-        SNAP_LOG_FATAL("watchdog_server::run_watchdog_plugins(): exception caught ")(e.what());
+        SNAP_LOG_FATAL("watchdog_child::record_usage(): exception caught ")(e.what());
     }
     catch(...)
     {
-        SNAP_LOG_FATAL("watchdog_server::run_watchdog_plugins(): unknown exception caught!");
+        SNAP_LOG_FATAL("watchdog_child::record_usage(): unknown exception caught!");
     }
     exit(1);
     NOTREACHED();
+    return false; // not reached, true or false is pretty much the same here
 }
 
 

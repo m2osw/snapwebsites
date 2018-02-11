@@ -25,15 +25,22 @@
 // snapwatchdog lib
 //
 #include "snapwatchdog.h"
+#include "version.h"
 
 // snapwebsites lib
 //
+#include <snapwebsites/snap_config.h>
 #include <snapwebsites/email.h>
+#include <snapwebsites/file_content.h>
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_used.h>
-#include <snapwebsites/process.h>
 #include <snapwebsites/qdomhelpers.h>
+
+// addr lib
+//
+//#include <libaddr/addr.h>
+#include <snapwebsites/addr.h>  // needs to be fixed!
 
 // Qt lib
 //
@@ -81,6 +88,12 @@ char const * get_name(name_t name)
 
     case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_PATH_DEFAULT:
         return "/usr/share/snapwebsites/snapwatchdog/scripts";
+
+    case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_WATCH_SCRIPT_STARTER:
+        return "watch_script_starter";
+
+    case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_WATCH_SCRIPT_STARTER_DEFAULT:
+        return "/usr/bin/watch_script_starter";
 
     default:
         // invalid index
@@ -185,6 +198,17 @@ void watchscripts::bootstrap(snap_child * snap)
 
     SNAP_LISTEN(watchscripts, "server", watchdog_server, process_watch, _1);
 
+    f_watch_script_starter = [&]()
+        {
+            QString const starter(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_WATCH_SCRIPT_STARTER)));
+            if(starter.isEmpty())
+            {
+                return QString::fromUtf8(get_name(name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_WATCH_SCRIPT_STARTER_DEFAULT));
+            }
+            return starter;
+        }();
+    setenv("WATCHDOG_WATCHSCRIPTS_LOG_PATH", f_log_path.toUtf8().data(), 1);
+
     // setup a variable that our scripts can use to save data as they
     // see fit; especially, many scripts need to remember what they've
     // done before or maybe they don't want to run too often and use a
@@ -223,7 +247,8 @@ void watchscripts::bootstrap(snap_child * snap)
         }();
     setenv("WATCHDOG_WATCHSCRIPTS_LOG_SUBFOLDER", f_log_subfolder.toUtf8().data(), 1);
 
-    f_scripts_log = f_log_path + "/" + f_log_subfolder + "/snapwatchdog-scripts.log";
+    f_scripts_output_log = f_log_path + "/" + f_log_subfolder + "/snapwatchdog-scripts.log";
+    f_scripts_error_log = f_log_path + "/" + f_log_subfolder + "/snapwatchdog-scripts-errors.log";
 }
 
 
@@ -247,7 +272,7 @@ void watchscripts::bootstrap(snap_child * snap)
  */
 void watchscripts::on_process_watch(QDomDocument doc)
 {
-//std::cerr << "starting on watchscripts...\n";
+    SNAP_LOG_TRACE("watchscripts::on_process_watch(): processing");
 
     QString const scripts_path([&]()
         {
@@ -268,11 +293,17 @@ void watchscripts::on_process_watch(QDomDocument doc)
     // allow for failures, admins are responsible for making sure it will
     // work as expected
     //
-    f_file.reset(new QFile(f_scripts_log));
-    if(f_file != nullptr
-    && !f_file->open(QIODevice::Append))
+    f_output_file.reset(new QFile(f_scripts_output_log));
+    if(f_output_file != nullptr
+    && !f_output_file->open(QIODevice::Append))
     {
-        f_file.reset();
+        f_output_file.reset();
+    }
+    f_error_file.reset(new QFile(f_scripts_error_log));
+    if(f_error_file != nullptr
+    && !f_error_file->open(QIODevice::Append))
+    {
+        f_error_file.reset();
     }
 
     f_email.clear();
@@ -335,29 +366,45 @@ void watchscripts::process_script(QString script_filename)
 {
     // setup the variable used while running a script
     //
-    f_new_script = true;
+    f_new_output_script = true;
+    f_new_error_script = true;
     f_last_output_byte = '\n'; // whatever works in here, but I think this '\n' makes it clearer
 
     f_output.clear();
+    f_error.clear();
     f_script_filename = script_filename;
     f_start_date = time(nullptr);
 
     // run the script
     //
     process p("watchscript");
-    p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
-    p.set_command("sh " + script_filename);
+    p.set_mode(process::mode_t::PROCESS_MODE_INOUTERR);
+    p.set_command(f_watch_script_starter);  // scripts should not have the 'x' set so we have to use /bin/sh to start them
+    p.add_argument(script_filename);
     p.set_output_callback(this);
     int const exit_code(p.run());
 
     // if we output some data and it did not ned with \n then add it now
     //
-    if(!f_new_script
+    if(!f_new_output_script
     && f_last_output_byte != '\n'
-    && f_file != nullptr)
+    && f_output_file != nullptr)
     {
-        f_file->write("\n", 1);
+        f_output_file->write("\n", 1);
         f_output += "\n";
+    }
+    if(!f_new_error_script
+    && f_last_error_byte != '\n'
+    && f_error_file != nullptr)
+    {
+        f_error_file->write("\n", 1);
+        f_error += "\n";
+    }
+
+    if(!f_error.isEmpty()
+    && exit_code == 0)
+    {
+        SNAP_LOG_WARNING("we got errors but the process exit code is 0");
     }
 
     // if we received some output, email it to the administrator
@@ -374,6 +421,18 @@ void watchscripts::process_script(QString script_filename)
         //       track of what we already added to f_email)
         //
         f_email += f_output;
+    }
+    if(exit_code != 0
+    && !f_error.isEmpty())
+    {
+        // we do not want to send 20 different emails so instead we
+        // generate a digest of all the output and then send that
+        // to the admins once we are done running all the scripts.
+        //
+        // TODO: we need to cut the data if too large (we need to keep
+        //       track of what we already added to f_email)
+        //
+        f_email += f_error;
     }
 }
 
@@ -392,36 +451,135 @@ bool watchscripts::output_available(process * p, QByteArray const & output)
     // generate a line to seperate each script entry
     //
     QString header;
-    if(f_new_script)
+    if(f_new_output_script)
     {
-        header = QString("%1 ---------------------------------------- %2\n")
+        header = QString("----------------------------------------------------------------------\n"
+                         "Snap! Watchdog Version: " SNAPWATCHDOG_VERSION_STRING "\n"
+                         "Date: %1\n"
+                         "Script: %2\n")
                                 .arg(format_date(f_start_date))
                                 .arg(f_script_filename).toUtf8();
+
+        snap::file_content hostname("/etc/hostname");
+        if(hostname.read_all())
+        {
+            header += "Hostname: ";
+            header += QString::fromUtf8(hostname.get_content().c_str()).trimmed();
+            header += "\n";
+        }
+
+        // if we have a properly installed snapcommunicator use that IP
+        //
+        snap::snap_config config("snapcommunicator");
+        QString const my_ip(config["my_address"]);
+        if(!my_ip.isEmpty())
+        {
+            header += "IP Address: ";
+            header += my_ip;
+            header += "\n";
+        }
+        else
+        {
+            // no snapcommunicator defined "my_address", then show
+            // all the IPs on this computer
+            //
+            snap_addr::addr::vector_t const ips(snap_addr::addr::get_local_addresses());
+            if(!ips.empty())
+            {
+                header += "IP Addresses: ";
+                QString sep;
+                for(auto const & a : ips)
+                {
+                    header += sep;
+                    header += a.get_ipv4or6_string().c_str();
+                    sep = ", ";
+                }
+                header += "\n";
+            }
+        }
 
         // we can immediately add it to the output buffer
         //
         f_output += header;
+
     }
+
+    // add an empty line between the header or previous output
+    // and the next output block
+    //
+    f_output += "\nMessage:\n";
+
     f_output += QString::fromUtf8(output);
 
     // if there is an output file, write that output data to it
     //
-    if(f_file != nullptr)
+    if(f_output_file != nullptr)
     {
         // first write for this script? then write its name
         //
-        if(f_new_script)
+        if(f_new_output_script)
         {
-            f_file->write(header.toUtf8());
+            f_output_file->write(header.toUtf8());
         }
-        f_file->write(output);
+        f_output_file->write(output);
 
         // save the last byte so we know whether we had a "\n"
         //
         f_last_output_byte = output.at(output.length() - 1);
     }
 
-    f_new_script = false;
+    f_new_output_script = false;
+
+    return true;
+}
+
+
+bool watchscripts::error_available(process * p, QByteArray const & error)
+{
+    NOTUSED(p);
+
+    // ignore if empty (it should not happen but our code depends on it.)
+    //
+    if(error.isEmpty())
+    {
+        return true;
+    }
+
+    // generate a line to seperate each script entry
+    //
+    QString header;
+    if(f_new_error_script)
+    {
+        // TODO: use a similar header as in the output_available()
+        //
+        header = QString("%1 ---------------------------------------- %2\n")
+                                .arg(format_date(f_start_date))
+                                .arg(f_script_filename).toUtf8();
+
+        // we can immediately add it to the error buffer
+        //
+        f_error += header;
+    }
+    f_error += QString::fromUtf8(error);
+
+    // if there is an error output file, write that error data to it
+    //
+    if(f_error_file != nullptr)
+    {
+        // first write for this script? then write its name
+        //
+        if(f_new_error_script)
+        {
+            f_error_file->write(header.toUtf8());
+        }
+        f_error_file->write(error);
+
+        // save the last byte so we know whether we had a "\n"
+        //
+        f_last_error_byte = error.at(error.length() - 1);
+    }
+
+    f_new_error_script = false;
 
     return true;
 }

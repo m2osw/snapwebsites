@@ -153,6 +153,8 @@ void cassandra::bootstrap(snap_child * snap)
  */
 void cassandra::on_process_watch(QDomDocument doc)
 {
+    SNAP_LOG_TRACE("cassandra::on_process_watch(): processing");
+
     process_list list;
 
     QDomElement e(doc.createElement("cassandra"));

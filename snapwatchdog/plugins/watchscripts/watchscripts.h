@@ -44,7 +44,9 @@ enum class name_t
     SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT,
     SNAP_NAME_WATCHDOG_WATCHSCRIPTS_OUTPUT_DEFAULT,
     SNAP_NAME_WATCHDOG_WATCHSCRIPTS_PATH,
-    SNAP_NAME_WATCHDOG_WATCHSCRIPTS_PATH_DEFAULT
+    SNAP_NAME_WATCHDOG_WATCHSCRIPTS_PATH_DEFAULT,
+    SNAP_NAME_WATCHDOG_WATCHSCRIPTS_WATCH_SCRIPT_STARTER,
+    SNAP_NAME_WATCHDOG_WATCHSCRIPTS_WATCH_SCRIPT_STARTER_DEFAULT
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
@@ -72,7 +74,7 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 class watchscripts
         : public plugins::plugin
-        , public process::process_output_callback
+        , private process::process_output_callback
 {
 public:
                             watchscripts();
@@ -90,19 +92,29 @@ public:
 
 private:
     void                    process_script(QString script_filename);
-    virtual bool            output_available(process * p, QByteArray const & output);
     static QString          format_date(time_t const t);
 
+    // process::process_output_callback implementation
+    //
+    virtual bool            output_available(process * p, QByteArray const & output) override;
+    virtual bool            error_available(process * p, QByteArray const & error) override;
+
     snap_child *            f_snap = nullptr;
-    bool                    f_new_script = false;
+    bool                    f_new_output_script = false;
+    bool                    f_new_error_script = false;
     char                    f_last_output_byte = '\n';
+    char                    f_last_error_byte = '\n';
+    QString                 f_watch_script_starter;
     QString                 f_log_path;
     QString                 f_log_subfolder;
-    QString                 f_scripts_log;
+    QString                 f_scripts_output_log;
+    QString                 f_scripts_error_log;
     QString                 f_script_filename;
-    std::shared_ptr<QFile>  f_file;
+    std::shared_ptr<QFile>  f_output_file;
+    std::shared_ptr<QFile>  f_error_file;
     time_t                  f_start_date;
     QString                 f_output;
+    QString                 f_error;
     QString                 f_email;
 };
 

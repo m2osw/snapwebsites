@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# This script is used to start one of the scripts that the watchscripts
+# wants to run.
+#
+
+set -e
+
+if test -z "$1"
+then
+    echo "fatal error: starter script must have one parameter: the name of the script to run"
+    exit 1;
+fi
+
+WATCH_SCRIPT="$1"
+
+# Source our defaults if present
+#
+if test -f /etc/default/snapwatchdog
+then
+    . /etc/default/snapwatchdog
+fi
+
+# Run the client's script
+#
+# If somehow it is an executable, then run it as is
+#
+# (it could still be a script with the 'x' flag set, but the point is that
+# some scripts won't have the 'x' flag and some people may create an ELF
+# binary.)
+#
+if test -x $WATCH_SCRIPT
+then
+    $WATCH_SCRIPT
+else
+    $SHELL $WATCH_SCRIPT
+fi
+
+# vim: ts=4 sw=4 et
