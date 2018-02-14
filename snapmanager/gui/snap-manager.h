@@ -167,11 +167,11 @@ private:
     QPointer<QPushButton>           f_sites_revert;
 
     DomainModel                     f_domain_model;
-    RowModel						f_params_row_model;
-    TableModel						f_sites_table_model;
+    RowModel                        f_params_row_model;
+    TableModel                      f_sites_table_model;
     WebsiteModel                    f_website_model;
-    int                             f_current_domain_index;
-    int                             f_current_website_index;
+    int                             f_current_domain_index = -1;
+    int                             f_current_website_index = -1;
 
     // snap server
     QString                         f_snap_host;
@@ -180,10 +180,10 @@ private:
     // cassandra data
     QString                                     f_cassandra_host;
     int32_t                                     f_cassandra_port = 0;
-    casswrapper::Session::pointer_t   f_session;
+    casswrapper::Session::pointer_t             f_session;
     QStringList                                 f_domains_to_check;
 
-    std::queue<casswrapper::Query::pointer_t>	f_queryQueue;
+    std::queue<casswrapper::Query::pointer_t>   f_queryQueue;
 
     void loadDomains          ();
     void domainWithSelection  ();

@@ -51,8 +51,6 @@ namespace
 
 snap_manager::snap_manager(QWidget *snap_parent)
     : QMainWindow(snap_parent)
-    , f_current_domain_index(-1)
-    , f_current_website_index(-1)
 {
     setupUi(this);
 
