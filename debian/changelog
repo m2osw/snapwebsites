@@ -1,3 +1,11 @@
+snapwebsites (1.5.46.0~xenial) xenial; urgency=high
+
+  * Added the snap_qt_connection so we can use both, snap_communicator and
+    Qt in the same binary.
+  * Added qt5x11extras so we can retrieve the X11 file descriptor.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  3 Mar 2018 02:51:15 -0700
+
 snapwebsites (1.5.45.0~xenial) xenial; urgency=high
 
   * Finished up the snapwatchdog plugin that runs shell script to test the

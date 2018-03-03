@@ -76,6 +76,7 @@ set( QT_LIBRARIES
     Qt5::Network
     Qt5::Script
     Qt5::Sql
+    Qt5::X11Extras
     Qt5::Xml
     Qt5::XmlPatterns
 )

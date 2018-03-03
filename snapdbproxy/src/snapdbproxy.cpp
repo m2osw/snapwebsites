@@ -6,7 +6,7 @@
  *      Proxy database access for two main reasons:
  *
  *      1. keep connections between this computer and the database
- *         computer open (i.e. opening remote TCP connections taken
+ *         computer open (i.e. opening remote TCP connections take
  *         "much" longer than opening local connections.)
  *
  *      2. remove threads being forced on us by the C/C++ driver from
