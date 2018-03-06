@@ -21,24 +21,21 @@
 
 #include <QString>
 
-inline std::ostream & operator << ( std::ostream & str, QByteArray const & qarray )
+inline std::ostream & operator << ( std::ostream & strm, QByteArray const & qarray )
 {
-    str << qarray.data();
-    return str;
+    return strm << qarray.data();
 }
 
 
-inline std::ostream & operator << ( std::ostream & str, QString const & qstr )
+inline std::ostream & operator << ( std::ostream & strm, QString const & qstr )
 {
-    str << qstr.toUtf8();
-    return str;
+    return strm << qstr.toUtf8();
 }
 
 
-inline std::ostream & operator << ( std::ostream & str, QStringRef const & qstr )
+inline std::ostream & operator << ( std::ostream & strm, QStringRef const & qstr )
 {
-    str << qstr.toString();
-    return str;
+    return strm << qstr.toString();
 }
 
 
@@ -78,6 +75,18 @@ inline std::string & operator += ( std::string & str, QStringRef const & qstr )
 {
     str = str + qstr;
     return str;
+}
+
+
+inline QString toQString(std::string const & s)
+{
+    return QString::fromUtf8(s.c_str());
+}
+
+
+inline std::string to_string(QString const & q)
+{   
+    return std::string(q.toUtf8().data());
 }
 
 

@@ -67,7 +67,7 @@ file(
     INSTALL
         bundles.xsd
     DESTINATION
-        ${CMAKE_BINARY_DIR}/dist/share/snapwebsites/xsd
+        ${SNAP_DIST_DIR}/share/snapwebsites/xsd
 )
 #
 install(

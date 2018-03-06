@@ -44,6 +44,7 @@ public:
     virtual                     ~snap_qt_connection() override;
 
     // implements snap_connection
+    virtual int                 get_socket() const override;
     virtual bool                is_reader() const override;
     virtual void                process_read() override;
 

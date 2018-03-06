@@ -161,6 +161,17 @@ snap_qt_connection::~snap_qt_connection()
 }
 
 
+/** \brief Retrieve the X11 socket.
+ *
+ * This function returns the X11 socket. It may return -1 although by
+ * default if we cannot determine the socket we fail with an exception.
+ */
+int snap_qt_connection::get_socket() const
+{
+    return f_fd;
+}
+
+
 /** \brief The X11 pipe is only a reader for us.
  *
  * The X11 pipe is a read/write pipe, but we don't handle the write,
