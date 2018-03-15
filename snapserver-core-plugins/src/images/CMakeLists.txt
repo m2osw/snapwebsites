@@ -39,7 +39,7 @@ find_package(ImageMagick
     COMPONENTS Magick++
 )
 if( NOT ImageMagick_FOUND )
-    message( FATAL_ERROR "ImageMagic is required to build the image plugin" )
+    message( FATAL_ERROR "ImageMagick++ is required to build the image plugin" )
 endif()
 
 find_package( Qt5Core REQUIRED )
