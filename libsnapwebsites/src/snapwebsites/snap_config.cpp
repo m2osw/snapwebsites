@@ -189,7 +189,11 @@ std::string const & snap_config_file::get_override_filename() const
 //}
 
 
-/** \brief Return the value of the f_exists flag
+/** \brief Return the value of the f_exists flag.
+ *
+ * This function lets you know whether the file exists or not. By default
+ * it is set to false until the read_config_file() gets called. It may
+ * remain set to false if the file is not found at that time.
  *
  * \return true if configuration file exists, false otherwise
  *
@@ -219,9 +223,13 @@ bool snap_config_file::exists()
  * edit a version where you define just the few fields you want to
  * modify within the "snapwebsites.d" sub-directory.
  *
- * \note Sets the f_exists flag.
+ * \note
+ * Sets the f_exists flag.
  *
  * \param[in] filename  The name of the file to read the parameters from.
+ *
+ * \sa actual_read_config_file()
+ * \sa exists()
  */
 void snap_config_file::read_config_file()
 {
@@ -261,8 +269,11 @@ void snap_config_file::read_config_file()
         // parameters (i.e. we keep the very last instance of each parameter
         // read from files.)
         //
-        if( f_exists )
+        if(f_exists)
         {
+            // TODO: allow for a different sub-directory name to be more
+            //       versatiled
+            //
             actual_read_config_file(g_configurations_path + "/snapwebsites.d/" + f_configuration_filename + ".conf", true);
         }
     }
@@ -271,16 +282,24 @@ void snap_config_file::read_config_file()
 
 /** \brief Read the configuration file itself.
  *
- * This is the function that actually reads the file. We use that because
- * we want to read files in a sub-directory such as: snapwebsites.d
- * (the name depends on the last element in your configuration path.)
+ * This is the function that actually reads the file. We use a sub-function
+ * so that way we can read files in a sub-directory, such as "snapwebsites.d,"
+ * with user modifications.
  *
- * \note if there is an error reading the file or a parsing error, exit(1) is called.
+ * This function attempts to read one file. The name of the sub-directory
+ * is determined by the caller.
+ *
+ * \exception snap_configurations_exception_config_error
+ * If there is an error reading the file or a parsing error, this exception
+ * is raised.
  *
  * \param[in] filename  The name of the file to read from.
- * \param[in] quiet     Whether to keep quiet about missing files (don't call exit(1), just return false).
+ * \param[in] quiet     Whether to keep quiet about missing files (do not
+ *                      raise exception, just return false).
  *
  * \return true if read, false on failure to read file.
+ *
+ * \sa read_config_file()
  */
 bool snap_config_file::actual_read_config_file(std::string const & filename, bool quiet)
 {
@@ -300,9 +319,9 @@ bool snap_config_file::actual_read_config_file(std::string const & filename, boo
         // read it, unfortunately
         std::stringstream ss;
         ss << "cannot read configuration file \"" << filename << "\"";
-        SNAP_LOG_FATAL(ss.str())(".");
+        SNAP_LOG_WARNING(ss.str())(".");
         syslog( LOG_CRIT, "%s, server not started. (in server::config())", ss.str().c_str() );
-        //exit(1);
+        //throw snap_configurations_exception_config_error(ss.str());
         return false;
     }
 
@@ -320,9 +339,9 @@ bool snap_config_file::actual_read_config_file(std::string const & filename, boo
         {
             std::stringstream ss;
             ss << "line " << line << " in \"" << filename << "\" is too long";
-            SNAP_LOG_ERROR() << ss.str() << ".";
+            SNAP_LOG_FATAL(ss.str())(".");
             syslog( LOG_CRIT, "%s, server not started. (in server::config())", ss.str().c_str() );
-            exit(1);
+            throw snap_configurations_exception_config_error(ss.str());
         }
         buf[len - 1] = '\0';
         --len;
@@ -374,9 +393,9 @@ bool snap_config_file::actual_read_config_file(std::string const & filename, boo
             {
                 std::stringstream ss;
                 ss << "invalid section on line " << line << " in \"" << filename << "\", no equal sign found";
-                SNAP_LOG_ERROR(ss.str())(".");
+                SNAP_LOG_FATAL(ss.str())(".");
                 syslog( LOG_CRIT, "%s, server not started. (in server::config())", ss.str().c_str() );
-                exit(1);
+                throw snap_configurations_exception_config_error(ss.str());
             }
             // right away add the "::" to the prefix so we can use it as is
             // when we find a variable
@@ -398,9 +417,9 @@ bool snap_config_file::actual_read_config_file(std::string const & filename, boo
             {
                 std::stringstream ss;
                 ss << "invalid variable on line " << line << " in \"" << filename << "\", no equal sign found";
-                SNAP_LOG_ERROR(ss.str())(".");
+                SNAP_LOG_FATAL(ss.str())(".");
                 syslog( LOG_CRIT, "%s, server not started. (in server::config())", ss.str().c_str() );
-                exit(1);
+                throw snap_configurations_exception_config_error(ss.str());
             }
             char * e;
             for(e = v; e > n && isspace(e[-1]); --e);
@@ -539,7 +558,7 @@ void snap_config_file::set_parameters( snap_configurations::parameter_map_t cons
 snap_config_file::pointer_t get_configuration
     ( std::string const & configuration_filename
     , std::string const & override_filename
-    , const bool quiet = false
+    , bool const quiet = false
     )
 {
     auto const & it(std::find_if(
@@ -561,9 +580,10 @@ snap_config_file::pointer_t get_configuration
         {
             // Exit the process as we have a critical error.
             //
-            // TODO: should this throw instead?
-            //
-            exit(1);
+            throw snap_configurations_exception_config_error(
+                      "loading configuration file \""
+                    + configuration_filename
+                    + "\" failed: File is missing.");
         }
         return conf;
     }
@@ -582,7 +602,7 @@ snap_config_file::pointer_t get_configuration
            << "\"";
         SNAP_LOG_FATAL(ss.str())(".");
         syslog( LOG_CRIT, "%s in snap_config.cpp: get_configuration()", ss.str().c_str() );
-        exit(1);
+        throw snap_configurations_exception_config_error(ss.str());
     }
 
     return it->second;
@@ -626,7 +646,7 @@ snap_configurations::snap_configurations()
  */
 snap_configurations::pointer_t snap_configurations::get_instance()
 {
-    if(!g_configurations)
+    if(g_configurations == nullptr)
     {
         // WARNING: cannot use std::make_shared<>() because the singleton
         //          has a private constructor

@@ -175,8 +175,12 @@ snap_thread::snap_mutex::snap_mutex()
 
 /** \brief Clean up a mutex object.
  *
- * This function ensures that the mutex object is cleaned up which means
+ * This function ensures that the mutex object is cleaned up, which means
  * the mutex and conditions get destroyed.
+ *
+ * This destructor verifies that the mutex is not currently locked. A
+ * locked mutex can't be destroyed. If still locked, then an error is
+ * sent to the logger and the function calls exit(1).
  */
 snap_thread::snap_mutex::~snap_mutex()
 {
@@ -184,9 +188,11 @@ snap_thread::snap_mutex::~snap_mutex()
     // you don't delete a mutex which is still locked; however, if
     // you still have multiple threads running, we can't really know
     // if another thread is not just about to use this thread...
+    //
     if(f_reference_count != 0UL)
     {
         // we cannot legally throw in a destructor so we instead generate a fatal error
+        //
         SNAP_LOG_FATAL("a mutex is being destroyed when its reference count is ")(f_reference_count)(" instead of zero.");
         exit(1);
     }

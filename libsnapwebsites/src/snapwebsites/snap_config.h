@@ -45,6 +45,14 @@ public:
     explicit snap_configurations_exception_too_late(QString const &     what_msg) : snap_configurations_exception(what_msg) {}
 };
 
+class snap_configurations_exception_config_error : public snap_configurations_exception
+{
+public:
+    explicit snap_configurations_exception_config_error(char const *        what_msg) : snap_configurations_exception(what_msg) {}
+    explicit snap_configurations_exception_config_error(std::string const & what_msg) : snap_configurations_exception(what_msg) {}
+    explicit snap_configurations_exception_config_error(QString const &     what_msg) : snap_configurations_exception(what_msg) {}
+};
+
 
 
 
