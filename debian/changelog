@@ -1,3 +1,11 @@
+snapwebsites (1.5.47.0~xenial) xenial; urgency=high
+
+  * Fix the snap_config so it uses exceptions instead of exit(1). That way
+    we avoid problems with mutexes (i.e. they properly get unlocked.)
+  * Various cleanups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  3 Mar 2018 02:51:15 -0700
+
 snapwebsites (1.5.46.0~xenial) xenial; urgency=high
 
   * Added the snap_qt_connection so we can use both, snap_communicator and
