@@ -1,3 +1,11 @@
+snapwebsites (1.5.48.0~xenial) xenial; urgency=high
+
+  * Fixed the snap_qt_connection constructor, a test was inverted.
+  * Fixed the f_fd declaration, it now gets set to -1 as expected.
+  * Fixed the header so the QMap gets protected against -Wctor-dtor-privacy.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 20 Mar 2018 01:23:32 -0700
+
 snapwebsites (1.5.47.0~xenial) xenial; urgency=high
 
   * Fix the snap_config so it uses exceptions instead of exit(1). That way

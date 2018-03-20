@@ -24,7 +24,10 @@
 #include "snapwebsites/not_used.h"
 //#include "snapwebsites/log.h" -- not sensible here at this time because log.h includes snap_communicator.h -- See Jira SNAP-623
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
 #include <QMap>
+#pragma GCC diagnostic pop
 
 #include <signal.h>
 #include <sys/signalfd.h>

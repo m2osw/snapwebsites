@@ -113,10 +113,18 @@ bool g_snap_qt_communicator_created = false;
  *
  * It gives it the name "qt". Since only one such object should exist
  * you should not have a problem with the name.
+ *
+ * \warning
+ * The constructor and destructor of this connection make use of a
+ * global flag without the use of a mutex. Since it is expected to
+ * only be used by the GUI thread, we do not see much of an
+ * inconvenience, but here we state that it can't be used by more
+ * than one thread. In any event, you can't create more than one
+ * Qt connection.
  */
 snap_qt_connection::snap_qt_connection()
 {
-    if(!g_snap_qt_communicator_created)
+    if(g_snap_qt_communicator_created)
     {
         throw snap_communicator_implementation_error("you cannot create more than one snap_qt_connection, make sure to delete the previous one before creating a new one (if you used a shared pointer, make sure to reset() first.)");
     }

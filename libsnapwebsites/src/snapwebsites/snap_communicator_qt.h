@@ -49,7 +49,7 @@ public:
     virtual void                process_read() override;
 
 private:
-    int                         f_fd;
+    int                         f_fd = -1;
 };
 
 
