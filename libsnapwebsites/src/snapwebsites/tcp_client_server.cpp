@@ -15,14 +15,23 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "snapwebsites/tcp_client_server.h"
 
+// snapwebsites lib
+//
 #include "snapwebsites/log.h"
 #include "snapwebsites/not_reached.h"
 #include "snapwebsites/not_used.h"
 
+// C++
+//
 #include <sstream>
+#include <iomanip>
 
+// C lib
+//
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <string.h>
@@ -262,6 +271,7 @@ void bio_initialize()
     g_bio_initialized = true;
 
     // Make sure the SSL library gets initialized
+    //
     SSL_library_init();
 
     // TBD: should we call the load string functions only when we
@@ -328,6 +338,19 @@ void bio_log_errors()
         char const * func_name(ERR_func_error_string(func_num));
         int const reason_num(ERR_GET_REASON(bio_errno));
         char const * reason(ERR_reason_error_string(reason_num));
+
+        if(lib_name == nullptr)
+        {
+            lib_name = "<no libname>";
+        }
+        if(func_name == nullptr)
+        {
+            func_name = "<no funcname>";
+        }
+        if(reason == nullptr)
+        {
+            reason = "<no reason>";
+        }
 
         // the format used by the OpenSSL library is as follow:
         //
@@ -1082,6 +1105,439 @@ int tcp_server::get_last_accepted_socket() const
  */
 
 
+namespace
+{
+
+
+char const * tls_rt_type(int type)
+{
+    switch(type)
+    {
+#ifdef SSL3_RT_HEADER
+    case SSL3_RT_HEADER:
+        return "TLS header";
+#endif
+    case SSL3_RT_CHANGE_CIPHER_SPEC:
+        return "TLS change cipher";
+    case SSL3_RT_ALERT:
+        return "TLS alert";
+    case SSL3_RT_HANDSHAKE:
+        return "TLS handshake";
+    case SSL3_RT_APPLICATION_DATA:
+        return "TLS app data";
+    default:
+        return "TLS Unknown";
+    }
+}
+
+
+char const * ssl_msg_type(int ssl_ver, int msg)
+{
+#ifdef SSL2_VERSION_MAJOR
+    if(ssl_ver == SSL2_VERSION_MAJOR)
+    {
+        switch(msg)
+        {
+        case SSL2_MT_ERROR:
+            return "Error";
+        case SSL2_MT_CLIENT_HELLO:
+            return "Client hello";
+        case SSL2_MT_CLIENT_MASTER_KEY:
+            return "Client key";
+        case SSL2_MT_CLIENT_FINISHED:
+            return "Client finished";
+        case SSL2_MT_SERVER_HELLO:
+            return "Server hello";
+        case SSL2_MT_SERVER_VERIFY:
+            return "Server verify";
+        case SSL2_MT_SERVER_FINISHED:
+            return "Server finished";
+        case SSL2_MT_REQUEST_CERTIFICATE:
+            return "Request CERT";
+        case SSL2_MT_CLIENT_CERTIFICATE:
+            return "Client CERT";
+        }
+    }
+    else
+#endif
+    if(ssl_ver == SSL3_VERSION_MAJOR)
+    {
+        switch(msg)
+        {
+        case SSL3_MT_HELLO_REQUEST:
+            return "Hello request";
+        case SSL3_MT_CLIENT_HELLO:
+            return "Client hello";
+        case SSL3_MT_SERVER_HELLO:
+            return "Server hello";
+#ifdef SSL3_MT_NEWSESSION_TICKET
+        case SSL3_MT_NEWSESSION_TICKET:
+            return "Newsession Ticket";
+#endif
+        case SSL3_MT_CERTIFICATE:
+            return "Certificate";
+        case SSL3_MT_SERVER_KEY_EXCHANGE:
+            return "Server key exchange";
+        case SSL3_MT_CLIENT_KEY_EXCHANGE:
+            return "Client key exchange";
+        case SSL3_MT_CERTIFICATE_REQUEST:
+            return "Request CERT";
+        case SSL3_MT_SERVER_DONE:
+            return "Server finished";
+        case SSL3_MT_CERTIFICATE_VERIFY:
+            return "CERT verify";
+        case SSL3_MT_FINISHED:
+            return "Finished";
+#ifdef SSL3_MT_CERTIFICATE_STATUS
+        case SSL3_MT_CERTIFICATE_STATUS:
+            return "Certificate Status";
+#endif
+        }
+    }
+    return "Unknown";
+}
+
+
+void ssl_trace(
+        int direction,
+        int ssl_ver,
+        int content_type,
+        void const * buf, size_t len,
+        SSL * ssl,
+        void * userp)
+{
+    snap::NOTUSED(ssl);
+    snap::NOTUSED(userp);
+
+    std::stringstream out;
+    char const * msg_name;
+    int msg_type;
+
+    // VERSION
+    //
+    out << SSL_get_version(ssl);
+
+    // DIRECTION
+    //
+    out << (direction == 0 ? " (IN), " : " (OUT), ");
+
+    // keep only major version
+    //
+    ssl_ver >>= 8;
+
+    // TLS RT NAME
+    //
+    if(ssl_ver == SSL3_VERSION_MAJOR
+    && content_type != 0)
+    {
+        out << tls_rt_type(content_type);
+    }
+    else
+    {
+        out << "(no tls_tr_type)";
+    }
+
+    if(len >= 1)
+    {
+        msg_type = * reinterpret_cast<unsigned char const *>(buf);
+        msg_name = ssl_msg_type(ssl_ver, msg_type);
+
+        out << ", ";
+        out << msg_name;
+        out << " (";
+        out << std::to_string(msg_type);
+        out << "):";
+    }
+
+    out << std::hex;
+    for(size_t line(0); line < len; line += 16)
+    {
+        out << std::endl
+            << (direction == 0 ? "<" : ">")
+            << " "
+            << std::setfill('0') << std::setw(4) << line
+            << "-  ";
+        size_t idx;
+        for(idx = 0; line + idx < len && idx < 16; ++idx)
+        {
+            if(idx == 8)
+            {
+                out << "   ";
+            }
+            else
+            {
+                out << " ";
+            }
+            int const c(reinterpret_cast<unsigned char const *>(buf)[line + idx]);
+            out << std::setfill('0') << std::setw(2) << static_cast<int>(c);
+        }
+        for(; idx < 16; ++idx)
+        {
+            if(idx == 8)
+            {
+                out << "  ";
+            }
+            out << "   ";
+        }
+        out << "   ";
+        for(idx = 0; line + idx < len && idx < 16; ++idx)
+        {
+            if(idx == 8)
+            {
+                out << " ";
+            }
+            char c(reinterpret_cast<char const *>(buf)[line + idx]);
+            if(c < ' ' || c > '~')
+            {
+                c = '.';
+            }
+            out << c;
+        }
+    }
+
+    std::cerr << out.str() << std::endl;
+}
+
+
+} // no name namespace
+
+
+
+
+
+
+/** \brief Initialize the options object to the defaults.
+ *
+ * This constructor sets up the default options in this structure.
+ */
+bio_client::options::options()
+{
+}
+
+
+/** \brief Specify the depth of SSL certificate verification.
+ *
+ * When verifying a certificate, you may end up with a very long chain.
+ * In most cases, a very long chain is not sensible and probably means
+ * something fishy is going on. For this reason, this is verified here.
+ *
+ * The default is 4. Some people like to use 5 or 6. The full range
+ * allows for way more, although really it should be very much
+ * limited.
+ *
+ * \exception
+ * This function accepts a number between 1 and 100. Any number outside
+ * of that range and this exception is raised.
+ *
+ * \param[in] depth  The depth for the verification of certificates.
+ */
+void bio_client::options::set_verification_depth(size_t depth)
+{
+    if(depth == 0
+    || depth > MAX_VERIFICATION_DEPTH)
+    {
+        throw tcp_client_server_parameter_error("the depth parameter must be defined between 1 and 100 inclusive");
+    }
+
+    f_verification_depth = depth;
+}
+
+
+/** \brief Retrieve the verification maximum depth allowed.
+ *
+ * This function returns the verification depth parameter. This number
+ * will always be between 1 and 100 inclusive.
+ *
+ * The inclusive maximum is actually defined as MAX_VERIFICATION_DEPTH.
+ *
+ * The default depth is 4.
+ *
+ * \return The current verification depth.
+ */
+size_t bio_client::options::get_verification_depth() const
+{
+    return f_verification_depth;
+}
+
+
+/** \brief Change the SSL options.
+ *
+ * This function sets the SSL options to the new \p ssl_options
+ * values.
+ *
+ * By default the bio_clent forbids:
+ *
+ * * SSL version 2
+ * * SSL version 3
+ * * TLS version 1.0
+ * * SSL compression
+ *
+ * which are parameter that are known to create security issues.
+ *
+ * To make it easier to add options to the defaults, the class
+ * offers the DEFAULT_SSL_OPTIONS option. Just add and remove
+ * bits starting from that value.
+ *
+ * \param[in] ssl_options  The new SSL options.
+ */
+void bio_client::options::set_ssl_options(ssl_options_t ssl_options)
+{
+    f_ssl_options = ssl_options;
+}
+
+
+/** \brief Retrieve the current SSL options.
+ *
+ * This function can be used to add and remove SSL options to
+ * bio_client connections.
+ *
+ * For example, to also prevent TLS 1.1, add the new flag:
+ *
+ * \code
+ *      bio.set_ssl_options(bio.get_ssl_options() | SSL_OP_NO_TLSv1_1);
+ * \endcode
+ *
+ * And to allow compression, remove a flag which is set by default:
+ *
+ * \code
+ *      bio.set_ssl_options(bio.get_ssl_options() & ~(SSL_OP_NO_COMPRESSION));
+ * \endcode
+ *
+ * \return The current SSL options.
+ */
+bio_client::options::ssl_options_t bio_client::options::get_ssl_options() const
+{
+    return f_ssl_options;
+}
+
+
+/** \brief Change the default path to SSL certificates.
+ *
+ * By default, we define the path to the SSL certificate as defined
+ * on Ubuntu. This is under "/etc/ssl/certs".
+ *
+ * This function let you change that path to another one. Maybe you
+ * would prefer to not allow all certificates to work in your
+ * circumstances.
+ *
+ * \param[in] path  The new path to SSL certificates used to verify
+ *                  secure connections.
+ */
+void bio_client::options::set_ssl_certificate_path(std::string const path)
+{
+    f_ssl_certificate_path = path;
+}
+
+
+/** \brief Return the current SSL certificate path.
+ *
+ * This function returns the path where the SSL interface will
+ * look for the root certificates used to verify a connection's
+ * security.
+ *
+ * \return The current SSL certificate path.
+ */
+std::string const & bio_client::options::get_ssl_certificate_path() const
+{
+    return f_ssl_certificate_path;
+}
+
+
+/** \brief Set whether the SNI should be included in the SSL request.
+ *
+ * Whenever SSL connects a server, it has the option to include the
+ * Server Name Indication, which is the server hostname to which
+ * are think you are connecting. That way the server can verify that
+ * you indeed were sent to the right server.
+ *
+ * The default is set to true, however, if you create a bio_client
+ * object using an IP address (opposed to the hostname) then no
+ * SNI will be included unless you also call the set_host() function
+ * to setup the host.
+ *
+ * In other words, you can use the IP address on the bio_client
+ * constructor and the hostname in the options and you will still
+ * be able to get the SNI setup as expected.
+ *
+ * \param[in] sni  true if you want the SNI to be included.
+ *
+ * \sa get_sni()
+ * \sa set_host()
+ */
+void bio_client::options::set_sni(bool sni)
+{
+    f_sni = sni;
+}
+
+
+/** \brief Retrieve the SNI flag.
+ *
+ * This function returns the current value of the SNI flag. By
+ * default this is true.
+ *
+ * Note that although the flag is true by default, the SSL request
+ * may still not get to work if you don't include the host with
+ * the set_host() and construct a bio_client object with an IP
+ * address (opposed to a hostname.)
+ *
+ * \return The current status of the SNI (true or false).
+ *
+ * \sa set_sni()
+ * \sa set_host()
+ */
+bool bio_client::options::get_sni() const
+{
+    return f_sni;
+}
+
+
+/** \brief Set the hostname.
+ *
+ * This function is used to setup the SNI hostname.
+ *
+ * The Server Name Indication is added to the SSL Hello message if
+ * available (i.e. the host was specified here or the bio_client
+ * constructor is called with the hostname and not an IP address.)
+ *
+ * If you construct the bio_client object with an IP address, you
+ * can use this set_host() function to specify the hostname, but
+ * you still need to make sure that both are a match.
+ *
+ * \param[in] host  The host being accessed.
+ */
+void bio_client::options::set_host(std::string const & host)
+{
+    f_host = host;
+}
+
+
+/** \brief Retrieve the hostname.
+ *
+ * This function is used to retrieve the hostname. This name has
+ * priority over the \p addr parameter specified to the
+ * bio_client constructor.
+ *
+ * By default this name is empty in which case the bio_client
+ * constructor checks the \p addr parameter and if it is
+ * a hostname (opposed to direct IP addresses) then it uses
+ * that \p addr parameter instead.
+ *
+ * If you do not want the Server Name Indication in the SSL
+ * request, you must call set_sni(false) so even if the
+ * bio_client constructor is called with a hostname, the
+ * SNI won't be included in the request.
+ *
+ * \return A referemce string with the hostname.
+ */
+std::string const & bio_client::options::get_host() const
+{
+    return f_host;
+}
+
+
+
+
+
 /** \brief Contruct a bio_client object.
  *
  * The bio_client constructor initializes a BIO connector and connects
@@ -1107,8 +1563,9 @@ int tcp_server::get_last_accepted_socket() const
  * \param[in] addr  The address of the server to connect to. It must be valid.
  * \param[in] port  The port the server is listening on.
  * \param[in] mode  Whether to use SSL when connecting.
+ * \param[in] opt  Additional options.
  */
-bio_client::bio_client(std::string const & addr, int port, mode_t mode)
+bio_client::bio_client(std::string const & addr, int port, mode_t mode, options const & opt)
     //: f_ssl_ctx(nullptr) -- auto-init
     //, f_bio(nullptr) -- auto-init
 {
@@ -1133,7 +1590,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode)
             // about that since here it does indeed say SSLv23...)
             //
             std::shared_ptr<SSL_CTX> ssl_ctx(SSL_CTX_new(SSLv23_client_method()), ssl_ctx_deleter);
-            if(!ssl_ctx)
+            if(ssl_ctx == nullptr)
             {
                 bio_log_errors();
                 throw tcp_client_server_initialization_error("failed creating an SSL_CTX object");
@@ -1141,13 +1598,13 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode)
 
             // allow up to 4 certificates in the chain otherwise fail
             // (this is not a very strong security feature though)
-            // TODO: allow user to specify the depth
-            SSL_CTX_set_verify_depth(ssl_ctx.get(), 4);
+            //
+            SSL_CTX_set_verify_depth(ssl_ctx.get(), opt.get_verification_depth());
 
             // make sure SSL v2/3 is not used, also compression in SSL is
             // known to have security issues
-            // TODO: allow client to specify some of these options
-            SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_COMPRESSION);
+            //
+            SSL_CTX_set_options(ssl_ctx.get(), opt.get_ssl_options());
 
             // limit the number of ciphers the connection can use
             if(mode == mode_t::MODE_SECURE)
@@ -1174,8 +1631,11 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode)
                 bio_log_errors();
                 throw tcp_client_server_initialization_error("failed loading verification certificates in an SSL_CTX object");
             }
+            //SSL_CTX_set_msg_callback(ssl_ctx.get(), ssl_trace);
+            //SSL_CTX_set_msg_callback_arg(ssl_ctx.get(), this);
 
             // create a BIO connected to SSL ciphers
+            //
             std::shared_ptr<BIO> bio(BIO_new_ssl_connect(ssl_ctx.get()), bio_deleter);
             if(!bio)
             {
@@ -1194,7 +1654,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode)
             {
                 // TBD: does this mean we would have a plain connection?
                 bio_log_errors();
-                throw tcp_client_server_initialization_error("failed connecting BIO object with SSL_CTX object");
+                throw tcp_client_server_initialization_error("failed retrieving the SSL contact from BIO object");
             }
 
             // allow automatic retries in case the connection somehow needs
@@ -1202,6 +1662,33 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode)
             // where we connect to a secure payment gateway?)
             //
             SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+
+            // setup the Server Name Indication (SNI)
+            //
+            if(opt.get_sni())
+            {
+                std::string host(opt.get_host());
+                struct in6_addr ignore;
+                if(host.empty()
+                && inet_pton(AF_INET, addr.c_str(), &ignore) == 0   // must fail
+                && inet_pton(AF_INET6, addr.c_str(), &ignore) == 0) // must fail
+                {
+                    // addr is not an IP address written as is,
+                    // it must be a hostname
+                    //
+                    host = addr;
+                }
+                if(!host.empty())
+                {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+                    // not only old style cast (but it's C, so expected)
+                    // but they want a non-constant pointer!?
+                    //
+                    SSL_set_tlsext_host_name(ssl, const_cast<char *>(host.c_str()));
+#pragma GCC diagnostic pop
+                }
+            }
 
             // TODO: other SSL initialization?
 
@@ -1212,6 +1699,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode)
 #pragma GCC diagnostic pop
 
             // connect to the server (open the socket)
+            //
             if(BIO_do_connect(bio.get()) <= 0)
             {
                 bio_log_errors();
@@ -1219,6 +1707,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode)
             }
 
             // encryption handshake
+            //
             if(BIO_do_handshake(bio.get()) != 1)
             {
                 bio_log_errors();
@@ -1264,6 +1753,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode)
     case mode_t::MODE_PLAIN:
         {
             // create a plain BIO connection
+            //
             std::shared_ptr<BIO> bio(BIO_new(BIO_s_connect()), bio_deleter);
             if(!bio)
             {
@@ -1576,6 +2066,7 @@ int bio_client::read(char * buf, size_t size)
     if(r <= -2)
     {
         // the BIO is not implemented
+        //
         bio_log_errors();
         errno = EIO;
         return -1;

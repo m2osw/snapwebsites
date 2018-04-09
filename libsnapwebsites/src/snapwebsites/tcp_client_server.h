@@ -20,15 +20,25 @@
 // (TODO: move to .cpp once we have the impl!)
 #define OPENSSL_THREAD_DEFINES
 
-#include <snapwebsites/addr.h>
+// snapwebsites lib
+//
+#include "snapwebsites/addr.h"
 
+// Qt lib
+//
 #include <QString>
 
+// C++ lib
+//
 #include <stdexcept>
 #include <memory>
 
+// C lib
+//
 #include <arpa/inet.h>
 
+// OpenSSL lib
+//
 // BIO versions of the TCP client/server
 // TODO: move to an impl
 #include <openssl/bio.h>
@@ -150,7 +160,39 @@ public:
         MODE_ALWAYS_SECURE      // fails if cannot be 100% secure
     };
 
-                        bio_client(std::string const & addr, int port, mode_t mode = mode_t::MODE_PLAIN);
+    class options
+    {
+    public:
+        typedef uint32_t            ssl_options_t;
+        static int const            MAX_VERIFICATION_DEPTH = 100;
+        static ssl_options_t const  DEFAULT_SSL_OPTIONS = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_COMPRESSION;
+
+                            options();
+
+        void                set_verification_depth(size_t depth);
+        size_t              get_verification_depth() const;
+
+        void                set_ssl_options(ssl_options_t ssl_options);
+        ssl_options_t       get_ssl_options() const;
+
+        void                set_ssl_certificate_path(std::string const path);
+        std::string const & get_ssl_certificate_path() const;
+
+        void                set_sni(bool sni = true);
+        bool                get_sni() const;
+
+        void                set_host(std::string const & host);
+        std::string const & get_host() const;
+
+    private:
+        size_t              f_verification_depth = 4;
+        uint32_t            f_ssl_options = DEFAULT_SSL_OPTIONS;
+        std::string         f_ssl_certificate_path = "/etc/ssl/certs";
+        bool                f_sni = true;
+        std::string         f_host;
+    };
+
+                        bio_client(std::string const & addr, int port, mode_t mode = mode_t::MODE_PLAIN, options const & opt = options());
                         bio_client(bio_client const & src) = delete;
     bio_client &        operator = (bio_client const & rhs) = delete;
                         ~bio_client();
