@@ -80,6 +80,7 @@ set( HEADERS
     lockfile.h
     log.h
     mail_exchanger.h
+    matrix.h
     minmax.h
     mkdir_p.h
     mkgmtime.h
