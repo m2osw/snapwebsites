@@ -289,6 +289,14 @@ std::string const & password::get_digest() const
  * Also remove characters that can cause problems for users (i.e. spaces,
  * ampersand, look alike characters, etc.)
  *
+ * \todo
+ * Look in the RAND_seed() or maybe RAND_status() and RAND_load_file()
+ * functions and whether the OpenSSL RAND_*() interface requires an
+ * initialization because cURL does have such and it could be that we
+ * need it too. In that case, I would suggest we create a separate
+ * contrib library for random numbers. That library would be responsible
+ * for generating the numbers automatically for us.
+ *
  * \param[in] min_length  The minimum length of the password.
  */
 void password::generate_password(int min_length)
