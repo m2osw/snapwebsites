@@ -452,7 +452,7 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
                     ++s;
                 }
 
-                f_error_messages += "found a spurious equal sign in a weighted st.\n";
+                f_error_messages += "found a spurious equal sign in a weighted string.\n";
             }
         }
         f_parts.push_back(part);
