@@ -43,6 +43,7 @@ if(CATCH_FOUND)
 
         # actual tests
         catch_email.cpp
+        catch_matrix.cpp
         catch_snapuri.cpp
         catch_weightedhttpstrings.cpp
     )
