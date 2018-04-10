@@ -299,6 +299,8 @@ void bio_initialize()
  *
  * This function reads all existing errors from the OpenSSL library
  * and send them to our logs.
+ *
+ * \param[in] sni  Whether SNI is ON (true) or OFF (false).
  */
 void bio_log_errors()
 {
@@ -1665,6 +1667,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
 
             // setup the Server Name Indication (SNI)
             //
+            bool using_sni(false);
             if(opt.get_sni())
             {
                 std::string host(opt.get_host());
@@ -1687,6 +1690,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
                     //
                     SSL_set_tlsext_host_name(ssl, const_cast<char *>(host.c_str()));
 #pragma GCC diagnostic pop
+                    using_sni = true;
                 }
             }
 
@@ -1702,6 +1706,12 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
             //
             if(BIO_do_connect(bio.get()) <= 0)
             {
+                if(!using_sni)
+                {
+                    SNAP_LOG_WARNING("the SNI feature is turned off,"
+                            " often failure to connect with SSL is because the SSL Hello message is missing the SNI (Server Name In)."
+                            " See the bio_client::options::set_sni().");
+                }
                 bio_log_errors();
                 throw tcp_client_server_initialization_error("failed connecting BIO object to server");
             }
@@ -1710,8 +1720,16 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
             //
             if(BIO_do_handshake(bio.get()) != 1)
             {
+                if(!using_sni)
+                {
+                    SNAP_LOG_WARNING("the SNI feature is turned off,"
+                            " often failure to connect with SSL is because the SSL Hello message is missing the SNI (Server Name In)."
+                            " See the bio_client::options::set_sni().");
+                }
                 bio_log_errors();
-                throw tcp_client_server_initialization_error("failed establishing a secure BIO connection with server");
+                throw tcp_client_server_initialization_error("failed establishing a secure BIO connection with server, handshake failed."
+                            " Often such failures to process SSL is because the SSL Hello message is missing the SNI (Server Name In)."
+                            " See the bio_client::options::set_sni().");
             }
 
             // verify that the peer certificate was signed by a
