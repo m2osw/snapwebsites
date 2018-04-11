@@ -35,6 +35,10 @@ public:
             //, f_i(i)
             , f_offset(i + j * m.columns())
         {
+            if(i >= m.f_columns)
+            {
+                throw std::out_of_range("used [] operator with too large a row number");
+            }
         }
 
         element_ref & operator = (value_type const v)
@@ -81,8 +85,8 @@ public:
 
     private:
         matrix<T, SIZE> &   f_matrix;
-        //size_type           f_row;
-        //size_type           f_column;
+        //size_type           f_j;
+        //size_type           f_i;
         size_type           f_offset;
     };
 
@@ -93,6 +97,10 @@ public:
             : f_matrix(m)
             , f_j(j)
         {
+            if(j >= m.f_rows)
+            {
+                throw std::out_of_range("used [] operator with too large a row number");
+            }
         }
 
         element_ref operator [] (size_type i)
@@ -118,10 +126,18 @@ public:
             : f_matrix(m)
             , f_j(j)
         {
+            if(j >= m.f_rows)
+            {
+                throw std::out_of_range("used [] operator with too large a row number");
+            }
         }
 
         value_type operator [] (size_type i) const
         {
+            if(i >= f_matrix.f_columns)
+            {
+                throw std::out_of_range("used [] operator with too large a row number");
+            }
             return f_matrix.f_vector[i + f_j * f_matrix.columns()];
         }
 
@@ -139,7 +155,7 @@ public:
         , f_columns(columns)
         , f_vector(rows * columns)
     {
-        identity();
+        initialize();
     }
 
     template<typename V, typename SZ>
@@ -148,7 +164,7 @@ public:
         , f_columns(rhs.f_columns)
         , f_vector(rhs.f_vector.size())
     {
-        identity();
+        initialize();
     }
 
     template<typename V, typename SZ>
@@ -190,6 +206,18 @@ public:
         f_vector.swap(rhs.f_vector);
     }
 
+    void initialize()
+    {
+        if(f_rows == f_columns)
+        {
+            identity();
+        }
+        else
+        {
+            clear();
+        }
+    }
+
     void clear()
     {
         std::fill(f_vector.begin(), f_vector.end(), value_type());
@@ -197,10 +225,10 @@ public:
 
     void identity()
     {
-        for(size_type j(0); j < f_columns; ++j)
+        for(size_type j(0); j < f_rows; ++j)
         {
             size_type const joffset(j * f_columns);
-            for(size_type i(0); i < f_rows; ++i)
+            for(size_type i(0); i < f_columns; ++i)
             {
                 f_vector[i + joffset] =
                     i == j
@@ -228,6 +256,13 @@ public:
         matrix<T, SIZE> t(*this);
         return t *= scalar;
     }
+
+//    At this point I don't know how to make that work...
+//    template<class S, typename V, typename SZ> friend
+//    matrix<V, SZ> operator * (S const & scalar, matrix<V, SZ> const & m)
+//    {
+//        return m * scalar;
+//    }
 
     template<class S>
     matrix<T, SIZE> & operator *= (S const & scalar)
@@ -327,16 +362,37 @@ public:
         return *this *= t;
     }
 
+    /** \brief Compute the inverse of `this` matrix if possible.
+     *
+     * This function computes the matrix determinant to see whether
+     * it can be inverted. If so, it computes the inverse and becomes
+     * that inverse.
+     *
+     * The function returns false if the inverse can't be calculated
+     * and the matrix remains unchanged.
+     *
+     * $$A^{-1} = {1 \over det(A)} adj(A)$$
+     *
+     * \return true if the inverse was successful.
+     */
     bool inverse()
     {
-        // the following is very specific to a 4x4 matrix...
-        //
         if(f_rows != 4
         || f_columns != 4)
         {
-            throw std::runtime_error("inverse() is only implemented for 4x4 matrices at the moment.");
+            double const det(determinant());
+            if(det == static_cast<value_type>(0))
+            {
+                return false;
+            }
+            snap::matrix<double> adj(adjugate());
+
+            *this = adj * (static_cast<value_type>(1) / det);
+            return true;
         }
 
+        // the following is very specific to a 4x4 matrix...
+        //
         value_type temp[4][8], *r[4], m[5];
 
         r[0] = temp[0];
@@ -647,16 +703,144 @@ public:
         return true;
     }
 
-    // https://ncalculators.com/matrix/4x4-inverse-matrix-calculator.htm
-    matrix<T, SIZE> reduce(size_type c) const
+    /** \brief Reduce a matrix by removing one row and one column.
+     *
+     * This function creates a minor duplicate of this matrix with column i
+     * and row j removed.
+     *
+     * The minor is denoted:
+     *
+     * $$M_{ij}$$
+     *
+     * It is a matrix built from $A$ without column `i` and row `j`.
+     *
+     * \note
+     * The matrix must at least be a 2x2 matrix.
+     *
+     * \note
+     * There is a "minor" macro so I named this function minor_matrix().
+     *
+     * \param[in] row  The row to remove.
+     * \param[in] column  The column to remove.
+     *
+     * \return The requested minor matrix.
+     */
+    matrix<T, SIZE> minor_matrix(size_type row, size_type column) const
     {
+        if(f_rows < 2
+        || f_columns < 2)
+        {
+            throw std::runtime_error("minor_matrix() must be called with a matrix which is at least 2x2, although it does not need to be a square matrix");
+        }
+
+        matrix<T, SIZE> p(f_rows - 1, f_columns - 1);
+
+        // we loop using p sizes
+        // the code below ensures the correct input is retrieved
+        //
+        // di -- destination column
+        // dj -- destination row
+        // si -- source column
+        // sj -- source row
+        //
+        for(size_type dj(0); dj < p.f_rows; ++dj)
+        {
+            for(size_type di(0); di < p.f_columns; ++di)
+            {
+                // here we have 4 cases:
+                //
+                //     a11 a12 | a13 | a14 a15
+                //     a21 a22 | a23 | a24 a25
+                //     --------+-----+--------
+                //     a31 a32 | a33 | a34 a35
+                //     --------+-----+--------
+                //     a41 a42 | a43 | a44 a45
+                //     a51 a52 | a53 | a54 a55
+                //
+                // assuming 'row' and 'column' are set to 3 and 3, then
+                // the graph shows the 4 cases as the 4 corners, the
+                // center lines will be removed so they are ignored in
+                // the source
+                //
+                size_type const si(di < column ? di : di + 1);
+                size_type const sj(dj < row    ? dj : dj + 1);
+
+                p.f_vector[di + dj * p.f_columns] = f_vector[si + sj * f_columns];
+            }
+        }
+
+        return p;
     }
 
+    /** \brief Calculate the determinant of this matrix.
+     *
+     * This function calculates the determinant of this matrix:
+     *
+     * $$det(A) = \sum_{\sigma \in S_n} \Big( sgn(\sigma) \prod_{i=1}^{n} a_{i,\sigma_i} \Big)$$
+     *
+     * The function is implemented using a recursive set of calls. It
+     * knows how to calculate a 2x2 matrix. All the ohers use recursive
+     * calls to calculate the final result.
+     *
+     * Let's say you have a 3x3 matrix like this:
+     *
+     * \code
+     *     | a11 a12 a13 |
+     *     | a21 a22 a23 |
+     *     | a31 a32 a33 |
+     * \endcode
+     *
+     * If first calculates the determinant of the 2x2 matrix:
+     *
+     * \code
+     *     | a22 a23 | = a22 x a33 - a23 x a32
+     *     | a32 a33 |
+     * \endcode
+     *
+     * Then multiply that determinant by `a11`.
+     *
+     * Next it calculates the determinant of the 2x2 matrix:
+     *
+     * \code
+     *     | a21 a23 | = a21 x a33 - a23 x a31
+     *     | a31 a33 |
+     * \endcode
+     *
+     * Then multiply that determinant by `a12` and multiply by -1.
+     *
+     * Finally, it calculates the last 2x2 matrix at the bottom left corner.
+     *
+     * \code
+     *     | a21 a22 | = a21 x a32 - a22 x a31
+     *     | a31 a32 |
+     * \endcode
+     *
+     * Then multiply that last determinant by `a13`.
+     *
+     * Finally we sum all three results and that's our determinant for a
+     * 3x3 matrix.
+     *
+     * The determinant of a 4x4 matrix will be calculated in a similar
+     * way by also calculating the determin of all the 3x3 matrices
+     * defined under the first row.
+     *
+     * Source: https://en.wikipedia.org/wiki/Determinant
+     *
+     * \exception runtime_error
+     * If the matrix is not a square matrix, raise a runtime_error exception.
+     *
+     * \return The determinant value.
+     */
     value_type determinant() const
     {
         if(f_rows != f_columns)
         {
             throw std::runtime_error("determinant can only be calculated for square matrices");
+        }
+
+        if(f_columns == 1)
+        {
+            return f_vector[0];
         }
 
         if(f_columns == 2)
@@ -668,48 +852,127 @@ public:
         value_type determinant = value_type();
 
         value_type sign = static_cast<value_type>(1);
-        for(size_type c(2); c < f_columns; ++c)
+        for(size_type c(0); c < f_columns; ++c)
         {
-            // create a smaller matrix
+            // create a minor matrix
             //
-            matrix<T, SIZE> p(f_rows - 1, f_columns - 1);
+            matrix<T, SIZE> p(minor_matrix(0, c));
 
-            for(size_type j(1); j < f_rows; ++j)
-            {
-                // this is the offset in 'this' matrix, it's one
-                // too far for the destination row
-                //
-                value_type const joffset(j * f_columns);
-                for(size_type i(0); i < f_columns; ++i)
-                {
-                    if(i < c)
-                    {
-                        // before 'c', copy one to one
-                        //
-                        p.f_vector[i + joffset - f_columns] = f_vector[i + joffset];
-                    }
-                    else if(i > c)
-                    {
-                        // after 'c', copy to the previous column
-                        //
-                        p.f_vector[i - 1 + joffset - f_columns] = f_vector[i + joffset];
-                    }
-                    // else if(i == c) -- we skip this column, that's the one that gets removed
-                }
-            }
-
-            // add to the determinant
+            // add to the determinant for that column
+            // (number of row 0 column 'c')
             //
             determinant += sign
-                         * f_vector[c + 0 * 0]
+                         * f_vector[c + 0 * f_columns]
                          * p.determinant();
 
             // swap the sign
             //
             sign *= static_cast<value_type>(-1);
         }
+
+        return determinant;
     }
 
+    /** \brief Swap the rows and columns of a matrix.
+     *
+     * This function returns the transpose of this matrix.
+     *
+     * Generally noted as:
+     *
+     * $$A^T$$
+     *
+     * The definition of the transpose is:
+     *
+     * $$[A^T]_{ij} = [A]_{ji}$$
+     *
+     * The resulting matrix has a number of columns equal to 'this' matrix
+     * rows and vice versa.
+     *
+     * \return A new matrix representing the transpose of 'this' matrix.
+     */
+    matrix<T, SIZE> transpose() const
+    {
+        // 'm' has its number of rows and columns swapped compared
+        // to 'this'
+        matrix<T, SIZE> m(f_columns, f_rows);
+
+        for(size_type j(0); j < f_rows; ++j)
+        {
+            for(size_type i(0); i < f_columns; ++i)
+            {
+                // we could also have used "j + i * f_rows" on the left
+                // but I think it's more confusing
+                //
+                m.f_vector[j + i * m.f_columns] = f_vector[i + j * f_columns];
+            }
+        }
+
+        return m;
+    }
+
+    /** \brief This function calculates the adjugate of this matrix.
+     *
+     * \return The adjugate of this matrix.
+     */
+    matrix<T, SIZE> adjugate() const
+    {
+        if(f_rows != f_columns)
+        {
+            // is that true?
+            //
+            throw std::runtime_error("adjugate can only be calculated for square matrices");
+        }
+
+        matrix<T, SIZE> r(f_rows, f_columns);
+
+        // det(A) when A is 1x1 equals | 1 |
+        // which is the default 'r'
+        //
+        if(f_columns != 1)
+        {
+            //if(f_columns == 2)
+            //{
+            //    // the 2x2 matrix is handled as a special case just so it goes
+            //    // faster but not so much more than that
+            //    //
+            //    //   adj | a b | = |  d -b |
+            //    //       | c d |   | -c  a |
+            //    //
+            //    r.f_vector[0 + 0 * 2] =  f_vector[1 + 1 * 2];
+            //    r.f_vector[1 + 0 * 2] = -f_vector[1 + 0 * 2];
+            //    r.f_vector[0 + 1 * 2] = -f_vector[0 + 1 * 2];
+            //    r.f_vector[1 + 1 * 2] =  f_vector[0 + 0 * 2];
+            //}
+            //else
+            {
+                // for larger matrices we use a loop and calculate the determinant
+                // for each new value with the "rest" of the matrix at that point
+                //
+                for(size_type j(0); j < f_rows; ++j)
+                {
+                    for(size_type i(0); i < f_columns; ++i)
+                    {
+                        matrix<T, SIZE> p(minor_matrix(j, i));
+                        r.f_vector[i + j * r.f_columns] = static_cast<value_type>(((i + j) & 1) == 0 ? 1 : -1) * p.determinant();
+                    }
+                }
+
+                return r.transpose();
+            }
+        }
+
+        return r;
+    }
+
+    /** \brief Add a scale to 'this' matrix.
+     *
+     * This function adds the specified scalar to the matrix. This adds
+     * the specified amount to all the elements of the matrix.
+     *
+     * $$[A]_{ij} \leftarrow [A]_{ij} + scalar$$
+     *
+     * \param[in] scalar  The scalar to add to this matrix.
+     */
     template<class S>
     matrix<T, SIZE> operator + (S const & scalar) const
     {
@@ -827,6 +1090,16 @@ private:
 
 
 
+/** \brief Output a matrix to a basic_ostream.
+ *
+ * This function allows one to print out a matrix. The function attempts
+ * to properly format the matrix inorder o mak readable.
+ *
+ * \param[in] out  The output stream where the matrix gets written.
+ * \param[in] matrix  The actual matrix that is to be printed.
+ *
+ * \return A reference to the basic_ostream object.
+ */
 template<class E, class S, class T, class SIZE>
 std::basic_ostream<E, S> & operator << (std::basic_ostream<E, S> & out, snap::matrix<T, SIZE> const & m)
 {

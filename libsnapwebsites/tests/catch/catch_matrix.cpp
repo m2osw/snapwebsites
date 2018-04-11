@@ -434,7 +434,7 @@ TEST_CASE("matrix_init", "[matrix]")
             REQUIRE(c2[3][2] == r32);
             REQUIRE(c2[3][3] == r33);
 
-            std::cout << c2 << std::endl;
+            //std::cout << c2 << std::endl;
 
             c2.swap(m);
 
@@ -1924,6 +1924,576 @@ TEST_CASE("matrix_additive", "[matrix]")
 }
 
 
+TEST_CASE("matrix_util", "[matrix]")
+{
+    // various ways to change the data order, minor, enlarge
+    //
+    GIVEN("move data")
+    {
+        SECTION("minor")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(4, 4);
+
+            REQUIRE(a.rows() == 4);
+            REQUIRE(a.columns() == 4);
+
+            double const a00(frand());
+            double const a01(frand());
+            double const a02(frand());
+            double const a03(frand());
+            double const a10(frand());
+            double const a11(frand());
+            double const a12(frand());
+            double const a13(frand());
+            double const a20(frand());
+            double const a21(frand());
+            double const a22(frand());
+            double const a23(frand());
+            double const a30(frand());
+            double const a31(frand());
+            double const a32(frand());
+            double const a33(frand());
+
+            a[0][0] = a00;
+            a[0][1] = a01;
+            a[0][2] = a02;
+            a[0][3] = a03;
+            a[1][0] = a10;
+            a[1][1] = a11;
+            a[1][2] = a12;
+            a[1][3] = a13;
+            a[2][0] = a20;
+            a[2][1] = a21;
+            a[2][2] = a22;
+            a[2][3] = a23;
+            a[3][0] = a30;
+            a[3][1] = a31;
+            a[3][2] = a32;
+            a[3][3] = a33;
+
+            REQUIRE(a[0][0] == a00);
+            REQUIRE(a[0][1] == a01);
+            REQUIRE(a[0][2] == a02);
+            REQUIRE(a[0][3] == a03);
+            REQUIRE(a[1][0] == a10);
+            REQUIRE(a[1][1] == a11);
+            REQUIRE(a[1][2] == a12);
+            REQUIRE(a[1][3] == a13);
+            REQUIRE(a[2][0] == a20);
+            REQUIRE(a[2][1] == a21);
+            REQUIRE(a[2][2] == a22);
+            REQUIRE(a[2][3] == a23);
+            REQUIRE(a[3][0] == a30);
+            REQUIRE(a[3][1] == a31);
+            REQUIRE(a[3][2] == a32);
+            REQUIRE(a[3][3] == a33);
+
+            {
+                snap::matrix<double> p = a.minor_matrix(0, 0);
+
+                REQUIRE(p.rows() == 3);
+                REQUIRE(p.columns() == 3);
+
+                REQUIRE(p[0][0] == a11);
+                REQUIRE(p[0][1] == a12);
+                REQUIRE(p[0][2] == a13);
+                REQUIRE(p[1][0] == a21);
+                REQUIRE(p[1][1] == a22);
+                REQUIRE(p[1][2] == a23);
+                REQUIRE(p[2][0] == a31);
+                REQUIRE(p[2][1] == a32);
+                REQUIRE(p[2][2] == a33);
+            }
+
+            {
+                snap::matrix<double> p = a.minor_matrix(0, 1);
+
+                REQUIRE(p.rows() == 3);
+                REQUIRE(p.columns() == 3);
+
+                REQUIRE(p[0][0] == a10);
+                REQUIRE(p[0][1] == a12);
+                REQUIRE(p[0][2] == a13);
+                REQUIRE(p[1][0] == a20);
+                REQUIRE(p[1][1] == a22);
+                REQUIRE(p[1][2] == a23);
+                REQUIRE(p[2][0] == a30);
+                REQUIRE(p[2][1] == a32);
+                REQUIRE(p[2][2] == a33);
+            }
+
+            {
+                snap::matrix<double> p = a.minor_matrix(0, 2);
+
+                REQUIRE(p.rows() == 3);
+                REQUIRE(p.columns() == 3);
+
+                REQUIRE(p[0][0] == a10);
+                REQUIRE(p[0][1] == a11);
+                REQUIRE(p[0][2] == a13);
+                REQUIRE(p[1][0] == a20);
+                REQUIRE(p[1][1] == a21);
+                REQUIRE(p[1][2] == a23);
+                REQUIRE(p[2][0] == a30);
+                REQUIRE(p[2][1] == a31);
+                REQUIRE(p[2][2] == a33);
+            }
+
+            {
+                snap::matrix<double> p = a.minor_matrix(0, 3);
+
+                REQUIRE(p.rows() == 3);
+                REQUIRE(p.columns() == 3);
+
+                REQUIRE(p[0][0] == a10);
+                REQUIRE(p[0][1] == a11);
+                REQUIRE(p[0][2] == a12);
+                REQUIRE(p[1][0] == a20);
+                REQUIRE(p[1][1] == a21);
+                REQUIRE(p[1][2] == a22);
+                REQUIRE(p[2][0] == a30);
+                REQUIRE(p[2][1] == a31);
+                REQUIRE(p[2][2] == a32);
+            }
+
+            {
+                snap::matrix<double> p = a.minor_matrix(2, 1);
+
+                REQUIRE(p.rows() == 3);
+                REQUIRE(p.columns() == 3);
+
+                REQUIRE(p[0][0] == a00);
+                REQUIRE(p[0][1] == a02);
+                REQUIRE(p[0][2] == a03);
+                REQUIRE(p[1][0] == a10);
+                REQUIRE(p[1][1] == a12);
+                REQUIRE(p[1][2] == a13);
+                REQUIRE(p[2][0] == a30);
+                REQUIRE(p[2][1] == a32);
+                REQUIRE(p[2][2] == a33);
+            }
+        }
+
+        SECTION("transpose 4x4")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(4, 4);
+
+            REQUIRE(a.rows() == 4);
+            REQUIRE(a.columns() == 4);
+
+            double const a00(frand());
+            double const a01(frand());
+            double const a02(frand());
+            double const a03(frand());
+            double const a10(frand());
+            double const a11(frand());
+            double const a12(frand());
+            double const a13(frand());
+            double const a20(frand());
+            double const a21(frand());
+            double const a22(frand());
+            double const a23(frand());
+            double const a30(frand());
+            double const a31(frand());
+            double const a32(frand());
+            double const a33(frand());
+
+            a[0][0] = a00;
+            a[0][1] = a01;
+            a[0][2] = a02;
+            a[0][3] = a03;
+            a[1][0] = a10;
+            a[1][1] = a11;
+            a[1][2] = a12;
+            a[1][3] = a13;
+            a[2][0] = a20;
+            a[2][1] = a21;
+            a[2][2] = a22;
+            a[2][3] = a23;
+            a[3][0] = a30;
+            a[3][1] = a31;
+            a[3][2] = a32;
+            a[3][3] = a33;
+
+            REQUIRE(a[0][0] == a00);
+            REQUIRE(a[0][1] == a01);
+            REQUIRE(a[0][2] == a02);
+            REQUIRE(a[0][3] == a03);
+            REQUIRE(a[1][0] == a10);
+            REQUIRE(a[1][1] == a11);
+            REQUIRE(a[1][2] == a12);
+            REQUIRE(a[1][3] == a13);
+            REQUIRE(a[2][0] == a20);
+            REQUIRE(a[2][1] == a21);
+            REQUIRE(a[2][2] == a22);
+            REQUIRE(a[2][3] == a23);
+            REQUIRE(a[3][0] == a30);
+            REQUIRE(a[3][1] == a31);
+            REQUIRE(a[3][2] == a32);
+            REQUIRE(a[3][3] == a33);
+
+            snap::matrix<double> t = a.transpose();
+
+            REQUIRE(t.rows() == 4);
+            REQUIRE(t.columns() == 4);
+
+            REQUIRE(t[0][0] == a00);
+            REQUIRE(t[0][1] == a10);
+            REQUIRE(t[0][2] == a20);
+            REQUIRE(t[0][3] == a30);
+            REQUIRE(t[1][0] == a01);
+            REQUIRE(t[1][1] == a11);
+            REQUIRE(t[1][2] == a21);
+            REQUIRE(t[1][3] == a31);
+            REQUIRE(t[2][0] == a02);
+            REQUIRE(t[2][1] == a12);
+            REQUIRE(t[2][2] == a22);
+            REQUIRE(t[2][3] == a32);
+            REQUIRE(t[3][0] == a03);
+            REQUIRE(t[3][1] == a13);
+            REQUIRE(t[3][2] == a23);
+            REQUIRE(t[3][3] == a33);
+        }
+
+        SECTION("transpose 6x2")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(6, 2);
+
+            REQUIRE(a.rows() == 6);
+            REQUIRE(a.columns() == 2);
+
+            double const a00(frand());
+            double const a01(frand());
+            double const a10(frand());
+            double const a11(frand());
+            double const a20(frand());
+            double const a21(frand());
+            double const a30(frand());
+            double const a31(frand());
+            double const a40(frand());
+            double const a41(frand());
+            double const a50(frand());
+            double const a51(frand());
+
+            a[0][0] = a00;
+            a[0][1] = a01;
+            a[1][0] = a10;
+            a[1][1] = a11;
+            a[2][0] = a20;
+            a[2][1] = a21;
+            a[3][0] = a30;
+            a[3][1] = a31;
+            a[4][0] = a40;
+            a[4][1] = a41;
+            a[5][0] = a50;
+            a[5][1] = a51;
+
+            REQUIRE(a[0][0] == a00);
+            REQUIRE(a[0][1] == a01);
+            REQUIRE(a[1][0] == a10);
+            REQUIRE(a[1][1] == a11);
+            REQUIRE(a[2][0] == a20);
+            REQUIRE(a[2][1] == a21);
+            REQUIRE(a[3][0] == a30);
+            REQUIRE(a[3][1] == a31);
+            REQUIRE(a[4][0] == a40);
+            REQUIRE(a[4][1] == a41);
+            REQUIRE(a[5][0] == a50);
+            REQUIRE(a[5][1] == a51);
+
+            snap::matrix<double> t = a.transpose();
+
+            REQUIRE(t.rows() == 2);
+            REQUIRE(t.columns() == 6);
+
+            // original
+            // a00 a01
+            // a10 a11
+            // a20 a21
+            // a30 a31
+            // a40 a41
+            // a50 a51
+            //
+            // transposed
+            // a00 a10 a20 a30 a40 a50
+            // a01 a11 a21 a31 a41 a51
+            //
+
+            REQUIRE(t[0][0] == a00);
+            REQUIRE(t[0][1] == a10);
+            REQUIRE(t[0][2] == a20);
+            REQUIRE(t[0][3] == a30);
+            REQUIRE(t[0][4] == a40);
+            REQUIRE(t[0][5] == a50);
+            REQUIRE(t[1][0] == a01);
+            REQUIRE(t[1][1] == a11);
+            REQUIRE(t[1][2] == a21);
+            REQUIRE(t[1][3] == a31);
+            REQUIRE(t[1][4] == a41);
+            REQUIRE(t[1][5] == a51);
+        }
+
+        SECTION("adjugate 2x2")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(2, 2);
+
+            REQUIRE(a.rows() == 2);
+            REQUIRE(a.columns() == 2);
+
+            double const a00(frand());
+            double const a01(frand());
+            double const a10(frand());
+            double const a11(frand());
+
+            a[0][0] = a00;
+            a[0][1] = a01;
+            a[1][0] = a10;
+            a[1][1] = a11;
+
+            REQUIRE(a[0][0] == a00);
+            REQUIRE(a[0][1] == a01);
+            REQUIRE(a[1][0] == a10);
+            REQUIRE(a[1][1] == a11);
+
+            snap::matrix<double> m = a.adjugate();
+
+            REQUIRE(m.rows() == 2);
+            REQUIRE(m.columns() == 2);
+
+            REQUIRE(m[0][0] ==  a11);
+            REQUIRE(m[0][1] == -a01);
+            REQUIRE(m[1][0] == -a10);
+            REQUIRE(m[1][1] ==  a00);
+        }
+
+        SECTION("adjugate 3x3")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(3, 3);
+
+            REQUIRE(a.rows() == 3);
+            REQUIRE(a.columns() == 3);
+
+            double const a00(frand());
+            double const a01(frand());
+            double const a02(frand());
+            double const a10(frand());
+            double const a11(frand());
+            double const a12(frand());
+            double const a20(frand());
+            double const a21(frand());
+            double const a22(frand());
+
+            a[0][0] = a00;
+            a[0][1] = a01;
+            a[0][2] = a02;
+            a[1][0] = a10;
+            a[1][1] = a11;
+            a[1][2] = a12;
+            a[2][0] = a20;
+            a[2][1] = a21;
+            a[2][2] = a22;
+
+            REQUIRE(a[0][0] == a00);
+            REQUIRE(a[0][1] == a01);
+            REQUIRE(a[0][2] == a02);
+            REQUIRE(a[1][0] == a10);
+            REQUIRE(a[1][1] == a11);
+            REQUIRE(a[1][2] == a12);
+            REQUIRE(a[2][0] == a20);
+            REQUIRE(a[2][1] == a21);
+            REQUIRE(a[2][2] == a22);
+
+            snap::matrix<double> m = a.adjugate();
+
+            REQUIRE(m.rows() == 3);
+            REQUIRE(m.columns() == 3);
+
+            {
+                snap::matrix<double> p(a.minor_matrix(0, 0));
+                double const e(m[0][0] - p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+
+            {
+                snap::matrix<double> p(a.minor_matrix(0, 1));
+                double const e(m[1][0] + p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+
+            {
+                snap::matrix<double> p(a.minor_matrix(0, 2));
+                double const e(m[2][0] - p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+
+            {
+                snap::matrix<double> p(a.minor_matrix(1, 0));
+                double const e(m[0][1] + p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+
+            {
+                snap::matrix<double> p(a.minor_matrix(1, 1));
+                double const e(m[1][1] - p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+
+            {
+                snap::matrix<double> p(a.minor_matrix(1, 2));
+                double const e(m[2][1] + p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+
+            {
+                snap::matrix<double> p(a.minor_matrix(2, 0));
+                double const e(m[0][2] - p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+
+            {
+                snap::matrix<double> p(a.minor_matrix(2, 1));
+                double const e(m[1][2] + p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+
+            {
+                snap::matrix<double> p(a.minor_matrix(2, 2));
+                double const e(m[2][2] - p.determinant());
+                REQUIRE(fabs(e) < 0.0001);
+            }
+        }
+    }
+
+    // calculations such as the determinant
+    //
+    GIVEN("calculations")
+    {
+        SECTION("2x2 determinant")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(2, 2);
+
+            REQUIRE(a.rows() == 2);
+            REQUIRE(a.columns() == 2);
+
+            double const a00(frand());
+            double const a01(frand());
+            double const a10(frand());
+            double const a11(frand());
+
+            a[0][0] = a00;
+            a[0][1] = a01;
+            a[1][0] = a10;
+            a[1][1] = a11;
+
+            REQUIRE(a[0][0] == a00);
+            REQUIRE(a[0][1] == a01);
+            REQUIRE(a[1][0] == a10);
+            REQUIRE(a[1][1] == a11);
+
+            double d(a.determinant());
+
+            //return f_vector[0 + 0 * 2] * f_vector[1 + 1 * 2]
+            //     - f_vector[1 + 0 * 2] * f_vector[0 + 1 * 2];
+            double e = a00 * a11 - a10 * a01;
+
+            REQUIRE(fabs(d - e) < 0.0001);
+        }
+
+        SECTION("3x3 determinant with specific data")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(3, 3);
+
+            REQUIRE(a.rows() == 3);
+            REQUIRE(a.columns() == 3);
+
+            a[0][0] =  5.0;
+            a[0][1] = -2.0;
+            a[0][2] =  1.0;
+            a[1][0] =  0.0;
+            a[1][1] =  3.0;
+            a[1][2] = -1.0;
+            a[2][0] =  2.0;
+            a[2][1] =  0.0;
+            a[2][2] =  7.0;
+
+            double d(a.determinant());
+
+            // we know that the exact answer for this one is 103
+            //
+            REQUIRE(fabs(d - 103.0) < 0.0001);
+        }
+
+        SECTION("3x3 determinant with random data")
+        {
+            // verify 10 times (with different values)
+            //
+            for(int repeat(0); repeat < 10; ++repeat)
+            {
+                // setup A
+                //
+                snap::matrix<double> a(3, 3);
+
+                REQUIRE(a.rows() == 3);
+                REQUIRE(a.columns() == 3);
+
+                double const a00(frand());
+                double const a01(frand());
+                double const a02(frand());
+                double const a10(frand());
+                double const a11(frand());
+                double const a12(frand());
+                double const a20(frand());
+                double const a21(frand());
+                double const a22(frand());
+
+                a[0][0] = a00;
+                a[0][1] = a01;
+                a[0][2] = a02;
+                a[1][0] = a10;
+                a[1][1] = a11;
+                a[1][2] = a12;
+                a[2][0] = a20;
+                a[2][1] = a21;
+                a[2][2] = a22;
+
+                REQUIRE(a[0][0] == a00);
+                REQUIRE(a[0][1] == a01);
+                REQUIRE(a[0][2] == a02);
+                REQUIRE(a[1][0] == a10);
+                REQUIRE(a[1][1] == a11);
+                REQUIRE(a[1][2] == a12);
+                REQUIRE(a[2][0] == a20);
+                REQUIRE(a[2][1] == a21);
+                REQUIRE(a[2][2] == a22);
+
+                double d(a.determinant());
+
+                //return f_vector[0 + 0 * 2] * f_vector[1 + 1 * 2]
+                //     - f_vector[1 + 0 * 2] * f_vector[0 + 1 * 2];
+                double e = a00 * a11 * a22 + a01 * a12 * a20 + a02 * a10 * a21
+                         - a00 * a12 * a21 - a01 * a10 * a22 - a02 * a11 * a20;
+
+                REQUIRE(fabs(d - e) < 0.0001);
+            }
+        }
+    }
+}
+
+
 TEST_CASE("matrix_multiplicative", "[matrix]")
 {
     // create two random 4x4 matrices and make sure the add works
@@ -3241,22 +3811,28 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             REQUIRE(c[3][2] == r[3][2]);
             REQUIRE(c[3][3] == r[3][3]);
 
-            REQUIRE(c[0][0] == a00 / b00);
-            REQUIRE(c[0][1] == a01 / b01);
-            REQUIRE(c[0][2] == a02 / b02);
-            REQUIRE(c[0][3] == a03 / b03);
-            REQUIRE(c[1][0] == a10 / b10);
-            REQUIRE(c[1][1] == a11 / b11);
-            REQUIRE(c[1][2] == a12 / b12);
-            REQUIRE(c[1][3] == a13 / b13);
-            REQUIRE(c[2][0] == a20 / b20);
-            REQUIRE(c[2][1] == a21 / b21);
-            REQUIRE(c[2][2] == a22 / b22);
-            REQUIRE(c[2][3] == a23 / b23);
-            REQUIRE(c[3][0] == a30 / b30);
-            REQUIRE(c[3][1] == a31 / b31);
-            REQUIRE(c[3][2] == a32 / b32);
-            REQUIRE(c[3][3] == a33 / b33);
+            double const determinant(b.determinant());
+            snap::matrix<double> adjugate(b.adjugate());
+
+            snap::matrix<double> inv(adjugate * (1.0 / determinant));
+            snap::matrix<double> div(a * inv);
+
+            REQUIRE(fabs(c[0][0] - div[0][0]) < 0.0001);
+            REQUIRE(fabs(c[0][1] - div[0][1]) < 0.0001);
+            REQUIRE(fabs(c[0][2] - div[0][2]) < 0.0001);
+            REQUIRE(fabs(c[0][3] - div[0][3]) < 0.0001);
+            REQUIRE(fabs(c[1][0] - div[1][0]) < 0.0001);
+            REQUIRE(fabs(c[1][1] - div[1][1]) < 0.0001);
+            REQUIRE(fabs(c[1][2] - div[1][2]) < 0.0001);
+            REQUIRE(fabs(c[1][3] - div[1][3]) < 0.0001);
+            REQUIRE(fabs(c[2][0] - div[2][0]) < 0.0001);
+            REQUIRE(fabs(c[2][1] - div[2][1]) < 0.0001);
+            REQUIRE(fabs(c[2][2] - div[2][2]) < 0.0001);
+            REQUIRE(fabs(c[2][3] - div[2][3]) < 0.0001);
+            REQUIRE(fabs(c[3][0] - div[3][0]) < 0.0001);
+            REQUIRE(fabs(c[3][1] - div[3][1]) < 0.0001);
+            REQUIRE(fabs(c[3][2] - div[3][2]) < 0.0001);
+            REQUIRE(fabs(c[3][3] - div[3][3]) < 0.0001);
         }
 
         SECTION("a-=b")
