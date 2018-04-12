@@ -16,15 +16,40 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// C++ lib
+//
+#include <cctype>
+#include <iostream>
+#include <stdexcept>
+#include <vector>
+
+// QImage
+//
+#include <QImage>
+
+#include <sstream>
+
+
 namespace snap
 {
 
-template<typename T, typename SIZE = size_t>
+template<typename T, typename SIZE = std::size_t>
 class matrix
 {
 public:
     typedef T           value_type;
     typedef SIZE        size_type;
+
+    // The color weights are used to convert RGB to Luminance
+    // With a factor, it's possible to change the color toward or
+    // away from the perfect Luminance if the color is not already
+    // a gray color (see the saturation() function.)
+    //
+    // see https://www.opengl.org/archives/resources/code/samples/advanced/advanced97/notes/node140.html
+    //
+    static value_type constexpr     RED_WEIGHT   = 0.3086;
+    static value_type constexpr     GREEN_WEIGHT = 0.6094;
+    static value_type constexpr     BLUE_WEIGHT  = 0.0820;
 
     class element_ref
     {
@@ -85,8 +110,6 @@ public:
 
     private:
         matrix<T, SIZE> &   f_matrix;
-        //size_type           f_j;
-        //size_type           f_i;
         size_type           f_offset;
     };
 
@@ -282,9 +305,7 @@ public:
     template<typename V, typename SZ>
     matrix<T, SIZE> operator * (matrix<V, SZ> const & m) const
     {
-        if(f_rows != f_columns
-        || m.f_rows != m.f_columns
-        || f_rows != m.f_rows)
+        if(f_columns != m.f_rows)
         {
             // enhance that support with time
             // (i.e. the number of columns of one matrix has to match the
@@ -296,20 +317,23 @@ public:
 
         // temporary buffer
         //
-        matrix<T, SIZE> t(f_rows, f_columns);
+        matrix<T, SIZE> t(f_rows, m.f_columns);
 
-        for(size_type j(0); j < m.f_rows; ++j)
+        for(size_type j(0); j < f_rows; ++j)
         {
             size_type const joffset(j * f_columns);
-            for(size_type i(0); i < f_columns; ++i)
+            for(size_type i(0); i < m.f_columns; ++i)
             {
                 value_type sum = value_type();
+
+                // k goes from 0 to (f_columns == m.f_rows)
+                //
                 for(size_type k(0); k < m.f_rows; ++k)     // sometimes it's X and sometimes it's Y
                 {
-                    sum += m.f_vector[k + joffset]
-                           * f_vector[i + k * f_columns];
+                    sum += f_vector[k + joffset]
+                       * m.f_vector[i + k * m.f_columns];
                 }
-                t.f_vector[i + joffset] = sum;
+                t.f_vector[i + j * t.f_columns] = sum;
             }
         }
 
@@ -381,10 +405,13 @@ public:
         || f_columns != 4)
         {
             double const det(determinant());
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
             if(det == static_cast<value_type>(0))
             {
                 return false;
             }
+#pragma GCC diagnostic pop
             snap::matrix<double> adj(adjugate());
 
             *this = adj * (static_cast<value_type>(1) / det);
@@ -448,6 +475,8 @@ public:
             abs_b = abs_a;
         }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
         if(abs_b == 0.0f)
         {
             return false;
@@ -628,6 +657,7 @@ public:
         if(r[3][3] == 0.0f) {
             return false;
         }
+#pragma GCC diagnostic pop
 
         // back substitute
         /* 3 */
@@ -1054,8 +1084,8 @@ public:
         return t -= m;
     }
 
-    template<class V>
-    matrix<T> & operator -= (matrix<V> const & m)
+    template<class V, typename SZ>
+    matrix<T, SIZE> & operator -= (matrix<V, SZ> const & m)
     {
         if(f_rows    != m.f_rows
         || f_columns != m.f_columns)
@@ -1073,6 +1103,282 @@ public:
         }
 
         return *this;
+    }
+
+
+    /** \brief Apply a scaling factor to this matrix.
+     *
+     * This function multiplies 'this' matrix by a scaling factor and
+     * returns the result. 'this' does not get changed.
+     *
+     * The scale matrix looks like:
+     *
+     * $$
+     * \begin{bmatrix}
+     *       brightness_r & 0 & 0 & 0
+     *    \\ 0 & brightness_g & 0 & 0
+     *    \\ 0 & 0 & brightness_b & 0
+     *    \\ 0 & 0 & 0 & 1
+     * \end{bmatrix}
+     * $$
+     *
+     * The 'r', 'g', 'b' indices represent the RGB colors if one wants to
+     * scale just one color at a time although this function only offers
+     * to set all of the fields to the same value \p s.
+     *
+     * See:
+     * http://www.graficaobscura.com/matrix/index.html
+     *
+     * \param[in] b  The scaling factor to apply to this matrix.
+     *
+     * \return 'this' x 'brightness'
+     */
+    template<typename S>
+    matrix<T, SIZE> brightness(S const b) const
+    {
+        if(f_rows    != 4
+        || f_columns != 4)
+        {
+            throw std::runtime_error("scale() is only for 4x4 matrices at this time");
+        }
+
+        matrix<T, SIZE> m(4, 4);
+        m[0][0] = b;
+        m[1][1] = b;
+        m[2][2] = b;
+
+        return *this * m;
+    }
+
+
+    /** \brief Apply an RGB color saturation to this matrix.
+     *
+     * This function applies the saturation matrix defined below to
+     * 'this' matrix. When the saturation parameter is set to zero (0)
+     * the function transforms the all colors to gray. When the saturation
+     * is set to one (1), the color does not get changed.
+     *
+     * The saturation matrix:
+     *
+     * $$
+     * \begin{bmatrix}
+     *     0.3086 \times ( 1 - saturation) + saturation  & 0.3086 \times ( 1 - saturation)               & 0.3086 \times ( 1 - saturation)                & 0
+     *  \\ 0.6094 \times ( 1 - saturation)               & 0.6094 \times ( 1 - saturation) + saturation  & 0.6094 \times ( 1 - saturation)                & 0
+     *  \\ 0.0820 \times ( 1 - saturation)               & 0.0820 \times ( 1 - saturation)               & 0.0820 \times ( 1 - saturation) + saturation   & 0
+     *  \\ 0                                             & 0                                             & 0                                              & 1
+     * \end{bmatrix}
+     * $$
+     *
+     * See:
+     * http://www.graficaobscura.com/matrix/index.html
+     *
+     * \param[in] s  How close or far to correct the color toward saturation.
+     *
+     * \return 'this' x 'scale'
+     */
+    template<typename S>
+    matrix<T, SIZE> saturation(S const s) const
+    {
+        if(f_rows    != 4
+        || f_columns != 4)
+        {
+            throw std::runtime_error("scale() is only for 4x4 matrices at this time");
+        }
+
+        matrix<T, SIZE> m(4, 4);
+
+        value_type const ns(static_cast<value_type>(s));
+        value_type const os(static_cast<value_type>(1) - static_cast<value_type>(s));
+
+        m[0][0] = RED_WEIGHT * os + ns;
+        m[0][1] = RED_WEIGHT * os;
+        m[0][2] = RED_WEIGHT * os;
+
+        m[1][0] = GREEN_WEIGHT * os;
+        m[1][1] = GREEN_WEIGHT * os + ns;
+        m[1][2] = GREEN_WEIGHT * os;
+
+        m[2][0] = BLUE_WEIGHT * os;
+        m[2][1] = BLUE_WEIGHT * os;
+        m[2][2] = BLUE_WEIGHT * os + ns;
+
+        return *this * m;
+    }
+
+
+    /** \brief Apply a hue correction.
+     *
+     * This function applies a hue correction to 'this' matrix.
+     *
+     * The hue correction makes use of the rotation around the red
+     * and green axis, then a skew to take luminace in account.
+     * At that point it rotates the color. Finally, the function
+     * reverses the skew and rotate back around the green and red
+     * axis.
+     *
+     * The following is the list of matrices used to rotate the hue:
+     *
+     * Rotation around the Red axis (Rr):
+     *
+     * $$
+     * R_r =
+     * \begin{bmatrix}
+     *       1 &  0                  & 0                  & 0
+     *    \\ 0 &  {1 \over \sqrt 2 } & {1 \over \sqrt 2 } & 0
+     *    \\ 0 & -{1 \over \sqrt 2 } & {1 \over \sqrt 2 } & 0
+     *    \\ 0 &  0                  & 0                  & 1
+     * \end{bmatrix}
+     * $$
+     *
+     * \note
+     * The $1 \over \sqrt 2$ is $sin ( \pi \over 4 )$ and
+     * $cos ( \pi \over 4 )$.
+     *
+     * Rotation around the Green axis (Rg):
+     *
+     * $$
+     * R_g =
+     * \begin{bmatrix}
+     *       1 & 0 & 0 & 0
+     *    \\ 0 & {\sqrt 2 \over \sqrt 3} & -{1 \over \sqrt 3} & 0
+     *    \\ 0 & {1 \over \sqrt 3} & {\sqrt 2 \over \sqrt 3} & 0
+     *    \\ 0 & 0 & 0 & 1
+     * \end{bmatrix}
+     * $$
+     *
+     * \note
+     * The $\sqrt 2 \over \sqrt 3$ and $1 \over \sqrt 3$ are sin and
+     * cos as well. These take the first rotation in account (i.e.
+     * so it is again a 45° angle but applied after the 45° angle
+     * applied to the red axis.)
+     *
+     * Combine both rotations:
+     *
+     * $$
+     * R_{rg} = R_r R_g
+     * $$
+     *
+     * Since colors are linear but not at a similar angle, we want to
+     * unskew them for which we need to use the luminance. So here we
+     * compute the luminance of the color.
+     *
+     * $$
+     * \begin{bmatrix}
+     *        L_r
+     *     \\ L_g
+     *     \\ L_b
+     *     \\ 0
+     * \end{bmatrix}
+     * =
+     * R_{rg}
+     * \begin{bmatrix}
+     *        W_r
+     *     \\ W_g
+     *     \\ W_b
+     *     \\ 0
+     * \end{bmatrix}
+     * $$
+     *
+     * Now we define a rotation matrix for the blue axis. This one uses
+     * a variable as the angle. This is the actual rotation angle which
+     * can go from 0 to $2 \pi$:
+     *
+     * $$
+     * R_b =
+     * \begin{bmatrix}
+     *       cos( \theta )  & sin( \theta ) & 0 & 0
+     *    \\ -sin( \theta ) & cos( \theta ) & 0 & 0
+     *    \\ 0              & 0             & 1 & 0
+     *    \\ 0              & 0             & 0 & 1
+     * \end{bmatrix}
+     * $$
+     *
+     * Now we have all the matrices to caculate the hue rotation
+     * of all the components of an image:
+     *
+     * $$
+     * H = R_{rg} S R_b S^{-1} R_{rg}^{-1}
+     * $$
+     *
+     * $H$ can then be used as in:
+     *
+     * $$
+     * \begin{bmatrix}
+     *      R'
+     *   \\ G'
+     *   \\ B'
+     * \end{bmatrix}
+     * =
+     * H
+     * \begin{bmatrix}
+     *      R
+     *   \\ G
+     *   \\ B
+     * \end{bmatrix}
+     * $$
+     *
+     * See:
+     * http://www.graficaobscura.com/matrix/index.html
+     *
+     * \param[in] h  The amount of rotation, an angle in radian.
+     *
+     * \return 'this' rotated around the hue axis by \p h
+     */
+    template<typename S>
+    matrix<T, SIZE> hue(S const h) const
+    {
+        if(f_rows    != 4
+        || f_columns != 4)
+        {
+            throw std::runtime_error("scale() is only for 4x4 matrices at this time");
+        }
+
+        // $R_r$ -- rotation around red axis
+        //
+        matrix<T, SIZE> r_r(4, 4);
+        value_type const inv_sqrt_2 = static_cast<value_type>(1) / sqrt(static_cast<value_type>(2));
+        r_r[1][1] =  inv_sqrt_2;
+        r_r[1][2] =  inv_sqrt_2;
+        r_r[2][1] = -inv_sqrt_2;
+        r_r[2][2] =  inv_sqrt_2;
+
+        // $R_g$ -- rotation around green axis
+        //
+        matrix<T, SIZE> r_g(4, 4);
+        value_type const sqrt_2_over_sqrt_3 = sqrt(static_cast<value_type>(2)) / sqrt(static_cast<value_type>(3));
+        value_type const minus_inv_sqrt_3 = -static_cast<value_type>(1) / sqrt(static_cast<value_type>(3));
+        r_r[0][0] =  sqrt_2_over_sqrt_3;
+        r_r[0][2] =  minus_inv_sqrt_3;
+        r_r[2][1] = -minus_inv_sqrt_3;
+        r_r[2][2] =  sqrt_2_over_sqrt_3;
+
+        // $R_{rg}$ -- the product or $R_r$ and $R_g$
+        //
+        matrix<T, SIZE> r_rg(r_r * r_g);
+
+        // Luminance Vector
+        //
+        matrix<T, SIZE> l(4, 1);
+        l[0][0] = RED_WEIGHT;
+        l[1][0] = GREEN_WEIGHT;
+        l[2][0] = BLUE_WEIGHT;
+        l[3][0] = 0;
+
+        matrix<T, SIZE> s(r_rg * l);
+
+        // Rotate blue
+        //
+        matrix<T, SIZE> r_b(4, 4);
+        value_type const rot_cos = cos(static_cast<value_type>(h));
+        value_type const rot_sin = sin(static_cast<value_type>(h));
+        r_b[0][0] =  rot_cos;
+        r_b[0][1] =  rot_sin;
+        r_b[1][0] = -rot_sin;
+        r_b[1][1] =  rot_cos;
+
+        // $H = R_{rg} S R_b S^{-1} R_{rg}^{-1}$
+        //
+        return r_rg * s * r_b / s / r_rg;
     }
 
 private:

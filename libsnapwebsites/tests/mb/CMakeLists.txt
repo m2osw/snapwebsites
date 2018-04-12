@@ -65,5 +65,18 @@ target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
 add_test( test_email ${PROJECT_NAME} )
 
 
+##
+## Test that the color matrices work as expected
+##
+project(test_color_matrix)
+
+add_executable( ${PROJECT_NAME}
+    test_color_matrix.cpp
+)
+target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
+
+add_test( test_color_matrix ${PROJECT_NAME} )
+
+
 
 # vim: ts=4 sw=4 et

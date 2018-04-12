@@ -3029,28 +3029,46 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
 //std::cout << "B = " << b << std::endl;
 //std::cout << "C = " << c << std::endl;
 
+            REQUIRE(c[0][0] == a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30);
+            REQUIRE(c[0][1] == a00 * b01 + a01 * b11 + a02 * b21 + a03 * b31);
+            REQUIRE(c[0][2] == a00 * b02 + a01 * b12 + a02 * b22 + a03 * b32);
+            REQUIRE(c[0][3] == a00 * b03 + a01 * b13 + a02 * b23 + a03 * b33);
+
+            REQUIRE(c[1][0] == a10 * b00 + a11 * b10 + a12 * b20 + a13 * b30);
+            REQUIRE(c[1][1] == a10 * b01 + a11 * b11 + a12 * b21 + a13 * b31);
+            REQUIRE(c[1][2] == a10 * b02 + a11 * b12 + a12 * b22 + a13 * b32);
+            REQUIRE(c[1][3] == a10 * b03 + a11 * b13 + a12 * b23 + a13 * b33);
+
+            REQUIRE(c[2][0] == a20 * b00 + a21 * b10 + a22 * b20 + a23 * b30);
+            REQUIRE(c[2][1] == a20 * b01 + a21 * b11 + a22 * b21 + a23 * b31);
+            REQUIRE(c[2][2] == a20 * b02 + a21 * b12 + a22 * b22 + a23 * b32);
+            REQUIRE(c[2][3] == a20 * b03 + a21 * b13 + a22 * b23 + a23 * b33);
+
+            REQUIRE(c[3][0] == a30 * b00 + a31 * b10 + a32 * b20 + a33 * b30);
+            REQUIRE(c[3][1] == a30 * b01 + a31 * b11 + a32 * b21 + a33 * b31);
+            REQUIRE(c[3][2] == a30 * b02 + a31 * b12 + a32 * b22 + a33 * b32);
+            REQUIRE(c[3][3] == a30 * b03 + a31 * b13 + a32 * b23 + a33 * b33);
+
             // if swapped it would equal this instead
-            //REQUIRE(c[0][0] == a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30);
+            //REQUIRE(c[0][0] == a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03);
+            //REQUIRE(c[0][1] == a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03);
+            //REQUIRE(c[0][2] == a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03);
+            //REQUIRE(c[0][3] == a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03);
 
-            REQUIRE(c[0][0] == a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03);
-            REQUIRE(c[0][1] == a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03);
-            REQUIRE(c[0][2] == a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03);
-            REQUIRE(c[0][3] == a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03);
+            //REQUIRE(c[1][0] == a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13);
+            //REQUIRE(c[1][1] == a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13);
+            //REQUIRE(c[1][2] == a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13);
+            //REQUIRE(c[1][3] == a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13);
 
-            REQUIRE(c[1][0] == a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13);
-            REQUIRE(c[1][1] == a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13);
-            REQUIRE(c[1][2] == a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13);
-            REQUIRE(c[1][3] == a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13);
+            //REQUIRE(c[2][0] == a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23);
+            //REQUIRE(c[2][1] == a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23);
+            //REQUIRE(c[2][2] == a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23);
+            //REQUIRE(c[2][3] == a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23);
 
-            REQUIRE(c[2][0] == a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23);
-            REQUIRE(c[2][1] == a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23);
-            REQUIRE(c[2][2] == a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23);
-            REQUIRE(c[2][3] == a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23);
-
-            REQUIRE(c[3][0] == a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33);
-            REQUIRE(c[3][1] == a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33);
-            REQUIRE(c[3][2] == a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33);
-            REQUIRE(c[3][3] == a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33);
+            //REQUIRE(c[3][0] == a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33);
+            //REQUIRE(c[3][1] == a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33);
+            //REQUIRE(c[3][2] == a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33);
+            //REQUIRE(c[3][3] == a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33);
         }
 
         SECTION("a*=b")
@@ -3211,25 +3229,45 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             REQUIRE(b[3][2] == b32);
             REQUIRE(b[3][3] == b33);
 
-            REQUIRE(a[0][0] == a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03);
-            REQUIRE(a[0][1] == a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03);
-            REQUIRE(a[0][2] == a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03);
-            REQUIRE(a[0][3] == a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03);
+            REQUIRE(a[0][0] == a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30);
+            REQUIRE(a[0][1] == a00 * b01 + a01 * b11 + a02 * b21 + a03 * b31);
+            REQUIRE(a[0][2] == a00 * b02 + a01 * b12 + a02 * b22 + a03 * b32);
+            REQUIRE(a[0][3] == a00 * b03 + a01 * b13 + a02 * b23 + a03 * b33);
 
-            REQUIRE(a[1][0] == a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13);
-            REQUIRE(a[1][1] == a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13);
-            REQUIRE(a[1][2] == a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13);
-            REQUIRE(a[1][3] == a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13);
+            REQUIRE(a[1][0] == a10 * b00 + a11 * b10 + a12 * b20 + a13 * b30);
+            REQUIRE(a[1][1] == a10 * b01 + a11 * b11 + a12 * b21 + a13 * b31);
+            REQUIRE(a[1][2] == a10 * b02 + a11 * b12 + a12 * b22 + a13 * b32);
+            REQUIRE(a[1][3] == a10 * b03 + a11 * b13 + a12 * b23 + a13 * b33);
 
-            REQUIRE(a[2][0] == a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23);
-            REQUIRE(a[2][1] == a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23);
-            REQUIRE(a[2][2] == a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23);
-            REQUIRE(a[2][3] == a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23);
+            REQUIRE(a[2][0] == a20 * b00 + a21 * b10 + a22 * b20 + a23 * b30);
+            REQUIRE(a[2][1] == a20 * b01 + a21 * b11 + a22 * b21 + a23 * b31);
+            REQUIRE(a[2][2] == a20 * b02 + a21 * b12 + a22 * b22 + a23 * b32);
+            REQUIRE(a[2][3] == a20 * b03 + a21 * b13 + a22 * b23 + a23 * b33);
 
-            REQUIRE(a[3][0] == a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33);
-            REQUIRE(a[3][1] == a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33);
-            REQUIRE(a[3][2] == a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33);
-            REQUIRE(a[3][3] == a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33);
+            REQUIRE(a[3][0] == a30 * b00 + a31 * b10 + a32 * b20 + a33 * b30);
+            REQUIRE(a[3][1] == a30 * b01 + a31 * b11 + a32 * b21 + a33 * b31);
+            REQUIRE(a[3][2] == a30 * b02 + a31 * b12 + a32 * b22 + a33 * b32);
+            REQUIRE(a[3][3] == a30 * b03 + a31 * b13 + a32 * b23 + a33 * b33);
+
+            //REQUIRE(a[0][0] == a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03);
+            //REQUIRE(a[0][1] == a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03);
+            //REQUIRE(a[0][2] == a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03);
+            //REQUIRE(a[0][3] == a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03);
+
+            //REQUIRE(a[1][0] == a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13);
+            //REQUIRE(a[1][1] == a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13);
+            //REQUIRE(a[1][2] == a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13);
+            //REQUIRE(a[1][3] == a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13);
+
+            //REQUIRE(a[2][0] == a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23);
+            //REQUIRE(a[2][1] == a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23);
+            //REQUIRE(a[2][2] == a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23);
+            //REQUIRE(a[2][3] == a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23);
+
+            //REQUIRE(a[3][0] == a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33);
+            //REQUIRE(a[3][1] == a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33);
+            //REQUIRE(a[3][2] == a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33);
+            //REQUIRE(a[3][3] == a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33);
         }
     }
 

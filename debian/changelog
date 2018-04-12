@@ -1,3 +1,9 @@
+snapwebsites (1.5.49.0~xenial) xenial; urgency=high
+
+  * Added a matrix.h header and corresponding tests.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 12 Apr 2018 04:07:41 -0700
+
 snapwebsites (1.5.48.0~xenial) xenial; urgency=high
 
   * Fixed the snap_qt_connection constructor, a test was inverted.
