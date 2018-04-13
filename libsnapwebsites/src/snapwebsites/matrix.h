@@ -312,6 +312,8 @@ public:
             // number of rows of the other, they don't need to be square
             // matrices of the same size)
             //
+std::cerr << "this " << f_rows << "x" << f_columns
+          << " and rhs " << m.f_rows << "x" << m.f_columns << "\n";
             throw std::runtime_error("matrices of incompatible sizes for a multiplication");
         }
 
@@ -1320,6 +1322,41 @@ public:
      * See:
      * http://www.graficaobscura.com/matrix/index.html
      *
+     * We can also extract the angles and use:
+     *
+     * $$
+     * H =
+     * \begin{bmatrix}
+     *      0.213 & 0.213 & 0.213
+     *   \\ 0.715 & 0.715 & 0.715
+     *   \\ 0.072 & 0.072 & 0.072
+     * \end{bmatrix}
+     * +
+     * cos ( \theta )
+     * \begin{bmatrix}
+     *       0.787 & -0.213 & -0.213
+     *   \\ -0.715 &  0.285 & -0.715
+     *   \\ -0.072 & -0.072 &  0.928
+     * \end{bmatrix}
+     * +
+     * sin ( \theta )
+     * \begin{bmatrix}
+     *      -0.213 &  0.143 & -0.787
+     *   \\ -0.715 &  0.140 &  0.715
+     *   \\  0.928 & -0.283 &  0.072
+     * \end{bmatrix}
+     * $$
+     *
+     * See:
+     * http://www.graficaobscura.com/matrix/index.html
+     *
+     * \note
+     * To verify that the angle is correct, one can use this Wikipedia
+     * page. As we can see, from Red, you add 30° to get yellow, 120°
+     * to get green, etc. Obviously you can go also backward with
+     * negative angles.
+     * https://en.wikipedia.org/wiki/Hue
+     *
      * \param[in] h  The amount of rotation, an angle in radian.
      *
      * \return 'this' rotated around the hue axis by \p h
@@ -1333,7 +1370,7 @@ public:
             throw std::runtime_error("scale() is only for 4x4 matrices at this time");
         }
 
-        // $R_r$ -- rotation around red axis
+        // $R_r$ -- rotation around red axis (inverse rotation around X axis)
         //
         matrix<T, SIZE> r_r(4, 4);
         value_type const inv_sqrt_2 = static_cast<value_type>(1) / sqrt(static_cast<value_type>(2));
@@ -1342,31 +1379,54 @@ public:
         r_r[2][1] = -inv_sqrt_2;
         r_r[2][2] =  inv_sqrt_2;
 
-        // $R_g$ -- rotation around green axis
+std::cerr << "R_r = " << r_r << "\n";
+
+        // $R_g$ -- rotation around green axis (inverse rotation around Y axis)
         //
         matrix<T, SIZE> r_g(4, 4);
+        value_type const inv_sqrt_3 = static_cast<value_type>(1) / sqrt(static_cast<value_type>(3));
         value_type const sqrt_2_over_sqrt_3 = sqrt(static_cast<value_type>(2)) / sqrt(static_cast<value_type>(3));
-        value_type const minus_inv_sqrt_3 = -static_cast<value_type>(1) / sqrt(static_cast<value_type>(3));
-        r_r[0][0] =  sqrt_2_over_sqrt_3;
-        r_r[0][2] =  minus_inv_sqrt_3;
-        r_r[2][1] = -minus_inv_sqrt_3;
-        r_r[2][2] =  sqrt_2_over_sqrt_3;
+        r_g[0][0] =  sqrt_2_over_sqrt_3;
+        r_g[0][2] =  inv_sqrt_3;
+        r_g[2][0] = -inv_sqrt_3;
+        r_g[2][2] =  sqrt_2_over_sqrt_3;
+
+std::cerr << "R_g = " << r_g << "\n";
 
         // $R_{rg}$ -- the product or $R_r$ and $R_g$
         //
         matrix<T, SIZE> r_rg(r_r * r_g);
 
+std::cerr << "R_rg = " << r_rg << "\n";
+
         // Luminance Vector
         //
-        matrix<T, SIZE> l(4, 1);
-        l[0][0] = RED_WEIGHT;
-        l[1][0] = GREEN_WEIGHT;
-        l[2][0] = BLUE_WEIGHT;
-        l[3][0] = 0;
+        matrix<T, SIZE> w(4, 1);
+        w[0][0] = RED_WEIGHT;
+        w[1][0] = GREEN_WEIGHT;
+        w[2][0] = BLUE_WEIGHT;
+        w[3][0] = 0;
 
-        matrix<T, SIZE> s(r_rg * l);
+std::cerr << "w = " << w << "\n";
 
-        // Rotate blue
+        matrix<T, SIZE> l(r_rg * w);
+
+std::cerr << "l = " << l << "\n";
+
+        matrix<T, SIZE> s(4, 4);
+        s[0][2] = l[0][0] / l[2][0];
+        s[1][2] = l[1][0] / l[2][0];
+
+std::cerr << "s = " << s << "\n";
+
+std::cerr << "s / s = " << (s/s) << "\n";
+
+std::cerr << "M_rg * s = " << (r_rg * s) << "\n";
+
+        matrix<T, SIZE> p(r_rg);
+        p *= s;
+
+        // Rotate blue (rotation around Z axis)
         //
         matrix<T, SIZE> r_b(4, 4);
         value_type const rot_cos = cos(static_cast<value_type>(h));
@@ -1376,9 +1436,50 @@ public:
         r_b[1][0] = -rot_sin;
         r_b[1][1] =  rot_cos;
 
-        // $H = R_{rg} S R_b S^{-1} R_{rg}^{-1}$
+std::cerr << "r_b = " << r_b << "\n";
+
+matrix<T, SIZE> ident(4,4);
+std::cerr
+    << "---------------------------------------\n"
+    << "r_rg = " << r_rg
+    << "\nr_g * r_r = " << (r_g * r_r)
+    << "\nr_rg^-1 = " << (ident/r_rg)
+    << "\n(1/r_g/r_r) = " << (ident/r_g/r_r) << "\n"
+    << "\np = " << p << "\n"
+    << "\np^-1 = " << (ident/p) << "\n"
+    << "---------------------------------------\n";
+
+        // $H = R_r R_g S R_b S^{-1} R_g^{-1} R_r^{-1}$
         //
-        return r_rg * s * r_b / s / r_rg;
+        return p * r_b / p;
+        //return r_rg * s * r_b / s / r_rg;
+        //return r_rg * s * r_b / s / r_g / r_r;
+        //return r_r * r_g * r_b / r_g / r_r;
+    }
+
+    std::string to_string() const
+    {
+        std::stringstream s;
+
+        s.precision(17);
+
+        s << "[";
+        for(size_type j(0); j < f_rows; ++j)
+        {
+            s << std::endl << "  [";
+            if(f_columns > 0)
+            {
+                s << f_vector[0 + j * f_columns];
+                for(size_type i(1); i < f_columns; ++i)
+                {
+                    s << ", " << f_vector[i + j * f_columns];
+                }
+            }
+            s << "]";
+        }
+        s << std::endl << "]" << std::endl;
+
+        return s.str();
     }
 
 private:
@@ -1439,7 +1540,7 @@ std::basic_ostream<E, S> & operator << (std::basic_ostream<E, S> & out, snap::ma
 
     // buffer is ready, display in output in one go
     //
-    return out << s.str().c_str();
+    return out << s.str();
 }
 
 

@@ -59,9 +59,9 @@ namespace
 //
 char * g_image_filename = nullptr;
 
-double g_saturation = 0.0;
+double g_saturation = 1.0;
 double g_hue = 0.0;
-double g_brightness = 0.0;
+double g_brightness = 1.0;
 
 snap::matrix<double>    g_color_matrix(4, 4);
 
@@ -70,10 +70,31 @@ void calculate_color_matrix()
     // reset back to identity
     //
     g_color_matrix.identity();
+std::cerr << "identity? = " << g_color_matrix << "\n";
 
+std::cerr << "brightness = " << g_brightness << "\n";
     g_color_matrix = g_color_matrix.brightness(g_brightness);
+std::cerr << "matrix = " << g_color_matrix << "\n";
     g_color_matrix = g_color_matrix.saturation(g_saturation);
-    g_color_matrix = g_color_matrix.hue(g_hue);
+std::cerr << "saturation " << g_saturation << " -> matrix = " << g_color_matrix << "\n";
+    g_color_matrix = g_color_matrix.hue(g_hue *  M_PI / 180.0);
+std::cerr << "hue " << (g_hue *  M_PI / 180.0) << " -> matrix = " << g_color_matrix << "\n";
+}
+
+
+uchar clamp(double c)
+{
+    int v(static_cast<int>(c + 0.5));
+    if(v <= 0)
+    {
+        return 0;
+    }
+    if(v >= 255)
+    {
+        return 255;
+    }
+
+    return v;
 }
 
 
@@ -134,12 +155,80 @@ void create_color_image()
 }
 
 
+//
+// Note:
+// First, decide which order to apply the rotations (say X then Y then Z).
+// Then, it also depends on your convention of whether your points are row
+// vectors or column vectors. For row vectors, you have ((r*X)*Y)*Z = r*(XYZ)
+// -- vs. column vectors, you have Z*(Y*(X*c))=(ZYX)*c 
+//
 void apply_color_matrix()
 {
     QImage img(QString::fromUtf8(g_image_filename));
     img.convertToFormat(QImage::Format_RGB32);
 
+// 17 is pretty much the best precision we can get here
+//
+std::cerr.precision(17);
+std::cout.precision(17);
+
     calculate_color_matrix();
+
+snap::matrix<double> p(4,4);
+p[0][0] = 0.81649658092772615;
+p[0][1] = 0.0;
+p[0][2] = 0.097737296040753485;
+p[0][3] = 0.0;
+p[1][0] = -0.40824829046386302;
+p[1][1] = 0.70710678118654746;
+p[1][2] = 0.32831470544894448;
+p[1][3] = 0.0;
+p[2][0] = -0.40824829046386302;
+p[2][1] = -0.70710678118654746;
+p[2][2] = 1.3059988060791796;
+p[2][3] = 0.0;
+p[3][0] = 0.0;
+p[3][1] = 0.0;
+p[3][2] = 0.0;
+p[3][3] = 1.0;
+
+snap::matrix<double> r_b(4,4);
+double const rot_cos = cos((g_hue * M_PI / 180.0));
+double const rot_sin = sin((g_hue * M_PI / 180.0));
+r_b[0][0] =  rot_cos;
+r_b[0][1] =  rot_sin;
+r_b[1][0] = -rot_sin;
+r_b[1][1] =  rot_cos;
+
+snap::matrix<double> m(4,4);
+m = p * r_b / p;
+
+std::cerr << "quick matrix = " << m << "\n";
+
+
+// Microsoft simplified matrix for +45 deg hue changes
+//g_color_matrix[0][0] =  0.6188793;
+//g_color_matrix[0][1] =  0.1635025;
+//g_color_matrix[0][2] = -0.4941068;
+//g_color_matrix[0][3] =  0.0;
+//g_color_matrix[1][0] = -0.2961627;
+//g_color_matrix[1][1] =  1.0155204;
+//g_color_matrix[1][2] =  0.715;
+//g_color_matrix[1][3] =  0.0;
+//g_color_matrix[2][0] =  0.6772834;
+//g_color_matrix[2][1] = -0.1790229;
+//g_color_matrix[2][2] =  0.7791068;
+//g_color_matrix[2][3] =  0.0;
+//g_color_matrix[3][0] =  0.0 ;
+//g_color_matrix[3][1] =  0.0;
+//g_color_matrix[3][2] =  0.0;
+//g_color_matrix[3][3] =  1.0;
+
+std::cerr << "color matrix = " << g_color_matrix << "\n";
+std::cerr << "c0 = " << (g_color_matrix[0][0] + g_color_matrix[1][0] + g_color_matrix[2][0])
+          << ", c1 = " << (g_color_matrix[0][1] + g_color_matrix[1][1] + g_color_matrix[2][1])
+          << ", c2 = " << (g_color_matrix[0][2] + g_color_matrix[1][2] + g_color_matrix[2][2])
+          << "\n";
 
     uchar * s(img.bits());
 
@@ -172,9 +261,9 @@ void apply_color_matrix()
         //*tb = r*mat[0][2] + g*mat[1][2] +
 		//    b*mat[2][2] + mat[3][2];
 
-        s[2] = static_cast<char>(r);
-        s[1] = static_cast<char>(g);
-        s[0] = static_cast<char>(b);
+        s[2] = clamp(r);
+        s[1] = clamp(g);
+        s[0] = clamp(b);
     }
 
     img.save("test-color-matrix.png");

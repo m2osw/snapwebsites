@@ -3873,7 +3873,7 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             REQUIRE(fabs(c[3][3] - div[3][3]) < 0.0001);
         }
 
-        SECTION("a-=b")
+        SECTION("a/=b")
         {
             // setup A
             //
@@ -3991,9 +3991,15 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             REQUIRE(b[3][2] == b32);
             REQUIRE(b[3][3] == b33);
 
-            // run operation A -= B
+            double const determinant(b.determinant());
+            snap::matrix<double> adjugate(b.adjugate());
+
+            snap::matrix<double> inv(adjugate * (1.0 / determinant));
+            snap::matrix<double> div(a * inv);
+
+            // run operation A /= B
             //
-            a -= b;
+            a /= b;
 
             // this could fail if one of bXX is 0.0
             //
@@ -4031,22 +4037,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             REQUIRE(b[3][2] == b32);
             REQUIRE(b[3][3] == b33);
 
-            REQUIRE(a[0][0] == a00 - b00);
-            REQUIRE(a[0][1] == a01 - b01);
-            REQUIRE(a[0][2] == a02 - b02);
-            REQUIRE(a[0][3] == a03 - b03);
-            REQUIRE(a[1][0] == a10 - b10);
-            REQUIRE(a[1][1] == a11 - b11);
-            REQUIRE(a[1][2] == a12 - b12);
-            REQUIRE(a[1][3] == a13 - b13);
-            REQUIRE(a[2][0] == a20 - b20);
-            REQUIRE(a[2][1] == a21 - b21);
-            REQUIRE(a[2][2] == a22 - b22);
-            REQUIRE(a[2][3] == a23 - b23);
-            REQUIRE(a[3][0] == a30 - b30);
-            REQUIRE(a[3][1] == a31 - b31);
-            REQUIRE(a[3][2] == a32 - b32);
-            REQUIRE(a[3][3] == a33 - b33);
+            REQUIRE(fabs(a[0][0] - div[0][0]) < 0.0001);
+            REQUIRE(fabs(a[0][1] - div[0][1]) < 0.0001);
+            REQUIRE(fabs(a[0][2] - div[0][2]) < 0.0001);
+            REQUIRE(fabs(a[0][3] - div[0][3]) < 0.0001);
+            REQUIRE(fabs(a[1][0] - div[1][0]) < 0.0001);
+            REQUIRE(fabs(a[1][1] - div[1][1]) < 0.0001);
+            REQUIRE(fabs(a[1][2] - div[1][2]) < 0.0001);
+            REQUIRE(fabs(a[1][3] - div[1][3]) < 0.0001);
+            REQUIRE(fabs(a[2][0] - div[2][0]) < 0.0001);
+            REQUIRE(fabs(a[2][1] - div[2][1]) < 0.0001);
+            REQUIRE(fabs(a[2][2] - div[2][2]) < 0.0001);
+            REQUIRE(fabs(a[2][3] - div[2][3]) < 0.0001);
+            REQUIRE(fabs(a[3][0] - div[3][0]) < 0.0001);
+            REQUIRE(fabs(a[3][1] - div[3][1]) < 0.0001);
+            REQUIRE(fabs(a[3][2] - div[3][2]) < 0.0001);
+            REQUIRE(fabs(a[3][3] - div[3][3]) < 0.0001);
         }
     }
 }
