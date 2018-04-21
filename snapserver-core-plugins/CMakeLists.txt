@@ -56,8 +56,8 @@ include_directories( SYSTEM
     ${Qt5XmlPatterns_INCLUDE_DIRS}
 )
 include_directories(
-	${libsnapwebsites_project_SOURCE_DIR}/src
-	${libsnapwebsites_project_BINARY_DIR}/src
+    ${libsnapwebsites_project_SOURCE_DIR}/src
+    ${libsnapwebsites_project_BINARY_DIR}/src
 )
 set( QT_LIBRARIES
     Qt5::Core
