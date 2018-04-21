@@ -31,11 +31,11 @@ function spin_globe(rotate)
     var selector = jQuery("img[id='globe']");
     if( rotate )
     {
-        selector.attr("src","globe.gif");
+        selector.attr("src", "waiting-wheel-75x75.gif");
     }
     else
     {
-        selector.attr("src","globe_still.png");
+        selector.attr("src", "globe_still.png");
     }
 }
 

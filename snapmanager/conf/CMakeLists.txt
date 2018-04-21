@@ -123,6 +123,7 @@ install(
         globe.gif
         globe_still.png
         snapmanagercgi-login.html
+        waiting-wheel-75x75.gif
 
     DESTINATION
         share/snapwebsites/html/snapmanager
