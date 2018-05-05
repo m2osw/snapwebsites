@@ -4131,7 +4131,7 @@ TEST_CASE("matrix_color", "[matrix]")
             REQUIRE(b.rows() == 4);
             REQUIRE(b.columns() == 4);
 
-            double luma[4][3];
+            double luma[6][3];
 
             luma[0][0] = a.HDTV_LUMA_RED  ;
             luma[0][1] = a.HDTV_LUMA_GREEN;
@@ -4149,7 +4149,15 @@ TEST_CASE("matrix_color", "[matrix]")
             luma[3][1] = a.NTSC_LUMA_GREEN;
             luma[3][2] = a.NTSC_LUMA_BLUE ;
 
-            for(int l(0); l < 4; ++l)
+            luma[4][0] = a.AVERAGE_LUMA_RED  ;
+            luma[4][1] = a.AVERAGE_LUMA_GREEN;
+            luma[4][2] = a.AVERAGE_LUMA_BLUE ;
+
+            luma[5][0] = 0.2; // to test any dynamic version if such exists for this algorithm
+            luma[5][1] = 0.7;
+            luma[5][2] = 0.1;
+
+            for(int l(0); l < 6; ++l)
             {
                 // set the luma weights
                 //
@@ -4201,7 +4209,7 @@ TEST_CASE("matrix_color", "[matrix]")
             REQUIRE(b.rows() == 4);
             REQUIRE(b.columns() == 4);
 
-            double luma[4][3];
+            double luma[6][3];
 
             luma[0][0] = a.HDTV_LUMA_RED  ;
             luma[0][1] = a.HDTV_LUMA_GREEN;
@@ -4219,18 +4227,40 @@ TEST_CASE("matrix_color", "[matrix]")
             luma[3][1] = a.NTSC_LUMA_GREEN;
             luma[3][2] = a.NTSC_LUMA_BLUE ;
 
-            for(int l(0); l < 4; ++l)
+            luma[4][0] = a.AVERAGE_LUMA_RED  ;
+            luma[4][1] = a.AVERAGE_LUMA_GREEN;
+            luma[4][2] = a.AVERAGE_LUMA_BLUE ;
+
+            luma[5][0] = 0.2; // to test any dynamic version if such exists for this algorithm
+            luma[5][1] = 0.7;
+            luma[5][2] = 0.1;
+
+            std::vector<std::string> last_hue_matrix{
+                "hdtv",
+                "led",
+                "crt",
+                "ntsc",
+                "average",
+                "dynamic"
+            };
+
+            for(int l(0); l < 6; ++l)
             {
                 // set the luma weights
                 //
                 a.set_luma_vector(luma[l][0], luma[l][1], luma[l][2]);
 
+//std::cerr << "*** working on luma " << l << "\n";
                 for(int idx(0); idx < 1000; ++idx)
                 {
                     // hue is an angle from 0 to 360 (albeit in radian)
                     //
                     double const hue(static_cast<double>(idx) / 1000.0 * M_PI * 2.0);
                     b = a.hue(hue);
+
+#ifdef _DEBUG
+                    REQUIRE(a.get_last_hue_matrix() == last_hue_matrix[l]);
+#endif
 
                     // this one requires us to work!
                     // here we calculate the hue matrix by hand instead of using

@@ -149,13 +149,14 @@ function mult($a, $b, $optimze)
 
 // to get the $m and $m_inv matrices run the following:
 //
-//     ../../BUILD/snapwebsites/libsnapwebsites/tests/mb/test_color_matrix --hue-matrix 0..3
+//     ../../BUILD/snapwebsites/libsnapwebsites/tests/mb/test_color_matrix --hue-matrix 0..4
 //
-// The number 0 to 3 defines which luma factors you want to use.
+// The number 0 to 4 defines which luma factors you want to use.
 //   0 -- HDTV
 //   1 -- LED
 //   2 -- CRT
 //   3 -- NTSC
+//   4 -- AVERAGE
 //
 // The first I used was the CRT factors.
 //
@@ -232,12 +233,56 @@ function ntsc_matrices(&$m, &$m_inv)
 }
 
 
-function compute($optimze)
+// AVERAGE (4)
+function average_matrices(&$m, &$m_inv)
+{
+    $m = array(
+            array(0.81649658092772615, 0, -1.5380048024607857, 0),
+            array(-0.40824829046386302, 0.70710678118654746, 0.48341511859422825, 0),
+            array(-0.40824829046386302, -0.70710678118654746, 2.7866404914354348, 0),
+            array(0, 0, 0, 1),
+        );
+    $m_inv = array(
+            array(2.3122784967090859, 1.0875336253174974, 1.0875336253174974, 0),
+            array(0.94028782101541564, 1.6473946022019634, 0.23318103982886837, 0),
+            array(0.57735026918962518, 0.57735026918962551, 0.57735026918962551, 0),
+            array(0, 0, 0, 1),
+        );
+}
+
+
+function compute($optimze, $weights)
 {
     $m = array();
     $m_inv = array();
 
-    ntsc_matrices($m, $m_inv);
+    switch($weights)
+    {
+    case "hdtv":
+        hdtv_matrices($m, $m_inv);
+        break;
+
+    case "led":
+        led_matrices($m, $m_inv);
+        break;
+
+    case "crt":
+        crt_matrices($m, $m_inv);
+        break;
+
+    case "ntsc":
+        ntsc_matrices($m, $m_inv);
+        break;
+
+    case "average":
+        average_matrices($m, $m_inv);
+        break;
+
+    default:
+        echo "error: unknown luma weights $weights\n";
+        exit(1);
+
+    }
 
     $r = array(
             array( "rot_cos",  "rot_sin", 0, 0),
@@ -321,9 +366,19 @@ function compute($optimze)
 
 }
 
+if($argc != 2)
+{
+    echo "error: which weights need to be used must be specified, one of:\n";
+    echo "  hdtv\n";
+    echo "  led\n";
+    echo "  crt\n";
+    echo "  ntsc\n";
+    echo "  average\n";
+    exit(1);
+}
 
-compute(false);
-compute(true);
+compute(false, $argv[1]);
+compute(true,  $argv[1]);
 
 
 // vim: ts=4 sw=4 et

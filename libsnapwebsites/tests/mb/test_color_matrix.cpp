@@ -300,6 +300,11 @@ void show_hue_matrix(int luma_select)
         a.set_luma_vector(a.NTSC_LUMA_RED, a.NTSC_LUMA_GREEN, a.NTSC_LUMA_BLUE);
         break;
 
+    case 4:
+        std::cerr << "AVERAGE luma" << std::endl << std::endl;
+        a.set_luma_vector(a.AVERAGE_LUMA_RED, a.AVERAGE_LUMA_GREEN, a.AVERAGE_LUMA_BLUE);
+        break;
+
     default:
         std::cerr << "Unknown luma number " << luma_select << ", try a number between 0 and 3 instead." << std::endl;
         return;

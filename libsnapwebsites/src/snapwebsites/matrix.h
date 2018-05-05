@@ -52,27 +52,36 @@ public:
     // away from the perfect Luma if the color is not already
     // a gray color (see the saturation() function.)
     //
-    // Note that these are often reference to as Luminance Weights.
-    // The Luminance is what you geton the monitor itself, not with
+    // Note that these are often referenced to as Luminance Weights.
+    // The Luminance is what you get on your monitor itself, not with
     // linear RGB as we manage in software.
     //
+    // The AVERAGE luma factors are present because they may be useful
+    // in some situation, but they aree definitely wrong and should
+    // very rarely be used.
+    //
+    // see https://en.wikipedia.org/wiki/Luma_%28video%29
     // see https://www.opengl.org/archives/resources/code/samples/advanced/advanced97/notes/node140.html
     //
-    static value_type constexpr     HDTV_LUMA_RED   = 0.2126;
-    static value_type constexpr     HDTV_LUMA_GREEN = 0.7152;
-    static value_type constexpr     HDTV_LUMA_BLUE  = 0.0722;
+    static value_type constexpr     HDTV_LUMA_RED      = 0.2126;
+    static value_type constexpr     HDTV_LUMA_GREEN    = 0.7152;
+    static value_type constexpr     HDTV_LUMA_BLUE     = 0.0722;
+                                                       
+    static value_type constexpr     LED_LUMA_RED       = 0.212;
+    static value_type constexpr     LED_LUMA_GREEN     = 0.701;
+    static value_type constexpr     LED_LUMA_BLUE      = 0.087;
+                                                       
+    static value_type constexpr     CRT_LUMA_RED       = 0.3086;
+    static value_type constexpr     CRT_LUMA_GREEN     = 0.6094;
+    static value_type constexpr     CRT_LUMA_BLUE      = 0.0820;
+                                                       
+    static value_type constexpr     NTSC_LUMA_RED      = 0.299;
+    static value_type constexpr     NTSC_LUMA_GREEN    = 0.587;
+    static value_type constexpr     NTSC_LUMA_BLUE     = 0.114;
 
-    static value_type constexpr     LED_LUMA_RED    = 0.212;
-    static value_type constexpr     LED_LUMA_GREEN  = 0.701;
-    static value_type constexpr     LED_LUMA_BLUE   = 0.087;
-
-    static value_type constexpr     CRT_LUMA_RED    = 0.3086;
-    static value_type constexpr     CRT_LUMA_GREEN  = 0.6094;
-    static value_type constexpr     CRT_LUMA_BLUE   = 0.0820;
-
-    static value_type constexpr     NTSC_LUMA_RED   = 0.299;
-    static value_type constexpr     NTSC_LUMA_GREEN = 0.587;
-    static value_type constexpr     NTSC_LUMA_BLUE  = 0.114;
+    static value_type constexpr     AVERAGE_LUMA_RED   = 1.0 / 3.0;
+    static value_type constexpr     AVERAGE_LUMA_GREEN = 1.0 / 3.0;
+    static value_type constexpr     AVERAGE_LUMA_BLUE  = 1.0 / 3.0;
 
     class element_ref
     {
@@ -1398,7 +1407,8 @@ std::cerr << "this " << f_rows << "x" << f_columns
      *
      * IMPORTANT: the weights change depending on the selected luma.
      * If the user makes use of a luma which is not one supported by
-     * defaut, the algorithm falls back to the fully dynamic version.
+     * defaut, the algorithm falls back to the fully dynamic version
+     * of the hue computation.
      *
      * $$
      * H =
@@ -1448,6 +1458,11 @@ std::cerr << "this " << f_rows << "x" << f_columns
      * negative angles.
      * https://en.wikipedia.org/wiki/Hue
      *
+     * \note
+     * For test purposes, which version of the matrix is used is defined
+     * by a variable that can be retrieved using the get_last_hue_matrix().
+     * The function is only available in debug mode.
+     *
      * \param[in] h  The amount of rotation, an angle in radian.
      *
      * \return 'this' rotated around the hue axis by \p h
@@ -1484,6 +1499,10 @@ std::cerr << "this " << f_rows << "x" << f_columns
             hue_matrix[2][1] = -0.76683217703798980 * rot_cos - 0.61489960114824952 * rot_sin + 0.76683217703798978;
             hue_matrix[2][2] =  0.23316782296201015 * rot_cos - 0.03754933195862373 * rot_sin + 0.76683217703798978;
 
+#ifdef _DEBUG
+            f_last_hue_matrix = "hdtv";
+#endif
+
             return *this * hue_matrix;
         }
 
@@ -1507,6 +1526,10 @@ std::cerr << "this " << f_rows << "x" << f_columns
             hue_matrix[2][1] = -0.78478482326597812 * rot_cos - 0.60949317935923603 * rot_sin + 0.78478482326597832;
             hue_matrix[2][2] =  0.21521517673402187 * rot_cos - 0.03214291016961022 * rot_sin + 0.78478482326597832;
 
+#ifdef _DEBUG
+            f_last_hue_matrix = "led";
+#endif
+
             return *this * hue_matrix;
         }
 
@@ -1529,6 +1552,10 @@ std::cerr << "this " << f_rows << "x" << f_columns
             hue_matrix[2][0] = -0.754018762251120000 * rot_cos + 0.65420940565900000 * rot_sin + 0.754018762251160;
             hue_matrix[2][1] = -0.754018762251113000 * rot_cos - 0.50049113272020600 * rot_sin + 0.754018762251160;
             hue_matrix[2][2] =  0.245981237748847000 * rot_cos + 0.07685913646939400 * rot_sin + 0.754018762251160;
+
+#ifdef _DEBUG
+            f_last_hue_matrix = "crt";
+#endif
 
             return *this * hue_matrix;
         }
@@ -1556,8 +1583,47 @@ std::cerr << "this " << f_rows << "x" << f_columns
             hue_matrix[2][1] = -0.79914222215880448 * rot_cos - 0.48832106313031034 * rot_sin + 0.79914222215880459;
             hue_matrix[2][2] =  0.20085777784119549 * rot_cos + 0.08902920605931547 * rot_sin + 0.79914222215880459;
 
+#ifdef _DEBUG
+            f_last_hue_matrix = "ntsc";
+#endif
+
             return *this * hue_matrix;
         }
+
+        if(fabs(f_luma_red   - AVERAGE_LUMA_RED  ) < 0.0001
+        && fabs(f_luma_green - AVERAGE_LUMA_GREEN) < 0.0001
+        && fabs(f_luma_blue  - AVERAGE_LUMA_BLUE ) < 0.0001)
+        {
+            // this matrice make use of the average luma
+            // (in other words, it makes no luma correction at all)
+            //
+            matrix<T, SIZE> hue_matrix(4, 4);
+
+            value_type const c(cos(h));
+            value_type const s(sin(h));
+
+            hue_matrix[0][0] =  1.88796748671567113 * rot_cos + 0.76774179094706859 * rot_sin - 0.88796748671567094;
+            hue_matrix[0][1] =  0.88796748671567144 * rot_cos + 1.34509206013669466 * rot_sin - 0.88796748671567149;
+            hue_matrix[0][2] =  0.88796748671567144 * rot_cos + 0.19039152175744295 * rot_sin - 0.88796748671567149;
+
+            hue_matrix[1][0] = -0.27909984885071244 * rot_cos - 2.01889870048836475 * rot_sin + 0.27909984885071226;
+            hue_matrix[1][1] =  0.72090015114928749 * rot_cos - 1.44154843129873957 * rot_sin + 0.27909984885071243;
+            hue_matrix[1][2] = -0.27909984885071243 * rot_cos - 0.86419816210911379 * rot_sin + 0.27909984885071243;
+
+            hue_matrix[2][0] = -1.60886763786495844 * rot_cos + 1.25115690954129627 * rot_sin + 1.60886763786495757;
+            hue_matrix[2][1] = -1.60886763786495881 * rot_cos + 0.09645637116204509 * rot_sin + 1.60886763786495868;
+            hue_matrix[2][2] = -0.60886763786495889 * rot_cos + 0.67380664035167087 * rot_sin + 1.60886763786495868;
+
+#ifdef _DEBUG
+            f_last_hue_matrix = "average";
+#endif
+
+            return *this * hue_matrix;
+        }
+
+#ifdef _DEBUG
+        f_last_hue_matrix = "dynamic";
+#endif
 
         {
 
@@ -1573,7 +1639,7 @@ std::cerr << "this " << f_rows << "x" << f_columns
             r_r[2][1] = -inv_sqrt_2;
             r_r[2][2] =  inv_sqrt_2;
 
-std::cerr << "R_r = " << r_r << "\n";
+//std::cerr << "R_r = " << r_r << "\n";
 
             // $R_g$ -- rotation around green axis (inverse rotation around Y axis)
             //
@@ -1585,13 +1651,13 @@ std::cerr << "R_r = " << r_r << "\n";
             r_g[2][0] = -inv_sqrt_3;
             r_g[2][2] =  sqrt_2_over_sqrt_3;
 
-std::cerr << "R_g = " << r_g << "\n";
+//std::cerr << "R_g = " << r_g << "\n";
 
             // $R_{rg}$ -- the product or $R_r$ and $R_g$
             //
             matrix<T, SIZE> r_rg(r_r * r_g);
 
-std::cerr << "R_rg = " << r_rg << "\n";
+//std::cerr << "R_rg = " << r_rg << "\n";
 
             // Luminance Vector
             //
@@ -1601,21 +1667,21 @@ std::cerr << "R_rg = " << r_rg << "\n";
             //w[2][0] = BLUE_WEIGHT;
             //w[3][0] = 0;
 
-std::cerr << "w = " << w << "\n";
+//std::cerr << "w = " << w << "\n";
 
             matrix<T, SIZE> l(r_rg * w);
 
-std::cerr << "l = " << l << "\n";
+//std::cerr << "l = " << l << "\n";
 
             matrix<T, SIZE> s(4, 4);
             s[0][2] = l[0][0] / l[2][0];
             s[1][2] = l[1][0] / l[2][0];
 
-std::cerr << "s = " << s << "\n";
+//std::cerr << "s = " << s << "\n";
 
-std::cerr << "s / s = " << (s/s) << "\n";
+//std::cerr << "s / s = " << (s/s) << "\n";
 
-std::cerr << "M_rg * s = " << (r_rg * s) << "\n";
+//std::cerr << "M_rg * s = " << (r_rg * s) << "\n";
 
             matrix<T, SIZE> p(r_rg);
             p *= s;
@@ -1628,18 +1694,18 @@ std::cerr << "M_rg * s = " << (r_rg * s) << "\n";
             r_b[1][0] = -rot_sin;
             r_b[1][1] =  rot_cos;
 
-std::cerr << "r_b = " << r_b << "\n";
+//std::cerr << "r_b = " << r_b << "\n";
 
-matrix<T, SIZE> ident(4,4);
-std::cerr
-    << "---------------------------------------\n"
-    << "r_rg = " << r_rg
-    << "\nr_g * r_r = " << (r_g * r_r)
-    << "\nr_rg^-1 = " << (ident/r_rg)
-    << "\n(1/r_g/r_r) = " << (ident/r_g/r_r) << "\n"
-    << "\np = " << p << "\n"
-    << "\np^-1 = " << (ident/p) << "\n"
-    << "---------------------------------------\n";
+//matrix<T, SIZE> ident(4,4);
+//std::cerr
+//    << "---------------------------------------\n"
+//    << "r_rg = " << r_rg
+//    << "\nr_g * r_r = " << (r_g * r_r)
+//    << "\nr_rg^-1 = " << (ident/r_rg)
+//    << "\n(1/r_g/r_r) = " << (ident/r_g/r_r) << "\n"
+//    << "\np = " << p << "\n"
+//    << "\np^-1 = " << (ident/p) << "\n"
+//    << "---------------------------------------\n";
 
             // $H = R_r R_g S R_b S^{-1} R_g^{-1} R_r^{-1}$
             //
@@ -1651,6 +1717,13 @@ std::cerr
             //return r_r * r_g * r_b / r_g / r_r;
         }
     }
+
+#ifdef _DEBUG
+    std::string get_last_hue_matrix()
+    {
+        return f_last_hue_matrix;
+    }
+#endif
 
     /** \brief Retrieve the current luma vector.
      *
@@ -1702,12 +1775,13 @@ std::cerr
      * The recommended values are the following predefined weights:
      *
      * \li HDTV_RED_WEIGHT, HDTV_GREEN_WEIGHT, HDTV_BLUE_WEIGHT
-     * \li LED_RED_WEIGHT,  LED_GREEN_WEIGHT,  LED_BLUE_WEIGHT
-     * \li CRT_RED_WEIGHT,  CRT_GREEN_WEIGHT,  CRT_BLUE_WEIGHT
+     * \li LED_RED_WEIGHT, LED_GREEN_WEIGHT, LED_BLUE_WEIGHT
+     * \li CRT_RED_WEIGHT, CRT_GREEN_WEIGHT, CRT_BLUE_WEIGHT
      * \li NTSC_RED_WEIGHT, NTSC_GREEN_WEIGHT, NTSC_BLUE_WEIGHT
+     * \li AVERAGE_RED_WEIGHT, AVERAGE_GREEN_WEIGHT, AVERAGE_BLUE_WEIGHT
      *
-     * The HDTV weights are those used by default if you do not callthe
-     * set_luminance_vector() with your own weights.
+     * The HDTV weights are those used by default if you do not call the
+     * set_luminance_vector() with different or even your own weights.
      *
      * \param[in] red_weight    The luma red weight.
      * \param[in] green_weight  The luma green weight.
@@ -1758,6 +1832,9 @@ private:
     value_type              f_luma_red   = HDTV_LUMA_RED;
     value_type              f_luma_green = HDTV_LUMA_GREEN;
     value_type              f_luma_blue  = HDTV_LUMA_BLUE;
+#ifdef _DEBUG
+    mutable std::string     f_last_hue_matrix;
+#endif
 };
 
 
