@@ -1,4 +1,4 @@
-// Snap Websites Server -- test email.cpp/h
+// Snap Websites Server -- test matrix.cpp/h
 // Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -105,7 +105,7 @@ void create_color_image()
 
     uchar * s = img.bits();
 
-    // BGRX -- is the real format here (or XRGB in little endian)
+    // BGRX -- is the real format here (or XRGB in little endian using uint32_t)
     uchar colors[16 * 4] =
     {
         255,   0,   0, 255,     // Blue
@@ -136,11 +136,12 @@ void create_color_image()
         {
             int x_offset(i * 25);
             int y_offset(j * 25);
-            for(int x(x_offset); x < x_offset+ 25; ++x)
+            for(int x(x_offset); x < x_offset + 25; ++x)
             {
-                for(int y(y_offset); y < y_offset+ 25; ++y)
+                for(int y(y_offset); y < y_offset + 25; ++y)
                 {
-                    // 
+                    // copy the colors in small blocks
+                    //
                     s[x * 4 + y * 100 * 4 + 0] = colors[c * 4 + 0];
                     s[x * 4 + y * 100 * 4 + 1] = colors[c * 4 + 1];
                     s[x * 4 + y * 100 * 4 + 2] = colors[c * 4 + 2];
@@ -270,6 +271,129 @@ std::cerr << "c0 = " << (g_color_matrix[0][0] + g_color_matrix[1][0] + g_color_m
 }
 
 
+void show_hue_matrix(int luma_select)
+{
+    snap::matrix<double> a(4, 4);
+
+    // setup the the luma and then calculate a few matrices that are
+    // used to calculate the factors
+    //
+    switch(luma_select)
+    {
+    case 0:
+        std::cerr << "HDTV luma" << std::endl << std::endl;
+        a.set_luma_vector(a.HDTV_LUMA_RED, a.HDTV_LUMA_GREEN, a.HDTV_LUMA_BLUE);
+        break;
+
+    case 1:
+        std::cerr << "LED luma" << std::endl << std::endl;
+        a.set_luma_vector(a.LED_LUMA_RED, a.LED_LUMA_GREEN, a.LED_LUMA_BLUE);
+        break;
+
+    case 2:
+        std::cerr << "CRT luma" << std::endl << std::endl;
+        a.set_luma_vector(a.CRT_LUMA_RED, a.CRT_LUMA_GREEN, a.CRT_LUMA_BLUE);
+        break;
+
+    case 3:
+        std::cerr << "NTSC luma" << std::endl << std::endl;
+        a.set_luma_vector(a.NTSC_LUMA_RED, a.NTSC_LUMA_GREEN, a.NTSC_LUMA_BLUE);
+        break;
+
+    default:
+        std::cerr << "Unknown luma number " << luma_select << ", try a number between 0 and 3 instead." << std::endl;
+        return;
+
+    }
+
+    // $R_r$ -- rotation around red axis (inverse rotation around X axis)
+    //
+    snap::matrix<double> r_r(4, 4);
+    double const inv_sqrt_2 = 1.0 / sqrt(2.0);
+    r_r[1][1] =  inv_sqrt_2;
+    r_r[1][2] =  inv_sqrt_2;
+    r_r[2][1] = -inv_sqrt_2;
+    r_r[2][2] =  inv_sqrt_2;
+
+//std::cerr << "R_r = " << r_r << "\n";
+
+    // $R_g$ -- rotation around green axis (inverse rotation around Y axis)
+    //
+    snap::matrix<double> r_g(4, 4);
+    double const inv_sqrt_3 = 1.0 / sqrt(3.0);
+    double const sqrt_2_over_sqrt_3 = sqrt(2.0) / sqrt(3.0);
+    r_g[0][0] =  sqrt_2_over_sqrt_3;
+    r_g[0][2] =  inv_sqrt_3;
+    r_g[2][0] = -inv_sqrt_3;
+    r_g[2][2] =  sqrt_2_over_sqrt_3;
+
+//std::cerr << "R_g = " << r_g << "\n";
+
+    // $R_{rg}$ -- the product or $R_r$ and $R_g$
+    //
+    snap::matrix<double> r_rg(r_r * r_g);
+
+//std::cerr << "R_rg = " << r_rg << "\n";
+
+    // Luminance Vector
+    //
+    snap::matrix<double> w(a.get_luma_vector());
+
+//std::cerr << "w = " << w << "\n";
+
+    snap::matrix<double> l(r_rg * w);
+
+//std::cerr << "l = " << l << "\n";
+
+    snap::matrix<double> s(4, 4);
+    s[0][2] = l[0][0] / l[2][0];
+    s[1][2] = l[1][0] / l[2][0];
+
+//std::cerr << "s = " << s << "\n";
+
+//std::cerr << "s / s = " << (s/s) << "\n";
+
+//std::cerr << "M_rg * s = " << (r_rg * s) << "\n";
+
+    snap::matrix<double> p(r_rg);
+    p *= s;
+
+//std::cerr << "p = " << p << "\n";
+
+    std::cout << "    $m = array(";
+    for(size_t j(0); j < 4; ++j)
+    {
+        std::cout << std::endl << "            array(";
+        std::cout << p[j][0];
+        for(size_t i(1); i < 4; ++i)
+        {
+            std::cout << ", " << p[j][i];
+        }
+        std::cout << "),";
+    }
+    std::cout << std::endl << "        );" << std::endl;
+
+// 'a' is an identity, so we can use it to compute the inverse
+    snap::matrix<double> p_inv(a/p);
+
+//std::cerr << "p^-1 = " << p_inv << "\n";
+
+    std::cout << "    $m_inv = array(";
+    for(size_t j(0); j < 4; ++j)
+    {
+        std::cout << std::endl << "            array(";
+        std::cout << p_inv[j][0];
+        for(size_t i(1); i < 4; ++i)
+        {
+            std::cout << ", " << p_inv[j][i];
+        }
+        std::cout << "),";
+    }
+    std::cout << std::endl << "        );" << std::endl;
+
+}
+
+
 
 }
 // no name namespace
@@ -278,6 +402,11 @@ std::cerr << "c0 = " << (g_color_matrix[0][0] + g_color_matrix[1][0] + g_color_m
 
 int main(int argc, char * argv[])
 {
+    // 17 is pretty much the best precision we can get here
+    //
+    std::cerr.precision(17);
+    std::cout.precision(17);
+
     try
     {
         for(int i(1); i < argc; ++i)
@@ -315,6 +444,16 @@ int main(int argc, char * argv[])
                     return 1;
                 }
                 g_hue = std::stod(argv[i]);
+            }
+            else if(strcmp(argv[i], "--hue-matrix") == 0)
+            {
+                ++i;
+                if(i >= argc)
+                {
+                    std::cerr << "error: --hue expects a number used to select the luma." << std::endl;
+                    return 1;
+                }
+                show_hue_matrix(std::stol(argv[i]));
             }
             else if(strcmp(argv[i], "--brightness") == 0)
             {

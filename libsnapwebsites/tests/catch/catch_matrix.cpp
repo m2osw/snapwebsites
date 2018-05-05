@@ -4058,4 +4058,346 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
 }
 
 
+TEST_CASE("matrix_color", "[matrix]")
+{
+    // generate a few brightness matrices
+    //
+    GIVEN("brightness")
+    {
+        SECTION("b=a*<brightness> (a is identity)")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(4, 4);
+
+            REQUIRE(a.rows() == 4);
+            REQUIRE(a.columns() == 4);
+
+            // setup B
+            //
+            snap::matrix<double> b(4, 4);
+
+            REQUIRE(b.rows() == 4);
+            REQUIRE(b.columns() == 4);
+
+            for(int idx(0); idx < 1000; ++idx)
+            {
+                double const brightness(static_cast<double>(idx) / 1000.0);
+                b = a.brightness(brightness);
+
+                REQUIRE(fabs(b[0][0] - brightness) < 0.0001);
+                REQUIRE(fabs(b[0][1] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[0][2] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[0][3] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[1][0] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[1][1] - brightness) < 0.0001);
+                REQUIRE(fabs(b[1][2] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[1][3] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[2][0] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[2][1] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[2][2] - brightness) < 0.0001);
+                REQUIRE(fabs(b[2][3] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[3][0] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[3][1] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[3][2] - 0.0) < 0.0001);
+                REQUIRE(fabs(b[3][3] - 1.0) < 0.0001);
+
+//     *       brightness_r & 0 & 0 & 0
+//     *    \\ 0 & brightness_g & 0 & 0
+//     *    \\ 0 & 0 & brightness_b & 0
+//     *    \\ 0 & 0 & 0 & 1
+
+            }
+        }
+    }
+
+    // generate a few saturation matrices
+    //
+    GIVEN("saturation")
+    {
+        SECTION("b=a*<saturation> (a is identity)")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(4, 4);
+
+            REQUIRE(a.rows() == 4);
+            REQUIRE(a.columns() == 4);
+
+            // setup B
+            //
+            snap::matrix<double> b(4, 4);
+
+            REQUIRE(b.rows() == 4);
+            REQUIRE(b.columns() == 4);
+
+            double luma[4][3];
+
+            luma[0][0] = a.HDTV_LUMA_RED  ;
+            luma[0][1] = a.HDTV_LUMA_GREEN;
+            luma[0][2] = a.HDTV_LUMA_BLUE ;
+
+            luma[1][0] = a.LED_LUMA_RED  ;
+            luma[1][1] = a.LED_LUMA_GREEN;
+            luma[1][2] = a.LED_LUMA_BLUE ;
+
+            luma[2][0] = a.CRT_LUMA_RED  ;
+            luma[2][1] = a.CRT_LUMA_GREEN;
+            luma[2][2] = a.CRT_LUMA_BLUE ;
+
+            luma[3][0] = a.NTSC_LUMA_RED  ;
+            luma[3][1] = a.NTSC_LUMA_GREEN;
+            luma[3][2] = a.NTSC_LUMA_BLUE ;
+
+            for(int l(0); l < 4; ++l)
+            {
+                // set the luma weights
+                //
+                a.set_luma_vector(luma[l][0], luma[l][1], luma[l][2]);
+
+                for(int idx(0); idx < 1000; ++idx)
+                {
+                    double const s(static_cast<double>(idx) / 1000.0);
+                    b = a.saturation(s);
+
+                    REQUIRE(fabs(b[0][0] - (luma[l][0] * (1.0 - s) + s)) < 0.0001);
+                    REQUIRE(fabs(b[0][1] - (luma[l][0] * (1.0 - s))) < 0.0001);
+                    REQUIRE(fabs(b[0][2] - (luma[l][0] * (1.0 - s))) < 0.0001);
+                    REQUIRE(fabs(b[0][3] - (0.0)) < 0.0001);
+                    REQUIRE(fabs(b[1][0] - (luma[l][1] * (1.0 - s))) < 0.0001);
+                    REQUIRE(fabs(b[1][1] - (luma[l][1] * (1.0 - s) + s)) < 0.0001);
+                    REQUIRE(fabs(b[1][2] - (luma[l][1] * (1.0 - s))) < 0.0001);
+                    REQUIRE(fabs(b[1][3] - (0.0)) < 0.0001);
+                    REQUIRE(fabs(b[2][0] - (luma[l][2] * (1.0 - s))) < 0.0001);
+                    REQUIRE(fabs(b[2][1] - (luma[l][2] * (1.0 - s))) < 0.0001);
+                    REQUIRE(fabs(b[2][2] - (luma[l][2] * (1.0 - s) + s)) < 0.0001);
+                    REQUIRE(fabs(b[2][3] - (0.0)) < 0.0001);
+                    REQUIRE(fabs(b[3][0] - (0.0)) < 0.0001);
+                    REQUIRE(fabs(b[3][1] - (0.0)) < 0.0001);
+                    REQUIRE(fabs(b[3][2] - (0.0)) < 0.0001);
+                    REQUIRE(fabs(b[3][3] - (1.0)) < 0.0001);
+                }
+            }
+        }
+    }
+
+    // generate a few brightness matrices
+    //
+    GIVEN("hue")
+    {
+        SECTION("b=a*<hue> (a is identity)")
+        {
+            // setup A
+            //
+            snap::matrix<double> a(4, 4);
+
+            REQUIRE(a.rows() == 4);
+            REQUIRE(a.columns() == 4);
+
+            // setup B
+            //
+            snap::matrix<double> b(4, 4);
+
+            REQUIRE(b.rows() == 4);
+            REQUIRE(b.columns() == 4);
+
+            double luma[4][3];
+
+            luma[0][0] = a.HDTV_LUMA_RED  ;
+            luma[0][1] = a.HDTV_LUMA_GREEN;
+            luma[0][2] = a.HDTV_LUMA_BLUE ;
+
+            luma[1][0] = a.LED_LUMA_RED  ;
+            luma[1][1] = a.LED_LUMA_GREEN;
+            luma[1][2] = a.LED_LUMA_BLUE ;
+
+            luma[2][0] = a.CRT_LUMA_RED  ;
+            luma[2][1] = a.CRT_LUMA_GREEN;
+            luma[2][2] = a.CRT_LUMA_BLUE ;
+
+            luma[3][0] = a.NTSC_LUMA_RED  ;
+            luma[3][1] = a.NTSC_LUMA_GREEN;
+            luma[3][2] = a.NTSC_LUMA_BLUE ;
+
+            for(int l(0); l < 4; ++l)
+            {
+                // set the luma weights
+                //
+                a.set_luma_vector(luma[l][0], luma[l][1], luma[l][2]);
+
+                for(int idx(0); idx < 1000; ++idx)
+                {
+                    // hue is an angle from 0 to 360 (albeit in radian)
+                    //
+                    double const hue(static_cast<double>(idx) / 1000.0 * M_PI * 2.0);
+                    b = a.hue(hue);
+
+                    // this one requires us to work!
+                    // here we calculate the hue matrix by hand instead of using
+                    // pre-calculated numbers; that way we know we have it right
+                    //
+
+                    // $R_r$ (red rotation)
+                    //
+                    snap::matrix<double> r_r(4, 4);
+                    r_r[1][1] =  1.0 / sqrt(2.0);
+                    r_r[1][2] =  1.0 / sqrt(2.0);
+                    r_r[2][1] = -1.0 / sqrt(2.0);
+                    r_r[2][2] =  1.0 / sqrt(2.0);
+
+                    // $R_g$ (green rotation)
+                    //
+                    snap::matrix<double> r_g(4, 4);
+                    r_g[0][0] =  sqrt(2.0) / sqrt(3.0);
+                    r_g[0][2] =  1.0 / sqrt(3.0);
+                    r_g[2][0] = -1.0 / sqrt(3.0);
+                    r_g[2][2] =  sqrt(2.0) / sqrt(3.0);
+
+                    // $R_rg = R_r R_g$ (red and green rotations combined)
+                    //
+                    snap::matrix<double> r_rg(r_r * r_g);
+
+                    // $w$ (luma vector, a.k.a. color weights to calcalute the perfect grayscale for your monitor)
+                    //
+                    snap::matrix<double> w(a.get_luma_vector());
+                    //w[0][0] = a.RED_WEIGHT;
+                    //w[1][0] = a.GREEN_WEIGHT;
+                    //w[2][0] = a.BLUE_WEIGHT;
+                    //w[3][0] = 0;
+
+                    // sm (skew matrix)
+                    //
+                    snap::matrix<double> sm(r_rg * w);
+
+                    // s (scaling with skew matrix)
+                    //
+                    snap::matrix<double> s(4, 4);
+                    s[0][2] = sm[0][0] / sm[2][0];
+                    s[1][2] = sm[1][0] / sm[2][0];
+
+                    // p (skewed red & green rotation)
+                    //
+                    snap::matrix<double> p(r_rg);
+                    p *= s;
+
+                    // r_b (blue rotation)
+                    //
+                    snap::matrix<double> r_b(4, 4);
+                    double const rot_cos(cos(hue));
+                    double const rot_sin(sin(hue));
+                    r_b[0][0] =  rot_cos;
+                    r_b[0][1] =  rot_sin;
+                    r_b[1][0] = -rot_sin;
+                    r_b[1][1] =  rot_cos;
+
+                    // hue_matrix (the resulting matrix depending on angle)
+                    //
+                    snap::matrix<double> hue_matrix(p * r_b / p);
+
+//std::cout << "Got b = " << b << "\n";
+//std::cout << "Got our hue matrix = " << hue_matrix << "\n";
+
+                    REQUIRE(fabs(b[0][0] - hue_matrix[0][0]) < 0.0001);
+                    REQUIRE(fabs(b[0][1] - hue_matrix[0][1]) < 0.0001);
+                    REQUIRE(fabs(b[0][2] - hue_matrix[0][2]) < 0.0001);
+                    REQUIRE(fabs(b[0][3] - hue_matrix[0][3]) < 0.0001);
+                    REQUIRE(fabs(b[1][0] - hue_matrix[1][0]) < 0.0001);
+                    REQUIRE(fabs(b[1][1] - hue_matrix[1][1]) < 0.0001);
+                    REQUIRE(fabs(b[1][2] - hue_matrix[1][2]) < 0.0001);
+                    REQUIRE(fabs(b[1][3] - hue_matrix[1][3]) < 0.0001);
+                    REQUIRE(fabs(b[2][0] - hue_matrix[2][0]) < 0.0001);
+                    REQUIRE(fabs(b[2][1] - hue_matrix[2][1]) < 0.0001);
+                    REQUIRE(fabs(b[2][2] - hue_matrix[2][2]) < 0.0001);
+                    REQUIRE(fabs(b[2][3] - hue_matrix[2][3]) < 0.0001);
+                    REQUIRE(fabs(b[3][0] - hue_matrix[3][0]) < 0.0001);
+                    REQUIRE(fabs(b[3][1] - hue_matrix[3][1]) < 0.0001);
+                    REQUIRE(fabs(b[3][2] - hue_matrix[3][2]) < 0.0001);
+                    REQUIRE(fabs(b[3][3] - hue_matrix[3][3]) < 0.0001);
+
+//     * $$
+//     * R_r =
+//     * \begin{bmatrix}
+//     *       1 &  0                  & 0                  & 0
+//     *    \\ 0 &  {1 \over \sqrt 2 } & {1 \over \sqrt 2 } & 0
+//     *    \\ 0 & -{1 \over \sqrt 2 } & {1 \over \sqrt 2 } & 0
+//     *    \\ 0 &  0                  & 0                  & 1
+//     * \end{bmatrix}
+//     * $$
+//     *
+//     * $$
+//     * R_g =
+//     * \begin{bmatrix}
+//     *       1 & 0 & 0 & 0
+//     *    \\ 0 & {\sqrt 2 \over \sqrt 3} & -{1 \over \sqrt 3} & 0
+//     *    \\ 0 & {1 \over \sqrt 3} & {\sqrt 2 \over \sqrt 3} & 0
+//     *    \\ 0 & 0 & 0 & 1
+//     * \end{bmatrix}
+//     * $$
+//     *
+//     * $$
+//     * R_{rg} = R_r R_g
+//     * $$
+//     *
+//     * $$
+//     * \begin{bmatrix}
+//     *        L_r
+//     *     \\ L_g
+//     *     \\ L_b
+//     *     \\ 0
+//     * \end{bmatrix}
+//     * =
+//     * R_{rg}
+//     * \begin{bmatrix}
+//     *        W_r
+//     *     \\ W_g
+//     *     \\ W_b
+//     *     \\ 0
+//     * \end{bmatrix}
+//     * $$
+//     *
+//     * Now we define a rotation matrix for the blue axis. This one uses
+//     * a variable as the angle. This is the actual rotation angle which
+//     * can go from 0 to $2 \pi$:
+//     *
+//     * $$
+//     * R_b =
+//     * \begin{bmatrix}
+//     *       cos( \theta )  & sin( \theta ) & 0 & 0
+//     *    \\ -sin( \theta ) & cos( \theta ) & 0 & 0
+//     *    \\ 0              & 0             & 1 & 0
+//     *    \\ 0              & 0             & 0 & 1
+//     * \end{bmatrix}
+//     * $$
+//     *
+//     * Now we have all the matrices to caculate the hue rotation
+//     * of all the components of an image:
+//     *
+//     * $$
+//     * H = R_{rg} S R_b S^{-1} R_{rg}^{-1}
+//     * $$
+//     *
+//     * $H$ can then be used as in:
+//     *
+//     * $$
+//     * \begin{bmatrix}
+//     *      R'
+//     *   \\ G'
+//     *   \\ B'
+//     * \end{bmatrix}
+//     * =
+//     * H
+//     * \begin{bmatrix}
+//     *      R
+//     *   \\ G
+//     *   \\ B
+//     * \end{bmatrix}
+//     * $$
+//     *
+                }
+            }
+        }
+    }
+}
+
+
 // vim: ts=4 sw=4 et

@@ -33,6 +33,12 @@
 namespace snap
 {
 
+// Matrix additions, subtractions, and multiplications can be verified
+// using this web page:
+// http://www.calcul.com/show/calculator/matrix-multiplication
+
+
+
 template<typename T, typename SIZE = std::size_t>
 class matrix
 {
@@ -40,16 +46,33 @@ public:
     typedef T           value_type;
     typedef SIZE        size_type;
 
-    // The color weights are used to convert RGB to Luminance
+    // The color weights are used to convert RGB to Luma.
+    //
     // With a factor, it's possible to change the color toward or
-    // away from the perfect Luminance if the color is not already
+    // away from the perfect Luma if the color is not already
     // a gray color (see the saturation() function.)
+    //
+    // Note that these are often reference to as Luminance Weights.
+    // The Luminance is what you geton the monitor itself, not with
+    // linear RGB as we manage in software.
     //
     // see https://www.opengl.org/archives/resources/code/samples/advanced/advanced97/notes/node140.html
     //
-    static value_type constexpr     RED_WEIGHT   = 0.3086;
-    static value_type constexpr     GREEN_WEIGHT = 0.6094;
-    static value_type constexpr     BLUE_WEIGHT  = 0.0820;
+    static value_type constexpr     HDTV_LUMA_RED   = 0.2126;
+    static value_type constexpr     HDTV_LUMA_GREEN = 0.7152;
+    static value_type constexpr     HDTV_LUMA_BLUE  = 0.0722;
+
+    static value_type constexpr     LED_LUMA_RED    = 0.212;
+    static value_type constexpr     LED_LUMA_GREEN  = 0.701;
+    static value_type constexpr     LED_LUMA_BLUE   = 0.087;
+
+    static value_type constexpr     CRT_LUMA_RED    = 0.3086;
+    static value_type constexpr     CRT_LUMA_GREEN  = 0.6094;
+    static value_type constexpr     CRT_LUMA_BLUE   = 0.0820;
+
+    static value_type constexpr     NTSC_LUMA_RED   = 0.299;
+    static value_type constexpr     NTSC_LUMA_GREEN = 0.587;
+    static value_type constexpr     NTSC_LUMA_BLUE  = 0.114;
 
     class element_ref
     {
@@ -210,6 +233,11 @@ public:
             f_columns = rhs.f_columns;
             f_vector = rhs.f_vector;
         }
+    }
+
+    bool empty() const
+    {
+        return f_rows == 0 ||f_columns == 0;
     }
 
     size_type rows() const
@@ -1157,19 +1185,25 @@ std::cerr << "this " << f_rows << "x" << f_columns
      *
      * This function applies the saturation matrix defined below to
      * 'this' matrix. When the saturation parameter is set to zero (0)
-     * the function transforms the all colors to gray. When the saturation
+     * the function transforms all the colors to gray. When the saturation
      * is set to one (1), the color does not get changed.
+     *
+     * A saturation parameter outside of the [0 .. 1] range will have
+     * unexpected results.
      *
      * The saturation matrix:
      *
      * $$
      * \begin{bmatrix}
-     *     0.3086 \times ( 1 - saturation) + saturation  & 0.3086 \times ( 1 - saturation)               & 0.3086 \times ( 1 - saturation)                & 0
-     *  \\ 0.6094 \times ( 1 - saturation)               & 0.6094 \times ( 1 - saturation) + saturation  & 0.6094 \times ( 1 - saturation)                & 0
-     *  \\ 0.0820 \times ( 1 - saturation)               & 0.0820 \times ( 1 - saturation)               & 0.0820 \times ( 1 - saturation) + saturation   & 0
-     *  \\ 0                                             & 0                                             & 0                                              & 1
+     *     L_r \times ( 1 - saturation) + saturation  & L_r \times ( 1 - saturation)               & L_r \times ( 1 - saturation)                & 0
+     *  \\ L_g \times ( 1 - saturation)               & L_g \times ( 1 - saturation) + saturation  & L_g \times ( 1 - saturation)                & 0
+     *  \\ L_b \times ( 1 - saturation)               & L_b \times ( 1 - saturation)               & L_b \times ( 1 - saturation) + saturation   & 0
+     *  \\ 0                                          & 0                                          & 0                                           & 1
      * \end{bmatrix}
      * $$
+     *
+     * The weights used here come from the luma matrix. See the
+     * get_luma_vector() function.
      *
      * See:
      * http://www.graficaobscura.com/matrix/index.html
@@ -1192,17 +1226,17 @@ std::cerr << "this " << f_rows << "x" << f_columns
         value_type const ns(static_cast<value_type>(s));
         value_type const os(static_cast<value_type>(1) - static_cast<value_type>(s));
 
-        m[0][0] = RED_WEIGHT * os + ns;
-        m[0][1] = RED_WEIGHT * os;
-        m[0][2] = RED_WEIGHT * os;
+        m[0][0] = f_luma_red   * os + ns;
+        m[0][1] = f_luma_red   * os;
+        m[0][2] = f_luma_red   * os;
 
-        m[1][0] = GREEN_WEIGHT * os;
-        m[1][1] = GREEN_WEIGHT * os + ns;
-        m[1][2] = GREEN_WEIGHT * os;
+        m[1][0] = f_luma_green * os;
+        m[1][1] = f_luma_green * os + ns;
+        m[1][2] = f_luma_green * os;
 
-        m[2][0] = BLUE_WEIGHT * os;
-        m[2][1] = BLUE_WEIGHT * os;
-        m[2][2] = BLUE_WEIGHT * os + ns;
+        m[2][0] = f_luma_blue  * os;
+        m[2][1] = f_luma_blue  * os;
+        m[2][2] = f_luma_blue  * os + ns;
 
         return *this * m;
     }
@@ -1241,10 +1275,10 @@ std::cerr << "this " << f_rows << "x" << f_columns
      * $$
      * R_g =
      * \begin{bmatrix}
-     *       1 & 0 & 0 & 0
-     *    \\ 0 & {\sqrt 2 \over \sqrt 3} & -{1 \over \sqrt 3} & 0
-     *    \\ 0 & {1 \over \sqrt 3} & {\sqrt 2 \over \sqrt 3} & 0
-     *    \\ 0 & 0 & 0 & 1
+     *        {\sqrt 2 \over \sqrt 3} & 0 & {1 \over \sqrt 3}       & 0
+     *    \\  0                       & 1 & 0                       & 0
+     *    \\ -{1 \over \sqrt 3}       & 0 & {\sqrt 2 \over \sqrt 3} & 0
+     *    \\  0                       & 0 & 0                       & 1
      * \end{bmatrix}
      * $$
      *
@@ -1322,16 +1356,22 @@ std::cerr << "this " << f_rows << "x" << f_columns
      * See:
      * http://www.graficaobscura.com/matrix/index.html
      *
-     * We can also extract the angles and use:
+     * We can also rewrite the hue matrix as follow:
+     *
+     * $$
+     * H = cos ( \theta ) C + sin ( \theta ) S + T
+     * $$
+     *
+     * Where C is the cosine matrix, S is the sine matrix and T is an
+     * additonal translation.
+     *
+     * I found an example on Microsoft (see link below) which I suspect
+     * does not include the color skewing. In other word, it completely
+     * ignores the color lumence weights which gives invalid results
+     * (albeit in most cases relatively good.)
      *
      * $$
      * H =
-     * \begin{bmatrix}
-     *      0.213 & 0.213 & 0.213
-     *   \\ 0.715 & 0.715 & 0.715
-     *   \\ 0.072 & 0.072 & 0.072
-     * \end{bmatrix}
-     * +
      * cos ( \theta )
      * \begin{bmatrix}
      *       0.787 & -0.213 & -0.213
@@ -1345,10 +1385,61 @@ std::cerr << "this " << f_rows << "x" << f_columns
      *   \\ -0.715 &  0.140 &  0.715
      *   \\  0.928 & -0.283 &  0.072
      * \end{bmatrix}
+     * +
+     * \begin{bmatrix}
+     *      0.213 & 0.213 & 0.213
+     *   \\ 0.715 & 0.715 & 0.715
+     *   \\ 0.072 & 0.072 & 0.072
+     * \end{bmatrix}
      * $$
      *
+     * The correct version is the one we actually use and it goes like this
+     * with high precision (double floating points) and 4x4 matrices:
+     *
+     * IMPORTANT: the weights change depending on the selected luma.
+     * If the user makes use of a luma which is not one supported by
+     * defaut, the algorithm falls back to the fully dynamic version.
+     *
+     * $$
+     * H =
+     * cos ( \theta )
+     * \begin{bmatrix}
+     *       0.943571345820976240 & -0.056428654178995265 & -0.056428654178995265 & 0
+     *   \\ -0.189552583569840000 &  0.810447416430107000 & -0.189552583569853000 & 0
+     *   \\ -0.754018762251120000 & -0.754018762251113000 &  0.245981237748847000 & 0
+     *   \\  0                    &  0                    &  0                    & 0
+     * \end{bmatrix}
+     * +
+     * sin ( \theta )
+     * \begin{bmatrix}
+     *       0.32589470021007605 &  0.90324496939967125 & -0.25145556897954369 & 0
+     *   \\ -0.98010410586906000 & -0.40275383667945400 &  0.17459643251014600 & 0
+     *   \\  0.65420940565900000 & -0.50049113272020600 &  0.07685913646939400 & 0
+     *   \\  0                   &  0                   &  0                   & 0
+     * \end{bmatrix}
+     * +
+     * \begin{bmatrix}
+     *      0.056428654178995 & 0.056428654178995 & 0.056428654178995 & 0
+     *   \\ 0.189552583569860 & 0.189552583569860 & 0.189552583569860 & 0
+     *   \\ 0.754018762251160 & 0.754018762251160 & 0.754018762251160 & 0
+     *   \\ 0                 & 0                 & 0                 & 1
+     * \end{bmatrix}
+     * $$
+     *
+     * This is exactly the matrix we use below, although we directly apply the
+     * matrix additions and multiplications to generate the matrix as quickly
+     * as possible (we calculte just the necessary component and avoid many
+     * copies so it ought to be much faster.)
+     *
+     * \note
+     * It looks like the Microsoft matrices are reversed, so affecting BGR
+     * instead of RGB. Our matrices expects RGBX, but we adjust the
+     * multiplication as required to handle BGR, XBGR, XRGB, etc. We will
+     * change our matrix if required by OpenGL but as far as I know it's
+     * already defined in the correct direction.
+     *
      * See:
-     * http://www.graficaobscura.com/matrix/index.html
+     * https://msdn.microsoft.com/en-us/library/windows/desktop/hh706342(v=vs.85).aspx
      *
      * \note
      * To verify that the angle is correct, one can use this Wikipedia
@@ -1370,52 +1461,155 @@ std::cerr << "this " << f_rows << "x" << f_columns
             throw std::runtime_error("scale() is only for 4x4 matrices at this time");
         }
 
-        // $R_r$ -- rotation around red axis (inverse rotation around X axis)
-        //
-        matrix<T, SIZE> r_r(4, 4);
-        value_type const inv_sqrt_2 = static_cast<value_type>(1) / sqrt(static_cast<value_type>(2));
-        r_r[1][1] =  inv_sqrt_2;
-        r_r[1][2] =  inv_sqrt_2;
-        r_r[2][1] = -inv_sqrt_2;
-        r_r[2][2] =  inv_sqrt_2;
+        value_type const rot_cos(cos(static_cast<value_type>(h)));
+        value_type const rot_sin(sin(static_cast<value_type>(h)));
+
+        if(fabs(f_luma_red   - HDTV_LUMA_RED  ) < 0.0001
+        && fabs(f_luma_green - HDTV_LUMA_GREEN) < 0.0001
+        && fabs(f_luma_blue  - HDTV_LUMA_BLUE ) < 0.0001)
+        {
+            // this matrice make use of the HDTV luma
+            //
+            matrix<T, SIZE> hue_matrix(4, 4);
+
+            hue_matrix[0][0] =  0.85089741314769186 * rot_cos + 0.39419567713872435 * rot_sin + 0.14910258685230815;
+            hue_matrix[0][1] = -0.14910258685230816 * rot_cos + 0.97154594632835023 * rot_sin + 0.14910258685230815;
+            hue_matrix[0][2] = -0.14910258685230816 * rot_cos - 0.18315459205090151 * rot_sin + 0.14910258685230815;
+
+            hue_matrix[1][0] = -0.08406523610970199 * rot_cos - 0.93399661436972614 * rot_sin + 0.08406523610970204;
+            hue_matrix[1][1] =  0.91593476389029794 * rot_cos - 0.35664634518010058 * rot_sin + 0.08406523610970204;
+            hue_matrix[1][2] = -0.08406523610970201 * rot_cos + 0.22070392400952521 * rot_sin + 0.08406523610970204;
+
+            hue_matrix[2][0] = -0.76683217703798975 * rot_cos + 0.53980093723100184 * rot_sin + 0.76683217703798978;
+            hue_matrix[2][1] = -0.76683217703798980 * rot_cos - 0.61489960114824952 * rot_sin + 0.76683217703798978;
+            hue_matrix[2][2] =  0.23316782296201015 * rot_cos - 0.03754933195862373 * rot_sin + 0.76683217703798978;
+
+            return *this * hue_matrix;
+        }
+
+        if(fabs(f_luma_red   - LED_LUMA_RED  ) < 0.0001
+        && fabs(f_luma_green - LED_LUMA_GREEN) < 0.0001
+        && fabs(f_luma_blue  - LED_LUMA_BLUE ) < 0.0001)
+        {
+            // this matrice make use of the LED luma
+            //
+            matrix<T, SIZE> hue_matrix(4, 4);
+
+            hue_matrix[0][0] =  0.86455583487454547 * rot_cos + 0.40703991394281032 * rot_sin + 0.13544416512545457;
+            hue_matrix[0][1] = -0.13544416512545459 * rot_cos + 0.98439018313243625 * rot_sin + 0.13544416512545460;
+            hue_matrix[0][2] = -0.13544416512545459 * rot_cos - 0.17031035524681553 * rot_sin + 0.13544416512545460;
+
+            hue_matrix[1][0] = -0.07977101160856729 * rot_cos - 0.95224727296282565 * rot_sin + 0.07977101160856727;
+            hue_matrix[1][1] =  0.92022898839143270 * rot_cos - 0.37489700377320009 * rot_sin + 0.07977101160856730;
+            hue_matrix[1][2] = -0.07977101160856729 * rot_cos + 0.20245326541642572 * rot_sin + 0.07977101160856730;
+
+            hue_matrix[2][0] = -0.78478482326597805 * rot_cos + 0.54520735902001539 * rot_sin + 0.78478482326597820;
+            hue_matrix[2][1] = -0.78478482326597812 * rot_cos - 0.60949317935923603 * rot_sin + 0.78478482326597832;
+            hue_matrix[2][2] =  0.21521517673402187 * rot_cos - 0.03214291016961022 * rot_sin + 0.78478482326597832;
+
+            return *this * hue_matrix;
+        }
+
+        if(fabs(f_luma_red   - CRT_LUMA_RED  ) < 0.0001
+        && fabs(f_luma_green - CRT_LUMA_GREEN) < 0.0001
+        && fabs(f_luma_blue  - CRT_LUMA_BLUE ) < 0.0001)
+        {
+            // this matrice make use of the CRT luma
+            //
+            matrix<T, SIZE> hue_matrix(4, 4);
+
+            hue_matrix[0][0] =  0.943571345820976240 * rot_cos + 0.32589470021007605 * rot_sin + 0.056428654178995;
+            hue_matrix[0][1] = -0.056428654178995265 * rot_cos + 0.90324496939967125 * rot_sin + 0.056428654178995;
+            hue_matrix[0][2] = -0.056428654178995265 * rot_cos - 0.25145556897954369 * rot_sin + 0.056428654178995;
+
+            hue_matrix[1][0] = -0.189552583569840000 * rot_cos - 0.98010410586906000 * rot_sin + 0.189552583569860;
+            hue_matrix[1][1] =  0.810447416430107000 * rot_cos - 0.40275383667945400 * rot_sin + 0.189552583569860;
+            hue_matrix[1][2] = -0.189552583569853000 * rot_cos + 0.17459643251014600 * rot_sin + 0.189552583569860;
+
+            hue_matrix[2][0] = -0.754018762251120000 * rot_cos + 0.65420940565900000 * rot_sin + 0.754018762251160;
+            hue_matrix[2][1] = -0.754018762251113000 * rot_cos - 0.50049113272020600 * rot_sin + 0.754018762251160;
+            hue_matrix[2][2] =  0.245981237748847000 * rot_cos + 0.07685913646939400 * rot_sin + 0.754018762251160;
+
+            return *this * hue_matrix;
+        }
+
+        if(fabs(f_luma_red   - NTSC_LUMA_RED  ) < 0.0001
+        && fabs(f_luma_green - NTSC_LUMA_GREEN) < 0.0001
+        && fabs(f_luma_blue  - NTSC_LUMA_BLUE ) < 0.0001)
+        {
+            // this matrice make use of the NTSC luma
+            //
+            matrix<T, SIZE> hue_matrix(4, 4);
+
+            value_type const c(cos(h));
+            value_type const s(sin(h));
+
+            hue_matrix[0][0] =  0.97667266520552899 * rot_cos + 0.35888772800180165 * rot_sin + 0.02332733479447109;
+            hue_matrix[0][1] = -0.02332733479447109 * rot_cos + 0.93623799719142759 * rot_sin + 0.02332733479447109;
+            hue_matrix[0][2] = -0.02332733479447108 * rot_cos - 0.21846254118782418 * rot_sin + 0.02332733479447109;
+
+            hue_matrix[1][0] = -0.17753044304672443 * rot_cos - 1.02526720325074270 * rot_sin + 0.17753044304672438;
+            hue_matrix[1][1] =  0.82246955695327556 * rot_cos - 0.44791693406111712 * rot_sin + 0.17753044304672441;
+            hue_matrix[1][2] = -0.17753044304672441 * rot_cos + 0.12943333512850867 * rot_sin + 0.17753044304672441;
+
+            hue_matrix[2][0] = -0.79914222215880441 * rot_cos + 0.66637947524894110 * rot_sin + 0.79914222215880448;
+            hue_matrix[2][1] = -0.79914222215880448 * rot_cos - 0.48832106313031034 * rot_sin + 0.79914222215880459;
+            hue_matrix[2][2] =  0.20085777784119549 * rot_cos + 0.08902920605931547 * rot_sin + 0.79914222215880459;
+
+            return *this * hue_matrix;
+        }
+
+        {
+
+// the full computation, it works, it's just slower than using
+// a pre-calculated matrix
+
+            // $R_r$ -- rotation around red axis (inverse rotation around X axis)
+            //
+            matrix<T, SIZE> r_r(4, 4);
+            value_type const inv_sqrt_2 = static_cast<value_type>(1) / sqrt(static_cast<value_type>(2));
+            r_r[1][1] =  inv_sqrt_2;
+            r_r[1][2] =  inv_sqrt_2;
+            r_r[2][1] = -inv_sqrt_2;
+            r_r[2][2] =  inv_sqrt_2;
 
 std::cerr << "R_r = " << r_r << "\n";
 
-        // $R_g$ -- rotation around green axis (inverse rotation around Y axis)
-        //
-        matrix<T, SIZE> r_g(4, 4);
-        value_type const inv_sqrt_3 = static_cast<value_type>(1) / sqrt(static_cast<value_type>(3));
-        value_type const sqrt_2_over_sqrt_3 = sqrt(static_cast<value_type>(2)) / sqrt(static_cast<value_type>(3));
-        r_g[0][0] =  sqrt_2_over_sqrt_3;
-        r_g[0][2] =  inv_sqrt_3;
-        r_g[2][0] = -inv_sqrt_3;
-        r_g[2][2] =  sqrt_2_over_sqrt_3;
+            // $R_g$ -- rotation around green axis (inverse rotation around Y axis)
+            //
+            matrix<T, SIZE> r_g(4, 4);
+            value_type const inv_sqrt_3 = static_cast<value_type>(1) / sqrt(static_cast<value_type>(3));
+            value_type const sqrt_2_over_sqrt_3 = sqrt(static_cast<value_type>(2)) / sqrt(static_cast<value_type>(3));
+            r_g[0][0] =  sqrt_2_over_sqrt_3;
+            r_g[0][2] =  inv_sqrt_3;
+            r_g[2][0] = -inv_sqrt_3;
+            r_g[2][2] =  sqrt_2_over_sqrt_3;
 
 std::cerr << "R_g = " << r_g << "\n";
 
-        // $R_{rg}$ -- the product or $R_r$ and $R_g$
-        //
-        matrix<T, SIZE> r_rg(r_r * r_g);
+            // $R_{rg}$ -- the product or $R_r$ and $R_g$
+            //
+            matrix<T, SIZE> r_rg(r_r * r_g);
 
 std::cerr << "R_rg = " << r_rg << "\n";
 
-        // Luminance Vector
-        //
-        matrix<T, SIZE> w(4, 1);
-        w[0][0] = RED_WEIGHT;
-        w[1][0] = GREEN_WEIGHT;
-        w[2][0] = BLUE_WEIGHT;
-        w[3][0] = 0;
+            // Luminance Vector
+            //
+            matrix<T, SIZE> w(get_luma_vector());
+            //w[0][0] = RED_WEIGHT;
+            //w[1][0] = GREEN_WEIGHT;
+            //w[2][0] = BLUE_WEIGHT;
+            //w[3][0] = 0;
 
 std::cerr << "w = " << w << "\n";
 
-        matrix<T, SIZE> l(r_rg * w);
+            matrix<T, SIZE> l(r_rg * w);
 
 std::cerr << "l = " << l << "\n";
 
-        matrix<T, SIZE> s(4, 4);
-        s[0][2] = l[0][0] / l[2][0];
-        s[1][2] = l[1][0] / l[2][0];
+            matrix<T, SIZE> s(4, 4);
+            s[0][2] = l[0][0] / l[2][0];
+            s[1][2] = l[1][0] / l[2][0];
 
 std::cerr << "s = " << s << "\n";
 
@@ -1423,18 +1617,16 @@ std::cerr << "s / s = " << (s/s) << "\n";
 
 std::cerr << "M_rg * s = " << (r_rg * s) << "\n";
 
-        matrix<T, SIZE> p(r_rg);
-        p *= s;
+            matrix<T, SIZE> p(r_rg);
+            p *= s;
 
-        // Rotate blue (rotation around Z axis)
-        //
-        matrix<T, SIZE> r_b(4, 4);
-        value_type const rot_cos = cos(static_cast<value_type>(h));
-        value_type const rot_sin = sin(static_cast<value_type>(h));
-        r_b[0][0] =  rot_cos;
-        r_b[0][1] =  rot_sin;
-        r_b[1][0] = -rot_sin;
-        r_b[1][1] =  rot_cos;
+            // Rotate blue (rotation around Z axis)
+            //
+            matrix<T, SIZE> r_b(4, 4);
+            r_b[0][0] =  rot_cos;
+            r_b[0][1] =  rot_sin;
+            r_b[1][0] = -rot_sin;
+            r_b[1][1] =  rot_cos;
 
 std::cerr << "r_b = " << r_b << "\n";
 
@@ -1449,12 +1641,85 @@ std::cerr
     << "\np^-1 = " << (ident/p) << "\n"
     << "---------------------------------------\n";
 
-        // $H = R_r R_g S R_b S^{-1} R_g^{-1} R_r^{-1}$
+            // $H = R_r R_g S R_b S^{-1} R_g^{-1} R_r^{-1}$
+            //
+            return *this * p * r_b / p;
+
+            // others to test further
+            //return r_rg * s * r_b / s / r_rg;
+            //return r_rg * s * r_b / s / r_g / r_r;
+            //return r_r * r_g * r_b / r_g / r_r;
+        }
+    }
+
+    /** \brief Retrieve the current luma vector.
+     *
+     * By default the luma vector is set to the HDTV weights.
+     * This may not be desirable, though. If you would prefer to
+     * use NTSC (?!) or some other weights, call the
+     * set_luma_vector() function with the correct weights.
+     *
+     * \note
+     * This is often referenced as the luminance, which is not quite
+     * correct. What we offer here are luma weights. See:
+     * https://en.wikipedia.org/wiki/Luma_%28video%29 for additional
+     * information.
+     *
+     * You can access to the red, green, and blue weights as:
+     *
+     * \code
+     *      matrix<T, SIZE> luma = m.get_luma_vector();
+     *      matrix::value_type red   = luma[0][0];
+     *      matrix::value_type green = luma[1][0];
+     *      matrix::value_type blue  = luma[2][0];
+     * \endcode
+     *
+     * This matrix can directly be used against a 4x4 matrix.
+     *
+     * The 4th parameter is set to zero.
+     *
+     * \return A 4x1 matrix with the luma weights.
+     *
+     * \sa set_luma_vector()
+     */
+    matrix<T, SIZE> get_luma_vector() const
+    {
+        matrix<T, SIZE> luma(4, 1);
+        luma[0][0] = f_luma_red;
+        luma[1][0] = f_luma_green;
+        luma[2][0] = f_luma_blue;
+        return luma;
+    }
+
+    /** \brief Change the luma vector.
+     *
+     * This function seets the luminance vector to the three weights
+     * you are passing here.
+     *
+     * The current luminance vector can be retrieved as a 4x1 matrix using
+     * the get_luma_vector().
+     *
+     * The recommended values are the following predefined weights:
+     *
+     * \li HDTV_RED_WEIGHT, HDTV_GREEN_WEIGHT, HDTV_BLUE_WEIGHT
+     * \li LED_RED_WEIGHT,  LED_GREEN_WEIGHT,  LED_BLUE_WEIGHT
+     * \li CRT_RED_WEIGHT,  CRT_GREEN_WEIGHT,  CRT_BLUE_WEIGHT
+     * \li NTSC_RED_WEIGHT, NTSC_GREEN_WEIGHT, NTSC_BLUE_WEIGHT
+     *
+     * The HDTV weights are those used by default if you do not callthe
+     * set_luminance_vector() with your own weights.
+     *
+     * \param[in] red_weight    The luma red weight.
+     * \param[in] green_weight  The luma green weight.
+     * \param[in] blue_weight   The luma blue weight.
+     */
+    void set_luma_vector(value_type red_weight, value_type green_weight, value_type blue_weight)
+    {
+        // save the user defined weights
         //
-        return p * r_b / p;
-        //return r_rg * s * r_b / s / r_rg;
-        //return r_rg * s * r_b / s / r_g / r_r;
-        //return r_r * r_g * r_b / r_g / r_r;
+        f_luma_red   = red_weight;
+        f_luma_green = green_weight;
+        f_luma_blue  = blue_weight;
     }
 
     std::string to_string() const
@@ -1487,9 +1752,12 @@ private:
     friend row_ref;
     friend const_row_ref;
 
-    size_type       f_rows = 0;
-    size_type       f_columns = 0;
-    std::vector<T>  f_vector;
+    size_type               f_rows       = 0;
+    size_type               f_columns    = 0;
+    std::vector<T>          f_vector;
+    value_type              f_luma_red   = HDTV_LUMA_RED;
+    value_type              f_luma_green = HDTV_LUMA_GREEN;
+    value_type              f_luma_blue  = HDTV_LUMA_BLUE;
 };
 
 
