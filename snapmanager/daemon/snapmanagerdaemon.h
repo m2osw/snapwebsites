@@ -21,7 +21,6 @@
 #include "snapmanager/manager.h"
 
 // snapwebsites lib
-#include <snapwebsites/addr.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/snap_exception.h>
 #include <snapwebsites/tcp_client_server.h>

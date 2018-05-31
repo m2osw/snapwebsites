@@ -39,8 +39,7 @@
 
 // addr lib
 //
-//#include <libaddr/addr.h>
-#include <snapwebsites/addr.h>  // needs to be fixed!
+#include <libaddr/addr.h>
 
 // Qt lib
 //
@@ -483,7 +482,7 @@ bool watchscripts::output_available(process * p, QByteArray const & output)
             // no snapcommunicator defined "my_address", then show
             // all the IPs on this computer
             //
-            snap_addr::addr::vector_t const ips(snap_addr::addr::get_local_addresses());
+            addr::addr::vector_t const ips(addr::addr::get_local_addresses());
             if(!ips.empty())
             {
                 header += "IP Addresses: ";
@@ -491,7 +490,7 @@ bool watchscripts::output_available(process * p, QByteArray const & output)
                 for(auto const & a : ips)
                 {
                     header += sep;
-                    header += a.get_ipv4or6_string().c_str();
+                    header += a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS).c_str();
                     sep = ", ";
                 }
                 header += "\n";

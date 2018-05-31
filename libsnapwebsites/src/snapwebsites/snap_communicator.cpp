@@ -20,18 +20,30 @@
 #define _GNU_SOURCE
 #endif
 
+// self
+//
 #include "snapwebsites/snap_communicator.h"
 
+// snapwebsites lib
+//
 #include "snapwebsites/log.h"
 #include "snapwebsites/not_reached.h"
 #include "snapwebsites/not_used.h"
 #include "snapwebsites/qstring_stream.h"
 #include "snapwebsites/string_replace.h"
 
+// addr lib
+//
+#include "libaddr/addr_parser.h"
+
+// C++ lib
+//
 #include <sstream>
 #include <limits>
 #include <atomic>
 
+// C lib
+//
 #include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>
@@ -42,6 +54,8 @@
 #include <sys/syscall.h>
 #include <sys/time.h>
 
+// last include
+//
 #include "snapwebsites/poison.h"
 
 
@@ -5180,7 +5194,7 @@ snap_communicator::snap_tcp_server_connection::snap_tcp_server_connection(
                 , mode_t mode
                 , int max_connections
                 , bool reuse_addr)
-    : bio_server(snap_addr::addr(addr, port, "tcp"), max_connections, reuse_addr, certificate, private_key, mode)
+    : bio_server(addr::string_to_addr(addr, "", port, "tcp"), max_connections, reuse_addr, certificate, private_key, mode)
 {
 }
 

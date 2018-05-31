@@ -15,14 +15,30 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "snapwebsites/udp_client_server.h"
 
+// snapwebsites lib
+//
+#include "snapwebsites/log.h"
+
+// C++ lib
+//
 #include <sstream>
+//#include <vector>
+
+// C lib
+//
 #include <string.h>
 #include <unistd.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
 
-#include <vector>
-
+// last include
+//
 #include "snapwebsites/poison.h"
 
 
@@ -82,7 +98,7 @@ udp_client::udp_client(std::string const & addr, int port)
     hints.ai_protocol = IPPROTO_UDP;
     std::string port_str(decimal_port.str());
     int r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &f_addrinfo));
-    if(r != 0 || f_addrinfo == NULL)
+    if(r != 0 || f_addrinfo == nullptr)
     {
         throw udp_client_server_runtime_error(("invalid address or port: \"" + addr + ":" + port_str + "\"").c_str());
     }
@@ -194,6 +210,14 @@ int udp_client::send(char const * msg, size_t size)
  * We only make use of the first address found by getaddrinfo(). All
  * the other addresses are ignored.
  *
+ * \warning
+ * Remember that the multicast feature under Linux is shared by all
+ * processes running on that server. Any one process can listen for
+ * any and all multicast messages from any other process. Our
+ * implementation limits the multicast from a specific IP. However.
+ * other processes can also receive you packets and there is nothing
+ * you can do to prevent that.
+ *
  * \exception udp_client_server_runtime_error
  * The udp_client_server_runtime_error exception is raised when the address
  * and port combinaison cannot be resolved or if the socket cannot be
@@ -201,8 +225,9 @@ int udp_client::send(char const * msg, size_t size)
  *
  * \param[in] addr  The address we receive on.
  * \param[in] port  The port we receive from.
+ * \param[in] multicast_addr  A multicast address.
  */
-udp_server::udp_server(std::string const & addr, int port)
+udp_server::udp_server(std::string const & addr, int port, std::string const * multicast_addr)
     : f_port(port)
     , f_addr(addr)
 {
@@ -210,37 +235,105 @@ udp_server::udp_server(std::string const & addr, int port)
     {
         throw udp_client_server_parameter_error("the address cannot be an empty string");
     }
+
     if(f_port < 0 || f_port >= 65536)
     {
         throw udp_client_server_parameter_error("invalid port for a client socket");
     }
+
     std::stringstream decimal_port;
     decimal_port << f_port;
+
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_protocol = IPPROTO_UDP;
+
     std::string port_str(decimal_port.str());
+
     int r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &f_addrinfo));
-    if(r != 0 || f_addrinfo == NULL)
+    if(r != 0 || f_addrinfo == nullptr)
     {
-        throw udp_client_server_runtime_error(("invalid address or port for UDP socket: \"" + addr + ":" + port_str + "\"").c_str());
+        throw udp_client_server_runtime_error("invalid address or port for UDP socket: \"" + addr + ":" + port_str + "\"");
     }
+
     f_socket = socket(f_addrinfo->ai_family, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP);
     if(f_socket == -1)
     {
         freeaddrinfo(f_addrinfo);
-        throw udp_client_server_runtime_error(("could not create UDP socket for: \"" + addr + ":" + port_str + "\"").c_str());
+        throw udp_client_server_runtime_error("could not create UDP socket for: \"" + addr + ":" + port_str + "\"");
     }
+
+    // pick the first address only
+    //
     r = bind(f_socket, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
     if(r != 0)
     {
         freeaddrinfo(f_addrinfo);
         close(f_socket);
-        throw udp_client_server_runtime_error(("could not bind UDP socket with: \"" + addr + ":" + port_str + "\"").c_str());
+        throw udp_client_server_runtime_error("could not bind UDP socket with: \"" + addr + ":" + port_str + "\"");
+    }
+    if(multicast_addr != nullptr)
+    {
+        struct ip_mreqn mreq;
+
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_UNSPEC;
+        hints.ai_socktype = SOCK_DGRAM;
+        hints.ai_protocol = IPPROTO_UDP;
+
+        // we use the multicast address, but the same port as for
+        // the other address
+        //
+        struct addrinfo * a(nullptr);
+        r = getaddrinfo(multicast_addr->c_str(), port_str.c_str(), &hints, &a);
+        if(r != 0 || a == nullptr)
+        {
+            throw udp_client_server_runtime_error("invalid address or port for UDP socket: \"" + addr + ":" + port_str + "\"");
+        }
+
+        // both addresses must have the exact right size
+        //
+        if(a->ai_addrlen != sizeof(mreq.imr_multiaddr)
+        && f_addrinfo->ai_addrlen != sizeof(mreq.imr_address))
+        {
+            throw udp_client_server_runtime_error("invalid address type for UDP multicast: \"" + addr + ":" + port_str
+                                                        + "\" or \"" + *multicast_addr + ":" + port_str + "\"");
+        }
+
+        memcpy(&mreq.imr_multiaddr, a->ai_addr->sa_data, sizeof(mreq.imr_multiaddr));
+        memcpy(&mreq.imr_address, f_addrinfo->ai_addr->sa_data, sizeof(mreq.imr_address));
+        mreq.imr_ifindex = 0;   // no specific interface
+
+        r = setsockopt(f_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+        if(r < 0)
+        {
+            int const e(errno);
+            throw udp_client_server_runtime_error("IP_ADD_MEMBERSHIP failed for: \"" + addr + ":" + port_str
+                                                        + "\" or \"" + *multicast_addr + ":" + port_str + "\", "
+                                                        + std::to_string(e) + strerror(e));
+        }
+
+        // setup the multicast to 0 so we don't receive other's
+        // messages; apparently the default would be 1
+        //
+        int multicast_all(0);
+        r = setsockopt(f_socket, IPPROTO_IP, IP_MULTICAST_ALL, &multicast_all, sizeof(multicast_all));
+        if(r < 0)
+        {
+            // things should still work if the IP_MULTICAST_ALL is not
+            // set as we want it
+            //
+            int const e(errno);
+            SNAP_LOG_WARNING("could not set IP_MULTICAST_ALL to zero, e = ")
+                            (e)
+                            (" -- ")
+                            (strerror(e));
+        }
     }
 }
+
 
 /** \brief Clean up the UDP server.
  *
@@ -251,6 +344,7 @@ udp_server::~udp_server()
     freeaddrinfo(f_addrinfo);
     close(f_socket);
 }
+
 
 /** \brief The socket used by this UDP server.
  *
@@ -264,6 +358,40 @@ int udp_server::get_socket() const
     return f_socket;
 }
 
+
+/** \brief Retrieve the size of the MTU on that connection.
+ *
+ * Linux offers a ioctl() function to retrieve the MTU's size. This
+ * function uses that and returns the result. If the call fails,
+ * then the function returns -1.
+ *
+ * The function returns the MTU's size of the socket on this side.
+ * If you want to communicate effectively with another system, you
+ * want to also ask about the MTU on the other side of the socket.
+ *
+ * \return -1 if the MTU could not be retrieved, the MTU's size otherwise.
+ */
+int udp_server::get_mtu_size() const
+{
+    if(f_mtu_size == 0)
+    {
+        struct ifreq ifr;
+        memset(&ifr, 0, sizeof(ifr));
+        strncpy(ifr.ifr_name, "eth0", sizeof(ifr.ifr_name));
+        if(ioctl(f_socket, SIOCGIFMTU, &ifr) == 0)
+        {
+            f_mtu_size = ifr.ifr_mtu;
+        }
+        else
+        {
+            f_mtu_size = -1;
+        }
+    }
+
+    return f_mtu_size;
+}
+
+
 /** \brief The port used by this UDP server.
  *
  * This function returns the port attached to the UDP server. It is a copy
@@ -275,6 +403,7 @@ int udp_server::get_port() const
 {
     return f_port;
 }
+
 
 /** \brief Return the address of this UDP server.
  *
@@ -288,6 +417,7 @@ std::string udp_server::get_addr() const
 {
     return f_addr;
 }
+
 
 /** \brief Wait on a message.
  *
@@ -311,6 +441,7 @@ int udp_server::recv(char * msg, size_t max_size)
 {
     return static_cast<int>(::recv(f_socket, msg, max_size, 0));
 }
+
 
 /** \brief Wait for data to come in.
  *
@@ -342,7 +473,7 @@ int udp_server::timed_recv(char * msg, size_t const max_size, int const max_wait
     struct timeval timeout;
     timeout.tv_sec = max_wait_ms / 1000;
     timeout.tv_usec = (max_wait_ms % 1000) * 1000;
-    int const retval(select(f_socket + 1, &s, NULL, &s, &timeout));
+    int const retval(select(f_socket + 1, &s, nullptr, &s, &timeout));
     if(retval == -1)
     {
         // select() set errno accordingly
@@ -376,7 +507,7 @@ int udp_server::timed_recv(char * msg, size_t const max_size, int const max_wait
  * \param[in] bufsize  The maximum size of the returned string in bytes.
  * \param[in] max_wait_ms  The maximum number of milliseconds to wait for a message.
  *
- * \return received string. NULL if error.
+ * \return received string. nullptr if error.
  *
  * \sa timed_recv()
  */

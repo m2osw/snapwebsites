@@ -24,7 +24,6 @@
 
 // snapwebsites lib
 //
-#include <snapwebsites/addr.h>
 #include <snapwebsites/chownnm.h>
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/loadavg.h>
@@ -34,6 +33,11 @@
 #include <snapwebsites/snap_communicator.h>
 #include <snapwebsites/snapwebsites.h>
 #include <snapwebsites/tokenize_string.h>
+
+// addr libr
+//
+#include <libaddr/addr_exceptions.h>
+#include <libaddr/addr_parser.h>
 
 // Qt lib
 //
@@ -313,7 +317,7 @@ class remote_communicator_connections
 public:
     typedef std::shared_ptr<remote_communicator_connections>    pointer_t;
 
-                                            remote_communicator_connections(snap_communicator_server_pointer_t communicator, snap_addr::addr const & my_addr);
+                                            remote_communicator_connections(snap_communicator_server_pointer_t communicator, addr::addr const & my_addr);
 
     QString                                 get_my_address() const;
     void                                    add_remote_communicator(QString const & addr);
@@ -327,7 +331,7 @@ public:
 
 private:
     snap_communicator_server_pointer_t      f_communicator_server;
-    snap_addr::addr const &                 f_my_address;
+    addr::addr const &                      f_my_address;
     QMap<QString, int>                      f_all_ips;
     int64_t                                 f_last_start_date = 0;
     remote_snap_communicator_list_t         f_smaller_ips;      // we connect to smaller IPs
@@ -403,7 +407,7 @@ private:
     snap::snap_communicator::snap_connection::pointer_t f_ping;             // UDP/IP
     snap::snap_communicator::snap_connection::pointer_t f_loadavg_timer;    // a 1 second timer to calculate load (used to load balance)
     float                                               f_last_loadavg = 0.0f;
-    snap_addr::addr                                     f_my_address;
+    addr::addr                                          f_my_address;
     QString                                             f_local_services;
     sorted_list_of_strings_t                            f_local_services_list;
     QString                                             f_services_heard_of;
@@ -878,10 +882,10 @@ public:
     virtual void                    process_connection_failed(std::string const & error_message) override;
     virtual void                    process_connected() override;
 
-    snap_addr::addr const &         get_address() const;
+    addr::addr const &              get_address() const;
 
 private:
-    snap_addr::addr                 f_address;
+    addr::addr                      f_address;
 };
 
 
@@ -1096,7 +1100,7 @@ void gossip_to_remote_snap_communicator::process_connected()
 
 
 
-remote_communicator_connections::remote_communicator_connections(snap_communicator_server::pointer_t communicator_server, snap_addr::addr const & my_addr)
+remote_communicator_connections::remote_communicator_connections(snap_communicator_server::pointer_t communicator_server, addr::addr const & my_addr)
     : f_communicator_server(communicator_server)
     , f_my_address(my_addr)
 {
@@ -1106,7 +1110,7 @@ remote_communicator_connections::remote_communicator_connections(snap_communicat
 
 QString remote_communicator_connections::get_my_address() const
 {
-    return f_my_address.get_ipv4or6_string(true).c_str();
+    return f_my_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str();
 }
 
 
@@ -1115,7 +1119,7 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
     SNAP_LOG_DEBUG("adding remote communicator at ")(addr_port);
 
     // no default address for neighbors
-    snap_addr::addr remote_addr(addr_port.toUtf8().data(), "", 4040, "tcp");
+    addr::addr remote_addr(addr::string_to_addr(addr_port.toUtf8().data(), "", 4040, "tcp"));
 
     if(remote_addr == f_my_address)
     {
@@ -1126,7 +1130,7 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
         return;
     }
 
-    QString const addr(remote_addr.get_ipv4or6_string().c_str());
+    QString const addr(remote_addr.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS).c_str());
     int const port(remote_addr.get_port());
 
     // was this address already added
@@ -1415,7 +1419,7 @@ public:
         , base_connection(cs)
         , f_server_name(server_name)
         //, f_address(get_client_addr_port(), "tcp")   // TODO: see if we could instead have a get address which returns a sockaddr_in[6] or even have the snap_addr::addr in our tcp_client_server classes
-        , f_address(get_remote_address().toUtf8().data(), "tcp")  // this is the address:port of the peer (the computer on the other side)
+        , f_address(addr::string_to_addr(get_remote_address().toUtf8().data(), "", -1, "tcp"))  // this is the address:port of the peer (the computer on the other side) -- TODO make a get_remote_addr() which returns an addr::addr directly
     {
     }
 
@@ -1585,7 +1589,7 @@ public:
      *
      * \return A reference to the remote address of this connection.
      */
-    snap_addr::addr const & get_address() const
+    addr::addr const & get_address() const
     {
         return f_address;
     }
@@ -1593,7 +1597,7 @@ public:
 
 private:
     QString const               f_server_name;
-    snap_addr::addr             f_address;
+    addr::addr                  f_address;
     bool                        f_named = false;
 };
 
@@ -2041,7 +2045,8 @@ void snap_communicator_server::init()
         }
         catch( snap::glob_dir_exception const & x )
         {
-            switch( int const r = x.get_error_num() )
+            int const r(x.get_error_num());
+            switch( r )
             {
             case GLOB_NOSPACE:
                 SNAP_LOG_FATAL("glob_dir did not have enough memory to alllocate its buffers.");
@@ -2128,13 +2133,13 @@ void snap_communicator_server::init()
     }
     // remote
     QString const listen_str(f_server->get_parameter("listen"));
-    snap_addr::addr listen_addr(listen_str.toUtf8().data(), "0.0.0.0", 4040, "tcp");
+    addr::addr listen_addr(addr::string_to_addr(listen_str.toUtf8().data(), "0.0.0.0", 4040, "tcp"));
     {
         // make this listener the remote listener, however, if the IP
         // address is 127.0.0.1 we skip on this one, we do not need
         // two listener on the local IP address
         //
-        if(listen_addr.get_network_type() != snap_addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK)
+        if(listen_addr.get_network_type() != addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK)
         {
             // remote connections may make use of SSL, check whether there
             // are certificate and private key files defined (by default
@@ -2147,7 +2152,7 @@ void snap_communicator_server::init()
                                 ? tcp_client_server::bio_client::mode_t::MODE_PLAIN
                                 : tcp_client_server::bio_client::mode_t::MODE_SECURE;
 
-            f_public_ip = listen_addr.get_ipv4or6_string();
+            f_public_ip = listen_addr.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS);
             f_listener.reset(new listener(shared_from_this(), f_public_ip, listen_addr.get_port(), certificate, private_key, max_pending_connections, false, f_server_name));
             f_listener->set_name("snap communicator listener");
             f_communicator->add_connection(f_listener);
@@ -2176,17 +2181,17 @@ void snap_communicator_server::init()
 
     // transform the my_address to a snap_addr::addr object
     //
-    f_my_address = snap_addr::addr(f_server->get_parameter("my_address").toUtf8().data(), "", listen_addr.get_port(), "tcp");
-    snap_addr::addr::computer_interface_address_t cia(f_my_address.is_computer_interface_address());
-    if(cia == snap_addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_ERROR)
+    f_my_address = addr::addr(addr::string_to_addr(f_server->get_parameter("my_address").toUtf8().data(), "", listen_addr.get_port(), "tcp"));
+    addr::addr::computer_interface_address_t cia(f_my_address.is_computer_interface_address());
+    if(cia == addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_ERROR)
     {
         int const e(errno);
         SNAP_LOG_ERROR("somehow getifaddrs() failed with errno: ")(e)(" -- ")(strerror(e));
         // we go on anyway...
     }
-    else if(cia != snap_addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE)
+    else if(cia != addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE)
     {
-        std::string const addr(f_my_address.get_ipv6_string());
+        std::string const addr(f_my_address.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS));
         SNAP_LOG_FATAL("my_address \"")(addr)("\" not found on this computer. Did a copy of the configuration file and forgot to change that entry?");
         throw snap::snap_exception(QString("my_address \"%1\" not found on this computer. Did a copy of the configuration file and forgot to change that entry?.").arg(QString::fromUtf8(addr.c_str())));
     }
@@ -2798,7 +2803,7 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
                                 //
                                 reply.set_command("ACCEPT");
                                 reply.add_parameter("server_name", f_server_name);
-                                reply.add_parameter("my_address", QString::fromUtf8(f_my_address.get_ipv4or6_string(true).c_str()));
+                                reply.add_parameter("my_address", QString::fromUtf8(f_my_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()));
 
                                 // services
                                 if(!f_local_services.isEmpty())
@@ -4031,7 +4036,7 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
             {
                 switch(conn->get_address().get_network_type())
                 {
-                case snap_addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK:
+                case addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK:
                     // these are localhost services, avoid sending the
                     // message is the destination does not know the
                     // command
@@ -4043,14 +4048,14 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
                     }
                     break;
 
-                case snap_addr::addr::network_type_t::NETWORK_TYPE_PRIVATE:
+                case addr::addr::network_type_t::NETWORK_TYPE_PRIVATE:
                     // these are computers within the same local network (LAN)
                     // we forward messages if at least 'remote' is true
                     //
                     broadcast = remote; // destination: "*" or "?"
                     break;
 
-                case snap_addr::addr::network_type_t::NETWORK_TYPE_PUBLIC:
+                case addr::addr::network_type_t::NETWORK_TYPE_PUBLIC:
                     // these are computers in another data center
                     // we forward messages only when 'all' is true
                     //
@@ -4069,7 +4074,7 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
                 //
                 switch(remote_communicator->get_address().get_network_type())
                 {
-                case snap_addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK:
+                case addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK:
                     {
                         static bool warned(false);
                         if(!warned)
@@ -4080,14 +4085,14 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
                     }
                     break;
 
-                case snap_addr::addr::network_type_t::NETWORK_TYPE_PRIVATE:
+                case addr::addr::network_type_t::NETWORK_TYPE_PRIVATE:
                     // these are computers within the same local network (LAN)
                     // we forward messages if at least 'remote' is true
                     //
                     broadcast = remote; // destination: "*" or "?"
                     break;
 
-                case snap_addr::addr::network_type_t::NETWORK_TYPE_PUBLIC:
+                case addr::addr::network_type_t::NETWORK_TYPE_PUBLIC:
                     // these are computers in another data center
                     // we forward messages only when 'all' is true
                     //
@@ -4104,7 +4109,9 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
             {
                 // get the IP address of the remote snapcommunicator
                 //
-                QString const address(QString::fromUtf8((conn ? conn->get_address() : remote_communicator->get_address()).get_ipv4or6_string(false, false).c_str()));
+                QString const address(QString::fromUtf8((conn
+                            ? conn->get_address()
+                            : remote_communicator->get_address()).to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY).c_str()));
                 if(!informed_neighbors_list.contains(address))
                 {
                     // not in the list of informed neighbors, add it and
@@ -4132,7 +4139,7 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
                 service_connection::pointer_t conn(std::dynamic_pointer_cast<service_connection>(nc));
                 if(conn)
                 {
-                    QString const address(QString::fromUtf8(conn->get_address().get_ipv4or6_string(false, false).c_str()));
+                    QString const address(QString::fromUtf8(conn->get_address().to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY).c_str()));
                     if(!informed_neighbors_list.contains(address))
                     {
                         // not in the list of informed neighbors, add it and
@@ -4148,7 +4155,7 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
                     remote_snap_communicator_pointer_t remote_communicator(std::dynamic_pointer_cast<remote_snap_communicator>(nc));
                     if(remote_communicator)
                     {
-                        QString const address(QString::fromUtf8(remote_communicator->get_address().get_ipv4or6_string(false, false).c_str()));
+                        QString const address(QString::fromUtf8(remote_communicator->get_address().to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY).c_str()));
                         if(!informed_neighbors_list.contains(address))
                         {
                             // not in the list of informed neighbors, add it and
@@ -4169,7 +4176,7 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
         // for the gossiping to work, we include additional
         // information in the message
         //
-        QString const originator(QString::fromUtf8(f_my_address.get_ipv4or6_string().c_str()));
+        QString const originator(QString::fromUtf8(f_my_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS).c_str()));
         if(!informed_neighbors_list.contains(originator))
         {
             // include self since we already know of the message too!
@@ -4417,7 +4424,7 @@ void snap_communicator_server::save_loadavg(snap::snap_communicator_message cons
     snap::loadavg_item item;
 
     // Note: we do not use the port so whatever number here is fine
-    snap_addr::addr a(snap_addr::addr(my_address.toUtf8().data(), "127.0.0.1", 4040, "tcp"));
+    addr::addr a(addr::string_to_addr(my_address.toUtf8().data(), "127.0.0.1", 4040, "tcp"));
     a.set_port(4040); // actually force the port so in effect it is ignored
     a.get_ipv6(item.f_address);
 
@@ -4490,7 +4497,7 @@ void snap_communicator_server::process_load_balancing()
         snap::snap_communicator_message load_avg;
         load_avg.set_command("LOADAVG");
         load_avg.add_parameter("avg", QString("%1").arg(avg));
-        load_avg.add_parameter("my_address", QString::fromUtf8(f_my_address.get_ipv4or6_string(true).c_str()));
+        load_avg.add_parameter("my_address", QString::fromUtf8(f_my_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()));
         load_avg.add_parameter("timestamp", QString("%1").arg(time(nullptr)));
 
         snap::snap_communicator::snap_connection::vector_t const & all_connections(f_communicator->get_connections());
@@ -4962,7 +4969,7 @@ void snap_communicator_server::process_connected(snap::snap_communicator::snap_c
     snap::snap_communicator_message connect;
     connect.set_command("CONNECT");
     connect.add_parameter("version", snap::snap_communicator::VERSION);
-    connect.add_parameter("my_address", QString::fromUtf8(f_my_address.get_ipv4or6_string(true).c_str()));
+    connect.add_parameter("my_address", QString::fromUtf8(f_my_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()));
     connect.add_parameter("server_name", f_server_name);
     if(!f_explicit_neighbors.isEmpty())
     {
@@ -5017,7 +5024,7 @@ remote_snap_communicator::remote_snap_communicator(snap_communicator_server::poi
                             , cs->connection_mode()
                             , REMOTE_CONNECTION_DEFAULT_TIMEOUT)
     , base_connection(cs)
-    , f_address(addr.toUtf8().data(), "", 4040, "tcp")
+    , f_address(addr::string_to_addr(addr.toUtf8().data(), "", 4040, "tcp"))
 {
 }
 
@@ -5026,12 +5033,12 @@ remote_snap_communicator::~remote_snap_communicator()
 {
     try
     {
-        SNAP_LOG_DEBUG("deleting remote_snap_communicator connection: ")(f_address.get_ipv4or6_string(true, true));
+        SNAP_LOG_DEBUG("deleting remote_snap_communicator connection: ")(f_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT));
     }
-    catch(snap_addr::addr_invalid_parameter_exception const &)
+    catch(addr::addr_invalid_parameter_exception const &)
     {
     }
-    catch(snap_addr::addr_invalid_argument_exception const &)
+    catch(addr::addr_invalid_argument_exception const &)
     {
     }
 }
@@ -5069,7 +5076,7 @@ void remote_snap_communicator::process_connected()
 }
 
 
-snap_addr::addr const & remote_snap_communicator::get_address() const
+addr::addr const & remote_snap_communicator::get_address() const
 {
     return f_address;
 }

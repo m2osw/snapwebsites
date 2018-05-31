@@ -63,14 +63,23 @@
 // SCRIPT_NAME=/cgi-bin/snap.cgi
 //
 
+// self (server version)
+//
 #include "version.h"
 
-#include <snapwebsites/addr.h>
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/snapwebsites.h>
 #include <snapwebsites/tcp_client_server.h>
 
+// addr lib
+//
+#include <libaddr/addr_parser.h>
+
+// advgetopt lib
+//
 #include <advgetopt/advgetopt.h>
 
 
@@ -231,8 +240,8 @@ bool snap_cgi::verify()
     // If not defined, keep the default of 127.0.0.1:4004
     if(f_opt.is_defined("snapserver"))
     {
-        snap_addr::addr a(f_opt.get_string("snapserver"), f_address, f_port, "tcp");
-        f_address = a.get_ipv4or6_string(false, false);
+        addr::addr a(addr::string_to_addr(f_opt.get_string("snapserver"), f_address, f_port, "tcp"));
+        f_address = a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY);
         f_port = a.get_port();
     }
 

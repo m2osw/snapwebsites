@@ -22,7 +22,6 @@
 
 // snapwebsites lib
 //
-#include <snapwebsites/addr.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/snap_exception.h>
 #include <snapwebsites/snap_communicator.h>

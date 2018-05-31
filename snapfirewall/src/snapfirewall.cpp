@@ -27,12 +27,29 @@
 #include <snapwebsites/snap_cassandra.h>
 #include <snapwebsites/snapwebsites.h>
 
+// addr lib
+//
+#include <libaddr/addr_exceptions.h>
+#include <libaddr/addr_parser.h>
+
+// Qt lib
+//
+#include <QDir>
+
+// C++ lib
+//
 #include <fstream>
 #include <sstream>
 
+// C lib
+//
 #include <sys/stat.h>
 
-#include <QDir>
+// last include
+//
+#include <snapwebsites/poison.h>
+
+
 
 namespace
 {
@@ -812,26 +829,26 @@ void snap_firewall::block_info_t::set_ip(QString const & ip)
         // it does not matter much here, I would think, since we will ignore the
         // port from the addr object, we are just verifying the IP address
         //
-        snap_addr::addr a(ip.toUtf8().data(), "", 123, "tcp");
+        addr::addr a(addr::string_to_addr(ip.toUtf8().data(), "", 123, "tcp"));
 
         switch(a.get_network_type())
         {
-        case snap_addr::addr::network_type_t::NETWORK_TYPE_UNDEFINED:
-        case snap_addr::addr::network_type_t::NETWORK_TYPE_PRIVATE:
-        case snap_addr::addr::network_type_t::NETWORK_TYPE_CARRIER:
-        case snap_addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL:
-        case snap_addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK:
-        case snap_addr::addr::network_type_t::NETWORK_TYPE_ANY:
+        case addr::addr::network_type_t::NETWORK_TYPE_UNDEFINED:
+        case addr::addr::network_type_t::NETWORK_TYPE_PRIVATE:
+        case addr::addr::network_type_t::NETWORK_TYPE_CARRIER:
+        case addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL:
+        case addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK:
+        case addr::addr::network_type_t::NETWORK_TYPE_ANY:
             SNAP_LOG_ERROR("BLOCK with an unexpected IP address type in \"")(ip)("\". BLOCK will be ignored.");
             return;
 
-        case snap_addr::addr::network_type_t::NETWORK_TYPE_MULTICAST:
-        case snap_addr::addr::network_type_t::NETWORK_TYPE_PUBLIC: // == NETWORK_TYPE_UNKNOWN
+        case addr::addr::network_type_t::NETWORK_TYPE_MULTICAST:
+        case addr::addr::network_type_t::NETWORK_TYPE_PUBLIC: // == NETWORK_TYPE_UNKNOWN
             break;
 
         }
     }
-    catch(snap_addr::addr_invalid_argument_exception const & e)
+    catch(addr::addr_invalid_argument_exception const & e)
     {
         SNAP_LOG_ERROR("BLOCK with an invalid IP address in \"")(ip)("\". BLOCK will be ignored.");
         return;

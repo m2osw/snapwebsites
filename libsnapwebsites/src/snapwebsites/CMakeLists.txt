@@ -44,14 +44,11 @@ endif()
 
 
 include_directories(
-    SYSTEM
-        ${MAGIC_INCLUDE_DIRS}
-        ${LIBPROCPS_INCLUDE_DIRS}
-        ${OPENSSL_INCLUDE_DIR}
-)
-
-include_directories(
+    ${MAGIC_INCLUDE_DIRS}
+    ${LIBPROCPS_INCLUDE_DIRS}
+    ${OPENSSL_INCLUDE_DIR}
     ${CASSVALUE_INCLUDE_DIRS}
+    ${LIBADDR_INCLUDE_DIRS}
     ${LIBTLD_INCLUDE_DIRS}
     ${LOG4CPLUS_INCLUDE_DIRS}
 )
@@ -61,7 +58,6 @@ qt5_add_resources(SNAP_LIBRARY_RESOURCES_RCC
 )
 
 set( HEADERS
-    addr.h
     cache_control.h
     chownnm.h
     compression.h
@@ -137,7 +133,6 @@ set( HEADERS
 
 add_library( ${PROJECT_NAME} SHARED
     ${HEADERS}
-    addr.cpp                                    # handling of host IP addresses (IPv4 and IPv6)
     cache_control.cpp                           # parse / handle Cache-Control settings
     chownnm.cpp                                 # chown using user and group names instead of uid/gid
     compression.cpp                             # compress/decompress data
@@ -199,9 +194,10 @@ add_library( ${PROJECT_NAME} SHARED
 target_link_libraries( ${PROJECT_NAME}
     ${ADVGETOPT_LIBRARIES}
     ${CASSVALUE_LIBRARIES}
+    ${LIBADDR_LIBRARIES}
     ${LIBEXCEPT_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
     ${LIBTLD_LIBRARIES}
+    ${LOG4CPLUS_LIBRARIES}
     ${QT_LIBRARIES}
     ${AS2JS_LIBRARIES}
     ${QTCASSANDRA_LIBRARIES}

@@ -27,14 +27,23 @@
 // THE SOFTWARE.
 //
 
+// self
+//
 #include "snapmanagerdaemon.h"
 
-#include <snapwebsites/addr.h>
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/tokenize_string.h>
 
+// addr lib
+//
+#include <libaddr/addr_parser.h>
+
+// last include
+//
 #include <sstream>
 
 
@@ -649,7 +658,7 @@ bool manager_daemon::stop_now_prima() const
 
 /** \brief A computer was unreachable, make sure to take note.
  *
- * The snapcommunicator will attempt to connect to remote computers
+ * The snapcommunicator attempts to connect to remote computers
  * that are expected to run snapcommunicator, either with a direct
  * connection or to send it a GOSSIP message.
  *
@@ -667,7 +676,7 @@ void manager_daemon::unreachable_message(snap::snap_communicator_message const &
     // the parameter "who" must exist and define the IP address of the
     // computer that could not connect
     //
-    snap_addr::addr who_addr(snap_addr::addr((message.get_parameter("who") + ":123").toUtf8().data(), "tcp"));
+    addr::addr const who_addr(addr::string_to_addr((message.get_parameter("who") + ":123").toUtf8().data(), "127.0.0.1", 123, "tcp"));
 
     // retrieve the list of servers (<data-path>/cluster-status/*.db file names)
     //
@@ -693,7 +702,7 @@ void manager_daemon::unreachable_message(snap::snap_communicator_message const &
         {
             continue;
         }
-        snap_addr::addr server_addr(snap_addr::addr((ip + ":123").toUtf8().data(), "tcp"));
+        addr::addr const server_addr(addr::string_to_addr((ip + ":123").toUtf8().data(), "127.0.0.1", 123, "tcp"));
 
         // is that the one that is down?
         //

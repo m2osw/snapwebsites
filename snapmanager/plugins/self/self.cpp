@@ -25,7 +25,6 @@
 
 // snapwebsites lib
 //
-#include <snapwebsites/addr.h>
 #include <snapwebsites/file_content.h>
 #include <snapwebsites/join_strings.h>
 #include <snapwebsites/log.h>
@@ -35,6 +34,10 @@
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/string_pathinfo.h>
 #include <snapwebsites/tokenize_string.h>
+
+// addr lib
+//
+#include <libaddr/addr_parser.h>
 
 // Qt lib
 //
@@ -225,7 +228,7 @@ void self::on_retrieve_status(snap_manager::server_status & server_status)
     }
 
     {
-        snap_addr::addr::vector_t interfaces( snap_addr::addr::get_local_addresses() );
+        addr::addr::vector_t interfaces( addr::addr::get_local_addresses() );
         for( auto const & addr : interfaces )
         {
             if( !addr.is_ipv4() )
@@ -234,13 +237,13 @@ void self::on_retrieve_status(snap_manager::server_status & server_status)
                 continue;
             }
 
-            SNAP_LOG_TRACE("get interface ")(addr.get_iface_name())(", ip addr=")(addr.get_ipv4_string());
+            SNAP_LOG_TRACE("get interface ")(addr.get_iface_name())(", ip addr=")(addr.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL));
             snap_manager::status_t const iface ( snap_manager::status_t::state_t::STATUS_STATE_INFO
                                                , get_plugin_name()
                                                , QString("if::%1 (%2)")
                                                  .arg(addr.get_iface_name().c_str())
                                                  .arg(addr.get_network_type_string().c_str())
-                                               , addr.get_ipv4_string().c_str()
+                                               , addr.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL).c_str()
                                                );
             server_status.set_field(iface);
         }

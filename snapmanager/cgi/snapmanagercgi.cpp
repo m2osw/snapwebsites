@@ -47,6 +47,9 @@
 #include <snapwebsites/snap_uri.h>
 #include <snapwebsites/tokenize_string.h>
 
+// addr lib
+#include <libaddr/addr_parser.h>
+
 // Qt lib
 //
 #include <QFile>
@@ -208,8 +211,8 @@ bool manager_cgi::verify()
     // TODO: make these "just in time" parameters, we nearly never need them
     if(f_config.has_parameter("snapcommunicator", "local_listen"))
     {
-        snap_addr::addr const a(f_config("snapcommunicator", "local_listen"), "127.0.0.1", 4040, "tcp");
-        f_communicator_address = a.get_ipv4or6_string(false, false);
+        addr::addr const a(addr::string_to_addr(f_config("snapcommunicator", "local_listen"), "127.0.0.1", 4040, "tcp"));
+        f_communicator_address = a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY);
         f_communicator_port = a.get_port();
     }
 
@@ -372,14 +375,14 @@ bool manager_cgi::verify()
     }
 
     {
-        snap_addr::addr const remote_address(std::string(remote_addr) + ":80", "tcp");
+        addr::addr const remote_address(addr::string_to_addr(std::string(remote_addr) + ":80", std::string(), -1, "tcp"));
         std::string const client(f_config.has_parameter("clients") ? f_config["clients"] : std::string());
 
         snap::snap_string_list const client_list(QString::fromUtf8(client.c_str()).split(',', QString::SkipEmptyParts));
         bool found(false);
         for(auto const & c : client_list)
         {
-            snap_addr::addr const client_address((c.trimmed() + ":80").toUtf8().data(), "tcp");
+            addr::addr const client_address(addr::string_to_addr((c.trimmed() + ":80").toUtf8().data(), std::string(), -1, "tcp"));
             if(client_address == remote_address)
             {
                 found = true;
@@ -388,7 +391,7 @@ bool manager_cgi::verify()
         }
         if(!found)
         {
-            forbidden(("Your remote address is " + remote_address.get_ipv4or6_string()));
+            forbidden(("Your remote address is " + remote_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL)));
             return false;
         }
     }

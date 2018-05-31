@@ -66,10 +66,11 @@ class udp_server
 public:
     typedef std::shared_ptr<udp_server>     pointer_t;
 
-                        udp_server(std::string const & addr, int port);
+                        udp_server(std::string const & addr, int port, std::string const * multicast_addr = nullptr);
                         ~udp_server();
 
     int                 get_socket() const;
+    int                 get_mtu_size() const;
     int                 get_port() const;
     std::string         get_addr() const;
 
@@ -80,8 +81,9 @@ public:
 private:
     int                 f_socket;
     int                 f_port;
+    mutable int         f_mtu_size = 0;
     std::string         f_addr;
-    struct addrinfo *   f_addrinfo;
+    struct addrinfo *   f_addrinfo = nullptr;
 };
 
 } // namespace udp_client_server

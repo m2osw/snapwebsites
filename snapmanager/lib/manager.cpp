@@ -21,13 +21,16 @@
 
 // snapwebsites lib
 //
-#include <snapwebsites/addr.h>
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qstring_stream.h>
+
+// addr lib
+//
+#include <libaddr/addr_parser.h>
 
 // C lib
 //
@@ -390,8 +393,8 @@ void manager::init(int argc, char * argv[])
     //
     if(f_config.has_parameter("snapcommunicator", "signal"))
     {
-        snap_addr::addr const a(f_config("snapcommunicator", "signal"), f_signal_address, f_signal_port, "udp");
-        f_signal_address = a.get_ipv4or6_string(false, false);
+        addr::addr const a(addr::string_to_addr(f_config("snapcommunicator", "signal"), f_signal_address, f_signal_port, "udp"));
+        f_signal_address = a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY);
         f_signal_port = a.get_port();
     }
 }

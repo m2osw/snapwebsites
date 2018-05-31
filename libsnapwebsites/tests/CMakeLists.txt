@@ -41,9 +41,8 @@ add_subdirectory(catch)
 # tweak the runtime environment in such a way that it could mess up other
 # tests, etc.
 #
-add_subdirectory(cs)	# Client/Server related
-add_subdirectory(ip)	# IP address/ports related
-add_subdirectory(mb)	# Multi-binaries and/or side effects, but no client/server/network
+add_subdirectory(cs)    # Client/Server related
+add_subdirectory(mb)    # Multi-binaries and/or side effects, but no client/server/network
 
 
 # By default "os" tests are turned off. These are used to test an OS feature
@@ -53,3 +52,4 @@ add_subdirectory(mb)	# Multi-binaries and/or side effects, but no client/server/
 #add_subdirectory(os)
 
 
+# vim: ts=4 sw=4 et

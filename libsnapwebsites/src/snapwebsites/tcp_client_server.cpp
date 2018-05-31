@@ -623,10 +623,12 @@ std::string tcp_client::get_client_addr() const
     switch(addr.sa_family)
     {
     case AF_INET:
+        // TODO: verify that 'r' >= sizeof(something)
         inet_ntop(AF_INET, &reinterpret_cast<struct sockaddr_in *>(&addr)->sin_addr, buf, sizeof(buf));
         break;
 
     case AF_INET6:
+        // TODO: verify that 'r' >= sizeof(something)
         inet_ntop(AF_INET6, &reinterpret_cast<struct sockaddr_in6 *>(&addr)->sin6_addr, buf, sizeof(buf));
         break;
 
@@ -1761,6 +1763,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
             f_bio.swap(bio);
 
             // secure connection ready
+            //
             char const * cipher_name(SSL_get_cipher(ssl));
             int cipher_bits(0);
             SSL_get_cipher_bits(ssl, &cipher_bits);
@@ -1786,6 +1789,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
 #pragma GCC diagnostic pop
 
             // connect to the server (open the socket)
+            //
             if(BIO_do_connect(bio.get()) <= 0)
             {
                 bio_log_errors();
@@ -1793,7 +1797,8 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
             }
 
             // it worked, save the results
-            f_bio = bio;
+            //
+            f_bio.swap(bio);
 
             // plain connection ready
         }
@@ -2278,14 +2283,14 @@ int bio_client::write(char const * buf, size_t size)
  * defined at 128 (Ubuntu 16.04.1). See:
  * /usr/include/x86_64-linux-gnu/bits/socket.h
  *
- * \param[in] addr_port  The address and port defined in a snap_addr object.
+ * \param[in] addr_port  The address and port defined in an addr object.
  * \param[in] max_connections  The number of connections to keep in the listen queue.
  * \param[in] reuse_addr  Whether to mark the socket with the SO_REUSEADDR flag.
  * \param[in] certificate  The server certificate filename (PEM).
  * \param[in] private_key  The server private key filename (PEM).
  * \param[in] mode  The mode used to create the listening socket.
  */
-bio_server::bio_server(snap_addr::addr const & addr_port, int max_connections, bool reuse_addr, std::string const & certificate, std::string const & private_key, mode_t mode)
+bio_server::bio_server(addr::addr const & addr_port, int max_connections, bool reuse_addr, std::string const & certificate, std::string const & private_key, mode_t mode)
     : f_max_connections(max_connections <= 0 ? MAX_CONNECTIONS : max_connections)
     //, f_bio(nullptr) -- auto-init
     //, f_ssl_ctx(nullptr) -- auto-init
@@ -2390,7 +2395,7 @@ bio_server::bio_server(snap_addr::addr const & addr_port, int max_connections, b
 
             // create a listening connection
             //
-            std::shared_ptr<BIO> listen(BIO_new_accept(addr_port.get_ipv4or6_string(true).c_str()), bio_deleter);
+            std::shared_ptr<BIO> listen(BIO_new_accept(addr_port.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()), bio_deleter);
             if(!listen)
             {
                 bio_log_errors();
@@ -2438,7 +2443,7 @@ bio_server::bio_server(snap_addr::addr const & addr_port, int max_connections, b
 
     case mode_t::MODE_PLAIN:
         {
-            std::shared_ptr<BIO> listen(BIO_new_accept(addr_port.get_ipv4or6_string(true).c_str()));
+            std::shared_ptr<BIO> listen(BIO_new_accept(addr_port.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()));
             if(!listen)
             {
                 bio_log_errors();

@@ -20,9 +20,9 @@
 // (TODO: move to .cpp once we have the impl!)
 #define OPENSSL_THREAD_DEFINES
 
-// snapwebsites lib
+// addr lib
 //
-#include "snapwebsites/addr.h"
+#include "libaddr/addr.h"
 
 // Qt lib
 //
@@ -234,7 +234,7 @@ public:
         MODE_SECURE             // use TLS encryption
     };
 
-                            bio_server(snap_addr::addr const & addr_port, int max_connections, bool reuse_addr, std::string const & certificate, std::string const & private_key, mode_t mode);
+                            bio_server(addr::addr const & addr_port, int max_connections, bool reuse_addr, std::string const & certificate, std::string const & private_key, mode_t mode);
 
     bool                    is_secure() const;
     int                     get_socket() const;
