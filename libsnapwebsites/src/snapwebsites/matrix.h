@@ -1227,7 +1227,7 @@ std::cerr << "this " << f_rows << "x" << f_columns
         if(f_rows    != 4
         || f_columns != 4)
         {
-            throw std::runtime_error("scale() is only for 4x4 matrices at this time");
+            throw std::runtime_error("saturation() is only for 4x4 matrices at this time");
         }
 
         matrix<T, SIZE> m(4, 4);
