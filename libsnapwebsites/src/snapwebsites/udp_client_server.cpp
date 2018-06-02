@@ -293,7 +293,7 @@ udp_server::udp_server(std::string const & addr, int port, std::string const * m
             throw udp_client_server_runtime_error("invalid address or port for UDP socket: \"" + addr + ":" + port_str + "\"");
         }
 
-        // both addresses must have the exact right size
+        // both addresses must have the right size
         //
         if(a->ai_addrlen != sizeof(mreq.imr_multiaddr)
         && f_addrinfo->ai_addrlen != sizeof(mreq.imr_address))
@@ -368,6 +368,21 @@ int udp_server::get_socket() const
  * The function returns the MTU's size of the socket on this side.
  * If you want to communicate effectively with another system, you
  * want to also ask about the MTU on the other side of the socket.
+ *
+ * \todo
+ * We need to support the possibly dynamically changing MTU size
+ * that the Internet may generate (or even a LAN if you let people
+ * tweak their MTU "randomly".) This is done by preventing
+ * defragmentation (see IP_NODEFRAG in `man 7 ip`) and also by
+ * asking for MTU size discovery (IP_MTU_DISCOVER). The size
+ * discovery changes over time as devices on the MTU path (the
+ * route taken by the packets) changes over time. The idea is
+ * to find the smallest MTU size of the MTU path and use that
+ * to send packets of that size at the most. Note that packets
+ * are otherwise automatically broken in smaller chunks and
+ * rebuilt on the other side, but that is not efficient if you
+ * expect to lose quite a few packets. The limit for chunked
+ * packets is a little under 64Kb.
  *
  * \return -1 if the MTU could not be retrieved, the MTU's size otherwise.
  */
