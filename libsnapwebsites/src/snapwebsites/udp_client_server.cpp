@@ -16,6 +16,9 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
+
+
+
 // self
 //
 #include "snapwebsites/udp_client_server.h"
@@ -33,9 +36,13 @@
 //
 #include <string.h>
 #include <unistd.h>
+//#include <net/ethernet.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/udp.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 
 // last include
 //
@@ -45,6 +52,246 @@
 
 namespace udp_client_server
 {
+
+// ========================= BASE =========================
+
+/** \brief Initialize a UDP base object.
+ *
+ * This function initializes the UDP base object using the address and the
+ * port as specified.
+ *
+ * The port is expected to be a host side port number (i.e. 59200).
+ *
+ * The \p addr parameter is a textual address. It may be an IPv4 or IPv6
+ * address and it can represent a host name or an address defined with
+ * just numbers. If the address cannot be resolved then an error occurs
+ * and the constructor throws.
+ *
+ * \note
+ * The socket is open in this process. If you fork() and exec() then the
+ * socket gets closed by the operating system (i.e. close on exec()).
+ *
+ * \warning
+ * We only make use of the first address found by getaddrinfo(). All
+ * the other addresses are ignored.
+ *
+ * \todo
+ * Add a constructor that supports a libaddr::addr object instead of
+ * just a string address.
+ *
+ * \exception udp_client_server_parameter_error
+ * The \p addr parameter is empty or the port is out of the supported range.
+ *
+ * \exception udp_client_server_runtime_error
+ * The server could not be initialized properly. Either the address cannot be
+ * resolved, the port is incompatible or not available, or the socket could
+ * not be created.
+ *
+ * \param[in] addr  The address to convert to a numeric IP.
+ * \param[in] port  The port number.
+ */
+udp_base::udp_base(std::string const & addr, int port)
+    : f_port(port)
+    , f_addr(addr)
+{
+    // the address can't be an empty string
+    //
+    if(f_addr.empty())
+    {
+        throw udp_client_server_parameter_error("the address cannot be an empty string");
+    }
+
+    // the port must be between 0 and 65535
+    // (although 0 won't work right as far as I know)
+    //
+    if(f_port < 0 || f_port >= 65536)
+    {
+        throw udp_client_server_parameter_error("invalid port for a client socket");
+    }
+
+    // for the getaddrinfo() function, convert the port to a string
+    //
+    std::stringstream decimal_port;
+    decimal_port << f_port;
+    std::string port_str(decimal_port.str());
+
+    // define the getaddrinfo() hints
+    // we are onl interested by addresses representing datagrams and
+    // acceptable by the UDP protocol
+    //
+    struct addrinfo hints = addrinfo();
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
+
+    // retrieve the list of addresses defined by getaddrinfo()
+    //
+    struct addrinfo * info;
+    int const r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &info));
+    if(r != 0 || info == nullptr)
+    {
+        throw udp_client_server_runtime_error(("invalid address or port: \"" + addr + ":" + port_str + "\"").c_str());
+    }
+    f_addrinfo = raii_addrinfo_t(info);
+
+    // now create the socket with the very first socket family
+    //
+    f_socket.reset(socket(f_addrinfo->ai_family, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP));
+    if(f_socket == nullptr)
+    {
+        throw udp_client_server_runtime_error(("could not create socket for: \"" + addr + ":" + port_str + "\"").c_str());
+    }
+}
+
+
+/** \brief Retrieve a copy of the socket identifier.
+ *
+ * This function return the socket identifier as returned by the socket()
+ * function. This can be used to change some flags.
+ *
+ * \return The socket used by this UDP client.
+ */
+int udp_base::get_socket() const
+{
+    return *f_socket;
+}
+
+
+/** \brief Retrieve the size of the MTU on that connection.
+ *
+ * Linux offers a ioctl() function to retrieve the MTU's size. This
+ * function uses that and returns the result. If the call fails,
+ * then the function returns -1.
+ *
+ * The function returns the MTU's size of the socket on this side.
+ * If you want to communicate effectively with another system, you
+ * want to also ask about the MTU on the other side of the socket.
+ *
+ * \note
+ * MTU stands for Maximum Transmission Unit.
+ *
+ * \note
+ * PMTUD stands for Path Maximum Transmission Unit Discovery.
+ *
+ * \note
+ * PLPMTU stands for Packetization Layer Path Maximum Transmission Unit
+ * Discovery.
+ *
+ * \todo
+ * We need to support the possibly dynamically changing MTU size
+ * that the Internet may generate (or even a LAN if you let people
+ * tweak their MTU "randomly".) This is done by preventing
+ * defragmentation (see IP_NODEFRAG in `man 7 ip`) and also by
+ * asking for MTU size discovery (IP_MTU_DISCOVER). The size
+ * discovery changes over time as devices on the MTU path (the
+ * route taken by the packets) changes over time. The idea is
+ * to find the smallest MTU size of the MTU path and use that
+ * to send packets of that size at the most. Note that packets
+ * are otherwise automatically broken in smaller chunks and
+ * rebuilt on the other side, but that is not efficient if you
+ * expect to lose quite a few packets. The limit for chunked
+ * packets is a little under 64Kb.
+ *
+ * \sa
+ * See `man 7 netdevice`
+ *
+ * \return -1 if the MTU could not be retrieved, the MTU's size otherwise.
+ */
+int udp_base::get_mtu_size() const
+{
+    if(f_mtu_size == 0)
+    {
+        struct ifreq ifr;
+        memset(&ifr, 0, sizeof(ifr));
+        strncpy(ifr.ifr_name, "eth0", sizeof(ifr.ifr_name));
+        if(ioctl(*f_socket, SIOCGIFMTU, &ifr) == 0)
+        {
+            f_mtu_size = ifr.ifr_mtu;
+        }
+        else
+        {
+            f_mtu_size = -1;
+        }
+    }
+
+    return f_mtu_size;
+}
+
+
+/** \brief Determine the size of the data buffer we can use.
+ *
+ * This function gets the MTU of the connection (i.e. not the PMTUD
+ * or PLPMTUD yet...) and subtract the space necessary for the IP and
+ * UDP headers. This is called the Maximum Segment Size (MSS).
+ *
+ * \todo
+ * If the IP address (in f_addr) is an IPv6, then we need to switch to
+ * the corresponding IPv6 subtractions.
+ *
+ * \todo
+ * Look into the the IP options because some options add to the size
+ * of the IP header. It's incredible that we have to take care of that
+ * on our end!
+ *
+ * \todo
+ * For congetion control, read more as described on ietf.org:
+ * https://tools.ietf.org/html/rfc8085
+ *
+ * \todo
+ * The sizes that will always work (as long as all the components of the
+ * path are working as per the UDP RFC) are (1) for IPv4, 576 bytes, and
+ * (2) for IPv6, 1280 bytes. This size is called EMTU_S which stands for
+ * "Effective Maximum Transmission Unit for Sending."
+ *
+ * \return The size of the MMU, which is the MTU minus IP and UDP headers.
+ */
+int udp_base::get_mss_size() const
+{
+    // ether_header -- /usr/include/net/ethernet.h
+    // iphdr -- /usr/include/netinet/ip.h
+    // udphdr -- /usr/include/netinet/udp.h
+    return get_mtu_size()
+            //- sizeof(ether_header)    // WARNING: this is for IPv4 only -- this is "transparent" to the MTU (i.e. it wraps the 1,500 bytes)
+            //- ETHER_CRC_LEN           // this is the CRC for the ethernet which appears at the end of the packet
+            - sizeof(iphdr)             // WARNING: this is for IPv4 only
+            //- ...                     // the IP protocol accepts options!
+            - sizeof(udphdr);
+}
+
+
+/** \brief Retrieve the port used by this UDP client.
+ *
+ * This function returns the port used by this UDP client. The port is
+ * defined as an integer, host side.
+ *
+ * \return The port as expected in a host integer.
+ */
+int udp_base::get_port() const
+{
+    return f_port;
+}
+
+
+/** \brief Retrieve a copy of the address.
+ *
+ * This function returns a copy of the address as it was specified in the
+ * constructor. This does not return a canonicalized version of the address.
+ *
+ * The address cannot be modified. If you need to send data on a different
+ * address, create a new UDP client.
+ *
+ * \return A string with a copy of the constructor input address.
+ */
+std::string udp_base::get_addr() const
+{
+    return f_addr;
+}
+
+
+
+
+
+
 
 
 // ========================= CLIENT =========================
@@ -78,37 +325,10 @@ namespace udp_client_server
  * \param[in] port  The port number.
  */
 udp_client::udp_client(std::string const & addr, int port)
-    : f_port(port)
-    , f_addr(addr)
+    : udp_base(addr, port)
 {
-    if(f_addr.empty())
-    {
-        throw udp_client_server_parameter_error("the address cannot be an empty string");
-    }
-    if(f_port < 0 || f_port >= 65536)
-    {
-        throw udp_client_server_parameter_error("invalid port for a client socket");
-    }
-    std::stringstream decimal_port;
-    decimal_port << f_port;
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_protocol = IPPROTO_UDP;
-    std::string port_str(decimal_port.str());
-    int r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &f_addrinfo));
-    if(r != 0 || f_addrinfo == nullptr)
-    {
-        throw udp_client_server_runtime_error(("invalid address or port: \"" + addr + ":" + port_str + "\"").c_str());
-    }
-    f_socket = socket(f_addrinfo->ai_family, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP);
-    if(f_socket < 0)
-    {
-        freeaddrinfo(f_addrinfo);
-        throw udp_client_server_runtime_error(("could not create socket for: \"" + addr + ":" + port_str + "\"").c_str());
-    }
 }
+
 
 /** \brief Clean up the UDP client object.
  *
@@ -117,48 +337,8 @@ udp_client::udp_client(std::string const & addr, int port)
  */
 udp_client::~udp_client()
 {
-    freeaddrinfo(f_addrinfo);
-    close(f_socket);
 }
 
-/** \brief Retrieve a copy of the socket identifier.
- *
- * This function return the socket identifier as returned by the socket()
- * function. This can be used to change some flags.
- *
- * \return The socket used by this UDP client.
- */
-int udp_client::get_socket() const
-{
-    return f_socket;
-}
-
-/** \brief Retrieve the port used by this UDP client.
- *
- * This function returns the port used by this UDP client. The port is
- * defined as an integer, host side.
- *
- * \return The port as expected in a host integer.
- */
-int udp_client::get_port() const
-{
-    return f_port;
-}
-
-/** \brief Retrieve a copy of the address.
- *
- * This function returns a copy of the address as it was specified in the
- * constructor. This does not return a canonicalized version of the address.
- *
- * The address cannot be modified. If you need to send data on a different
- * address, create a new UDP client.
- *
- * \return A string with a copy of the constructor input address.
- */
-std::string udp_client::get_addr() const
-{
-    return f_addr;
-}
 
 /** \brief Send a message through this UDP client.
  *
@@ -179,8 +359,11 @@ std::string udp_client::get_addr() const
  */
 int udp_client::send(char const * msg, size_t size)
 {
-    return static_cast<int>(sendto(f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
+    return static_cast<int>(sendto(*f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
 }
+
+
+
 
 
 
@@ -228,57 +411,27 @@ int udp_client::send(char const * msg, size_t size)
  * \param[in] multicast_addr  A multicast address.
  */
 udp_server::udp_server(std::string const & addr, int port, std::string const * multicast_addr)
-    : f_port(port)
-    , f_addr(addr)
+    : udp_base(addr, port)
 {
-    if(f_addr.empty())
-    {
-        throw udp_client_server_parameter_error("the address cannot be an empty string");
-    }
-
-    if(f_port < 0 || f_port >= 65536)
-    {
-        throw udp_client_server_parameter_error("invalid port for a client socket");
-    }
-
-    std::stringstream decimal_port;
-    decimal_port << f_port;
-
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_protocol = IPPROTO_UDP;
-
-    std::string port_str(decimal_port.str());
-
-    int r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &f_addrinfo));
-    if(r != 0 || f_addrinfo == nullptr)
-    {
-        throw udp_client_server_runtime_error("invalid address or port for UDP socket: \"" + addr + ":" + port_str + "\"");
-    }
-
-    f_socket = socket(f_addrinfo->ai_family, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP);
-    if(f_socket == -1)
-    {
-        freeaddrinfo(f_addrinfo);
-        throw udp_client_server_runtime_error("could not create UDP socket for: \"" + addr + ":" + port_str + "\"");
-    }
-
-    // pick the first address only
+    // bind to the very first address
     //
-    r = bind(f_socket, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
+    int r(bind(*f_socket, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
     if(r != 0)
     {
-        freeaddrinfo(f_addrinfo);
-        close(f_socket);
-        throw udp_client_server_runtime_error("could not bind UDP socket with: \"" + addr + ":" + port_str + "\"");
+        throw udp_client_server_runtime_error("could not bind UDP socket with: \"" + f_addr + ":" + std::to_string(port) + "\"");
     }
+
+    // are we creating a server to listen to multicast packets?
+    //
     if(multicast_addr != nullptr)
     {
         struct ip_mreqn mreq;
 
-        memset(&hints, 0, sizeof(hints));
+        std::stringstream decimal_port;
+        decimal_port << f_port;
+        std::string port_str(decimal_port.str());
+
+        struct addrinfo hints = addrinfo();
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_DGRAM;
         hints.ai_protocol = IPPROTO_UDP;
@@ -296,7 +449,7 @@ udp_server::udp_server(std::string const & addr, int port, std::string const * m
         // both addresses must have the right size
         //
         if(a->ai_addrlen != sizeof(mreq.imr_multiaddr)
-        && f_addrinfo->ai_addrlen != sizeof(mreq.imr_address))
+        || f_addrinfo->ai_addrlen != sizeof(mreq.imr_address))
         {
             throw udp_client_server_runtime_error("invalid address type for UDP multicast: \"" + addr + ":" + port_str
                                                         + "\" or \"" + *multicast_addr + ":" + port_str + "\"");
@@ -306,7 +459,7 @@ udp_server::udp_server(std::string const & addr, int port, std::string const * m
         memcpy(&mreq.imr_address, f_addrinfo->ai_addr->sa_data, sizeof(mreq.imr_address));
         mreq.imr_ifindex = 0;   // no specific interface
 
-        r = setsockopt(f_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+        r = setsockopt(*f_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
         if(r < 0)
         {
             int const e(errno);
@@ -319,7 +472,7 @@ udp_server::udp_server(std::string const & addr, int port, std::string const * m
         // messages; apparently the default would be 1
         //
         int multicast_all(0);
-        r = setsockopt(f_socket, IPPROTO_IP, IP_MULTICAST_ALL, &multicast_all, sizeof(multicast_all));
+        r = setsockopt(*f_socket, IPPROTO_IP, IP_MULTICAST_ALL, &multicast_all, sizeof(multicast_all));
         if(r < 0)
         {
             // things should still work if the IP_MULTICAST_ALL is not
@@ -341,96 +494,6 @@ udp_server::udp_server(std::string const & addr, int port, std::string const * m
  */
 udp_server::~udp_server()
 {
-    freeaddrinfo(f_addrinfo);
-    close(f_socket);
-}
-
-
-/** \brief The socket used by this UDP server.
- *
- * This function returns the socket identifier. It can be useful if you are
- * doing a select() on many sockets.
- *
- * \return The socket of this UDP server.
- */
-int udp_server::get_socket() const
-{
-    return f_socket;
-}
-
-
-/** \brief Retrieve the size of the MTU on that connection.
- *
- * Linux offers a ioctl() function to retrieve the MTU's size. This
- * function uses that and returns the result. If the call fails,
- * then the function returns -1.
- *
- * The function returns the MTU's size of the socket on this side.
- * If you want to communicate effectively with another system, you
- * want to also ask about the MTU on the other side of the socket.
- *
- * \todo
- * We need to support the possibly dynamically changing MTU size
- * that the Internet may generate (or even a LAN if you let people
- * tweak their MTU "randomly".) This is done by preventing
- * defragmentation (see IP_NODEFRAG in `man 7 ip`) and also by
- * asking for MTU size discovery (IP_MTU_DISCOVER). The size
- * discovery changes over time as devices on the MTU path (the
- * route taken by the packets) changes over time. The idea is
- * to find the smallest MTU size of the MTU path and use that
- * to send packets of that size at the most. Note that packets
- * are otherwise automatically broken in smaller chunks and
- * rebuilt on the other side, but that is not efficient if you
- * expect to lose quite a few packets. The limit for chunked
- * packets is a little under 64Kb.
- *
- * \return -1 if the MTU could not be retrieved, the MTU's size otherwise.
- */
-int udp_server::get_mtu_size() const
-{
-    if(f_mtu_size == 0)
-    {
-        struct ifreq ifr;
-        memset(&ifr, 0, sizeof(ifr));
-        strncpy(ifr.ifr_name, "eth0", sizeof(ifr.ifr_name));
-        if(ioctl(f_socket, SIOCGIFMTU, &ifr) == 0)
-        {
-            f_mtu_size = ifr.ifr_mtu;
-        }
-        else
-        {
-            f_mtu_size = -1;
-        }
-    }
-
-    return f_mtu_size;
-}
-
-
-/** \brief The port used by this UDP server.
- *
- * This function returns the port attached to the UDP server. It is a copy
- * of the port specified in the constructor.
- *
- * \return The port of the UDP server.
- */
-int udp_server::get_port() const
-{
-    return f_port;
-}
-
-
-/** \brief Return the address of this UDP server.
- *
- * This function returns a verbatim copy of the address as passed to the
- * constructor of the UDP server (i.e. it does not return the canonicalized
- * version of the address.)
- *
- * \return The address as passed to the constructor.
- */
-std::string udp_server::get_addr() const
-{
-    return f_addr;
 }
 
 
@@ -454,7 +517,7 @@ std::string udp_server::get_addr() const
  */
 int udp_server::recv(char * msg, size_t max_size)
 {
-    return static_cast<int>(::recv(f_socket, msg, max_size, 0));
+    return static_cast<int>(::recv(*f_socket, msg, max_size, 0));
 }
 
 
@@ -483,12 +546,12 @@ int udp_server::timed_recv(char * msg, size_t const max_size, int const max_wait
     FD_ZERO(&s);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-    FD_SET(f_socket, &s);
+    FD_SET(*f_socket, &s);
 #pragma GCC diagnostic pop
     struct timeval timeout;
     timeout.tv_sec = max_wait_ms / 1000;
     timeout.tv_usec = (max_wait_ms % 1000) * 1000;
-    int const retval(select(f_socket + 1, &s, nullptr, &s, &timeout));
+    int const retval(select(*f_socket + 1, &s, nullptr, &s, &timeout));
     if(retval == -1)
     {
         // select() set errno accordingly
@@ -497,7 +560,7 @@ int udp_server::timed_recv(char * msg, size_t const max_size, int const max_wait
     if(retval > 0)
     {
         // our socket has data
-        return static_cast<int>(::recv(f_socket, msg, max_size, 0));
+        return static_cast<int>(::recv(*f_socket, msg, max_size, 0));
     }
 
     // our socket has no data

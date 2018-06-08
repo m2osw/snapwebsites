@@ -16,12 +16,22 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// snapwebsites lib
+//
+#include <snapwebsites/raii_generic_deleter.h>
+
+// C++ lib
+//
+#include <stdexcept>
+
+// C lib
+//
+#include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
+#include <unistd.h>
 
-#include <stdexcept>
-#include <memory>
+
 
 namespace udp_client_server
 {
@@ -39,7 +49,31 @@ public:
 };
 
 
+class udp_base
+{
+public:
+    typedef std::unique_ptr<int, snap::raii_generic_deleter<int, -1, decltype(&::close), &::close>>     raii_fd_t;
+    typedef std::unique_ptr<struct addrinfo, snap::raii_pointer_deleter<struct addrinfo, decltype(&::freeaddrinfo), &::freeaddrinfo>> raii_addrinfo_t;
+
+    int                 get_socket() const;
+    int                 get_mtu_size() const;
+    int                 get_mss_size() const;
+    int                 get_port() const;
+    std::string         get_addr() const;
+
+protected:
+                        udp_base(std::string const & addr, int port);
+
+    raii_fd_t           f_socket;
+    int                 f_port = -1;
+    mutable int         f_mtu_size = 0;
+    std::string         f_addr;
+    raii_addrinfo_t     f_addrinfo;
+};
+
+
 class udp_client
+    : public udp_base
 {
 public:
     typedef std::shared_ptr<udp_client>     pointer_t;
@@ -47,21 +81,14 @@ public:
                         udp_client(std::string const & addr, int port);
                         ~udp_client();
 
-    int                 get_socket() const;
-    int                 get_port() const;
-    std::string         get_addr() const;
-
-    int                 send(const char * msg, size_t size);
+    int                 send(char const * msg, size_t size);
 
 private:
-    int                 f_socket;
-    int                 f_port;
-    std::string         f_addr;
-    struct addrinfo *   f_addrinfo;
 };
 
 
 class udp_server
+    : public udp_base
 {
 public:
     typedef std::shared_ptr<udp_server>     pointer_t;
@@ -69,21 +96,11 @@ public:
                         udp_server(std::string const & addr, int port, std::string const * multicast_addr = nullptr);
                         ~udp_server();
 
-    int                 get_socket() const;
-    int                 get_mtu_size() const;
-    int                 get_port() const;
-    std::string         get_addr() const;
-
     int                 recv(char * msg, size_t max_size);
     int                 timed_recv( char * msg, size_t const max_size, int const max_wait_ms );
     std::string         timed_recv( int const bufsize, int const max_wait_ms );
 
 private:
-    int                 f_socket;
-    int                 f_port;
-    mutable int         f_mtu_size = 0;
-    std::string         f_addr;
-    struct addrinfo *   f_addrinfo = nullptr;
 };
 
 } // namespace udp_client_server
