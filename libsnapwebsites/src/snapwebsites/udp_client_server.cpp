@@ -199,7 +199,12 @@ int udp_base::get_socket() const
  */
 int udp_base::get_mtu_size() const
 {
-    if(f_mtu_size == 0)
+    if(f_socket == nullptr)
+    {
+        f_mtu_size = -1;
+        errno = EBADF;
+    }
+    else if(f_mtu_size == 0)
     {
         struct ifreq ifr;
         memset(&ifr, 0, sizeof(ifr));
@@ -247,15 +252,21 @@ int udp_base::get_mtu_size() const
  */
 int udp_base::get_mss_size() const
 {
+    // where these structures are defined
+    //
     // ether_header -- /usr/include/net/ethernet.h
     // iphdr -- /usr/include/netinet/ip.h
     // udphdr -- /usr/include/netinet/udp.h
-    return get_mtu_size()
+    //
+    int const mtu(get_mtu_size()
             //- sizeof(ether_header)    // WARNING: this is for IPv4 only -- this is "transparent" to the MTU (i.e. it wraps the 1,500 bytes)
             //- ETHER_CRC_LEN           // this is the CRC for the ethernet which appears at the end of the packet
             - sizeof(iphdr)             // WARNING: this is for IPv4 only
             //- ...                     // the IP protocol accepts options!
-            - sizeof(udphdr);
+            - sizeof(udphdr)
+        );
+
+    return mtu <= 0 ? -1 : mtu;
 }
 
 
