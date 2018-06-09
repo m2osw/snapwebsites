@@ -1,3 +1,9 @@
+snapwebsites (1.5.50.0~xenial) xenial; urgency=high
+
+  * Applied changes to support the new addr::iface class from libaddr.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  9 Jun 2018 01:19:34 -0700
+
 snapwebsites (1.5.49.0~xenial) xenial; urgency=high
 
   * Added a matrix.h header and corresponding tests.

@@ -40,6 +40,7 @@
 // addr lib
 //
 #include <libaddr/addr.h>
+#include <libaddr/iface.h>
 
 // Qt lib
 //
@@ -482,15 +483,15 @@ bool watchscripts::output_available(process * p, QByteArray const & output)
             // no snapcommunicator defined "my_address", then show
             // all the IPs on this computer
             //
-            addr::addr::vector_t const ips(addr::addr::get_local_addresses());
+            addr::iface::vector_t const ips(addr::iface::get_local_addresses());
             if(!ips.empty())
             {
                 header += "IP Addresses: ";
                 QString sep;
-                for(auto const & a : ips)
+                for(auto const & i : ips)
                 {
                     header += sep;
-                    header += a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS).c_str();
+                    header += i.get_address().to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS).c_str();
                     sep = ", ";
                 }
                 header += "\n";

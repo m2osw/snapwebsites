@@ -38,6 +38,7 @@
 // addr lib
 //
 #include <libaddr/addr_parser.h>
+#include <libaddr/iface.h>
 
 // Qt lib
 //
@@ -228,24 +229,25 @@ void self::on_retrieve_status(snap_manager::server_status & server_status)
     }
 
     {
-        addr::addr::vector_t interfaces( addr::addr::get_local_addresses() );
-        for( auto const & addr : interfaces )
+        addr::iface::vector_t interfaces( addr::iface::get_local_addresses() );
+        for( auto const & i : interfaces )
         {
-            if( !addr.is_ipv4() )
+            addr::addr const & a(i.get_address());
+            if( !a.is_ipv4() )
             //||  addr.get_network_type() != snap_addr::addr::network_type_t::NETWORK_TYPE_PRIVATE )
             {
                 continue;
             }
 
-            SNAP_LOG_TRACE("get interface ")(addr.get_iface_name())(", ip addr=")(addr.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL));
-            snap_manager::status_t const iface ( snap_manager::status_t::state_t::STATUS_STATE_INFO
+            SNAP_LOG_TRACE("get interface ")(i.get_name())(", ip addr=")(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL));
+            snap_manager::status_t const iface_status ( snap_manager::status_t::state_t::STATUS_STATE_INFO
                                                , get_plugin_name()
                                                , QString("if::%1 (%2)")
-                                                 .arg(addr.get_iface_name().c_str())
-                                                 .arg(addr.get_network_type_string().c_str())
-                                               , addr.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL).c_str()
+                                                 .arg(i.get_name().c_str())
+                                                 .arg(a.get_network_type_string().c_str())
+                                               , a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL).c_str()
                                                );
-            server_status.set_field(iface);
+            server_status.set_field(iface_status);
         }
     }
 

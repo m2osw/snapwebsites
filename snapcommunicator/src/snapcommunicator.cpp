@@ -38,6 +38,7 @@
 //
 #include <libaddr/addr_exceptions.h>
 #include <libaddr/addr_parser.h>
+#include <libaddr/iface.h>
 
 // Qt lib
 //
@@ -2182,14 +2183,8 @@ void snap_communicator_server::init()
     // transform the my_address to a snap_addr::addr object
     //
     f_my_address = addr::addr(addr::string_to_addr(f_server->get_parameter("my_address").toUtf8().data(), "", listen_addr.get_port(), "tcp"));
-    addr::addr::computer_interface_address_t cia(f_my_address.is_computer_interface_address());
-    if(cia == addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_ERROR)
-    {
-        int const e(errno);
-        SNAP_LOG_ERROR("somehow getifaddrs() failed with errno: ")(e)(" -- ")(strerror(e));
-        // we go on anyway...
-    }
-    else if(cia != addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE)
+    bool const cia(addr::find_addr_interface(f_my_address) != nullptr);
+    if(!cia)
     {
         std::string const addr(f_my_address.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS));
         SNAP_LOG_FATAL("my_address \"")(addr)("\" not found on this computer. Did a copy of the configuration file and forgot to change that entry?");
