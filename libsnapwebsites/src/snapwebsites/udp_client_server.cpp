@@ -27,16 +27,18 @@
 //
 #include "snapwebsites/log.h"
 
+// addr lib
+//
+#include <libaddr/iface.h>
+
 // C++ lib
 //
 #include <sstream>
-//#include <vector>
 
 // C lib
 //
 #include <string.h>
 #include <unistd.h>
-//#include <net/ethernet.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
@@ -116,7 +118,7 @@ udp_base::udp_base(std::string const & addr, int port)
     std::string port_str(decimal_port.str());
 
     // define the getaddrinfo() hints
-    // we are onl interested by addresses representing datagrams and
+    // we are only interested by addresses representing datagrams and
     // acceptable by the UDP protocol
     //
     struct addrinfo hints = addrinfo();
@@ -192,6 +194,9 @@ int udp_base::get_socket() const
  * expect to lose quite a few packets. The limit for chunked
  * packets is a little under 64Kb.
  *
+ * \note
+ * errno is either EBADF or set by ioctl().
+ *
  * \sa
  * See `man 7 netdevice`
  *
@@ -199,23 +204,55 @@ int udp_base::get_socket() const
  */
 int udp_base::get_mtu_size() const
 {
-    if(f_socket == nullptr)
+    if(f_socket != nullptr
+    && f_mtu_size == 0)
     {
-        f_mtu_size = -1;
-        errno = EBADF;
-    }
-    else if(f_mtu_size == 0)
-    {
-        struct ifreq ifr;
-        memset(&ifr, 0, sizeof(ifr));
-        strncpy(ifr.ifr_name, "eth0", sizeof(ifr.ifr_name));
-        if(ioctl(*f_socket, SIOCGIFMTU, &ifr) == 0)
+        addr::addr a;
+        switch(f_addrinfo->ai_addr->sa_family)
         {
-            f_mtu_size = ifr.ifr_mtu;
-        }
-        else
-        {
+        case AF_INET:
+            a.set_ipv4(*reinterpret_cast<struct sockaddr_in *>(f_addrinfo->ai_addr));
+            break;
+
+        case AF_INET6:
+            a.set_ipv6(*reinterpret_cast<struct sockaddr_in6 *>(f_addrinfo->ai_addr));
+            break;
+
+        default:
             f_mtu_size = -1;
+            errno = EBADF;
+            break;
+
+        }
+        if(f_mtu_size == 0)
+        {
+            std::string iface_name;
+            addr::iface::pointer_t i(find_addr_interface(a));
+            if(i != nullptr)
+            {
+                iface_name = i->get_name();
+            }
+
+            if(iface_name.empty())
+            {
+                f_mtu_size = -1;
+                errno = EBADF;
+            }
+            else
+            {
+                struct ifreq ifr;
+                memset(&ifr, 0, sizeof(ifr));
+                strncpy(ifr.ifr_name, iface_name.c_str(), sizeof(ifr.ifr_name));
+                if(ioctl(*f_socket, SIOCGIFMTU, &ifr) == 0)
+                {
+                    f_mtu_size = ifr.ifr_mtu;
+                }
+                else
+                {
+                    f_mtu_size = -1;
+                    // errno -- defined by ioctl()
+                }
+            }
         }
     }
 

@@ -1,3 +1,10 @@
+snapwebsites (1.5.51.0~xenial) xenial; urgency=high
+
+  * Fixed the MTU size gathering by getting the interface name corresponding
+    to the address used with that UDP port.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  9 Jun 2018 22:39:54 -0700
+
 snapwebsites (1.5.50.0~xenial) xenial; urgency=high
 
   * Applied changes to support the new addr::iface class from libaddr.

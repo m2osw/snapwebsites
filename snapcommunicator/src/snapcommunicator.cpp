@@ -2183,7 +2183,7 @@ void snap_communicator_server::init()
     // transform the my_address to a snap_addr::addr object
     //
     f_my_address = addr::addr(addr::string_to_addr(f_server->get_parameter("my_address").toUtf8().data(), "", listen_addr.get_port(), "tcp"));
-    bool const cia(addr::find_addr_interface(f_my_address) != nullptr);
+    bool const cia(addr::find_addr_interface(f_my_address, false) != nullptr);
     if(!cia)
     {
         std::string const addr(f_my_address.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS));

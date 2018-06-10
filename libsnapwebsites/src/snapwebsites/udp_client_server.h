@@ -64,6 +64,9 @@ public:
 protected:
                         udp_base(std::string const & addr, int port);
 
+    // TODO: convert the port + addr into a libaddr addr object?
+    //       (we use the f_addrinfo as is in the sendto() and bind() calls, though)
+    //
     raii_fd_t           f_socket;
     int                 f_port = -1;
     mutable int         f_mtu_size = 0;
