@@ -1,3 +1,9 @@
+snapwebsites (1.5.52.0~xenial) xenial; urgency=high
+
+  * Added support for 'family' in the UDP server.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 18 Jun 2018 22:36:25 -0700
+
 snapwebsites (1.5.51.0~xenial) xenial; urgency=high
 
   * Fixed the MTU size gathering by getting the interface name corresponding

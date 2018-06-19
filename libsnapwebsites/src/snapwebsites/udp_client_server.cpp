@@ -91,8 +91,9 @@ namespace udp_client_server
  *
  * \param[in] addr  The address to convert to a numeric IP.
  * \param[in] port  The port number.
+ * \param[in] family  The family used to search for 'addr'.
  */
-udp_base::udp_base(std::string const & addr, int port)
+udp_base::udp_base(std::string const & addr, int port, int family)
     : f_port(port)
     , f_addr(addr)
 {
@@ -122,7 +123,7 @@ udp_base::udp_base(std::string const & addr, int port)
     // acceptable by the UDP protocol
     //
     struct addrinfo hints = addrinfo();
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = family;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_protocol = IPPROTO_UDP;
 
@@ -371,9 +372,10 @@ std::string udp_base::get_addr() const
  *
  * \param[in] addr  The address to convert to a numeric IP.
  * \param[in] port  The port number.
+ * \param[in] family  The family used to search for 'addr'.
  */
-udp_client::udp_client(std::string const & addr, int port)
-    : udp_base(addr, port)
+udp_client::udp_client(std::string const & addr, int port, int family)
+    : udp_base(addr, port, family)
 {
 }
 
@@ -456,10 +458,11 @@ int udp_client::send(char const * msg, size_t size)
  *
  * \param[in] addr  The address we receive on.
  * \param[in] port  The port we receive from.
+ * \param[in] family  The family used to search for 'addr'.
  * \param[in] multicast_addr  A multicast address.
  */
-udp_server::udp_server(std::string const & addr, int port, std::string const * multicast_addr)
-    : udp_base(addr, port)
+udp_server::udp_server(std::string const & addr, int port, int family, std::string const * multicast_addr)
+    : udp_base(addr, port, family)
 {
     // bind to the very first address
     //

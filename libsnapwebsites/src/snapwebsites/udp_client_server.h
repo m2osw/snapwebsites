@@ -62,7 +62,7 @@ public:
     std::string         get_addr() const;
 
 protected:
-                        udp_base(std::string const & addr, int port);
+                        udp_base(std::string const & addr, int port, int family);
 
     // TODO: convert the port + addr into a libaddr addr object?
     //       (we use the f_addrinfo as is in the sendto() and bind() calls, though)
@@ -81,7 +81,7 @@ class udp_client
 public:
     typedef std::shared_ptr<udp_client>     pointer_t;
 
-                        udp_client(std::string const & addr, int port);
+                        udp_client(std::string const & addr, int port, int family = AF_UNSPEC);
                         ~udp_client();
 
     int                 send(char const * msg, size_t size);
@@ -96,7 +96,7 @@ class udp_server
 public:
     typedef std::shared_ptr<udp_server>     pointer_t;
 
-                        udp_server(std::string const & addr, int port, std::string const * multicast_addr = nullptr);
+                        udp_server(std::string const & addr, int port, int family = AF_UNSPEC, std::string const * multicast_addr = nullptr);
                         ~udp_server();
 
     int                 recv(char * msg, size_t max_size);
