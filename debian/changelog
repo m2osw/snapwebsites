@@ -1,3 +1,9 @@
+snapwebsites (1.5.52.1~xenial) xenial; urgency=high
+
+  * Kick a rebuild as launchpad did not properly detect the need.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 19 Jun 2018 15:00:41 -0700
+
 snapwebsites (1.5.52.0~xenial) xenial; urgency=high
 
   * Added support for 'family' in the UDP server.
