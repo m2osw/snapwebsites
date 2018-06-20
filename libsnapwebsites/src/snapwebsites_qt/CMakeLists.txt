@@ -88,9 +88,13 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
 install(
     TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib
 )
+
+# TODO:
+# See whether we could use the same folder as "libsnapwebsites"
+# but I don't think that's doable...
 install(
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites
+    DESTINATION include/snapwebsites_qt
     FILES_MATCHING PATTERN "*.h"
 )
 

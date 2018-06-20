@@ -1,3 +1,11 @@
+snapwebsites (1.5.54.0~xenial) xenial; urgency=high
+
+  * Removed the libsnapwebsites-qt-doc package. At this time it's not
+    necessary and the data will be in the libsnapwebsites-doc anyway.
+  * Place the headers under /usr/include/snapwebsites_qt for the Qt version.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 20 Jun 2018 00:17:58 -0700
+
 snapwebsites (1.5.53.0~xenial) xenial; urgency=high
 
   * Broke up the snap_communicator_qt implementation to avoid X11 in the main

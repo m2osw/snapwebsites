@@ -773,6 +773,7 @@ WARN_LOGFILE           =
 
 INPUT                  = @libsnapwebsites_project_SOURCE_DIR@/src \
                          @libsnapwebsites_project_SOURCE_DIR@/src/snapwebsites \
+                         @libsnapwebsites_project_SOURCE_DIR@/src/snapwebsites_qt \
                          @libsnapwebsites_project_BINARY_DIR@/src/snapwebsites/version.h
 
 # This tag can be used to specify the character encoding of the source files
