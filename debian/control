@@ -188,6 +188,52 @@ Description: Fast Websites: powerful CMS for Apache written in C++ (documentatio
  .
  This is the documenation package, complete developer reference.
 
+Package: libsnapwebsites-qt
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the runtime package for the C++ library used with Qt applications.
+
+Package: libsnapwebsites-qt-dev
+Section: libdevel
+Architecture: any
+Depends: libsnapwebsites-qt (= ${binary:Version}), ${misc:Depends}, libboost-dev, libssl-dev
+Suggests: libsnapwebsites-qt-doc (= ${binary:Version})
+Replaces: libqtcassandra-dev
+Description: Fast Websites: powerful CMS for Apache written in C++ (development package).
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the development package complete with C++ headers used with Qt
+ applications.
+
+Package: libsnapwebsites-qt-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Suggests: libsnapwebsites-qt (= ${binary:Version})
+Description: Fast Websites: powerful CMS for Apache written in C++ (documentation package).
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ This is the documenation package, complete developer reference.
+
 Package: snapbackend
 Section: admin
 Architecture: any

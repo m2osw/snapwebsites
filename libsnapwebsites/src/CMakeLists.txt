@@ -31,7 +31,8 @@
 
 project(snapwebsites_src)
 
-add_subdirectory( libdbproxy   )
-add_subdirectory( snapwebsites )
+add_subdirectory( libdbproxy      )
+add_subdirectory( snapwebsites    )
+add_subdirectory( snapwebsites_qt )
 
 # vim: ts=4 sw=4 et nocindent

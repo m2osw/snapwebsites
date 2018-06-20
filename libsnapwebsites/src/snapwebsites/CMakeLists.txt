@@ -103,7 +103,6 @@ set( HEADERS
     snap_child.h
     snap_communicator.h
     snap_communicator_dispatcher.h
-    snap_communicator_qt.h
     snap_config.h
     snap_console.h
     snap_exception.h
@@ -167,7 +166,6 @@ add_library( ${PROJECT_NAME} SHARED
     snap_cassandra.cpp                          # encapuslate initiating a connection to the database.
     snap_communicator.cpp                       # handle any number of sockets with a single process.
     snap_communicator_dispatcher.cpp            # dispatch messages to your functions
-    snap_communicator_qt.cpp                    # qt snap_connection extension
     snap_config.cpp                             # class to read in configuration
     snap_console.cpp                            # a CUI helper with two panels: Input and Output so the output can be asynchronous
     snap_child.cpp                              # requests processing

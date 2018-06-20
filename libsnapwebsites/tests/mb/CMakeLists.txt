@@ -46,7 +46,11 @@ set( LIBRARIES
     ${LIBEXCEPT_LIBRARIES}
     ${LOG4CPLUS_LIBRARIES}
     ${LIBTLD_LIBRARIES}
+
     ${QT_LIBRARIES}
+    # This one is not general, but we can have it in all tests, that's fine.
+    Qt5::X11Extras
+
     snapwebsites
     libdbproxy
 )

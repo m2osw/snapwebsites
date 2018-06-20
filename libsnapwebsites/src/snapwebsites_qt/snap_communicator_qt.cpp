@@ -17,7 +17,7 @@
 
 // self
 //
-#include "snapwebsites/snap_communicator_qt.h"
+#include "snapwebsites_qt/snap_communicator_qt.h"
 
 
 // snapwebsites lib

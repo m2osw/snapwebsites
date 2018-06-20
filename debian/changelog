@@ -1,3 +1,10 @@
+snapwebsites (1.5.53.0~xenial) xenial; urgency=high
+
+  * Broke up the snap_communicator_qt implementation to avoid X11 in the main
+    library (and all the tools under snapwebsites).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 19 Jun 2018 22:45:04 -0700
+
 snapwebsites (1.5.52.1~xenial) xenial; urgency=high
 
   * Kick a rebuild as launchpad did not properly detect the need.

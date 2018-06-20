@@ -76,9 +76,11 @@ set( QT_LIBRARIES
     Qt5::Network
     Qt5::Script
     Qt5::Sql
-    Qt5::X11Extras
     Qt5::Xml
     Qt5::XmlPatterns
+
+    # This forces in all the X11 and OpenGL libraries!
+    #Qt5::X11Extras
 )
 
 #SnapGetVersion( LIBSNAPWEBSITES ${CMAKE_CURRENT_SOURCE_DIR} )
