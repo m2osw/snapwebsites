@@ -137,6 +137,10 @@ udp_base::udp_base(std::string const & addr, int port, int family)
     }
     f_addrinfo = raii_addrinfo_t(info);
 
+SNAP_LOG_TRACE("test a first socket before the official one...");
+int s(socket(f_addrinfo->ai_family, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP));
+SNAP_LOG_TRACE("that socket is: ")(s)(" and we'll keep it open");
+
     // now create the socket with the very first socket family
     //
     f_socket.reset(socket(f_addrinfo->ai_family, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP));
@@ -469,7 +473,9 @@ udp_server::udp_server(std::string const & addr, int port, int family, std::stri
     //
     int r(bind(*f_socket, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
 
+int const save_errno(errno);
 SNAP_LOG_TRACE("bind() with socket ")(*f_socket)(" r = ")(r);
+errno = save_errno;
 
     if(r != 0)
     {

@@ -15,6 +15,12 @@ case "$1" in
     make -C ../../BUILD/snapwebsites install 2>&1 | less
     ;;
 
+"-p"|"--packages")
+    # Run a dput to generate all the packages on launchpad
+    #
+    make -C ../../BUILD dput
+    ;;
+
 *)
     # Default, just rebuild snapwebsites
     #

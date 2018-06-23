@@ -1,3 +1,10 @@
+snapwebsites (1.5.55.2~xenial) xenial; urgency=high
+
+  * Added a few more traces to see whether fd == 0 is the problem.
+  * Added a -p to my ./mk tool to dput packages.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 23 Jun 2018 14:40:37 -0700
+
 snapwebsites (1.5.55.1~xenial) xenial; urgency=high
 
   * Added a couple of traces in an attempt to understand why the system
