@@ -144,6 +144,7 @@ udp_base::udp_base(std::string const & addr, int port, int family)
     {
         throw udp_client_server_runtime_error(("could not create socket for: \"" + addr + ":" + port_str + "\"").c_str());
     }
+SNAP_LOG_TRACE("f_socket just got allocated: ")(*f_socket)(" r = ")(r);
 }
 
 
@@ -467,6 +468,9 @@ udp_server::udp_server(std::string const & addr, int port, int family, std::stri
     // bind to the very first address
     //
     int r(bind(*f_socket, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
+
+SNAP_LOG_TRACE("bind() with socket ")(*f_socket)(" r = ")(r);
+
     if(r != 0)
     {
         int const e(errno);
