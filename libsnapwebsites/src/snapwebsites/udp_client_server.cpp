@@ -209,7 +209,7 @@ int udp_base::get_mtu_size() const
     && f_mtu_size == 0)
     {
         addr::addr a;
-        switch(f_addrinfo->ai_addr->sa_family)
+        switch(f_addrinfo->ai_family)
         {
         case AF_INET:
             a.set_ipv4(*reinterpret_cast<struct sockaddr_in *>(f_addrinfo->ai_addr));
@@ -469,6 +469,43 @@ udp_server::udp_server(std::string const & addr, int port, int family, std::stri
     int r(bind(*f_socket, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
     if(r != 0)
     {
+        int const e(errno);
+
+        // reverse the address from the f_addrinfo so we know exactly
+        // which one was picked
+        //
+        char addr_buf[256];
+        switch(f_addrinfo->ai_family)
+        {
+        case AF_INET:
+            inet_ntop(AF_INET
+                    , &reinterpret_cast<struct sockaddr_in *>(f_addrinfo->ai_addr)->sin_addr
+                    , addr_buf
+                    , sizeof(addr_buf));
+            break;
+
+        case AF_INET6:
+            inet_ntop(AF_INET6
+                    , &reinterpret_cast<struct sockaddr_in6 *>(f_addrinfo->ai_addr)->sin6_addr
+                    , addr_buf
+                    , sizeof(addr_buf));
+            break;
+
+        default:
+            strncpy(addr_buf, "Unknown Adress Family", sizeof(addr_buf));
+            break;
+
+        }
+
+        SNAP_LOG_ERROR("the bind() function failed with errno: ")
+                (e)
+                (" (")
+                (strerror(e))
+                ("); address length ")
+                (f_addrinfo->ai_addrlen)
+                (" and address is \"")
+                (addr_buf)
+                ("\"");
         throw udp_client_server_runtime_error("could not bind UDP socket with: \"" + f_addr + ":" + std::to_string(port) + "\"");
     }
 
