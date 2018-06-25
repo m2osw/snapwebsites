@@ -1,3 +1,12 @@
+snapwebsites (1.5.57.0~xenial) xenial; urgency=high
+
+  * Well, a non-pointer just can't be dereferenced, so I fixed that class
+    with an operator T () instead of the operator * ().
+  * Fixed the UDP implementation accordingly.
+  * Added a catch for the SIGABRT signal in hope of getting a stack trace.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 25 Jun 2018 16:55:57 -0700
+
 snapwebsites (1.5.56.0~xenial) xenial; urgency=high
 
   * Okay, found out that the compiler optimizations would create a problem
