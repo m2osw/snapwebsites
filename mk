@@ -21,10 +21,15 @@ case "$1" in
     make -C ../../BUILD dput
     ;;
 
-*)
+"")
     # Default, just rebuild snapwebsites
     #
     make -C ../../BUILD/snapwebsites install
+    ;;
+
+*)
+    echo "error: unknown command line option $1"
+    exit 1
     ;;
 
 esac
