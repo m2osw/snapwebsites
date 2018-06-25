@@ -35,21 +35,7 @@ namespace snap
 {
 
 
-#if 0
-// WARNING: at this time this class doesn't work when compiling with -O0.
-//
-// I have reported the bug here:
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86296
-//
-// Also I have a stackoverflow.com question, but I don't hold my hopes
-// up on that one. Usually you very quickly get an answer for C++ questions
-// but actual bugs in the compiler you're likely to get nothing. Plus, the
-// fact that -O0 and -O1 return different output is a clear factor that it
-// there is a g++ bug.
-//
-// https://stackoverflow.com/questions/51015016/am-i-using-the-pointer-class-properly-in-this-generic-unique-ptr-deleter
-
-
+#if 1
 /** \brief A templated used to allow unique_ptr<>() of nearly any type.
  *
  * This template is used with nearly any type representing a resource
@@ -57,7 +43,7 @@ namespace snap
  * unique_ptr<>() definition.
  *
  * Note that it only works with resources which type is not a pointer.
- * For example, a file descriptor which uses an `int` works with this
+ * For example, a file descriptor, which uses an `int`, works with this
  * class.
  *
  * For resources that have a pointer, use the raii_pointer_deleter instead.
@@ -68,6 +54,38 @@ namespace snap
  * 	typedef std::unique_ptr<int, snap::raii_generic_deleter<int, -1, decltype(&::close), &::close>> raii_fd_t;
  *
  * 	raii_fd_t fd(open("/tmp/test.tmp", O_RDWR));
+ * \endcode
+ *
+ * \note
+ * We actually offer the raii_fd_t as a default since it can be used by
+ * many other implementations.
+ *
+ * To access the value, use the `get()` function of your pointer.
+ * For example:
+ *
+ * \code
+ *  raii_fd_t safe_fd;
+ *  safe_fd.reset(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
+ *  std::cout << safe_fd.get() << std::endl;
+ *  write(safe_fd.get(), "MSG\n", 4);
+ * \endcode
+ *
+ * \warning
+ * This class doesn't properly handle a case where an invalid resource can
+ * be represented by more than one value. For a file descriptor, we expect
+ * the invalid value to be exactlly -1. If a function call may return other
+ * negative values, then this implementation currently fails to handle such.
+ * It is your responsibility to fix the return value of the function or
+ * use a two step initialization such as in:
+ *
+ * \code
+ *  int r(this_func("open/something", "rw"));
+ *  if(r < 0)
+ *  {
+ *      return; // it failed. r may not just be -1
+ *  }
+ *  raii_fd_t safe_fd(r);
+ *  ...
  * \endcode
  *
  * \note
@@ -238,13 +256,29 @@ public:
 //            return f_pointer != null_value;
 //        }
 
-        /** \brief Retrieve the pointer.
+        /** \brief Retrieve the "pointer".
          *
-         * This function is used to retrieve the pointer.
+         * This function is used to retrieve the "pointer" value.
          *
-         * \return A copy of the resource pointer.
+         * \note
+         * This class does not offer an `operator * ()` because that
+         * would need to return a reference to the value which is not
+         * possible with a value other than an actual real pointer.
+         * Otherwise it becomes a reference to a temporary pointer.
+         * This is because unique_ptr<>() is implemented as:
+         *
+         * \code
+         * pointer get() const { ...}
+         * reference operator * () const { return get(); }
+         * \endcode
+         *
+         * \par
+         * As we can see, the `get()` returns a `pointer` and the
+         * `operator * ()` would return a reference on that temporary.
+         *
+         * \return A copy of the resource "pointer".
          */
-        T & operator * ()
+        operator T () const
         {
             return f_pointer;
         }
@@ -263,11 +297,14 @@ public:
      */
     void operator () (pointer p)
     {
-        deleter(*p);
+        // we use static_cast<T>(p) in case the deleter does not
+        // use a clear type as its parameter (these damn C functions...)
+        //
+        deleter(static_cast<T>(p));
     }
 };
 typedef std::unique_ptr<int, raii_generic_deleter<int, -1, decltype(&::close), &::close>>     raii_fd_t;
-#endif
+#else
 
 
 template<class T, T null_value, class D, D deleter>
@@ -328,12 +365,12 @@ public:
         return f_pointer != null_value;
     }
 
-    T operator * () const
-    {
-        return f_pointer;
-    }
-
-    // since T is not a pointer, there is really no point in offering these
+    // since T is not a pointer, these are not really a good idea
+    //T operator * () const
+    //{
+    //    return f_pointer;
+    //}
+    //
     //T operator -> () const
     //{
     //    return f_pointer;
@@ -429,7 +466,7 @@ private:
 
 typedef raii_generic_deleter<int, -1, decltype(&::close), &::close> raii_fd_t;
 
-
+#endif
 
 
 
