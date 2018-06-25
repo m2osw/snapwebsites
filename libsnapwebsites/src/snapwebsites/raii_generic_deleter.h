@@ -1,4 +1,4 @@
-// UDP Client Server -- allow for any type of RAII deleter
+// RAII Generic Deleter -- allow for any type of RAII deleter
 // Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,11 +23,31 @@
 // C++ lib
 //
 #include <memory>
+#include <iostream>
+
+// C lib
+//
+#include <unistd.h>
 
 
 
 namespace snap
 {
+
+
+#if 0
+// WARNING: at this time this class doesn't work when compiling with -O0.
+//
+// I have reported the bug here:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86296
+//
+// Also I have a stackoverflow.com question, but I don't hold my hopes
+// up on that one. Usually you very quickly get an answer for C++ questions
+// but actual bugs in the compiler you're likely to get nothing. Plus, the
+// fact that -O0 and -O1 return different output is a clear factor that it
+// there is a g++ bug.
+//
+// https://stackoverflow.com/questions/51015016/am-i-using-the-pointer-class-properly-in-this-generic-unique-ptr-deleter
 
 
 /** \brief A templated used to allow unique_ptr<>() of nearly any type.
@@ -81,6 +101,12 @@ public:
      * then it defines the type using that pointer class pointer operator
      * (i.e. the `\<type> operator *`) instead of using an actual pointer
      * (i.e. it uses `deleter::pointer` instead of the default `T *`.)
+     *
+     * The C++ class is defined as a NullablePointer. It also needs one
+     * operator function to retrieve the pointer (operator *).
+     *
+     * \see
+     * https://en.cppreference.com/w/cpp/named_req/NullablePointer
      */
     class pointer
     {
@@ -89,7 +115,7 @@ public:
          *
          * This parameter is the resource pointer being managed.
          */
-        T f_pointer;
+        T f_pointer = null_value;
 
     public:
         /** \brief Create a pointer with a value of type T.
@@ -117,6 +143,7 @@ public:
         {
             NOTUSED(p);
         }
+
 
 //        /** \brief Assign the nullptr to this pointer.
 //         *
@@ -162,7 +189,6 @@ public:
          * \return true if both pointers are equal.
          */
         bool operator == (pointer const rhs) const
-        //friend bool operator == (pointer lhs, pointer rhs) //const
         {
             return f_pointer == rhs.f_pointer;
         }
@@ -178,7 +204,6 @@ public:
          * \return true if both pointers are not equal.
          */
         bool operator != (pointer const rhs) const
-        //friend bool operator != (pointer lhs, pointer rhs)
         {
             return f_pointer != rhs.f_pointer;
         }
@@ -241,6 +266,171 @@ public:
         deleter(*p);
     }
 };
+typedef std::unique_ptr<int, raii_generic_deleter<int, -1, decltype(&::close), &::close>>     raii_fd_t;
+#endif
+
+
+template<class T, T null_value, class D, D deleter>
+class raii_generic_deleter
+{
+public:
+    raii_generic_deleter(T const & p)
+        : f_pointer(p)
+    {
+    }
+
+    raii_generic_deleter(std::nullptr_t p = nullptr)
+    {
+        NOTUSED(p);
+    }
+
+    raii_generic_deleter(raii_generic_deleter const &) = delete;
+    raii_generic_deleter(raii_generic_deleter const &&) = delete;
+    raii_generic_deleter & operator = (raii_generic_deleter const &) = delete;
+
+    ~raii_generic_deleter()
+    {
+        delete_pointer();
+    }
+
+    void reset(T new_pointer = null_value)
+    {
+        delete_pointer();
+        f_pointer = new_pointer;
+    }
+
+    T release()
+    {
+        T p(f_pointer);
+        f_pointer = null_value;
+        return p;
+    }
+
+    void swap(raii_generic_deleter & rhs)
+    {
+        T p(f_pointer);
+        f_pointer = rhs.f_pointer;
+        rhs.f_pointer = p;
+    }
+
+    T get() const
+    {
+        return f_pointer;
+    }
+
+    D get_deleter() const
+    {
+        return deleter;
+    }
+
+    operator bool () const
+    {
+        return f_pointer != null_value;
+    }
+
+    T operator * () const
+    {
+        return f_pointer;
+    }
+
+    // since T is not a pointer, there is really no point in offering these
+    //T operator -> () const
+    //{
+    //    return f_pointer;
+    //}
+    //
+    //T operator [] () const
+    //{
+    //    ...
+    //}
+
+    bool operator == (raii_generic_deleter const & rhs) const
+    {
+        return f_pointer == rhs.f_pointer;
+    }
+
+    bool operator == (T const & rhs) const
+    {
+        return f_pointer == rhs.f_pointer;
+    }
+
+    bool operator == (std::nullptr_t) const
+    {
+        return f_pointer == null_value;
+    }
+
+    bool operator != (raii_generic_deleter const & rhs) const
+    {
+        return f_pointer != rhs.f_pointer;
+    }
+
+    bool operator != (T const & rhs) const
+    {
+        return f_pointer != rhs.f_pointer;
+    }
+
+    bool operator != (std::nullptr_t) const
+    {
+        return f_pointer != null_value;
+    }
+
+    bool operator < (raii_generic_deleter const & rhs) const
+    {
+        return f_pointer < rhs.f_pointer;
+    }
+
+    bool operator < (T const & rhs) const
+    {
+        return f_pointer < rhs.f_pointer;
+    }
+
+    bool operator <= (raii_generic_deleter const & rhs) const
+    {
+        return f_pointer <= rhs.f_pointer;
+    }
+
+    bool operator <= (T const & rhs) const
+    {
+        return f_pointer <= rhs.f_pointer;
+    }
+
+    bool operator > (raii_generic_deleter const & rhs) const
+    {
+        return f_pointer > rhs.f_pointer;
+    }
+
+    bool operator > (T const & rhs) const
+    {
+        return f_pointer > rhs.f_pointer;
+    }
+
+    bool operator >= (raii_generic_deleter const & rhs) const
+    {
+        return f_pointer >= rhs.f_pointer;
+    }
+
+    bool operator >= (T const & rhs) const
+    {
+        return f_pointer >= rhs.f_pointer;
+    }
+
+private:
+    void delete_pointer()
+    {
+        if(f_pointer != -1)
+        {
+            get_deleter()(f_pointer);
+            f_pointer = -1;
+        }
+    }
+
+    T       f_pointer = null_value;
+};
+
+typedef raii_generic_deleter<int, -1, decltype(&::close), &::close> raii_fd_t;
+
+
+
 
 
 /** \brief A templated used to easily delete a unique_ptr<>() resource.

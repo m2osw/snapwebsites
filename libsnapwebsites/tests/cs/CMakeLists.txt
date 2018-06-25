@@ -96,4 +96,20 @@ target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
 
 
 
+##
+## Test a client/server via snap_communicator to see whether shutdown()
+## has the same effect in the parent as it has in the client
+##
+## (It was determined that YES it is incorrect so we actually have the
+## shutdown turned off--see the code if you want to test with it turned ON)
+##
+project(test_udp_allocation)
+add_executable( ${PROJECT_NAME}
+    test_udp_allocation.cpp
+)
+target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
+
+
+
+
 # vim: ts=4 sw=4 et
