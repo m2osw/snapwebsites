@@ -156,7 +156,7 @@ udp_base::udp_base(std::string const & addr, int port, int family)
  */
 int udp_base::get_socket() const
 {
-    return *f_socket;
+    return f_socket.get();
 }
 
 
@@ -244,7 +244,7 @@ int udp_base::get_mtu_size() const
                 struct ifreq ifr;
                 memset(&ifr, 0, sizeof(ifr));
                 strncpy(ifr.ifr_name, iface_name.c_str(), sizeof(ifr.ifr_name));
-                if(ioctl(*f_socket, SIOCGIFMTU, &ifr) == 0)
+                if(ioctl(f_socket.get(), SIOCGIFMTU, &ifr) == 0)
                 {
                     f_mtu_size = ifr.ifr_mtu;
                 }
@@ -409,7 +409,7 @@ udp_client::~udp_client()
  */
 int udp_client::send(char const * msg, size_t size)
 {
-    return static_cast<int>(sendto(*f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
+    return static_cast<int>(sendto(f_socket.get(), msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
 }
 
 
@@ -466,7 +466,7 @@ udp_server::udp_server(std::string const & addr, int port, int family, std::stri
 {
     // bind to the very first address
     //
-    int r(bind(*f_socket, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
+    int r(bind(f_socket.get(), f_addrinfo->ai_addr, f_addrinfo->ai_addrlen));
     if(r != 0)
     {
         int const e(errno);
@@ -547,7 +547,7 @@ udp_server::udp_server(std::string const & addr, int port, int family, std::stri
         memcpy(&mreq.imr_address, f_addrinfo->ai_addr->sa_data, sizeof(mreq.imr_address));
         mreq.imr_ifindex = 0;   // no specific interface
 
-        r = setsockopt(*f_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+        r = setsockopt(f_socket.get(), IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
         if(r < 0)
         {
             int const e(errno);
@@ -560,7 +560,7 @@ udp_server::udp_server(std::string const & addr, int port, int family, std::stri
         // messages; apparently the default would be 1
         //
         int multicast_all(0);
-        r = setsockopt(*f_socket, IPPROTO_IP, IP_MULTICAST_ALL, &multicast_all, sizeof(multicast_all));
+        r = setsockopt(f_socket.get(), IPPROTO_IP, IP_MULTICAST_ALL, &multicast_all, sizeof(multicast_all));
         if(r < 0)
         {
             // things should still work if the IP_MULTICAST_ALL is not
@@ -605,7 +605,7 @@ udp_server::~udp_server()
  */
 int udp_server::recv(char * msg, size_t max_size)
 {
-    return static_cast<int>(::recv(*f_socket, msg, max_size, 0));
+    return static_cast<int>(::recv(f_socket.get(), msg, max_size, 0));
 }
 
 
@@ -634,12 +634,12 @@ int udp_server::timed_recv(char * msg, size_t const max_size, int const max_wait
     FD_ZERO(&s);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-    FD_SET(*f_socket, &s);
+    FD_SET(f_socket.get(), &s);
 #pragma GCC diagnostic pop
     struct timeval timeout;
     timeout.tv_sec = max_wait_ms / 1000;
     timeout.tv_usec = (max_wait_ms % 1000) * 1000;
-    int const retval(select(*f_socket + 1, &s, nullptr, &s, &timeout));
+    int const retval(select(f_socket.get() + 1, &s, nullptr, &s, &timeout));
     if(retval == -1)
     {
         // select() set errno accordingly
@@ -648,7 +648,7 @@ int udp_server::timed_recv(char * msg, size_t const max_size, int const max_wait
     if(retval > 0)
     {
         // our socket has data
-        return static_cast<int>(::recv(*f_socket, msg, max_size, 0));
+        return static_cast<int>(::recv(f_socket.get(), msg, max_size, 0));
     }
 
     // our socket has no data
