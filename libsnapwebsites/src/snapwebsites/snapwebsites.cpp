@@ -962,6 +962,7 @@ void server::config(int argc, char * argv[])
     signal( SIGTERM, sighandler );
     signal( SIGINT,  sighandler );
     signal( SIGQUIT, sighandler );
+    signal( SIGABRT, sighandler );  // although we can't really return from this one, having the stack trace is useful
 
     // we want to ignore SIGPIPE, but having a log is really useful so
     // we use a signal handler that logs the info and returns,
@@ -2877,6 +2878,7 @@ void server::sighandler( int sig )
         case SIGTERM : signame = "SIGTERM"; output_stack_trace = false; break;
         case SIGINT  : signame = "SIGINT";  output_stack_trace = false; break;
         case SIGQUIT : signame = "SIGQUIT"; output_stack_trace = false; break;
+        case SIGABRT : signame = "SIGABRT"; break;
         default      : signame = "UNKNOWN"; break;
     }
 
