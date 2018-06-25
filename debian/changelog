@@ -1,3 +1,11 @@
+snapwebsites (1.5.56.0~xenial) xenial; urgency=high
+
+  * Okay, found out that the compiler optimizations would create a problem
+    so I reimplemented the RAII class for us to move forward.
+  * Added a UDP test to verify that RAII implementation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 23 Jun 2018 14:40:37 -0700
+
 snapwebsites (1.5.55.2~xenial) xenial; urgency=high
 
   * Added a few more traces to see whether fd == 0 is the problem.
