@@ -787,6 +787,7 @@ int process::run()
                     //, f_callback() -- auto-init
                     //, f_process() -- auto-init
                 {
+SNAP_LOG_TRACE("process out_t::f_callback on construction ")(f_callback != nullptr ? "NOT NULL?!?!?" : "is a nullptr by default, perfect!");
                 }
 
                 virtual void run()
@@ -825,10 +826,13 @@ int process::run()
                 process *                       f_process = nullptr;
             } out(f_output);
             out.f_pipe = inout.f_pipes[2];
-            out.f_callback = std::bind(&process_output_callback::output_available
-                                     , f_output_callback
-                                     , std::placeholders::_1
-                                     , std::placeholders::_2);
+            if(f_output_callback != nullptr)
+            {
+                out.f_callback = std::bind(&process_output_callback::output_available
+                                         , f_output_callback
+                                         , std::placeholders::_1
+                                         , std::placeholders::_2);
+            }
             out.f_process = this;
             snap_thread out_thread("process::out::thread", &out);
             if(!out_thread.start())
@@ -846,10 +850,13 @@ int process::run()
                     return -1;
                 }
                 err->f_pipe = inout.f_pipes[4];
-                err->f_callback = std::bind(&process_output_callback::error_available
-                                         , f_output_callback
-                                         , std::placeholders::_1
-                                         , std::placeholders::_2);
+                if(f_output_callback != nullptr)
+                {
+                    err->f_callback = std::bind(&process_output_callback::error_available
+                                             , f_output_callback
+                                             , std::placeholders::_1
+                                             , std::placeholders::_2);
+                }
                 err->f_process = this;
                 err_thread.reset(new snap_thread("process::error::thread", err.get()));
                 if(err_thread == nullptr
@@ -860,9 +867,11 @@ int process::run()
             }
 
             // wait for the child process first
-            int const r( child.wait() );
             //
-            // then wait on the two threads
+            int const r( child.wait() );
+
+            // then wait on the two or three threads
+            //
             in_thread.stop();
             out_thread.stop();
             if(err_thread != nullptr)

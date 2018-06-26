@@ -225,35 +225,45 @@ public:
             return f_pointer != rhs.f_pointer;
         }
 
-//        /** \brief Compare this pointer against nullptr for equality.
-//         *
-//         * This function is used whenever this pointer gets compared
-//         * against the special value `nullptr`.
-//         *
-//         * \param[in] rhs  The nullptr.
-//         *
-//         * \return true when this pointer is the `nullptr`.
-//         */
-//        bool operator == (std::nullptr_t rhs) const
-//        {
-//            NOTUSED(rhs);
-//            return f_pointer == null_value;
-//        }
-//
-//        /** \brief Compare this pointer against nullptr for inequality.
-//         *
-//         * This function is used whenever this pointer gets compared
-//         * against the special value `nullptr` for inquality.
-//         *
-//         * \param[in] rhs  The nullptr.
-//         *
-//         * \return true when this pointer is not the `nullptr`.
-//         */
-//        bool operator != (std::nullptr_t rhs) const
-//        {
-//            NOTUSED(rhs);
-//            return f_pointer != null_value;
-//        }
+        /** \brief Compare this pointer against nullptr for equality.
+         *
+         * This function is used whenever this pointer gets compared
+         * against the special value `nullptr`.
+         *
+         * \note
+         * From what I've seen, this function doesn't get called.
+         * Instead, they do: "_internal_ptr == pointer()".
+         *
+         * \param[in] rhs  The nullptr.
+         *
+         * \return true when this pointer is the `nullptr`.
+         */
+        bool operator == (std::nullptr_t rhs) const
+        {
+            NOTUSED(rhs);
+            return f_pointer == null_value;
+        }
+
+        /** \brief Compare this pointer against nullptr for inequality.
+         *
+         * This function is used whenever this pointer gets compared
+         * against the special value `nullptr` for inquality.
+         *
+         * \note
+         * This function gets called in many circumstances where the
+         * unique_ptr<>() implementation checks whether the pointer
+         * is null or not. It's a simplification that may help the
+         * compiler.
+         *
+         * \param[in] rhs  The nullptr.
+         *
+         * \return true when this pointer is not the `nullptr`.
+         */
+        bool operator != (std::nullptr_t rhs) const
+        {
+            NOTUSED(rhs);
+            return f_pointer != null_value;
+        }
 
         /** \brief Retrieve the "pointer".
          *

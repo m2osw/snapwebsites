@@ -1,3 +1,12 @@
+snapwebsites (1.5.58.0~xenial) xenial; urgency=high
+
+  * Fixed the process implementation, a couple of functions where eventually
+    used with a nullptr. I added a couple of tests to avoid the problem.
+  * Made the == and != to nullptr functions official for faster compile of
+    the RAII code.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 26 Jun 2018 00:11:01 -0700
+
 snapwebsites (1.5.57.0~xenial) xenial; urgency=high
 
   * Well, a non-pointer just can't be dereferenced, so I fixed that class
