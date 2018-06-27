@@ -19,18 +19,22 @@
 //
 #include "snapwebsites/process.h"
 
-// Our lib
+// snapwebsites lib
 //
 #include "snapwebsites/log.h"
 
 // C lib
 //
-#include <stdio.h>
-#include <unistd.h>
 #include <proc/readproc.h>
+#include <stdio.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
+
+// last include
+//
 #include "snapwebsites/poison.h"
+
 
 
 extern char ** environ;
@@ -693,8 +697,15 @@ int process::run()
                 const_cast<char * const *>(&args_strings[0]),
                 const_cast<char * const *>(&envs_strings[0])
             );
+
             // the child returns only if execvp() fails, which is possible
-            SNAP_LOG_FATAL("Starting child process \"")(f_command.toUtf8().data())(" ")(f_arguments.join(" "))("\" failed.");
+            //
+            int const e(errno);
+            SNAP_LOG_FATAL("Starting child process \"")(f_command)
+                          (" ")(f_arguments.join(" "))
+                          ("\" failed. (errno: ")(e)
+                          (" -- ")(strerror(e))
+                          (")");
         }
         catch( snap_exception const & except )
         {
@@ -787,7 +798,6 @@ int process::run()
                     //, f_callback() -- auto-init
                     //, f_process() -- auto-init
                 {
-SNAP_LOG_TRACE("process out_t::f_callback on construction ")(f_callback != nullptr ? "NOT NULL?!?!?" : "is a nullptr by default, perfect!");
                 }
 
                 virtual void run()

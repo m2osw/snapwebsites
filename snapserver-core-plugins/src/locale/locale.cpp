@@ -15,22 +15,34 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "snap_locale.h"
 #include "qunicodestring.h"
 
+// other plugins
+//
 #include "../content/content.h"
 
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkgmtime.h>
 #include <snapwebsites/not_used.h>
 
+// UIC (unicode) lib
+//
 #include <unicode/datefmt.h>
 #include <unicode/errorcode.h>
 #include <unicode/locid.h>
 #include <unicode/smpdtfmt.h>
 #include <unicode/timezone.h>
 
+
+// last include
+//
 #include <snapwebsites/poison.h>
+
 
 
 SNAP_PLUGIN_START(locale, 1, 0)
@@ -250,7 +262,7 @@ locale::locale_list_t const & locale::get_locale_list()
         // the various objects offering a getAvailableLocales()
         // function... (TBD)
         int32_t count;
-        const Locale *l(DateFormat::getAvailableLocales(count));
+        Locale const * l(DateFormat::getAvailableLocales(count));
         for(int32_t i(0); i < count; ++i)
         {
             locale_info_t info;

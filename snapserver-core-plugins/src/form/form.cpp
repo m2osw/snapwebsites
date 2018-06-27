@@ -15,11 +15,17 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "form.h"
 
+// other plugins
+//
 #include "../content/content.h"
 #include "../messages/messages.h"
 
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
@@ -30,9 +36,15 @@
 #include <snapwebsites/qxmlmessagehandler.h>
 #include <snapwebsites/xslt.h>
 
+// Qt lib
+//
+#include <QByteArray>
 #include <QFile>
 #include <QFileInfo>
 
+
+// last include
+//
 #include <snapwebsites/poison.h>
 
 
@@ -1424,12 +1436,13 @@ int form::count_text_lines(QString const& text)
 {
     int lines(0);
 
-    for(char *s(text.toUtf8().data()); *s != '\0'; ++s)
+    QByteArray const utf8(text.toUtf8());
+    for(char const *s(utf8.data()); *s != '\0'; ++s)
     {
         if(*s == '\r')
         {
             ++lines;
-            if(s[1] == '\r')
+            if(s[1] == '\n')
             {
                 // \r\n <=> one line
                 ++s;
@@ -1854,12 +1867,13 @@ bool form::validate_post_for_widget_impl(content::path_info_t & ipath, sessions:
             {
                 re = re.mid(1);
             }
-            int p(re.lastIndexOf('/'));
+            int const p(re.lastIndexOf('/'));
             if(p >= 0)
             {
-                QString flags(re.mid(p + 1));
+                QString const flags(re.mid(p + 1));
                 re = re.mid(0, p);
-                for(char *s(flags.toUtf8().data()); *s != '\0'; ++s)
+                QByteArray const utf8(flags.toUtf8());
+                for(char const *s(utf8.data()); *s != '\0'; ++s)
                 {
                     switch(*s)
                     {

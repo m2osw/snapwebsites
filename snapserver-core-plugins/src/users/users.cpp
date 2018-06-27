@@ -69,14 +69,20 @@
  * pushed back, whether the user is logged in or not.
  */
 
+// self
+//
 #include "users.h"
 
+// other plugins
+//
 #include "../output/output.h"
 #include "../list/list.h"
 #include "../locale/snap_locale.h"
 #include "../messages/messages.h"
 #include "../server_access/server_access.h"
 
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
@@ -84,14 +90,24 @@
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_lock.h>
 
-#include <iostream>
-
+// Qt lib
+//
 #include <QFile>
 
+// C++ lib
+//
+#include <iostream>
+
+// OpenSSL lib
+//
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
+
+// last include
+//
 #include <snapwebsites/poison.h>
+
 
 
 SNAP_PLUGIN_START(users, 1, 0)
@@ -4026,7 +4042,9 @@ void users::encrypt_password(QString const & digest, QString const & password, Q
     }
 
     // add password (encrypt to UTF-8)
-    const char *pwd(password.toUtf8().data());
+    //
+    QByteArray const pwd_utf8(password.toUtf8());
+    char const * pwd(pwd_utf8.data());
     if(EVP_DigestUpdate(&mdctx, pwd, strlen(pwd)) != 1)
     {
         throw users_exception_encryption_failed("EVP_DigestUpdate() failed digest update (password)");

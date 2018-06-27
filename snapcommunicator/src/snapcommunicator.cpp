@@ -57,9 +57,11 @@
 #include <pwd.h>
 #include <sys/resource.h>
 
+
 // included last
 //
 #include <snapwebsites/poison.h>
+
 
 
 /** \file
@@ -2015,28 +2017,17 @@ void snap_communicator_server::init()
             // we have some local services (note that snapcommunicator is
             // not added as a local service)
             //
-            dir.enumerate_glob( [&]( QString path )
-            {
-                // TODO: change away from C-lib stuff and use QString methods.
-                //
-                char const * p_path( path.toUtf8().data() );
-                char const * basename(strrchr(p_path, '/'));
-                if( basename == nullptr )
-                {
-                    basename = p_path;
-                }
-                else
-                {
-                    ++basename;
-                }
-                char const * end(strstr(basename, ".service"));
-                if(end == nullptr)
-                {
-                    end = basename + strlen(basename);
-                }
-                QString const key(QString::fromUtf8(basename, end - basename));
-                f_local_services_list[key] = true;
-            });
+            dir.enumerate_glob( [&]( QString const & path )
+                    {
+                        int const s(path.lastIndexOf('/') + 1);
+                        int e(path.length() - s);
+                        if(path.endsWith(".service"))
+                        {
+                            e -= 8;
+                        }
+                        QString const key(path.mid(s, e));
+                        f_local_services_list[key] = true;
+                    });
 
             // the list of local services cannot (currently) change while
             // snapcommunicator is running so generate the corresponding

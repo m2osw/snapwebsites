@@ -36,16 +36,18 @@
 //
 #include <fstream>
 
-// QtCore
+// Qt lib
 //
 #include <QFile>
 #include <QString>
 #include <QStringList>
 #include <QTextStream>
 
-// last entry
+
+// last include
 //
 #include <snapwebsites/poison.h>
+
 
 
 SNAP_PLUGIN_START(ssh, 1, 0)
@@ -622,7 +624,7 @@ bool ssh::apply_setting
             authorized_keys_out.open(authorized_keys_path, std::ios::out | std::ios::trunc | std::ios::binary);
             if(authorized_keys_out.is_open())
             {
-                authorized_keys_out << new_value.trimmed().toUtf8().data() << std::endl;
+                authorized_keys_out << new_value.trimmed() << std::endl;
 
                 if(chmod(authorized_keys_path.c_str(), S_IRUSR | S_IWUSR) != 0)
                 {

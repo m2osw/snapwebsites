@@ -15,19 +15,30 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "snapwebsites/log.h"
 
+// snapwebsite lib
+//
 #include "snapwebsites/not_reached.h"
 #include "snapwebsites/not_used.h"
+#include "snapwebsites/qstring_stream.h"
 #include "snapwebsites/snap_exception.h"
 #include "snapwebsites/snapwebsites.h"
 
-#include <syslog.h>
-
+// boost lib
+//
 #include <boost/algorithm/string/replace.hpp>
 
-// log4cplus wants to be compatible with old compilers and thus uses
-// std::auto_ptr<>() which throws an error in our code
+// Qt lib
+//
+#include <QFileInfo>
+
+// log4cplus lib
+//
+// this one wants to be compatible with (really) old compilers and thus
+// uses std::auto_ptr<>() which throws an error in our code
 //
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -42,9 +53,17 @@
 #include <log4cplus/syslogappender.h>
 #pragma GCC diagnostic pop
 
-#include <QFileInfo>
+// C lib
+//
+#include <syslog.h>
 
+
+
+// last include
+//
 #include "snapwebsites/poison.h"
+
+
 
 
 /** \file
@@ -1059,7 +1078,7 @@ logger::~logger()
 
     if(console && isatty(STDERR_FILENO))
     {
-        std::cerr << level_str << ":" << f_file << ":" << f_line << ": " << f_message.toUtf8().data() << std::endl;
+        std::cerr << level_str << ":" << f_file << ":" << f_line << ": " << f_message << std::endl;
     }
 }
 

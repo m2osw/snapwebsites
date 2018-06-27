@@ -1,3 +1,13 @@
+snapwebsites (1.5.59.0~xenial) xenial; urgency=high
+
+  * Fixed five invalid use of str.toUtf8().data(), which would end up
+    using a temporary buffer after the corresponding object was deleted.
+  * Enhanced error message in case execvpe() fails.
+  * Fixed form line counting for "\r\n" (it was testing "\r\r" instead.)
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 26 Jun 2018 18:21 27 -0700
+
 snapwebsites (1.5.58.0~xenial) xenial; urgency=high
 
   * Fixed the process implementation, a couple of functions where eventually

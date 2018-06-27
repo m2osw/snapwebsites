@@ -1,4 +1,4 @@
-// Snap Websites Servers -- snap websites child process hanlding
+// Snap Websites Servers -- allow for QString in ostream (i.e. "std::cout << qstring")
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,16 @@
 
 #pragma once
 
+// Qt lib
+//
+#include <QString>
+
+
+// C++ lib
+//
 #include <iostream>
 
-#include <QString>
+
 
 inline std::ostream & operator << ( std::ostream & strm, QByteArray const & qarray )
 {
