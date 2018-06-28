@@ -40,7 +40,12 @@
 //};
 
 
-
+extern "C" {
+char const * __asan_default_options()
+{
+    return "detect_leaks=0";
+}
+}
 
 int main(int argc, char *argv[])
 {

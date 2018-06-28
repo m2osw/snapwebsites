@@ -6,6 +6,7 @@ debian/tmp/usr/share/snapwebsites/logger/log.properties usr/share/snapwebsites/l
 snapbase/conf/snapserver.conf                           etc/snapwebsites/
 snapbase/conf/log.properties                            etc/snapwebsites/logger/
 snapbase/conf/README.md                                 etc/snapwebsites/snapwebsites.d/
+snapbase/conf/50-snaplist.pref                          etc/apt/preferences.d/
 snapbase/conf/snap-acceptfilter.conf                    etc/apache2/conf-available/
 snapbase/conf/snap-apache2-extra-options.conf           etc/apache2/conf-available/
 snapbase/conf/snap-apache2-security.conf                etc/apache2/conf-available/

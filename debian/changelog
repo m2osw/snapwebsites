@@ -1,3 +1,11 @@
+snapwebsites (1.5.60.0~xenial) xenial; urgency=high
+
+  * Added a snaplist.pref file to reduce the priority of our build packages.
+  * Added some clean up to the snap_parser.h default variable values.
+  * Trying to avoid the memory leak reports since we don't really need them.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 26 Jun 2018 18:21:27 -0700
+
 snapwebsites (1.5.59.0~xenial) xenial; urgency=high
 
   * Fixed five invalid use of str.toUtf8().data(), which would end up
@@ -6,7 +14,7 @@ snapwebsites (1.5.59.0~xenial) xenial; urgency=high
   * Fixed form line counting for "\r\n" (it was testing "\r\r" instead.)
   * Various clean ups.
 
- -- Alexis Wilke <alexis@m2osw.com>  Tue, 26 Jun 2018 18:21 27 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 26 Jun 2018 18:21:27 -0700
 
 snapwebsites (1.5.58.0~xenial) xenial; urgency=high
 

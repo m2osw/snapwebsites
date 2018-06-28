@@ -83,6 +83,16 @@
 #include <advgetopt/advgetopt.h>
 
 
+extern "C" {
+char const * __asan_default_options()
+{
+    return "detect_leaks=0";
+}
+}
+
+
+
+
 namespace
 {
     const std::vector<std::string> g_configuration_files

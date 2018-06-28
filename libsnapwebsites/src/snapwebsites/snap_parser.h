@@ -130,7 +130,7 @@ public:
     QString         to_string() const;
 
 private:
-    token_t         f_id;
+    token_t         f_id = token_t::TOKEN_ID_NONE_ENUM;
     QVariant        f_value;
 };
 typedef QVector<QSharedPointer<token> >    vector_token_t;
@@ -177,7 +177,7 @@ private:
 class keyword
 {
 public:
-                    keyword() : f_number(0) {}
+                    keyword() {}
                     keyword(lexer & parent, QString const & keyword_identifier, int index_number = 0);
 
     QString         identifier() const { return f_identifier; }
@@ -186,7 +186,7 @@ public:
 private:
     static int      g_next_number;
 
-    int             f_number;
+    int             f_number = 0;
     QString         f_identifier;
 };
 
@@ -228,8 +228,8 @@ public:
         choices&        get_choices() const { return *f_rule->f_tokens[f_position].f_choices; }
 
     private:
-        rule const *    f_rule;
-        int             f_position;
+        rule const *    f_rule = nullptr;
+        int             f_position = 0;
     };
 
     rule_ref const  operator [] (int position) const
@@ -264,13 +264,13 @@ private:
         rule_data_t(QString const & value); // i.e. literal
         rule_data_t(keyword const & k);
 
-        token_t             f_token;
-        QString             f_value;    // required value if not empty
-        keyword             f_keyword;    // the keyword
-        choices *           f_choices;    // sub-rule if not null & token TOKEN_ID_CHOICES_ENUM
+        token_t             f_token = token_t::TOKEN_ID_NONE_ENUM;
+        QString             f_value;        // required value if not empty
+        keyword             f_keyword;      // the keyword
+        choices *           f_choices = nullptr;    // sub-rule if not null & token TOKEN_ID_CHOICES_ENUM
     };
 
-    choices *               f_parent;
+    choices *               f_parent = nullptr;
     QVector<rule_data_t>    f_tokens;
     reducer_t               f_reducer;
 };

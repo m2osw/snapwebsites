@@ -1,0 +1,28 @@
+# Snap! Websites preferences
+#
+# Place file under:
+#    /etc/apt/preferences.d/50-snaplist.pref
+#
+# Manual page for this file:
+#    man apt_preferences
+#
+
+# Any package from our build system is given a lower than
+# normal priority; this means by default our PPA packages 
+# are preferred over those from our build system.
+#
+# To test the priority of a package, run this command:
+#
+#    apt-cache policy <package-name>
+#
+# The default priority is generally 500 or 990. Older versions get a
+# priority of 100. Incompatible or non-automatic packages get a priority
+# of 1.
+#
+# Here we use 300 which is a middle ground that should make things
+# work as expected.
+#
+Package: *
+Pin: origin "build.m2osw.com"
+Pin-Priority: 300
+
