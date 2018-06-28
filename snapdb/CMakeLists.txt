@@ -66,16 +66,11 @@ add_subdirectory( src   )
 install(
     PROGRAMS
         scripts/snapclearcache
-    DESTINATION
-        bin
-)
-
-install(
-    PROGRAMS
         scripts/cass-stop
     DESTINATION
         bin
 )
+
 
 snap_build_xml_targets()
 
