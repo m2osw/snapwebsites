@@ -1,3 +1,9 @@
+snapwebsites (1.5.61.0~xenial) xenial; urgency=high
+
+  * Fixed the debian/snapdb.install to get the two scripts installed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 27 Jun 2018 23:47:20 -0700
+
 snapwebsites (1.5.60.0~xenial) xenial; urgency=high
 
   * Added a snaplist.pref file to reduce the priority of our build packages.
