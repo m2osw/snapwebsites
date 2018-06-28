@@ -1,3 +1,9 @@
+snapwebsites (1.5.64.0~xenial) xenial; urgency=high
+
+  * Missed the /bin/ sub-folder.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 28 Jun 2018 03:11:39 -0700
+
 snapwebsites (1.5.63.0~xenial) xenial; urgency=high
 
   * Restoring the path. It still did not make it in the output.
