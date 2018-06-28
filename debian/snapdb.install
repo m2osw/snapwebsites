@@ -1,4 +1,4 @@
 debian/tmp/usr/bin/snapdb                          usr/bin/
-snapmanager/scripts/snapclearcache                 usr/bin/
-snapmanager/scripts/cass-stop                      usr/bin/
+snapdb/scripts/snapclearcache                      usr/bin/
+snapdb/scripts/cass-stop                           usr/bin/
 debian/tmp/usr/share/snapwebsites/conf/snapdb.conf etc/snapwebsites/
