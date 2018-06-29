@@ -398,12 +398,6 @@ snapwebsites (1.5.27.0~xenial) xenial; urgency=high
 
  -- Doug Barbieri <doug@dooglio.net>  Wed, 25 Oct 2017 17:01:11 -0700
 
-snapwebsites (1.5.26.3~xenial) xenial; urgency=high
-
-  * Nightly build.
-
- -- Build Server <build@m2osw.com>  Wed, 13 Sep 2017 16:04:38 -0700
-
 snapwebsites (1.5.26.0~xenial) xenial; urgency=high
 
   * Fixed test websites: the canonical is not enough, we need to prevent
