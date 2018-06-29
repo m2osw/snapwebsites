@@ -1,3 +1,17 @@
+snapwebsites (1.5.65.0~xenial) xenial; urgency=high
+
+  * Fixed the .../bundle-scripts/... path usage: it's part of the
+    /var/cache/snapwebsites folder so it gets deleted once in a while,
+    so (1) no need to create when installing and (2) need to create any
+    time we need to use it (i.e. when we try run a script.)
+  * Removed the mkdir from the snapmanagerdaemon post installation script.
+  * Fixed the spelling (missing "s") in post removal script.
+  * Added support to file_content() to auto-create path if required.
+  * Updated the three places that access the bundle-scripts in C++ to auto-
+    generate that folder if missing.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 28 Jun 2018 18:29:23 -0700
+
 snapwebsites (1.5.64.0~xenial) xenial; urgency=high
 
   * Missed the /bin/ sub-folder.

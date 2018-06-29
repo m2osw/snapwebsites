@@ -104,7 +104,7 @@ class file_handler
 {
 public:
     file_handler()
-        : file_content("/tmp/email.eml", true)
+        : file_content("/tmp/email.eml", false, true)
     {
         if(!read_all())
         {

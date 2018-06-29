@@ -16,7 +16,7 @@ then
     # delete the data and cache files
     #
     rm -rf /var/lib/snapwebsites/bundles
-    rm -rf /var/cache/snapwebsites/bundle-script
+    rm -rf /var/cache/snapwebsites/bundle-scripts
     rm -f /var/cache/snapwebsites/apt-check.output
 
     # delete the logs if any

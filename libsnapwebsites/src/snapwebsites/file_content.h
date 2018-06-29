@@ -42,6 +42,14 @@ public:
     explicit file_content_exception_invalid_parameter(QString const &     whatmsg) : file_content_exception(whatmsg) {}
 };
 
+class file_content_exception_io_error : public file_content_exception
+{
+public:
+    explicit file_content_exception_io_error(char const *        whatmsg) : file_content_exception(whatmsg) {}
+    explicit file_content_exception_io_error(std::string const & whatmsg) : file_content_exception(whatmsg) {}
+    explicit file_content_exception_io_error(QString const &     whatmsg) : file_content_exception(whatmsg) {}
+};
+
 
 
 
@@ -53,7 +61,7 @@ class file_content
 public:
     typedef std::shared_ptr<file_content>   pointer_t;
 
-                                file_content(std::string const & filename, bool temporary = false);
+                                file_content(std::string const & filename, bool create_missing_directories = false, bool temporary = false);
     virtual                     ~file_content();
 
     std::string const &         get_filename() const;

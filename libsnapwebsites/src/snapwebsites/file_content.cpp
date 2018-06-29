@@ -49,16 +49,39 @@ namespace snap
  * destructor also makes use of the filename to delete the file
  * at that time. By default a file is not marked as temporary.
  *
+ * \exception file_content_exception_invalid_parameter
+ * The \p filename parameter cannot be an empty string.
+ *
+ * \exception file_content_exception_io_error
+ * The function checks whether all the folders exist. If not then the
+ * file can't be create or read so there is no valid file_content()
+ * possible with that path. This exception only occurs if the
+ * \p create_missing_directories is true and the creation of any
+ * of the directories fails.
+ *
  * \param[in] filename  The name of the file to read and write.
+ * \param[in] create_missing_directories  Whether to create missing directories
+ *            as found in the path (see mkdir_p()).
  * \param[in] temporary  Whether the file is temporary.
+ *
+ * \sa mkdir_p()
  */
-file_content::file_content(std::string const & filename, bool temporary)
+file_content::file_content(std::string const & filename, bool create_missing_directories, bool temporary)
     : f_filename(filename)
     , f_temporary(temporary)
 {
     if(f_filename.empty())
     {
         throw file_content_exception_invalid_parameter("the filename of a file_content object cannot be the empty string");
+    }
+
+    if(create_missing_directories)
+    {
+        int const r(mkdir_p(QString::fromUtf8(f_filename.c_str()), true);
+        if(r != 0)
+        {
+            throw file_content_exception_io_error("the full path to filename for a file_content object could not be created");
+        }
     }
 }
 
