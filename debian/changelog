@@ -1,3 +1,9 @@
+snapwebsites (1.5.65.1~xenial) xenial; urgency=high
+
+  * Fixed the use of the mkdir_p() function in file_content.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 28 Jun 2018 18:51:42 -0700
+
 snapwebsites (1.5.65.0~xenial) xenial; urgency=high
 
   * Fixed the .../bundle-scripts/... path usage: it's part of the

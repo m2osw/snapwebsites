@@ -22,6 +22,7 @@
 // snapwebsites lib
 //
 #include "snapwebsites/log.h"
+#include "snapwebsites/mkdir_p.h"
 
 // C lib
 //
@@ -77,7 +78,7 @@ file_content::file_content(std::string const & filename, bool create_missing_dir
 
     if(create_missing_directories)
     {
-        int const r(mkdir_p(QString::fromUtf8(f_filename.c_str()), true);
+        int const r(mkdir_p(QString::fromUtf8(f_filename.c_str()), true));
         if(r != 0)
         {
             throw file_content_exception_io_error("the full path to filename for a file_content object could not be created");
