@@ -18,38 +18,165 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
+
+// self
+//
 #include "glob_dir.h"
+
+// snapwebsites lib
+//
 #include "log.h"
 
 
+// last include
+//
 #include "poison.h"
+
+
 
 namespace snap
 {
 
-/** \class Enumerate the contents of a directory (single level) using a wildcard.
+
+namespace
+{
+
+
+int glob_err_callback(char const * epath, int eerrno)
+{
+    SNAP_LOG_ERROR("an error occurred while reading directory under \"")
+        (epath)
+        ("\". Got error: ")
+        (eerrno)
+        (", ")
+        (strerror(eerrno))
+        (".");
+
+    // do not abort on a directory read error...
+    return 0;
+}
+
+
+}
+// no name namespace
+
+
+/** \class glob_dir
+ * \brief Enumerate the contents of a directory using a wildcard.
  *
- * This class encapsulates and hides a Linux 'C' `glob_t` structure.
- * It allows enumeration of a single folder at the first level, using a path containing a wildcard.
+ * This class encapsulates and hides a Unix 'C' `glob_t` structure.
+ *
+ * It allows enumeration of a single folder at the first level
+ * using a path containing a Unix shell compatible wildcard.
  */
 
+
+/** \brief Create an empty directory.
+ *
+ * The default constructor creates an empty directory. You are expected
+ * to call the set_path() function at least once before attempting to
+ * enumerate files.
+ *
+ * \sa set_path()
+ */
 glob_dir::glob_dir()
 {
     // Empty
 }
 
 
+/** \brief Create a glob_dir from a path and flags.
+ *
+ * This constructor calls set_path() immediately using the two parameters
+ * passed to it.
+ *
+ * \param[in] path  The path including the Unix shell wildcards.
+ * \param[in] flags  A set of GLOB_... flags.
+ *
+ * \sa set_path()
+ */
+glob_dir::glob_dir( char const * path, int const flags )
+{
+    set_path( path, flags );
+}
+
+
+/** \brief Create a glob_dir from a path and flags.
+ *
+ * This constructor calls set_path() immediately using the two parameters
+ * passed to it.
+ *
+ * \param[in] path  The path including the Unix shell wildcards.
+ * \param[in] flags  A set of GLOB_... flags.
+ *
+ * \sa set_path()
+ */
+glob_dir::glob_dir( std::string const & path, int const flags )
+{
+    set_path( path, flags );
+}
+
+
+/** \brief Create a glob_dir from a path and flags.
+ *
+ * This constructor calls set_path() immediately using the two parameters
+ * passed to it.
+ *
+ * \param[in] path  The path including the Unix shell wildcards.
+ * \param[in] flags  A set of GLOB_... flags.
+ *
+ * \sa set_path()
+ */
 glob_dir::glob_dir( QString const & path, int const flags )
 {
     set_path( path, flags );
 }
 
 
-void glob_dir::set_path( QString const & path, int const flags )
+/** \brief Set the path to read with glob().
+ *
+ * This function is an overload which accepts a bare pointer as input.
+ *
+ * \param[in] path  The path including the Unix shell wildcards.
+ * \param[in] flags  A set of GLOB_... flags.
+ */
+void glob_dir::set_path( char const * path, int const flags )
+{
+    if(path != nullptr)
+    {
+        set_path(std::string(path), flags);
+    }
+}
+
+
+/** \brief Set the path to read with glob().
+ *
+ * This function passes the \p path parameter to the glob() function and
+ * saves the results in an internally managed glob_t structure.
+ *
+ * The flags are as specified in the glob(3) function (try `man glob`).
+ *
+ * The path is expected to already include a wildcard. Without a wildcard,
+ * it probably won't work as expected.
+ *
+ * The function doesn't return anything. Instead it will memorize the
+ * results and enumerate them once the enumerate_glob() function is called.
+ *
+ * \note
+ * Do not worry about the globfree(), this class handles that part internally.
+ *
+ * \todo
+ * Offer another function to retrieve a vector of strings instead of only an
+ * enumeration function.
+ *
+ * \param[in] path  The path including the Unix shell wildcards.
+ * \param[in] flags  A set of GLOB_... flags.
+ */
+void glob_dir::set_path( std::string const & path, int const flags )
 {
     f_dir = glob_pointer_t( new glob_t );
     *f_dir = glob_t();
-    int const r(glob(path.toUtf8().data(), flags, glob_err_callback, f_dir.get()));
+    int const r(glob(path.c_str(), flags, glob_err_callback, f_dir.get()));
     if(r != 0)
     {
         // do nothing when errors occur
@@ -78,30 +205,61 @@ void glob_dir::set_path( QString const & path, int const flags )
 }
 
 
-void glob_dir::enumerate_glob( std::function<void (QString path)> func ) const
+/** \brief Set the path to read with glob().
+ *
+ * This function is an overload with a QString. See the set_path() function
+ * with an std::string for more details.
+ *
+ * \param[in] path  The path including the Unix shell wildcards.
+ * \param[in] flags  A set of GLOB_... flags.
+ */
+void glob_dir::set_path( QString const & path, int const flags )
 {
-    for(size_t idx(0); idx < f_dir->gl_pathc; ++idx)
+    set_path(path.toUtf8().data(), flags);
+}
+
+
+/** \brief Enumerate full filenames with an std::string.
+ *
+ * This function enumerates all the filenames found in this glob
+ * calling your callback once per file. This function expects
+ * an std::string. You can also enumerate using a QString.
+ *
+ * \param[in] func  The function to call on each filename.
+ */
+void glob_dir::enumerate_glob( std::function<void (std::string path)> func ) const
+{
+    if(f_dir != nullptr)
     {
-        func(QString::fromUtf8(f_dir->gl_pathv[idx]));
+        for(size_t idx(0); idx < f_dir->gl_pathc; ++idx)
+        {
+            func(f_dir->gl_pathv[idx]);
+        }
     }
 }
 
 
-int glob_dir::glob_err_callback(char const * epath, int eerrno)
+/** \brief Enumerate full filenames with a QString.
+ *
+ * This function enumerates all the filenames found in this glob
+ * calling your callback once per file. This function expects
+ * a QString. You can also enumerate using an std::string.
+ *
+ * \param[in] func  The function to call on each filename.
+ */
+void glob_dir::enumerate_glob( std::function<void (QString path)> func ) const
 {
-    SNAP_LOG_ERROR("an error occurred while reading directory under \"")
-        (epath)
-        ("\". Got error: ")
-        (eerrno)
-        (", ")
-        (strerror(eerrno))
-        (".");
-
-    // do not abort on a directory read error...
-    return 0;
+    if(f_dir != nullptr)
+    {
+        for(size_t idx(0); idx < f_dir->gl_pathc; ++idx)
+        {
+            func(QString::fromUtf8(f_dir->gl_pathv[idx]));
+        }
+    }
 }
 
 
-} // namespace snap
 
+
+} // namespace snap
 // vim: ts=4 sw=4 et

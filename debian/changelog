@@ -1,3 +1,15 @@
+snapwebsites (1.5.66.0~xenial) xenial; urgency=high
+
+  * Enhanced glob_dir to support std::string and char const *.
+  * Made use of the raii_pointer_deleter to track the glob_t object.
+  * Updated the manager.cpp and journal.cpp to the new version of glob_dir.
+  * Documented glob_dir and journal_list.
+  * Changed when the journal_list becomes "finished": which is now when
+    the done() function is called (because once marked done we should
+    never reuse that pointer!)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 28 Jun 2018 18:51:42 -0700
+
 snapwebsites (1.5.65.1~xenial) xenial; urgency=high
 
   * Fixed the use of the mkdir_p() function in file_content.

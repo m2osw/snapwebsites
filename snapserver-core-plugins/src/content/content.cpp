@@ -4478,7 +4478,7 @@ void content::add_css(QDomDocument doc, QString const & name)
 {
     if(f_added_css.contains(name))
     {
-        // already added, we're done
+        // already added, we are done
         return;
     }
     f_added_css[name] = true;

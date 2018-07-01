@@ -655,22 +655,22 @@ private:
 class journal_list
 {
 public:
-    ~journal_list();
+                        ~journal_list();
 
-    void add_page_url( QString const& url );
-    void done();
+    void                add_page_url( QString const & url );
+    void                done();
 
 private:
-    journal_list( snap_child* snap );
+    friend class content;
 
-    snap_child*                             f_snap = nullptr;
-    libdbproxy::table::pointer_t f_journal_table;
+                        journal_list( snap_child * snap );
+
+    void                finish_pages();
+
+    snap_child *                            f_snap = nullptr;
+    libdbproxy::table::pointer_t            f_journal_table;
     QStringList                             f_url_list;
     bool                                    f_finished_called = false;
-
-    void finish_pages();
-
-    friend class content;
 };
 
 
@@ -854,11 +854,13 @@ public:
     bool                is_final(QString const & key);
 
     // journal support
-    journal_list*        get_journal_list();
+    journal_list *       get_journal_list();
 
     SNAP_TEST_PLUGIN_SUITE_SIGNALS()
 
 private:
+    friend class journal_list;
+
     // from the <param> tags
     struct content_param
     {
@@ -921,13 +923,13 @@ private:
     void        backend_minify_css_file(libdbproxy::row::pointer_t file_row, attachment_file const& file);
     void        backend_action_rebuild_index();
 
-    void        journal_list_pop();
+    void        journal_list_pop(journal_list * journal);
     void        finish_all_journals();
 
     // tests
     SNAP_TEST_PLUGIN_TEST_DECL(test_journal_list)
 
-    snap_child *                                    f_snap = nullptr;
+    snap_child *                         f_snap = nullptr;
     libdbproxy::table::pointer_t         f_content_table;
     libdbproxy::table::pointer_t         f_secret_table;
     libdbproxy::table::pointer_t         f_processing_table;
@@ -935,19 +937,17 @@ private:
     libdbproxy::table::pointer_t         f_branch_table;
     libdbproxy::table::pointer_t         f_revision_table;
     libdbproxy::table::pointer_t         f_files_table;
-    content_block_map_t                             f_blocks;
-    int32_t                                         f_file_index = 0;
-    bool                                            f_updating = false;
-    QMap<QString, bool>                             f_added_javascripts;
-    javascript_ref_map_t                            f_javascripts;
-    QMap<QString, bool>                             f_added_css;
-
-    friend class journal_list;
+    content_block_map_t                  f_blocks;
+    int32_t                              f_file_index = 0;
+    bool                                 f_updating = false;
+    QMap<QString, bool>                  f_added_javascripts;
+    javascript_ref_map_t                 f_javascripts;
+    QMap<QString, bool>                  f_added_css;
 
     // Journaling support
     //
-    std::stack<journal_list*>                       f_journal_list_stack;
-    std::vector<journal_list>                       f_to_process;
+    std::stack<journal_list *>           f_journal_list_stack;
+    std::vector<journal_list>            f_to_process;
 };
 
 //class content_box_execute
