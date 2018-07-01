@@ -6395,6 +6395,40 @@ QString snap_child::get_server_parameter(QString const & name)
 }
 
 
+/** \brief Retrieve the path to the snapwebsites data folder.
+ *
+ * This function retrieve the path to the data used by various processes
+ * to save data accross runs.
+ *
+ * For example, we save our counter.u64 used to generate unique numbers
+ * on any one computer.
+ *
+ * By default the path is `"/var/lib/snapwebsites"`.
+ *
+ * \note
+ * The function never returns an empty path.
+ *
+ * \return The path to the data directory.
+ */
+QString snap_child::get_data_path()
+{
+    // get the data_path variable from the configuration file
+    //
+    server::pointer_t server(f_server.lock());
+    if(!server)
+    {
+        throw snap_logic_exception("server pointer is nullptr");
+    }
+    QString path(server->get_parameter(get_name(name_t::SNAP_NAME_CORE_DATA_PATH)));
+
+    // if not defined by end user, return the default value
+    //
+    return path.isEmpty()
+                ? QString("/var/lib/snapwebsites")
+                : path;
+}
+
+
 /** \brief Retrieve the path to the list data.
  *
  * This function retrieve the path to the data used by the list environment.
@@ -6407,11 +6441,25 @@ QString snap_child::get_server_parameter(QString const & name)
  */
 QString snap_child::get_list_data_path()
 {
-    QString const path(get_server_parameter(get_name(name_t::SNAP_NAME_CORE_LIST_DATA_PATH)));
-
-    // not defined by end user, return the default value
+    // try the most specific path first
     //
-    return path.isEmpty() ? "/var/lib/snapwebsites/list" : path;
+    QString path(get_server_parameter(get_name(name_t::SNAP_NAME_CORE_LIST_DATA_PATH)));
+
+    if(path.isEmpty())
+    {
+        // if the most specific is not defined, then maybe the basic
+        // data_path is, we need to add "list" at the end, though
+        //
+        path = get_data_path();
+
+        // get_data_path() never returns an empty path so no need to test
+        //
+        path += "/list";
+    }
+
+    // if not defined by end user, return the default value
+    //
+    return path;
 }
 
 
@@ -7532,7 +7580,7 @@ QString snap_child::get_unique_number()
         throw snap_logic_exception("server pointer is nullptr");
     }
 
-    QString const data_path(server->get_parameter("data_path"));
+    QString const data_path(get_data_path());
 
     quint64 c(0);
     {

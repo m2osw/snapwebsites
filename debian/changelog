@@ -1,3 +1,13 @@
+snapwebsites (1.5.67.0~xenial) xenial; urgency=high
+
+  * Moved the snapcommunicator neighbors.txt file to the lib folder instead
+    of the cache (otherwise it gets deleted and we lose them for good!)
+  * Added a get_data_path() function to clearly distinguish it from
+    the get_list_data_path().
+  * Added a help to the cass-stop script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  1 Jul 2018 00:55:34 -0700
+
 snapwebsites (1.5.66.0~xenial) xenial; urgency=high
 
   * Enhanced glob_dir to support std::string and char const *.

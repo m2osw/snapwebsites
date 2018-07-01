@@ -300,15 +300,17 @@ void communicator::on_retrieve_status(snap_manager::server_status & server_statu
 }
 
 
-// TODO: put that in the library so the snapcommunicator and this plugin can both use the same function?
+// TODO: put that in a library so the snapcommunicator and this plugin
+//       can both use the same function?
+//
 QString communicator::get_known_neighbors()
 {
-    // get the path to the cache, create if necessary
+    // get the path to the dynamic snapwebsites data files
     //
-    QString neighbors_cache_filename(f_snap->get_cache_path());
+    QString neighbors_cache_filename(f_snap->get_data_path());
     if(neighbors_cache_filename.isEmpty())
     {
-        neighbors_cache_filename = "/var/cache/snapwebsites";
+        neighbors_cache_filename = "/var/data/snapwebsites";
     }
     neighbors_cache_filename += "/neighbors.txt";
 

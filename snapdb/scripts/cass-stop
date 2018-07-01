@@ -1,4 +1,11 @@
 #!/bin/bash
+
+if test "$1" = "-h" -o "$1" = "--help"
+then
+	echo "Usage: $0 <cassandra-ip>"
+	exit 1;
+fi
+
 HOSTIP=$1
 
 if test -z "$HOSTIP"

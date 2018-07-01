@@ -4631,12 +4631,12 @@ void snap_communicator_server::read_neighbors()
 {
     if(f_neighbors_cache_filename.isEmpty())
     {
-        // get the path to the cache, create if necessary
+        // get the path to the dynamic snapwebsites data files
         //
-        f_neighbors_cache_filename = f_server->get_parameter("cache_path");
+        f_neighbors_cache_filename = f_server->get_parameter("data_path");
         if(f_neighbors_cache_filename.isEmpty())
         {
-            f_neighbors_cache_filename = "/var/cache/snapwebsites";
+            f_neighbors_cache_filename = "/var/lib/snapwebsites";
         }
         f_neighbors_cache_filename += "/neighbors.txt";
 

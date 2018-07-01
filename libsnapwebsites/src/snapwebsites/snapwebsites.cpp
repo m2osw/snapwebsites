@@ -161,6 +161,9 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_CORE_COOKIE_DOMAIN:
         return "core::cookie_domain";
 
+    case name_t::SNAP_NAME_CORE_DATA_PATH:
+        return "data_path";
+
     case name_t::SNAP_NAME_CORE_DATE:
         return "Date";
 

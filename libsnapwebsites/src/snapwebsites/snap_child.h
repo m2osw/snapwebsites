@@ -355,6 +355,7 @@ public:
     static char const *         get_running_server_version();
     bool                        is_core_plugin(QString const & name) const;
     QString                     get_server_parameter(QString const & name);
+    QString                     get_data_path();
     QString                     get_list_data_path();
     void                        reset_sites_table();
     libdbproxy::value

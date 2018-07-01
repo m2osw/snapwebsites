@@ -2237,7 +2237,7 @@ void list::on_modified_content(content::path_info_t & ipath)
                 + ";uri=" + canonicalized_key.toUtf8().data()
                 + "\n");
 
-    std::string journal_filename(std::string(path.c_str()) + "/" + std::to_string(hour) + ".msg");
+    std::string const journal_filename(std::string(path.c_str()) + "/" + std::to_string(hour) + ".msg");
     int fd(open(journal_filename.c_str(), O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR));
     if(fd < 0)
     {
