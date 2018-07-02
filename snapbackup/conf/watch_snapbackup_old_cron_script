@@ -1,0 +1,66 @@
+#!/bin/sh
+#
+# Verify that the old /etc/cron.daily/snapbackend script was removed
+#
+# This can be removed once we updated all our installations and the
+# old script is gone. We just used the wrong name and an update does
+# not remove old files.
+#
+################################################################################
+#
+# Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
+#
+# https://snapwebsites.org/
+# contact@m2osw.com
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+
+set -e
+
+ROGUE_CRON_FILE=/etc/cron.daily/snapbackend
+TEMP_EMAIL=/tmp/snapbackup.eml
+RECIPIENT=contact@m2osw.com
+SENDER=root@m2osw.com
+
+# if the file exists, send an email
+#
+if test -f ${ROGUE_CRON_FILE}
+then
+else
+    cat >${TEMP_EMAIL} <<EOF
+From: ${SENDER}
+To: ${RECIPIENT}
+Subject: File ${ROGUE_CRON_FILE} still exists!
+Date: `date --rfc-2822`
+
+The ${ROGUE_CRON_FILE} file still exists on this system.
+Please check your installation and remove that file if it is indeed a
+copy of the 'snapbackup' script.
+
+The Snap! Websites Team
+EOF
+    sendmail -f ${SENDER} ${RECIPIENT} <${TEMP_EMAIL}
+fi
+
+exit 0
+
+# vim: ts=4 sw=4 et

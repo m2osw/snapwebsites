@@ -1,1 +1,2 @@
-debian/tmp/usr/bin/snapbackup    usr/bin/
+debian/tmp/usr/bin/snapbackup                       usr/bin/
+snapbackup/conf/watch_snapbackup_old_cron_script    usr/share/snapwebsites/snapwatchdog/scripts/
