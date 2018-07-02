@@ -9,8 +9,8 @@
   <description>
     <p>Install postfix and snapbounce to make this computer a mail server.</p>
 
-    <p>The post installation script will then update the necessary setup
-    files in order to get the duo working.</p>
+    <p>The post installation script updates the necessary setup files
+    in order to get the duo working.</p>
   </description>
   <fields>
     <field name="domain" type="input">

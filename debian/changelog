@@ -1,6 +1,7 @@
 snapwebsites (1.5.68.0~xenial) xenial; urgency=high
 
   * Added a watchdog script to detect the old /etc/cron.daily/snapbackend file.
+  * Adding a bundle to install msmtp and create a sendmail script.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sun,  1 Jul 2018 23:12:24 -0700
 

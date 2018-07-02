@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-sendmail.xml
+-->
+<bundle>
+  <name>sendmail</name>
+  <description>
+    <p>Install msmtp so email generated on this computer get transmitted
+    to the one running postfix.</p>
+
+    <p>The post installation script saves the parameters entered here so
+    msmtp works as if you installed a sendmail tool on your computer. This
+    allows for CRON emails to be forwarded to your postfix installation.</p>
+  </description>
+  <fields>
+    <field name="host" type="input">
+      <label>Host</label>
+      <description>
+        The domain name or the IP address of the computer running Postfix.
+        If you have not yet installed that computer, you may want to wait
+        before installing this MTA.
+      </description>
+    </field>
+    <field name="domain" type="input">
+      <label>Domain</label>
+      <description>
+        The domain to use when sending emails. This is usually the name of
+        the MTA without the "mail." part. Say your MTA has domain name
+        "mail.example.com", then this domain name is likely "example.com".
+      </description>
+    </field>
+    <field name="from" type="input">
+      <label>From</label>
+      <description>
+        The default email address to use with the email "From:" header.
+        Using the wrong "From:" may prevent emails from being sent to
+        external MTA. Note that most email servers won't accept an IP
+        address as a destination.
+      </description>
+    </field>
+  </fields>
+  <packages>msmtp</packages>
+  <postinst>
+    ################################################################################
+    # Setup the msmtprc file from the user supplied parameters
+    #
+    MSMTPRC=/etc/msmtprc
+    cat &gt;${MSMTPRC} &lt;EOF
+# MSMTP Configuration
+#
+# See https://marlam.de/msmtp/msmtp.html#Configuration-files
+#
+host ${BUNDLE_INSTALLATION_HOST}
+domain ${BUNDLE_INSTALLATION_DOMAIN}
+from ${BUNDLE_INSTALLATION_FROM}
+
+# If necessary you can turn ON TLS
+#tls on
+#tls_certcheck off
+#tls_trust_file /etc/ssl/certs/ca-certificates.crt
+EOF
+
+    chown root:root ${MSMTPRC}
+    chmod 644 ${MSMTPRC}
+
+    ################################################################################
+    # Create the /usr/sbin/sendmail script, but only if it doesn't already
+    # exist... this can be a problem in an attempt to re-install a bundle
+    # but we do delete this script in the removal script if we detect the
+    # proper signature in the script
+    #
+    SENDMAIL=/usr/sbin/sendmail
+    if ! test -f ${SENDMAIL}
+    then
+      cat &gt;${SENDMAIL} &lt;EOF
+#!/bin/sh
+#
+# Snap! Website -- sendmail v1.0
+#
+# This script can be used to send emails to an SMTP server however, if
+# that fails, it will attempt to save the message as an email to the root
+# user under /var/mail
+#
+
+if ! msmtp $*
+then
+  # The SMTP attempt failed, save the email in /var/mail/root
+  #
+  # TBD: we may want to look into distributing the email to its rightful
+  #      owner; only there should not be very many and it's probably easier
+  #      if all end up in the same place
+  #
+  sudo -s &lt;&lt;SUDO_END
+# Run this part of the script as root
+#
+ROOT_EMAIL=/var/mail/root
+echo "From SNAP_WEBSITES_SENDMAIL_TOOL  `date +%a\ %b\ %d\ %H:%M:%S\ %Y`" >>${ROOT_EMAIL}
+cat - >>${ROOT_EMAIL}
+echo >>${ROOT_EMAIL}
+SUDO_END
+fi
+EOF
+
+      # Make sure the sudo can work automatically
+      #
+      chown root:root ${SENDMAIL}
+      chmod 4755 ${SENDMAIL}
+    fi
+  </postinst>
+  <postrm>
+    # If the sendmail file is our script, then delete it, otherwise leave
+    # the file alone
+    #
+    SENDMAIL=/usr/sbin/sendmail
+    if grep -s "# Snap! Website -- sendmail v" ${SENDMAIL}
+    then
+      rm -f ${SENDMAIL}
+    fi
+
+    # Note: the /etc/msmtprc file gets removed when the package gets purged
+  </postrm>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->
