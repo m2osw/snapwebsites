@@ -1,9 +1,9 @@
 /*
  * Name: snapmanagercgi.js
  * Layout: default
- * Version: 0.2
+ * Version: 0.3
  * Browsers: all
- * Copyright: Copyright 2017 (c) Made to Order Software Inc.
+ * Copyright: Copyright 2017-1028 (c) Made to Order Software Inc.
  * License: GPLv2
  */
 
@@ -28,14 +28,15 @@ function upTo(el, tagName)
 
 function spin_globe(rotate)
 {
-    var selector = jQuery("img[id='globe']");
-    if( rotate )
+    var selector = jQuery("img[id='globe']"),
+        img = rotate ? "waiting-wheel-75x75.gif" : "globe_still.png");
+
+    // change image only if necessary (otherwise it kills the gif
+    // animation)
+    //
+    if(selector.attr("src") != img)
     {
-        selector.attr("src", "waiting-wheel-75x75.gif");
-    }
-    else
-    {
-        selector.attr("src", "globe_still.png");
+        selector.attr("src", img);
     }
 }
 
