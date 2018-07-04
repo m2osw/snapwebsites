@@ -1,3 +1,11 @@
+snapwebsites (1.5.69.0~xenial) xenial; urgency=high
+
+  * Added bundle-sendmail.xml to install an SMTP tool (msmtp).
+  * Install the bundle-snaplistd.xml bundle.
+  * Changed the watchdog service field from an input string to a dropdown.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  3 Jul 2018 22:52:54 -0700
+
 snapwebsites (1.5.68.0~xenial) xenial; urgency=high
 
   * Added a watchdog script to detect the old /etc/cron.daily/snapbackend file.

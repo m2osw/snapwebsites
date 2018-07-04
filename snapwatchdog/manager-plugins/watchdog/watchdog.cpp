@@ -207,26 +207,28 @@ void watchdog::on_retrieve_status(snap_manager::server_status & server_status)
         return;
     }
 
-    // get the snapwatchdog status
-    //
-    snap_manager::service_status_t status(f_snap->service_status("/usr/bin/snapwatchdogserver", "snapwatchdog"));
+    {
+        // get the snapwatchdog status
+        //
+        snap_manager::service_status_t status(f_snap->service_status("/usr/bin/snapwatchdogserver", "snapwatchdog"));
 
-    // transform to a string
-    //
-    QString const status_string(QString::fromUtf8(snap_manager::manager::service_status_to_string(status)));
+        // transform to a string
+        //
+        QString const status_string(QString::fromUtf8(snap_manager::manager::service_status_to_string(status)));
 
-    // create status widget
-    //
-    snap_manager::status_t const status_widget(
-                    status == snap_manager::service_status_t::SERVICE_STATUS_NOT_INSTALLED
-                            ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
-                            : status == snap_manager::service_status_t::SERVICE_STATUS_DISABLED
-                                    ? snap_manager::status_t::state_t::STATUS_STATE_WARNING
-                                    : snap_manager::status_t::state_t::STATUS_STATE_INFO,
-                    get_plugin_name(),
-                    "service_status",
-                    status_string);
-    server_status.set_field(status_widget);
+        // create status widget
+        //
+        snap_manager::status_t const status_widget(
+                        status == snap_manager::service_status_t::SERVICE_STATUS_NOT_INSTALLED
+                                ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
+                                : status == snap_manager::service_status_t::SERVICE_STATUS_DISABLED
+                                        ? snap_manager::status_t::state_t::STATUS_STATE_WARNING
+                                        : snap_manager::status_t::state_t::STATUS_STATE_INFO,
+                        get_plugin_name(),
+                        "service_status",
+                        status_string);
+        server_status.set_field(status_widget);
+    }
 }
 
 
@@ -285,9 +287,16 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                     , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE
                     );
 
-            snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
+            QStringList service_list;
+            service_list << "disabled";
+            service_list << "enabled";
+            service_list << "active";
+            service_list << "failed";
+
+            snap_manager::widget_select::pointer_t field(std::make_shared<snap_manager::widget_select>(
                               "Enabled/Disabled/Activate watchdog"
                             , s.get_field_name()
+                            , service_list
                             , s.get_value()
                             , "<p>Enter the new state of the snapwatchdog"
                               " service as one of:</p>"
