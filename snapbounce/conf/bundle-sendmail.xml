@@ -47,7 +47,7 @@
     # Setup the msmtprc file from the user supplied parameters
     #
     MSMTPRC=/etc/msmtprc
-    cat &gt;${MSMTPRC} &lt;EOF
+    cat &gt;${MSMTPRC} &lt;&lt;EOF
 # MSMTP Configuration
 #
 # See https://marlam.de/msmtp/msmtp.html#Configuration-files
@@ -74,7 +74,7 @@ EOF
     SENDMAIL=/usr/sbin/sendmail
     if ! test -f ${SENDMAIL}
     then
-      cat &gt;${SENDMAIL} &lt;EOF
+      cat &gt;${SENDMAIL} &lt;&lt;EOF
 #!/bin/sh
 #
 # Snap! Website -- sendmail v1.0

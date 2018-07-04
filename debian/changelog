@@ -1,8 +1,14 @@
+snapwebsites (1.5.71.0~xenial) xenial; urgency=high
+
+  * Fixed the sendmail script, the EOF needs two "<<" not just one.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  4 Jul 2018 14:24:02 -0700
+
 snapwebsites (1.5.70.1~xenial) xenial; urgency=high
 
   * Removed an invalid parenthesis in the JavaScript.
 
- -- Alexis Wilke <alexis@m2osw.com>  Wed,  4 Jul 2018 04:46265 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  4 Jul 2018 04:46:25 -0700
 
 snapwebsites (1.5.70.0~xenial) xenial; urgency=high
 
