@@ -29,7 +29,7 @@ function upTo(el, tagName)
 function spin_globe(rotate)
 {
     var selector = jQuery("img[id='globe']"),
-        img = rotate ? "waiting-wheel-75x75.gif" : "globe_still.png");
+        img = rotate ? "waiting-wheel-75x75.gif" : "globe_still.png";
 
     // change image only if necessary (otherwise it kills the gif
     // animation)
