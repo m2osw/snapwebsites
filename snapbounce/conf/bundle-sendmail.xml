@@ -41,7 +41,7 @@
       </description>
     </field>
   </fields>
-  <packages>msmtp</packages>
+  <packages>snapsendmail</packages>
   <postinst>
     ################################################################################
     # Setup the msmtprc file from the user supplied parameters
@@ -64,63 +64,10 @@ EOF
 
     chown root:root ${MSMTPRC}
     chmod 644 ${MSMTPRC}
-
-    ################################################################################
-    # Create the /usr/sbin/sendmail script, but only if it doesn't already
-    # exist... this can be a problem in an attempt to re-install a bundle
-    # but we do delete this script in the removal script if we detect the
-    # proper signature in the script
-    #
-    SENDMAIL=/usr/sbin/sendmail
-    if ! test -f ${SENDMAIL}
-    then
-      cat &gt;${SENDMAIL} &lt;&lt;EOF
-#!/bin/sh
-#
-# Snap! Website -- sendmail v1.0
-#
-# This script can be used to send emails to an SMTP server however, if
-# that fails, it will attempt to save the message as an email to the root
-# user under /var/mail
-#
-
-if ! msmtp $*
-then
-  # The SMTP attempt failed, save the email in /var/mail/root
-  #
-  # TBD: we may want to look into distributing the email to its rightful
-  #      owner; only there should not be very many and it's probably easier
-  #      if all end up in the same place
-  #
-  sudo -s &lt;&lt;SUDO_END
-# Run this part of the script as root
-#
-ROOT_EMAIL=/var/mail/root
-echo "From SNAP_WEBSITES_SENDMAIL_TOOL  `date +%a\ %b\ %d\ %H:%M:%S\ %Y`" >>${ROOT_EMAIL}
-cat - >>${ROOT_EMAIL}
-echo >>${ROOT_EMAIL}
-SUDO_END
-fi
-EOF
-
-      # Make sure the sudo can work automatically
-      #
-      chown root:root ${SENDMAIL}
-      chmod 4755 ${SENDMAIL}
-    fi
   </postinst>
-  <postrm>
-    # If the sendmail file is our script, then delete it, otherwise leave
-    # the file alone
-    #
-    SENDMAIL=/usr/sbin/sendmail
-    if grep -s "# Snap! Website -- sendmail v" ${SENDMAIL}
-    then
-      rm -f ${SENDMAIL}
-    fi
-
+  <!--postrm>
     # Note: the /etc/msmtprc file gets removed when the package gets purged
-  </postrm>
+  </postrm-->
 </bundle>
 <!--
   vim: ts=2 sw=2 et

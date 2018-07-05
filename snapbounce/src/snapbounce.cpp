@@ -341,17 +341,17 @@ int main(int argc, char *argv[])
         bounce->read_stdin();
         bounce->store_email();
     }
-    catch( snap::snap_exception const& except )
+    catch( snap::snap_exception const & except )
     {
         SNAP_LOG_FATAL("snap_bounce: snap_exception caught! ")(except.what());
         retval = 1;
     }
-    catch( std::invalid_argument const& std_except )
+    catch( std::invalid_argument const & std_except )
     {
         SNAP_LOG_FATAL("snap_bounce: invalid argument: ")(std_except.what());
         retval = 1;
     }
-    catch( std::exception const& std_except )
+    catch( std::exception const & std_except )
     {
         SNAP_LOG_FATAL("snap_bounce: std::exception caught! ")(std_except.what());
         retval = 1;
@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
         retval = 1;
     }
 
-    return 0;
+    return retval;
 }
 
 // vim: ts=4 sw=4 et

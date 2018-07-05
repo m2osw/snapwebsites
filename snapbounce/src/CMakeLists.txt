@@ -3,9 +3,13 @@
 #      snapbounce/src/CMakeLists.txt
 #
 # Description:
-#      The Snap! Websites Server. The server is the main() of the Snap!
-#      environment. Most everything is however defined in the
-#      libsnapwebsites.so library (see lib/*).
+#      The Snap! Websites mail tools.
+#
+#        * snapbounce is used to gracefully handle emails that bounce
+#          by saving them in our database and warning the sender
+#
+#        * sendmail is a thin SMTP or mail queuing tool (i.e. when emails
+#          can't be forwarded to an SMTP server, enqueue them locally.)
 #
 # Documentation:
 #      See the CMake documentation.
@@ -31,12 +35,16 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/version.h
+)
+
+
 #################################################################################
-## Snap signal manager
+## Snap! Email Bounce Manager
 ##
 project(snapbounce)
-
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h )
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -63,6 +71,52 @@ target_link_libraries(${PROJECT_NAME}
 
 install(
     TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin
+)
+
+
+#################################################################################
+## Snap! sendmail tool to have a form of MTA on all machines
+##
+## Note: the project is named snapsendmail because we already have a sendmail
+##       plugin in our snapserver-core-plugins
+##
+project(snapsendmail)
+
+include_directories(
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CASSVALUE_INCLUDE_DIRS}
+    ${QTSERIALIZATION_INCLUDE_DIRS}
+)
+
+add_executable(${PROJECT_NAME}
+    sendmail.cpp
+)
+
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES 
+        OUTPUT_NAME sendmail
+)
+
+target_link_libraries(${PROJECT_NAME}
+    snapwebsites
+    libdbproxy
+    ${ADVGETOPT_LIBRARIES}
+    ${CASSVALUE_LIBRARIES}
+    ${LIBEXCEPT_LIBRARIES}
+    ${LIBTLD_LIBRARIES}
+    ${LOG4CPLUS_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${QTSERIALIZATION_LIBRARIES}
+    ${UUID}
+)
+
+# IMPORTANT: this tool HAS to go in /usr/sbin to be found by CRON and other
+#            old tools that checks that directory for sendmail
+install(
+    TARGETS
+        ${PROJECT_NAME}
+    RUNTIME DESTINATION
+        sbin
 )
 
 

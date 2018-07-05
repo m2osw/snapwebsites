@@ -1,3 +1,13 @@
+snapwebsites (1.5.72.0~xenial) xenial; urgency=high
+
+  * Changed the script to C++ so I can actually do a setuid(0).
+  * The C++ code includes a way to use the /var/mail/root as a mail queue too.
+  * Added a package since we have a binary to install: snapsendmail.
+  * Added a rule for /usr/sbin/sendmail so we can do the setuid(0).
+  * Fixed the exit value in snapbounce, it would always exit with 0.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  5 Jul 2018 02:32:32 -0700
+
 snapwebsites (1.5.71.0~xenial) xenial; urgency=high
 
   * Fixed the sendmail script, the EOF needs two "<<" not just one.

@@ -28,6 +28,7 @@
 // C lib
 //
 #include <unistd.h>
+#include <stdio.h>
 
 
 
@@ -361,6 +362,7 @@ public:
         deleter(p);
     }
 };
+typedef std::unique_ptr<FILE, raii_pointer_deleter<FILE, decltype(&::fclose), &::fclose>>     raii_file_t;
 
 
 } // namespace snap

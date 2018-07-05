@@ -340,6 +340,20 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
  .
  Header files for snapmanager plugin.
 
+Package: snapsendmail
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, msmtp
+Description: Fast Websites: powerful CMS for Apache written in C++.
+ Snap! C++ runs your CMS using binary code written in C and C++.
+ The basic concept is taken from a large set of Drupal 6.x
+ modules from Drupal Core and necessary 3rd party modules (we've been using
+ over 220 modules on top of the Core modules.) The result is quite
+ extensible as it offers a plug-in mechanism that everyone is welcome to use to
+ create their own extensions.
+ .
+ MTA for all computers that do not run postfix.
+
 Package: snapcgi
 Section: admin
 Architecture: any
