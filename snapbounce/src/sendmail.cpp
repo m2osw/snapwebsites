@@ -485,7 +485,12 @@ int sendmail::dequeue()
                 {
                     // it broke at some point, keep what's left
                     //
-                    ftruncate(f_fd, sz);
+                    if(ftruncate(f_fd, sz) != 0)
+                    {
+                        SNAP_LOG_WARNING("ftruncate() failed to fix the file of \"")
+                                        (g_root_mail)
+                                        ("\" at the right size");
+                    }
                 }
                 else
                 {
