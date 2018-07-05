@@ -1,3 +1,9 @@
+snapwebsites (1.5.73.1~xenial) xenial; urgency=high
+
+  * The file gets installed under debian/snapsendmail, not snapbounce.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  5 Jul 2018 04:44:57 -0700
+
 snapwebsites (1.5.73.0~xenial) xenial; urgency=high
 
   * Check the return value of ftruncate() so it compiles in RELEASE.
