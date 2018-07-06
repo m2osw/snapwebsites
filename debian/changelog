@@ -1,3 +1,10 @@
+snapwebsites (1.5.75.1~xenial) xenial; urgency=high
+
+  * Fixed the name from sendmail to snapmta in the rules.
+  * Renamed the bundle the snapmta instead of sendmail.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri,  6 Jul 2018 01:05:48 -0700
+
 snapwebsites (1.5.75.0~xenial) xenial; urgency=high
 
   * Change the name of the package to snapmta because there is a conflict

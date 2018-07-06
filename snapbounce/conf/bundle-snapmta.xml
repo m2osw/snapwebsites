@@ -2,17 +2,18 @@
 <!--
   see /usr/share/snapwebsites/xsd/bundles.xsd for details
   to verify your changes (change the == with two dashes):
-    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-sendmail.xml
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-snapmta.xml
 -->
 <bundle>
-  <name>sendmail</name>
+  <name>snapmta</name>
   <description>
     <p>Install msmtp so email generated on this computer get transmitted
     to the one running postfix.</p>
 
     <p>The post installation script saves the parameters entered here so
-    msmtp works as if you installed a sendmail tool on your computer. This
-    allows for CRON emails to be forwarded to your postfix installation.</p>
+    msmtp works as if you installed a sendmail tool (i.e. a basic MTA) on
+    your computer. This allows for CRON emails to be forwarded to your
+    postfix installation.</p>
   </description>
   <fields>
     <field name="host" type="input">
@@ -41,7 +42,7 @@
       </description>
     </field>
   </fields>
-  <packages>snapsendmail</packages>
+  <packages>snapmta</packages>
   <postinst>
     ################################################################################
     # Setup the msmtprc file from the user supplied parameters

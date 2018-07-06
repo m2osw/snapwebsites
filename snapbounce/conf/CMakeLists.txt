@@ -38,7 +38,7 @@ snap_validate_xml( bundle-mailserver.xml bundles.xsd )
 install(
     FILES 
         bundle-mailserver.xml
-        bundle-sendmail.xml
+        bundle-snapmta.xml
 
     DESTINATION
         share/snapwebsites/bundles
