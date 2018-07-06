@@ -1,15 +1,54 @@
 /*
  * Name: snapmanagercgi.css
  * Layout: default
- * Version: 0.4
+ * Version: 0.5
  * Browsers: all
- * Copyright: Copyright 2017 (c) Made to Order Software Inc.
+ * Copyright: Copyright 2017-2018 (c) Made to Order Software Inc.
  * License: GPLv2
  */
 
 body
 {
     font-family: sans;
+    margin: 0;
+    padding: 0;
+}
+header
+{
+    background-color: #f0f0f0;
+    border-bottom: 1px solid black;
+    padding: 5px;
+    position: fixed;
+    z-index: 1;
+    width: 100%;
+    top: 0;
+}
+.ui-state-active a,
+.ui-state-active a:link,
+.ui-state-active a:visited
+{
+    /* jquery-ui.css set this one to white, which on bright yellow does not
+     * work well.
+     */
+    color: black;
+}
+.ui-state-active a:hover
+{
+    /* however in this case it's no a dark blue background in the menu
+     */
+    color: white;
+}
+ul.menu
+{
+}
+ul.menu.ui-widget-content
+{
+    border: none;
+}
+ul.menu li.menu-item
+{
+    float: left;
+    padding-top: 15px;
 }
 div.access-warning
 {
@@ -19,6 +58,11 @@ div.access-warning
     background: #ffe0e0;
     padding: 10px;
     padding-bottom: 0;
+}
+div.wait
+{
+    float: right;
+    padding-right: 10px;
 }
 div.access-warning div.access-title
 {
@@ -89,15 +133,6 @@ input[type="input"]
 button
 {
     margin: 5px 10px;
-}
-.ui-state-active a,
-.ui-state-active a:link,
-.ui-state-active a:visited
-{
-    /* jquery-ui.css set this one to white, which on bright yellow does not
-     * work well.
-     */
-    color: black;
 }
 
 /* vim: ts=4 sw=4 et

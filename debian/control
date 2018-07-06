@@ -340,7 +340,7 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
  .
  Header files for snapmanager plugin.
 
-Package: snapsendmail
+Package: snapmta
 Section: admin
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, msmtp

@@ -97,7 +97,7 @@ snap_communicator::pointer_t g_communicator;
  * on the SIGINT.
  */
 class watchdog_interrupt
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<watchdog_interrupt>     pointer_t;
@@ -165,7 +165,7 @@ void watchdog_interrupt::process_signal()
  * mandatory table as expected on a CASSANDRAREADY message.
  */
 class cassandra_check_timer
-        : public snap_communicator::snap_timer
+    : public snap_communicator::snap_timer
 {
 public:
     typedef std::shared_ptr<cassandra_check_timer>  pointer_t;
@@ -194,7 +194,7 @@ cassandra_check_timer::pointer_t    g_cassandra_check_timer;
  * This disables the timer and sets up its ticks to send us a timeout
  * event once per minute.
  *
- * So by default this timer does nothing.
+ * So by default this timer does nothing (since it is disabled).
  *
  * If the check_cassandra() function somehow fails in a way that means
  * we would never get awaken again, then this timer gets turned on.
@@ -244,13 +244,13 @@ void cassandra_check_timer::process_timeout()
 
 /** \brief The timer to produce ticks once every minute.
  *
- * This timer is the one used to know when to gather the data again.
+ * This timer is the one used to know when to gather data again.
  *
  * By default the interval is set to one minute, although it is possible
  * to change that amount in the configuration file.
  */
 class tick_timer
-        : public snap::snap_communicator::snap_timer
+    : public snap::snap_communicator::snap_timer
 {
 public:
     typedef std::shared_ptr<tick_timer>        pointer_t;
@@ -317,7 +317,7 @@ void tick_timer::process_timeout()
  * so we can handle incoming messages.
  */
 class messenger
-        : public snap_communicator::snap_tcp_client_permanent_message_connection
+    : public snap_communicator::snap_tcp_client_permanent_message_connection
 {
 public:
     typedef std::shared_ptr<messenger>    pointer_t;
@@ -435,7 +435,7 @@ void messenger::process_connected()
  * get an event whenever our child dies.
  */
 class sigchld_connection
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<sigchld_connection>    pointer_t;

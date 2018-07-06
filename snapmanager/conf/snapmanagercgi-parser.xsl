@@ -36,34 +36,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         <script type="text/javascript" src="snapmanagercgi.js"/>
       </head>
       <body>
-        <div id="header">
-          <table>
-            <tbody>
-              <tr>
-                <td>
-                  <ul id="menu" class="menu">
-                    <li class="menu-item"><div><a href="/snapmanager">Home</a></div></li>
-                    <!-- more entries... -->
-                    <xsl:for-each select="menu/item">
-                        <li class="menu-item"><div><a href="{@href}"><xsl:copy-of select="."/></a></div></li>
-                    </xsl:for-each>
-                    <li class="menu-item"><div><a href="/snapmanager?logout">Log Out</a></div></li>
-                  </ul>
-                </td>
-                <td>
-                  <p>
-                    <xsl:for-each select="menu/select">
-                      <xsl:copy-of select="."/>
-                    </xsl:for-each>
-                  </p>
-                </td>
-                <td>
-                  <img id="globe" src="globe_still.png"/>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <header>
+          <ul class="menu">
+            <li class="menu-item"><div><a href="/snapmanager">Home</a></div></li>
+            <!-- more entries... -->
+            <xsl:for-each select="menu/item">
+                <li class="menu-item"><div><a href="{@href}"><xsl:copy-of select="."/></a></div></li>
+            </xsl:for-each>
+            <li class="menu-item"><div><a href="/snapmanager?logout">Log Out</a></div></li>
+          </ul>
+          <!--p>
+            ...At this point this does nothing...
+            <xsl:for-each select="menu/select">
+              <xsl:copy-of select="."/>
+            </xsl:for-each>
+          </p-->
+          <div class="wait">
+            <img id="globe" src="globe_still.png" width="50" height="50"/>
+          </div>
+          <div style="clear: both"></div>
+        </header>
         <h1>Snap! Manager</h1>
         <div id="tabs">
           <xsl:copy-of select="output/node()"/>

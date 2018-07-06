@@ -1,10 +1,18 @@
+snapwebsites (1.5.75.0~xenial) xenial; urgency=high
+
+  * Change the name of the package to snapmta because there is a conflict
+    with the snapsendmail backend package
+  * Changed the snapmanager menu and globe to be fixed at the top.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  5 Jul 2018 22:30:31 -0700
+
 snapwebsites (1.5.74.0~xenial) xenial; urgency=high
 
   * Also remove the very first line of the email (the From <...>).
   * Added a script in snapserver/scripts to check snapcommunicator connections.
   * Cleaned up the #include in the sendmail.cpp file.
 
- -- Alexis Wilke <alexis@m2osw.com>  Thu,  5 Jul 2018 04:44:57 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  5 Jul 2018 20:00:40 -0700
 
 snapwebsites (1.5.73.1~xenial) xenial; urgency=high
 

@@ -1,4 +1,4 @@
-// Snap Websites Server -- snap websites backend tool
+// Snap Websites Server -- snap websites watchdog tool
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,20 +28,27 @@ int main(int argc, char * argv[])
     try
     {
         // create a server object
+        //
         snap::watchdog_server::pointer_t s( snap::watchdog_server::instance() );
         s->setup_as_backend();
 
         // parse the command line arguments
+        //
         s->config(argc, argv);
 
         // if possible, detach the server
+        //
         s->detach();
         // Only the child (backend) process returns here
 
         // now create the qt application instance
+        //
         s->prepare_qtapp( argc, argv );
 
         // listen to connections
+        //
+        // wakeup once in a while to watch this system like a dog
+        //
         s->watchdog();
 
         exitval = 0;
@@ -63,7 +70,7 @@ int main(int argc, char * argv[])
     //
     snap::watchdog_server::exit( exitval );
     snap::NOTREACHED();
-    return 0;
+    return exitval;
 }
 
 // vim: ts=4 sw=4 et
