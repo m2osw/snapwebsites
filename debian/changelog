@@ -1,3 +1,11 @@
+snapwebsites (1.5.74.0~xenial) xenial; urgency=high
+
+  * Also remove the very first line of the email (the From <...>).
+  * Added a script in snapserver/scripts to check snapcommunicator connections.
+  * Cleaned up the #include in the sendmail.cpp file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  5 Jul 2018 04:44:57 -0700
+
 snapwebsites (1.5.73.1~xenial) xenial; urgency=high
 
   * The file gets installed under debian/snapsendmail, not snapbounce.

@@ -44,37 +44,20 @@
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 //#include <snapwebsites/raii_generic_deleter.h>
-//#include <snapwebsites/snap_exception.h>
-//#include <snapwebsites/snap_thread.h>
-//#include <snapwebsites/snapwebsites.h>
 
 // contrib lib
 //
 #include <advgetopt/advgetopt.h>
 
-//// Qt lib
-////
-//#include <QFile>
-//#include <QTime>
-
 // C++ lib
 //
-//#include <exception>
-//#include <memory>
-//#include <vector>
-//#include <iostream>
 #include <fstream>
-//#include <algorithm>
 
 // C lib
 //
-//#include <stdlib.h>
 #include <fcntl.h>
-//#include <unistd.h>
 #include <sys/file.h>
- #include <sys/mman.h>
-//#include <sys/wait.h>
-//#include <uuid/uuid.h>
+#include <sys/mman.h>
 
 
 // included last
@@ -497,6 +480,11 @@ int sendmail::dequeue()
                     // the file is now empty, unlink
                     // (we can have the file still open and truncate just fine)
                     //
+                    // Note: the unlink() works only if the /var/mail/root
+                    //       file is only accessed by us, otherwise, it may
+                    //       break as other tools could add/remove to the
+                    //       file in parallel
+                    //
                     unlink(g_lock_filename);
                 }
             }
@@ -514,6 +502,28 @@ int sendmail::dequeue()
             {
                 // no more email, an empty string signals EOF
                 //
+                return std::string();
+            }
+            if(f_ptr + 5 > f_end
+            || memcmp(f_ptr, "From ", 5) != 0)
+            {
+                SNAP_LOG_FATAL("the format of \"")
+                              (g_root_mail)
+                              ("\" is not understood. Can't dequeue anymore.");
+                return std::string();
+            }
+
+            // skip first line, it's not part of the SMTP data
+            //
+            for(; f_ptr < f_end && *f_ptr != '\r' && *f_ptr != '\n'; ++f_ptr);
+            for(; f_ptr < f_end && (*f_ptr == '\r' || *f_ptr == '\n'); ++f_ptr);
+            if(f_ptr >= f_end)
+            {
+                // somehow we reached the end of the file too soon!?
+                //
+                SNAP_LOG_ERROR("somehow we have a \"From ...\" that's not followed by an email in \"")
+                              (g_root_mail)
+                              ("\".");
                 return std::string();
             }
 
