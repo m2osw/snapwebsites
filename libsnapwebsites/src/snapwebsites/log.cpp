@@ -614,11 +614,15 @@ void configure_syslog()
 {
     unconfigure();
 
-    log4cplus::SharedAppenderPtr appender( new log4cplus::SysLogAppender( get_progname() ) );
-    log4cplus::tstring const pattern
-                ( //boost::replace_all_copy(get_progname(), "%", "%%").c_str() -- this is added by syslog() already
-                  log4cplus::tstring("[%i] %m (%b:%L)%n")
-                );
+    // set identifier to: "<progname>[<pid>]:" as expected in syslog on Ubuntu
+    //
+    std::string const ident("snapcpp/" + boost::replace_all_copy(get_progname(), "%", "%%") + "[" + std::to_string(getpid()) + "]");
+    log4cplus::SharedAppenderPtr appender( new log4cplus::SysLogAppender( ident ) );
+
+    // define the pattern as "<message> (<source filename>:<line>)"
+    //
+    log4cplus::tstring const pattern(log4cplus::tstring("%m (%b:%L)%n"));
+
 // log4cplus only accepts std::auto_ptr<> which is deprecated in newer versions
 // of g++ so we have to make sure the deprecated definition gets ignored
 #pragma GCC diagnostic push

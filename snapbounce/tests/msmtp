@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# This is a script used to simulate the msmtp tool
+# The simulation is just that it runs as expected but just trash the
+# email entirely.
+#
+# To simulate an error, add the --send-error on the sendmail command
+# line and this msmtp script will just exit with 1
+
+# Note: the standard msmtp reads the header before exiting, we don't
+#       really need to simulate that part, though
+
+while test $# -gt 0
+do
+    case "$1" in
+    "--help")
+        echo "Usage: make this script available in your PATH variable before the normal"
+        echo "       msmtp tool so you can run snapbounce/src/sendmail with this script"
+        echo "       to test that the tool works as expected."
+        echo
+        echo "To set the PATH variable do something like this:"
+        echo "    cd snapbounce/tests"
+        echo "    PATH=\`pwd\`:\$PATH"
+        echo
+        echo "  use --send-error on the sendmail command line to test that when msmtp"
+        echo "  exists with an error, sendmail reacts as expected"
+        exit 1
+        ;;
+
+    "--send-error")
+        exit 1
+        ;;
+
+    *)
+        # just ignore, at this level we don't care much about the parameters
+        ;;
+
+    esac
+    shift
+done
+
+# drop the input data
+#
+cat - >/dev/null
+
+# success
+#
+exit 0
+
+# vim: ts=4 sw=4 et
