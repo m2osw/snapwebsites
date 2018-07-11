@@ -500,6 +500,10 @@ int sendmail::enqueue()
                       ("\". Can't enqueue email.");
         return 1;
     }
+    // Linux usually fixes the ownership of emails but we should have the
+    // correct user/group anyway, so here we go:
+    //
+    snap::chownnm(QString::fromUtf8(g_root_mail) , "root" , "mail");
 
     time_t const now(time(nullptr));
     if(now == static_cast<time_t>(-1))
@@ -1005,6 +1009,33 @@ int sendmail::dequeue()
 
 int main(int argc, char * argv [])
 {
+#if 1
+    // since sendmail may be invoked from CRON and other tools, it may
+    // be useful to see the command line arguments used in those situations
+    // the following helps we determining such
+    {
+        snap::raii_fd_t fd;
+        fd.reset(open("/tmp/sendmail-run.txt"
+                       , O_CLOEXEC | O_CREAT | O_RDWR
+                       , S_IRUSR | S_IWUSR));
+        if(fd != nullptr)
+        {
+            std::string msg("args =\n");
+            write(fd.get(), msg.c_str(), msg.length());
+
+            for(int idx(0); idx < argc; ++idx)
+            {
+                msg = std::to_string(idx) + ". " + argv[idx] + "\n";
+                write(fd.get(), msg.c_str(), msg.length());
+            }
+        }
+        else
+        {
+            std::cerr << "error: fd for \"/tmp/sendmail-run.txt\" is nullptr?\n";
+        }
+    }
+#endif
+
     try
     {
         // get the command line parameters, we forward them to msmtp which
