@@ -701,6 +701,10 @@ int manager_cgi::process()
         doc.appendChild(root);
         QDomElement output(doc.createElement("output"));
         root.appendChild(output);
+        QDomElement snap_version(doc.createElement("snap-version"));
+        root.appendChild(snap_version);
+        QDomText snapversion_text(doc.createTextNode("Snap! Websites v" SNAPMANAGERCGI_VERSION_STRING));
+        snap_version.appendChild(snapversion_text);
         QDomElement menu(doc.createElement("menu"));
         root.appendChild(menu);
         {

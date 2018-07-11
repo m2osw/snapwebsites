@@ -41,7 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             <li class="menu-item"><div><a href="/snapmanager">Home</a></div></li>
             <!-- more entries... -->
             <xsl:for-each select="menu/item">
-                <li class="menu-item"><div><a href="{@href}"><xsl:copy-of select="."/></a></div></li>
+                <li class="menu-item"><div><a href="{@href}"><xsl:copy-of select="item/*"/></a></div></li>
             </xsl:for-each>
             <li class="menu-item"><div><a href="/snapmanager?logout">Log Out</a></div></li>
           </ul>
@@ -51,6 +51,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
               <xsl:copy-of select="."/>
             </xsl:for-each>
           </p-->
+          <div class="snap-version">
+            <xsl:copy-of select="snap-version"/>
+          </div>
           <div class="wait">
             <img id="globe" src="globe_still.png" width="50" height="50"/>
           </div>
