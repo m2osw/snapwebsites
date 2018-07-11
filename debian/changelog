@@ -1,3 +1,9 @@
+snapwebsites (1.5.77.2~xenial) xenial; urgency=high
+
+  * Marked the debug write() result as not used.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 11 Jul 2018 01:49:36 -0700
+
 snapwebsites (1.5.77.1~xenial) xenial; urgency=high
 
   * Bump version since the PPA did not kick start the previous attempt.

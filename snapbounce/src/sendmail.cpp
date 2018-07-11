@@ -44,6 +44,7 @@
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/not_reached.h>
+#include <snapwebsites/not_used.h>
 
 // advget lib
 //
@@ -1021,12 +1022,12 @@ int main(int argc, char * argv [])
         if(fd != nullptr)
         {
             std::string msg("args =\n");
-            write(fd.get(), msg.c_str(), msg.length());
+            snap::NOTUSED(write(fd.get(), msg.c_str(), msg.length()));
 
             for(int idx(0); idx < argc; ++idx)
             {
                 msg = std::to_string(idx) + ". " + argv[idx] + "\n";
-                write(fd.get(), msg.c_str(), msg.length());
+                snap::NOTUSED(write(fd.get(), msg.c_str(), msg.length()));
             }
         }
         else
