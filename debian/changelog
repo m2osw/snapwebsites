@@ -1,3 +1,9 @@
+snapwebsites (1.5.77.1~xenial) xenial; urgency=high
+
+  * Bump version since the PPA did not kick start the previous attempt.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 11 Jul 2018 00:22:51 -0700
+
 snapwebsites (1.5.77.0~xenial) xenial; urgency=high
 
   * Added a chown() against the /var/mail/root file to root:mail.
@@ -6,7 +12,7 @@ snapwebsites (1.5.77.0~xenial) xenial; urgency=high
   * Added the Snap! Website version to the snapmanager top bar.
   * Fixed the starting position of the data as the top bar went over.
 
- -- Alexis Wilke <alexis@m2osw.com>  Sat,  7 Jul 2018 03:24:44 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 10 Jul 2018 23:50:14 -0700
 
 snapwebsites (1.5.76.1~xenial) xenial; urgency=high
 
