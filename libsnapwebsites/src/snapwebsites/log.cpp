@@ -152,13 +152,14 @@ log4cplus::Logger   g_messenger_logger;
 bool                g_messenger_logger_initialized = false;
 
 enum class logging_type_t
-    { UNCONFIGURED_LOGGER
+{
+      UNCONFIGURED_LOGGER
     , CONSOLE_LOGGER
     , FILE_LOGGER
     , CONFFILE_LOGGER
     , SYSLOG_LOGGER
     , MESSENGER_LOGGER
-    };
+};
 
 logging_type_t      g_logging_type( logging_type_t::UNCONFIGURED_LOGGER );
 logging_type_t      g_last_logging_type( logging_type_t::UNCONFIGURED_LOGGER );
@@ -166,7 +167,7 @@ logging_type_t      g_last_logging_type( logging_type_t::UNCONFIGURED_LOGGER );
 
 
 class logger_stub
-        : public logger
+    : public logger
 {
 public:
                     logger_stub(log_level_t const log_level, char const * file, char const * func, int const line)

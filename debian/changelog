@@ -1,3 +1,9 @@
+snapwebsites (1.5.80.0~xenial) xenial; urgency=high
+
+  * Fixed the CSS, the version can't be fixed & flexed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 11 Jul 2018 22:29:28 -0700
+
 snapwebsites (1.5.79.0~xenial) xenial; urgency=high
 
   * Fixed the versions, it needs the ${...} around the names.

@@ -69,7 +69,6 @@ ul#menu
 }
 div.snap-version
 {
-    position: fixed;
     text-align: center;
     flex: auto;
     padding: 20px;
