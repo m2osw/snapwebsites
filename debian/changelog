@@ -1,3 +1,9 @@
+snapwebsites (1.5.82.0~xenial) xenial; urgency=high
+
+  * One more attempt in the dark to resolve the menu item issue in XSL.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 12 Jul 2018 05:05:04 -0700
+
 snapwebsites (1.5.81.0~xenial) xenial; urgency=high
 
   * Fixed the uninstalled that would not run "apt-get autoremove --purge".
