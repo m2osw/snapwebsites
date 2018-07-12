@@ -271,7 +271,7 @@ int manager::update_packages(std::string const & command)
     std::vector<std::string> allowed_commands{"update", "upgrade", "dist-upgrade", "autoremove"};
     if(std::find(allowed_commands.begin(), allowed_commands.end(), command) == allowed_commands.end())
     {
-        throw std::logic_error("install_package was called with an invalid command.");
+        throw std::logic_error("update_packages() was called with an invalid command.");
     }
 #endif
 
@@ -289,8 +289,12 @@ int manager::update_packages(std::string const & command)
         p.add_argument("Dpkg::Options::=--force-confold");
     }
     p.add_argument(QString::fromUtf8(command.c_str()));
+    if(command == "autoremove")
+    {
+        p.add_argument("--purge");
+    }
     p.add_environ("DEBIAN_FRONTEND", "noninteractive");
-    int r(p.run());
+    int const r(p.run());
 
     // the output is saved so we can send it to the user and log it...
     QString const output(p.get_output(true));
@@ -317,7 +321,7 @@ int manager::install_package(std::string const & package_name, std::string const
     std::vector<std::string> allowed_commands{"install", "remove", "purge"};
     if(std::find(allowed_commands.begin(), allowed_commands.end(), command) == allowed_commands.end())
     {
-        throw std::logic_error("install_package was called with an invalid command.");
+        throw std::logic_error("install_package() was called with an invalid command.");
     }
 #endif
 
@@ -337,7 +341,7 @@ int manager::install_package(std::string const & package_name, std::string const
     p.add_argument(QString::fromUtf8(command.c_str()));
     p.add_argument(QString::fromUtf8(package_name.c_str()));
     p.add_environ("DEBIAN_FRONTEND", "noninteractive");
-    int r(p.run());
+    int const r(p.run());
 
     // the output is saved so we can send it to the user and log it...
     QString const output(p.get_output(true));
@@ -701,9 +705,22 @@ bool manager::installer(QString const & bundle_name, std::string const & command
                         // we want to call all the install even if a
                         // previous one (or the update) failed
                         //
-                        success = this->install_package(p, command) && success;
+                        // (using "this->" because we're inside a lambda)
+                        //
+                        success = this->install_package(p, command) != 0 && success;
                     }
                 });
+
+        // purging a package may leave other packages that were auto-installed
+        // ready to be removed, we handle those here with the autoremove
+        // command
+        //
+        if(!installing)
+        {
+            // this is an update command
+            //
+            success = update_packages("autoremove") == 0 && success;
+        }
     }
 
     // there may be some post installation instructions
