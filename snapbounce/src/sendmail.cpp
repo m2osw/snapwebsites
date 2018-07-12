@@ -1010,10 +1010,14 @@ int sendmail::dequeue()
 
 int main(int argc, char * argv [])
 {
-#if 1
+#if 0
     // since sendmail may be invoked from CRON and other tools, it may
     // be useful to see the command line arguments used in those situations
     // the following helps we determining such
+    //
+    // my problem on my test server was that my hourly cron script was not
+    // executable (chmod 755 /etc/cron.hourly/myscript) and thus it did not
+    // kick start at all...
     {
         snap::raii_fd_t fd;
         fd.reset(open("/tmp/sendmail-run.txt"

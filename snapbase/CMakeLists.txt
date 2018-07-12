@@ -40,6 +40,10 @@ project(snapbase_project)
 ##
 #SnapGetVersion( SNAPBASE ${CMAKE_CURRENT_SOURCE_DIR} )
 
+set( SNAPBASE_VERSION_MAJOR SNAPWEBSITES_VERSION_MAJOR )
+set( SNAPBASE_VERSION_MINOR SNAPWEBSITES_VERSION_MINOR )
+set( SNAPBASE_VERSION_PATCH SNAPWEBSITES_VERSION_PATCH )
+
 add_subdirectory( conf    )
 add_subdirectory( doc     )
 add_subdirectory( dtd     )

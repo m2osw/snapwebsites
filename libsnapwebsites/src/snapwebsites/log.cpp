@@ -1021,6 +1021,7 @@ logger::~logger()
         ll = log4cplus::TRACE_LOG_LEVEL;
         level_str = "trace";
         break;
+
     }
 
     // TODO: instead of calling logger_exists() which is very expensive

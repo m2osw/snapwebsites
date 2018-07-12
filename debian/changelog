@@ -1,3 +1,14 @@
+snapwebsites (1.5.78.0~xenial) xenial; urgency=high
+
+  * Fixed the version of snapbounce, it was empty because it moved to
+    become SNAPWEBSITES_VERSION_... (also corrected others with the same
+    problem)
+  * Fixed the XSL and CSS so the version appears properly in snapmanagercgi.
+  * Fixed the CSS for the fixed header, no padding allowed.
+  * Removed my debug code generating a /tmp file from sendmail.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 11 Jul 2018 17:30:13 -0700
+
 snapwebsites (1.5.77.2~xenial) xenial; urgency=high
 
   * Marked the debug write() result as not used.
