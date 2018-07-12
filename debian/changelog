@@ -1,9 +1,9 @@
-snapwebsites (1.5.80.0~xenial) xenial; urgency=high
+snapwebsites (1.5.81.0~xenial) xenial; urgency=high
 
   * Fixed the uninstalled that would not run "apt-get autoremove --purge".
   * Added the "--purge" whenever an "autoremove" command is sent.
 
- -- Alexis Wilke <alexis@m2osw.com>  Wed, 11 Jul 2018 22:29:28 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 12 Jul 2018 00:15:44 -0700
 
 snapwebsites (1.5.80.0~xenial) xenial; urgency=high
 
