@@ -58,8 +58,12 @@ domain ${BUNDLE_INSTALLATION_DOMAIN}
 from ${BUNDLE_INSTALLATION_FROM}
 
 # If necessary you can turn ON TLS
-#tls on
-#tls_certcheck off
+#
+# in our case we expect to use out local network area and our postfix is
+# setup with TLS, so we turn it on by default and ignored the certificate
+# TODO: make the tls_trust_file=... work
+tls on
+tls_certcheck off
 #tls_trust_file /etc/ssl/certs/ca-certificates.crt
 EOF
 

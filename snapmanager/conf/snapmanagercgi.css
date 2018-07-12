@@ -23,6 +23,7 @@ header
     z-index: 1;
     width: 100%;
     top: 0;
+    display: flex;
 }
 .ui-state-active a,
 .ui-state-active a:link,
@@ -60,16 +61,22 @@ div.access-warning
     padding: 10px;
     padding-bottom: 0;
 }
+ul#menu
+{
+    flex: none;
+    background: transparent;
+    padding-left: 10px;
+}
 div.snap-version
 {
     position: fixed;
     text-align: center;
-    width: 100%;
+    flex: auto;
     padding: 20px;
 }
 div.wait
 {
-    float: right;
+    flex: none;
     padding-top: 5px;
     padding-right: 5px;
 }
