@@ -80,7 +80,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         'n',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "context-name",
         "snap_websites",
         "name of the context (or keyspace) to dump/restore (defaults to 'snap_websites')",
@@ -96,7 +96,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         'T',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "tables",
         nullptr,
         "specify the list of tables to dump to SQLite database, or restore from SQLite to Cassandra",
@@ -120,7 +120,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         'c',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "count",
         "100",
         "specify the page size in rows (default 100)",
@@ -128,7 +128,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         'l',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "low-watermark",
         "0",
         "specify the low water mark bytes (default 0)",
@@ -136,7 +136,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         'm',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "high-watermark",
         "65536",
         "specify the high water mark bytes (default 0)",
@@ -144,7 +144,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "yes-i-know-what-im-doing",
         nullptr,
         "Force the dropping of context and overwriting of database, without warning and stdin prompt. Only use this if you know what you're doing!",
@@ -152,7 +152,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         'f',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "force-schema-creation",
         nullptr,
         "Force the creation of the context even if it already exists (default ignore)",
@@ -160,7 +160,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         'h',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "host",
         "localhost",
         "host IP address or name (defaults to localhost)",
@@ -168,7 +168,7 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         'p',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "port",
         "9042",
         "port on the host to connect to (defaults to 9042)",
@@ -176,10 +176,18 @@ const advgetopt::getopt::option g_snapbackup_options[] =
     },
     {
         's',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        0,
         "use-ssl",
         nullptr,
         "communicate with the Cassandra server using SSL encryption (defaults to false).",
+        advgetopt::getopt::argument_mode_t::no_argument
+    },
+    {
+        'v',
+        0,
+        "verbose",
+        nullptr,
+        "print out various message to console",
         advgetopt::getopt::argument_mode_t::no_argument
     },
     {
@@ -202,6 +210,13 @@ const advgetopt::getopt::option g_snapbackup_options[] =
 
 bool confirm_drop_check( const QString& msg )
 {
+    // background task can't be interactive
+    //
+    if(!isatty(fileno(stdout)))
+    {
+        return false;
+    }
+
     std::cout << "WARNING! " << msg << std::endl
               << "         This action is IRREVERSIBLE!" << std::endl
               << std::endl
@@ -251,7 +266,7 @@ int main(int argc, char *argv[])
 
         snapTableList::initList();
 
-        snapbackup  s(opt);
+        snapbackup s(opt);
         s.connectToCassandra();
 
         if( opt->is_defined("drop-context") )
@@ -276,10 +291,10 @@ int main(int argc, char *argv[])
         }
         else
         {
-            throw std::runtime_error("You must specify --drop-context, --dump-context, or --restore-context!");
+            throw std::runtime_error("You must specify one of --drop-context, --dump-context, or --restore-context!");
         }
     }
-    catch(std::exception const& e)
+    catch(std::exception const & e)
     {
         std::cerr << "snapbackup: exception: " << e.what() << std::endl;
         retval = 1;

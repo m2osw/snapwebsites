@@ -25,7 +25,7 @@
 // snapwatchdog lib
 //
 #include "snapwatchdog.h"
-#include "version.h"
+#include "snapwatchdog/version.h"
 
 // snapwebsites lib
 //

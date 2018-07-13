@@ -16,6 +16,20 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// snapwatchdog lib
+//
+#include "snapwatchdog/snapwatchdog.h"
+
+// snapwebsites lib
+//
+#include <snapwebsites/plugins.h>
+#include <snapwebsites/snap_child.h>
+
+// Qt lib
+//
+#include <QDomDocument>
+
+
 
 namespace snap
 {
@@ -52,7 +66,7 @@ public:
 
 
 class cassandra
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         cassandra();
@@ -69,7 +83,7 @@ public:
     void                on_process_watch(QDomDocument doc);
 
 private:
-    zpsnap_child_t      f_snap;
+    watchdog_child *    f_snap = nullptr;
 };
 
 } // namespace cassandra

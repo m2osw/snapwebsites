@@ -19,18 +19,22 @@
 //
 #include "firewall.h"
 
-// our lib
+// snapwatchdog lib
 //
-#include "snapwatchdog.h"
+#include "snapwatchdog/snapwatchdog.h"
 
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_used.h>
+#include <snapwebsites/process.h>
+#include <snapwebsites/qdomhelpers.h>
 
-// last entry
+
+// last include
 //
-#include "poison.h"
+#include <snapwebsites/poison.h>
+
 
 
 SNAP_PLUGIN_START(firewall, 1, 0)
@@ -39,26 +43,15 @@ SNAP_PLUGIN_START(firewall, 1, 0)
 namespace
 {
 
-struct apache_data_t
-{
-    uint32_t    f_pcpu;
-    int32_t     f_tty;
-    uint64_t    f_utime;
-    uint64_t    f_stime;
-    uint64_t    f_cutime;
-    uint64_t    f_cstime;
-    int64_t     f_total_size;
-    int64_t     f_resident_size;
-};
 
 
 
 }
 
 
-/** \brief Get a fixed apache plugin name.
+/** \brief Get a fixed firewall plugin name.
  *
- * The apache plugin makes use of different names. This function ensures
+ * The firewall plugin makes use of different names. This function ensures
  * that you get the right spelling for a given name.
  *
  * \param[in] name  The name to retrieve.
@@ -69,12 +62,12 @@ char const * get_name(name_t name)
 {
     switch(name)
     {
-    case name_t::SNAP_NAME_WATCHDOG_APACHE_NAME:
+    case name_t::SNAP_NAME_WATCHDOG_FIREWALL_NAME:
         return "name";
 
     default:
         // invalid index
-        throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_APACHE_...");
+        throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_FIREWALL_...");
 
     }
     NOTREACHED();
@@ -83,9 +76,9 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the apache plugin.
+/** \brief Initialize the firewall plugin.
  *
- * This function is used to initialize the apache plugin object.
+ * This function is used to initialize the firewall plugin object.
  */
 firewall::firewall()
     //: f_snap(nullptr) -- auto-init
@@ -93,27 +86,27 @@ firewall::firewall()
 }
 
 
-/** \brief Clean up the apache plugin.
+/** \brief Clean up the firewall plugin.
  *
- * Ensure the apache object is clean before it is gone.
+ * Ensure the firewall object is clean before it is gone.
  */
 firewall::~firewall()
 {
 }
 
 
-/** \brief Get a pointer to the apache plugin.
+/** \brief Get a pointer to the firewall plugin.
  *
- * This function returns an instance pointer to the apache plugin.
+ * This function returns an instance pointer to the firewall plugin.
  *
  * Note that you cannot assume that the pointer will be valid until the
  * bootstrap event is called.
  *
- * \return A pointer to the apache plugin.
+ * \return A pointer to the firewall plugin.
  */
-apache *apache::instance()
+firewall * firewall::instance()
 {
-    return g_plugin_apache_factory.instance();
+    return g_plugin_firewall_factory.instance();
 }
 
 
@@ -129,6 +122,19 @@ apache *apache::instance()
 QString firewall::description() const
 {
     return "Check whether the Apache server is running.";
+}
+
+
+/** \brief Return our dependencies.
+ *
+ * This function builds the list of plugins (by name) that are considered
+ * dependencies (required by this plugin.)
+ *
+ * \return Our list of dependencies.
+ */
+QString firewall::dependencies() const
+{
+    return "|server|";
 }
 
 
@@ -150,18 +156,18 @@ int64_t firewall::do_update(int64_t last_updated)
 }
 
 
-/** \brief Initialize apache.
+/** \brief Initialize firewall.
  *
- * This function terminates the initialization of the apache plugin
+ * This function terminates the initialization of the firewall plugin
  * by registering for various events.
  *
  * \param[in] snap  The child handling this request.
  */
 void firewall::bootstrap(snap_child * snap)
 {
-    f_snap = snap;
+    f_snap = static_cast<watchdog_child *>(snap);
 
-    SNAP_LISTEN(apache, "server", server, process_watch, _1);
+    SNAP_LISTEN(firewall, "server", watchdog_server, process_watch, _1);
 }
 
 
@@ -170,23 +176,29 @@ void firewall::bootstrap(snap_child * snap)
  * This function runs this watchdog.
  *
  * \param[in] doc  The document.
- * \param[in] e  This element to record this watchdog information.
  */
-void firewall::on_process_watch(QDomDocument doc, QDomElement e)
+void firewall::on_process_watch(QDomDocument doc)
 {
     SNAP_LOG_TRACE("firewall::on_process_watch(): processing");
 
+    QDomElement parent(snap_dom::create_element(doc, "watchdog"));
+    QDomElement e(snap_dom::create_element(parent, "processes"));
+
+    // first we check that the snapfirewall daemon is running
     process_list list;
 
-    list.set_field(list_process::process_info::field_t::COMMAND_LINE);
+    list.set_field(process_list::field_t::COMMAND_LINE);
+    list.set_field(process_list::field_t::STATISTICS);
     for(;;)
     {
-        process_list::process_info_pointer_t info(list.next());
+        process_list::proc_info::pointer_t info(list.next());
         if(!info)
         {
-            // no apache process!?
+            // no snapfirewall process!?
+            //
             e.setAttribute("error", "missing");
-            break;
+            f_snap->append_error(doc, "firewall", "can't find snapfirewall in the list of processes.", 95);
+            return;
         }
         std::string name(info->get_process_name());
         std::string::size_type p(name.find_last_of('/'));
@@ -194,9 +206,10 @@ void firewall::on_process_watch(QDomDocument doc, QDomElement e)
         {
             name = name.substr(p + 1);
         }
-        if(name == "apache2")
+        if(name == "snapfirewall")
         {
-            // got apache2 server, get the extra info
+            // got snapfirewall server, get the extra info
+            //
 
             e.setAttribute("pcpu", QString("%1").arg(info->get_pcpu()));
             e.setAttribute("total_size", QString("%1").arg(info->get_total_size()));
@@ -216,6 +229,19 @@ void firewall::on_process_watch(QDomDocument doc, QDomElement e)
             break;
         }
     }
+
+    // TODO:
+    // check that certain rules exist, that way we make sure that it's
+    // really up (although we do not really have a good way to test
+    // the system other than that...)
+    //
+    // long term it would be great to have a way to do a kind of nmap
+    // to see what ports are open on what IP, that way we can make sure
+    // that only ports that we generally allow are opened and all the
+    // others are not, however, an nmap test is very long and slow so
+    // it would required another tool we run once a day with a report
+    // of the current firewall status
+    //
 }
 
 

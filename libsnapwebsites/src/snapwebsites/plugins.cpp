@@ -58,6 +58,7 @@ plugin_map_t        g_plugins;
 plugin_vector_t     g_ordered_plugins;
 QString             g_next_register_name;
 QString             g_next_register_filename;
+QString             g_next_register_introducer;
 
 
 /** \brief Load a complete list of available plugins.
@@ -160,7 +161,7 @@ snap_string_list list_all(QString const & plugin_paths)
  *
  * \return true if all the modules were loaded.
  */
-bool load(QString const & plugin_paths, snap_child * snap, plugin_ptr_t server, snap_string_list const & list_of_plugins)
+bool load(QString const & plugin_paths, snap_child * snap, plugin_ptr_t server, snap_string_list const & list_of_plugins, QString const & introducer)
 {
     g_plugins.insert("server", server.get());
 
@@ -228,6 +229,7 @@ bool load(QString const & plugin_paths, snap_child * snap, plugin_ptr_t server, 
         //
         g_next_register_name = name;
         g_next_register_filename = filename;
+        g_next_register_introducer = introducer;
         void const * const h(dlopen(filename.toUtf8().data(), RTLD_LAZY | RTLD_GLOBAL));
         if(h == nullptr)
         {
@@ -238,6 +240,7 @@ bool load(QString const & plugin_paths, snap_child * snap, plugin_ptr_t server, 
         }
         g_next_register_name.clear();
         g_next_register_filename.clear();
+        g_next_register_introducer.clear();
 //SNAP_LOG_ERROR("note: registering plugin: \"")(name)("\"");
     }
 
@@ -468,15 +471,21 @@ void register_plugin(QString const & name, plugin * p)
     {
         throw plugin_exception("plugin name missing when registering... expected \"" + name + "\".");
     }
-    if(name != g_next_register_name)
+
+    QString const full_name(g_next_register_introducer.isEmpty()
+                                ? name
+                                : g_next_register_introducer + "_" + name);
+
+    if(full_name != g_next_register_name)
     {
-        throw plugin_exception("it is not possible to register a plugin (" + name + ") other than the one being loaded (" + g_next_register_name + ").");
+        throw plugin_exception("it is not possible to register a plugin (" + full_name + ") other than the one being loaded (" + g_next_register_name + ").");
     }
+
 #ifdef DEBUG
     // this is not possible if you use the macro, but in case you create
     // your own factory instance by hand, it is a requirement too
     //
-    if(name != p->get_plugin_name())
+    if(full_name != p->get_plugin_name())
     {
         throw plugin_exception("somehow your plugin factory name is \"" + p->get_plugin_name() + "\" when we were expecting \"" + name + "\".");
     }
@@ -485,6 +494,7 @@ void register_plugin(QString const & name, plugin * p)
     {
         // this should not happen except if the plugin factory was attempting
         // to register the same plugin many times in a row
+        //
         throw plugin_exception("it is not possible to register a plugin more than once (" + name + ").");
     }
     g_plugins.insert(name, p);

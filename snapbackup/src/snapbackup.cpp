@@ -58,28 +58,31 @@
 using namespace casswrapper;
 using namespace casswrapper::schema;
 
+
+
 snapbackup::snapbackup( getopt_ptr_t opt )
     : f_session( Session::create() )
     , f_opt(opt)
+    , f_verbose(opt->is_defined("verbose"))
 {
 }
 
 
-void snapbackup::setSqliteDbFile( const QString& sqlDbFile )
+void snapbackup::setSqliteDbFile( QString const & sqlDbFile )
 {
     QSqlDatabase db = QSqlDatabase::addDatabase( "QSQLITE" );
     if( !db.isValid() )
     {
-        const QString error( "QSQLITE database is not valid for some reason!" );
-        std::cerr << "QSQLITE not valid!!!" << std::endl;
-        throw std::runtime_error( error.toUtf8().data() );
+        QString const error( "QSQLITE database is not valid for some reason!" );
+        std::cerr << error << std::endl;
+        throw sqlite_exception( error );
     }
     db.setDatabaseName( sqlDbFile );
     if( !db.open() )
     {
-        const QString error( QString("Cannot open SQLite database [%1]!").arg(sqlDbFile) );
-        std::cerr << "QSQLITE not open!!!" << std::endl;
-        throw std::runtime_error( error.toUtf8().data() );
+        QString const error( QString("Cannot open SQLite database [%1]!").arg(sqlDbFile) );
+        std::cerr << error << std::endl;
+        throw sqlite_exception( error );
     }
 }
 
@@ -96,17 +99,17 @@ void snapbackup::connectToCassandra()
             );
 }
 
-void snapbackup::exec( QSqlQuery& q )
+void snapbackup::exec( QSqlQuery & q )
 {
     if( !q.exec() )
     {
         std::cerr << "lastQuery=[" << q.lastQuery() << "]" << std::endl;
         std::cerr << "query error=[" << q.lastError().text() << "]" << std::endl;
-        throw std::runtime_error( q.lastError().text().toUtf8().data() );
+        throw sqlite_exception( q.lastError().text() );
     }
 }
 
-void snapbackup::storeSchemaEntry( const QString& description, const QString& name, const QString& schema_line )
+void snapbackup::storeSchemaEntry( QString const & description, QString const & name, QString const & schema_line )
 {
     const QString q_str =
         "INSERT OR REPLACE INTO cql_schema_list "
@@ -127,22 +130,28 @@ void snapbackup::storeSchemaEntry( const QString& description, const QString& na
 
 void snapbackup::storeSchema( const QString& context_name )
 {
-    std::cout << "Generating CQL schema blob..." << std::endl;
+    if(f_verbose)
+    {
+        std::cout << "Generating CQL schema blob..." << std::endl;
+    }
     SessionMeta::pointer_t sm( SessionMeta::create(f_session) );
     sm->loadSchema();
     const auto& keyspaces( sm->getKeyspaces() );
     auto snap_iter = keyspaces.find(context_name);
     if( snap_iter == keyspaces.end() )
     {
-        throw std::runtime_error(
+        throw cassandra_exception(
                 QString("Context '%1' does not exist! Aborting!")
-                .arg(context_name).toUtf8().data()
+                        .arg(context_name)
                 );
     }
 
     auto kys( snap_iter->second );
 
-    std::cout << "Creating CQL schema blob table..." << std::endl;
+    if(f_verbose)
+    {
+        std::cout << "Creating CQL schema blob table..." << std::endl;
+    }
     QString q_str = "CREATE TABLE IF NOT EXISTS cql_schema_list "
             "( name TEXT PRIMARY KEY"
             ", description TEXT"
@@ -153,7 +162,10 @@ void snapbackup::storeSchema( const QString& context_name )
     q.prepare( q_str );
     exec( q );
 
-    std::cout << "Storing schema blob..." << std::endl;
+    if(f_verbose)
+    {
+        std::cout << "Storing schema blob..." << std::endl;
+    }
     storeSchemaEntry( "keyspace", context_name, kys->getKeyspaceCql() );
     for( const auto& line : kys->getTablesCql() )
     {
@@ -172,23 +184,35 @@ void snapbackup::restoreSchema( const QString& context_name )
     {
         if( f_opt->is_defined("force-schema-creation") )
         {
-            std::cout << "Context " << context_name << " already exists, but forcing (re)creation as requested." << std::endl;
+            if(f_verbose)
+            {
+                std::cout << "Context " << context_name << " already exists, but forcing (re)creation as requested." << std::endl;
+            }
         }
         else
         {
-            std::cout << "Context " << context_name << " already exists, so skipping schema creation." << std::endl;
+            if(f_verbose)
+            {
+                std::cout << "Context " << context_name << " already exists, so skipping schema creation." << std::endl;
+            }
             return;
         }
     }
 
-    std::cout << "Restoring CQL schema blob..." << std::endl;
+    if(f_verbose)
+    {
+        std::cout << "Restoring CQL schema blob..." << std::endl;
+    }
     const QString q_str( "SELECT name, description, schema_line FROM cql_schema_list;" );
     QSqlQuery q;
     q.prepare( q_str );
     //
     exec( q );
 
-    std::cout << "Creating keyspace '" << context_name << "', and tables." << std::endl;
+    if(f_verbose)
+    {
+        std::cout << "Creating keyspace '" << context_name << "', and tables." << std::endl;
+    }
     const int name_idx    = q.record().indexOf("name");
     const int desc_idx    = q.record().indexOf("description");
     const int schema_idx  = q.record().indexOf("schema_line");
@@ -201,23 +225,38 @@ void snapbackup::restoreSchema( const QString& context_name )
         auto cass_query = Query::create( f_session );
         cass_query->query( schema_string );
         cass_query->start( false );
-        std::cout << "Creating " << desc << " " << name;
+        if(f_verbose)
+        {
+            std::cout << "Creating " << desc << " " << name;
+        }
         while( !cass_query->isReady() )
         {
-            std::cout << "." << std::flush;
+            if(f_verbose)
+            {
+                std::cout << "." << std::flush;
+            }
             sleep(1);
         }
-        std::cout << "done!" << std::endl;
+        if(f_verbose)
+        {
+            std::cout << "done!" << std::endl;
+        }
         cass_query->end();
     }
 
-    std::cout << std::endl << "Database creation finished!" << std::endl;
+    if(f_verbose)
+    {
+        std::cout << std::endl << "Database creation finished!" << std::endl;
+    }
 }
 
 
 void snapbackup::dropContext( const QString& context_name )
 {
-    std::cout << QString("Dropping context [%1]...").arg(context_name) << std::endl;
+    if(f_verbose)
+    {
+        std::cout << QString("Dropping context [%1]...").arg(context_name) << std::endl;
+    }
 
     SessionMeta::pointer_t sm( SessionMeta::create(f_session) );
     sm->loadSchema();
@@ -225,9 +264,9 @@ void snapbackup::dropContext( const QString& context_name )
     auto snap_iter = keyspaces.find(context_name);
     if( snap_iter == keyspaces.end() )
     {
-        throw std::runtime_error(
+        throw cassandra_exception(
                 QString("Context '%1' does not exist! Aborting!")
-                .arg(context_name).toUtf8().data()
+                        .arg(context_name)
                 );
     }
 
@@ -240,29 +279,50 @@ void snapbackup::dropContext( const QString& context_name )
         auto q( Query::create(f_session) );
         q->query( QString("DROP TABLE %1.%2").arg(context_name).arg(table_name) );
         q->start( false );
-        std::cout << "Dropping table " << table_name;
+        if(f_verbose)
+        {
+            std::cout << "Dropping table " << table_name;
+        }
         while( !q->isReady() )
         {
-            std::cout << "." << std::flush;
+            if(f_verbose)
+            {
+                std::cout << "." << std::flush;
+            }
             sleep(1);
         }
-        std::cout << "dropped!" << std::endl;
+        if(f_verbose)
+        {
+            std::cout << "dropped!" << std::endl;
+        }
     }
 
     {
         auto q( Query::create(f_session) );
         q->query( QString("DROP KEYSPACE %1").arg(context_name) );
         q->start( false );
-        std::cout << "Dropping keyspace " << context_name;
+        if(f_verbose)
+        {
+            std::cout << "Dropping keyspace " << context_name;
+        }
         while( !q->isReady() )
         {
-            std::cout << "." << std::flush;
+            if(f_verbose)
+            {
+                std::cout << "." << std::flush;
+            }
             sleep(1);
         }
-        std::cout << "dropped!" << std::endl;
+        if(f_verbose)
+        {
+            std::cout << "dropped!" << std::endl;
+        }
     }
 
-    std::cout << std::endl << "Context successfully dropped!" << std::endl;
+    if(f_verbose)
+    {
+        std::cout << std::endl << "Context successfully dropped!" << std::endl;
+    }
 }
 
 
@@ -272,7 +332,7 @@ void snapbackup::dumpContext()
 
     auto db( QSqlDatabase::database() );
     db.transaction();
-    const QString context_name( f_opt->get_string("context-name").c_str() );
+    QString const context_name( f_opt->get_string("context-name").c_str() );
     storeSchema( context_name );
     storeTables( f_opt->get_long("count"), context_name );
     db.commit();
@@ -335,9 +395,9 @@ void snapbackup::storeTables( const int count, const QString& context_name )
     auto snap_iter = keyspaces.find(context_name);
     if( snap_iter == keyspaces.end() )
     {
-        throw std::runtime_error(
+        throw cassandra_exception(
                 QString("Context '%1' does not exist! Aborting!")
-                .arg(context_name).toUtf8().data()
+                        .arg(context_name)
                 );
     }
 
@@ -384,7 +444,10 @@ void snapbackup::storeTables( const int count, const QString& context_name )
         q.prepare( q_str );
         exec( q );
 
-        std::cout << "Dumping table [" << table_name << "]" << std::endl;
+        if(f_verbose)
+        {
+            std::cout << "Dumping table [" << table_name << "]" << std::endl;
+        }
 
         const QString cql_select_string("SELECT key,column1,value FROM snap_websites.%1");
         q_str = cql_select_string.arg(table_name);
@@ -420,7 +483,7 @@ void snapbackup::storeTables( const int count, const QString& context_name )
 //
 // Then call this method.
 //
-void snapbackup::restoreTables( const QString& context_name )
+void snapbackup::restoreTables( QString const & context_name )
 {
     snapTableList   dump_list;
 
@@ -430,9 +493,9 @@ void snapbackup::restoreTables( const QString& context_name )
     auto snap_iter = keyspaces.find(context_name);
     if( snap_iter == keyspaces.end() )
     {
-        throw std::runtime_error(
+        throw cassandra_exception(
                 QString("Context '%1' does not exist! Aborting!")
-                .arg(context_name).toUtf8().data()
+                        .arg(context_name)
                 );
     }
 
@@ -468,7 +531,10 @@ void snapbackup::restoreTables( const QString& context_name )
             }
         }
 
-        std::cout << "Restoring table [" << table_name << "]" << std::endl;
+        if(f_verbose)
+        {
+            std::cout << "Restoring table [" << table_name << "]" << std::endl;
+        }
 
         const QString sql_select_string ("SELECT key,column1,value FROM %1");
         QString q_str                   ( sql_select_string.arg(table_name) );

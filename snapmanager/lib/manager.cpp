@@ -489,7 +489,7 @@ void manager::load_plugins()
         //
         all_plugins.removeOne("server");
 
-        if(!snap::plugins::load(f_plugins_path, this, std::static_pointer_cast<snap::plugins::plugin>(g_instance), all_plugins))
+        if(!snap::plugins::load(f_plugins_path, this, std::static_pointer_cast<snap::plugins::plugin>(g_instance), all_plugins, QString()))
         {
             throw snapmanager_exception_cannot_load_plugins("the snapmanager library could not load its plugins");
         }

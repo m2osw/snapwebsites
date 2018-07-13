@@ -19,11 +19,22 @@ then
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
     mkdir -p ${SNAPWATCHDOG_LIB_DIR}
     chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}
-    for subdir in data script-files
+    for subdir in data rusage script-files
     do
         mkdir -p ${SNAPWATCHDOG_LIB_DIR}/${subdir}
         chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}/${subdir}
     done
+
+    # clean up old data if any is left
+    # (i.e. moved under .../data/...)
+    #
+    rm -rf ${SNAPWATCHDOG_LIB_DIR}/[0-9]*.xml
+
+    # make the snapwatchdog cache folders
+    #
+    SNAPWATCHDOG_CACHE_DIR=/var/lib/snapwebsites/${PACKAGENAME}
+    mkdir -p ${SNAPWATCHDOG_CACHE_DIR}
+    chown snapwebsites:snapwebsites ${SNAPWATCHDOG_CACHE_DIR}
 
     # Create the logfile because the snapwebsites user may have
     # difficulties with it otherwise during logrotate.

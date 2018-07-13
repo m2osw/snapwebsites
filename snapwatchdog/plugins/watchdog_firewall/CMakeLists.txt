@@ -1,9 +1,9 @@
 #
 # File:
-#      snapwatchdog/plugins/memory/CMakeLists.txt
+#      snapwatchdog/plugins/firewall/CMakeLists.txt
 #
 # Description:
-#      Memory watchdog: record memory usage over time.
+#      Firewall watchdog.
 #
 # Documentation:
 #      See the CMake documentation.
@@ -18,27 +18,21 @@
 #      it under the terms of the GNU General Public License as published by
 #      the Free Software Foundation; either version 2 of the License, or
 #      (at your option) any later version.
-#     
+#
 #      This program is distributed in the hope that it will be useful,
 #      but WITHOUT ANY WARRANTY; without even the implied warranty of
 #      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #      GNU General Public License for more details.
-#     
+#
 #      You should have received a copy of the GNU General Public License
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_memory)
+project(watchdog_firewall)
 
-find_package( ProcPS )
 find_package( Qt5Core REQUIRED )
 find_package( Qt5Xml  REQUIRED )
-
-include_directories(
-    SYSTEM
-        ${PROCPS_INCLUDES}
-)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -47,28 +41,33 @@ include_directories(
 
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    memory.qrc
+    firewall.qrc
 )
 
 
-add_library(memory SHARED
-    memory.cpp
+add_library(${PROJECT_NAME} SHARED
+    firewall.cpp
     ${SNAP_MANAGER_MOC_CXX}
     ${SNAP_MANAGER_RESOURCES_RCC}
 )
 
-target_link_libraries(memory
+target_link_libraries(${PROJECT_NAME}
     Qt5::Core
     Qt5::Xml
 )
 
 install(
-    TARGETS memory LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        ${PROJECT_NAME}
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(
-    FILES ${HEADER_FILES}
-    DESTINATION include/snapwatchdog/plugins/memory
+    FILES
+        ${HEADER_FILES}
+    DESTINATION
+        include/snapwatchdog/plugins/firewall
 )
 
 # vim: ts=4 sw=4 et

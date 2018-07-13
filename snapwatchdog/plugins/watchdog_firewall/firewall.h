@@ -1,4 +1,4 @@
-// Snap Websites Server -- CPU watchdog: record CPU usage over time
+// Snap Websites Server -- watchdog firewall
 // Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -16,66 +16,74 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// snapwatchdog lib
+//
+#include "snapwatchdog/snapwatchdog.h"
+
+// snapwebsites lib
+//
 #include <snapwebsites/plugins.h>
 #include <snapwebsites/snap_child.h>
 
+// Qt lib
+//
 #include <QDomDocument>
+
+
 
 namespace snap
 {
-namespace cpu
+namespace firewall
 {
-
 
 enum class name_t
 {
-    SNAP_NAME_WATCHDOG_CPU_NAME
+    SNAP_NAME_WATCHDOG_FIREWALL_NAME
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
 
+//class firewall_exception : public snap_exception
+//{
+//public:
+//    firewall_exception(char const *        what_msg) : snap_exception("firewall", what_msg) {}
+//    firewall_exception(std::string const & what_msg) : snap_exception("firewall", what_msg) {}
+//    firewall_exception(QString const &     what_msg) : snap_exception("firewall", what_msg) {}
+//};
+//
+//class firewall_exception_invalid_argument : public firewall_exception
+//{
+//public:
+//    firewall_exception_invalid_argument(char const *        what_msg) : firewall_exception(what_msg) {}
+//    firewall_exception_invalid_argument(std::string const & what_msg) : firewall_exception(what_msg) {}
+//    firewall_exception_invalid_argument(QString const &     what_msg) : firewall_exception(what_msg) {}
+//};
 
-class cpu_exception : public snap_exception
+
+
+
+
+class firewall
+    : public plugins::plugin
 {
 public:
-    cpu_exception(char const *        what_msg) : snap_exception("cpu", what_msg) {}
-    cpu_exception(std::string const & what_msg) : snap_exception("cpu", what_msg) {}
-    cpu_exception(QString const &     what_msg) : snap_exception("cpu", what_msg) {}
-};
-
-class cpu_exception_invalid_argument : public cpu_exception
-{
-public:
-    cpu_exception_invalid_argument(char const *        what_msg) : cpu_exception(what_msg) {}
-    cpu_exception_invalid_argument(std::string const & what_msg) : cpu_exception(what_msg) {}
-    cpu_exception_invalid_argument(QString const &     what_msg) : cpu_exception(what_msg) {}
-};
-
-
-
-
-
-class cpu
-        : public plugins::plugin
-{
-public:
-                        cpu();
-                        ~cpu();
+                        firewall();
+                        ~firewall();
 
     // plugins::plugin implementation
-    static cpu *        instance();
+    static firewall *   instance();
     virtual QString     description() const;
     virtual QString     dependencies() const;
     virtual int64_t     do_update(int64_t last_updated);
     virtual void        bootstrap(snap_child * snap);
 
-    // server signal
+    // server signals
     void                on_process_watch(QDomDocument doc);
 
 private:
-    snap_child *        f_snap = nullptr;
+    watchdog_child *    f_snap = nullptr;
 };
 
-} // namespace cpu
+} // namespace firewall
 } // namespace snap
 // vim: ts=4 sw=4 et

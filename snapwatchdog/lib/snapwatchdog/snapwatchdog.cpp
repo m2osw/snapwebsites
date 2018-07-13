@@ -18,13 +18,13 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// ourselves
+// self
 //
-#include "snapwatchdog.h"
+#include "snapwatchdog/snapwatchdog.h"
 
-// out lib
+// snapwatchdog lib
 //
-#include "version.h"
+#include "snapwatchdog/version.h"
 
 // snapwebsites lib
 //
@@ -42,8 +42,10 @@
 //
 #include <sys/wait.h>
 
-
+// last include
+//
 #include <snapwebsites/poison.h>
+
 
 
 /** \file
@@ -512,6 +514,9 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_WATCHDOG_ADMINISTRATOR_EMAIL:
         return "administrator_email";
 
+    case name_t::SNAP_NAME_WATCHDOG_CACHE_PATH:
+        return "cache_path";
+
     case name_t::SNAP_NAME_WATCHDOG_DATA_PATH:
         return "data_path";
 
@@ -669,11 +674,13 @@ void watchdog_server::process_tick()
 {
     // Can connect to Cassandra yet?
     //
-    if(f_snapdbproxy_addr.isEmpty())
-    {
-        SNAP_LOG_TRACE("cannot connect to Cassandra, f_snapdbproxy_addr is undefined.");
-        return;
-    }
+    // We now support running without Cassandra
+    //
+    //if(f_snapdbproxy_addr.isEmpty())
+    //{
+    //    SNAP_LOG_TRACE("cannot connect to Cassandra, f_snapdbproxy_addr is undefined.");
+    //    return;
+    //}
 
     // make sure we do not start more than one tick process because that
     // would cause horrible problems (i.e. many fork()'s, heavy memory
@@ -994,10 +1001,12 @@ void watchdog_server::process_message(snap::snap_communicator_message const & me
     {
         // Can connect to Cassandra yet?
         //
-        if(f_snapdbproxy_addr.isEmpty())
-        {
-            return;
-        }
+        // We now support running without Cassandra
+        //
+        //if(f_snapdbproxy_addr.isEmpty())
+        //{
+        //    return;
+        //}
 
         // a process just sent us its RUSAGE just before exiting
         // (note that a UDP message is generally used to send that info
@@ -1166,20 +1175,32 @@ bool watchdog_child::run_watchdog_plugins()
 
         init_start_date();
 
-        NOTUSED(connect_cassandra(true));
-
         // the usefulness of the weak pointer is questionable here since
         // we have it locked for the rest of the child process
         //
         auto server(std::dynamic_pointer_cast<watchdog_server>(f_server.lock()));
-        if(!server)
+        if(server == nullptr)
         {
             throw snap_child_exception_no_server("watchdog_child::run_watchdog_plugins(): The p_server weak pointer could not be locked");
         }
 
+        if(server->snapdbproxy_addr().isEmpty())
+        {
+            // no need to test if the address is empty
+            //
+            f_has_cassandra = false;
+        }
+        else
+        {
+            f_has_cassandra = connect_cassandra(false);
+        }
+
         // initialize the plugins
         //
-        init_plugins(false);
+        // notice the introducer, it's important since all the watchdog
+        // plugin names start wit "lib" + "watchdog_" + <name> + ".so"
+        //
+        init_plugins(false, "watchdog");
 
         f_ready = true;
 
@@ -1211,17 +1232,22 @@ bool watchdog_child::run_watchdog_plugins()
             //
             int64_t const date((start_date / (1000000LL * 60LL) * 60LL) % server->get_statistics_period());
 
-            // add the date in ns to this result
+            // add the date in us to this result
+            //
             QDomElement watchdog_tag(snap_dom::create_element(doc, "watchdog"));
             watchdog_tag.setAttribute("date", static_cast<qlonglong>(start_date));
+            int64_t const current_date(get_current_date());
+            watchdog_tag.setAttribute("end-date", static_cast<qlonglong>(current_date));
             result = doc.toString(-1);
 
             // save the result in a file first
             //
             QString data_path(server->get_parameter(watchdog::get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_DATA_PATH)));
+std::cerr << "----------------------------- process_watch() done -- save at: " << data_path << "\n";
             if(!data_path.isEmpty())
             {
-                data_path += QString("/%1.xml").arg(date);
+                data_path += QString("/data/%1.xml").arg(date);
+std::cerr << "----------------------------- process_watch() done -- in file: " << data_path << "\n";
 
                 std::ofstream out;
                 out.open(data_path.toUtf8().data(), std::ios_base::binary);
@@ -1237,15 +1263,18 @@ bool watchdog_child::run_watchdog_plugins()
             //
             // retrieve server statistics table
             //
-            QString const table_name(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS));
-            libdbproxy::table::pointer_t table(f_context->getTable(table_name));
+            if(f_has_cassandra)
+            {
+                QString const table_name(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS));
+                libdbproxy::table::pointer_t table(f_context->getTable(table_name));
 
-            libdbproxy::value value;
-            value.setStringValue(result);
-            value.setTtl(server->get_statistics_ttl());
-            QByteArray cell_key;
-            libdbproxy::setInt64Value(cell_key, date);
-            table->getRow(QString::fromUtf8(server->get_server_name().c_str()) + "/system-statistics")->getCell(cell_key)->setValue(value);
+                libdbproxy::value value;
+                value.setStringValue(result);
+                value.setTtl(server->get_statistics_ttl());
+                QByteArray cell_key;
+                libdbproxy::setInt64Value(cell_key, date);
+                table->getRow(QString::fromUtf8(server->get_server_name().c_str()) + "/system-statistics")->getCell(cell_key)->setValue(value);
+            }
         }
 
         // the child has to exit()
@@ -1292,6 +1321,7 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
         int const e(errno);
 
         // parent process
+        //
         if(f_child_pid == -1)
         {
             // we do not try again, we just abandon the whole process
@@ -1302,20 +1332,32 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
         return true;
     }
 
-    // we are the child, run the watchdog_process() signal
+    // we are the child, run the actual record_usage() function
     try
     {
         f_ready = false;
 
         // on fork() we lose the configuration so we have to reload it
+        //
         logging::reconfigure();
 
-        NOTUSED(connect_cassandra(true));
+        init_start_date();
 
         auto server(std::dynamic_pointer_cast<watchdog_server>(f_server.lock()));
-        if(!server)
+        if(server == nullptr)
         {
             throw snap_child_exception_no_server("watchdog_child::record_usage(): The p_server weak pointer could not be locked");
+        }
+
+        if(server->snapdbproxy_addr().isEmpty())
+        {
+            // no need to test if the address is empty
+            //
+            f_has_cassandra = false;
+        }
+        else
+        {
+            f_has_cassandra = connect_cassandra(false);
         }
 
         QDomDocument doc("watchdog");
@@ -1323,8 +1365,9 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
         QDomElement e(snap_dom::create_element(parent, "rusage"));
 
         QString const process_name(message.get_parameter("process_name"));
+        QString const pid(message.get_parameter("pid"));
         e.setAttribute("process_name",                  process_name);
-        e.setAttribute("pid",                           message.get_parameter("pid"));
+        e.setAttribute("pid",                           pid);
         e.setAttribute("user_time",                     message.get_parameter("user_time"));
         e.setAttribute("system_time",                   message.get_parameter("system_time"));
         e.setAttribute("maxrss",                        message.get_parameter("maxrss"));
@@ -1337,14 +1380,40 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
 
         int64_t const start_date(get_start_date());
 
-        QString const table_name(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS));
-        libdbproxy::table::pointer_t table(f_context->getTable(table_name));
+        // add the date in us to this result
+        //
+        QDomElement watchdog_tag(snap_dom::create_element(doc, "watchdog"));
+        watchdog_tag.setAttribute("date", static_cast<qlonglong>(start_date));
+        QString const result = doc.toString(-1);
 
-        libdbproxy::value value;
-        value.setStringValue(doc.toString(-1));
-        value.setTtl(server->get_statistics_ttl());
-        QString const cell_key(QString("%1::%2").arg(process_name).arg(start_date));
-        table->getRow(QString::fromUtf8(server->get_server_name().c_str()) + "/rusage")->getCell(cell_key)->setValue(value);
+        // save the result in a file first
+        //
+        QString data_path(server->get_parameter(watchdog::get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_DATA_PATH)));
+        if(!data_path.isEmpty())
+        {
+            data_path += QString("/rusage/%1.xml").arg(pid);
+
+            std::ofstream out;
+            out.open(data_path.toUtf8().data(), std::ios_base::binary);
+            if(out.is_open())
+            {
+                // result already ends with a "\n"
+                //
+                out << result;
+            }
+        }
+
+        if(f_has_cassandra)
+        {
+            QString const table_name(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS));
+            libdbproxy::table::pointer_t table(f_context->getTable(table_name));
+
+            libdbproxy::value value;
+            value.setStringValue(result);
+            value.setTtl(server->get_statistics_ttl());
+            QString const cell_key(QString("%1::%2").arg(process_name).arg(start_date));
+            table->getRow(QString::fromUtf8(server->get_server_name().c_str()) + "/rusage")->getCell(cell_key)->setValue(value);
+        }
 
         // the child has to exit()
         exit(0);
@@ -1380,6 +1449,63 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
 pid_t watchdog_child::get_child_pid() const
 {
     return f_child_pid;
+}
+
+
+/** \brief Attach an error to the specified \p doc DOM.
+ *
+ * This function creates an \<error> element and add the specified
+ * message to it. The message can be any text you'd like.
+ *
+ * The plugin_name is expected to match the name of your plugin one to one.
+ *
+ * The priority is used to know whether an email will be sent to the user
+ * or not. By default it is 50 and the configuration file says to send
+ * emails if the priority is 1 or more. We expect numbers between 0 and 100.
+ *
+ * \param[in] doc  The DOM document where the \<error> tag is created.
+ * \param[in] plugin_name  The name of the plugin generating this error.
+ * \param[in] message  The error message. This is free form. It can't include
+ *            tags (\< and \> will be inserted as \&lt; and \&gt;.)
+ * \param[in] priority  The priority of this error. The higher the greater the
+ *            priority and the sooner the error will be sent to the
+ *            administrator.
+ */
+void watchdog_child::append_error(QDomDocument doc, QString const & plugin_name, QString const & message, int priority)
+{
+    if(priority < 0 || priority > 100)
+    {
+        throw snapwatchdog_exception_invalid_parameters(
+                  "priority must be between 0 and 100 inclusive, "
+                + std::to_string(priority)
+                + " is not valid.");
+    }
+
+    QDomElement parent(snap_dom::create_element(doc, "watchdog"));
+    QDomElement err(snap_dom::create_element(parent, "error"));
+
+    // use createElement() so we get one message per call
+    //QDomElement msg(snap_dom::create_element(doc, "message"));
+    QDomElement msg(doc.createElement("message"));
+    err.appendChild(msg);
+
+    msg.setAttribute("plugin_name", plugin_name);
+    msg.setAttribute("priority", priority);
+
+    QDomText text(doc.createTextNode(message));
+    msg.appendChild(text);
+}
+
+
+void watchdog_child::append_error(QDomDocument doc, QString const & plugin_name, std::string const & message, int priority)
+{
+    append_error(doc, plugin_name, QString::fromUtf8(message.c_str()), priority);
+}
+
+
+void watchdog_child::append_error(QDomDocument doc, QString const & plugin_name, char const * message, int priority)
+{
+    append_error(doc, plugin_name, QString::fromUtf8(message), priority);
 }
 
 

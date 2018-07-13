@@ -1,4 +1,4 @@
-// Snap Websites Server -- watchdog apache
+// Snap Websites Server -- CPU watchdog: record CPU usage over time
 // Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -16,62 +16,76 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-//#include "../users/users.h"
-//#include "../server_access/server_access.h"
+// snapwatchdog lib
+//
+#include "snapwatchdog/snapwatchdog.h"
+
+// snapwebsites lib
+//
+#include <snapwebsites/plugins.h>
+#include <snapwebsites/snap_child.h>
+
+// Qt lib
+//
+#include <QDomDocument>
+
+
 
 namespace snap
 {
-namespace apache
+namespace cpu
 {
+
 
 enum class name_t
 {
-    SNAP_NAME_WATCHDOG_APACHE_NAME
+    SNAP_NAME_WATCHDOG_CPU_NAME
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-//class apache_exception : public snap_exception
-//{
-//public:
-//    apache_exception(char const *        what_msg) : snap_exception("apache", what_msg) {}
-//    apache_exception(std::string const & what_msg) : snap_exception("apache", what_msg) {}
-//    apache_exception(QString const &     what_msg) : snap_exception("apache", what_msg) {}
-//};
-//
-//class apache_exception_invalid_argument : public apache_exception
-//{
-//public:
-//    apache_exception_invalid_argument(char const *        what_msg) : apache_exception(what_msg) {}
-//    apache_exception_invalid_argument(std::string const & what_msg) : apache_exception(what_msg) {}
-//    apache_exception_invalid_argument(QString const &     what_msg) : apache_exception(what_msg) {}
-//};
+
+class cpu_exception : public snap_exception
+{
+public:
+    cpu_exception(char const *        what_msg) : snap_exception("cpu", what_msg) {}
+    cpu_exception(std::string const & what_msg) : snap_exception("cpu", what_msg) {}
+    cpu_exception(QString const &     what_msg) : snap_exception("cpu", what_msg) {}
+};
+
+class cpu_exception_invalid_argument : public cpu_exception
+{
+public:
+    cpu_exception_invalid_argument(char const *        what_msg) : cpu_exception(what_msg) {}
+    cpu_exception_invalid_argument(std::string const & what_msg) : cpu_exception(what_msg) {}
+    cpu_exception_invalid_argument(QString const &     what_msg) : cpu_exception(what_msg) {}
+};
 
 
 
 
 
-class apache
+class cpu
         : public plugins::plugin
 {
 public:
-                        apache();
-                        ~apache();
+                        cpu();
+                        ~cpu();
 
     // plugins::plugin implementation
-    static apache *     instance();
+    static cpu *        instance();
     virtual QString     description() const;
     virtual QString     dependencies() const;
     virtual int64_t     do_update(int64_t last_updated);
     virtual void        bootstrap(snap_child * snap);
 
-    // server signals
-    void                on_process_watch();
+    // server signal
+    void                on_process_watch(QDomDocument doc);
 
 private:
-    zpsnap_child_t      f_snap;
+    watchdog_child *    f_snap = nullptr;
 };
 
-} // namespace apache
+} // namespace cpu
 } // namespace snap
 // vim: ts=4 sw=4 et

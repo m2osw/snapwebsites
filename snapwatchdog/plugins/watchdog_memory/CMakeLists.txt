@@ -1,9 +1,9 @@
 #
 # File:
-#      snapwatchdog/plugins/disk/CMakeLists.txt
+#      snapwatchdog/plugins/memory/CMakeLists.txt
 #
 # Description:
-#      Disk watchdog: report disk usage over time.
+#      Memory watchdog: record memory usage over time.
 #
 # Documentation:
 #      See the CMake documentation.
@@ -29,10 +29,16 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_disk)
+project(watchdog_memory)
 
+find_package( ProcPS )
 find_package( Qt5Core REQUIRED )
 find_package( Qt5Xml  REQUIRED )
+
+include_directories(
+    SYSTEM
+        ${PROCPS_INCLUDES}
+)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -41,28 +47,33 @@ include_directories(
 
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    disk.qrc
+    memory.qrc
 )
 
 
-add_library(disk SHARED
-    disk.cpp
+add_library(${PROJECT_NAME} SHARED
+    memory.cpp
     ${SNAP_MANAGER_MOC_CXX}
     ${SNAP_MANAGER_RESOURCES_RCC}
 )
 
-target_link_libraries(disk
+target_link_libraries(${PROJECT_NAME}
     Qt5::Core
     Qt5::Xml
 )
 
 install(
-    TARGETS disk LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        ${PROJECT_NAME}
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(
-    FILES ${HEADER_FILES}
-    DESTINATION include/snapwatchdog/plugins/disk
+    FILES
+        ${HEADER_FILES}
+    DESTINATION
+        include/snapwatchdog/plugins/memory
 )
 
 # vim: ts=4 sw=4 et

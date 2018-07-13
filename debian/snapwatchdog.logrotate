@@ -43,4 +43,16 @@
     create 640 snapwebsites snapwebsites
 }
 
+# We save rusage using the PID of the process, this means we could end up
+# with a whooping 32,000 files in this folder, if the file is more than
+# a week old, delete it, checked daily
+#
+/var/lib/snapwebsites/snapwatchdog/rusage/*.xml {
+    daily
+    maxage 7
+    su snapwebsites snapwebsites
+    missingok
+    rotate 0
+}
+
 # vim: ts=4 sw=4 et

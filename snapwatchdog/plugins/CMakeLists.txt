@@ -47,13 +47,14 @@ set( PLUGIN_INSTALL_DIR lib/snapwebsites/watchdog_plugins )
 ################################################################################
 # Keep the plugins in alphabetical order for ease of management
 #
-add_subdirectory(cpu)
-add_subdirectory(disk)
-#add_subdirectory(firewall)
-add_subdirectory(memory)
-add_subdirectory(network)
-add_subdirectory(processes)
-add_subdirectory(watchscripts)
+add_subdirectory(watchdog_cassandra)
+add_subdirectory(watchdog_cpu)
+add_subdirectory(watchdog_disk)
+add_subdirectory(watchdog_firewall)
+add_subdirectory(watchdog_memory)
+add_subdirectory(watchdog_network)
+add_subdirectory(watchdog_processes)
+add_subdirectory(watchdog_watchscripts)
 
 
 # vim: ts=4 sw=4 nocindent

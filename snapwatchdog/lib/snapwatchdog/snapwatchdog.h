@@ -19,8 +19,12 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// snapwebsites lib
+//
 #include <snapwebsites/snapwebsites.h>
 
+// Qt lib
+//
 #include <QDomDocument>
 
 
@@ -32,6 +36,7 @@ namespace watchdog
 enum class name_t
 {
     SNAP_NAME_WATCHDOG_ADMINISTRATOR_EMAIL,
+    SNAP_NAME_WATCHDOG_CACHE_PATH,
     SNAP_NAME_WATCHDOG_DATA_PATH,
     SNAP_NAME_WATCHDOG_DEFAULT_LOG_PATH,
     SNAP_NAME_WATCHDOG_FROM_EMAIL,
@@ -69,7 +74,7 @@ class watchdog_child;
 
 
 class watchdog_server
-        : public server
+    : public server
 {
 public:
     typedef std::shared_ptr<watchdog_server>         pointer_t;
@@ -105,7 +110,7 @@ private:
 
 
 class watchdog_child
-        : public snap_child
+    : public snap_child
 {
 public:
     typedef std::shared_ptr<watchdog_child>     pointer_t;
@@ -119,10 +124,14 @@ public:
     virtual void        exit(int code) override;
 
     pid_t               get_child_pid() const;
+    void                append_error(QDomDocument doc, QString const & plugin_name, QString const & message, int priority = 50);
+    void                append_error(QDomDocument doc, QString const & plugin_name, std::string const & message, int priority = 50);
+    void                append_error(QDomDocument doc, QString const & plugin_name, char const * message, int priority = 50);
 
 private:
     pid_t               f_child_pid = -1;
     bool const          f_tick = true;
+    bool                f_has_cassandra = false;
 };
 
 

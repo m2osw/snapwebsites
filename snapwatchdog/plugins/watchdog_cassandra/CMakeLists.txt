@@ -1,9 +1,9 @@
 #
 # File:
-#      snapwatchdog/plugins/network/CMakeLists.txt
+#      snapwatchdog/plugins/cassandra/CMakeLists.txt
 #
 # Description:
-#      Network watchdog.
+#      Cassandra watchdog.
 #
 # Documentation:
 #      See the CMake documentation.
@@ -29,42 +29,46 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_network)
+project(watchdog_cassandra)
 
+find_package( ProcPS )
 find_package( Qt5Core REQUIRED )
 find_package( Qt5Xml  REQUIRED )
+
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${snapwatchdog_SOURCE_DIR}
 )
 
-
-
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    network.qrc
+    cassandra.qrc
 )
 
 
-
-add_library(network SHARED
-    network.cpp
+add_library(${PROJECT_NAME} SHARED
+    cassandra.cpp
     ${SNAP_MANAGER_MOC_CXX}
     ${SNAP_MANAGER_RESOURCES_RCC}
 )
 
-target_link_libraries( network
+target_link_libraries(${PROJECT_NAME}
     Qt5::Core
     Qt5::Xml
 )
 
 install(
-    TARGETS network LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        ${PROJECT_NAME}
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(
-    FILES ${HEADER_FILES}
-    DESTINATION include/snapwatchdog/plugins/network
+    FILES
+        ${HEADER_FILES}
+    DESTINATION
+        include/snapwatchdog/plugins/cassandra
 )
 
 # vim: ts=4 sw=4 et

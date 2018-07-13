@@ -15,11 +15,21 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "cassandra.h"
 
-#include "not_used.h"
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
+#include <snapwebsites/not_used.h>
+#include <snapwebsites/process.h>
+#include <snapwebsites/qdomhelpers.h>
 
-#include "poison.h"
+
+// last include
+//
+#include <snapwebsites/poison.h>
 
 
 SNAP_PLUGIN_START(cassandra, 1, 0)
@@ -27,7 +37,7 @@ SNAP_PLUGIN_START(cassandra, 1, 0)
 
 /** \brief Get a fixed cassandra plugin name.
  *
- * The cassamdra plugin makes use of different names in the database. This
+ * The cassandra plugin makes use of different names in the database. This
  * function ensures that you get the right spelling for a given name.
  *
  * \param[in] name  The name to retrieve.
@@ -57,7 +67,7 @@ char const * get_name(name_t name)
  * This function is used to initialize the cassandra plugin object.
  */
 cassandra::cassandra()
-    //: f_snap(NULL) -- auto-init
+    //: f_snap(nullptr) -- auto-init
 {
 }
 
@@ -97,7 +107,7 @@ cassandra * cassandra::instance()
  */
 QString cassandra::description() const
 {
-    return "Check whether the Cassandra server is running.";
+    return "Check whether the Cassandra server is running on this very computer.";
 }
 
 
@@ -124,6 +134,8 @@ QString cassandra::dependencies() const
  */
 int64_t cassandra::do_update(int64_t last_updated)
 {
+    NOTUSED(last_updated);
+
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in watchdog
     SNAP_PLUGIN_UPDATE_EXIT();
@@ -139,9 +151,9 @@ int64_t cassandra::do_update(int64_t last_updated)
  */
 void cassandra::bootstrap(snap_child * snap)
 {
-    f_snap = snap;
+    f_snap = static_cast<watchdog_child *>(snap);
 
-    SNAP_LISTEN(apache, "server", server, process_watch, _1);
+    SNAP_LISTEN(cassandra, "server", watchdog_server, process_watch, _1);
 }
 
 
@@ -157,16 +169,19 @@ void cassandra::on_process_watch(QDomDocument doc)
 
     process_list list;
 
-    QDomElement e(doc.createElement("cassandra"));
+    QDomElement parent(snap_dom::create_element(doc, "watchdog"));
+    QDomElement e(snap_dom::create_element(parent, "cassandra"));
 
-    list.set_field(list_process::process_info::field_t::COMMAND_LINE);
+    list.set_field(process_list::field_t::COMMAND_LINE);
+    list.set_field(process_list::field_t::STATISTICS);
     for(;;)
     {
-        process_list::process_info_pointer_t info(list.next());
-        if(!info)
+        process_list::proc_info::pointer_t info(list.next());
+        if(info == nullptr)
         {
             // no cassandra process!?
             e.setAttribute("error", "missing");
+            f_snap->append_error(doc, "cassandra", "can't find Cassandra in the list of processes.", 90);
             return;
         }
         std::string name(info->get_process_name());
@@ -178,13 +193,14 @@ void cassandra::on_process_watch(QDomDocument doc)
         if(name == "java")
         {
             // found a java entry, search for Cassandra
-            int count_max(info->get_args_size());
+            int const count_max(info->get_args_size());
             for(int c(0); c < count_max; ++c)
             {
                 // is it Cassandra?
                 if(info->get_arg(c) == "org.apache.cassandra.service.CassandraDaemon")
                 {
-                    // got it!
+                    // got it! (well, one of them at least)
+                    //
                     e.setAttribute("pcpu", QString("%1").arg(info->get_pcpu()));
                     e.setAttribute("total_size", QString("%1").arg(info->get_total_size()));
                     e.setAttribute("resident", QString("%1").arg(info->get_resident_size()));
@@ -200,11 +216,16 @@ void cassandra::on_process_watch(QDomDocument doc)
                     e.setAttribute("stime", QString("%1").arg(stime));
                     e.setAttribute("cutime", QString("%1").arg(cutime));
                     e.setAttribute("cstime", QString("%1").arg(cstime));
-                    return;
+                    break;
                 }
             }
         }
     }
+
+    // TODO: do further checks to make sure everything is A-Okay
+    //       although checks against the database itself are
+    //       to be done once in a while, not every minute
+    //
 }
 
 

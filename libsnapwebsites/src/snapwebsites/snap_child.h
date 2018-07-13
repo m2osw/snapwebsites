@@ -467,14 +467,14 @@ protected:
     void                        canonicalize_website();
     void                        canonicalize_options();
     void                        site_redirect();
-    snap_string_list            init_plugins(bool const add_defaults);
+    snap_string_list            init_plugins(bool const add_defaults, QString const & introducer = QString());
 
     server_pointer_t                            f_server;
     bool                                        f_is_child = false;
     pid_t                                       f_child_pid = 0;
     tcp_client_server::bio_client::pointer_t    f_client;
-    libdbproxy::libdbproxy::pointer_t          f_cassandra;
-    libdbproxy::context::pointer_t   f_context;
+    libdbproxy::libdbproxy::pointer_t           f_cassandra;
+    libdbproxy::context::pointer_t              f_context;
     int64_t                                     f_start_date = 0; // time request arrived
     bool                                        f_ready = false; // becomes true just before the server::execute() call
     environment_map_t                           f_env;

@@ -18,8 +18,12 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "snapwebsites/snapwebsites.h"
 
+// snapwebsites lib
+//
 #include "snapwebsites/log.h"
 #include "snapwebsites/not_used.h"
 #include "snapwebsites/snap_backend.h"
@@ -27,14 +31,20 @@
 #include "snapwebsites/snap_lock.h"
 #include "snapwebsites/snap_tables.h"
 
+// C++ lib
+//
 #include <sstream>
 
+// Qt lib
+//
 #include <QFile>
 #include <QDirIterator>
 #include <QHostAddress>
 #include <QCoreApplication>
 #include <QTextCodec>
 
+// C lib
+//
 #include <errno.h>
 #include <signal.h>
 #include <syslog.h>
@@ -1556,7 +1566,7 @@ void server::set_translation(QString const xml_data)
  * \param[in] mandatory_table  A table that we expect to exist to go on.
  * \param[out] timer_required  Whether the caller should setup a timer to
  *             poll availability (true) or another CASSANDRAREADY message
- *             will be sent later (i.e. not context/tables.)
+ *             will be sent later (i.e. no context/tables when true.)
  *
  * \return true if Cassandra is considered valid (up/running/initialized).
  */

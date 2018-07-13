@@ -48,40 +48,59 @@ typedef std::shared_ptr<advgetopt::getopt>    getopt_ptr_t;
 class snapbackup
 {
 public:
-    class schema_already_exists_exception : public std::runtime_error
+    class cassandra_exception : public std::runtime_error
     {
     public:
-        schema_already_exists_exception( const QString& msg )
+        cassandra_exception( QString const & msg )
             : std::runtime_error(msg.toUtf8().data())
         {
         }
     };
 
-    snapbackup( getopt_ptr_t opt );
+    class sqlite_exception : public std::runtime_error
+    {
+    public:
+        sqlite_exception( QString const & msg )
+            : std::runtime_error(msg.toUtf8().data())
+        {
+        }
+    };
 
-    void connectToCassandra();
+    class schema_already_exists_exception : public std::runtime_error
+    {
+    public:
+        schema_already_exists_exception( QString const & msg )
+            : std::runtime_error(msg.toUtf8().data())
+        {
+        }
+    };
 
-    void dropContext();
-    void dumpContext();
-    void restoreContext();
+                snapbackup( getopt_ptr_t opt );
+
+    void        connectToCassandra();
+
+    void        dropContext();
+    void        dumpContext();
+    void        restoreContext();
 
 private:
-    casswrapper::Session::pointer_t f_session;
-    getopt_ptr_t                              f_opt;
+    void        setSqliteDbFile( QString const & sqlDbFile );
+    void        appendRowsToSqliteDb( int& id, casswrapper::Query::pointer_t cass_query, QString const & table_name );
 
-    void setSqliteDbFile( const QString& sqlDbFile );
-    void appendRowsToSqliteDb( int& id, casswrapper::Query::pointer_t cass_query, const QString& table_name );
+    void        exec( QSqlQuery & q );
 
-    void exec( QSqlQuery& q );
+    void        storeSchemaEntry( QString const & description, QString const & name, QString const & schema_line );
 
-    void storeSchemaEntry( const QString& description, const QString& name, const QString& schema_line );
+    void        storeSchema( QString const & context_name );
+    void        restoreSchema( QString const & context_name );
 
-    void storeSchema( const QString& context_name );
-    void restoreSchema( const QString& context_name );
+    void        dropContext( QString const & context_name );
+    void        storeTables( int const count, QString const & context_name );
+    void        restoreTables( QString const & context_name );
 
-    void dropContext( const QString& context_name );
-    void storeTables( const int count, const QString& context_name );
-    void restoreTables( const QString& context_name );
+    casswrapper::Session::pointer_t     f_session;
+    getopt_ptr_t                        f_opt;
+    bool                                f_verbose = false;
 };
 
 // vim: ts=4 sw=4 et

@@ -127,7 +127,7 @@ private:
 
 
 snap_string_list        list_all(QString const & plugin_path);
-bool                    load(QString const & plugin_path, snap_child * snap, plugin_ptr_t server, snap_string_list const & list_of_plugins);
+bool                    load(QString const & plugin_path, snap_child * snap, plugin_ptr_t server, snap_string_list const & list_of_plugins, QString const & introducer);
 QString                 find_plugin_filename(snap_string_list const & plugin_paths, QString const & name);
 bool                    exists(QString const & name);
 void                    register_plugin(QString const & name, plugin * p);

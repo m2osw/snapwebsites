@@ -29,7 +29,8 @@
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 
-// last entry
+
+// last include
 //
 #include <snapwebsites/poison.h>
 

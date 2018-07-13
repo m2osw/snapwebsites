@@ -3023,7 +3023,8 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         // (not a full 301, just show site B instead of site A)
         site_redirect();
 
-        // start the plugins and there initialization
+        // start the plugins and their initialization
+        //
         snap_string_list list_of_plugins(init_plugins(true));
 
         // run updates if any
@@ -7626,7 +7627,7 @@ QString snap_child::get_unique_number()
  *                          the Snap! server itself, not so much for other
  *                          servers using plugins.)
  */
-snap_string_list snap_child::init_plugins(bool const add_defaults)
+snap_string_list snap_child::init_plugins(bool const add_defaults, QString const & introducer)
 {
     server::pointer_t server( f_server.lock() );
     if(!server)
@@ -7661,14 +7662,30 @@ snap_string_list snap_child::init_plugins(bool const add_defaults)
     // clean up the list
     if(need_cleanup)
     {
-        for(int i(0); i < list_of_plugins.length(); ++i)
+        if(introducer.isEmpty())
         {
-            list_of_plugins[i] = list_of_plugins[i].trimmed();
-            if(list_of_plugins.at(i).isEmpty())
+            for(int i(0); i < list_of_plugins.length(); ++i)
             {
-                // remove parts that the trimmed() rendered empty
-                list_of_plugins.removeAt(i);
-                --i;
+                list_of_plugins[i] = list_of_plugins[i].trimmed();
+                if(list_of_plugins.at(i).isEmpty())
+                {
+                    // remove parts that the trimmed() rendered empty
+                    list_of_plugins.removeAt(i);
+                    --i;
+                }
+            }
+        }
+        else
+        {
+            for(int i(0); i < list_of_plugins.length(); ++i)
+            {
+                list_of_plugins[i] = introducer + "_" + list_of_plugins[i].trimmed();
+                if(list_of_plugins.at(i).isEmpty())
+                {
+                    // remove parts that the trimmed() rendered empty
+                    list_of_plugins.removeAt(i);
+                    --i;
+                }
             }
         }
     }
@@ -7699,7 +7716,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults)
         NOTREACHED();
     }
 
-    if(!snap::plugins::load(plugins_path, this, std::static_pointer_cast<snap::plugins::plugin>(server), list_of_plugins))
+    if(!snap::plugins::load(plugins_path, this, std::static_pointer_cast<snap::plugins::plugin>(server), list_of_plugins, introducer))
     {
         die( http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE
            , "Plugin Unavailable"

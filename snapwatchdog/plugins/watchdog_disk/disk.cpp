@@ -19,10 +19,6 @@
 //
 #include "disk.h"
 
-// snapwatchdog lib
-//
-#include "snapwatchdog.h"
-
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
@@ -284,7 +280,7 @@ int64_t disk::do_update(int64_t last_updated)
  */
 void disk::bootstrap(snap_child * snap)
 {
-    f_snap = snap;
+    f_snap = static_cast<watchdog_child *>(snap);
 
     SNAP_LISTEN(disk, "server", watchdog_server, process_watch, _1);
 }
@@ -319,17 +315,55 @@ void disk::on_process_watch(QDomDocument doc)
         {
             // got an entry, however, we ignore entries that have a number
             // of block equal to zero because those are virtual drives
+            //
             if(s.f_blocks != 0)
             {
+                // we can't use create_element() since we want a new partition
+                // each time we create an entry
+                //QDomElement p(snap_dom::create_element(e, "partition"));
                 QDomElement p(doc.createElement("partition"));
                 e.appendChild(p);
 
+                // directory where this partition is attached
+                //
                 p.setAttribute("dir", m[idx].get_dir().c_str());
 
                 // we do not expect to get a server with blocks of 512 bytes
-                // otherwise the following lose a bit of precision...
+                // otherwise the following lose one bit of precision...
+                //
                 p.setAttribute("blocks", QString("%1").arg(s.f_blocks * s.f_frsize / 1024));
                 p.setAttribute("available", QString("%1").arg(s.f_bavail * s.f_frsize / 1024));
+
+                // is that partition full at 90% or more?
+                //
+                double const usage(static_cast<double>(s.f_bavail) / static_cast<double>(s.f_blocks));
+                if(usage >= 0.9)
+                {
+                    p.setAttribute("error", "partition is uses over 90%");
+
+                    // get the name of the host for the error message
+                    //
+                    char hostname[HOST_NAME_MAX + 1];
+                    if(gethostname(hostname, sizeof(hostname)) != 0)
+                    {
+                        strncpy(hostname, "<not available>", sizeof(hostname));
+                    }
+
+                    // priority increases as the disk gets filled up more
+                    //
+                    int const priority(usage >= 99.9
+                                            ? 100
+                                            : (usage >= 95
+                                                ? 80
+                                                : 55));
+                    f_snap->append_error(doc
+                                       , "disk"
+                                       , QString("partition \"%1\" on \"%2\" is close to full (%3%)")
+                                                .arg(m[idx].get_dir().c_str())
+                                                .arg(hostname)
+                                                .arg(usage * 100.0)
+                                       , priority);
+                }
             }
         }
     }

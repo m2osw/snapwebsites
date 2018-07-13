@@ -28,6 +28,10 @@ BACKUP_LOG=/var/log/snapwebsites/snapbackup.log
 #
 echo "`date +%Y/%m/%d\ %H:%M:%S` $HOSTNAME $0[$$]: info: starting backup." >> ${BACKUP_LOG}
 
+# make sure the backup logs are owned by snapwebsites
+#
+chown snapwebsites:snapwebsites ${BACKUP_LOG}
+
 # make sure the output folder exists
 #
 # TODO: should change the ownership? Right now this will all be root which

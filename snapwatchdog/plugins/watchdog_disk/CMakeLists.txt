@@ -1,9 +1,9 @@
 #
 # File:
-#      snapwatchdog/plugins/cassandra/CMakeLists.txt
+#      snapwatchdog/plugins/disk/CMakeLists.txt
 #
 # Description:
-#      Cassandra watchdog.
+#      Disk watchdog: report disk usage over time.
 #
 # Documentation:
 #      See the CMake documentation.
@@ -29,9 +29,10 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_cassandra)
+project(watchdog_disk)
 
 find_package( Qt5Core REQUIRED )
+find_package( Qt5Xml  REQUIRED )
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -39,14 +40,25 @@ include_directories(
 )
 
 
-add_library(cassandra SHARED
-    cassandra.cpp
+qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
+    disk.qrc
 )
 
 
+add_library(${PROJECT_NAME} SHARED
+    disk.cpp
+    ${SNAP_MANAGER_MOC_CXX}
+    ${SNAP_MANAGER_RESOURCES_RCC}
+)
+
+target_link_libraries(${PROJECT_NAME}
+    Qt5::Core
+    Qt5::Xml
+)
+
 install(
     TARGETS
-        cassandra
+        ${PROJECT_NAME}
     LIBRARY DESTINATION
         ${PLUGIN_INSTALL_DIR}
 )
@@ -55,7 +67,7 @@ install(
     FILES
         ${HEADER_FILES}
     DESTINATION
-        include/snapwatchdog/plugins/cassandra
+        include/snapwatchdog/plugins/disk
 )
 
 # vim: ts=4 sw=4 et

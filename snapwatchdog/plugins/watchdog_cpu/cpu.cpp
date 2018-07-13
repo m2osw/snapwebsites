@@ -19,21 +19,21 @@
 //
 #include "cpu.h"
 
-// our lib
-//
-#include "snapwatchdog.h"
-
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 
+// Qt lib
+//
+#include <QFile>
+
 // C lib
 //
 #include <proc/sysinfo.h>
 
-// last entry
+// last include
 //
 #include <snapwebsites/poison.h>
 
@@ -73,7 +73,7 @@ char const * get_name(name_t name)
  * This function is used to initialize the cpu plugin object.
  */
 cpu::cpu()
-    //: f_snap(NULL) -- auto-init
+    //: f_snap(nullptr) -- auto-init
 {
 }
 
@@ -157,7 +157,7 @@ int64_t cpu::do_update(int64_t last_updated)
  */
 void cpu::bootstrap(snap_child * snap)
 {
-    f_snap = snap;
+    f_snap = static_cast<watchdog_child *>(snap);
 
     SNAP_LISTEN(cpu, "server", watchdog_server, process_watch, _1);
 }
@@ -198,6 +198,90 @@ void cpu::on_process_watch(QDomDocument doc)
         e.setAttribute("avg1", QString("%1").arg(avg1));
         e.setAttribute("avg5", QString("%1").arg(avg5));
         e.setAttribute("avg15", QString("%1").arg(avg15));
+
+        // we always need the path to this cache file, if the CPU is
+        // okay (not overloaded) then we want to delete the file
+        // which in effect resets the timer
+        //
+        QString cache_path(f_snap->get_server_parameter(snap::watchdog::get_name(snap::watchdog::name_t::SNAP_NAME_WATCHDOG_CACHE_PATH)));
+        if(cache_path.isEmpty())
+        {
+            cache_path = "/var/lib/snapwebsites/snapwatchdog";
+        }
+        QString high_cpu_usage_filename(cache_path + "/high_cpu_usage.txt");
+
+        double max_avg1(smp_num_cpus);
+        if(max_avg1 > 1.0) // with 1 CPU, go up to 100%
+        {
+            if(max_avg1 <= 2.0)
+            {
+                max_avg1 *= 0.95; // with 2 CPUs, go up to 95%
+            }
+            else
+            {
+                max_avg1 *= 0.8; // with 3+, go up to 80%
+            }
+        }
+        if(static_cast<double>(avg1) >= max_avg1)
+        {
+            // using too much of the CPUs is considered a warning, however,
+            // if it lasts for too long (15 min.) it becomes an error
+            //
+            bool add_warning(true);
+
+            int64_t const start_date(f_snap->get_start_date());
+
+            // to track the CPU over time, we create a file
+            //
+            // we use the cache location since the file should not stay
+            // around for very long (a few minutes) or there is a problem
+            // on the computer
+            //
+            QFile file(high_cpu_usage_filename);
+            if(file.exists())
+            {
+                if(file.open(QIODevice::ReadOnly))
+                {
+                    QByteArray const value(file.readAll());
+                    QString const high_cpu_start_date_str(value);
+                    bool ok(false);
+                    int64_t const high_cpu_start_date(high_cpu_start_date_str.toLongLong(&ok, 10));
+                    if(ok)
+                    {
+                        // high CPU started more than 15 min. ago?
+                        //
+                        if(start_date - high_cpu_start_date > 15LL * 60LL * 1000000LL)
+                        {
+                            // processors are overloaded on this machine
+                            //
+                            e.setAttribute("error", "High CPU usage");
+                            f_snap->append_error(doc, "cpu", "High CPU usage.", 100);
+                            add_warning = false;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if(file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+                {
+                    QString const data_str(QString("%1").arg(start_date));
+                    QByteArray const data(data_str.toUtf8());
+                    file.write(data.data(), data.size());
+                }
+            }
+
+            if(add_warning)
+            {
+                e.setAttribute("cpu_warning", "high CPU usage");
+            }
+        }
+        else
+        {
+            // CPU usage is not that high right now, eliminate the file
+            //
+            unlink(high_cpu_usage_filename.toUtf8().data());
+        }
     }
 
     // some additional statistics

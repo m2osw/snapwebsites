@@ -21,7 +21,7 @@
 
 // our lib
 //
-#include "snapwatchdog.h"
+#include "snapwatchdog/snapwatchdog.h"
 
 // snapwebsites lib
 //
@@ -34,7 +34,7 @@
 //
 #include <QRegExp>
 
-// last entry
+// last include
 //
 #include <snapwebsites/poison.h>
 
@@ -218,7 +218,7 @@ void processes::on_process_watch(QDomDocument doc)
     while(!re_names.isEmpty())
     {
         process_list::proc_info::pointer_t info(list.next());
-        if(!info)
+        if(info == nullptr)
         {
             // some process(es) missing?
             int const max_re(re_names.count());

@@ -1,15 +1,15 @@
 #
 # File:
-#      snapwatchdog/plugins/cpu/CMakeLists.txt
+#      snapwatchdog/plugins/watchscripts/CMakeLists.txt
 #
 # Description:
-#      CPU watchdog: record CPU usage over time.
+#      Watch scripts for snawatchdog.
 #
 # Documentation:
 #      See the CMake documentation.
 #
 # License:
-#      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
+#      Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
 #
 #      https://snapwebsites.org/
 #      contact@m2osw.com
@@ -18,58 +18,56 @@
 #      it under the terms of the GNU General Public License as published by
 #      the Free Software Foundation; either version 2 of the License, or
 #      (at your option) any later version.
-#     
+#
 #      This program is distributed in the hope that it will be useful,
 #      but WITHOUT ANY WARRANTY; without even the implied warranty of
 #      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #      GNU General Public License for more details.
-#     
+#
 #      You should have received a copy of the GNU General Public License
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_cpu)
+project(watchdog_watchscripts)
 
-find_package( ProcPS )
 find_package( Qt5Core REQUIRED )
 find_package( Qt5Xml  REQUIRED )
-
-include_directories(
-    SYSTEM
-        ${PROCPS_INCLUDES}
-)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${snapwatchdog_SOURCE_DIR}
 )
 
+
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    cpu.qrc
+    watchscripts.qrc
 )
 
 
-
-add_library(cpu SHARED
-    cpu.cpp
+add_library(${PROJECT_NAME} SHARED
+    watchscripts.cpp
     ${SNAP_MANAGER_MOC_CXX}
     ${SNAP_MANAGER_RESOURCES_RCC}
 )
 
-target_link_libraries(cpu
+target_link_libraries(${PROJECT_NAME}
     Qt5::Core
     Qt5::Xml
-    ${PROCPS_LIBRARIES}
 )
 
 install(
-    TARGETS cpu LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        ${PROJECT_NAME}
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(
-    FILES ${HEADER_FILES}
-    DESTINATION include/snapwatchdog/plugins/cpu
+    FILES
+        ${HEADER_FILES}
+    DESTINATION
+        include/snapwatchdog/plugins/watchscripts
 )
 
 # vim: ts=4 sw=4 et

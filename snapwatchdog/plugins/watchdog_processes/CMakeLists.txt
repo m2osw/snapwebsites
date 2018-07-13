@@ -1,15 +1,15 @@
 #
 # File:
-#      snapwatchdog/plugins/watchscripts/CMakeLists.txt
+#      snapwatchdog/plugins/processes/CMakeLists.txt
 #
 # Description:
-#      Watch scripts for snawatchdog.
+#      Processes watchdog.
 #
 # Documentation:
 #      See the CMake documentation.
 #
 # License:
-#      Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
+#      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
 #      https://snapwebsites.org/
 #      contact@m2osw.com
@@ -29,7 +29,7 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_watchscripts)
+project(watchdog_processes)
 
 find_package( Qt5Core REQUIRED )
 find_package( Qt5Xml  REQUIRED )
@@ -41,29 +41,31 @@ include_directories(
 
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    watchscripts.qrc
+    processes.qrc
 )
 
 
-add_library(watchscripts SHARED
-    watchscripts.cpp
+add_library(${PROJECT_NAME} SHARED
+    processes.cpp
     ${SNAP_MANAGER_MOC_CXX}
     ${SNAP_MANAGER_RESOURCES_RCC}
 )
 
-target_link_libraries( watchscripts
+target_link_libraries( ${PROJECT_NAME}
     Qt5::Core
     Qt5::Xml
 )
 
 install(
-    TARGETS watchscripts
-    LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        ${PROJECT_NAME}
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(
     FILES ${HEADER_FILES}
-    DESTINATION include/snapwatchdog/plugins/watchscripts
+    DESTINATION include/snapwatchdog/plugins/processes
 )
 
 # vim: ts=4 sw=4 et
