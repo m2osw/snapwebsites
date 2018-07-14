@@ -22,8 +22,9 @@
 
 // snapwebsites lib
 //
-#include "qcaseinsensitivestring.h"
-#include "snap_exception.h"
+#include "snapwebsites/qcaseinsensitivestring.h"
+#include "snapwebsites/snap_exception.h"
+#include "snapwebsites/quoted_printable.h"
 
 // qt serialization lib
 //
@@ -118,6 +119,11 @@ public:
         // data ("matter" of this attachment)
         //
         void                    set_data(QByteArray const & data, QString mime_type = QString());
+        void                    quoted_printable_encode_and_set_data(
+                                            QByteArray const & data
+                                          , QString mime_type = QString()
+                                          , int flags = quoted_printable::QUOTED_PRINTABLE_FLAG_LFONLY
+                                                      | quoted_printable::QUOTED_PRINTABLE_FLAG_NO_LONE_PERIOD);
         QByteArray              get_data() const;
 
         // header for this header

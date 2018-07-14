@@ -51,8 +51,8 @@ char const * get_name(name_t name)
 {
     switch(name)
     {
-    case name_t::SNAP_NAME_WATCHDOG_DISK_NAME:
-        return "admin/drafts";
+    case name_t::SNAP_NAME_WATCHDOG_DISK_IGNORE:
+        return "disk_ignore";
 
     default:
         // invalid index
@@ -66,6 +66,14 @@ char const * get_name(name_t name)
 
 namespace
 {
+
+
+std::vector<QString> const g_ignore_filled_partitions =
+{
+    "^/snap/core/"
+};
+
+
 
 /** \brief The alarm handler we use to create a statvfs_try() function.
  *
@@ -326,43 +334,80 @@ void disk::on_process_watch(QDomDocument doc)
 
                 // directory where this partition is attached
                 //
-                p.setAttribute("dir", m[idx].get_dir().c_str());
+                QString const dir(QString::fromUtf8(m[idx].get_dir().c_str()));
+                p.setAttribute("dir", dir);
 
                 // we do not expect to get a server with blocks of 512 bytes
                 // otherwise the following lose one bit of precision...
                 //
                 p.setAttribute("blocks", QString("%1").arg(s.f_blocks * s.f_frsize / 1024));
+                p.setAttribute("bfree", QString("%1").arg(s.f_bfree * s.f_frsize / 1024));
                 p.setAttribute("available", QString("%1").arg(s.f_bavail * s.f_frsize / 1024));
+                p.setAttribute("ffree", QString("%1").arg(s.f_ffree));
+                p.setAttribute("favailable", QString("%1").arg(s.f_favail));
+                p.setAttribute("flags", QString("%1").arg(s.f_flag));
 
                 // is that partition full at 90% or more?
                 //
-                double const usage(static_cast<double>(s.f_bavail) / static_cast<double>(s.f_blocks));
+                double const usage(1.0 - static_cast<double>(s.f_bavail) / static_cast<double>(s.f_blocks));
                 if(usage >= 0.9)
                 {
+                    // we mark the partition as quite full even if the user
+                    // marks it as "ignore that one"
+                    //
                     p.setAttribute("error", "partition is uses over 90%");
 
-                    // get the name of the host for the error message
-                    //
-                    char hostname[HOST_NAME_MAX + 1];
-                    if(gethostname(hostname, sizeof(hostname)) != 0)
+                    // if we find it in the list of partitions to be
+                    // ignored then we 
+                    auto it1(std::find_if(
+                              g_ignore_filled_partitions.begin()
+                            , g_ignore_filled_partitions.end()
+                            , [dir](auto pattern)
+                            {
+                                QRegExp const pat(pattern);
+                                return pat.indexIn(dir) != -1;
+                            }));
+                    if(it1 == g_ignore_filled_partitions.end())
                     {
-                        strncpy(hostname, "<not available>", sizeof(hostname));
-                    }
+                        // the user can also define a list of QRegExp which
+                        // we test now to ignore further partitions
+                        //
+                        QString const disk_ignore(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_DISK_IGNORE)));
+                        QStringList const disk_ignore_patterns(disk_ignore.split(':'));
+                        auto it2(std::find_if(
+                                  disk_ignore_patterns.begin()
+                                , disk_ignore_patterns.end()
+                                , [dir](auto pattern)
+                                {
+                                    QRegExp const pat(pattern);
+                                    return pat.indexIn(dir) != -1;
+                                }));
+                        if(it2 == disk_ignore_patterns.end())
+                        {
+                            // get the name of the host for the error message
+                            //
+                            char hostname[HOST_NAME_MAX + 1];
+                            if(gethostname(hostname, sizeof(hostname)) != 0)
+                            {
+                                strncpy(hostname, "<unknown>", sizeof(hostname));
+                            }
 
-                    // priority increases as the disk gets filled up more
-                    //
-                    int const priority(usage >= 99.9
-                                            ? 100
-                                            : (usage >= 95
-                                                ? 80
-                                                : 55));
-                    f_snap->append_error(doc
-                                       , "disk"
-                                       , QString("partition \"%1\" on \"%2\" is close to full (%3%)")
-                                                .arg(m[idx].get_dir().c_str())
-                                                .arg(hostname)
-                                                .arg(usage * 100.0)
-                                       , priority);
+                            // priority increases as the disk gets filled up more
+                            //
+                            int const priority(usage >= 99.9
+                                                    ? 100
+                                                    : (usage >= 95
+                                                        ? 80
+                                                        : 55));
+                            f_snap->append_error(doc
+                                               , "disk"
+                                               , QString("partition \"%1\" on \"%2\" is close to full (%3%)")
+                                                        .arg(m[idx].get_dir().c_str())
+                                                        .arg(hostname)
+                                                        .arg(usage * 100.0)
+                                               , priority);
+                        }
+                    }
                 }
             }
         }

@@ -206,7 +206,7 @@ void cpu::on_process_watch(QDomDocument doc)
         QString cache_path(f_snap->get_server_parameter(snap::watchdog::get_name(snap::watchdog::name_t::SNAP_NAME_WATCHDOG_CACHE_PATH)));
         if(cache_path.isEmpty())
         {
-            cache_path = "/var/lib/snapwebsites/snapwatchdog";
+            cache_path = "/var/cache/snapwebsites/snapwatchdog";
         }
         QString high_cpu_usage_filename(cache_path + "/high_cpu_usage.txt");
 

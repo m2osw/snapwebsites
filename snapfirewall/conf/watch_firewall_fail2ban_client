@@ -63,7 +63,7 @@ then
         touch -f ${FAIL2BAN_CLIENT_RUNNING}
     fi
 else
-    # process if gone, make sure the file is gone too
+    # process is gone, make sure the file is gone too
     #
     rm -f ${FAIL2BAN_CLIENT_RUNNING}
 fi

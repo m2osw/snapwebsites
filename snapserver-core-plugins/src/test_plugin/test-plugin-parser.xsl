@@ -35,7 +35,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<a class="run name" href="{@name}" title="Click to run this specific test."><xsl:value-of select="@name"/></a>
 			<span class="status">
 				<xsl:if test="@ran = 'ran'">
-					| Last run on <span title="It run until {@end_date}"><xsl:value-of select="@start_date"/></span>
+					| Last run on <span title="It ran until {@end_date}"><xsl:value-of select="@start_date"/></span>
 					for <xsl:value-of select="@duration"/> seconds
 					and
 					<xsl:if test="@success = 1">succeeded.</xsl:if>

@@ -208,6 +208,46 @@ void email::attachment::set_data(QByteArray const & data, QString mime_type)
 }
 
 
+/** \brief Set the email attachment using quoted printable encoding.
+ *
+ * In most cases, when you attach something else than just text, you want
+ * to encode the data. Even text, if you do not control the length of each
+ * line properly, it is likely to get cut at some random length and could
+ * end up looking wrong.
+ *
+ * This function encodes the data using the quoted_printable::encode()
+ * function and marks the data encoded in such a way.
+ *
+ * By default, all you have to do is pass a QByteArray and the rest works
+ * on its own, although it is usually a good idea to specify the MIME type
+ * if you knowit.
+ *
+ * The flags parameter can be used to tweak the encoding functionality.
+ * The default works with most data, although it does not include the
+ * binary flag. See the quoted_printable::encode() function for additional
+ * information about these flags.
+ *
+ * \param[in] data  The data of this a attachment.
+ * \param[in] mime_type  The MIME type of the data, if left empty, it will
+ *            be determined on the fly.
+ * \param[in] flags  A set of quoted_printable::encode() flags.
+ */
+void email::attachment::quoted_printable_encode_and_set_data(
+                            QByteArray const & data
+                          , QString mime_type
+                          , int flags)
+{
+    std::string const encoded_data(quoted_printable::encode(data.data(), flags));
+
+    QByteArray encoded_data_bytes(encoded_data.c_str(), static_cast<int>(encoded_data.length()));
+
+    set_data(encoded_data_bytes, mime_type);
+
+    add_header(get_name(name_t::SNAP_NAME_CORE_EMAIL_CONTENT_TRANSFER_ENCODING),
+               get_name(name_t::SNAP_NAME_CORE_EMAIL_CONTENT_ENCODING_QUOTED_PRINTABLE));
+}
+
+
 /** \brief The email attachment data.
  *
  * This function retrieves the attachment data from this email attachment

@@ -57,8 +57,14 @@ include_directories(
         ${QT_INCLUDES}
 )
 
+qt5_add_resources(SNAPWATCHDOG_RESOURCES_RCC
+    snapwatchdog.qrc
+)
+
 add_library( ${PROJECT_NAME} SHARED
     snapwatchdog.cpp                            # Implements the core of the watchdog server
+    ${SNAPWATCHDOG_MOC_CXX}
+    ${SNAPWATCHDOG_RESOURCES_RCC}
 )
 
 target_link_libraries( ${PROJECT_NAME}

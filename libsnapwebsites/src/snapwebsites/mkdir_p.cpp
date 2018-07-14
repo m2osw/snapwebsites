@@ -130,5 +130,17 @@ int mkdir_p(QString const & path, bool include_filename)
 }
 
 
+int mkdir_p(std::string const & path, bool include_filename)
+{
+    return mkdir_p(QString::fromUtf8(path.c_str()), include_filename);
+}
+
+
+int mkdir_p(char const * path, bool include_filename)
+{
+    return mkdir_p(QString::fromUtf8(path), include_filename);
+}
+
+
 } // snap namespace
 // vim: ts=4 sw=4 et

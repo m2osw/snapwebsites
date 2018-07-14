@@ -18,12 +18,18 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "layout.h"
 
+// other plugins
+//
 #include "../filter/filter.h"
 #include "../taxonomy/taxonomy.h"
 #include "../path/path.h"
 
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 #include <snapwebsites/qdomreceiver.h>
 #include <snapwebsites/qhtmlserializer.h>
@@ -37,12 +43,20 @@
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/xslt.h>
 
+// C++ lib
+//
 #include <iostream>
 #include <fstream>
 
+// Qt lib
+//
 #include <QFile>
 
+
+// last include
+//
 #include <snapwebsites/poison.h>
+
 
 
 SNAP_PLUGIN_START(layout, 1, 0)

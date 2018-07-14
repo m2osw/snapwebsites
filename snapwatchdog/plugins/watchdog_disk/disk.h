@@ -38,7 +38,7 @@ namespace disk
 
 enum class name_t
 {
-    SNAP_NAME_WATCHDOG_DISK_NAME
+    SNAP_NAME_WATCHDOG_DISK_IGNORE
 };
 char const * get_name(name_t name) __attribute__ ((const));
 

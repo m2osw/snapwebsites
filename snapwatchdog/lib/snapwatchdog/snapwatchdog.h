@@ -84,6 +84,7 @@ public:
     static pointer_t    instance();
     void                watchdog();
 
+    time_t              get_server_start_date() const;
     virtual void        show_version();
     int64_t             get_statistics_period() const { return f_statistics_period; }
     int64_t             get_statistics_ttl() const { return f_statistics_ttl; }
@@ -101,6 +102,7 @@ private:
     void                init_parameters();
     void                run_watchdog_process();
 
+    time_t const                                    f_server_start_date;
     int64_t                                         f_statistics_frequency = 0;
     int64_t                                         f_statistics_period = 0;
     int64_t                                         f_statistics_ttl = 0;

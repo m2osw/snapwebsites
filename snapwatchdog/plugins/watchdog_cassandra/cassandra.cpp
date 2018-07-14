@@ -174,7 +174,7 @@ void cassandra::on_process_watch(QDomDocument doc)
 
     list.set_field(process_list::field_t::COMMAND_LINE);
     list.set_field(process_list::field_t::STATISTICS);
-    for(;;)
+    for(bool found(false); !found;)
     {
         process_list::proc_info::pointer_t info(list.next());
         if(info == nullptr)
@@ -216,6 +216,8 @@ void cassandra::on_process_watch(QDomDocument doc)
                     e.setAttribute("stime", QString("%1").arg(stime));
                     e.setAttribute("cutime", QString("%1").arg(cutime));
                     e.setAttribute("cstime", QString("%1").arg(cstime));
+
+                    found = true;
                     break;
                 }
             }

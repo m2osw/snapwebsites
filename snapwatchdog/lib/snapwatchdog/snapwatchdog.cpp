@@ -28,10 +28,17 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/email.h>
 #include <snapwebsites/log.h>
+#include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_cassandra.h>
+#include <snapwebsites/xslt.h>
+
+// Qt lib
+//
+#include <QFile>
 
 // C++ lib
 //
@@ -561,6 +568,7 @@ char const * get_name(name_t name)
  * snapwatchdog server configuration file.
  */
 watchdog_server::watchdog_server()
+    : f_server_start_date(time(nullptr))
 {
     server::set_config_filename("snapwatchdog");
 }
@@ -588,6 +596,19 @@ watchdog_server::pointer_t watchdog_server::instance()
         plugins::g_next_register_filename.clear();
     }
     return std::dynamic_pointer_cast<watchdog_server>(s);
+}
+
+
+/** \brief Get the time in seconds when the server started.
+ *
+ * This function is used to know at what time this watchdog instance
+ * was started. We avoid sending emails within the first 5 minutes.
+ *
+ * \return The time, in seconds, when the server started.
+ */
+time_t watchdog_server::get_server_start_date() const
+{
+    return f_server_start_date;
 }
 
 
@@ -1240,14 +1261,207 @@ bool watchdog_child::run_watchdog_plugins()
             watchdog_tag.setAttribute("end-date", static_cast<qlonglong>(current_date));
             result = doc.toString(-1);
 
+            // if there is an <error> tag, send an email about it
+            //
+            // give 5 min. to the server to get everything started, though,
+            // because otherwise we'd get a lot of false positive
+            //
+            time_t const server_start_date(server->get_server_start_date());
+            time_t const now(time(nullptr));
+            int64_t diff(now - server_start_date);
+            if(diff >= 5 * 60)
+            {
+                QDomElement error(snap_dom::get_child_element(doc, "watchdog/error"));
+                if(!error.isNull())
+                {
+                    // there is an <error> tag, report it, however, we do not
+                    // want to send more than one email every 15 min. unless
+                    // there is an error with a priority of 90 or more
+                    //
+                    size_t count(0);
+                    int max_priority(0);
+                    for(QDomNode n(error.firstChild()); !n.isNull(); n = n.nextSibling())
+                    {
+                        if(n.isElement())
+                        {
+                            QDomElement msg(n.toElement());
+
+                            QString const attr_str(msg.attribute("priority"));
+                            bool ok(false);
+                            int const p(attr_str.toInt(&ok, 10));
+                            if(ok
+                            && p > max_priority)
+                            {
+                                max_priority = p;
+                            }
+
+                            ++count;
+                        }
+                    }
+                    // if too low a priority then ignore the errors altogether
+                    //
+                    // TODO: make this "10" a parameter in the watchdog.conf
+                    //       file so the user can choose what to receive
+                    //
+                    if(max_priority >= 10)
+                    {
+                        // how often to send an email depends on the priority
+                        // if 90+, always send an email
+                        // if
+                        //
+                        int64_t span(86400);    // 1 day by default
+                        if(max_priority >= 90)
+                        {
+                            span = 15 * 60;     // 15 min.
+                        }
+                        else if(max_priority >= 50)
+                        {
+                            span = 60 * 60;     // 1 hour
+                        }
+
+                        // use a file in the cache area since we are likely
+                        // to regenerate it often or just ignore it for a
+                        // while (and if ignored for a while it could as
+                        // well be deleted)
+                        //
+                        QString cache_path(get_server_parameter(snap::watchdog::get_name(snap::watchdog::name_t::SNAP_NAME_WATCHDOG_CACHE_PATH)));
+                        if(cache_path.isEmpty())
+                        {
+                            cache_path = "/var/cache/snapwebsites/snapwatchdog";
+                        }
+                        // the path to "/var/cache/snapwebsites" will always
+                        // exists, however "/var/cache/snapwebsites/snapwatchdog"
+                        // may get deleted once in a while, we have to create it
+                        //
+                        mkdir_p(cache_path);
+                        QString const last_email_filename(cache_path + "/last_email_time.txt");
+
+                        bool send_email(true);
+                        bool file_opened(false);
+                        QFile file(last_email_filename);
+                        if(file.exists())
+                        {
+                            // when the file exists we want to read it
+                            // first and determine whether 'span' has
+                            // passed, if so, we write 'now' in the file
+                            // and send the email
+                            //
+                            if(file.open(QIODevice::ReadOnly))
+                            {
+                                file_opened = true;
+                                QByteArray const value(file.readAll());
+                                QString const last_mail_date_str(value);
+                                bool ok(false);
+                                int64_t const last_mail_date(last_mail_date_str.toLongLong(&ok, 10));
+                                if(ok)
+                                {
+                                    if(now - last_mail_date < span)
+                                    {
+                                        // span has not yet elapsed, keep
+                                        // the file as is and don't send
+                                        // the email
+                                        //
+                                        send_email = false;
+                                    }
+                                }
+                                file.close();
+                            }
+                        }
+
+                        if(send_email)
+                        {
+                            // first save the time when we are sending the email
+                            //
+                            if(file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+                            {
+                                QString const data_str(QString("%1").arg(now));
+                                QByteArray const data(data_str.toUtf8());
+                                file.write(data.data(), data.size());
+                                file.close();
+                            }
+
+                            QString from_email(get_server_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_FROM_EMAIL)));
+                            if(from_email.isEmpty())
+                            {
+                                from_email = "snapwebsites@snap.website";
+                            }
+                            QString administrator_email(get_server_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_ADMINISTRATOR_EMAIL)));
+                            if(administrator_email.isEmpty())
+                            {
+                                administrator_email = "root@snap.website";
+                            }
+
+                            // create the email and add a few headers
+                            //
+                            email e;
+                            e.set_from(from_email);
+                            e.set_to(administrator_email);
+                            e.set_priority(email::priority_t::EMAIL_PRIORITY_URGENT);
+
+                            char hostname[HOST_NAME_MAX + 1];
+                            if(gethostname(hostname, sizeof(hostname)) != 0)
+                            {
+                                strncpy(hostname, "<unknown>", sizeof(hostname));
+                            }
+                            QString subject(QString("snapwatchdog: found %1 error%2 on %3")
+                                            .arg(count)
+                                            .arg(count == 1 ? "" : "s")
+                                            .arg(hostname));
+                            e.set_subject(subject);
+
+                            e.add_header("X-SnapWatchdog-Version", SNAPWATCHDOG_VERSION_STRING);
+
+                            // generate a body in HTML
+                            //
+                            QByteArray data;
+                            {
+                                QString const error_to_email_filename(":/xsl/layout/error-to-email.xsl");
+                                QFile error_to_email_file(error_to_email_filename);
+                                if(error_to_email_file.open(QIODevice::ReadOnly))
+                                {
+                                    data = error_to_email_file.readAll();
+                                }
+                            }
+                            email::attachment html;
+                            QString const xsl(QString::fromUtf8(data.data(), data.size()));
+                            if(xsl.isEmpty())
+                            {
+                                SNAP_LOG_ERROR("could not read error-to-email.xsl from resources.");
+                                html.quoted_printable_encode_and_set_data("<html><body><p>Sorry! Could not find error-to-email.xsl in the resources. See Snap! Watchdog errors in attached XML.</p></body></html>", "text/html");
+                            }
+                            else
+                            {
+                                xslt x;
+                                x.set_xsl(xsl);
+                                x.set_document(doc);
+                                QDomDocument doc_email("html");
+                                x.evaluate_to_document(doc_email);
+                                html.quoted_printable_encode_and_set_data(doc_email.toString(-1).toUtf8(), "text/html");
+                            }
+                            e.set_body_attachment(html);
+
+                            // add the XML as an attachment
+                            //
+                            email::attachment a;
+                            a.quoted_printable_encode_and_set_data(result.toUtf8(), "application/xml");
+                            a.set_content_disposition("snapwatchdog.xml");
+                            a.add_header("X-Start-Date", QString("%1").arg(start_date));
+                            e.add_attachment(a);
+
+                            // finally send email
+                            //
+                            e.send();
+                        }
+                    }
+                }
+            }
+
             // save the result in a file first
             //
             QString data_path(server->get_parameter(watchdog::get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_DATA_PATH)));
-std::cerr << "----------------------------- process_watch() done -- save at: " << data_path << "\n";
             if(!data_path.isEmpty())
             {
                 data_path += QString("/data/%1.xml").arg(date);
-std::cerr << "----------------------------- process_watch() done -- in file: " << data_path << "\n";
 
                 std::ofstream out;
                 out.open(data_path.toUtf8().data(), std::ios_base::binary);
