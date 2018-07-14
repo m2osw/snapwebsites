@@ -3,11 +3,14 @@ snapwebsites (1.5.84.0~xenial) xenial; urgency=high
   * Made snapwatchdog capable of running its plugins and RUSAGE even without
     the Cassandra cluster (otherwise it would not be capable of cleanly
     reporting that Cassandra is down)
+  * Added code to report errors found by the snapwatchdog plugins by sending
+    an email to the site administrator_email user or email list.
   * Added a log rotate for the RUSAGE files since we use the PID for the name.
   * Added a cache folder for snapwatchdog CPU data.
   * Added support for a plugin introducer (i.e. the "watchdog_").
   * Made the firewall and cassandra plugins work in snapwatchdog.
   * Renamed all the snapwatchdog plugins so they start with "watchdog_".
+  * Fixed the cassandra loop so it breaks as expected when we find the instance.
   * Moved the lib one directory down so the #include work as expected.
   * Started work on adding errors (included in cassandra, firewall, disk,
     and cpu so far.)
@@ -16,6 +19,13 @@ snapwebsites (1.5.84.0~xenial) xenial; urgency=high
   * In the confirmation of the drop command, it's not usable in a batch but
     now it won't just sit there.
   * Added a couple of exception and use those instead of std::...() ones.
+  * Added the quoted_printable_encode_and_set_data() function to the email
+    class so we don't have to duplicate that code over and over.
+  * Added a mkdir_p() that take an std::string or char const *.
+  * Added a mew configuration variable named `disk_ignore` to allow for regex
+    to ignore partitions that are filled up.
+  * Added resources to the snapwatchdog library to support an error to email
+    XSTL 2.0 script.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 12 Jul 2018 05:05:04 -0700
