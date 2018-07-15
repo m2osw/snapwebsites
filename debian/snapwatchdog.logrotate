@@ -42,6 +42,18 @@
     notifempty
     create 640 snapwebsites snapwebsites
 }
+/var/log/snapwebsites/snapwatchdog-output/snapwatchdog-scripts-errors.log {
+    daily
+    maxage 7
+    maxsize 1M
+    su snapwebsites snapwebsites
+    missingok
+    rotate 10
+    compress
+    delaycompress
+    notifempty
+    create 640 snapwebsites snapwebsites
+}
 
 # We save rusage using the PID of the process, this means we could end up
 # with a whooping 32,000 files in this folder, if the file is more than

@@ -77,6 +77,7 @@ set( HEADERS
     log.h
     mail_exchanger.h
     matrix.h
+    meminfo.h
     minmax.h
     mkdir_p.h
     mkgmtime.h
@@ -148,6 +149,7 @@ add_library( ${PROJECT_NAME} SHARED
     loadavg.cpp                                 # handle the loadavg file
     log.cpp                                     # log4cplus support
     mail_exchanger.cpp                          # retrieve the MX record for a given domain
+    meminfo.cpp                                 # read /proc/meminfo
     mkdir_p.cpp                                 # make directories so path is valid
     mkgmtime.c                                  # mktime() with a UTC time
     mounts.cpp                                  # read /proc/mounts or some other mount point file

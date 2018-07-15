@@ -52,9 +52,9 @@ then
         then
             # problem, it has been running for 3 minutes or more
             #
-            echo "warning: we detected the fail2ban-client has been running for 3 or more"
-            echo "minutes in a row. Please check this system as it is likely that the"
-            echo "utility is jammed and needs to be killed."
+            echo "warning: we detected the fail2ban-client has been running for 3 or more" >&2
+            echo "minutes in a row. Please check this system as it is likely that the" >&2
+            echo "utility is jammed and needs to be killed." >&2
             exit 2
         fi
     else

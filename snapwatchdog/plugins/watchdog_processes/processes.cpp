@@ -19,10 +19,6 @@
 //
 #include "processes.h"
 
-// our lib
-//
-#include "snapwatchdog/snapwatchdog.h"
-
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
@@ -159,7 +155,7 @@ int64_t processes::do_update(int64_t last_updated)
  */
 void processes::bootstrap(snap_child * snap)
 {
-    f_snap = snap;
+    f_snap = static_cast<watchdog_child *>(snap);
 
     SNAP_LISTEN(processes, "server", watchdog_server, process_watch, _1);
 }
@@ -175,37 +171,70 @@ void processes::on_process_watch(QDomDocument doc)
 {
     SNAP_LOG_TRACE("processes::on_process_watch(): processing");
 
-    QString process_names(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_PROCESSES)));
+    QString const process_names(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_PROCESSES)));
     if(process_names.isEmpty())
     {
+        // user turned of that feature for now
+        //
+        SNAP_LOG_DEBUG("no process verification, you may want to turn off the 'processes' plugin instead of making the list empty.");
         return;
     }
 
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "processes"));
 
-    QStringList name_list(process_names.split(','));
     struct process_name_t
     {
+        /** \brief Matching depends on whether we have an 're' or not.
+         *
+         * If we have a regular expression, then we match it against
+         * the command line.
+         *
+         * On the other hand, without a regular expression, the process
+         * name must match one to one.
+         */
+        bool match(QString const & name, QString const & cmdline)
+        {
+            if(f_re == nullptr)
+            {
+                return f_name == name;
+            }
+            else
+            {
+                return f_re->indexIn(cmdline) != -1;
+            }
+        }
+
         QString                     f_name;
         QSharedPointer<QRegExp>     f_re;
+        bool                        f_mandatory = false;
     };
+    QStringList name_list(process_names.split(','));
     QVector<process_name_t> re_names;
     {
         int const max_names(name_list.count());
         for(int idx(0); idx < max_names; ++idx)
         {
             process_name_t n;
-            int pos(name_list[idx].indexOf(':'));
+            QString cmd(name_list[idx]);
+            n.f_mandatory = !cmd.isEmpty() && cmd[0] == '!';
+            if(n.f_mandatory)
+            {
+                cmd = cmd.mid(1);
+            }
+            int const pos(cmd.indexOf(':'));
             if(pos > 0)
             {
-                n.f_name = name_list[idx].mid(0, pos);
-                n.f_re = QSharedPointer<QRegExp>(new QRegExp(name_list[idx].mid(pos + 1)));
+                n.f_name = cmd.mid(0, pos);
+                n.f_re = QSharedPointer<QRegExp>(new QRegExp(cmd.mid(pos + 1)));
             }
             else
             {
-                n.f_name = name_list[idx];
-                n.f_re = QSharedPointer<QRegExp>(new QRegExp(name_list[idx]));
+                n.f_name = cmd;
+            }
+            if(n.f_name.isEmpty())
+            {
+                throw processes_exception_invalid_process_name("the name of a process can't be the empty string");
             }
             re_names.push_back(n);
         }
@@ -229,18 +258,44 @@ void processes::on_process_watch(QDomDocument doc)
 
                 proc.setAttribute("name", re_names[j].f_name);
                 proc.setAttribute("error", "missing");
+
+                // TBD: what should the priority be on this one?
+                //      it's likely super important so more than 50
+                //      but probably not that important that it should be
+                //      close to 100?
+                //
+                if(re_names[j].f_mandatory)
+                {
+                    f_snap->append_error(doc
+                                       , "processes"
+                                       , QString("can't find mandatory process \"%1\" in the list of processes.")
+                                                .arg(re_names[j].f_name)
+                                       , 95);
+                }
+                else
+                {
+                    f_snap->append_error(doc
+                                       , "processes"
+                                       , QString("can't find expected process \"%1\" in the list of processes.")
+                                                .arg(re_names[j].f_name)
+                                       , 60);
+                }
             }
             break;
         }
         std::string name(info->get_process_name());
+
+        // keep the full path in the cmdline parameter
+        //
+        QString cmdline(QString::fromUtf8(name.c_str()));
+
         std::string::size_type p(name.find_last_of('/'));
         if(p != std::string::npos)
         {
             name = name.substr(p + 1);
         }
-        QString utf8_name(QString::fromUtf8(name.c_str()));
+        QString const utf8_name(QString::fromUtf8(name.c_str()));
 
-        QString cmdline(utf8_name);
         int const count_max(info->get_args_size());
         for(int c(0); c < count_max; ++c)
         {
@@ -248,6 +303,11 @@ void processes::on_process_watch(QDomDocument doc)
             if(info->get_arg(c) != "")
             {
                 cmdline += " ";
+
+                // IMPORTANT NOTE: we should escape special characters
+                //                 only it would make the command line
+                //                 regular expression more complicated
+                //
                 cmdline += QString::fromUtf8(info->get_arg(c).c_str());
             }
         }
@@ -255,7 +315,7 @@ void processes::on_process_watch(QDomDocument doc)
 //std::cerr << "check process [" << name << "] -> [" << cmdline << "]\n";
         for(int j(0); j < max_re; ++j)
         {
-            if(re_names[j].f_re->indexIn(cmdline) != -1)
+            if(re_names[j].match(utf8_name, cmdline))
             {
                 QDomElement proc(doc.createElement("process"));
                 e.appendChild(proc);

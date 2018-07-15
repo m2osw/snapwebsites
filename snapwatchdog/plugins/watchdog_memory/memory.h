@@ -16,10 +16,20 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// our lib
+//
+#include "snapwatchdog.h"
+
+// snapwebsites lib
+//
 #include <snapwebsites/plugins.h>
 #include <snapwebsites/snap_child.h>
 
+// Qt lib
+//
 #include <QDomDocument>
+
+
 
 namespace snap
 {
@@ -73,7 +83,7 @@ public:
     void                on_process_watch(QDomDocument doc);
 
 private:
-    snap_child *        f_snap = nullptr;
+    watchdog_child *    f_snap = nullptr;
 };
 
 } // namespace memory

@@ -45,4 +45,16 @@ install(
 )
 
 
+###############################################################################
+## Scripts to check on the old CRON script, user should remove it
+##
+install(
+    FILES
+        watch_snapbackup_old_cron_script
+
+    DESTINATION
+        share/snapwebsites/snapwatchdog/scripts
+)
+
+
 # vim: ts=4 sw=4 et

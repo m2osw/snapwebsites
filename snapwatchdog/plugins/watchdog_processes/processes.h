@@ -16,6 +16,10 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// our lib
+//
+#include "snapwatchdog/snapwatchdog.h"
+
 // snapwebsites lib
 //
 #include <snapwebsites/plugins.h>
@@ -40,21 +44,29 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 
-//class apache_exception : public snap_exception
-//{
-//public:
-//    apache_exception(char const *        what_msg) : snap_exception("apache", what_msg) {}
-//    apache_exception(std::string const & what_msg) : snap_exception("apache", what_msg) {}
-//    apache_exception(QString const &     what_msg) : snap_exception("apache", what_msg) {}
-//};
-//
-//class apache_exception_invalid_argument : public apache_exception
-//{
-//public:
-//    apache_exception_invalid_argument(char const *        what_msg) : apache_exception(what_msg) {}
-//    apache_exception_invalid_argument(std::string const & what_msg) : apache_exception(what_msg) {}
-//    apache_exception_invalid_argument(QString const &     what_msg) : apache_exception(what_msg) {}
-//};
+class processes_exception : public snap_exception
+{
+public:
+    processes_exception(char const *        what_msg) : snap_exception("processes", what_msg) {}
+    processes_exception(std::string const & what_msg) : snap_exception("processes", what_msg) {}
+    processes_exception(QString const &     what_msg) : snap_exception("processes", what_msg) {}
+};
+
+class processes_exception_invalid_argument : public processes_exception
+{
+public:
+    processes_exception_invalid_argument(char const *        what_msg) : processes_exception(what_msg) {}
+    processes_exception_invalid_argument(std::string const & what_msg) : processes_exception(what_msg) {}
+    processes_exception_invalid_argument(QString const &     what_msg) : processes_exception(what_msg) {}
+};
+
+class processes_exception_invalid_process_name : public processes_exception
+{
+public:
+    processes_exception_invalid_process_name(char const *        what_msg) : processes_exception(what_msg) {}
+    processes_exception_invalid_process_name(std::string const & what_msg) : processes_exception(what_msg) {}
+    processes_exception_invalid_process_name(QString const &     what_msg) : processes_exception(what_msg) {}
+};
 
 
 
@@ -78,7 +90,7 @@ public:
     void                on_process_watch(QDomDocument doc);
 
 private:
-    snap_child *        f_snap = nullptr;
+    watchdog_child *    f_snap = nullptr;
 };
 
 } // namespace processes

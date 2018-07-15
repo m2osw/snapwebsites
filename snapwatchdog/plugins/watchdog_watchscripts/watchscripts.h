@@ -19,6 +19,10 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// self
+//
+#include "snapwatchdog/snapwatchdog.h"
+
 // snapwebsites lib
 //
 #include <snapwebsites/plugins.h>
@@ -99,7 +103,10 @@ private:
     virtual bool            output_available(process * p, QByteArray const & output) override;
     virtual bool            error_available(process * p, QByteArray const & error) override;
 
-    snap_child *            f_snap = nullptr;
+    QString                 generate_header(QString const & type);
+
+    watchdog_child *        f_snap = nullptr;
+    QDomElement             f_watchdog;
     bool                    f_new_output_script = false;
     bool                    f_new_error_script = false;
     char                    f_last_output_byte = '\n';

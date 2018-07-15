@@ -37,28 +37,17 @@
 set -e
 
 ROGUE_CRON_FILE=/etc/cron.daily/snapbackend
-TEMP_EMAIL=/tmp/snapbackup.eml
-RECIPIENT=contact@m2osw.com
-SENDER=root@m2osw.com
 
 # if the file exists, send an email
 #
 if test -f ${ROGUE_CRON_FILE}
 then
-else
-    cat >${TEMP_EMAIL} <<EOF
-From: ${SENDER}
-To: ${RECIPIENT}
-Subject: File ${ROGUE_CRON_FILE} still exists!
-Date: `date --rfc-2822`
-
-The ${ROGUE_CRON_FILE} file still exists on this system.
-Please check your installation and remove that file if it is indeed a
-copy of the 'snapbackup' script.
-
-The Snap! Websites Team
-EOF
-    sendmail -f ${SENDER} ${RECIPIENT} <${TEMP_EMAIL}
+    echo "The ${ROGUE_CRON_FILE} file still exists on this system." >&2
+    echo "Please check your installation and remove that file if it is indeed a" >&2
+    echo "copy of the 'snapbackup' script." >&2
+    echo >&2
+    echo "The Snap! Websites Team" >&2
+    exit 1
 fi
 
 exit 0

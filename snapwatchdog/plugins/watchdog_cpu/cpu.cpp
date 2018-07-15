@@ -273,7 +273,7 @@ void cpu::on_process_watch(QDomDocument doc)
 
             if(add_warning)
             {
-                e.setAttribute("cpu_warning", "high CPU usage");
+                e.setAttribute("cpu_warning", "High CPU usage");
             }
         }
         else

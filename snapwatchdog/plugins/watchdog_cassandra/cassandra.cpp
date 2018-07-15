@@ -180,8 +180,13 @@ void cassandra::on_process_watch(QDomDocument doc)
         if(info == nullptr)
         {
             // no cassandra process!?
-            e.setAttribute("error", "missing");
-            f_snap->append_error(doc, "cassandra", "can't find Cassandra in the list of processes.", 90);
+            QDomElement proc(doc.createElement("process"));
+            e.appendChild(proc);
+
+            proc.setAttribute("name", "snapfirewall");
+            proc.setAttribute("error", "missing");
+
+            f_snap->append_error(doc, "cassandra", "can't find \"cassandra\" in the list of processes.", 90);
             return;
         }
         std::string name(info->get_process_name());
@@ -199,12 +204,19 @@ void cassandra::on_process_watch(QDomDocument doc)
                 // is it Cassandra?
                 if(info->get_arg(c) == "org.apache.cassandra.service.CassandraDaemon")
                 {
-                    // got it! (well, one of them at least)
+                    // got it! (well, one of them at least, they spawn
+                    // many times and we just grab the first we find.)
                     //
-                    e.setAttribute("pcpu", QString("%1").arg(info->get_pcpu()));
-                    e.setAttribute("total_size", QString("%1").arg(info->get_total_size()));
-                    e.setAttribute("resident", QString("%1").arg(info->get_resident_size()));
-                    e.setAttribute("tty", QString("%1").arg(info->get_tty()));
+                    QDomElement proc(doc.createElement("process"));
+                    e.appendChild(proc);
+
+                    proc.setAttribute("name", "cassandra");
+
+                    //proc.setAttribute("cmdline", cmdline); -- TBD do we want to build the command line to save in the XML?
+                    proc.setAttribute("pcpu",       QString("%1").arg(info->get_pcpu()));
+                    proc.setAttribute("total_size", QString("%1").arg(info->get_total_size()));
+                    proc.setAttribute("resident",   QString("%1").arg(info->get_resident_size()));
+                    proc.setAttribute("tty",        QString("%1").arg(info->get_tty()));
 
                     unsigned long long utime;
                     unsigned long long stime;
@@ -212,10 +224,10 @@ void cassandra::on_process_watch(QDomDocument doc)
                     unsigned long long cstime;
                     info->get_times(utime, stime, cutime, cstime);
 
-                    e.setAttribute("utime", QString("%1").arg(utime));
-                    e.setAttribute("stime", QString("%1").arg(stime));
-                    e.setAttribute("cutime", QString("%1").arg(cutime));
-                    e.setAttribute("cstime", QString("%1").arg(cstime));
+                    proc.setAttribute("utime",  QString("%1").arg(utime));
+                    proc.setAttribute("stime",  QString("%1").arg(stime));
+                    proc.setAttribute("cutime", QString("%1").arg(cutime));
+                    proc.setAttribute("cstime", QString("%1").arg(cstime));
 
                     found = true;
                     break;

@@ -182,7 +182,7 @@ void firewall::on_process_watch(QDomDocument doc)
     SNAP_LOG_TRACE("firewall::on_process_watch(): processing");
 
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
-    QDomElement e(snap_dom::create_element(parent, "processes"));
+    QDomElement e(snap_dom::create_element(parent, "firewall"));
 
     // first we check that the snapfirewall daemon is running
     process_list list;
@@ -196,8 +196,13 @@ void firewall::on_process_watch(QDomDocument doc)
         {
             // no snapfirewall process!?
             //
-            e.setAttribute("error", "missing");
-            f_snap->append_error(doc, "firewall", "can't find snapfirewall in the list of processes.", 95);
+            QDomElement proc(doc.createElement("process"));
+            e.appendChild(proc);
+
+            proc.setAttribute("name", "snapfirewall");
+            proc.setAttribute("error", "missing");
+
+            f_snap->append_error(doc, "firewall", "can't find \"snapfirewall\" in the list of processes.", 95);
             return;
         }
         std::string name(info->get_process_name());
@@ -210,11 +215,16 @@ void firewall::on_process_watch(QDomDocument doc)
         {
             // got snapfirewall server, get the extra info
             //
+            QDomElement proc(doc.createElement("process"));
+            e.appendChild(proc);
 
-            e.setAttribute("pcpu", QString("%1").arg(info->get_pcpu()));
-            e.setAttribute("total_size", QString("%1").arg(info->get_total_size()));
-            e.setAttribute("resident", QString("%1").arg(info->get_resident_size()));
-            e.setAttribute("tty", QString("%1").arg(info->get_tty()));
+            proc.setAttribute("name", "firewall");
+
+            //proc.setAttribute("cmdline", cmdline); -- TBD do we want to build the command line to save in the XML?
+            proc.setAttribute("pcpu",       QString("%1").arg(info->get_pcpu()));
+            proc.setAttribute("total_size", QString("%1").arg(info->get_total_size()));
+            proc.setAttribute("resident",   QString("%1").arg(info->get_resident_size()));
+            proc.setAttribute("tty",        QString("%1").arg(info->get_tty()));
 
             unsigned long long utime;
             unsigned long long stime;
@@ -222,10 +232,10 @@ void firewall::on_process_watch(QDomDocument doc)
             unsigned long long cstime;
             info->get_times(utime, stime, cutime, cstime);
 
-            e.setAttribute("utime", QString("%1").arg(utime));
-            e.setAttribute("stime", QString("%1").arg(stime));
-            e.setAttribute("cutime", QString("%1").arg(cutime));
-            e.setAttribute("cstime", QString("%1").arg(cstime));
+            proc.setAttribute("utime",  QString("%1").arg(utime));
+            proc.setAttribute("stime",  QString("%1").arg(stime));
+            proc.setAttribute("cutime", QString("%1").arg(cutime));
+            proc.setAttribute("cstime", QString("%1").arg(cstime));
             break;
         }
     }

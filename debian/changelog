@@ -12,10 +12,16 @@ snapwebsites (1.5.84.0~xenial) xenial; urgency=high
   * Renamed all the snapwatchdog plugins so they start with "watchdog_".
   * Fixed the cassandra loop so it breaks as expected when we find the instance.
   * Moved the lib one directory down so the #include work as expected.
-  * Started work on adding errors (included in cassandra, firewall, disk,
-    and cpu so far.)
+  * Added error handling to all snapwatchdog plugins.
+  * Added a log rotation for the snapwatchdog-scripts-errors.log file.
+  * Added resources to the snapwatchdog library to support an error to email
+    XSTL 2.0 script.
+  * Added support for marking processes as mandatory for the system.
   * Protected all the std::cout in snapbackup with a --verbose.
   * Force ownership of snapbackup.log to snapwebsites:snapwebsites.
+  * Actually install the watch_snapbackup_old_cron_script file for developers.
+  * Fixed watch_snapbackup_old_cron_script and watch_firewall_fail2ban_client
+    to work with the new snapwatchdog.
   * In the confirmation of the drop command, it's not usable in a batch but
     now it won't just sit there.
   * Added a couple of exception and use those instead of std::...() ones.
@@ -24,8 +30,7 @@ snapwebsites (1.5.84.0~xenial) xenial; urgency=high
   * Added a mkdir_p() that take an std::string or char const *.
   * Added a mew configuration variable named `disk_ignore` to allow for regex
     to ignore partitions that are filled up.
-  * Added resources to the snapwatchdog library to support an error to email
-    XSTL 2.0 script.
+  * Added a meminfo.cpp/h to the library to read the /proc/meminfo file.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 12 Jul 2018 05:05:04 -0700

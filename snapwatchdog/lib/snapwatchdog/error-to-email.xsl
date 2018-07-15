@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
       <body>
         <xsl:for-each select="message">
           <h2><xsl:value-of select="@plugin_name"/> (<xsl:value-of select="@priority"/>)</h2>
-          <blockquote><xsl:value-of select="text()"/></blockquote>
+          <blockquote><xsl:copy-of select="./node()"/></blockquote>
         </xsl:for-each>
       </body>
     </html>

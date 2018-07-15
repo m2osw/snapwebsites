@@ -1411,6 +1411,10 @@ bool watchdog_child::run_watchdog_plugins()
 
                             e.add_header("X-SnapWatchdog-Version", SNAPWATCHDOG_VERSION_STRING);
 
+                            // prevent blacklisting
+                            // (since we won't run the `sendmail` plugin validation, it's not necessary)
+                            //e.add_parameter(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST), "true");
+
                             // generate a body in HTML
                             //
                             QByteArray data;
@@ -1454,6 +1458,14 @@ bool watchdog_child::run_watchdog_plugins()
                         }
                     }
                 }
+            }
+            else
+            {
+                // let us know with a debug in case error go unreported
+                // because they happen early on; these could be of interest
+                // in some cases
+                //
+                SNAP_LOG_DEBUG("found errors, but not reporting them because it has been less than 5 min. that this daemon started.");
             }
 
             // save the result in a file first
@@ -1687,6 +1699,18 @@ pid_t watchdog_child::get_child_pid() const
  */
 void watchdog_child::append_error(QDomDocument doc, QString const & plugin_name, QString const & message, int priority)
 {
+    // log the error so we have a trace
+    //
+    QString clean_message(message);
+    clean_message.replace("\n", " -- ");
+    SNAP_LOG_ERROR("plugin \"")
+                  (plugin_name)
+                  ("\" detected an error: ")
+                  (clean_message)
+                  (" (")
+                  (priority)
+                  (")");
+
     if(priority < 0 || priority > 100)
     {
         throw snapwatchdog_exception_invalid_parameters(
@@ -1706,8 +1730,24 @@ void watchdog_child::append_error(QDomDocument doc, QString const & plugin_name,
     msg.setAttribute("plugin_name", plugin_name);
     msg.setAttribute("priority", priority);
 
-    QDomText text(doc.createTextNode(message));
-    msg.appendChild(text);
+    // handle new lines so the emails look good, but keep the rest as
+    // plain text
+    //
+    QStringList lines(message.split("\n"));
+
+    if(!lines.isEmpty())
+    {
+        QDomText text(doc.createTextNode(lines[0]));
+        msg.appendChild(text);
+        for(int l(1); l < lines.size(); ++l)
+        {
+            QDomElement br(doc.createElement("br"));
+            msg.appendChild(br);
+
+            QDomText following_line(doc.createTextNode(lines[l]));
+            msg.appendChild(following_line);
+        }
+    }
 }
 
 

@@ -19,19 +19,12 @@
 //
 #include "memory.h"
 
-// our lib
-//
-#include "snapwatchdog.h"
-
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
 #include <snapwebsites/qdomhelpers.h>
+#include <snapwebsites/meminfo.h>
 #include <snapwebsites/not_used.h>
-
-// C lib
-//
-#include <proc/sysinfo.h>
 
 // last entry
 //
@@ -73,7 +66,7 @@ char const * get_name(name_t name)
  * This function is used to initialize the memory plugin object.
  */
 memory::memory()
-    //: f_snap(NULL) -- auto-init
+    //: f_snap(nullptr) -- auto-init
 {
 }
 
@@ -156,7 +149,7 @@ int64_t memory::do_update(int64_t last_updated)
  */
 void memory::bootstrap(snap_child * snap)
 {
-    f_snap = snap;
+    f_snap = static_cast<watchdog_child *>(snap);
 
     SNAP_LISTEN(memory, "server", watchdog_server, process_watch, _1);
 }
@@ -175,26 +168,60 @@ void memory::on_process_watch(QDomDocument doc)
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "memory"));
 
-    // all the info gets saved in global variables (yuck) but we
-    // have to call a function to read the current value
+    // read "/proc/meminfo"
     //
-    // WARNING: many of the entries in /proc/meminfo do not get read
-    //          by procps meminfo(); it changes quickly so many of
-    //          the entries just do not always make it in the library
-    meminfo();
+    meminfo_t const info(get_meminfo());
 
     // simple memory data should always be available
-    e.setAttribute("mem_total",   QString("%1").arg(kb_main_total));
-    e.setAttribute("mem_free",    QString("%1").arg(kb_main_free));
-    e.setAttribute("mem_cached",  QString("%1").arg(kb_main_cached));
-    e.setAttribute("mem_buffers", QString("%1").arg(kb_main_buffers));
-    e.setAttribute("swap_free",   QString("%1").arg(kb_swap_free));
-    //e.setAttribute("swap_cached", QString("%1").arg(kb_swap_cached)); -- we get a link error on this one... (Ubuntu 14.04) even though it is defined in the headers
-    e.setAttribute("swap_total",  QString("%1").arg(kb_swap_total));
+    e.setAttribute("mem_total",     QString("%1").arg(info.f_mem_total));
+    e.setAttribute("mem_free",      QString("%1").arg(info.f_mem_free));
+    e.setAttribute("mem_available", QString("%1").arg(info.f_mem_available));
+    e.setAttribute("mem_buffers",   QString("%1").arg(info.f_buffers));
+    e.setAttribute("mem_cached",    QString("%1").arg(info.f_cached));
+    e.setAttribute("swap_cached",   QString("%1").arg(info.f_swap_cached));
+    e.setAttribute("swap_total",    QString("%1").arg(info.f_swap_total));
+    e.setAttribute("swap_free",     QString("%1").arg(info.f_swap_free));
 
-    // TBD: we should probably look into processing /proc/swaps
-    //      as well, that way we would get details such as what
-    //      files / partition is being used, etc.
+    bool const high_memory_usage([info]()
+            {
+                // if we have at least 512MB don't generate an error
+                //
+                if(info.f_mem_available > 512.0 * 1024.0 * 1024.0)
+                {
+                    return false;
+                }
+
+                // otherwise see whether we use over 80% of the RAM
+                //
+                // NOTE: the 0.2 value is going to make it true immediatly
+                //       if the total amount of memory is about 8Gb or more.
+                //
+                double const mem_left_percent(static_cast<double>(info.f_mem_available) / static_cast<double>(info.f_mem_total));
+                return mem_left_percent < 0.2;
+            }());
+    if(high_memory_usage)
+    {
+        e.setAttribute("error", "high memory usage");
+        f_snap->append_error(doc, "memory", "high memory usage", 75);
+    }
+
+    bool const high_swap_usage([info]()
+            {
+                // for swap, we generate errors once 50% is in use, it should
+                // never be much more than 10% for a good system
+                //
+                double const swap_left_percent(static_cast<double>(info.f_swap_free) / static_cast<double>(info.f_swap_total));
+                return swap_left_percent < 0.5;
+            }());
+    if(high_swap_usage)
+    {
+        e.setAttribute("error", "high swap usage");
+        f_snap->append_error(doc, "memory", "high swap usage", 65);
+    }
+
+    // TODO: we should probably look into processing /proc/swaps
+    //       as well, that way we would get details such as what
+    //       files / partition is being used, etc.
 }
 
 
