@@ -1,3 +1,4 @@
-debian/tmp/usr/bin/snaplistd        usr/bin/
-snaplistd/conf/snaplistd.conf       etc/snapwebsites/
-snaplistd/conf/snaplistd.properties etc/snapwebsites/logger/
+debian/tmp/usr/bin/snaplistd                                            usr/bin/
+debian/tmp/usr/share/snapwebsites/snapwatchdog/snaplistd-processes.xml  usr/share/snapwebsites/snapwatchdog/processes/
+snaplistd/conf/snaplistd.conf                                           etc/snapwebsites/
+snaplistd/conf/snaplistd.properties                                     etc/snapwebsites/logger/

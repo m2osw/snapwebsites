@@ -38,6 +38,11 @@ configure_file(
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+snap_validate_xml(
+    snaplistd-processes.xml
+    ${watchdog_processes_SOURCE_DIR}/watchdog-processes.xsd
+)
+
 add_executable(${PROJECT_NAME}
     snaplistd.h
     snaplistd.cpp
@@ -57,8 +62,17 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 install(
-    TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin
+    TARGETS
+        ${PROJECT_NAME}
+    RUNTIME DESTINATION
+        bin
+)
+
+install(
+    FILES
+        snaplistd-processes.xml
+    DESTINATION
+        share/snapwebsites/snapwatchdog/processes
 )
 
 # vim: ts=4 sw=4 et

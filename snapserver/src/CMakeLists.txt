@@ -43,6 +43,11 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+snap_validate_xml(
+    snapserver-processes.xml
+    ${watchdog_processes_SOURCE_DIR}/watchdog-processes.xsd
+)
+
 add_executable(${PROJECT_NAME}
     snapserver.cpp
 )
@@ -148,5 +153,11 @@ install(
     TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin
 )
 
+install(
+    FILES
+        snapserver-processes.xml
+    DESTINATION
+        share/snapwebsites/snapwatchdog/processes
+)
 
 # vim: ts=4 sw=4 et

@@ -183,7 +183,7 @@ void cassandra::on_process_watch(QDomDocument doc)
             QDomElement proc(doc.createElement("process"));
             e.appendChild(proc);
 
-            proc.setAttribute("name", "snapfirewall");
+            proc.setAttribute("name", "cassandra"); // the name of the command is really "java" at the moment
             proc.setAttribute("error", "missing");
 
             f_snap->append_error(doc, "cassandra", "can't find \"cassandra\" in the list of processes.", 90);

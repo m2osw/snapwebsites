@@ -223,7 +223,7 @@ bool network::find_snapcommunicator(QDomElement e)
             proc.setAttribute("name", "snapcommunicator");
             proc.setAttribute("error", "missing");
 
-            f_snap->append_error(e.ownerDocument(), "snapcommunicator", "can't find mandatory processs \"napcommunicator\" in the list of processes. network health is not available.", 99);
+            f_snap->append_error(e.ownerDocument(), "snapcommunicator", "can't find mandatory processs \"snapcommunicator\" in the list of processes. network health is not available.", 99);
 
             return false;
         }

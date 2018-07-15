@@ -38,7 +38,7 @@ namespace processes
 
 enum class name_t
 {
-    SNAP_NAME_WATCHDOG_PROCESSES
+    SNAP_NAME_WATCHDOG_PROCESSES_PATH
 };
 char const * get_name(name_t name) __attribute__ ((const));
 

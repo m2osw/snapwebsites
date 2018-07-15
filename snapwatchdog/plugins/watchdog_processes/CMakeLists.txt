@@ -40,6 +40,11 @@ include_directories(
 )
 
 
+snap_validate_xml(
+    watchdog-processes.xml
+    watchdog-processes.xsd
+)
+
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     processes.qrc
 )
@@ -64,8 +69,22 @@ install(
 )
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(
-    FILES ${HEADER_FILES}
-    DESTINATION include/snapwatchdog/plugins/processes
+    FILES
+        ${HEADER_FILES}
+    DESTINATION
+        include/snapwatchdog/plugins/processes
+)
+install(
+    FILES
+        watchdog-processes.xml
+    DESTINATION
+        share/snapwebsites/snapwatchdog/processes
+)
+install(
+	FILES
+		watchdog-processes.xsd
+	DESTINATION
+		share/snapwebsites/xsd
 )
 
 # vim: ts=4 sw=4 et

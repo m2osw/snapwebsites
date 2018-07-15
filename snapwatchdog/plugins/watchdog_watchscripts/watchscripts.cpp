@@ -477,12 +477,6 @@ bool watchscripts::output_available(process * p, QByteArray const & output)
         //
         f_output += header;
     }
-
-    // add an empty line between the header or previous output
-    // and the next output block
-    //
-    f_output += "\nMessage:\n";
-
     f_output += QString::fromUtf8(output);
 
     // if there is an output file, write that output data to it

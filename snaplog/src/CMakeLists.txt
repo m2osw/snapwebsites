@@ -40,6 +40,11 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_BINARY_
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
 
+snap_validate_xml(
+    snaplog-processes.xml
+    ${watchdog_processes_SOURCE_DIR}/watchdog-processes.xsd
+)
+
 add_executable(${PROJECT_NAME}
     snaplog.cpp
     snaplog_interrupt.cpp
@@ -59,6 +64,13 @@ target_link_libraries(${PROJECT_NAME}
 
 install(
     TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin
+)
+
+install(
+    FILES
+        snaplog-processes.xml
+    DESTINATION
+        share/snapwebsites/snapwatchdog/processes
 )
 
 
