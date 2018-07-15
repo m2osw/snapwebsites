@@ -17,6 +17,13 @@ snapwebsites (1.5.84.0~xenial) xenial; urgency=high
   * Added resources to the snapwatchdog library to support an error to email
     XSTL 2.0 script.
   * Added support for marking processes as mandatory for the system.
+  * Changed the list of processes from  the snapwatchdog.conf file to a list
+    of XML files, just drop extra XML files and more processes get checked.
+  * Replaced the watchdog_processes with watchdog_processes_path.
+  * Added XML files to check for processes (snaplog, snapserver, snaplistd,
+    and snapwatchdog for the expected defaults)
+  * Installed those XML files with process definitions.
+  * Added validation of the process XML files to the CMakeLists.txt.
   * Protected all the std::cout in snapbackup with a --verbose.
   * Force ownership of snapbackup.log to snapwebsites:snapwebsites.
   * Actually install the watch_snapbackup_old_cron_script file for developers.
