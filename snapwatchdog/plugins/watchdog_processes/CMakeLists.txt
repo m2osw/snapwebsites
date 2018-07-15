@@ -42,7 +42,7 @@ include_directories(
 
 snap_validate_xml(
     watchdog-processes.xml
-    watchdog-processes.xsd
+    ${CMAKE_CURRENT_SOURCE_DIR}/watchdog-processes.xsd
 )
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC

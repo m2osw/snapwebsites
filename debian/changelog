@@ -1,3 +1,9 @@
+snapwebsites (1.5.84.1~xenial) xenial; urgency=high
+
+  * Force XSD path so snapwatchdog compiles on launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 15 Jul 2018 16:48:45 -0700
+
 snapwebsites (1.5.84.0~xenial) xenial; urgency=high
 
   * Made snapwatchdog capable of running its plugins and RUSAGE even without
