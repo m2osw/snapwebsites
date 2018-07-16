@@ -34,7 +34,7 @@ header
      */
     color: black;
 }
-.ui-state-active a:hover
+#menu .ui-state-active a:hover
 {
     /* however in this case it's no a dark blue background in the menu
      */

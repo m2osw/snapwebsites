@@ -329,10 +329,10 @@ void self::on_retrieve_status(snap_manager::server_status & server_status)
                       "before upgrading to avoid data loss.</i><br/><br/>";
             }
             //
-            if( f_backends_active )
+            if( f_backends_active > 0 )
             {
                 msg << QString("<b>%1 BACKENDS ARE RUNNING!</b>"
-                      "<br/><i>It is highly recommended that disable the all of the backends on your cluster "
+                      "<br/><i>It is highly recommended that you disable all of the backends on your cluster "
                       "before upgrading to avoid data loss.</i><br/><br/>")
                     .arg(f_backends_active);
             }
