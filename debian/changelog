@@ -1,3 +1,17 @@
+snapwebsites (1.5.86.0~xenial) xenial; urgency=high
+
+  * Added a daily cron along snapmta so we attempt to dequeue emails once a
+    day (becausewe may send emails only very rarely so it could otherwise
+    get stuck there for a very long time.)
+  * Marked the snapmta as being in conflict with postfix as they both provide
+    a tool named /usr/sbin/sendmail.
+  * Added ntpd as a process that needs to be running.
+  * Fixed the path to the *-processes.xml files in the .install files.
+  * Removed the dependency on snapwatchdog from snapserver (it was a test.)
+  * Removed the message from the snapserver CMakeLists.txt.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 15 Jul 2018 18:13:38 -0700
+
 snapwebsites (1.5.85.0~xenial) xenial; urgency=high
 
   * Test build by changing the order of the add_subdirectory().

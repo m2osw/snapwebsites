@@ -43,8 +43,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-message(INFO "Check snapserver processes XML file with XSD under path '${watchdog_processes_SOURCE_DIR}' + .../watchdog-processes.xsd")
-
 snap_validate_xml(
     snapserver-processes.xml
     ${watchdog_processes_SOURCE_DIR}/watchdog-processes.xsd

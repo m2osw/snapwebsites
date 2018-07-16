@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# is sendmail still present?
+#
+test -x /usr/sbin/sendmail || exit 0
+
+# attempt a dequeue of emails if any were queued
+#
+if test -f /var/mail/root
+then
+    /usr/sbin/sendmail --dequeue-emails
+fi
+
+# vim: ts=4 sw=4 et

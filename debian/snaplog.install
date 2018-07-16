@@ -1,5 +1,5 @@
-debian/tmp/usr/bin/snaplog                                            usr/bin/
-debian/tmp/usr/share/snapwebsites/snapwatchdog/snaplog-processes.xml  usr/share/snapwebsites/snapwatchdog/processes/
-snaplog/conf/snaplog.conf                                             etc/snapwebsites/
-snaplog/conf/snaplog.properties                                       etc/snapwebsites/logger/
-snaplog/conf/snap-mysql-jail.conf                                     etc/fail2ban/jail.d/
+debian/tmp/usr/bin/snaplog                                                      usr/bin/
+debian/tmp/usr/share/snapwebsites/snapwatchdog/processes/snaplog-processes.xml  usr/share/snapwebsites/snapwatchdog/processes/
+snaplog/conf/snaplog.conf                                                       etc/snapwebsites/
+snaplog/conf/snaplog.properties                                                 etc/snapwebsites/logger/
+snaplog/conf/snap-mysql-jail.conf                                               etc/fail2ban/jail.d/

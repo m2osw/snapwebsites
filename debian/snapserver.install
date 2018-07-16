@@ -1,6 +1,6 @@
-debian/tmp/usr/bin/cxpath                                                usr/bin/
-debian/tmp/usr/bin/snapexpr                                              usr/bin/
-debian/tmp/usr/bin/snapimg                                               usr/bin/
-debian/tmp/usr/bin/snapserver                                            usr/bin/
-debian/tmp/usr/lib/snapwebsites/manager_plugins/libsnapserver_manager.so usr/lib/snapwebsites/manager_plugins/
-debian/tmp/usr/share/snapwebsites/snapwatchdog/snapserver-processes.xml  usr/share/snapwebsites/snapwatchdog/processes/
+debian/tmp/usr/bin/cxpath                                                          usr/bin/
+debian/tmp/usr/bin/snapexpr                                                        usr/bin/
+debian/tmp/usr/bin/snapimg                                                         usr/bin/
+debian/tmp/usr/bin/snapserver                                                      usr/bin/
+debian/tmp/usr/lib/snapwebsites/manager_plugins/libsnapserver_manager.so           usr/lib/snapwebsites/manager_plugins/
+debian/tmp/usr/share/snapwebsites/snapwatchdog/processes/snapserver-processes.xml  usr/share/snapwebsites/snapwatchdog/processes/

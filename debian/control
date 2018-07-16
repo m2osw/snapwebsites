@@ -344,6 +344,7 @@ Package: snapmta
 Section: admin
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, msmtp
+Conflicts: postfix
 Description: Fast Websites: powerful CMS for Apache written in C++.
  Snap! C++ runs your CMS using binary code written in C and C++.
  The basic concept is taken from a large set of Drupal 6.x
@@ -352,7 +353,8 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
  extensible as it offers a plug-in mechanism that everyone is welcome to use to
  create their own extensions.
  .
- MTA for all computers that do not run postfix.
+ MTA for all computers that do not run postfix. You will not be able to
+ install postifx and snapmta on the same computer as they have a conflict.
 
 Package: snapcgi
 Section: admin
@@ -749,7 +751,7 @@ Package: snapserver
 Section: web
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy, snapwatchdog
+    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy
 Recommends: snapdb
 Suggests: cassandra (>= 3.5.0), snapcgi, snapbounce, snapserver-doc
 Description: Fast Websites: powerful CMS for Apache written in C++.
