@@ -19,6 +19,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 -->
 <watchdog-processes>
   <process name="snaplistd" mandatory="mandatory"/>
+  <!-- since snaplistd is mandatory, mysqld should also be mandatory
+       but because it's shared, I decided to not make it so. -->
+  <process name="mysqld" allow_duplicates="true"/>
 </watchdog-processes>
 <!--
 vim: ts=2 sw=2 et

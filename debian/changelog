@@ -1,3 +1,11 @@
+snapwebsites (1.5.85.0~xenial) xenial; urgency=high
+
+  * Test build by changing the order of the add_subdirectory().
+  * Added support for potential duplicate definition of processes in XML files.
+  * Added mysqld as a process running along snaplistd and snaplog.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 15 Jul 2018 17:49:23 -0700
+
 snapwebsites (1.5.84.3~xenial) xenial; urgency=high
 
   * Updated the error message in an attempt to find the problem.

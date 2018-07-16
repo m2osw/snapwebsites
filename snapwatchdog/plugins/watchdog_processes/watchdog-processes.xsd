@@ -33,11 +33,18 @@
     </xsd:all>
     <xsd:attribute name="name" type="name"/>
     <xsd:attribute name="mandatory" type="tMandatory" use="optional"/>
+    <xsd:attribute name="allow_duplicates" type="tAllowDuplicates" use="optional"/>
   </xsd:complexType>
 
   <xsd:simpleType name="tMandatory">
     <xsd:restriction base="name">
       <xsd:enumeration value="mandatory"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="tAllowDuplicates">
+    <xsd:restriction base="name">
+      <xsd:enumeration value="allow_duplicates"/>
     </xsd:restriction>
   </xsd:simpleType>
 

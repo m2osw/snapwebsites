@@ -51,7 +51,7 @@ namespace
  *
  * \code
  * <watchdog-processes>
- *   <process name="name" mandatory="mandatory">
+ *   <process name="name" mandatory="mandatory" allow_duplicates="allow_duplicates">
  *      <command>...</command>
  *      <match>...</match>
  *   </process>
@@ -67,13 +67,14 @@ class watchdog_process_t
 public:
     typedef std::vector<watchdog_process_t>     vector_t;
 
-                                watchdog_process_t(QString const & name, bool mandatory);
+                                watchdog_process_t(QString const & name, bool mandatory, bool allow_duplicates);
 
     void                        set_command(QString const & command);
     void                        set_match(QString const & match);
 
     QString const &             get_name() const;
     bool                        is_mandatory() const;
+    bool                        allow_duplicates() const;
     bool                        match(QString const & name, QString const & cmdline);
 
 private:
@@ -81,6 +82,7 @@ private:
     QString                     f_command;
     QSharedPointer<QRegExp>     f_match;
     bool                        f_mandatory = false;
+    bool                        f_allow_duplicates = false;
 };
 
 
@@ -99,10 +101,13 @@ watchdog_process_t::vector_t    g_processes;
  *            same as the terminal command line name.
  * \param[in] mandatory  Whether the process is mandatory (error with a
  *            very high priority if not found.)
+ * \param[in] allow_duplicates  Whether this entry can be defined more than
+ *            once within various XML files.
  */
-watchdog_process_t::watchdog_process_t(QString const & name, bool mandatory)
+watchdog_process_t::watchdog_process_t(QString const & name, bool mandatory, bool allow_duplicates)
     : f_name(name)
     , f_mandatory(mandatory)
+    , f_allow_duplicates(allow_duplicates)
 {
 }
 
@@ -173,6 +178,27 @@ QString const & watchdog_process_t::get_name() const
 bool watchdog_process_t::is_mandatory() const
 {
     return f_mandatory;
+}
+
+
+/** \brief Wether duplicate definitions are allowed or not.
+ *
+ * If a process is required by more than one package, then it should
+ * be defined in each one of them and it should be marked as a
+ * possible duplicate.
+ *
+ * For example, the mysqld service is required by snaplog and snaplistd.
+ * Both will have a defintion for mysqld (because one could be installed
+ * on a backend and the other on another backend.) However, when they
+ * both get installed on the same machine, you get two definitions with
+ * the same process name. If this function returns false for either one,
+ * then the setup throws.
+ *
+ * \return true if the process definitions can have duplicates for that process.
+ */
+bool watchdog_process_t::allow_duplicates() const
+{
+    return f_allow_duplicates;
 }
 
 
@@ -261,8 +287,36 @@ void load_xml(QString processes_filename)
                 {
                     throw processes_exception_invalid_process_name("the name of a process cannot be the empty string");
                 }
+
+                bool const allow_duplicates(process.hasAttribute("allow_duplicates"));
+
+                auto it(std::find_if(
+                          g_processes.begin()
+                        , g_processes.end()
+                        , [name, allow_duplicates](auto & wprocess)
+                        {
+                            if(name == wprocess.get_name())
+                            {
+                                if(!allow_duplicates
+                                || !wprocess.allow_duplicates())
+                                {
+                                    throw processes_exception_invalid_process_name("found process \"" + name + "\" twice and duplicates are not allowed.");
+                                }
+                                return true;
+                            }
+                            return false;
+                        }));
+                if(it != g_processes.end())
+                {
+                    // skip the duplicate, we assume that the command,
+                    // match, etc. are identical enough for the system
+                    // to still work as expected
+                    //
+                    continue;
+                }
+
                 bool const mandatory(process.hasAttribute("mandatory"));
-                watchdog_process_t wp(name, mandatory);
+                watchdog_process_t wp(name, mandatory, allow_duplicates);
 
                 QDomNodeList cmdline_tags(process.elementsByTagName("cmdline"));
                 if(cmdline_tags.size() > 0)
