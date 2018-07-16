@@ -1,3 +1,10 @@
+snapwebsites (1.5.84.2~xenial) xenial; urgency=high
+
+  * Try having snapwatchdog as a dependency of snapserver to see whether
+    that resolves the XSD validation problem.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 15 Jul 2018 17:06:03 -0700
+
 snapwebsites (1.5.84.1~xenial) xenial; urgency=high
 
   * Force XSD path so snapwatchdog compiles on launchpad.

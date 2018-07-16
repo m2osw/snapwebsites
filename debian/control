@@ -724,7 +724,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
     libsnapwatchdog (= ${binary:Version}),
     snapwatchdog-core-plugins
-Suggests: cassandra (>= 2.0.3), snapserver (= ${binary:Version})
+Suggests: snapmta | snapbounce
 Description: Track status and health of any number of servers.
  Snap! Watchdog is a tool that works on any number of servers to
  gather various information that let you know how your server is
@@ -749,7 +749,7 @@ Package: snapserver
 Section: web
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy
+    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy, snapwatchdog
 Recommends: snapdb
 Suggests: cassandra (>= 3.5.0), snapcgi, snapbounce, snapserver-doc
 Description: Fast Websites: powerful CMS for Apache written in C++.
