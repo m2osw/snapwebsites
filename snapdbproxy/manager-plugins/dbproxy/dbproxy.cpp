@@ -239,7 +239,7 @@ void dbproxy::on_retrieve_status(snap_manager::server_status & server_status)
                       snap_manager::status_t::state_t::STATUS_STATE_INFO
                     , get_plugin_name()
                     , "cassandra_use_ssl"
-                    , use_ssl? "true": "false"
+                    , use_ssl ? "true" : "false"
                     );
         server_status.set_field(use_ssl_switch);
     }

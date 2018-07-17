@@ -18,7 +18,26 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 -->
 <watchdog-processes>
-  <process name="snapserver" mandatory="mandatory"/>
+  <process name="sendmail" mandatory="mandatory">
+    <command>snapbackend</command>
+    <service>snapsendmail</service>
+    <match>--cron-action sendmail::sendmail</match>
+  </process>
+  <process name="images" mandatory="mandatory">
+    <command>snapbackend</command>
+    <service>snapimages</service>
+    <match>--cron-action images::images</match>
+  </process>
+  <process name="pagelist" mandatory="mandatory">
+    <command>snapbackend</command>
+    <service>snappagelist</service>
+    <match>--cron-action list::pagelist</match>
+  </process>
+  <process name="listjournal" mandatory="mandatory">
+    <command>snapbackend</command>
+    <service>snaplistjournal</service>
+    <match>--cron-action list::listjournal</match>
+  </process>
   <process name="snaplock" mandatory="mandatory" allow_duplicates="allow_duplicates"/>
 </watchdog-processes>
 <!--

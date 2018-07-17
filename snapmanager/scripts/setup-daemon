@@ -7,5 +7,12 @@
 # it somewhere else and run these commands against that copy. This way
 # you can avoid having to re-run this script every single time.
 #
-sudo chown root ../../BUILD/snapwebsites/snapmanagercgi/daemon/snapmanagerdaemon
-sudo chmod 4775 ../../BUILD/snapwebsites/snapmanagercgi/daemon/snapmanagerdaemon
+sudo chown root ../../BUILD/snapwebsites/snapmanager/daemon/snapmanagerdaemon
+sudo chmod 4775 ../../BUILD/snapwebsites/snapmanager/daemon/snapmanagerdaemon
+
+# The snapmanager.cgi also makes use of snappassword which must be in your
+# Apache2 instance path (or create a soft link from /usr/bin to your
+# developer instance)
+#
+sudo chown root ../../BUILD/snapwebsites/snapmanager/password/snappassword
+sudo chmod 4775 ../../BUILD/snapwebsites/snapmanager/password/snappassword

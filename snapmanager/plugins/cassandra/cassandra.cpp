@@ -921,7 +921,7 @@ bool cassandra::display_value(QDomElement parent, snap_manager::status_t const &
  *            (usually ignored,) or the installation values (only
  *            for the self plugin that manages bundles.)
  *
- * \return true if the new_value was applied successfully.
+ * \return true if field_name was handled (even if it failed).
  */
 bool cassandra::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {

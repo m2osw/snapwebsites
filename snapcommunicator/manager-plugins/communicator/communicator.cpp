@@ -273,28 +273,35 @@ void communicator::on_retrieve_status(snap_manager::server_status & server_statu
     //
     if(vpn::vpn::is_installed())
     {
+        // verify that the configuration file exists before trying to load
+        // this file (on a developer system, it may not be available)
+        // if not available, the snap_config class throws and that prevents
+        // all the plugins coming after this one from running
+        //
         snap_config config(g_service_filename, g_service_override_filename);
-
+        if(config.configuration_file_exists())
         {
-            std::string const after(config[get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_AFTER_FIELD)]);
-            snap_manager::status_t const field(
-                      snap_manager::status_t::state_t::STATUS_STATE_INFO
-                    , get_plugin_name()
-                    , get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_AFTER)
-                    , QString::fromUtf8(after.c_str())
-                    );
-            server_status.set_field(field);
-        }
+            {
+                std::string const after(config[get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_AFTER_FIELD)]);
+                snap_manager::status_t const field(
+                          snap_manager::status_t::state_t::STATUS_STATE_INFO
+                        , get_plugin_name()
+                        , get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_AFTER)
+                        , QString::fromUtf8(after.c_str())
+                        );
+                server_status.set_field(field);
+            }
 
-        {
-            std::string const require(config[get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_REQUIRE_FIELD)]);
-            snap_manager::status_t const field(
-                      snap_manager::status_t::state_t::STATUS_STATE_INFO
-                    , get_plugin_name()
-                    , get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_REQUIRE)
-                    , QString::fromUtf8(require.c_str())
-                    );
-            server_status.set_field(field);
+            {
+                std::string const require(config[get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_REQUIRE_FIELD)]);
+                snap_manager::status_t const field(
+                          snap_manager::status_t::state_t::STATUS_STATE_INFO
+                        , get_plugin_name()
+                        , get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_REQUIRE)
+                        , QString::fromUtf8(require.c_str())
+                        );
+                server_status.set_field(field);
+            }
         }
     }
 }

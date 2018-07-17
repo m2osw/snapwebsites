@@ -114,7 +114,8 @@ meminfo_t get_meminfo()
         { "hugepages_surp",     &meminfo_t::f_huge_pages_surp },
         { "hugepagesize",       &meminfo_t::f_huge_page_size },
         { "directmap4k",        &meminfo_t::f_direct_map4k },
-        { "directmap2m",        &meminfo_t::f_direct_map2m }
+        { "directmap2m",        &meminfo_t::f_direct_map2m },
+        { "directmap1g",        &meminfo_t::f_direct_map1g }
     };
 
     std::ifstream in;

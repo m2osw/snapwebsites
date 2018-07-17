@@ -33,6 +33,11 @@
 
 project(snapbackend)
 
+snap_validate_xml(
+    snapbackend-processes.xml
+    ${watchdog_processes_SOURCE_DIR}/watchdog-processes.xsd
+)
+
 add_executable(${PROJECT_NAME}
     snapbackend.cpp
 )
@@ -51,6 +56,13 @@ target_link_libraries(${PROJECT_NAME}
 
 install(
     TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin
+)
+
+install(
+    FILES
+        snapbackend-processes.xml
+    DESTINATION
+        share/snapwebsites/snapwatchdog/processes
 )
 
 

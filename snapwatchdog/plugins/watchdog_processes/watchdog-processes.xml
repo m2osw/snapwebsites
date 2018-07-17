@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 -->
 <watchdog-processes>
   <process name="apache2" mandatory="mandatory"/>
-  <process name="snaplock" mandatory="mandatory"/>
   <process name="snapdbproxy" mandatory="mandatory"/>
   <process name="snapmanagerdaemon"/>
   <process name="ntpd"/>

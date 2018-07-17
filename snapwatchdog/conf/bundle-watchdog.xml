@@ -15,6 +15,10 @@
     that it restart. At a later time, we may also look into creating
     a new VPS automatically as a replacement of the whole server that's
     failing.</p>
+    <p>Once installed you must enter a few parameters to ensure that
+    the watchdog emails reach you. You also want to test that it works
+    to make sure that the watchdog is indeed going to be useful. The
+    Watchdog tab will include a "Test Now!" button.</p>
   </description>
   <affected-services>snapmanagerdaemon</affected-services>
   <packages>snapwatchdog</packages>

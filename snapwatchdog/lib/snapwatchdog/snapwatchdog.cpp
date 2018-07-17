@@ -1380,81 +1380,79 @@ bool watchdog_child::run_watchdog_plugins()
                                 file.close();
                             }
 
+                            // get the emails where to send the data
+                            // if not available, it "breaks" the process
+                            //
                             QString from_email(get_server_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_FROM_EMAIL)));
-                            if(from_email.isEmpty())
-                            {
-                                from_email = "snapwebsites@snap.website";
-                            }
                             QString administrator_email(get_server_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_ADMINISTRATOR_EMAIL)));
-                            if(administrator_email.isEmpty())
+                            if(!from_email.isEmpty()
+                            && !administrator_email.isEmpty())
                             {
-                                administrator_email = "root@snap.website";
-                            }
+                                // create the email and add a few headers
+                                //
+                                email e;
+                                e.set_from(from_email);
+                                e.set_to(administrator_email);
+                                e.set_priority(email::priority_t::EMAIL_PRIORITY_URGENT);
 
-                            // create the email and add a few headers
-                            //
-                            email e;
-                            e.set_from(from_email);
-                            e.set_to(administrator_email);
-                            e.set_priority(email::priority_t::EMAIL_PRIORITY_URGENT);
-
-                            char hostname[HOST_NAME_MAX + 1];
-                            if(gethostname(hostname, sizeof(hostname)) != 0)
-                            {
-                                strncpy(hostname, "<unknown>", sizeof(hostname));
-                            }
-                            QString subject(QString("snapwatchdog: found %1 error%2 on %3")
-                                            .arg(count)
-                                            .arg(count == 1 ? "" : "s")
-                                            .arg(hostname));
-                            e.set_subject(subject);
-
-                            e.add_header("X-SnapWatchdog-Version", SNAPWATCHDOG_VERSION_STRING);
-
-                            // prevent blacklisting
-                            // (since we won't run the `sendmail` plugin validation, it's not necessary)
-                            //e.add_parameter(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST), "true");
-
-                            // generate a body in HTML
-                            //
-                            QByteArray data;
-                            {
-                                QString const error_to_email_filename(":/xsl/layout/error-to-email.xsl");
-                                QFile error_to_email_file(error_to_email_filename);
-                                if(error_to_email_file.open(QIODevice::ReadOnly))
+                                char hostname[HOST_NAME_MAX + 1];
+                                if(gethostname(hostname, sizeof(hostname)) != 0)
                                 {
-                                    data = error_to_email_file.readAll();
+                                    strncpy(hostname, "<unknown>", sizeof(hostname));
                                 }
-                            }
-                            email::attachment html;
-                            QString const xsl(QString::fromUtf8(data.data(), data.size()));
-                            if(xsl.isEmpty())
-                            {
-                                SNAP_LOG_ERROR("could not read error-to-email.xsl from resources.");
-                                html.quoted_printable_encode_and_set_data("<html><body><p>Sorry! Could not find error-to-email.xsl in the resources. See Snap! Watchdog errors in attached XML.</p></body></html>", "text/html");
-                            }
-                            else
-                            {
-                                xslt x;
-                                x.set_xsl(xsl);
-                                x.set_document(doc);
-                                QDomDocument doc_email("html");
-                                x.evaluate_to_document(doc_email);
-                                html.quoted_printable_encode_and_set_data(doc_email.toString(-1).toUtf8(), "text/html");
-                            }
-                            e.set_body_attachment(html);
+                                QString subject(QString("snapwatchdog: found %1 error%2 on %3")
+                                                .arg(count)
+                                                .arg(count == 1 ? "" : "s")
+                                                .arg(hostname));
+                                e.set_subject(subject);
 
-                            // add the XML as an attachment
-                            //
-                            email::attachment a;
-                            a.quoted_printable_encode_and_set_data(result.toUtf8(), "application/xml");
-                            a.set_content_disposition("snapwatchdog.xml");
-                            a.add_header("X-Start-Date", QString("%1").arg(start_date));
-                            e.add_attachment(a);
+                                e.add_header("X-SnapWatchdog-Version", SNAPWATCHDOG_VERSION_STRING);
 
-                            // finally send email
-                            //
-                            e.send();
+                                // prevent blacklisting
+                                // (since we won't run the `sendmail` plugin validation, it's not necessary)
+                                //e.add_parameter(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST), "true");
+
+                                // generate a body in HTML
+                                //
+                                QByteArray data;
+                                {
+                                    QString const error_to_email_filename(":/xsl/layout/error-to-email.xsl");
+                                    QFile error_to_email_file(error_to_email_filename);
+                                    if(error_to_email_file.open(QIODevice::ReadOnly))
+                                    {
+                                        data = error_to_email_file.readAll();
+                                    }
+                                }
+                                email::attachment html;
+                                QString const xsl(QString::fromUtf8(data.data(), data.size()));
+                                if(xsl.isEmpty())
+                                {
+                                    SNAP_LOG_ERROR("could not read error-to-email.xsl from resources.");
+                                    html.quoted_printable_encode_and_set_data("<html><body><p>Sorry! Could not find error-to-email.xsl in the resources. See Snap! Watchdog errors in attached XML.</p></body></html>", "text/html");
+                                }
+                                else
+                                {
+                                    xslt x;
+                                    x.set_xsl(xsl);
+                                    x.set_document(doc);
+                                    QDomDocument doc_email("html");
+                                    x.evaluate_to_document(doc_email);
+                                    html.quoted_printable_encode_and_set_data(doc_email.toString(-1).toUtf8(), "text/html");
+                                }
+                                e.set_body_attachment(html);
+
+                                // add the XML as an attachment
+                                //
+                                email::attachment a;
+                                a.quoted_printable_encode_and_set_data(result.toUtf8(), "application/xml");
+                                a.set_content_disposition("snapwatchdog.xml");
+                                a.add_header("X-Start-Date", QString("%1").arg(start_date));
+                                e.add_attachment(a);
+
+                                // finally send email
+                                //
+                                e.send();
+                            }
                         }
                     }
                 }

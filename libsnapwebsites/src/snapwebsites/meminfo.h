@@ -80,6 +80,7 @@ struct meminfo_t
     uint64_t        f_huge_page_size = 0;
     uint64_t        f_direct_map4k = 0;
     uint64_t        f_direct_map2m = 0;
+    uint64_t        f_direct_map1g = 0;
 };
 
 meminfo_t get_meminfo();

@@ -253,8 +253,8 @@ void apt::on_retrieve_status(snap_manager::server_status & server_status)
                 if( file.open( QIODevice::ReadOnly | QIODevice::Text ) )
                 {
                     QTextStream in(&file);
-                    snap_manager::status_t const list
-                            ( snap_manager::status_t::state_t::STATUS_STATE_INFO
+                    snap_manager::status_t const list(
+                                snap_manager::status_t::state_t::STATUS_STATE_INFO
                               , get_plugin_name()
                               , SNAPCPP_APT_SOURCE
                               , in.readAll()
@@ -276,7 +276,7 @@ void apt::on_retrieve_status(snap_manager::server_status & server_status)
     if( !snapcpp_list_found )
     {
         snap_manager::status_t const outofdate(
-                    snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
+                      snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
                     , get_plugin_name()
                     , OLD_APT_SOURCE
                     , "APT sources are out of date!");
@@ -286,7 +286,7 @@ void apt::on_retrieve_status(snap_manager::server_status & server_status)
     // Add GPG key field for the apt source
     {
         snap_manager::status_t const conf_field(
-                    snap_manager::status_t::state_t::STATUS_STATE_INFO
+                      snap_manager::status_t::state_t::STATUS_STATE_INFO
                     , get_plugin_name()
                     , GPG_KEY
                     , "");
@@ -312,7 +312,7 @@ void apt::on_retrieve_status(snap_manager::server_status & server_status)
             }
         }
         snap_manager::status_t const conf_field(
-                    snap_manager::status_t::state_t::STATUS_STATE_INFO
+                      snap_manager::status_t::state_t::STATUS_STATE_INFO
                     , get_plugin_name()
                     , RELEASE_PIN
                     , pin_name);
@@ -431,7 +431,11 @@ bool apt::display_value ( QDomElement parent
 }
 
 
-/** \brief Does nothing
+/** \brief Commit the apt values to file.
+ *
+ * This function checks which field was modified and saves its value
+ * to disk. The old APT setup will be removed if it still exists. It
+ * gets replaced by the newer version.
  *
  * \param[in] button_name  The name of the button the user clicked.
  * \param[in] field_name  The name of the field to update.
@@ -440,7 +444,7 @@ bool apt::display_value ( QDomElement parent
  *            (usually ignored,) or the installation values (only
  *            for the self plugin that manages bundles.)
  *
- * \return true if the new_value was applied successfully.
+ * \return true if field_name was handled (even if it failed).
  */
 bool apt::apply_setting ( QString const & button_name
                         , QString const & field_name
@@ -497,7 +501,7 @@ bool apt::apply_setting ( QString const & button_name
         {
             QString const errmsg = QString("Cannot open '%1' for writing!").arg(file.fileName());
             SNAP_LOG_ERROR(errmsg);
-            return false;
+            return true;
         }
         //
         QTextStream out( &file );
@@ -506,20 +510,18 @@ bool apt::apply_setting ( QString const & button_name
         file.flush();
         file.close();
 
-        bool success = true;
         QStringList params;
         params << "add" << file.fileName();
         if( QProcess::execute( "apt-key", params ) != 0 )
         {
             SNAP_LOG_ERROR("Cannot import GPG key!");
-            success = false;
         }
 
         // Remove the temporary file
         file.remove();
 
         // And...done!
-        return success;
+        return true;
     }
     else if( field_name == RELEASE_PIN )
     {
@@ -541,26 +543,31 @@ bool apt::apply_setting ( QString const & button_name
         {
             QString const errmsg = QString("Cannot open '%1' for writing!").arg(file.fileName());
             SNAP_LOG_ERROR(errmsg);
-            return false;
         }
         return true;
     }
 
-    // Default write to snapcpp.list
+    // the OLD_APT_SOURCE becomes the new SNAPCPP_APT_SOURCE now
     //
+    if(field_name == SNAPCPP_APT_SOURCE
+    || field_name == OLD_APT_SOURCE)
     {
         QFile file( QString("%1/snapcpp.list").arg(APT_SOURCE_DIR) );
         if( !file.open( QIODevice::WriteOnly | QIODevice::Truncate ) )
         {
             QString const errmsg = QString("Cannot open '%1' for writing!").arg(file.fileName());
             SNAP_LOG_ERROR(errmsg);
-            return false;
+            return true;
         }
 
         QTextStream out( &file );
         out << new_value;
+        return true;
     }
-    return true;
+
+    // field not found?!
+    //
+    return false;
 }
 
 

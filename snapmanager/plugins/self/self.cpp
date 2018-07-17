@@ -1161,7 +1161,9 @@ bool self::apply_setting(QString const & button_name, QString const & field_name
     {
         if(!field_name.startsWith("bundle::"))
         {
-            SNAP_LOG_ERROR("install or uninstall with field_name \"")(field_name)("\" is invalid, we expected a name starting with \"bundle::\".");
+            SNAP_LOG_ERROR("install or uninstall with field_name \"")
+                          (field_name)
+                          ("\" is invalid, we expected a name starting with \"bundle::\".");
             return false;
         }
         QByteArray values(old_or_installation_value.toUtf8());

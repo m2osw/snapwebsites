@@ -45,6 +45,44 @@ namespace
 {
 
 
+/** \brief Check whether a service is enabled or not.
+ *
+ * The Snap! Watchdog does view a missing process as normal if the
+ * corresponding service is marked as disabled. This function tells
+ * us whether the service is considered up and running or not.
+ *
+ * When the XML file includes the \<service> tag, it calls this
+ * function. If the function returns false, then no further test
+ * is done and the process entry is ignored.
+ *
+ * \note
+ * This means a process that's turned off for maintenance does not
+ * generate errors for being turned off during that time OR AFTER
+ * IF YOU FORGET TO TURN IT BACK ON. A later version may want to
+ * have a way to know whether the process is expected to be on and
+ * if so still generate an error after X hours of being down...
+ * (or once the system is back up, i.e., it's not in maintenance
+ * mode anymore.) However, at this point we do not know which
+ * snapbackend are expected to be running.
+ *
+ * \param[in] service_name  The name of the service, as systemd understands
+ *            it, to check on.
+ *
+ * \return true if the service is marked as enabled.
+ */
+bool is_service_enabled(QString const & service_name)
+{
+    snap::process p("query service status");
+    p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
+    p.set_command("systemctl");
+    p.add_argument("is-enabled");
+    p.add_argument(service_name);
+    int const r(p.run());
+    SNAP_LOG_INFO("\"is-enabled\" query output (")(r)("): ")(p.get_output(true).trimmed());
+    return r == 0;
+}
+
+
 /** \brief Class used to read the list of processes to check.
  *
  * The class understands the following XML format:
@@ -69,7 +107,9 @@ public:
 
                                 watchdog_process_t(QString const & name, bool mandatory, bool allow_duplicates);
 
+    void                        set_mandatory(bool mandatory);
     void                        set_command(QString const & command);
+    void                        set_service(QString const & service);
     void                        set_match(QString const & match);
 
     QString const &             get_name() const;
@@ -80,9 +120,11 @@ public:
 private:
     QString                     f_name;
     QString                     f_command;
+    QString                     f_service;
     QSharedPointer<QRegExp>     f_match;
     bool                        f_mandatory = false;
     bool                        f_allow_duplicates = false;
+    bool                        f_service_is_enabled = true;
 };
 
 
@@ -112,6 +154,23 @@ watchdog_process_t::watchdog_process_t(QString const & name, bool mandatory, boo
 }
 
 
+/** \brief Set whether this process is mandatory or not.
+ *
+ * Change the mandatory flag.
+ *
+ * At the moment this is used by the loader to force the mandatory flag
+ * when a duplicate is found and the new version is mandatory. In other
+ * word, it is a logical or between all the instances of the process
+ * found on the system.
+ *
+ * \param[in] mandatory  Whether this process is mandatory.
+ */
+void watchdog_process_t::set_mandatory(bool mandatory)
+{
+    f_mandatory = mandatory;
+}
+
+
 /** \brief Set the name of the expected command.
  *
  * The name of the watchdog process may be different from the exact
@@ -124,6 +183,28 @@ watchdog_process_t::watchdog_process_t(QString const & name, bool mandatory, boo
 void watchdog_process_t::set_command(QString const & command)
 {
     f_command = command;
+}
+
+
+/** \brief Set the name of the service corresponding to this process.
+ *
+ * When testing whether a process is running, the watchdog can first
+ * check whether that process is a service (i.e. when a service name was
+ * specified in the XML.) When a process is a known service and the
+ * service is disabled, then whether the service is running is none of
+ * our concern. However, if enabled and the service is not running,
+ * then there is a problem.
+ *
+ * \param[in] service  The name of the service to check.
+ */
+void watchdog_process_t::set_service(QString const & service)
+{
+    // we check whether the service is running just once here
+    // (otherwise we could end up calling that function once per
+    // process!)
+    //
+    f_service = service;
+    f_service_is_enabled = is_service_enabled(service);
 }
 
 
@@ -204,6 +285,20 @@ bool watchdog_process_t::allow_duplicates() const
 
 /** \brief Match the name and command line against this process definition.
  *
+ * If this process is connected to a service, we check whether that service
+ * is enabled. If not, then we assume that the user explicitly disabled
+ * that service and thus we can't expect the process as running.
+ *
+ * \todo
+ * We actually want two new settings:
+ * \li A list of backends we want running on that very system. This needs to
+ *     be something we clearly setup rather than having flags changed as per
+ *     the current setup, because the current setup may be messed up. (Doug
+ *     implemented that and it works to a certain extend, but long terms it
+ *     breaks once in a while and we lose a backend just like that!)
+ * \li Check whether we are in maintenance mode or not, if in maintenance
+ *     we accept disabled services. If not, we generate errors.
+ *
  * If we have a command (\<command> tag) then the \p name must match
  * that parameter.
  *
@@ -223,6 +318,18 @@ bool watchdog_process_t::allow_duplicates() const
  */
 bool watchdog_process_t::match(QString const & command, QString const & cmdline)
 {
+    if(!f_service.isEmpty())
+    {
+        if(!f_service_is_enabled)
+        {
+            // this corresponds to a service which may be "legally"
+            // disabled and if so, whether the process is running or
+            // not is of no concern of ours
+            //
+            return true;
+        }
+    }
+
     if(!f_command.isEmpty())
     {
         if(f_command != command)
@@ -288,6 +395,7 @@ void load_xml(QString processes_filename)
                     throw processes_exception_invalid_process_name("the name of a process cannot be the empty string");
                 }
 
+                bool const mandatory(process.hasAttribute("mandatory"));
                 bool const allow_duplicates(process.hasAttribute("allow_duplicates"));
 
                 auto it(std::find_if(
@@ -312,20 +420,34 @@ void load_xml(QString processes_filename)
                     // match, etc. are identical enough for the system
                     // to still work as expected
                     //
+                    if(mandatory)
+                    {
+                        it->set_mandatory(true);
+                    }
                     continue;
                 }
 
-                bool const mandatory(process.hasAttribute("mandatory"));
                 watchdog_process_t wp(name, mandatory, allow_duplicates);
 
-                QDomNodeList cmdline_tags(process.elementsByTagName("cmdline"));
-                if(cmdline_tags.size() > 0)
+                QDomNodeList command_tags(process.elementsByTagName("command"));
+                if(command_tags.size() > 0)
                 {
-                    QDomNode cmdline_node(cmdline_tags.at(0));
-                    if(cmdline_node.isElement())
+                    QDomNode command_node(command_tags.at(0));
+                    if(command_node.isElement())
                     {
-                        QDomElement cmdline(cmdline_node.toElement());
-                        wp.set_command(cmdline.text());
+                        QDomElement command(command_node.toElement());
+                        wp.set_command(command.text());
+                    }
+                }
+
+                QDomNodeList service_tags(process.elementsByTagName("service"));
+                if(service_tags.size() > 0)
+                {
+                    QDomNode service_node(service_tags.at(0));
+                    if(service_node.isElement())
+                    {
+                        QDomElement service(service_node.toElement());
+                        wp.set_service(service.text());
                     }
                 }
 
@@ -619,8 +741,6 @@ void processes::on_process_watch(QDomDocument doc)
         }
     }
 }
-
-
 
 
 SNAP_PLUGIN_END()

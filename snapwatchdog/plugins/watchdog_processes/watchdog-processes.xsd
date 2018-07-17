@@ -29,6 +29,7 @@
     </xsd:annotation>
     <xsd:all>
       <xsd:element name="command" type="tCommand" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="service" type="tService" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="match" type="tMatch" minOccurs="0" maxOccurs="1"/>
     </xsd:all>
     <xsd:attribute name="name" type="name"/>
@@ -61,6 +62,20 @@
         allowed for the same process. In that case both will be checked
         against each process found running at the time the processes
         plugin is started.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="tService">
+    <xsd:annotation>
+      <xsd:documentation>
+        Define the name of the service that runs this process. This is
+        the exact same name you use with systemctl. The watchdog system
+        will check whether the service is currently enabled. If enabled
+        then the process must be running. If not enabled, then it is
+        expected the the process won't be running and as a result it
+        doesn't even get checked.
       </xsd:documentation>
     </xsd:annotation>
     <xsd:restriction base="xsd:string"/>

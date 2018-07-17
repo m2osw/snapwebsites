@@ -1,3 +1,25 @@
+snapwebsites (1.5.88.0~xenial) xenial; urgency=high
+
+  * Added another field found in /proc/meminfo on digitalocean.
+  * Added the snapbackend daemons to a processes XML file.
+  * Fixed an error message in the glob_dir() function.
+  * Fixed the communicator manager plugin by testing whether the service
+    file exists, if not avoid accessing it (it throws otherwise.)
+  * Allow for the mandatory flag to work in duplicated process definitions
+    in the snapwatchdog XML files.
+  * Try creating the folders if message for the snapmanager.cgi session.
+    (Reality is that it's unlikely to work because Apache won't have
+    permissions butat least I have better error messages.)
+  * When trying to create a new session, do 10 attempts max. and fail.
+  * Removed the default from/admin. emails from snapwatchdog.
+  * Changed the WARNING in a HIGHLIGHT when snapwatchdog is disabled.
+  * Added snapmanager.cgi fields to manage snapwatchdog emails and plugins.
+  * Added snaplock as a mandatory process in a couple of places instead of
+    the default because it's not present on Cassandra nodes.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 16 Jul 2018 21:21:21 -0700
+
 snapwebsites (1.5.87.0~xenial) xenial; urgency=high
 
   * Fixed the default path to the snapwatchdog processes.

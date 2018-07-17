@@ -184,21 +184,23 @@ void glob_dir::set_path( std::string const & path, int const flags )
         QString err_msg;
         switch(r)
         {
-            case GLOB_NOSPACE:
-                err_msg = "glob() did not have enough memory to alllocate its buffers.";
-                break;
+        case GLOB_NOSPACE:
+            err_msg = "glob() did not have enough memory to alllocate its buffers.";
+            break;
 
-            case GLOB_ABORTED:
-                err_msg = "glob() was aborted after a read error.";
-                break;
+        case GLOB_ABORTED:
+            err_msg = "glob() was aborted after a read error.";
+            break;
 
-            case GLOB_NOMATCH:
-                err_msg = "glob() could not find any status information.";
-                break;
+        case GLOB_NOMATCH:
+            err_msg = QString("glob() could not find any files matching the specified glob pattern: \"%1\".")
+                                .arg(QString::fromUtf8(path.c_str()));
+            break;
 
-            default:
-                err_msg = QString("unknown glob() error code: %1.").arg(r);
-                break;
+        default:
+            err_msg = QString("unknown glob() error code: %1.").arg(r);
+            break;
+
         }
         throw glob_dir_exception( r, err_msg );
     }

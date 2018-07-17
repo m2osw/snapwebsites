@@ -119,7 +119,8 @@ public:
     std::string         get_parameter(std::string const & parameter_name) const;
     bool                has_parameter(std::string const & parameter_name) const;
     void                set_parameter(std::string const & parameter_name, std::string const & value);
-    snap_configurations::parameter_map_t const & get_parameters() const;
+    snap_configurations::parameter_map_t const &
+                        get_parameters() const;
     void                set_parameters(snap_configurations::parameter_map_t const & params);
 
 private:
@@ -147,7 +148,9 @@ snap_config_file::map_t      g_config_files;
  * The constructor saves the filename of the configuration file.
  * The filename cannot be modified later.
  *
- * \param[in] filename  The filename for this configuration file.
+ * \param[in] configuration_filename  The filename for this configuration file.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
  */
 snap_config_file::snap_config_file(std::string const & configuration_filename, std::string const & override_filename)
     : f_configuration_filename(configuration_filename)
@@ -551,6 +554,8 @@ void snap_config_file::set_parameters( snap_configurations::parameter_map_t cons
  * not yet loaded, the function loads the file at this point.
  *
  * \param[in] configuration_filename  The name of the configuration file to retrieve.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
  * \param[in] quiet                   Silently fail if one cannot read the config file.
  *
  * \return The shared pointer to a snap_config_file object.
@@ -733,6 +738,8 @@ void snap_configurations::set_configuration_path(std::string const & path)
  *
  * \param[in] configuration_filename  The name of the configuration file off of
  *                                which the parameters are returned.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
  *
  * \return A reference to the map of parameters of that configuration file.
  */
@@ -756,6 +763,8 @@ snap_configurations::parameter_map_t const & snap_configurations::get_parameters
  * parameter.)
  *
  * \param[in] configuration_filename  The name of the configuration file concerned.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
  * \param[in] params  The new parameters.
  */
 void snap_configurations::set_parameters(std::string const & configuration_filename, std::string const & override_filename, parameter_map_t const & params)
@@ -776,6 +785,8 @@ void snap_configurations::set_parameters(std::string const & configuration_filen
  * use the has_parameter() function instead.
  *
  * \param[in] configuration_filename  The name of the configuration file.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
  * \param[in] parameter_name  The name of the parameter to retrieve.
  *
  * \return The value of the parameter or the empty string.
@@ -788,6 +799,19 @@ std::string snap_configurations::get_parameter(std::string const & configuration
 }
 
 
+/** \brief Check whether the specified configuration file exists.
+ *
+ * This function searches for the configuration file and possibly an
+ * override file. If neither exists, the function returns false. If at
+ * least one exists, then the function returns false.
+ *
+ * \param[in] configuration_filename  The name of the configuration file to
+ *            probe for existence.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
+ *
+ * \return true if a configuration file was found.
+ */
 bool snap_configurations::configuration_file_exists( std::string const & configuration_filename, std::string const &override_filename )
 {
     snap_thread::snap_lock lock(*g_mutex);
@@ -808,6 +832,8 @@ bool snap_configurations::configuration_file_exists( std::string const & configu
  * configuration is to read it.
  *
  * \param[in] configuration_filename  The name of the configuration file to read.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
  * \param[in] parameter_name  The parameter to check the presence of.
  */
 bool snap_configurations::snap_configurations::has_parameter(std::string const & configuration_filename, std::string const & override_filename, std::string const & parameter_name) const
@@ -824,6 +850,8 @@ bool snap_configurations::snap_configurations::has_parameter(std::string const &
  * in configuration file \p configuration_filename with \p value.
  *
  * \param[in] configuration_filename  The name of the configuration file to change.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
  * \param[in] parameter_name  The name of the parameter to modify.
  * \param[in] value  The new value of the parameter.
  */

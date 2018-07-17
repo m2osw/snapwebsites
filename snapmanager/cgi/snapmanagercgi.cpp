@@ -38,9 +38,11 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/chownnm.h>
 #include <snapwebsites/file_content.h>
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/hexadecimal_string.h>
+#include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_communicator.h>
@@ -936,6 +938,12 @@ int manager_cgi::is_logged_in(std::string & request_method)
             // for that to work, we use the snappassword tool which can become
             // root on a --check command
             //
+            // note that this is not 100% secure since the user password will
+            // appear in the list of command line arguments
+            //
+            // Note: the snappassword.log file is created by the postinst
+            //       and kept alive by logrotate as required
+            //
             std::string const command("snappassword --check --username "
                                      + f_user_name
                                      + " --password "
@@ -970,6 +978,34 @@ int manager_cgi::is_logged_in(std::string & request_method)
                         , "Somehow the snappassword command failed.");
             }
 
+            // without this directory in place, the following while would
+            // fail "forever" (although we now have a counter to make sure
+            // we get things straight)
+            //
+            struct stat s;
+            if(stat(g_session_path, &s) != 0)
+            {
+                if(snap::mkdir_p(g_session_path) != 0)
+                {
+                    return error(
+                              "500 Internal Server Error"
+                            , "An internal error occurred."
+                            , "Could not ensure the availability of the session path folder (g_session_path).");
+                }
+                // change the ownership and permissions to be more secure
+                //
+                snap::chownnm(g_session_path, "www-data", "www-data");
+                chmod(g_session_path, 0700);
+
+                // of course we could statically define the parent but
+                // this way if it changes we still have code that works
+                //
+                char const * parent_end(strrchr(g_session_path, '/'));
+                std::string const parent(g_session_path, parent_end - g_session_path);
+                snap::chownnm(parent.c_str(), "www-data", "www-data");
+                chmod(parent.c_str(), 0700);
+            }
+
             // user credentials were accepted, generate a session and a cookie
             //
             // loop until we get a unique session ID, it should be really rare
@@ -980,8 +1016,17 @@ int manager_cgi::is_logged_in(std::string & request_method)
             //
             std::string session_path;
             int session_fd(-1);
+            int count(10); // do a max. of 10 attempts, it should never take more than 2 to succeed
             do
             {
+                --count;
+                if(count <= 0)
+                {
+                    return error(
+                              "500 Internal Server Error"
+                            , "An internal error occurred."
+                            , "Failed creating a unique session filename.");
+                }
                 unsigned char buf[16];
                 int const rs(RAND_bytes(buf, sizeof(buf)));
                 if(rs != 1)
@@ -1661,7 +1706,7 @@ QDomElement manager_cgi::create_table_header( QDomDocument& doc )
 }
 
 
-void manager_cgi::generate_self_refresh_plugin_entry( QDomDocument& doc, QDomElement& table )
+void manager_cgi::generate_self_refresh_plugin_entry( QDomDocument & doc, QDomElement & table )
 {
     // add a "special" field so one can do a Refresh
     //
@@ -1704,7 +1749,7 @@ void manager_cgi::generate_self_refresh_plugin_entry( QDomDocument& doc, QDomEle
 }
 
 
-void manager_cgi::generate_plugin_entry( snap_manager::status_t status, QDomDocument& doc, QDomElement& table )
+void manager_cgi::generate_plugin_entry( snap_manager::status_t status, QDomDocument & doc, QDomElement & table )
 {
     QString const & plugin_name(status.get_plugin_name());
     snap::plugins::plugin * p(snap::plugins::get_plugin(plugin_name));
@@ -1807,7 +1852,7 @@ void manager_cgi::generate_plugin_entry( snap_manager::status_t status, QDomDocu
     bool managed(false);
     plugin_base * pb(dynamic_cast<plugin_base *>(p));
     if(pb != nullptr
-            && state != snap_manager::status_t::state_t::STATUS_STATE_MODIFIED)
+    && state != snap_manager::status_t::state_t::STATUS_STATE_MODIFIED)
     {
         // call that signal directly on that one plugin
         //
