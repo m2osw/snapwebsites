@@ -192,6 +192,12 @@ void network::on_process_watch(QDomDocument doc)
         //
 
         // TODO: implement
+        if(verify_snapcommunicator_connection(e))
+        {
+        }
+        else
+        {
+        }
     }
     else
     {
@@ -216,14 +222,15 @@ bool network::find_snapcommunicator(QDomElement e)
         process_list::proc_info::pointer_t info(list.next());
         if(info == nullptr)
         {
-            // no cassandra process!?
+            // no snapcommunicator process!?
+            //
             QDomElement proc(e.ownerDocument().createElement("process"));
             e.appendChild(proc);
 
             proc.setAttribute("name", "snapcommunicator");
             proc.setAttribute("error", "missing");
 
-            f_snap->append_error(e.ownerDocument(), "snapcommunicator", "can't find mandatory processs \"snapcommunicator\" in the list of processes. network health is not available.", 99);
+            f_snap->append_error(e.ownerDocument(), "network", "can't find mandatory processs \"snapcommunicator\" in the list of processes. network health is not available.", 99);
 
             return false;
         }
@@ -240,7 +247,7 @@ bool network::find_snapcommunicator(QDomElement e)
             QDomElement proc(e.ownerDocument().createElement("process"));
             e.appendChild(proc);
 
-            proc.setAttribute("name", "snapfirewall");
+            proc.setAttribute("name", "snapcommunicator");
 
             //proc.setAttribute("cmdline", cmdline); -- TBD do we want to build the command line to save in the XML?
             proc.setAttribute("pcpu", QString("%1").arg(info->get_pcpu()));
@@ -258,12 +265,88 @@ bool network::find_snapcommunicator(QDomElement e)
             proc.setAttribute("stime", QString("%1").arg(stime));
             proc.setAttribute("cutime", QString("%1").arg(cutime));
             proc.setAttribute("cstime", QString("%1").arg(cstime));
+
             return true;
         }
     }
 }
 
 
+
+bool network::verify_snapcommunicator_connection(QDomElement e)
+{
+    watchdog_server::pointer_t server(f_snap->get_server());
+
+    if(!server->get_snapcommunicator_is_connected())
+    {
+        // no snapcommunicator process!?
+        //
+        QDomElement service(e.ownerDocument().createElement("service"));
+        e.appendChild(service);
+
+        service.setAttribute("name", "snapcommunicator");
+        service.setAttribute("error", "not connected");
+
+        int64_t const connected(server->get_snapcommunicator_connected_on());
+        int64_t const disconnected(server->get_snapcommunicator_disconnected_on());
+        int64_t const now(snap_child::get_current_date());
+        int64_t duration;
+        if(connected == 0)
+        {
+            // on startup, the process was never connected give the system
+            // 5 min. to get started
+            //
+            duration = now - disconnected;
+            if(duration < 5 * 60 * 1000000)
+            {
+                // don't report the error in this case
+                //
+                return false;
+            }
+
+            // to determine the priority from duration we remove the
+            // first 5 min.
+            //
+            duration -= 5 * 60 * 1000000;
+        }
+        else
+        {
+            // amount of time since the last connection
+            //
+            duration = now - disconnected;
+        }
+
+        // depending on how long the connection has been missing, the
+        // priority increases
+        //
+        int priority(15);
+        if(duration > 15 * 60LL * 1000000LL) // 15 min.
+        {
+            priority = 100;
+        }
+        else if(duration > 5 * 60LL * 1000000LL) // 5 min.
+        {
+            priority = 65;
+        }
+        else if(duration > 60LL * 1000000LL) // 1 min.
+        {
+            priority = 30;
+        }
+        // else use default of 15
+
+        f_snap->append_error(e.ownerDocument()
+                           , "network"
+                           , QString("found the \"snapcommunicator\" process but somehow snapwatchdog is not connected, has not been for %1 microseconds.")
+                                        .arg(duration)
+                           , priority);
+
+        return false;
+    }
+
+    // process running & we're connected!
+    //
+    return true;
+}
 
 
 

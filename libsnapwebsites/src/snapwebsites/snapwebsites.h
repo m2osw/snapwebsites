@@ -208,7 +208,7 @@ class listener_impl;
 
 
 class server
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
     typedef std::shared_ptr<server>             pointer_t;
@@ -318,7 +318,7 @@ public:
     void                udp_rusage(QString const & process_name);
     static void         block_ip( QString const & uri, QString const & period = QString(), QString const & reason = QString() );
 
-    const snap_config&  get_parameters() const;
+    snap_config const & get_parameters() const;
 
 #ifdef SNAP_NO_FORK
     bool nofork() const;

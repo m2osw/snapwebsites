@@ -89,6 +89,11 @@ public:
     int64_t             get_statistics_period() const { return f_statistics_period; }
     int64_t             get_statistics_ttl() const { return f_statistics_ttl; }
     void                stop(bool quitting);
+    void                set_snapcommunicator_connected(bool status);
+    void                set_snapcommunicator_disconnected(bool status);
+    bool                get_snapcommunicator_is_connected() const;
+    int64_t             get_snapcommunicator_connected_on() const;
+    int64_t             get_snapcommunicator_disconnected_on() const;
 
     SNAP_SIGNAL_WITH_MODE(process_watch, (QDomDocument doc), (doc), NEITHER);
 
@@ -108,6 +113,8 @@ private:
     int64_t                                         f_statistics_ttl = 0;
     std::vector< std::shared_ptr<watchdog_child> >  f_processes;
     bool                                            f_stopping = false;
+    int64_t                                         f_snapcommunicator_connected = 0;
+    int64_t                                         f_snapcommunicator_disconnected = 0;
 };
 
 
@@ -129,6 +136,8 @@ public:
     void                append_error(QDomDocument doc, QString const & plugin_name, QString const & message, int priority = 50);
     void                append_error(QDomDocument doc, QString const & plugin_name, std::string const & message, int priority = 50);
     void                append_error(QDomDocument doc, QString const & plugin_name, char const * message, int priority = 50);
+
+    watchdog_server::pointer_t  get_server();
 
 private:
     pid_t               f_child_pid = -1;

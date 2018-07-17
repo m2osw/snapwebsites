@@ -272,6 +272,19 @@ void watchdog::on_retrieve_status(snap_manager::server_status & server_status)
                     , snap_watchdog_conf["plugins"]);
         server_status.set_field(plugins);
     }
+
+    // check that we have an MTA, which means having a "sendmail" tool
+    //
+    struct stat st;
+    if(stat("/usr/sbin/sendmail", &st) != 0)
+    {
+        snap_manager::status_t const plugins(
+                      snap_manager::status_t::state_t::STATUS_STATE_ERROR
+                    , get_plugin_name()
+                    , "no-mta"
+                    , "not available");
+        server_status.set_field(plugins);
+    }
 }
 
 
@@ -466,6 +479,37 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                           "<ul>"
                         + available_plugins
                         + "</ul>"
+                        ));
+        f.add_widget(field);
+        f.generate(parent, uri);
+        return true;
+    }
+
+    if(s.get_field_name() == "no-mta")
+    {
+        // the list of enabled plugins
+        //
+        snap_manager::form f(
+                  get_plugin_name()
+                , s.get_field_name()
+                , 0
+                );
+
+        snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
+                          "Missing MTA"
+                        , s.get_field_name()
+                        , "ignored"
+                        , "<p>For the full functioning of the snapwatchdog daemon, you must"
+                            " install an MTA. It is also useful to get any kind of email to"
+                            " you. For example, a CRON script may be failing and it will"
+                            " attempt to send you an email. However, without the MTA you"
+                            " won't get any of those emails.</p>"
+                          "<p>On at least one computer, generally a backend, you want to"
+                          " install Postfix (the snapmailserver bundle.) On the other"
+                          " computers, you want to install the Snap! MTA which is very"
+                          " small and very fast and uses a very small amount of memory"
+                          " only when an email is being sent. This is done by installing"
+                          " the snapmta bundle.</p>"
                         ));
         f.add_widget(field);
         f.generate(parent, uri);

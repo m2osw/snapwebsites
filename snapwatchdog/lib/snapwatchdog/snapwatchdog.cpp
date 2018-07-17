@@ -413,6 +413,7 @@ void messenger::process_connection_failed(std::string const & error_message)
 
     // also call the default function, just in case
     snap_tcp_client_permanent_message_connection::process_connection_failed(error_message);
+    f_watchdog_server->set_snapcommunicator_connected(false);
 }
 
 
@@ -433,6 +434,7 @@ void messenger::process_connected()
     register_backend.add_parameter("service", "snapwatchdog");
     register_backend.add_parameter("version", snap::snap_communicator::VERSION);
     send_message(register_backend);
+    f_watchdog_server->set_snapcommunicator_connected(true);
 }
 
 
@@ -569,6 +571,7 @@ char const * get_name(name_t name)
  */
 watchdog_server::watchdog_server()
     : f_server_start_date(time(nullptr))
+    , f_snapcommunicator_disconnected(snap_child::get_current_date())
 {
     server::set_config_filename("snapwatchdog");
 }
@@ -1106,6 +1109,41 @@ void watchdog_server::stop(bool quitting)
 
 
 
+void watchdog_server::set_snapcommunicator_connected(bool status)
+{
+    if(status)
+    {
+        f_snapcommunicator_connected = snap_child::get_current_date();
+    }
+    else
+    {
+        f_snapcommunicator_disconnected = snap_child::get_current_date();
+    }
+}
+
+
+
+bool watchdog_server::get_snapcommunicator_is_connected() const
+{
+    return f_snapcommunicator_disconnected < f_snapcommunicator_connected;
+}
+
+
+
+int64_t watchdog_server::get_snapcommunicator_connected_on() const
+{
+    return f_snapcommunicator_connected;
+}
+
+
+
+int64_t watchdog_server::get_snapcommunicator_disconnected_on() const
+{
+    return f_snapcommunicator_disconnected;
+}
+
+
+
 /** \brief Initialize the watchdog child.
  *
  * This function saves the server pointer so it can be accessed
@@ -1202,7 +1240,7 @@ bool watchdog_child::run_watchdog_plugins()
         auto server(std::dynamic_pointer_cast<watchdog_server>(f_server.lock()));
         if(server == nullptr)
         {
-            throw snap_child_exception_no_server("watchdog_child::run_watchdog_plugins(): The p_server weak pointer could not be locked");
+            throw snap_child_exception_no_server("watchdog_child::run_watchdog_plugins(): The f_server weak pointer could not be locked");
         }
 
         if(server->snapdbproxy_addr().isEmpty())
@@ -1570,7 +1608,7 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
         auto server(std::dynamic_pointer_cast<watchdog_server>(f_server.lock()));
         if(server == nullptr)
         {
-            throw snap_child_exception_no_server("watchdog_child::record_usage(): The p_server weak pointer could not be locked");
+            throw snap_child_exception_no_server("watchdog_child::record_usage(): The f_server weak pointer could not be locked");
         }
 
         if(server->snapdbproxy_addr().isEmpty())
@@ -1758,6 +1796,17 @@ void watchdog_child::append_error(QDomDocument doc, QString const & plugin_name,
 void watchdog_child::append_error(QDomDocument doc, QString const & plugin_name, char const * message, int priority)
 {
     append_error(doc, plugin_name, QString::fromUtf8(message), priority);
+}
+
+
+watchdog_server::pointer_t watchdog_child::get_server()
+{
+    auto server(std::dynamic_pointer_cast<watchdog_server>(f_server.lock()));
+    if(server == nullptr)
+    {
+        throw snap_child_exception_no_server("watchdog_child::get_server(): The f_server weak pointer could not be locked");
+    }
+    return server;
 }
 
 

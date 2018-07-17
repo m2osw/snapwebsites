@@ -491,6 +491,40 @@ private:
     typedef QMap<QString, http_header_t>    header_map_t;
     typedef QMap<QString, http_cookie>      cookie_map_t;
 
+    class messenger_runner
+        : public snap_thread::snap_runner
+    {
+    public:
+                        messenger_runner( snap_child * sc );
+
+        virtual void    run() override;
+
+    private:
+        snap_child *    f_child;
+    };
+
+    class child_messenger
+            : public snap_communicator::snap_tcp_client_permanent_message_connection
+    {
+    public:
+        typedef std::shared_ptr<child_messenger> pointer_t;
+
+                        child_messenger( snap_child * s
+                                 , std::string const & addr
+                                 , int port
+                                 );
+
+        virtual void    process_message( snap_communicator_message const & message ) override;
+        virtual void    process_connected() override;
+
+    private:
+        snap_child *    f_child;
+        QString         f_service_name;
+    };
+
+    friend class messenger_runner;
+    friend class child_messenger;
+
     void                        read_environment();
     void                        mark_for_initialization();
     void                        setup_uri();
@@ -506,86 +540,47 @@ private:
     void                        output_headers(header_mode_t modes);
     void                        output_cookies();
     void                        output_session_log( QString const& what );
+    void                        connect_messenger();
+    void                        stop_messenger();
 
-    libdbproxy::table::pointer_t     f_sites_table;
-    bool                                        f_new_content = false;
-    bool                                        f_is_being_initialized = false;
-    environment_map_t                           f_post;
-    post_file_map_t                             f_files;
-    environment_map_t                           f_browser_cookies;
-    bool                                        f_has_post = false;
-    mutable bool                                f_fixed_server_protocol = false;
-    QString                                     f_domain_key;
-    QString                                     f_website_key;
-    QString                                     f_site_key_with_slash;
-    QBuffer                                     f_output;
-    header_map_t                                f_header;
-    http_link::map_t                            f_http_links;
-    cookie_map_t                                f_cookies;
-    bool                                        f_ignore_cookies = false;
-    bool                                        f_died = false; // die() was already called once
-    QString                                     f_language;
-    QString                                     f_country;
-    QString                                     f_language_key;
-    bool                                        f_original_timezone_defined = false;
-    QString                                     f_original_timezone;
-    bool                                        f_plugins_locales_was_not_ready = false;
-    locale_info_vector_t                        f_plugins_locales;
-    locale_info_vector_t                        f_browser_locales;
-    locale_info_vector_t                        f_all_locales;
-    bool                                        f_working_branch = false;
-    snap_version::version_number_t              f_branch;
-    snap_version::version_number_t              f_revision;
-    QString                                     f_revision_key;
-    compression_vector_t                        f_compressions;
-    cache_control_settings                      f_client_cache_control;
-    cache_control_settings                      f_server_cache_control;
-    cache_control_settings                      f_page_cache_control;
-
-    //======================================================================
-    class messenger_runner
-        : public snap_thread::snap_runner
-    {
-    public:
-        messenger_runner( snap_child* sc );
-
-        virtual void run() override;
-
-    private:
-        snap_child* f_child;
-    };
-
-    friend class messenger_runner;
-
-
-    class child_messenger
-            : public snap_communicator::snap_tcp_client_permanent_message_connection
-    {
-    public:
-        typedef std::shared_ptr<child_messenger> pointer_t;
-
-        child_messenger( snap_child * s
-                 , std::string const & addr
-                 , int port
-                 );
-
-        virtual void process_message( snap_communicator_message const & message ) override;
-        virtual void process_connected() override;
-
-    private:
-        snap_child *        f_child;
-        QString             f_service_name;
-    };
-
-    friend class child_messenger;
-
-    messenger_runner                f_messenger_runner;
-    snap::snap_thread               f_messenger_thread;
-    snap_communicator::pointer_t    f_communicator;
-    child_messenger::pointer_t      f_messenger;
-
-    void connect_messenger();
-    void stop_messenger();
+    libdbproxy::table::pointer_t        f_sites_table;
+    bool                                f_new_content = false;
+    bool                                f_is_being_initialized = false;
+    environment_map_t                   f_post;
+    post_file_map_t                     f_files;
+    environment_map_t                   f_browser_cookies;
+    bool                                f_has_post = false;
+    mutable bool                        f_fixed_server_protocol = false;
+    QString                             f_domain_key;
+    QString                             f_website_key;
+    QString                             f_site_key_with_slash;
+    QBuffer                             f_output;
+    header_map_t                        f_header;
+    http_link::map_t                    f_http_links;
+    cookie_map_t                        f_cookies;
+    bool                                f_ignore_cookies = false;
+    bool                                f_died = false; // die() was already called once
+    QString                             f_language;
+    QString                             f_country;
+    QString                             f_language_key;
+    bool                                f_original_timezone_defined = false;
+    QString                             f_original_timezone;
+    bool                                f_plugins_locales_was_not_ready = false;
+    locale_info_vector_t                f_plugins_locales;
+    locale_info_vector_t                f_browser_locales;
+    locale_info_vector_t                f_all_locales;
+    bool                                f_working_branch = false;
+    snap_version::version_number_t      f_branch;
+    snap_version::version_number_t      f_revision;
+    QString                             f_revision_key;
+    compression_vector_t                f_compressions;
+    cache_control_settings              f_client_cache_control;
+    cache_control_settings              f_server_cache_control;
+    cache_control_settings              f_page_cache_control;
+    messenger_runner                    f_messenger_runner;
+    snap::snap_thread                   f_messenger_thread;
+    snap_communicator::pointer_t        f_communicator;
+    child_messenger::pointer_t          f_messenger;
 };
 
 typedef std::vector<snap_child *> snap_child_vector_t;

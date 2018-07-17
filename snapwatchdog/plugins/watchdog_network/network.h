@@ -65,7 +65,7 @@ public:
 
 
 class network
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         network();
@@ -84,6 +84,7 @@ public:
 
 private:
     bool                find_snapcommunicator(QDomElement e);
+    bool                verify_snapcommunicator_connection(QDomElement e);
 
     watchdog_child *    f_snap = nullptr;
     QString             f_network_data_path;

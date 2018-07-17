@@ -180,6 +180,7 @@ void cassandra::on_process_watch(QDomDocument doc)
         if(info == nullptr)
         {
             // no cassandra process!?
+            //
             QDomElement proc(doc.createElement("process"));
             e.appendChild(proc);
 
