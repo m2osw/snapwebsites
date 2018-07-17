@@ -16,6 +16,9 @@ snapwebsites (1.5.88.0~xenial) xenial; urgency=high
   * Added snapmanager.cgi fields to manage snapwatchdog emails and plugins.
   * Added snaplock as a mandatory process in a couple of places instead of
     the default because it's not present on Cassandra nodes.
+  * Added an error in case we detect snapcommunicator but can't connect to it.
+  * Show an error message in the watchdog tab of snapmanager.cgi when no MTA
+    is installed (since sending an email wouldn't do any good...)
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 16 Jul 2018 21:21:21 -0700
