@@ -238,7 +238,7 @@ void snapserver_manager::on_retrieve_status(snap_manager::server_status & server
                     status == snap_manager::service_status_t::SERVICE_STATUS_NOT_INSTALLED
                             ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
                             : status == snap_manager::service_status_t::SERVICE_STATUS_DISABLED
-                                    ? snap_manager::status_t::state_t::STATUS_STATE_WARNING
+                                    ? snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
                                     : snap_manager::status_t::state_t::STATUS_STATE_INFO,
                     get_plugin_name(),
                     "service_status",

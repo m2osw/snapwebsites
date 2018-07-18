@@ -1,3 +1,10 @@
+snapwebsites (1.5.89.0~xenial) xenial; urgency=high
+
+  * Fixed the firewall and snapserver managers so they use HIGHLIGHT instead
+    of WARNING.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 18 Jul 2018 03:36:39 -0700
+
 snapwebsites (1.5.88.0~xenial) xenial; urgency=high
 
   * Added another field found in /proc/meminfo on digitalocean.
