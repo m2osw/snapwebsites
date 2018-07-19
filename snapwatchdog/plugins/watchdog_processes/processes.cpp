@@ -394,16 +394,6 @@ bool watchdog_process_t::allow_duplicates() const
  * is enabled. If not, then we assume that the user explicitly disabled
  * that service and thus we can't expect the process as running.
  *
- * \todo
- * We actually want two new settings:
- * \li A list of backends we want running on that very system. This needs to
- *     be something we clearly setup rather than having flags changed as per
- *     the current setup, because the current setup may be messed up. (Doug
- *     implemented that and it works to a certain extend, but long terms it
- *     breaks once in a while and we lose a backend just like that!)
- * \li Check whether we are in maintenance mode or not, if in maintenance
- *     we accept disabled services. If not, we generate errors.
- *
  * If we have a command (\<command> tag) then the \p name must match
  * that parameter.
  *
