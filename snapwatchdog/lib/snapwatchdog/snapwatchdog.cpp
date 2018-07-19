@@ -1438,7 +1438,7 @@ bool watchdog_child::run_watchdog_plugins()
                                 {
                                     strncpy(hostname, "<unknown>", sizeof(hostname));
                                 }
-                                QString subject(QString("snapwatchdog: found %1 error%2 on %3")
+                                QString const subject(QString("snapwatchdog: found %1 error%2 on %3")
                                                 .arg(count)
                                                 .arg(count == 1 ? "" : "s")
                                                 .arg(hostname));

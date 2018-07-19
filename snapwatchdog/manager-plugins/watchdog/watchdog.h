@@ -39,7 +39,7 @@ namespace watchdog
 
 enum class name_t
 {
-    SNAP_NAME_SNAPMANAGERCGI_WATCHDOG_NAME
+    SNAP_NAME_SNAPMANAGERCGI_WATCHDOG_FROM_EMAIL
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
@@ -66,7 +66,7 @@ public:
 
 
 class watchdog
-        : public snap_manager::plugin_base
+    : public snap_manager::plugin_base
 {
 public:
                             watchdog();

@@ -108,9 +108,9 @@ replace_configuration_value_t const    REPLACE_CONFIGURATION_VALUE_TRIM_RESULT  
 
 
 class manager
-        : public snap::plugins::plugin
-        , public snap::snap_child
-        , public std::enable_shared_from_this<manager>
+    : public snap::plugins::plugin
+    , public snap::snap_child
+    , public std::enable_shared_from_this<manager>
 {
 public:
     typedef std::shared_ptr<manager>         pointer_t;

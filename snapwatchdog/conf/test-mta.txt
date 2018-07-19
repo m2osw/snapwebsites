@@ -1,0 +1,2 @@
+# This file is a placeholder for the email and result of sending a test email
+# from the snapwatchdog snapmanager.cgi screen.

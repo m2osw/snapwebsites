@@ -22,9 +22,11 @@
 // our lib
 //
 #include <snapmanager/form.h>
+#include <snapmanager/version.h>
 
 // snapwebsites lib
 //
+#include <snapwebsites/email.h>
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/join_strings.h>
 #include <snapwebsites/log.h>
@@ -59,6 +61,8 @@ char const * g_configuration_filename = "snapwatchdog";
 
 char const * g_configuration_d_filename = "/etc/snapwebsites/snapwebsites.d/snapwatchdog.conf";
 
+char const * g_test_mta_results = "/var/lib/snapwebsites/snapwatchdog/test-mta.txt";
+
 
 
 
@@ -79,8 +83,8 @@ char const * get_name(name_t name)
 {
     switch(name)
     {
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_WATCHDOG_NAME:
-        return "name";
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_WATCHDOG_FROM_EMAIL:
+        return "from_email";
 
     default:
         // invalid index
@@ -275,6 +279,28 @@ void watchdog::on_retrieve_status(snap_manager::server_status & server_status)
                     , get_plugin_name()
                     , "no-mta"
                     , "not available");
+        server_status.set_field(plugins);
+    }
+    else
+    {
+        QString email;
+
+        try
+        {
+            snap_config test_mta(g_test_mta_results);
+            email = test_mta["email"];
+        }
+        catch(snap_configurations_exception const & e)
+        {
+            SNAP_LOG_DEBUG("test_mta could not be read.");
+            // ignore the error otherwise
+        }
+
+        snap_manager::status_t const plugins(
+                      snap_manager::status_t::state_t::STATUS_STATE_INFO
+                    , get_plugin_name()
+                    , "test_mta"
+                    , email);
         server_status.set_field(plugins);
     }
 }
@@ -508,6 +534,45 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
+    if(s.get_field_name() == "test_mta")
+    {
+        // the list of enabled plugins
+        //
+        snap_manager::form f(
+                  get_plugin_name()
+                , s.get_field_name()
+                , snap_manager::form::FORM_BUTTON_SAVE
+                );
+
+        snap_config const test_mta(g_test_mta_results);
+        QString status;
+        try
+        {
+            status = QString::fromUtf8(test_mta["status"].c_str());
+        }
+        catch(snap_configurations_exception const & e)
+        {
+            SNAP_LOG_DEBUG("test_mta could not be read.");
+            // ignore the error otherwise
+        }
+        if(status.isEmpty())
+        {
+            status = "<p>The MTA was not yet tested through the Watchdog.</p>";
+        }
+
+        snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
+                          "Send a test email"
+                        , s.get_field_name()
+                        , s.get_value()
+                        , "<p>Enter an email address and click the Save button to make sure that"
+                          " sendmail works as expected.</p>"
+                        + status
+                        ));
+        f.add_widget(field);
+        f.generate(parent, uri);
+        return true;
+    }
+
     return false;
 }
 
@@ -622,6 +687,70 @@ bool watchdog::apply_setting(QString const & button_name, QString const & field_
         affected_services.insert("snapwatchdog");
 
         f_snap->replace_configuration_value(g_configuration_d_filename, "plugins", new_list_of_plugins);
+        return true;
+    }
+
+    if(field_name == "test_mta")
+    {
+        // to make use of the new test MTA parameters, make sure to restart
+        //
+        affected_services.insert("snapwatchdog");
+
+        snap_config snap_watchdog_conf(g_configuration_filename);
+        QString const from_email(snap_watchdog_conf["from_email"]);
+
+        //QString const from_email(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_WATCHDOG_FROM_EMAIL)));
+        if(from_email.isEmpty())
+        {
+            f_snap->replace_configuration_value(
+                          g_test_mta_results
+                        , "status"
+                        , "The from_email must bost be defined to test the MTA from the watchdog.");
+        }
+        else if(new_value.isEmpty())
+        {
+            f_snap->replace_configuration_value(
+                          g_test_mta_results
+                        , "status"
+                        , "You must enter a test_mta email address so we can send the test email somewhere.");
+        }
+        else
+        {
+            // create the email and add a few headers
+            //
+            email e;
+            e.set_from(from_email);
+            e.set_to(new_value);
+            e.set_priority(email::priority_t::EMAIL_PRIORITY_NORMAL);
+
+            char hostname[HOST_NAME_MAX + 1];
+            if(gethostname(hostname, sizeof(hostname)) != 0)
+            {
+                strncpy(hostname, "<unknown>", sizeof(hostname));
+            }
+            QString const subject(QString("snapwatchdog: test email from %1")
+                            .arg(hostname));
+            e.set_subject(subject);
+
+            e.add_header("X-SnapWatchdog-Version", SNAPMANAGERCGI_VERSION_STRING);
+
+            // prevent blacklisting
+            // (since we won't run the `sendmail` plugin validation, it's not necessary)
+            //e.add_parameter(sendmail::get_name(sendmail::name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST), "true");
+
+            // create the body
+            //
+            email::attachment text;
+            text.quoted_printable_encode_and_set_data("This is the test email from your Snap! Watchdog.", "text/plain");
+            e.set_body_attachment(text);
+
+            // finally send email
+            //
+            e.send();
+
+            f_snap->replace_configuration_value(g_test_mta_results, "status", "Email was sent. Now verify that you receive it.");
+            f_snap->replace_configuration_value(g_test_mta_results, "email", new_value);
+        }
         return true;
     }
 

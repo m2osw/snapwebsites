@@ -71,6 +71,18 @@ install(
 
 
 #################################################################################
+## Bundles are also saved under a bundle directory for reference
+##
+install(
+    FILES
+        test-mta.txt
+
+    DESTINATION
+        lib/snapwebsites/snapwatchdog
+)
+
+
+#################################################################################
 ## The starter script to run a watch script is viewed as a normal binary
 ##
 install(
