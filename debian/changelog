@@ -1,3 +1,15 @@
+snapwebsites (1.5.91.0~xenial) xenial; urgency=high
+
+  * Added a mark on the backend services so snapwatchdog knows they are
+    backends and it can manage them slightly differently.
+  * Cleaned up the get_retry_from_content() of the snapmanagercgi and
+    especially properly test a couple more potential errors.
+  * Enhanced the processes check to avoid generating errors when the system
+    backends were clearly disabled.
+  * Removed some dead code in backend.cpp.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 18 Jul 2018 22:09:24 -0700
+
 snapwebsites (1.5.90.0~xenial) xenial; urgency=high
 
   * Changed the use of the status_file with two variables in the snapserver.conf

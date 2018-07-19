@@ -21,6 +21,7 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/file_content.h>
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_used.h>
@@ -43,6 +44,11 @@ SNAP_PLUGIN_START(processes, 1, 0)
 
 namespace
 {
+
+
+char const * g_server_configuration_filename = "snapserver";
+
+char const * g_configuration_apache2_maintenance = "/etc/apache2/snap-conf/snap-apache2-maintenance.conf";
 
 
 /** \brief Check whether a service is enabled or not.
@@ -83,6 +89,82 @@ bool is_service_enabled(QString const & service_name)
 }
 
 
+/** \brief Check whether a service is active or not.
+ *
+ * The Snap! Watchdog checks whether a service is considered active too.
+ * A service may be marked as enabled but it may not be active.
+ *
+ * \param[in] service_name  The name of the service, as systemd understands
+ *            it, to check on.
+ *
+ * \return true if the service is marked as active.
+ */
+bool is_service_active(QString const & service_name)
+{
+    snap::process p("query service status");
+    p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
+    p.set_command("systemctl");
+    p.add_argument("is-active");
+    p.add_argument(service_name);
+    int const r(p.run());
+    SNAP_LOG_INFO("\"is-active\" query output (")(r)("): ")(p.get_output(true).trimmed());
+    return r == 0;
+}
+
+
+/** \brief Check whether the system is in maintenance mode.
+ *
+ * This function checks whether the standard maintenance mode is currently
+ * turn on or not. This is done by checking the maintenance Apache
+ * configuration file and see whether the lines between ##MAINTENANCE-START##
+ * and ##MAINTENANCE-END## are commented out or not.
+ *
+ * \return true if the maintenance mode is ON.
+ */
+bool is_in_maintenance()
+{
+    snap::file_content conf(g_configuration_apache2_maintenance);
+    if(!conf.exists())
+    {
+        // the maintenance file doesn't exist, assume the worst, that
+        // we are not in maintenance
+        //
+        return false;
+    }
+
+    std::string const content(conf.get_content());
+    std::string::size_type const pos(content.find("##MAINTENANCE-START##"));
+    if(pos == std::string::npos)
+    {
+        // marker not found... consider we are live
+        //
+        return false;
+    }
+
+    char const * s(content.c_str() + pos + 21);
+    while(isspace(*s))
+    {
+        ++s;
+    }
+    if(*s == '#')
+    {
+        // not in maintenance, fields are commented out
+        //
+        return false;
+    }
+
+    std::string::size_type const ra_pos(content.find("Retry-After"));
+    if(ra_pos == std::string::npos)
+    {
+        // no Retry-After header?!
+        //
+        return false;
+    }
+
+    return true;
+}
+
+
 /** \brief Class used to read the list of processes to check.
  *
  * The class understands the following XML format:
@@ -109,11 +191,12 @@ public:
 
     void                        set_mandatory(bool mandatory);
     void                        set_command(QString const & command);
-    void                        set_service(QString const & service);
+    void                        set_service(QString const & service, bool backend);
     void                        set_match(QString const & match);
 
     QString const &             get_name() const;
     bool                        is_mandatory() const;
+    bool                        is_backend() const;
     bool                        allow_duplicates() const;
     bool                        match(QString const & name, QString const & cmdline);
 
@@ -125,6 +208,8 @@ private:
     bool                        f_mandatory = false;
     bool                        f_allow_duplicates = false;
     bool                        f_service_is_enabled = true;
+    bool                        f_service_is_active = true;
+    bool                        f_service_is_backend = false;
 };
 
 
@@ -196,8 +281,9 @@ void watchdog_process_t::set_command(QString const & command)
  * then there is a problem.
  *
  * \param[in] service  The name of the service to check.
+ * \param[in] backend  Whether the service is a snapbackend.
  */
-void watchdog_process_t::set_service(QString const & service)
+void watchdog_process_t::set_service(QString const & service, bool backend)
 {
     // we check whether the service is running just once here
     // (otherwise we could end up calling that function once per
@@ -205,6 +291,8 @@ void watchdog_process_t::set_service(QString const & service)
     //
     f_service = service;
     f_service_is_enabled = is_service_enabled(service);
+    f_service_is_active = is_service_active(service);
+    f_service_is_backend = backend;
 }
 
 
@@ -259,6 +347,23 @@ QString const & watchdog_process_t::get_name() const
 bool watchdog_process_t::is_mandatory() const
 {
     return f_mandatory;
+}
+
+
+/** \brief Check whether this process is a backend service.
+ *
+ * Whenever a process is marked as a service, it can also specifically
+ * be marked as a backend service.
+ *
+ * A backend service is not forcibly expected to be running whenever
+ * the system is put in maintenance mode. This flag is used to test
+ * that specific status.
+ *
+ * \return true if the process was marked as a backend service.
+ */
+bool watchdog_process_t::is_backend() const
+{
+    return f_service_is_backend;
 }
 
 
@@ -320,13 +425,66 @@ bool watchdog_process_t::match(QString const & command, QString const & cmdline)
 {
     if(!f_service.isEmpty())
     {
+        // service possible states:
+        //
+        //  . disabled (and thus inactive)
+        //  . enabled
+        //  . active
+        //
+        // a service may also be marked as a backend; backends are
+        // further affected by the "backend_status" and "backends"
+        // fields found in the "snapserver.conf" file
+        //
         if(!f_service_is_enabled)
         {
-            // this corresponds to a service which may be "legally"
-            // disabled and if so, whether the process is running or
-            // not is of no concern of ours
+            // a regular service markedas disabled is not expected to be running
+            // so if disabled we return true (i.e. "all good")
             //
-            return true;
+            // however, a backend which is disabled is not going to return true
+            // until the "backend_status" is "disabled" or the maintenance mode
+            // is turned on, in all other cases, disabled and/or not running
+            // backends are in error if the system is in standard run mode
+            //
+            if(!f_service_is_backend)
+            {
+                return true;
+            }
+
+            // this is a backend, check the "backend_status" flag
+            //
+            // note: configuration files are cached so the following is rather
+            //       fast the second time (i.e. access an std::map<>().)
+            //
+            snap_config snap_server_conf(g_server_configuration_filename);
+            if(snap_server_conf["backend_status"] == "disabled")
+            {
+                // no problem, the administrator disabled all the backends
+                //
+                return true;
+            }
+
+            // okay, now check whether that specific backend is expected to
+            // be running on this system because that varies "widely"
+            //
+            QString const expected_backends(snap_server_conf["backends"]);
+            snap_string_list valid_backends(expected_backends.split(','));
+            int const max(valid_backends.size());
+            for(int idx(0); idx < max; ++idx)
+            {
+                // in case the admin edited that list manually, we need to
+                // fix it before we use it (we should look into using our
+                // tokenize_string instead because it can auto-trims)
+                //
+                valid_backends[idx] = valid_backends[idx].trimmed();
+            }
+
+            if(!valid_backends.contains(f_service))
+            {
+                // all good, the administrator doesn't expect this backend
+                // to run on this computer
+                //
+                return true;
+            }
         }
     }
 
@@ -368,6 +526,8 @@ bool watchdog_process_t::match(QString const & command, QString const & cmdline)
  *
  * This function loads one XML file and transform it in a
  * watchdog_process_t structure.
+ *
+ * param[in] processes_filename  The name of an XML file representing processes.
  */
 void load_xml(QString processes_filename)
 {
@@ -447,7 +607,7 @@ void load_xml(QString processes_filename)
                     if(service_node.isElement())
                     {
                         QDomElement service(service_node.toElement());
-                        wp.set_service(service.text());
+                        wp.set_service(service.text(), service.hasAttribute("backend"));
                     }
                 }
 
@@ -657,22 +817,33 @@ void processes::on_process_watch(QDomDocument doc)
                 //      but probably not that important that it should be
                 //      close to 100?
                 //
+                int priority(50);
+                char const * message_fmt = nullptr;
                 if(g_processes[j].is_mandatory())
                 {
-                    f_snap->append_error(doc
-                                       , "processes"
-                                       , QString("can't find mandatory process \"%1\" in the list of processes.")
-                                                .arg(g_processes[j].get_name())
-                                       , 95);
+                    message_fmt = "can't find mandatory process \"%1\" in the list of processes.";
+                    priority = 95;
                 }
                 else
                 {
-                    f_snap->append_error(doc
-                                       , "processes"
-                                       , QString("can't find expected process \"%1\" in the list of processes.")
-                                                .arg(g_processes[j].get_name())
-                                       , 60);
+                    message_fmt = "can't find expected process \"%1\" in the list of processes.";
+                    priority = 60;
                 }
+
+                if(g_processes[j].is_backend()
+                && is_in_maintenance())
+                {
+                    // a backend which is not running while we are in
+                    // maintenance is a very low priority
+                    //
+                    priority = 5;
+                }
+
+                f_snap->append_error(
+                          doc
+                        , "processes"
+                        , QString(message_fmt).arg(g_processes[j].get_name())
+                        , priority);
             }
             break;
         }

@@ -67,7 +67,16 @@
     <xsd:restriction base="xsd:string"/>
   </xsd:simpleType>
 
-  <xsd:simpleType name="tService">
+  <xsd:simpleType name="tServiceContent">
+    <xsd:annotation>
+      <xsd:documentation>
+        See tService. This simple type only defines the content.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="tService">
     <xsd:annotation>
       <xsd:documentation>
         Define the name of the service that runs this process. This is
@@ -78,7 +87,17 @@
         doesn't even get checked.
       </xsd:documentation>
     </xsd:annotation>
-    <xsd:restriction base="xsd:string"/>
+    <xsd:simpleContent>
+      <xsd:extension base="tServiceContent">
+        <xsd:attribute name="backend" type="tBackend" use="optional"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:simpleType name="tBackend">
+    <xsd:restriction base="name">
+      <xsd:enumeration value="backend"/>
+    </xsd:restriction>
   </xsd:simpleType>
 
   <xsd:simpleType name="tMatch">

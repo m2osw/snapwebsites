@@ -96,71 +96,6 @@ backend_services const & get_service_by_name( QString const & service_name )
 }
 
 
-//class status_file
-//{
-//public:
-//    status_file()
-//    {
-//        load_file();
-//    }
-//
-//    QString &       operator[]( QString const& name )       { return f_map[name];    }
-//    QString const & operator[]( QString const& name ) const { return f_map.at(name); }
-//
-//    bool is_empty() const { return f_map.empty(); }
-//    void clear()          { f_map.clear();        }
-//    void save()           { save_file();          }
-//
-//private:
-//    std::map<QString,QString>   f_map;
-//    QString const               f_filename = "/var/lib/snapwebsites/snapbackend/backend-status.txt";
-//
-//    void load_file()
-//    {
-//        QFile the_file( f_filename );
-//        if( !the_file.exists() )
-//        {
-//            // Doesn't yet exist, so don't load anything
-//            return;
-//        }
-//
-//        if( !the_file.open(QFile::ReadOnly) )
-//        {
-//            SNAP_LOG_ERROR("Cannot read backend status file!");
-//            return;
-//        }
-//
-//        QTextStream in(&the_file);
-//        QString line;
-//        while( in.readLineInto(&line) )
-//        {
-//            line = line.trimmed();
-//            if( line[0] == '#' ) continue; // ignore comments
-//            QStringList values( line.split('=') );
-//            f_map[values[0]] = values[1];
-//        }
-//    }
-//
-//    void save_file()
-//    {
-//        QFile the_file( f_filename );
-//        if( !the_file.open(QFile::WriteOnly | QFile::Truncate) )
-//        {
-//            SNAP_LOG_ERROR("Cannot open backend status file for write!");
-//            return;
-//        }
-//
-//        QTextStream out(&the_file);
-//        out << "# Auto-generated file by `snapbackend`.\n";
-//        for( auto const& pair : f_map )
-//        {
-//            SNAP_LOG_DEBUG("outputting first=")(pair.first)(", second=")(pair.second);
-//            out << pair.first << "=" << pair.second << "\n";
-//        }
-//
-//        the_file.flush();
-//    }
-//};
 
 
 }
@@ -608,32 +543,6 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
         return true;
     }
 
-    //if(field_name == "disabled")
-    //{
-    //    // the list if frontend snapmanagers that are to receive statuses
-    //    // of the cluster computers; may be just one computer; should not
-    //    // be empty; shows a text input field
-    //    //
-    //    snap_manager::form f(
-    //              get_plugin_name()
-    //            , s.get_field_name()
-    //            ,   snap_manager::form::FORM_BUTTON_RESET
-    //              | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
-    //              | snap_manager::form::FORM_BUTTON_SAVE
-    //              | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
-    //            );
-
-    //    snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
-    //                      QString("Enable/Disable %1 Backend").arg(service_name)
-    //                    , s.get_field_name()
-    //                    , s.get_value()
-    //                    , QString("Define whether the %1 backend is \"enabled\" or \"disabled\".").arg(service_name)
-    //                    ));
-    //    f.add_widget(field);
-    //    f.generate(parent, uri);
-    //    return true;
-    //}
-
     if(field_name == "recovery")
     {
         // the list if frontend snapmanagers that are to receive statuses
@@ -764,7 +673,6 @@ bool backend::apply_setting( QString const     & button_name
         f_snap->replace_configuration_value(g_configuration_d_filename, "backend_status", new_value);
 
         update_all_services();
-        //send_update(new_value); -- not necessary because we force the user to click "Save Everywhere"
         return true;
     }
 
@@ -1001,19 +909,6 @@ void backend::update_all_services()
 }
 
 
-//void backend::send_update( QString const & new_value )
-//{
-//    snap::snap_communicator_message cmd;
-//    cmd.set_command("BACKENDALLSERVICES");
-//    cmd.set_service("*");
-//    //cmd.add_parameter( "cache"    , "ttl=60"  ); TODO?
-//    cmd.add_parameter( "all_services" , new_value );
-//    f_snap->forward_message(cmd);
-//
-//    SNAP_LOG_DEBUG("BACKENDALLSERVICES message sent, new_value=")(new_value);
-//}
-
-
 void backend::send_status( snap::snap_communicator_message const* message )
 {
     snap::snap_communicator_message cmd;
@@ -1055,7 +950,6 @@ void backend::on_communication_ready()
 void backend::on_add_plugin_commands(snap::snap_string_list & understood_commands)
 {
     understood_commands << "BACKENDSTATUS_REQUEST";
-    //understood_commands << "BACKENDALLSERVICES";
 }
 
 
@@ -1069,12 +963,6 @@ void backend::on_process_plugin_message(snap::snap_communicator_message const & 
         send_status( &message );
         processed = true;
     }
-    //else if(command == "BACKENDALLSERVICES")
-    //{
-    //    SNAP_LOG_DEBUG("BACKENDALLSERVICES received!");
-    //    update_all_services( message.get_parameter( "all_services" ) );
-    //    processed = true;
-    //}
 }
 
 

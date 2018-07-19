@@ -60,14 +60,6 @@ char const * g_configuration_filename = "snapwatchdog";
 char const * g_configuration_d_filename = "/etc/snapwebsites/snapwebsites.d/snapwatchdog.conf";
 
 
-//void file_descriptor_deleter(int * fd)
-//{
-//    if(close(*fd) != 0)
-//    {
-//        int const e(errno);
-//        SNAP_LOG_WARNING("closing file descriptor failed (errno: ")(e)(", ")(strerror(e))(")");
-//    }
-//}
 
 
 } // no name namespace

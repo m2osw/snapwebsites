@@ -65,13 +65,70 @@ char const * g_configuration_d_filename = "/etc/snapwebsites/snapwebsites.d/snap
 char const * g_configuration_apache2_maintenance = "/etc/apache2/snap-conf/snap-apache2-maintenance.conf";
 
 
-void file_descriptor_deleter(int * fd)
+
+
+/** \brief Search for the Retry-After header parameter.
+ *
+ * This function searches for the Retry-After header parameter of the
+ * maintenance Apache2 configuration file.
+ *
+ * If it can't find that field or the computer is not in maintenance mode,
+ * the function returns 0 which means that we are in live mode. Note that
+ * if there are any errors in the maintenance file (compared to what we
+ * expect of it) then the function returns 0.
+ *
+ * \return 0 if the Retry-After can't be found or is commented out, the
+ *         Retry-After value otherwise.
+ */
+int get_retry_from_content(std::string const & content)
 {
-    if(close(*fd) != 0)
+    int retry_after(0);
+
+    // search for the start marker
+    //
+    std::string::size_type const pos(content.find("##MAINTENANCE-START##"));
+    if(pos != std::string::npos)
     {
-        int const e(errno);
-        SNAP_LOG_WARNING("closing file descriptor failed (errno: ")(e)(", ")(strerror(e))(")");
+        char const * s(content.c_str() + pos + 21);
+        while(isspace(*s))
+        {
+            ++s;
+        }
+
+        // not commenter further? then we are in maintenance mode otherwise
+        // we are likely live
+        //
+        if(*s != '#')
+        {
+            // search for the Retry-After header
+            //
+            std::string::size_type const ra_pos(content.find("Retry-After"));
+            if(ra_pos != std::string::npos)
+            {
+                char const * ra(content.c_str() + ra_pos + 11);
+                for(; *ra == '"' || isspace(*ra); ++ra);
+                for(; *ra >= '0' && *ra <= '9'; ++ra)
+                {
+                    retry_after = retry_after * 10 + *ra - '0';
+                    if(retry_after > 365 * 24 * 60 * 60)
+                    {
+                        // more than 1 year?!? use 1 year
+                        //
+                        retry_after = 365 * 24 * 60 * 60;
+                        break;
+                    }
+                }
+                if(retry_after < 60)
+                {
+                    // less than a minute? (probably invalid though)
+                    // adjust and use 1 min. minimum
+                    //
+                    retry_after = 60;
+                }
+            }
+        }
     }
+    return retry_after;
 }
 
 
@@ -208,38 +265,6 @@ void cgi::bootstrap(snap_child * snap)
 }
 
 
-int get_retry_from_content( std::string const & content )
-{
-    int retry_after(0);
-    std::string::size_type const pos(content.find("##MAINTENANCE-START##"));
-    char const * s(content.c_str() + pos + 21);
-    while(isspace(*s))
-    {
-        ++s;
-    }
-    if(*s != '#')
-    {
-        std::string::size_type const ra_pos(content.find("Retry-After"));
-        char const * ra(content.c_str() + ra_pos + 11);
-        for(; *ra == '"' || isspace(*ra); ++ra);
-        for(; *ra >= '0' && *ra <= '9'; ++ra)
-        {
-            retry_after = retry_after * 10 + *ra - '0';
-            if(retry_after > 365 * 24 * 60 * 60) // more than 1 year?!?
-            {
-                retry_after = 365 * 24 * 60 * 60;
-                break;
-            }
-        }
-        if(retry_after < 60) // less than a minute?!?
-        {
-            retry_after = 60;
-        }
-    }
-    return retry_after;
-}
-
-
 /** \brief Determine this plugin status data.
  *
  * This function builds a tree of statuses.
@@ -273,7 +298,9 @@ void cgi::on_retrieve_status(snap_manager::server_status & server_status)
         snap::file_content conf(g_configuration_apache2_maintenance);
         if(conf.exists())
         {
-            int const retry_after = conf.read_all()? get_retry_from_content(conf.get_content()) : 0;
+            int const retry_after = conf.read_all()
+                                        ? get_retry_from_content(conf.get_content())
+                                        : 0;
 
             // TODO: display retry_after in minutes, hours, days...
             snap_manager::status_t const maintenance(
