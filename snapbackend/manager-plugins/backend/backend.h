@@ -84,7 +84,7 @@ public:
 private:
     void                    retrieve_bundles_status(snap_manager::server_status & server_status);
     bool                    install_bundle(bool const install, QString const & bundle_name, std::set<QString> & services);
-    void                    update_all_services( QString const & new_value );
+    void                    update_all_services();
     void                    send_update( QString const& new_value );
     void                    send_status( snap::snap_communicator_message const* message = nullptr );
     bool                    change_service_status( QString const& exe_path, QString const& unit_name, snap_manager::service_status_t status );

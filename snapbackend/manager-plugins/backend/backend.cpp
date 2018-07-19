@@ -56,24 +56,33 @@ SNAP_PLUGIN_START(backend, 1, 0)
 namespace
 {
 
-// TODO: offer the user a way to change this path?
+char const * g_configuration_filename = "snapserver";
+
+char const * g_configuration_d_filename = "/etc/snapwebsites/snapwebsites.d/snapserver.conf";
+
+
+// TODO: offer the user a way to change the path to the executable?
 struct backend_services
 {
     char const *        f_service_name       = nullptr;
     char const *        f_service_executable = nullptr;
-    bool                f_recovery           = true;
-    int                 f_nice               = 0;
+    char const *        f_recovery           = nullptr;     // default Service::RestartSec value
+    int                 f_nice               = 0;           // default nice value
 };
 
-backend_services g_services[5] = {
-        { "snapbackend",        "/usr/bin/snapbackend", false,  5 },
-        { "snapimages",         "/usr/bin/snapbackend", true,  10 },
-        { "snaplistjournal",    "/usr/bin/snapbackend", true,   3 },
-        { "snappagelist",       "/usr/bin/snapbackend", true,   3 },
-        { "snapsendmail",       "/usr/bin/snapbackend", true,   7 }
-    };
+backend_services const g_not_found;
 
-backend_services get_service_by_name( QString const & service_name )
+backend_services const g_services[5] =
+{
+    { "snapbackend",        "/usr/bin/snapbackend", nullptr,  5 },
+    { "snapimages",         "/usr/bin/snapbackend", "1h",    10 },
+    { "snaplistjournal",    "/usr/bin/snapbackend", "5min",   3 },
+    { "snappagelist",       "/usr/bin/snapbackend", "5min",   3 },
+    { "snapsendmail",       "/usr/bin/snapbackend", "1h",     7 }
+};
+
+
+backend_services const & get_service_by_name( QString const & service_name )
 {
     for(auto const & service_info : g_services)
     {
@@ -83,8 +92,76 @@ backend_services get_service_by_name( QString const & service_name )
         }
     }
 
-    return backend_services();
+    return g_not_found;
 }
+
+
+//class status_file
+//{
+//public:
+//    status_file()
+//    {
+//        load_file();
+//    }
+//
+//    QString &       operator[]( QString const& name )       { return f_map[name];    }
+//    QString const & operator[]( QString const& name ) const { return f_map.at(name); }
+//
+//    bool is_empty() const { return f_map.empty(); }
+//    void clear()          { f_map.clear();        }
+//    void save()           { save_file();          }
+//
+//private:
+//    std::map<QString,QString>   f_map;
+//    QString const               f_filename = "/var/lib/snapwebsites/snapbackend/backend-status.txt";
+//
+//    void load_file()
+//    {
+//        QFile the_file( f_filename );
+//        if( !the_file.exists() )
+//        {
+//            // Doesn't yet exist, so don't load anything
+//            return;
+//        }
+//
+//        if( !the_file.open(QFile::ReadOnly) )
+//        {
+//            SNAP_LOG_ERROR("Cannot read backend status file!");
+//            return;
+//        }
+//
+//        QTextStream in(&the_file);
+//        QString line;
+//        while( in.readLineInto(&line) )
+//        {
+//            line = line.trimmed();
+//            if( line[0] == '#' ) continue; // ignore comments
+//            QStringList values( line.split('=') );
+//            f_map[values[0]] = values[1];
+//        }
+//    }
+//
+//    void save_file()
+//    {
+//        QFile the_file( f_filename );
+//        if( !the_file.open(QFile::WriteOnly | QFile::Truncate) )
+//        {
+//            SNAP_LOG_ERROR("Cannot open backend status file for write!");
+//            return;
+//        }
+//
+//        QTextStream out(&the_file);
+//        out << "# Auto-generated file by `snapbackend`.\n";
+//        for( auto const& pair : f_map )
+//        {
+//            SNAP_LOG_DEBUG("outputting first=")(pair.first)(", second=")(pair.second);
+//            out << pair.first << "=" << pair.second << "\n";
+//        }
+//
+//        the_file.flush();
+//    }
+//};
+
 
 }
 // unnamed namespace
@@ -220,73 +297,6 @@ void backend::bootstrap(snap_child * snap)
 }
 
 
-class status_file
-{
-public:
-    status_file()
-    {
-        load_file();
-    }
-
-    QString &       operator[]( QString const& name )       { return f_map[name];    }
-    QString const & operator[]( QString const& name ) const { return f_map.at(name); }
-
-    bool is_empty() const { return f_map.empty(); }
-    void clear()          { f_map.clear();        }
-    void save()           { save_file();          }
-
-private:
-    std::map<QString,QString>   f_map;
-    QString const               f_filename = "/var/lib/snapwebsites/snapbackend/backend-status.txt";
-
-    void load_file()
-    {
-        QFile the_file( f_filename );
-        if( !the_file.exists() )
-        {
-            // Doesn't yet exist, so don't load anything
-            return;
-        }
-
-        if( !the_file.open(QFile::ReadOnly) )
-        {
-            SNAP_LOG_ERROR("Cannot read backend status file!");
-            return;
-        }
-
-        QTextStream in(&the_file);
-        QString line;
-        while( in.readLineInto(&line) )
-        {
-            line = line.trimmed();
-            if( line[0] == '#' ) continue; // ignore comments
-            QStringList values( line.split('=') );
-            f_map[values[0]] = values[1];
-        }
-    }
-
-    void save_file()
-    {
-        QFile the_file( f_filename );
-        if( !the_file.open(QFile::WriteOnly | QFile::Truncate) )
-        {
-            SNAP_LOG_ERROR("Cannot open backend status file for write!");
-            return;
-        }
-
-        QTextStream out(&the_file);
-        out << "# Auto-generated file by `snapbackend`.\n";
-        for( auto const& pair : f_map )
-        {
-            SNAP_LOG_DEBUG("outputting first=")(pair.first)(", second=")(pair.second);
-            out << pair.first << "=" << pair.second << "\n";
-        }
-
-        the_file.flush();
-    }
-};
-
-
 /** \brief Determine this plugin status data.
  *
  * This function builds a tree of statuses.
@@ -300,38 +310,40 @@ void backend::on_retrieve_status(snap_manager::server_status & server_status)
         return;
     }
 
+    snap_config snap_server_conf(g_configuration_filename);
+
     // Add the enable/disable ALL backends pulldown:
     //
+
     {
-        status_file sf;
-        if( !sf.is_empty() )
-        {
-            SNAP_LOG_DEBUG("backend::on_retrieve_status(): snapbackend::all_services, sf[\"disabled\"]=")(sf["disabled"]);
-            bool const disabled_mode(sf["disabled"] == "true");
-            snap_manager::status_t const all_status_widget(
-                        disabled_mode
-                            ? snap_manager::status_t::state_t::STATUS_STATE_WARNING
-                            : snap_manager::status_t::state_t::STATUS_STATE_INFO,
-                        get_plugin_name(),
-                        "snapbackend::all_services",
-                        disabled_mode ? "disabled" : "enabled");
-            server_status.set_field(all_status_widget);
-        }
+        QString const status(snap_server_conf["backend_status"]);
+        SNAP_LOG_DEBUG("all_services -- backend_status=")(status);
+        snap_manager::status_t const all_status_widget(
+                    status == "enabled"
+                        ? snap_manager::status_t::state_t::STATUS_STATE_INFO
+                        : snap_manager::status_t::state_t::STATUS_STATE_WARNING,
+                    get_plugin_name(),
+                    "all_services",
+                    status);
+        server_status.set_field(all_status_widget);
     }
 
-    // TODO: add support so the user can edit the recovery delay, the nice
-    //       value and in case of CRON, the timer ticking
-    //
+    {
+        snap_manager::status_t const backends_widget(
+                    snap_manager::status_t::state_t::STATUS_STATE_INFO,
+                    get_plugin_name(),
+                    "backends",
+                    snap_server_conf["backends"]);
+        server_status.set_field(backends_widget);
+    }
 
-    // TODO: replace with new snapfirewall implementation
-    //
     for(auto const & service_info : g_services)
     {
         // get the backend service status
         //
         snap_manager::service_status_t status(f_snap->service_status(
                         service_info.f_service_executable,
-                        std::string(service_info.f_service_name) + (service_info.f_recovery ? "" : ".timer")));
+                        std::string(service_info.f_service_name) + (service_info.f_recovery != nullptr ? "" : ".timer")));
 
         // transform to a string
         //
@@ -360,7 +372,7 @@ void backend::on_retrieve_status(snap_manager::server_status & server_status)
                                       service_config["Service::Nice"]);
             server_status.set_field(nice);
 
-            if(service_info.f_recovery)
+            if(service_info.f_recovery != nullptr)
             {
                 snap_manager::status_t const recovery(snap_manager::status_t::state_t::STATUS_STATE_INFO,
                                           get_plugin_name(),
@@ -386,134 +398,6 @@ void backend::on_retrieve_status(snap_manager::server_status & server_status)
 }
 
 
-bool backend::change_service_status( QString const& exe_path, QString const& unit_name, snap_manager::service_status_t status )
-{
-    bool changed(false);
-    if( f_snap->service_status( exe_path.toUtf8().data(), unit_name.toUtf8().data() ) != status )
-    {
-        f_snap->service_apply_status( unit_name.toUtf8().data(), status );
-        changed = true;
-    }
-
-    return changed;
-}
-
-
-void backend::update_all_services( QString const & new_value )
-{
-    SNAP_LOG_DEBUG("backend::update_all_services(), new_value=")(new_value);
-    status_file sf;
-
-    for(auto const & service_info : g_services)
-    {
-        // get the backend service status
-        //
-        QString const unit_name(QString("%1%2").arg(service_info.f_service_name).arg(service_info.f_recovery ? "" : ".timer"));
-        if( sf[unit_name].isEmpty() )
-        {
-            sf[unit_name] = "disabled";
-        }
-
-        auto const to_status(
-            (new_value == "disabled")
-              ? snap_manager::service_status_t::SERVICE_STATUS_DISABLED
-              : snap_manager::manager::string_to_service_status(sf[unit_name].toUtf8().data())
-            );
-        change_service_status( service_info.f_service_executable, unit_name, to_status );
-    }
-
-    if( new_value == "disabled" )
-    {
-        sf["disabled"] = "true";
-    }
-    else
-    {
-        sf["disabled"] = "false";
-    }
-
-    sf.save();
-
-    send_status();
-}
-
-
-void backend::send_update( QString const& new_value )
-{
-    snap::snap_communicator_message cmd;
-    cmd.set_command("BACKENDALLSERVICES");
-    cmd.set_service("*");
-    //cmd.add_parameter( "cache"    , "ttl=60"  ); TODO?
-    cmd.add_parameter( "disabled" , new_value );
-    f_snap->forward_message(cmd);
-
-    SNAP_LOG_DEBUG("BACKENDALLSERVICES message sent, new_value=")(new_value);
-}
-
-
-void backend::send_status( snap::snap_communicator_message const* message )
-{
-    snap::snap_communicator_message cmd;
-    cmd.set_command("BACKENDSTATUS");
-    //
-    if( message == nullptr )
-    {
-        cmd.set_service("*");
-    }
-    else
-    {
-        cmd.reply_to(*message);
-    }
-
-    for(auto const & service_info : g_services)
-    {
-        // get the backend service status
-        //
-        snap_manager::service_status_t status(f_snap->service_status(
-                        service_info.f_service_executable,
-                        std::string(service_info.f_service_name) + (service_info.f_recovery ? "" : ".timer")));
-        QString const status_string(QString::fromUtf8(snap_manager::manager::service_status_to_string(status)));
-        cmd.add_parameter( QString("backend_%1").arg(service_info.f_service_name), status_string );
-    }
-
-    //cmd.add_parameter( "cache" , "ttl=60"     ); TODO?
-    f_snap->forward_message(cmd);
-
-    SNAP_LOG_DEBUG("BACKENDSTATUS message sent!");
-}
-
-
-void backend::on_communication_ready()
-{
-    send_status();
-}
-
-
-void backend::on_add_plugin_commands(snap::snap_string_list & understood_commands)
-{
-    understood_commands << "BACKENDSTATUS_REQUEST";
-    understood_commands << "BACKENDALLSERVICES";
-}
-
-
-void backend::on_process_plugin_message(snap::snap_communicator_message const & message, bool & processed)
-{
-    QString const command(message.get_command());
-    SNAP_LOG_TRACE("backend::on_process_plugin_message(), command=[")(command)("]");
-
-    if(command == "BACKENDSTATUS_REQUEST")
-    {
-        send_status( &message );
-        processed = true;
-    }
-    else if( command == "BACKENDALLSERVICES" )
-    {
-        SNAP_LOG_DEBUG("BACKENDALLSERVICES recieved!");
-        update_all_services( message.get_parameter( "disabled" ) );
-    }
-}
-
-
-
 /** \brief Transform a value to HTML for display.
  *
  * This function expects the name of a field and its value. It then adds
@@ -533,19 +417,14 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
 {
     QDomDocument doc(parent.ownerDocument());
 
-    int const pos(s.get_field_name().indexOf("::"));
-    if(pos <= 0)
+    if(s.get_field_name() == "all_services")
     {
-        return false;
-    }
-
-    if(s.get_field_name() == "snapbackend::all_services")
-    {
-        SNAP_LOG_DEBUG("backend::display_value(): snapbackend::all_services! s.get_value()=")(s.get_value());
+        SNAP_LOG_DEBUG("backend::display_value(): all_services! s.get_value()=")(s.get_value());
         snap_manager::form f(
-                get_plugin_name()
+                  get_plugin_name()
                 , s.get_field_name()
-                , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
+                ,   snap_manager::form::FORM_BUTTON_RESET
+                  | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
                 );
 
         QStringList service_list;
@@ -562,10 +441,59 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
                         " When you disable the current configuration, it will be remembered on enable-all.</p>"
                     ));
         f.add_widget(field);
-
         f.generate(parent, uri);
-
         return true;
+    }
+
+    if(s.get_field_name() == "backends")
+    {
+        // list of enabled backends
+        //
+        snap_manager::form f(
+                  get_plugin_name()
+                , s.get_field_name()
+                ,   snap_manager::form::FORM_BUTTON_RESET
+                  | snap_manager::form::FORM_BUTTON_SAVE
+                  | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
+                );
+
+        QString available_services;
+        for(auto const & service_info : g_services)
+        {
+            available_services += "<li>" + QString::fromUtf8(service_info.f_service_name) + "</li>";
+        }
+
+        QString const backend_names(s.get_value());
+        snap_string_list backend_names_list(backend_names.split(","));
+        backend_names_list.sort();
+        QString const backend_names_lined(backend_names_list.join('\n'));
+
+        snap_manager::widget_text::pointer_t field(std::make_shared<snap_manager::widget_text>(
+                    "Enable or disable ALL backend services"
+                    , s.get_field_name()
+                    , backend_names_lined
+                    , "<p>Select the exact list of backends to run on this system."
+                      " This information is saved in the snapserver.conf file."
+                      " It is used by the main On/Off switch (the all_services flag.)</p>"
+                      "<p>The following is a list of available backends:</p>"
+                      "<ul>"
+                    + available_services
+                    + "</ul>"
+                      "<p>If a service is not active and the \"all_services\" flag is"
+                      " \"enabled\", then you can try to click \"Save\" here to give"
+                      " that service a nudge. The system will again go through the loop"
+                      " trying to start/stop each service as required. You do not have"
+                      " to make changes to the list in this situation.</p>"
+                    ));
+        f.add_widget(field);
+        f.generate(parent, uri);
+        return true;
+    }
+
+    int const pos(s.get_field_name().indexOf("::"));
+    if(pos <= 0)
+    {
+        return false;
     }
 
     QString const service_name(s.get_field_name().mid(0, pos));
@@ -603,12 +531,11 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
             snap_manager::widget_description::pointer_t field(std::make_shared<snap_manager::widget_description>(
                               "Somehow the service plugin is still in place when the service was uninstalled"
                             , s.get_field_name()
-                            , "This plugin should not be able to detect that the service in question is"
+                            , "<p>This plugin should not be able to detect that the service in question is"
                              " uninstalled since the plugin is part of that service and thus it should"
-                             " disappear along the main binary... Please report this bug."
+                             " disappear along the main binary... Please report this bug.</p>"
                             ));
             f.add_widget(field);
-
             f.generate(parent, uri);
         }
         else
@@ -616,34 +543,65 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
             snap_manager::form f(
                       get_plugin_name()
                     , s.get_field_name()
-                    , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE
+                    ,   snap_manager::form::FORM_BUTTON_RESET
+                      | snap_manager::form::FORM_BUTTON_SAVE
                     );
 
-            QStringList service_list;
-            service_list << "disabled";
-            service_list << "enabled";
-            service_list << "active";
-            service_list << "failed";   // Not sure about this...
+            // the old code would allow us to change the status of each
+            // individual backend, which would often create a mess in the
+            // sense that some backends would then get lost and the system
+            // (specificall, snapwatchdog) would not know whether a backend
+            // is expected to be running or not
 
-            snap_manager::widget_select::pointer_t field(std::make_shared<snap_manager::widget_select>(
-                              QString("Enabled/Disabled/Activate %1").arg(service_info.f_service_name)
+            //QStringList service_list;
+            //service_list << "disabled";
+            //service_list << "enabled";
+            //service_list << "active";
+            //service_list << "failed";   // Not sure about this...
+
+            //snap_manager::widget_select::pointer_t field(std::make_shared<snap_manager::widget_select>(
+            //                  QString("Enabled/Disabled/Activate %1").arg(service_info.f_service_name)
+            //                , s.get_field_name()
+            //                , service_list
+            //                , s.get_value()
+            //                , QString("<p>Enter the new state of the %1"
+            //                  " service as one of:</p>"
+            //                  "<ul>"
+            //                  "  <li>disabled -- deactivate and disable the service</li>"
+            //                  "  <li>enabled -- enable the service, deactivate if it was activated</li>"
+            //                  "  <li>active -- enable and activate the service</li>"
+            //                  "</ul>"
+            //                  "<p>You cannot request to go to the \"failed\" status. It appears in the list for status purposes only."
+            //                  " To uninstall search for the corresponding bundle and"
+            //                  " click the <strong>Uninstall</strong> button.</p>")
+            //                        .arg(service_info.f_service_name)
+            //                ));
+
+            // in the new version we still want to display the current status
+            // of the backend by not allow the user to change it here, instead
+            // they want to add/remove them from the "backends" field
+            //
+            snap_manager::widget_description::pointer_t field(std::make_shared<snap_manager::widget_description>(
+                              "Service Current Status"
                             , s.get_field_name()
-                            , service_list
-                            , s.get_value()
-                            , QString("<p>Enter the new state of the %1"
-                              " service as one of:</p>"
-                              "<ul>"
-                              "  <li>disabled -- deactivate and disable the service</li>"
-                              "  <li>enabled -- enable the service, deactivate if it was activated</li>"
-                              "  <li>active -- enable and activate the service</li>"
-                              "</ul>"
-                              "<p>You cannot request to go to the \"failed\" status. It appears in the list for status purposes only."
-                              " To uninstall search for the corresponding bundle and"
-                              " click the <strong>Uninstall</strong> button.</p>")
-                                    .arg(service_info.f_service_name)
+                            , "<p>This service is currently <strong>" + s.get_value() + "</strong></p>"
+                              "<p>A service is \"disabled\" when either one of the following is true:</p>"
+                              "<ol>"
+                                "<li>\"all_services\" is currently disabled</li>"
+                                "<li>the service does not appear in the \"backends\" list of enabled services</li>"
+                              "</ol>"
+                              "<p>When the \"all_services\" is currently disabled, this probably means you are"
+                              " working on upgrading your system. Changing that setting to \"Enabled\" will"
+                              " restore all the backend services to their normal \"active\" status as expected.</p>"
+                              "<p>When the \"backends\" list does not include the name of this backend,"
+                              " it is consided disabled and won't run whether \"all_services\" is enabled or not.</p>"
+                              "<p>By editing either one of those two other fields, the service status will"
+                              " change accordingly as you save the new value.</p>"
+                              "<p>Notice that the \"all_services\" can only be \"Saved Everywhere\" since"
+                              " it really only makes sense to turn off backends on all computers, not just"
+                              " one of them.</p>"
                             ));
             f.add_widget(field);
-
             f.generate(parent, uri);
         }
 
@@ -659,7 +617,10 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
     //    snap_manager::form f(
     //              get_plugin_name()
     //            , s.get_field_name()
-    //            , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE | snap_manager::form::FORM_BUTTON_SAVE | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
+    //            ,   snap_manager::form::FORM_BUTTON_RESET
+    //              | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
+    //              | snap_manager::form::FORM_BUTTON_SAVE
+    //              | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
     //            );
 
     //    snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
@@ -669,9 +630,7 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
     //                    , QString("Define whether the %1 backend is \"enabled\" or \"disabled\".").arg(service_name)
     //                    ));
     //    f.add_widget(field);
-
     //    f.generate(parent, uri);
-
     //    return true;
     //}
 
@@ -684,7 +643,10 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
         snap_manager::form f(
                   get_plugin_name()
                 , s.get_field_name()
-                , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE | snap_manager::form::FORM_BUTTON_SAVE | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
+                ,   snap_manager::form::FORM_BUTTON_RESET
+                  | snap_manager::form::FORM_BUTTON_SAVE
+                  | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
+                  | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
                 );
 
         snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
@@ -694,9 +656,7 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
                         , QString("Delay before restarting %1 if it fails to restart immediately after a crash. This number is in seconds.").arg(service_name)
                         ));
         f.add_widget(field);
-
         f.generate(parent, uri);
-
         return true;
     }
 
@@ -709,7 +669,10 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
         snap_manager::form f(
                   get_plugin_name()
                 , s.get_field_name()
-                , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE | snap_manager::form::FORM_BUTTON_SAVE | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
+                ,   snap_manager::form::FORM_BUTTON_RESET
+                  | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
+                  | snap_manager::form::FORM_BUTTON_SAVE
+                  | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
                 );
 
         snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
@@ -721,12 +684,12 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
                                  " If a run takes 10min and this delay is 5min, then the snapbackend will run once every 15min. or so."
                                  " The value can be followed by 'ms' for milliseconds,"
                                  " 's' for seconds, 'min' for minutes,"
-                                 " combos work too: 5min 30s. For more, see <a href=\"https://www.freedesktop.org/software/systemd/man/systemd.time.html\">sytemd.time</a>").arg(service_name)
+                                 " combos work too: 5min 30s. For more, see"
+                                 " <a href=\"https://www.freedesktop.org/software/systemd/man/systemd.time.html\">sytemd.time</a>")
+                                        .arg(service_name)
                         ));
         f.add_widget(field);
-
         f.generate(parent, uri);
-
         return true;
     }
 
@@ -739,7 +702,10 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
         snap_manager::form f(
                   get_plugin_name()
                 , s.get_field_name()
-                , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE | snap_manager::form::FORM_BUTTON_SAVE | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
+                ,   snap_manager::form::FORM_BUTTON_RESET
+                  | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
+                  | snap_manager::form::FORM_BUTTON_SAVE
+                  | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
                 );
 
         snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
@@ -749,9 +715,7 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
                         , "The nice value is the same as the nice command line Unix utility. It changes the priority of the process. The larger the value, the weak the priority of that process (it will yield to processes with a smaller nice value.)"
                         ));
         f.add_widget(field);
-
         f.generate(parent, uri);
-
         return true;
     }
 
@@ -781,19 +745,69 @@ bool backend::apply_setting( QString const     & button_name
                            , std::set<QString> & affected_services
                            )
 {
-    NOTUSED(button_name);
     NOTUSED(old_or_installation_value);
     NOTUSED(affected_services);
 
     // restore defaults?
     //
-    //bool const use_default_value(button_name == "restore_default");
+    bool const use_default_value(button_name == "restore_default");
 
-    if( field_name == "snapbackend::all_services" )
+    if(field_name == "all_services")
     {
-        SNAP_LOG_DEBUG("backend::apply_setting(): snapbackend::all_services!");
-        update_all_services( new_value );
-        send_update        ( new_value );
+        // We don't support the "Restore Default" here because we need
+        // the "Save Everywhere" to work right
+        //QString const value(use_default_value ? "enabled" : new_value);
+        SNAP_LOG_DEBUG("all_services = ")(new_value);
+
+        snap_config snap_server_conf(g_configuration_filename);
+        snap_server_conf["backend_status"] = new_value;
+        f_snap->replace_configuration_value(g_configuration_d_filename, "backend_status", new_value);
+
+        update_all_services();
+        //send_update(new_value); -- not necessary because we force the user to click "Save Everywhere"
+        return true;
+    }
+
+    if(field_name == "backends")
+    {
+        snap_string_list names;
+        if(use_default_value)
+        {
+            names << "snaplistjournal";
+        }
+        else
+        {
+            names = new_value.split('\n');
+        }
+        snap_string_list clean_names;
+        int const max(names.size());
+        for(int idx(0); idx < max; ++idx)
+        {
+            QString const t(names[idx].trimmed());
+            if(!t.isEmpty())
+            {
+                auto const & service(get_service_by_name(t));
+                if(service.f_service_name == nullptr)
+                {
+                    // probably mispelled, it would break the load so don't
+                    // allow it in the .conf file
+                    //
+                    SNAP_LOG_ERROR("Could not find backend named \"")
+                                  (t)
+                                  ("\" in the list of available backends. Please try again.");
+                    return true;
+                }
+
+                clean_names << t;
+            }
+        }
+        QString const new_list_of_plugins(clean_names.join(','));
+        snap_config snap_server_conf(g_configuration_filename);
+        snap_server_conf["backends"] = new_list_of_plugins;
+
+        f_snap->replace_configuration_value(g_configuration_d_filename, "backends", new_list_of_plugins);
+
+        update_all_services();
         return true;
     }
 
@@ -824,24 +838,28 @@ bool backend::apply_setting( QString const     & button_name
 
     if(field == "service_status")
     {
-        QString unit_name(service_name);
-        if(!service_info.f_recovery)
-        {
-            unit_name += ".timer";
-        }
-        auto const status(snap_manager::manager::string_to_service_status(new_value.toUtf8().data()));
-        if( change_service_status( service_info.f_service_executable, unit_name, status ) )
-        {
-            send_status();
-        }
+        // this is now ignored, use the "all_services" and "backends"
+        // fields instead (there is a "service_status" entry, but it's
+        // now just a description with the status of the service
+
+        //QString unit_name(service_name);
+        //if(service_info.f_recovery == nullptr)
+        //{
+        //    unit_name += ".timer";
+        //}
+        //auto const status(snap_manager::manager::string_to_service_status(new_value.toUtf8().data()));
+        //if( change_service_status( service_info.f_service_executable, unit_name, status ) )
+        //{
+        //    send_status();
+        //}
 
         // Save new configuration in file
         //
-        status_file sf;
-        QString const status_string( QString::fromUtf8(snap_manager::manager::service_status_to_string(status)) );
-        sf[unit_name] = status_string;
-        SNAP_LOG_DEBUG("++++ Writing status_file from apply_setting()!");
-        sf.save();
+        //status_file sf;
+        //QString const status_string( QString::fromUtf8(snap_manager::manager::service_status_to_string(status)) );
+        //sf[unit_name] = status_string;
+        //SNAP_LOG_DEBUG("++++ Writing status_file from apply_setting()!");
+        //sf.save();
 
         return true;
     }
@@ -854,13 +872,14 @@ bool backend::apply_setting( QString const     & button_name
     if(field == "recovery")
     {
         QString const filename(QString("/etc/systemd/system/%1.service.d/override.conf").arg(service_name));
-        if(f_snap->replace_configuration_value(filename, "Service::RestartSec", new_value, snap_manager::REPLACE_CONFIGURATION_VALUE_SECTION))
+        QString const value(use_default_value ? service_info.f_recovery : new_value);
+        if(f_snap->replace_configuration_value(filename, "Service::RestartSec", value, snap_manager::REPLACE_CONFIGURATION_VALUE_SECTION))
         {
             // make sure the cache gets updated
             //
             snap_config service_config(std::string("/lib/systemd/system/") + service_name + ".service"
                                      , std::string("/etc/systemd/system/") + service_name + ".service.d/override.conf");
-            service_config["Service::RestartSec"] = new_value;
+            service_config["Service::RestartSec"] = value;
         }
         snap::process p("reload daemon");
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
@@ -873,13 +892,14 @@ bool backend::apply_setting( QString const     & button_name
     if(field == "cron")
     {
         QString const filename(QString("/etc/systemd/system/%1.timer.d/override.conf").arg(service_name));
-        if(f_snap->replace_configuration_value(filename, "Timer::OnUnitActiveSec", new_value, snap_manager::REPLACE_CONFIGURATION_VALUE_SECTION))
+        QString const value(use_default_value ? "5min" : new_value);
+        if(f_snap->replace_configuration_value(filename, "Timer::OnUnitActiveSec", value, snap_manager::REPLACE_CONFIGURATION_VALUE_SECTION))
         {
             // make sure the cache gets updated
             //
             snap_config service_config(std::string("/lib/systemd/system/") + service_name + ".timer"
                                      , std::string("/etc/systemd/system/") + service_name + ".timer.d/override.conf");
-            service_config["Timer::OnUnitActiveSec"] = new_value;
+            service_config["Timer::OnUnitActiveSec"] = value;
         }
         snap::process p("reload daemon");
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
@@ -892,13 +912,16 @@ bool backend::apply_setting( QString const     & button_name
     if(field == "nice")
     {
         QString const filename(QString("/etc/systemd/system/%1.service.d/override.conf").arg(service_name));
-        if(f_snap->replace_configuration_value(filename, "Service::Nice", new_value, snap_manager::REPLACE_CONFIGURATION_VALUE_SECTION))
+        QString value(use_default_value
+                    ? QString("%1").arg(service_info.f_nice)
+                    : new_value);
+        if(f_snap->replace_configuration_value(filename, "Service::Nice", value, snap_manager::REPLACE_CONFIGURATION_VALUE_SECTION))
         {
             // make sure the cache gets updated
             //
             snap_config service_config(std::string("/lib/systemd/system/") + service_name + ".service"
                                      , std::string("/etc/systemd/system/") + service_name + ".service.d/override.conf");
-            service_config["Service::Nice"] = new_value;
+            service_config["Service::Nice"] = value;
         }
         snap::process p("reload daemon");
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
@@ -909,6 +932,149 @@ bool backend::apply_setting( QString const     & button_name
     }
 
     return false;
+}
+
+
+
+bool backend::change_service_status( QString const & exe_path, QString const & unit_name, snap_manager::service_status_t status )
+{
+    bool changed(false);
+    if( f_snap->service_status( exe_path.toUtf8().data(), unit_name.toUtf8().data() ) != status )
+    {
+        f_snap->service_apply_status( unit_name.toUtf8().data(), status );
+        changed = true;
+    }
+
+    return changed;
+}
+
+
+void backend::update_all_services()
+{
+    snap_config snap_server_conf(g_configuration_filename);
+    bool const disable_all(snap_server_conf["backend_status"] == "disabled");
+    QString const backends(snap_server_conf["backends"]);
+    snap_string_list const enabled_backends(backends.split(','));
+    int const max(enabled_backends.size());
+    std::map<QString, bool> enabled_backends_map;
+    for(int idx(0); idx < max; ++idx)
+    {
+        enabled_backends_map[enabled_backends[idx].trimmed()] = true;
+    }
+
+    SNAP_LOG_DEBUG("generate status: ")(snap_server_conf["backend_status"]);
+
+    for(auto const & service_info : g_services)
+    {
+        // get the backend service status
+        //
+        // we currently limit the status to 2 values:
+        //   . disabled -- backend is not used
+        //   . active -- the backend is used as expected
+        //
+        // another possible status is "enabled" which we don't need here
+        // (and "not installed" which doesn't apply here at all.)
+        //
+        snap_manager::service_status_t to_status(snap_manager::service_status_t::SERVICE_STATUS_DISABLED);
+
+        // is the main flag enabled, if not keep DISABLED as the to_status
+        //
+        if(!disable_all)
+        {
+            // is that backend enabled? (a.k.a. "active" in terms of systemd)
+            //
+            if(enabled_backends_map.find(service_info.f_service_name) != enabled_backends_map.end())
+            {
+                to_status = snap_manager::service_status_t::SERVICE_STATUS_ACTIVE;
+            }
+        }
+
+        // now update the status at the system level
+        //
+        QString const unit_name(QString("%1%2")
+                            .arg(service_info.f_service_name)
+                            .arg(service_info.f_recovery != nullptr ? "" : ".timer"));
+        change_service_status(service_info.f_service_executable, unit_name, to_status);
+    }
+
+    send_status();
+}
+
+
+//void backend::send_update( QString const & new_value )
+//{
+//    snap::snap_communicator_message cmd;
+//    cmd.set_command("BACKENDALLSERVICES");
+//    cmd.set_service("*");
+//    //cmd.add_parameter( "cache"    , "ttl=60"  ); TODO?
+//    cmd.add_parameter( "all_services" , new_value );
+//    f_snap->forward_message(cmd);
+//
+//    SNAP_LOG_DEBUG("BACKENDALLSERVICES message sent, new_value=")(new_value);
+//}
+
+
+void backend::send_status( snap::snap_communicator_message const* message )
+{
+    snap::snap_communicator_message cmd;
+    cmd.set_command("BACKENDSTATUS");
+    //
+    if( message == nullptr )
+    {
+        cmd.set_service("*");
+    }
+    else
+    {
+        cmd.reply_to(*message);
+    }
+
+    for(auto const & service_info : g_services)
+    {
+        // get the backend service status
+        //
+        snap_manager::service_status_t status(f_snap->service_status(
+                        service_info.f_service_executable,
+                        std::string(service_info.f_service_name) + (service_info.f_recovery != nullptr ? "" : ".timer")));
+        QString const status_string(QString::fromUtf8(snap_manager::manager::service_status_to_string(status)));
+        cmd.add_parameter( QString("backend_%1").arg(service_info.f_service_name), status_string );
+    }
+
+    //cmd.add_parameter( "cache" , "ttl=60"     ); TODO?
+    f_snap->forward_message(cmd);
+
+    SNAP_LOG_DEBUG("BACKENDSTATUS message sent!");
+}
+
+
+void backend::on_communication_ready()
+{
+    send_status();
+}
+
+
+void backend::on_add_plugin_commands(snap::snap_string_list & understood_commands)
+{
+    understood_commands << "BACKENDSTATUS_REQUEST";
+    //understood_commands << "BACKENDALLSERVICES";
+}
+
+
+void backend::on_process_plugin_message(snap::snap_communicator_message const & message, bool & processed)
+{
+    QString const command(message.get_command());
+    SNAP_LOG_TRACE("backend::on_process_plugin_message(), command=[")(command)("]");
+
+    if(command == "BACKENDSTATUS_REQUEST")
+    {
+        send_status( &message );
+        processed = true;
+    }
+    //else if(command == "BACKENDALLSERVICES")
+    //{
+    //    SNAP_LOG_DEBUG("BACKENDALLSERVICES received!");
+    //    update_all_services( message.get_parameter( "all_services" ) );
+    //    processed = true;
+    //}
 }
 
 

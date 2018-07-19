@@ -1,3 +1,17 @@
+snapwebsites (1.5.90.0~xenial) xenial; urgency=high
+
+  * Changed the use of the status_file with two variables in the snapserver.conf
+    file instead (backend_status and backends).
+  * Removed the backend service dropdown functionality, instead you have to use
+    the "backends" parameter. If present there, then the backend is expected
+    to be active whenever the all_services is ON.
+  * Properly implemented the Restore Default button of backend and watchdog.
+  * Removed a couple of TODO that are actually done now.
+  * Removed BACKENDALLSERVICES and force people to do a "Save Everywhere".
+  * Added the default Service::RestartSec value in the backend_services table.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 18 Jul 2018 17:51:51 -0700
+
 snapwebsites (1.5.89.0~xenial) xenial; urgency=high
 
   * Fixed the firewall and snapserver managers so they use HIGHLIGHT instead

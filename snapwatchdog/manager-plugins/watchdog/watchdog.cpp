@@ -446,8 +446,8 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                   get_plugin_name()
                 , s.get_field_name()
                 ,   snap_manager::form::FORM_BUTTON_RESET
-                  | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
                   | snap_manager::form::FORM_BUTTON_SAVE
+                  | snap_manager::form::FORM_BUTTON_RESTORE_DEFAULT
                 );
 
         // get the list of watchdog plugins that are available on this
@@ -520,6 +520,123 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
 }
 
 
+/** \brief Save 'new_value' in field 'field_name'.
+ *
+ * This function saves 'new_value' in 'field_name'.
+ *
+ * \param[in] button_name  The name of the button the user clicked.
+ * \param[in] field_name  The name of the field to update.
+ * \param[in] new_value  The new value to save in that field.
+ * \param[in] old_or_installation_value  The old value, just in case
+ *            (usually ignored,) or the installation values (only
+ *            for the self plugin that manages bundles.)
+ * \param[in] affected_services  The list of services that were affected
+ *            by this call.
+ *
+ * \return true if the new_value was applied successfully.
+ */
+bool watchdog::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
+{
+    NOTUSED(old_or_installation_value);
+    NOTUSED(button_name);
+
+    bool const use_default_value(button_name == "restore_default");
+
+    if(field_name == "service_status")
+    {
+        snap_manager::service_status_t const status(snap_manager::manager::string_to_service_status(new_value.toUtf8().data()));
+        f_snap->service_apply_status("snapwatchdog", status);
+        return true;
+    }
+
+    if(field_name == "from_email")
+    {
+        // to make use of the new list, make sure to restart
+        //
+        affected_services.insert("snapwatchdog");
+
+        // fix the value in memory
+        //
+        snap_config snap_watchdog_conf(g_configuration_filename);
+        snap_watchdog_conf["from_email"] = new_value;
+
+        f_snap->replace_configuration_value(g_configuration_d_filename, "from_email", new_value);
+        return true;
+    }
+
+    if(field_name == "administrator_email")
+    {
+        // to make use of the new list, make sure to restart
+        //
+        affected_services.insert("snapwatchdog");
+
+        // fix the value in memory
+        //
+        snap_config snap_watchdog_conf(g_configuration_filename);
+        snap_watchdog_conf["administrator_email"] = new_value;
+
+        f_snap->replace_configuration_value(g_configuration_d_filename, "administrator_email", new_value);
+        return true;
+    }
+
+    if(field_name == "plugins")
+    {
+        // fix the value in memory
+        //
+        QString const available_plugins(get_list_of_available_plugins());
+        snap_config snap_watchdog_conf(g_configuration_filename);
+        snap_string_list names;
+        if(use_default_value)
+        {
+            // restore to the default list of plugins
+            //
+            names << "cpu";
+            names << "disk";
+            names << "memory";
+            names << "network";
+            names << "processes";
+            names << "watchscripts";
+        }
+        else
+        {
+            names = new_value.split('\n');
+        }
+        snap_string_list clean_names;
+        int const max(names.size());
+        for(int idx(0); idx < max; ++idx)
+        {
+            QString const t(names[idx].trimmed());
+            if(!t.isEmpty())
+            {
+                if(available_plugins.indexOf("<li>" + t + "</li>") == -1)
+                {
+                    // probably mispelled, it would break the load so don't
+                    // allow it in the .conf file
+                    //
+                    SNAP_LOG_ERROR("Could not find plugin named \"")
+                                  (t)
+                                  ("\" in the list of available plugins. Please try again.");
+                    return true;
+                }
+
+                clean_names << t;
+            }
+        }
+        QString const new_list_of_plugins(clean_names.join(','));
+        snap_watchdog_conf["plugins"] = new_list_of_plugins;
+
+        // to make use of the new list, make sure to restart
+        //
+        affected_services.insert("snapwatchdog");
+
+        f_snap->replace_configuration_value(g_configuration_d_filename, "plugins", new_list_of_plugins);
+        return true;
+    }
+
+    return false;
+}
+
+
 /** \brief Generate a list of plugins.
  *
  * This function generates an HTML list of watchdog plugin names. The list
@@ -573,7 +690,7 @@ QString watchdog::get_list_of_available_plugins()
  */
 void watchdog::get_plugin_names(QString plugin_filename, QString * available_plugins)
 {
-    int basename_pos(plugin_filename.lastIndexOf('/') + 1);
+    int const basename_pos(plugin_filename.lastIndexOf('/') + 1);
     int name_pos(plugin_filename.indexOf('_', basename_pos));
     if(name_pos == -1)
     {
@@ -591,106 +708,6 @@ void watchdog::get_plugin_names(QString plugin_filename, QString * available_plu
         extension_pos = plugin_filename.length();
     }
     *available_plugins += "<li>" + plugin_filename.mid(name_pos, extension_pos - name_pos) + "</li>";
-}
-
-
-/** \brief Save 'new_value' in field 'field_name'.
- *
- * This function saves 'new_value' in 'field_name'.
- *
- * \param[in] button_name  The name of the button the user clicked.
- * \param[in] field_name  The name of the field to update.
- * \param[in] new_value  The new value to save in that field.
- * \param[in] old_or_installation_value  The old value, just in case
- *            (usually ignored,) or the installation values (only
- *            for the self plugin that manages bundles.)
- * \param[in] affected_services  The list of services that were affected
- *            by this call.
- *
- * \return true if the new_value was applied successfully.
- */
-bool watchdog::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
-{
-    NOTUSED(old_or_installation_value);
-    NOTUSED(button_name);
-
-    if(field_name == "service_status")
-    {
-        snap_manager::service_status_t const status(snap_manager::manager::string_to_service_status(new_value.toUtf8().data()));
-        f_snap->service_apply_status("snapwatchdog", status);
-        return true;
-    }
-
-    if(field_name == "from_email")
-    {
-        // to make use of the new list, make sure to restart
-        //
-        affected_services.insert("snapwatchdog");
-
-        // fix the value in memory
-        //
-        snap_config snap_watchdog_conf(g_configuration_filename);
-        snap_watchdog_conf["from_email"] = new_value;
-
-        f_snap->replace_configuration_value(g_configuration_d_filename, "from_email", new_value);
-        return true;
-    }
-
-    if(field_name == "administrator_email")
-    {
-        // to make use of the new list, make sure to restart
-        //
-        affected_services.insert("snapwatchdog");
-
-        // fix the value in memory
-        //
-        snap_config snap_watchdog_conf(g_configuration_filename);
-        snap_watchdog_conf["administrator_email"] = new_value;
-
-        f_snap->replace_configuration_value(g_configuration_d_filename, "administrator_email", new_value);
-        return true;
-    }
-
-    if(field_name == "plugins")
-    {
-        // fix the value in memory
-        //
-        QString const available_plugins(get_list_of_available_plugins());
-        snap_config snap_watchdog_conf(g_configuration_filename);
-        snap_string_list names(new_value.split('\n'));
-        snap_string_list clean_names;
-        int const max(names.size());
-        for(int idx(0); idx < max; ++idx)
-        {
-            QString t(names[idx].trimmed());
-            if(!t.isEmpty())
-            {
-                if(available_plugins.indexOf("<li>" + t + "</li>") == -1)
-                {
-                    // probably mispelled, it would break the load so don't
-                    // allow it in the .conf file
-                    //
-                    SNAP_LOG_ERROR("Could not find plugin named ")
-                                  (t)
-                                  (" in the list of available plugins. Please try again.");
-                    return true;
-                }
-
-                clean_names << t;
-            }
-        }
-        QString new_list_of_plugins(clean_names.join(','));
-        snap_watchdog_conf["plugins"] = new_list_of_plugins;
-
-        // to make use of the new list, make sure to restart
-        //
-        affected_services.insert("snapwatchdog");
-
-        f_snap->replace_configuration_value(g_configuration_d_filename, "plugins", new_list_of_plugins);
-        return true;
-    }
-
-    return false;
 }
 
 

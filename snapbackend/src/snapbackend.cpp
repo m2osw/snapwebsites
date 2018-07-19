@@ -27,6 +27,7 @@ int main(int argc, char * argv[])
     try
     {
         // create a server object
+        //
         snap::server::pointer_t s( snap::server::instance() );
         s->setup_as_backend();
 
@@ -35,6 +36,7 @@ int main(int argc, char * argv[])
         s->config( argc, argv );
 
         // if possible, detach the server
+        //
         s->detach();
         // Only the child (backend) process returns here
 
@@ -43,6 +45,7 @@ int main(int argc, char * argv[])
         s->prepare_qtapp( argc, argv );
 
         // run backends
+        //
         s->backend();
 
         exitval = 0;
