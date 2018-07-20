@@ -92,6 +92,9 @@ namespace
 {
 
 
+char const * g_watchdog_last_result_filename = "/var/cache/snapwebsites/snapwatchdog/last_results.txt";
+
+
 /** \brief The snap communicator singleton.
  *
  * This variable holds a copy of the snap communicator singleton.
@@ -1299,11 +1302,28 @@ bool watchdog_child::run_watchdog_plugins()
             watchdog_tag.setAttribute("end-date", static_cast<qlonglong>(current_date));
             result = doc.toString(-1);
 
+            // save the result in a file first
+            //
+            QString data_path(server->get_parameter(watchdog::get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_DATA_PATH)));
+            if(!data_path.isEmpty())
+            {
+                data_path += QString("/data/%1.xml").arg(date);
+
+                std::ofstream out;
+                out.open(data_path.toUtf8().data(), std::ios_base::binary);
+                if(out.is_open())
+                {
+                    // result already ends with a "\n"
+                    out << result;
+                }
+            }
+
             // if there is an <error> tag, send an email about it
             //
             // give 5 min. to the server to get everything started, though,
             // because otherwise we'd get a lot of false positive
             //
+            size_t count(0);
             time_t const server_start_date(server->get_server_start_date());
             time_t const now(time(nullptr));
             int64_t diff(now - server_start_date);
@@ -1316,7 +1336,6 @@ bool watchdog_child::run_watchdog_plugins()
                     // want to send more than one email every 15 min. unless
                     // there is an error with a priority of 90 or more
                     //
-                    size_t count(0);
                     int max_priority(0);
                     for(QDomNode n(error.firstChild()); !n.isNull(); n = n.nextSibling())
                     {
@@ -1336,6 +1355,7 @@ bool watchdog_child::run_watchdog_plugins()
                             ++count;
                         }
                     }
+
                     // if too low a priority then ignore the errors altogether
                     //
                     // TODO: make this "10" a parameter in the watchdog.conf
@@ -1504,20 +1524,19 @@ bool watchdog_child::run_watchdog_plugins()
                 SNAP_LOG_DEBUG("found errors, but not reporting them because it has been less than 5 min. that this daemon started.");
             }
 
-            // save the result in a file first
+            // save the number of errors to a file so the snapmanager
+            // can actually pick that information and display it
+            // (through the snapwatchdog plugin extension to the
+            // snapmanager.)
             //
-            QString data_path(server->get_parameter(watchdog::get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_DATA_PATH)));
-            if(!data_path.isEmpty())
+            mkdir_p(g_watchdog_last_result_filename, true);
+            std::ofstream info;
+            info.open(g_watchdog_last_result_filename, std::ios_base::binary | std::ios_base::trunc | std::ios_base::out);
+            if(info.is_open())
             {
-                data_path += QString("/data/%1.xml").arg(date);
-
-                std::ofstream out;
-                out.open(data_path.toUtf8().data(), std::ios_base::binary);
-                if(out.is_open())
-                {
-                    // result already ends with a "\n"
-                    out << result;
-                }
+                info << "# This is an auto-generated file. Do not edit." << std::endl;
+                info << "error_count=" << count << std::endl;
+                info << "data_path=" << data_path << std::endl;
             }
 
             // then try to save it in the Cassandra database

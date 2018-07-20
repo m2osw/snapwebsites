@@ -677,7 +677,7 @@ int manager_cgi::process()
         //
         status_map_t status_map;
         get_status_map( host, status_map );
-        generate_plugin_status( doc, output, plugin_name, status_map[plugin_name], false /*parent_div*/ );
+        generate_plugin_status( doc, output, plugin_name, status_map[plugin_name] );
         //
         // Add only this element to the "output" and send it back as a post.
         // Also, avoid the enclosed <output> section and send the div only.
@@ -1875,22 +1875,30 @@ void manager_cgi::generate_plugin_status
     , QDomElement& output
     , QString const & plugin_name
     , status_list_t const & status_list
-    , bool const parent_div
+    , QString const & alerts
+    )
+{
+    QDomElement div(doc.createElement("div"));
+    div.setAttribute( "id", plugin_name );
+    if( !alerts.isEmpty() )
+    {
+        div.setAttribute( "class", alerts );
+    }
+    output.appendChild(div);
+
+    generate_plugin_status(doc, div, plugin_name, status_list);
+}
+
+
+void manager_cgi::generate_plugin_status
+    ( QDomDocument& doc
+    , QDomElement& output
+    , QString const & plugin_name
+    , status_list_t const & status_list
     )
 {
     QDomElement table( create_table_header( doc ) );
-
-    if( parent_div )
-    {
-        QDomElement div(doc.createElement("div"));
-        div.setAttribute( "id", plugin_name );
-        output.appendChild(div);
-        div.appendChild(table);
-    }
-    else
-    {
-        output.appendChild(table);
-    }
+    output.appendChild(table);
 
     if( plugin_name == "self" )
     {
@@ -1972,7 +1980,10 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
     ordered_statuses.push_back(status_map["self"]);
     for( auto const & s : status_map )
     {
-        if( s.first == "self" ) continue;
+        if( s.first == "self" )
+        {
+            continue;
+        }
         ordered_statuses.push_back(s.second);
     }
 
@@ -1981,9 +1992,10 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
     //
     // The 'self' plugin is always first.
     //
+    std::map<QString, QString> alerts;
     QDomElement ul(doc.createElement("ul"));
     output.appendChild(ul);
-    for( auto const& s : ordered_statuses )
+    for( auto const & s : ordered_statuses )
     {
         QString const plugin_name(s[0].get_plugin_name());
         QDomElement li(doc.createElement("li"));
@@ -1996,7 +2008,7 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
         li.appendChild(a);
 
         QStringList alert_classes;
-        for( auto const& st : s )
+        for( auto const & st : s )
         {
             add_state_class_name( alert_classes, st.get_state() );
         }
@@ -2004,7 +2016,9 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
         if( !alert_classes.isEmpty() )
         {
             alert_classes.removeDuplicates();
-            a.setAttribute( "class", alert_classes.join(" ") );
+            QString const classes(alert_classes.join(" "));
+            alerts[plugin_name] = classes;
+            li.setAttribute( "class", classes );
         }
     }
 
@@ -2012,7 +2026,8 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
     //
     for(auto const & s : ordered_statuses)
     {
-        generate_plugin_status( doc, output, s[0].get_plugin_name(), s );
+        QString const plugin_name(s[0].get_plugin_name());
+        generate_plugin_status( doc, output, plugin_name, s, alerts[plugin_name] );
     }
 }
 

@@ -55,24 +55,30 @@ function Feedback()
     // we expect a div already in the HTML that we can just grab
     //
     this.feedback_block = jQuery("#feedback");
-    this.message_list = jQuery(".message-list", this.feedback_block);
+    this.message_list = this.feedback_block.find(".message-list");
 
     // enable the close button
     //
-    jQuery(".close-button", this.feedback_block).click(function(e)
+    this.feedback_block.find(".close-button").click(function(e)
         {
             e.preventDefault();
 
             that.feedback_block.hide();
         });
 
-// a couple of tests to make sure it works as expected
+// a few messages to test that our window works as expected
 //setTimeout(function(){
 //Feedback.FeedbackInstance.message("error", "Got the timeout!");
 //}, 5000 );
 //setTimeout(function(){
 //Feedback.FeedbackInstance.message("warning", "Error two! With a very long message so we see that our width is not crazy large.");
 //}, 10000 );
+//for(i = 15; i < 40; i += 5){
+//setTimeout(function(){
+//Feedback.FeedbackInstance.message("info", "Too many messages, testing the scroll feature.");
+//}, i * 1000 );
+//}
+
 }
 
 Feedback.FeedbackInstance = null; // static
@@ -96,7 +102,7 @@ Feedback.prototype.message_list = null;
  */
 Feedback.prototype.message = function(level, msg)
 {
-    var messages = jQuery(".feedback-message", this.message_list),
+    var messages = this.message_list.find(".feedback-message"),
         now = new Date();
 
     // make sure the feedback window appears
@@ -105,7 +111,7 @@ Feedback.prototype.message = function(level, msg)
 
     // limit to the last 5 messages
     //
-    while(messages.length >= 5)
+    if(messages.length >= 5)
     {
         messages.first().remove();
     }
@@ -119,6 +125,10 @@ Feedback.prototype.message = function(level, msg)
                         + "</strong><br/>"
                         + msg
                         + "</div>");
+
+    // scroll to the bottom otherwise it's hard to see the last message
+    //
+    this.message_list.scrollTop(this.message_list[0].scrollHeight);
 }
 
 

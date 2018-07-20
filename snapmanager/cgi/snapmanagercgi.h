@@ -95,7 +95,13 @@ private:
                                     , QDomElement& output
                                     , QString const & plugin_name
                                     , status_list_t const & status_list
-                                    , bool const parent_div = true
+                                    , QString const & alerts
+                                    );
+    void                        generate_plugin_status
+                                    ( QDomDocument& doc
+                                    , QDomElement& output
+                                    , QString const & plugin_name
+                                    , status_list_t const & status_list
                                     );
     void                        get_status_map( QString const & doc, status_map_t& map );
     void                        get_host_status(QDomDocument doc, QDomElement output, QString const & host);

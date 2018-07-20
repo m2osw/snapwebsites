@@ -12,6 +12,7 @@ body
     font-family: sans;
     margin: 0;
     padding: 70px 0 0 0;
+    background: #dedede;
 }
 header
 {
@@ -25,6 +26,22 @@ header
     top: 0;
     display: flex;
 }
+body > h1
+{
+    padding-left: 20px;
+}
+.ui-widget-content a
+{
+    color: blue;
+}
+.ui-widget-content a:visited
+{
+    color: purple;
+}
+.ui-widget-content a:hover
+{
+    color: red;
+}
 .ui-state-active a,
 .ui-state-active a:link,
 .ui-state-active a:visited
@@ -34,14 +51,30 @@ header
      */
     color: black;
 }
-#menu .ui-state-active a:hover
+#menu
+{
+    flex: none;
+    background: transparent;
+    /*padding-left: 10px;*/
+    margin-top: 10px;
+    margin-left: 10px;
+}
+#menu.ui-menu .ui-menu-item-wrapper
+{
+    padding: 0;
+}
+#menu.ui-widget-content a
+{
+    display: block;
+    padding: 0.6em;
+    color: black;
+    text-decoration: none;
+}
+#menu .ui-state-active a
 {
     /* however in this case it's no a dark blue background in the menu
      */
     color: white;
-}
-ul.menu
-{
 }
 ul.menu.ui-widget-content
 {
@@ -50,7 +83,6 @@ ul.menu.ui-widget-content
 ul.menu li.menu-item
 {
     float: left;
-    padding-top: 15px;
 }
 div.access-warning
 {
@@ -61,11 +93,11 @@ div.access-warning
     padding: 10px;
     padding-bottom: 0;
 }
-ul#menu
+div.access-warning div.access-title
 {
-    flex: none;
-    background: transparent;
-    padding-left: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 120%;
 }
 div.snap-version
 {
@@ -79,11 +111,60 @@ div.wait
     padding-top: 5px;
     padding-right: 5px;
 }
-div.access-warning div.access-title
+#tabs
 {
-    text-align: center;
-    font-weight: bold;
-    font-size: 120%;
+    background-color: #dedede;
+    border: none;
+}
+#tabs li.ui-tab
+{
+    border-width: 2px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+#tabs.ui-tabs .ui-tabs-nav .ui-tabs-anchor
+{
+    float: none;
+    display: block;
+}
+#tabs.ui-tabs .ui-widget-header
+{
+    background-color: #dedede;
+    border: none;
+}
+#tabs.ui-tabs .ui-tabs-panel
+{
+    background-color: white;
+}
+#tabs table.server-status
+{
+    background-color: white;
+}
+#tabs.ui-tabs .ui-tabs-nav li
+{
+    /* avoid margin for better effect of bottom border,
+     * although this somewhat breaks the left & right borders
+     */
+    margin-right: 0;
+}
+#tabs ul.ui-widget-header li.ui-state-default
+{
+    background-color: #eee;
+}
+#tabs ul.ui-widget-header li.ui-state-default.ui-state-hover:not(.ui-state-active)
+{
+    background-color: #ffd;
+}
+#tabs ul.ui-widget-header li.ui-state-active
+{
+    border-color: white;
+    border-bottom: none;
+    background-color: white;
+    padding-top: 2px;
+}
+#tabs ul.ui-widget-header li.ui-state-active a
+{
+    outline: none;
 }
 table
 {
@@ -115,26 +196,61 @@ a.modified
     background-color: #d6b2ff;
 }
 table tr.highlight,
-a.highlight
+#tabs ul.ui-widget-header li.highlight.ui-state-active,
+#tabs.ui-tabs div.highlight.ui-tabs-panel
 {
     background-color: #fff881;
 }
+#tabs.ui-widget-content li.highlight.ui-state-default
+{
+    background-color: #e6df74;
+}
+#tabs ul.ui-widget-header li.highlight.ui-state-active
+{
+    border-color: #fff881;
+}
 table tr.warnings,
-a.warnings
+#tabs ul.ui-widget-header li.warnings.ui-state-active,
+#tabs.ui-tabs div.warnings.ui-tabs-panel
 {
     background-color: #ffde9f;
 }
+#tabs.ui-widget-content li.warnings.ui-state-default
+{
+    background-color: #e6c88f;
+}
+#tabs ul.ui-widget-header li.warnings.ui-state-active
+{
+    border-color: #ffde9f;
+}
+table tr.errors,
+#tabs ul.ui-widget-header li.errors.ui-state-active,
+#tabs.ui-tabs div.errors.ui-tabs-panel
+{
+    background-color: #ffd8d8;
+}
+#tabs.ui-widget-content li.errors.ui-state-default
+{
+    background-color: #e6c2c2;
+}
+#tabs ul.ui-widget-header li.errors.ui-state-active
+{
+    border-color: #ffd8d8;
+}
+table tr.errors
+{
+    border-left: 1px solid red;
+}
 table tr.down,
-a.down
 {
     background-color: #ffdede;
     text-decoration: line-through;
 }
-table tr.errors,
-a.errors
+#tabs.ui-widget-content li.highlight.ui-state-default.ui-state-hover:not(.ui-tabs-active),
+#tabs.ui-widget-content li.warnings.ui-state-default.ui-state-hover:not(.ui-tabs-active),
+#tabs.ui-widget-content li.errors.ui-state-default.ui-state-hover:not(.ui-tabs-active)
 {
-    background-color: #ffd8d8;
-    border-left: 1px solid red;
+    background-color: #ffd;
 }
 label
 {

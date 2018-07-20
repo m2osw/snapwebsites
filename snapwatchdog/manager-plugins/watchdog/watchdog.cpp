@@ -63,6 +63,7 @@ char const * g_configuration_d_filename = "/etc/snapwebsites/snapwebsites.d/snap
 
 char const * g_test_mta_results = "/var/lib/snapwebsites/snapwatchdog/test-mta.txt";
 
+char const * g_watchdog_last_result_filename = "/var/cache/snapwebsites/snapwatchdog/last_results.txt";
 
 
 
@@ -271,36 +272,59 @@ void watchdog::on_retrieve_status(snap_manager::server_status & server_status)
 
     // check that we have an MTA, which means having a "sendmail" tool
     //
-    struct stat st;
-    if(stat("/usr/sbin/sendmail", &st) != 0)
     {
-        snap_manager::status_t const plugins(
-                      snap_manager::status_t::state_t::STATUS_STATE_ERROR
-                    , get_plugin_name()
-                    , "no-mta"
-                    , "not available");
-        server_status.set_field(plugins);
+        struct stat st;
+        if(stat("/usr/sbin/sendmail", &st) != 0)
+        {
+            snap_manager::status_t const plugins(
+                          snap_manager::status_t::state_t::STATUS_STATE_ERROR
+                        , get_plugin_name()
+                        , "no-mta"
+                        , "not available");
+            server_status.set_field(plugins);
+        }
+        else
+        {
+            QString email;
+
+            try
+            {
+                snap_config test_mta(g_test_mta_results);
+                email = test_mta["email"];
+            }
+            catch(snap_configurations_exception const & e)
+            {
+                SNAP_LOG_DEBUG("test_mta could not be read.");
+                // ignore the error otherwise
+            }
+
+            snap_manager::status_t const plugins(
+                          snap_manager::status_t::state_t::STATUS_STATE_INFO
+                        , get_plugin_name()
+                        , "test_mta"
+                        , email);
+            server_status.set_field(plugins);
+        }
     }
-    else
+
+    // Get the latest status first
+    // (TBD: I think this will not change often enough...)
+    //
     {
-        QString email;
-
-        try
+        std::string error_count;
+        struct stat st;
+        if(stat(g_watchdog_last_result_filename, &st) == 0)
         {
-            snap_config test_mta(g_test_mta_results);
-            email = test_mta["email"];
+            snap_config const last_results(g_watchdog_last_result_filename);
+            error_count = last_results["error_count"];
         }
-        catch(snap_configurations_exception const & e)
-        {
-            SNAP_LOG_DEBUG("test_mta could not be read.");
-            // ignore the error otherwise
-        }
-
         snap_manager::status_t const plugins(
-                      snap_manager::status_t::state_t::STATUS_STATE_INFO
+                      std::stoi(error_count) == 0
+                            ? snap_manager::status_t::state_t::STATUS_STATE_INFO
+                            : snap_manager::status_t::state_t::STATUS_STATE_ERROR
                     , get_plugin_name()
-                    , "test_mta"
-                    , email);
+                    , "last_results"
+                    , error_count.c_str()); // no need for Utf8, a number is ASCII
         server_status.set_field(plugins);
     }
 }
@@ -567,6 +591,43 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                         , "<p>Enter an email address and click the Save button to make sure that"
                           " sendmail works as expected.</p>"
                         + status
+                        ));
+        f.add_widget(field);
+        f.generate(parent, uri);
+        return true;
+    }
+
+    if(s.get_field_name() == "last_results")
+    {
+        // the list of enabled plugins
+        //
+        snap_manager::form f(
+                  get_plugin_name()
+                , s.get_field_name()
+                , snap_manager::form::FORM_BUTTON_NONE
+                );
+
+        // try to be as close as possible to the latest results, only
+        // the info/error status won't be tweaked in time here...
+        //
+        std::string error_count;
+        struct stat st;
+        if(stat(g_watchdog_last_result_filename, &st) == 0)
+        {
+            // read a couple of values from the last result file
+            //
+            snap_config const last_results(g_watchdog_last_result_filename);
+            error_count = last_results["error_count"];
+        }
+
+        int const errcnt(std::stoi(error_count));
+        snap_manager::widget_description::pointer_t field(std::make_shared<snap_manager::widget_description>(
+                          "Snap! Watchdog Last Results"
+                        , s.get_field_name()
+                        , QString("<p>The snapwatchdogserver found %1 error%2.</p>"
+                                  "<p>TODO: make that link actually work -- <a href=\"/snapmanager/?watchdog\">View the last results</a></p>")
+                                    .arg(errcnt == 0 ? "no" : error_count.c_str())
+                                    .arg(errcnt == 1 ? "" : "s")
                         ));
         f.add_widget(field);
         f.generate(parent, uri);
