@@ -1270,6 +1270,12 @@ bool watchdog_child::run_watchdog_plugins()
         //
         QDomDocument doc("watchdog");
 
+        // it doesn't look like Qt supports such
+        //QDomProcessingInstruction stylesheet(doc.createProcessingInstruction("xml-stylesheet", QString()));
+        //stylesheet.setAttribute("type", "text/xsl");
+        //stylesheet.setAttribute("href", "file:///home/snapwebsites/snapcpp/snapwebsites/snapwatchdog/conf/snapwatchdog-data.xsl");
+        //doc.appendChild(stylesheet);
+
         // run each plugin watchdog function
         //
         server->process_watch(doc);
@@ -1300,7 +1306,12 @@ bool watchdog_child::run_watchdog_plugins()
             watchdog_tag.setAttribute("date", static_cast<qlonglong>(start_date));
             int64_t const current_date(get_current_date());
             watchdog_tag.setAttribute("end-date", static_cast<qlonglong>(current_date));
-            result = doc.toString(-1);
+            result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+                     "<?xml-stylesheet"
+                               " type=\"text/xsl\""
+                               " href=\"/snapwatchdog-data.xsl\"?>"
+                     + doc.toString(-1);
+            result.remove("<!DOCTYPE watchdog>");
 
             // save the result in a file first
             //

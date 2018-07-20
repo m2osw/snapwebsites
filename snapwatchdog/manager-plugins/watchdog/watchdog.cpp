@@ -311,7 +311,7 @@ void watchdog::on_retrieve_status(snap_manager::server_status & server_status)
     // (TBD: I think this will not change often enough...)
     //
     {
-        std::string error_count;
+        std::string error_count("0");
         struct stat st;
         if(stat(g_watchdog_last_result_filename, &st) == 0)
         {
@@ -610,7 +610,7 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
         // try to be as close as possible to the latest results, only
         // the info/error status won't be tweaked in time here...
         //
-        std::string error_count;
+        std::string error_count("0");
         struct stat st;
         if(stat(g_watchdog_last_result_filename, &st) == 0)
         {

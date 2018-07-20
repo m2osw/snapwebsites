@@ -6,3 +6,4 @@ debian/tmp/usr/share/snapwebsites/xsd/watchdog-processes.xsd                    
 debian/tmp/usr/share/snapwebsites/snapwatchdog/processes/watchdog-processes.xml  usr/share/snapwebsites/snapwatchdog/processes/
 snapwatchdog/conf/snapwatchdog.conf                                              etc/snapwebsites/
 snapwatchdog/conf/snapwatchdog.properties                                        etc/snapwebsites/logger/
+snapwatchdog/conf/snapwatchdog-data.xsl                                          var/www/snapmanager/public_html/
