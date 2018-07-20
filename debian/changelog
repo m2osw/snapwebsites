@@ -1,3 +1,12 @@
+snapwebsites (1.5.95.0~xenial) xenial; urgency=high
+
+  * Started writing an XSLT stylesheet to convert snapwatchdog data to HTML.
+  * Fixed the XML files to include a header and stylesheet.
+  * Added "0" to the error_count so the stoi() doesn't fail (although there
+    files are there and yet it doesn't seem the read them)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 19 Jul 2018 17:53:39 -0700
+
 snapwebsites (1.5.94.0~xenial) xenial; urgency=high
 
   * Fixed the JS to remove old feedback messages, the while() was not working.
@@ -7,6 +16,7 @@ snapwebsites (1.5.94.0~xenial) xenial; urgency=high
     the CSS of the tabs and the tab panels.
   * Added a snapmanager.cgi widget (a link really) to view watchdog results
     (although the link destination doesn't work yet...)
+  * Changed the snapwatchdog XML to include a valid header.
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 19 Jul 2018 17:53:39 -0700
 
