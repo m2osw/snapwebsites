@@ -372,8 +372,13 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
                     , service_list
                     , s.get_value()
                     , "<p>Enable or disable all backend services either on this system or cluster-wide.</p>"
-                        "<p>Use the 'SAVE' button for the local system only, or hit 'SAVE EVERYWHERE' for cluster-wide effect."
-                        " When you disable the current configuration, it will be remembered on enable-all.</p>"
+                      "<p>Hit <strong>Save Everywhere</strong> to change or re-iterate the state."
+                      " There is no legitimate way to only enable or disable the backend services"
+                      " on just one computer. This feature is always run cluster wide.</p>"
+                      "<p>Note that you can click the <strong>Save Everywhere</strong> button without"
+                      " changing the status. The system will force the state again and make sure it is"
+                      " enabled or disabled on all computers. This feature can be useful after an upgrade"
+                      " since all the backends may not get restarted properly after such.</p>"
                     ));
         f.add_widget(field);
         f.generate(parent, uri);

@@ -16,3 +16,13 @@ sudo chmod 4775 ../../BUILD/snapwebsites/snapmanager/daemon/snapmanagerdaemon
 #
 sudo chown root ../../BUILD/snapwebsites/snapmanager/password/snappassword
 sudo chmod 4775 ../../BUILD/snapwebsites/snapmanager/password/snappassword
+
+# We also need a few files in specific locations, this works for me, you
+# may have to tweak a few things depending on your installation
+#
+cp snapmanager/conf/snapmanagercgi.js /usr/clients/www/csnap.m2osw.com/public_html/.
+cp snapmanager/conf/snapmanagercgi.css /usr/clients/www/csnap.m2osw.com/public_html/.
+cp snapmanager/conf/snapmanagercgi-parser.xsl /etc/snapwebsites/.
+cp ../../BUILD/snapwebsites/snapmanager/cgi/snapmanager.cgi /usr/clients/www/csnap.m2osw.com/cgi-bin/snapmanager.cgi
+
+# vim: ts=4 sw=4 et

@@ -149,6 +149,67 @@ button
 {
     margin: 5px 10px;
 }
+#feedback
+{
+    display: none; /* by default this is hidden */
+    position: fixed;
+    x-index: 2; /* over the header if necessary */
+    bottom: 0;
+    right: 0;
+    width: auto;
+    max-width: 500px;
+    height: auto;
+    background-color: #f0e0e0;
+    border-left: 2px solid #c66;
+    border-top: 2px solid #c66;
+}
+#feedback .titlebar
+{
+    display: flex;
+    background: #bbb;
+    border-bottom: 1px solid black;
+}
+#feedback .titlebar .title
+{
+    flex: auto;
+    padding: 5px;
+    padding-right: 15px;
+}
+#feedback .titlebar .close-button
+{
+    flex: 0 0 20px;
+    text-align: center;
+    padding: 5px;
+    border-left: 1px solid black;
+    cursor: pointer;
+}
+#feedback .titlebar .close-button:hover
+{
+    background-color: #def;
+}
+#feedback .message-list
+{
+    max-height: 300px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+#feedback .feedback-message
+{
+    border: 1px solid black;
+    margin: 10px;
+    padding: 10px;
+    color: #440000;
+}
+#feedback .feedback-message.error
+{
+    border: 1px solid red;
+    color: #cc0000;
+}
+#feedback .feedback-message.warning
+{
+    border: 1px solid orange;
+    color: #880000;
+}
 
 /* vim: ts=4 sw=4 et
  */

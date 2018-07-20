@@ -63,6 +63,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         <div id="tabs">
           <xsl:copy-of select="output/node()"/>
         </div>
+        <div id='feedback'>
+          <div class="titlebar"><div class="title">Feedback Window</div><div class="close-button">X</div></div>
+          <div class="message-list"></div>
+        </div>
       </body>
     </html>
   </xsl:template>

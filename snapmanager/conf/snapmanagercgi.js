@@ -3,7 +3,7 @@
  * Layout: default
  * Version: 0.3
  * Browsers: all
- * Copyright: Copyright 2017-1028 (c) Made to Order Software Inc.
+ * Copyright: Copyright 2017-2018 (c) Made to Order Software Inc.
  * License: GPLv2
  */
 
@@ -41,31 +41,111 @@ function spin_globe(rotate)
 }
 
 
-// Forward declare functions
-//
-function hook_up_form_events()       {}
+
+/** \brief Create a feedback box and show messages.
+ *
+ * This object is used to handle feedback. It creates a box at the bottom
+ * right of the screen with messagessuch as errors and success and various
+ * other things that just happen.
+ */
+function Feedback()
+{
+    var that = this;
+
+    // we expect a div already in the HTML that we can just grab
+    //
+    this.feedback_block = jQuery("#feedback");
+    this.message_list = jQuery(".message-list", this.feedback_block);
+
+    // enable the close button
+    //
+    jQuery(".close-button", this.feedback_block).click(function(e)
+        {
+            e.preventDefault();
+
+            that.feedback_block.hide();
+        });
+
+// a couple of tests to make sure it works as expected
+//setTimeout(function(){
+//Feedback.FeedbackInstance.message("error", "Got the timeout!");
+//}, 5000 );
+//setTimeout(function(){
+//Feedback.FeedbackInstance.message("warning", "Error two! With a very long message so we see that our width is not crazy large.");
+//}, 10000 );
+}
+
+Feedback.FeedbackInstance = null; // static
+
+Feedback.DateFormat = {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    };
+
+Feedback.prototype.feedback_block = null;
+Feedback.prototype.message_list = null;
+
+/** \brief Emit a feedback message so the user knows somthing is happening.
+ *
+ * \param[in] level  One of "error", "warning" or "info".
+ * \param[in] msg  The feedback message to display.
+ */
+Feedback.prototype.message = function(level, msg)
+{
+    var messages = jQuery(".feedback-message", this.message_list),
+        now = new Date();
+
+    // make sure the feedback window appears
+    //
+    this.feedback_block.show();
+
+    // limit to the last 5 messages
+    //
+    while(messages.length >= 5)
+    {
+        messages.first().remove();
+    }
+
+    this.message_list.append("<div class=\"feedback-message "
+                        + level
+                        + "\"><strong>"
+                        + level.charAt(0).toUpperCase() + level.substr(1)
+                        + ": "
+                        + now.toLocaleDateString("en-US", Feedback.DateFormat)
+                        + "</strong><br/>"
+                        + msg
+                        + "</div>");
+}
+
+
+
 
 
 var div_map = {};
 
 function FieldDiv( the_form )
 {
-    var jq_form         = jQuery(the_form);
+    var jq_form = jQuery(the_form),
+        that = this;
+
     this.parent_tr      = upTo(the_form,"tr");
     this.parent_div     = jQuery( upTo(this.parent_tr,"div") );
     this.button_name    = jq_form.data("button_name");
     this.form_post_data = jq_form.serialize();
     this.form_data      = {};
  
-    var local_this = this;
     jQuery.each( jq_form.serializeArray(), function(i,element) {
-        local_this.form_data[element.name] = element.value;
+        that.form_data[element.name] = element.value;
     });
 
     jQuery(this.parent_tr).addClass("modified");
     spin_globe(true);
 
-    // Replace the div which contiains the "modified" tr.
+    // Replace the div which contains the "modified" tr.
     // If you set save_form_data to 'true', it will first
     // save the embedded form data, useful for POSTs.
     //
@@ -109,25 +189,29 @@ function FieldDiv( the_form )
     {
         var that = this;
         jQuery.ajax(
-        {
-            url : "snapmanager",
-            type: "POST",
-            data: that.get_post_data()
-        })
-        .done( function(response)
-        {
-            that.replace_div( response );
-            that.check_status();
-        })
-        .fail( function( xhr, the_status, errorThrown )
-        {
-            console.log( "Failed to connect to server!"  );
-            console.log( "xhr   : [" + xhr         + "]" );
-            console.log( "status: [" + status      + "]" );
-            console.log( "error : [" + errorThrown + "]" );
-            //
-            that.check_status();
-        });
+            {
+                url : "snapmanager",
+                type: "POST",
+                data: that.get_post_data()
+            })
+            .done( function(response)
+                {
+                    that.replace_div( response );
+                    that.check_status();
+                })
+            .fail( function( xhr, the_status, errorThrown )
+                {
+                    // give some feedback so we know something is happening
+                    //
+                    Feedback.FeedbackInstance.message("error", "Failed to connect to server for AJAX feedback! (" + errorThrown + ")");
+
+                    console.log( "Failed to connect to server!"  );
+                    console.log( "xhr   : [" + xhr         + "]" );
+                    console.log( "status: [" + status      + "]" );
+                    console.log( "error : [" + errorThrown + "]" );
+                    //
+                    that.check_status();
+                });
     }
 }
 
@@ -156,12 +240,12 @@ function hook_up_form_events()
     {
         if( check_for_modified_divs() )
         {
-            // Ignore button hit if operation pending.
+            // Ignore button hit if any operation is pending.
             event.preventDefault();
             return;
         }
 
-        // Get the button name that was hit, find the form,
+        // Get the name of the button that was hit, find the form,
         // and set the name of the button in the form's user
         // data. This way we can retrieve it when creating the
         // FieldDiv object in the form submit below.
@@ -198,18 +282,20 @@ function hook_up_form_events()
 //
 jQuery(document).ready(function()
 {
+    Feedback.FeedbackInstance = new Feedback();
+
     jQuery("#tabs").tabs(
-    {
-        heightStyle: "content",
-    }); 
+        {
+            heightStyle: "content",
+        }); 
 
     jQuery( "#menu" ).menu(
-    {
-        classes:
         {
-            "ui-menu": "highlight"
-        }
-    });
+            classes:
+            {
+                "ui-menu": "highlight"
+            }
+        });
 
     spin_globe( jQuery("tr[class='modified']").length > 0 );
 

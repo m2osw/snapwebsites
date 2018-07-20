@@ -1,3 +1,12 @@
+snapwebsites (1.5.93.0~xenial) xenial; urgency=high
+
+  * Fixed the description of the Enable All widget.
+  * Fixed the failing "upgrade_required" button once the upgrade was done.
+  * Added a feedback window (for errors) to the Snap! Manager.
+  * Updated my setup-daemon with the few JS/CSS files that I copy too.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 19 Jul 2018 16:38:44 -0700
+
 snapwebsites (1.5.92.0~xenial) xenial; urgency=high
 
   * Added support so we can send a test email from the watchdog manager plugin.

@@ -1460,8 +1460,11 @@ int manager_cgi::process_post()
     // Note: "self::refresh" is a special case and no field actually
     //       exists in the status file for that one
     //
+    //       "self::upgrade_required" disappears once the upgrade is
+    //       done so we have to also give manage it as a special case
+    //
     if(plugin_name != "self"
-    || field_name != "refresh")
+    || (field_name != "refresh" && field_name != "upgrade_required"))
     {
         if(status_file.get_field_state(plugin_name, field_name) == snap_manager::status_t::state_t::STATUS_STATE_UNDEFINED)
         {
