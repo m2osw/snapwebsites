@@ -30,6 +30,48 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     <html>
       <head>
         <title>Snap! Watchdog Data</title>
+        <style>
+          #error-section h2
+          {
+            margin-top: 0;
+          }
+          table.name-value
+          {
+            border-spacing: 0;
+            border-collapse: separate;
+          }
+          table.name-value th
+          {
+            text-align: right;
+          }
+          table.name-value th,
+          table.name-value td
+          {
+            border-top: 1px solid black;
+            margin: 0;
+            padding: 5px;
+          }
+          table.name-value tr:first-child th,
+          table.name-value tr:first-child td
+          {
+            border-top: none;
+          }
+          table.table-with-borders
+          {
+            border-left: 1px solid black;
+            border-top: 1px solid black;
+            border-spacing: 0;
+            border-collapse: separate;
+          }
+          table.table-with-borders th,
+          table.table-with-borders td
+          {
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+            margin: 0;
+            padding: 5px;
+          }
+        </style>
       </head>
       <body>
         <h1>Snap! Watchdog Data</h1>
@@ -60,20 +102,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           </div>
         </xsl:if>
 
-        <!-- cassandra has a process when running -->
-        <xsl:variable name="cassandra_count" select="count(watchdog/cassandra)"/>
-        <xsl:if test="$cassandra_count > 0">
-          <div id="cassandra-section">
-            <h2>Cassandra</h2>
-            <table class="table-with-borders">
-              <xsl:call-template name="process_table_header"/>
-              <tbody>
-                <xsl:apply-templates select="watchdog/cassandra/process"/>
-              </tbody>
-            </table>
-          </div>
-        </xsl:if>
-
         <!-- CPU info -->
         <xsl:variable name="cpu_count" select="count(watchdog/cpu)"/>
         <xsl:if test="$cpu_count > 0">
@@ -82,67 +110,67 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 <p>(TODO convert to readable date &amp; sizes)</p>
             <table class="name-value">
               <tr>
-                <td>Time of Boot:</td>
+                <th>Time of Boot:</th>
                 <td><xsl:value-of select="watchdog/cpu/@time_of_boot"/></td>
               </tr>
               <tr>
-                <td>Up Time:</td>
+                <th>Up Time:</th>
                 <td><xsl:value-of select="watchdog/cpu/@uptime"/></td>
               </tr>
               <tr>
-                <td>CPU Count:</td>
+                <th>CPU Count:</th>
                 <td><xsl:value-of select="watchdog/cpu/@cpu_count"/></td>
               </tr>
               <tr>
-                <td>CPU Freq:</td>
+                <th>CPU Freq:</th>
                 <td><xsl:value-of select="watchdog/cpu/@cpu_freq"/></td>
               </tr>
               <tr>
-                <td>Idle:</td>
+                <th>Idle:</th>
                 <td><xsl:value-of select="watchdog/cpu/@idle"/></td>
               </tr>
               <tr>
-                <td>Total CPU System:</td>
+                <th>Total CPU System:</th>
                 <td><xsl:value-of select="watchdog/cpu/@total_cpu_system"/></td>
               </tr>
               <tr>
-                <td>Total CPU User:</td>
+                <th>Total CPU User:</th>
                 <td><xsl:value-of select="watchdog/cpu/@total_cpu_user"/></td>
               </tr>
               <tr>
-                <td>Total CPU Wait:</td>
+                <th>Total CPU Wait:</th>
                 <td><xsl:value-of select="watchdog/cpu/@total_cpu_wait"/></td>
               </tr>
               <tr>
-                <td>Avg 1 min.:</td>
+                <th>Avg 1 min.:</th>
                 <td><xsl:value-of select="watchdog/cpu/@avg1"/></td>
               </tr>
               <tr>
-                <td>Avg 5 min.:</td>
+                <th>Avg 5 min.:</th>
                 <td><xsl:value-of select="watchdog/cpu/@avg5"/></td>
               </tr>
               <tr>
-                <td>Avg 15 min.:</td>
+                <th>Avg 15 min.:</th>
                 <td><xsl:value-of select="watchdog/cpu/@avg15"/></td>
               </tr>
               <tr>
-                <td>Page Cache In:</td>
+                <th>Page Cache In:</th>
                 <td><xsl:value-of select="watchdog/cpu/@page_cache_in"/></td>
               </tr>
               <tr>
-                <td>Page Cache Out:</td>
+                <th>Page Cache Out:</th>
                 <td><xsl:value-of select="watchdog/cpu/@page_cache_out"/></td>
               </tr>
               <tr>
-                <td>Swap Cache In:</td>
+                <th>Swap Cache In:</th>
                 <td><xsl:value-of select="watchdog/cpu/@swap_cache_in"/></td>
               </tr>
               <tr>
-                <td>Swap Cache Out:</td>
+                <th>Swap Cache Out:</th>
                 <td><xsl:value-of select="watchdog/cpu/@swap_cache_out"/></td>
               </tr>
               <tr>
-                <td>Total Processes:</td>
+                <th>Total Processes:</th>
                 <td><xsl:value-of select="watchdog/cpu/@total_processes"/></td>
               </tr>
             </table>
@@ -157,40 +185,158 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 <p>(TODO convert to readable date &amp; sizes)</p>
             <table class="name-value">
               <tr>
-                <td>Total Memory:</td>
+                <th>Total Memory:</th>
                 <td><xsl:value-of select="watchdog/memory/@mem_total"/></td>
               </tr>
               <tr>
-                <td>Available Memory:</td>
+                <th>Available Memory:</th>
                 <td><xsl:value-of select="watchdog/memory/@mem_available"/></td>
               </tr>
               <tr>
-                <td>Free Memory:</td>
+                <th>Free Memory:</th>
                 <td><xsl:value-of select="watchdog/memory/@mem_free"/></td>
               </tr>
               <tr>
-                <td>Memory Buffers:</td>
+                <th>Memory Buffers:</th>
                 <td><xsl:value-of select="watchdog/memory/@mem_buffers"/></td>
               </tr>
               <tr>
-                <td>Memory Cached:</td>
+                <th>Memory Cached:</th>
                 <td><xsl:value-of select="watchdog/memory/@mem_cached"/></td>
               </tr>
               <tr>
-                <td>Swap Total Space:</td>
+                <th>Swap Total Space:</th>
                 <td><xsl:value-of select="watchdog/memory/@swap_total"/></td>
               </tr>
               <tr>
-                <td>Free Swap Space:</td>
+                <th>Free Swap Space:</th>
                 <td><xsl:value-of select="watchdog/memory/@swap_free"/></td>
               </tr>
               <tr>
-                <td>Swap Space Cached:</td>
+                <th>Swap Space Cached:</th>
                 <td><xsl:value-of select="watchdog/memory/@swap_cached"/></td>
               </tr>
             </table>
           </div>
         </xsl:if>
+
+        <!-- Disk info -->
+        <xsl:variable name="disk_count" select="count(watchdog/disk)"/>
+        <xsl:if test="$disk_count > 0">
+          <div id="disk-section">
+            <h2>Disk Partitions</h2>
+<p>(TODO convert to readable date &amp; sizes)</p>
+            <table class="table-with-borders">
+              <thead>
+                <tr>
+                  <th>Path</th>
+                  <th>Free Space</th>
+                  <th>Block Free</th>
+                  <th>Blocks</th>
+                  <th>Flags</th>
+                  <th>Free Files</th>
+                  <th>Files Available</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                <xsl:for-each select="watchdog/disk/partition">
+                  <tr>
+                    <td><xsl:value-of select="@dir"/></td>
+                    <td><xsl:value-of select="@available"/></td>
+                    <td><xsl:value-of select="@bfree"/></td>
+                    <td><xsl:value-of select="@blocks"/></td>
+                    <td><xsl:value-of select="@flags"/></td>
+                    <td><xsl:value-of select="@ffree"/></td>
+                    <td><xsl:value-of select="@favailable"/></td>
+                    <td><xsl:value-of select="@error"/></td>
+                  </tr>
+                </xsl:for-each>
+              </tbody>
+            </table>
+          </div>
+        </xsl:if>
+
+        <!-- cassandra has a process when running -->
+        <xsl:variable name="cassandra_count" select="count(watchdog/cassandra)"/>
+        <xsl:if test="$cassandra_count > 0">
+          <div id="cassandra-section">
+            <h2>Cassandra</h2>
+            <table class="table-with-borders">
+              <xsl:call-template name="process_table_header"/>
+              <tbody>
+                <xsl:apply-templates select="watchdog/cassandra/process"/>
+              </tbody>
+            </table>
+          </div>
+        </xsl:if>
+
+        <!-- firewall has a process when running -->
+        <xsl:variable name="firewall_count" select="count(watchdog/firewall)"/>
+        <xsl:if test="$firewall_count > 0">
+          <div id="firewall-section">
+            <h2>Firewall</h2>
+            <table class="table-with-borders">
+              <xsl:call-template name="process_table_header"/>
+              <tbody>
+                <xsl:apply-templates select="watchdog/firewall/process"/>
+              </tbody>
+            </table>
+          </div>
+        </xsl:if>
+
+        <!-- network has a process when running -->
+        <xsl:variable name="network_count" select="count(watchdog/network)"/>
+        <xsl:if test="$network_count > 0">
+          <div id="network-section">
+            <h2>Network</h2>
+            <table class="table-with-borders">
+              <xsl:call-template name="process_table_header"/>
+              <tbody>
+                <xsl:apply-templates select="watchdog/network/process"/>
+              </tbody>
+            </table>
+          </div>
+        </xsl:if>
+
+        <!-- processes has a process when running -->
+        <xsl:variable name="processes_count" select="count(watchdog/processes)"/>
+        <xsl:if test="$processes_count > 0">
+          <div id="processes-section">
+            <h2>Processes</h2>
+            <table class="table-with-borders">
+              <xsl:call-template name="process_table_header"/>
+              <tbody>
+                <xsl:apply-templates select="watchdog/processes/process"/>
+              </tbody>
+            </table>
+          </div>
+        </xsl:if>
+
+        <!-- watchdscripts a set of results, one per script -->
+        <xsl:variable name="watchscripts_count" select="count(watchdog/watchscripts)"/>
+        <xsl:if test="$watchscripts_count > 0">
+          <div id="watchscripts-section">
+            <h2>Watchscripts</h2>
+            <table class="table-with-borders">
+              <thead>
+                <tr>
+                  <th>Script Path</th>
+                  <th>Exit Code</th>
+                </tr>
+              </thead>
+              <tbody>
+                <xsl:for-each select="watchdog/watchscripts/script">
+                  <tr>
+                    <td><xsl:value-of select="@name"/></td>
+                    <td><xsl:value-of select="@exit_code"/></td>
+                  </tr>
+                </xsl:for-each>
+              </tbody>
+            </table>
+          </div>
+        </xsl:if>
+
       </body>
     </html>
   </xsl:template>
@@ -207,12 +353,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         <th>CSTime</th>
         <th>TSize</th>
         <th>TTY</th>
+        <th>Error</th>
       </tr>
     </thead>
   </xsl:template>
 
   <xsl:template match="process">
     <tr>
+      <xsl:attribute name="class">
+        process
+        <xsl:if test="@error">
+          error
+        </xsl:if>
+        <xsl:if test="@tty != 0">
+          tty
+        </xsl:if>
+      </xsl:attribute>
       <td><xsl:value-of select="@name"/></td>
       <td><xsl:value-of select="@resident"/></td>
       <td><xsl:value-of select="@pcpu"/></td>
@@ -222,6 +378,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
       <td><xsl:value-of select="@cstime"/></td>
       <td><xsl:value-of select="@total_size"/></td>
       <td><xsl:if test="@tty != 0">Yes</xsl:if></td>
+      <td><xsl:value-of select="@error"/></td>
     </tr>
   </xsl:template>
 
