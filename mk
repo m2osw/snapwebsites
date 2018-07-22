@@ -21,6 +21,12 @@ case "$1" in
     make -C ../../BUILD dput
     ;;
 
+"-v"|"--verbose")
+    # Rebuild snapwebsites with verbosity ON
+    #
+    VERBOSE=1 make -C ../../BUILD/snapwebsites install
+    ;;
+
 "")
     # Default, just rebuild snapwebsites
     #

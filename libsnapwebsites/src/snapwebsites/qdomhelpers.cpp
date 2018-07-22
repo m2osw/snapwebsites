@@ -167,6 +167,8 @@ void insert_html_string_to_xml_doc(QDomNode & node, QString const & xml)
  * This function copies all the children of the specified \p node
  * at the end of the child node.
  *
+ * The source and destination documents do not need to be the same.
+ *
  * \param[in,out] child  The destination node.
  * \param[in] node  The source element node.
  */

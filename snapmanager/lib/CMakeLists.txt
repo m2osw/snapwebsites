@@ -78,16 +78,24 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
 )
 
 install(
-    TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib
+    TARGETS
+        ${PROJECT_NAME}
+    LIBRARY DESTINATION
+        lib
 )
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include
-    FILES_MATCHING PATTERN "snapmanager/*.h"
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION
+        include
+    FILES_MATCHING PATTERN
+        "snapmanager/*.h"
 )
 install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/snapmanager/version.h
-    DESTINATION include/snapmanager
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/snapmanager/version.h
+    DESTINATION
+        include/snapmanager
 )
 
 # vim: ts=4 sw=4 et nocindent

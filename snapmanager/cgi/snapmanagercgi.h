@@ -43,7 +43,7 @@ namespace snap_manager
 
 
 class messenger
-        : public snap::snap_communicator::snap_tcp_blocking_client_message_connection
+    : public snap::snap_communicator::snap_tcp_blocking_client_message_connection
 {
 public:
                             messenger(std::string const & address, int port, snap::snap_communicator_message const & message);
@@ -73,10 +73,16 @@ public:
                                 manager_cgi();
     virtual                     ~manager_cgi();
 
+    static pointer_t            instance();
+
     int                         error(char const * code, char const * msg, char const * details);
     void                        forbidden(std::string details);
     bool                        verify();
     int                         process();
+    snap::snap_uri const &      get_uri() const;
+
+    //void                        generate_content(QDomDocument doc, QDomElement root, QDomElement menu); -- old function
+    SNAP_SIGNAL_WITH_MODE(generate_content, (QDomDocument doc, QDomElement output, QDomElement menu, snap::snap_uri const & uri), (doc, output, menu, uri), START_AND_DONE);
 
 private:
     typedef std::map<std::string, std::string>      post_variables_t;
@@ -86,7 +92,6 @@ private:
 
     int                         read_post_variables();
     int                         process_post();
-    void                        generate_content(QDomDocument doc, QDomElement root, QDomElement menu);
     QDomElement                 create_table_header( QDomDocument& doc );
     void                        generate_self_refresh_plugin_entry( QDomDocument& doc, QDomElement& table );
     void                        generate_plugin_entry( snap_manager::status_t status, QDomDocument& doc, QDomElement& table );

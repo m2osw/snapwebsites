@@ -126,6 +126,12 @@ manager_cgi::~manager_cgi()
 }
 
 
+manager_cgi::pointer_t manager_cgi::instance()
+{
+    return std::dynamic_pointer_cast<manager_cgi>(manager::instance());
+}
+
+
 int manager_cgi::error(char const * code, char const * msg, char const * details)
 {
     if(details == nullptr)
@@ -364,7 +370,10 @@ bool manager_cgi::verify()
     char const * remote_addr(getenv("REMOTE_ADDR"));
     if(remote_addr == nullptr)
     {
-        error("400 Bad Request", nullptr, "The REMOTE_ADDR parameter is not available.");
+        error(
+            "400 Bad Request",
+            nullptr,
+            "The REMOTE_ADDR parameter is not available.");
         return false;
     }
 
@@ -470,6 +479,15 @@ bool manager_cgi::verify()
             return false;
         }
 
+        // TODO: move to snapserver because this could be the name of a legal page...
+        if(strcasestr(request_uri, "phpmyadmin") != nullptr)
+        {
+            // block myPhpAdmin accessors
+            error("410 Gone", "MySQL left.", nullptr);
+            snap::server::block_ip(remote_addr, "year", "user tried to access phpmyadmin through snapmanager.cgi");
+            return false;
+        }
+
         // once the index.html page is blocked, we would end up with a 404
         // instead we can just redirect the user to /snapmanager
         //
@@ -492,6 +510,24 @@ bool manager_cgi::verify()
             return false;
         }
 
+        // We do not allow any kind of proxy
+        //
+        // Note: Yes. This is not required at this point since we check that
+        //       the path is "/snapmanager" and since it starts with "/"...
+        //       However, we may change that later and we think it is
+        //       preferable to keep things this way.
+        //
+        if(*request_uri != '/')
+        {
+            // avoid proxy accesses
+            error(
+                "404 Page Not Found",
+                nullptr,
+                "The REQUEST_URI cannot represent a proxy access.");
+            snap::server::block_ip(remote_addr, "year", "user tried to access snapmanager.cgi with a proxy");
+            return false;
+        }
+
         // make sure the user is trying to access exactly "/snapmanager/?"
         // (with the '/' and '?' being optional)
         //
@@ -507,30 +543,6 @@ bool manager_cgi::verify()
                 "We could not find the page you were looking for.",
                 (std::string("The REQUEST_URI must be \"/snapmanager\", not \"") + request_uri + "\".").c_str());
             snap::server::block_ip(remote_addr, QString(), "user tried to access \"/snapmanager\" through snapmanager.cgi");
-            return false;
-        }
-
-        // We do not allow any kind of proxy
-        //
-        // Note: Yes. This is not required at this point since we check that
-        //       the path is "/snapmanager" and since it starts with "/"...
-        //       However, we may change that later and we think it is
-        //       preferable to keep things this way.
-        //
-        if(*request_uri != '/')
-        {
-            // avoid proxy accesses
-            error("404 Page Not Found", nullptr, "The REQUEST_URI cannot represent a proxy access.");
-            snap::server::block_ip(remote_addr, "year", "user tried to access snapmanager.cgi with a proxy");
-            return false;
-        }
-
-        // TODO: move to snapserver because this could be the name of a legal page...
-        if(strcasestr(request_uri, "phpmyadmin") != nullptr)
-        {
-            // block myPhpAdmin accessors
-            error("410 Gone", "MySQL left.", nullptr);
-            snap::server::block_ip(remote_addr, "year", "user tried to access phpmyadmin through snapmanager.cgi");
             return false;
         }
     }
@@ -656,10 +668,7 @@ int manager_cgi::process()
             // an error occurred, exit now
             return 0;
         }
-    }
 
-    if( (request_method == "POST") )
-    {
         QString const host         = f_post_variables["hostname"].c_str();
         QString const plugin_name  = f_post_variables["plugin_name"].c_str();
 
@@ -667,7 +676,7 @@ int manager_cgi::process()
         //
         if( !f_uri.has_query_option("host") )
         {
-            f_uri.set_query_option("host",host);
+            f_uri.set_query_option("host", host);
         }
 
         QDomDocument doc;
@@ -709,6 +718,14 @@ int manager_cgi::process()
         snap_version.appendChild(snapversion_text);
         QDomElement menu(doc.createElement("menu"));
         root.appendChild(menu);
+
+        // we need the plugins for the following test
+        //
+        load_plugins();
+
+        generate_content(doc, output, menu, f_uri);
+
+        // handle this warning after the generate_content() signal
         {
             // we force HTTPS by default, but someone could turn that feature
             // off...
@@ -719,7 +736,7 @@ int manager_cgi::process()
             {
                 QDomElement warning_div(doc.createElement("div"));
                 warning_div.setAttribute("class", "access-warning");
-                output.appendChild(warning_div);
+                output.insertBefore(warning_div, QDomNode());
 
                 // TODO: add a link to a help page on snapwebsites.org
                 snap::snap_dom::insert_html_string_to_xml_doc(warning_div,
@@ -727,8 +744,6 @@ int manager_cgi::process()
                         "<p>You are accessing this website without SSL. All the data transfers will be unencrypted.</p>");
             }
         }
-
-        generate_content( doc, output, menu );
 
         snap::xslt x;
         x.set_xsl_from_file(f_config["stylesheet"]); // setup the .xsl file
@@ -749,6 +764,12 @@ int manager_cgi::process()
     }
 
     return 0;
+}
+
+
+snap::snap_uri const & manager_cgi::get_uri() const
+{
+    return f_uri;
 }
 
 
@@ -1607,16 +1628,16 @@ SNAP_LOG_TRACE("msg.run() finished");
  * \param[in] output  The output tag.
  * \param[in] menu  The menu tag.
  */
-void manager_cgi::generate_content(QDomDocument doc, QDomElement output, QDomElement menu)
+bool manager_cgi::generate_content_impl(QDomDocument doc, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
 {
-    QString const function(f_uri.query_option("function"));
+    snap::NOTUSED(output);
+    snap::NOTUSED(uri);
 
     // is a host name specified?
-    // if so then the function / page has to be applied to that specific host
     //
-    if( f_uri.has_query_option("host") )
+    if(f_uri.has_query_option("host"))
     {
-        QString const host( f_uri.query_option("host") );
+        QString const host(f_uri.query_option("host"));
 
         // either way, if we are here, we can show two additional menus:
         //    host status
@@ -1630,46 +1651,59 @@ void manager_cgi::generate_content(QDomDocument doc, QDomElement output, QDomEle
 
         QDomElement status(doc.createElement("status"));
         menu.appendChild(status);
-        status.appendChild( doc.createTextNode("Host: ") );
-        status.appendChild( doc.createElement("br")      );
-        status.appendChild( doc.createTextNode(host)     );
-
-        // the function is to be applied to that specific host
-        //
-        if(!function.isEmpty())
-        {
-            // apply a function on that specific host
-            //
-        }
-        else
-        {
-            // no function + specific host, show a complete status from
-            // that host
-            //
-            get_host_status(doc, output, host);
-        }
+        status.appendChild(doc.createTextNode(QString("(Host: %1)").arg(host)));
     }
     else
     {
         QDomElement status(doc.createElement("status"));
         menu.appendChild(status);
-        status.appendChild( doc.createTextNode("Select Host:") );
+        status.appendChild(doc.createTextNode("(Select Host)"));
+    }
+
+    return true;
+}
+
+
+
+void manager_cgi::generate_content_done(QDomDocument doc, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
+{
+    // did one of the plugins generate the output?
+    // if so then we have nothing to do here
+    //
+    // Note that we expect plugins to generate some output ONLY if they
+    // understand the Query String function parameter. If that parameter
+    // is not set then it should not do anything (although it could still
+    // generate a menu entry.)
+    //
+    // QString const function(f_uri.query_option("function"));
+    //
+    if(!output.firstChild().isNull())
+    {
+        return;
+    }
+
+    // is a host name specified?
+    // if so then the function / page has to be applied to that specific host
+    //
+    if(f_uri.has_query_option("host"))
+    {
+        // note: uri and f_uri are the same, we use uri to avoid the
+        //       "not used" warning
+        //
+        QString const host(uri.query_option("host"));
+        get_host_status(doc, output, host);
+    }
+    else
+    {
+        QDomElement status(doc.createElement("status"));
+        menu.appendChild(status);
+        status.appendChild(doc.createTextNode("(Select Host)"));
 
         // no host specified, if there is a function it has to be applied
         // to all computers, otherwise show the list of computers and their
         // basic status
         //
-        if(!function.isEmpty())
-        {
-            // execute function on all computers
-            //
-        }
-        else
-        {
-            // "just" a cluster status...
-            //
-            get_cluster_status(doc, output);
-        }
+        get_cluster_status(doc, output);
     }
 }
 
@@ -1987,6 +2021,19 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
         ordered_statuses.push_back(s.second);
     }
 
+    // add the dynamic title
+    //
+    QDomElement h1(doc.createElement("h1"));
+    QDomText title(doc.createTextNode(QString("Snap! Manager (%1)").arg(host)));
+    h1.appendChild(title);
+    output.appendChild(h1);
+
+    // add the <div>, the <ul> appears inside that <div>
+    //
+    QDomElement div(doc.createElement("div"));
+    div.setAttribute("id", "tabs");
+    output.appendChild(div);
+
     // Create <ul>...</ul> "menu" at the top. jQuery::tabs will turn this into
     // the tab button list.
     //
@@ -1994,8 +2041,8 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
     //
     std::map<QString, QString> alerts;
     QDomElement ul(doc.createElement("ul"));
-    output.appendChild(ul);
-    for( auto const & s : ordered_statuses )
+    div.appendChild(ul);
+    for(auto const & s : ordered_statuses)
     {
         QString const plugin_name(s[0].get_plugin_name());
         QDomElement li(doc.createElement("li"));
@@ -2027,7 +2074,7 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
     for(auto const & s : ordered_statuses)
     {
         QString const plugin_name(s[0].get_plugin_name());
-        generate_plugin_status( doc, output, plugin_name, s, alerts[plugin_name] );
+        generate_plugin_status( doc, div, plugin_name, s, alerts[plugin_name] );
     }
 }
 

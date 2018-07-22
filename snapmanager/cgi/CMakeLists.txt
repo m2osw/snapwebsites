@@ -56,6 +56,15 @@ add_executable( ${PROJECT_NAME}
 )
 
 
+# the following ensures that the snapmanager_cgi::instance() is accessible
+# even though we are an executable and not a .so file
+set_target_properties(
+    ${PROJECT_NAME}
+    PROPERTIES
+        LINK_FLAGS -rdynamic
+)
+
+
 # while developing you may need to set LD_LIBRARY_PATH
 target_link_libraries( ${PROJECT_NAME}
     snapmanager
@@ -87,6 +96,14 @@ install(
 
     RUNTIME DESTINATION
         lib/cgi-bin
+)
+
+
+install(
+    FILES
+        snapmanagercgi.h
+    DESTINATION
+        include/snapmanager
 )
 
 

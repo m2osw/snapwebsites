@@ -1,7 +1,7 @@
 /*
  * Name: snapmanagercgi.css
  * Layout: default
- * Version: 0.5
+ * Version: 0.6
  * Browsers: all
  * Copyright: Copyright 2017-2018 (c) Made to Order Software Inc.
  * License: GPLv2
@@ -103,7 +103,11 @@ div.snap-version
 {
     text-align: center;
     flex: auto;
-    padding: 20px;
+    padding: 10px 10px 0 10px;
+}
+div.snap-version .menu-status
+{
+    font-size: 60%;
 }
 div.wait
 {
@@ -115,6 +119,14 @@ div.wait
 {
     background-color: #dedede;
     border: none;
+}
+/* for a plugin to just generate an error page, the main page does not manage errors that way */
+#tabs.error
+{
+    background-color: #dec0b8;
+    border: 1px solid red;
+    margin: 0 20px 20px 20px;
+    padding: 20px;
 }
 #tabs li.ui-tab
 {

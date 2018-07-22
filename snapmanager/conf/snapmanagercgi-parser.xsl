@@ -28,12 +28,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         <meta charset="utf-8"/>
         <title>Snap! Manager</title>
         <meta name="generator" content="Snap! Manager CGI"/>
-        <link href="/favicon.ico" type="image/x-icon" rel="shortcut icon"/>
-        <link rel="stylesheet" href="jquery-ui.css"/>
-        <link rel="stylesheet" href="snapmanagercgi.css"/>
-        <script type="text/javascript" src="jquery.js"/>
-        <script type="text/javascript" src="jquery-ui.js"/>
-        <script type="text/javascript" src="snapmanagercgi.js"/>
+        <link rel="bookmark" type="text/html" title="Generator" href="https://snapwebsites.org/project/snap-manager"/>
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+        <link rel="stylesheet" href="/jquery-ui.css"/>
+        <link rel="stylesheet" href="/snapmanagercgi.css"/>
+        <script type="text/javascript" src="/jquery.js"/>
+        <script type="text/javascript" src="/jquery-ui.js"/>
+        <script type="text/javascript" src="/snapmanagercgi.js"/>
       </head>
       <body>
         <header>
@@ -45,24 +46,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             </xsl:for-each>
             <li class="menu-item"><div><a href="/snapmanager?logout">Log Out</a></div></li>
           </ul>
-          <!--p>
-            ...At this point this does nothing...
-            <xsl:for-each select="menu/select">
-              <xsl:copy-of select="."/>
-            </xsl:for-each>
-          </p-->
           <div class="snap-version">
             <xsl:copy-of select="snap-version/node()"/>
+            <br/>
+            <span class="menu-status">
+              <xsl:for-each select="menu/status">
+                <xsl:copy-of select="./node()"/>
+              </xsl:for-each>
+            </span>
           </div>
           <div class="wait">
-            <img id="globe" src="globe_still.png" width="50" height="50"/>
+            <img id="globe" src="/globe_still.png" width="50" height="50"/>
           </div>
           <div style="clear: both"></div>
         </header>
-        <h1>Snap! Manager</h1>
-        <div id="tabs">
-          <xsl:copy-of select="output/node()"/>
-        </div>
+        <xsl:copy-of select="output/node()"/>
         <div id='feedback'>
           <div class="titlebar"><div class="title">Feedback Window</div><div class="close-button">X</div></div>
           <div class="message-list"></div>

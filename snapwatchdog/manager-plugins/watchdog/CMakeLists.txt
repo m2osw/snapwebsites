@@ -32,11 +32,14 @@
 
 project(plugin_watchdog)
 
+snap_validate_xml( snapwatchdog-data.xsl simplified-xslt20.dtd )
+
 find_package( Qt5Core REQUIRED )
 find_package( Qt5Xml  REQUIRED )
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${snamanagercgi_SOURCE_DIR}
 )
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC

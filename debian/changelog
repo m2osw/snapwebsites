@@ -1,3 +1,21 @@
+snapwebsites (1.5.96.0~xenial) xenial; urgency=high
+
+  * Added a --verbose option to the mk script.
+  * Moved the snapwatchdog-data.xsl source file to the manager plugin.
+  * Made the watchdog data file output shown in the snapmanager.cgi screens.
+  * Added a menu entry to reach that page.
+  * Tweaked the snapmanagercgi.cpp so it can have plugins generate the page
+    output and add menu items.
+  * Actually fixed the select="menu/select", it was supposed to be named:
+    select="menu/status" instead and we really only expect one.
+  * Made the images use "/..." instead of no slash.
+  * Fixed the tests order in manager_cgi::verify() so they happen.
+  * Made snapmanager.cgi symbols available to `dl`.
+  * Added a validation step for the snapwatchdog-data.xsl file.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jul 2018 22:45:06 -0700
+
 snapwebsites (1.5.95.0~xenial) xenial; urgency=high
 
   * Started writing an XSLT stylesheet to convert snapwatchdog data to HTML.

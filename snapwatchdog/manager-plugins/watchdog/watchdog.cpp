@@ -24,6 +24,9 @@
 #include <snapmanager/form.h>
 #include <snapmanager/version.h>
 
+// it's not under snapmanager from within snapwatchdog
+#include <snapmanagercgi.h>
+
 // snapwebsites lib
 //
 #include <snapwebsites/email.h>
@@ -194,6 +197,7 @@ void watchdog::bootstrap(snap_child * snap)
     }
 
     SNAP_LISTEN(watchdog, "server", snap_manager::manager, retrieve_status, _1);
+    SNAP_LISTEN(watchdog, "server", snap_manager::manager_cgi, generate_content, _1, _2, _3, _4);
 }
 
 
@@ -619,15 +623,19 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
             snap_config const last_results(g_watchdog_last_result_filename);
             error_count = last_results["error_count"];
         }
-
         int const errcnt(std::stoi(error_count));
+
+        // we should always have a snapmanager_cgi here
+        //
+        QString const host(uri.query_option("host"));
         snap_manager::widget_description::pointer_t field(std::make_shared<snap_manager::widget_description>(
                           "Snap! Watchdog Last Results"
                         , s.get_field_name()
                         , QString("<p>The snapwatchdogserver found %1 error%2.</p>"
-                                  "<p>TODO: make that link actually work -- <a href=\"/snapmanager/?watchdog\">View the last results</a></p>")
+                                  "<p><a href=\"/snapmanager/?host=%3&amp;function=watchdog&amp;position=latest\">View the last results</a></p>")
                                     .arg(errcnt == 0 ? "no" : error_count.c_str())
                                     .arg(errcnt == 1 ? "" : "s")
+                                    .arg(host)
                         ));
         f.add_widget(field);
         f.generate(parent, uri);
@@ -893,6 +901,195 @@ void watchdog::get_plugin_names(QString plugin_filename, QString * available_plu
 }
 
 
+/** \brief Generate content which is a menu entry and a page if the function.
+ *
+ * The generate_content() gets called to generate the content of the current
+ * page. If the function=... query string is set to 'watchdog'.
+ *
+ * \param[in] doc  The document being worked on.
+ * \param[in] output  The output where we put the data in case we generate it.
+ * \param[in] menu  Menu entries.
+ */
+void watchdog::on_generate_content(QDomDocument doc, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
+{
+    snap::NOTUSED(doc);
+    snap::NOTUSED(output);
+
+    QString const host(uri.query_option("host"));
+
+    // add an option to the menu so one can access that page from there
+    {
+        QDomElement item(doc.createElement("item"));
+        item.setAttribute("href"
+                        , QString("?host=%1&function=watchdog&position=latest")
+                                .arg(host)
+                         );
+        menu.appendChild(item);
+        QDomText text(doc.createTextNode("Host Watchdog"));
+        item.appendChild(text);
+    }
+
+    {
+        QString const function(uri.query_option("function"));
+        if(function == "watchdog")
+        {
+            snap::snap_config snap_watchdog_conf(g_configuration_filename);
+            QString const data_path(snap_watchdog_conf["data_path"]);
+            QString const full_data_path(data_path + "/data");
+
+            // the position indicates the file, if we can't load it get
+            // the latest (also if position == "latest")
+            //
+            QString data_filename;
+            QString const position(uri.query_option("position"));
+            if(position != "latest")
+            {
+                // not the latest, check for a file with that name
+                //
+                data_filename = full_data_path + "/" + position;
+                struct stat st;
+                if(stat(data_filename.toUtf8().data(), &st) != 0)
+                {
+                    data_filename.clear();
+                }
+            }
+            if(data_filename.isEmpty())
+            {
+                // file at 'position' not found, try the latest instead
+                //
+                QString const cache_path(snap_watchdog_conf["cache_path"]);
+                QString const last_results_filename(cache_path + "/last_results.txt");
+                struct stat st;
+                if(stat(last_results_filename.toUtf8().data(), &st) == 0)
+                {
+                    snap::snap_config last_results_conf(last_results_filename.toUtf8().data());
+                    data_filename = last_results_conf["data_path"];
+                    if(stat(data_filename.toUtf8().data(), &st) != 0)
+                    {
+                        data_filename.clear();
+                    }
+                }
+            }
+            if(data_filename.isEmpty())
+            {
+                // lastest from last_results.txt failed, try again with
+                // a glob(), this is much slower than getting the latest
+                // from the last_results.txt file, but it still works
+                //
+                struct newest_t
+                {
+                    QString     f_filename;
+                    struct stat f_stat; // not initialized if f_filename.isEmpty() is true
+                };
+                newest_t newest;
+                auto newest_data = [&newest](QString const & filename)
+                    {
+                        struct stat st;
+                        stat(filename.toUtf8().data(), &st);
+                        if(newest.f_filename.isEmpty()
+                        || st.st_mtime > newest.f_stat.st_mtime)
+                        {
+                            newest.f_filename = filename;
+                            newest.f_stat = st;
+                        }
+                    };
+
+                glob_dir d(full_data_path + "/[0-9]*.xml");
+                d.enumerate_glob(newest_data);
+
+                // get the result of the glob()
+                // it may still be empty if the pattern did not match any
+                // filename
+                //
+                data_filename = newest.f_filename;
+                struct stat st;
+                if(stat(data_filename.toUtf8().data(), &st) != 0)
+                {
+                    data_filename.clear();
+                }
+            }
+            QDomDocument data_doc;
+            if(!data_filename.isEmpty())
+            {
+                QFile data_file(data_filename);
+                if(!data_doc.setContent(&data_file))
+                {
+                    // could not read that file as XML
+                    //
+                    data_filename.clear();
+                }
+            }
+            QDomElement body_tag;
+            if(!data_filename.isEmpty())
+            {
+                // at this time we place the XSLT file in the www location
+                //
+                QString const snapwatchdog_data_filename(":/xsl/layout/snapwatchdog-data.xsl");
+                QFile snapwatchdog_data_file(snapwatchdog_data_filename);
+                if(snapwatchdog_data_file.open(QIODevice::ReadOnly))
+                {
+                    QByteArray data(snapwatchdog_data_file.readAll());
+                    QString const snapwatchdog_data_xsl(QString::fromUtf8(data.data(), data.size()));
+                    if(snapwatchdog_data_xsl.isEmpty())
+                    {
+                        // emit an error because to debug this otherwise is
+                        // going to be complicated!
+                        //
+                        SNAP_LOG_ERROR("could not read the \"")
+                                      (snapwatchdog_data_filename)
+                                      ("\" XSLT file.");
+                    }
+                    else
+                    {
+                        xslt x;
+                        x.set_xsl(snapwatchdog_data_xsl);
+                        x.set_document(data_doc);
+                        QDomDocument doc_page("html");
+                        x.evaluate_to_document(doc_page);
+
+                        QDomNodeList body_list(doc_page.elementsByTagName("body"));
+                        if(body_list.size() == 1)
+                        {
+                            // we don't have to test whether it's an element,
+                            // it will return a null node if so
+                            //
+                            body_tag = body_list.at(0).toElement();
+                        }
+                    }
+                }
+            }
+            // if it all worked we have a body_tag now
+            //
+            if(body_tag.isNull())
+            {
+                QDomElement h1(doc.createElement("h1"));
+                QDomText title(doc.createTextNode(QString("Snap! Watchdog (%1)").arg(host)));
+                h1.appendChild(title);
+                output.appendChild(h1);
+
+                QDomElement div(doc.createElement("div"));
+                div.setAttribute("id", "tabs"); // we don't actually have tabs in this case...
+                div.setAttribute("class", "error");
+                output.appendChild(div);
+
+                QDomElement p(doc.createElement("p"));
+                div.appendChild(p);
+                QDomElement strong(doc.createElement("strong"));
+                p.appendChild(strong);
+                QDomText error(doc.createTextNode("ERROR:"));
+                strong.appendChild(error);
+                QDomText text(doc.createTextNode(" no data file could be loaded, is the snapwatchdorserver running at all?"));
+                p.appendChild(text);
+            }
+            else
+            {
+                snap::snap_dom::insert_node_to_xml_doc(output, body_tag);
+                //QDomText text(doc.createTextNode("Got watchdog function!"));
+                //output.appendChild(text);
+            }
+        }
+    }
+}
 
 
 

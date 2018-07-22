@@ -63,6 +63,16 @@ DTD of the XSLT 2.0.
 <!ELEMENT xsl:apply-templates ANY>
 <!ATTLIST xsl:apply-templates select CDATA #IMPLIED>
 
+<!--
+these do not work at all with xmlpatterns
+<!ELEMENT xsl:analyze-string ANY>
+<!ATTLIST xsl:analyze-string select CDATA #IMPLIED
+                             regex CDATA #IMPLIED>
+
+<!ELEMENT xsl:matching-substring ANY>
+<!ELEMENT xsl:non-matching-substring ANY>
+-->
+
 <!ELEMENT xsl:sort ANY>
 <!ATTLIST xsl:sort select CDATA #REQUIRED
                    order (ascending|descending) "ascending">
@@ -369,6 +379,7 @@ DTD of the XSLT 2.0.
                 cellspacing CDATA #IMPLIED
                 class CDATA #IMPLIED
                 height CDATA #IMPLIED
+                id CDATA #IMPLIED
                 style CDATA #IMPLIED
                 width CDATA #IMPLIED>
 

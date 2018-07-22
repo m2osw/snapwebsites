@@ -58,7 +58,7 @@ public:
 
 
 class backup
-        : public snap_manager::plugin_base
+    : public snap_manager::plugin_base
 {
 public:
                             backup();

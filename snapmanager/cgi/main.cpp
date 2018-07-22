@@ -86,14 +86,15 @@ int main(int argc, char * argv[])
 
         snap::plugins::g_next_register_name.clear();
         snap::plugins::g_next_register_filename.clear();
-        
+
         try
         {
             cgi->init(argc, argv);
 
             // mark that we started properly now that the logger is on
             //
-            SNAP_LOG_INFO("--------------------------------- snapmanager.cgi v" SNAPMANAGERCGI_VERSION_STRING " started on ")(cgi->get_server_name());
+            SNAP_LOG_INFO("--------------------------------- snapmanager.cgi v" SNAPMANAGERCGI_VERSION_STRING " started on ")
+                         (cgi->get_server_name());
 
             if(!cgi->verify())
             {
