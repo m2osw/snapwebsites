@@ -139,7 +139,7 @@ int main(int argc, char * argv[])
 
         // mark that we started properly now that the logger is on
         //
-        SNAP_LOG_INFO("--------------------------------- snapupgrader v" SNAPMANAGERCGI_VERSION_STRING " started on ")(upgrader->get_server_name());
+        SNAP_LOG_INFO("--------------------------------- snapupgrader v" SNAPMANAGER_VERSION_STRING " started on ")(upgrader->get_server_name());
 
         // detach from the parent now, this allows for --version and
         // --help to work as expected (i.e. before the detach)

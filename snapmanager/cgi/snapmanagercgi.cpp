@@ -132,6 +132,12 @@ manager_cgi::pointer_t manager_cgi::instance()
 }
 
 
+std::string manager_cgi::server_type() const
+{
+    return "manager_cgi";
+}
+
+
 int manager_cgi::error(char const * code, char const * msg, char const * details)
 {
     if(details == nullptr)
@@ -714,7 +720,7 @@ int manager_cgi::process()
         root.appendChild(output);
         QDomElement snap_version(doc.createElement("snap-version"));
         root.appendChild(snap_version);
-        QDomText snapversion_text(doc.createTextNode("Snap! Websites v" SNAPMANAGERCGI_VERSION_STRING));
+        QDomText snapversion_text(doc.createTextNode("Snap! Websites v" SNAPMANAGER_VERSION_STRING));
         snap_version.appendChild(snapversion_text);
         QDomElement menu(doc.createElement("menu"));
         root.appendChild(menu);

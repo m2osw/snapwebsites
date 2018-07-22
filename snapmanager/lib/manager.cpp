@@ -267,7 +267,7 @@ void manager::init(int argc, char * argv[])
     //
     if(f_opt->is_defined("version"))
     {
-        std::cout << SNAPMANAGERCGI_VERSION_STRING << std::endl;
+        std::cout << SNAPMANAGER_VERSION_STRING << std::endl;
         exit(0);
     }
 
@@ -474,6 +474,12 @@ void manager::bootstrap(snap_child * snap)
 }
 
 
+std::string manager::server_type() const
+{
+    return "manager";
+}
+
+
 void manager::load_plugins()
 {
     if(!f_plugins_loaded)
@@ -491,6 +497,7 @@ void manager::load_plugins()
 
         if(!snap::plugins::load(f_plugins_path, this, std::static_pointer_cast<snap::plugins::plugin>(g_instance), all_plugins, QString()))
         {
+            SNAP_LOG_FATAL("loading of all the snapmanager plugins failed.");
             throw snapmanager_exception_cannot_load_plugins("the snapmanager library could not load its plugins");
         }
     }
@@ -621,25 +628,25 @@ void manager::forward_message(snap::snap_communicator_message const & message)
 
 int manager::get_version_major()
 {
-    return SNAPMANAGERCGI_VERSION_MAJOR;
+    return SNAPMANAGER_VERSION_MAJOR;
 }
 
 
 int manager::get_version_minor()
 {
-    return SNAPMANAGERCGI_VERSION_MINOR;
+    return SNAPMANAGER_VERSION_MINOR;
 }
 
 
 int manager::get_version_patch()
 {
-    return SNAPMANAGERCGI_VERSION_PATCH;
+    return SNAPMANAGER_VERSION_PATCH;
 }
 
 
 char const * manager::get_version_string()
 {
-    return SNAPMANAGERCGI_VERSION_STRING;
+    return SNAPMANAGER_VERSION_STRING;
 }
 
 

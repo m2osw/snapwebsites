@@ -46,8 +46,6 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     watchdog.qrc
 )
 
-
-
 add_library(watchdog SHARED
     watchdog.cpp
     ${SNAP_MANAGER_MOC_CXX}

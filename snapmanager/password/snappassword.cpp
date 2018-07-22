@@ -175,7 +175,7 @@ snappassword::snappassword(int argc, char * argv[])
 {
     if(f_opt.is_defined("version"))
     {
-        std::cout << SNAPMANAGERCGI_VERSION_STRING << std::endl;
+        std::cout << SNAPMANAGER_VERSION_STRING << std::endl;
         exit(0);
     }
     if(f_opt.is_defined("help"))

@@ -150,7 +150,6 @@
  * \param[in] parameters  A list of parameters written between parenthesis.
  * \param[in] variables  List the variable names as they appear in the
  *                       parameters, written between parenthesis.
- * \param[in] mode  The mode used to call the various functions.
  */
 #define    SNAP_SIGNAL(name, parameters, variables) \
     SNAP_SIGNAL_WITH_MODE(name, parameters, variables, START)

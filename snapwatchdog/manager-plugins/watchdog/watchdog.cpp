@@ -197,7 +197,22 @@ void watchdog::bootstrap(snap_child * snap)
     }
 
     SNAP_LISTEN(watchdog, "server", snap_manager::manager, retrieve_status, _1);
-    SNAP_LISTEN(watchdog, "server", snap_manager::manager_cgi, generate_content, _1, _2, _3, _4);
+
+    // we cannot use dynamic_cast<>() because it accesses the typeinfo of
+    // snap_manager::manager_cgi which creates a linkage problem (i.e. when
+    // not loaded from snapmanagercgi the plugin fails linkage)
+    //
+    //     // the following requires a typeinfo variable linkage
+    //     snap_manager::manager_cgi * cgi(dynamic_cast<snap_manager::manager_cgi *>(f_snap));
+    //
+    // so for this reason we instead use a simple virtual function for
+    // the "same" information--that works perfectly
+    //
+    std::string const type(f_snap->server_type());
+    if(type == "manager_cgi")
+    {
+        SNAP_LISTEN(watchdog, "server", snap_manager::manager_cgi, generate_content, _1, _2, _3, _4);
+    }
 }
 
 
@@ -801,7 +816,7 @@ bool watchdog::apply_setting(QString const & button_name, QString const & field_
                             .arg(hostname));
             e.set_subject(subject);
 
-            e.add_header("X-SnapWatchdog-Version", SNAPMANAGERCGI_VERSION_STRING);
+            e.add_header("X-SnapWatchdog-Version", SNAPMANAGER_VERSION_STRING);
 
             // prevent blacklisting
             // (since we won't run the `sendmail` plugin validation, it's not necessary)

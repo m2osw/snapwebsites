@@ -26,7 +26,7 @@ projects on their own.
 ## cmake
 
 Various files to properly support cmake and be able to use our
-projects from third party extensions.
+projects with and from third party extensions.
 
 
 ## Library
@@ -38,26 +38,28 @@ available to third party extensions.
 Especially, the library includes the `snap_communicator` class which
 handles the network in all the other tools that require access to
 the network. This class can parse and process messages as they arrive
-at a client or a server.
+at a client or a server. It is very much like an RPC system.
 
 
 ## snapbase
 
-A few scripts that are required by many of the other packages.
+A few scripts and configuration files that are required by many of the
+other packages.
 
 
 ## snapserver
 
 The `snapserver` is the main binary that makes Snap! function. It handles
-requires that are passed to it from Apache (through `snapcgi`).
+requests that are passed to it from Apache (through `snapcgi`).
 
-It knows about the `snapserver-core-plugins` and handles the `snapbackend`.
+It knows about the `snapserver-core-plugins` and handles many of the basics
+of the `snapbackend` tool.
 
 
 ## snapserver-core-plugins
 
 This is a long list of plugins that make the system work in a very
-module way. For example, the password plugin is used to handle user
+modular way. For example, the password plugin is used to handle user
 passwords.
 
 At this point, the core plugins are those that are part of Snap! by
@@ -65,7 +67,7 @@ default and not the bare minimum list of plugins.
 
 The minimum listis defined in the
 `libsnapmanager/src/snapwebsites/snap_child.cpp` file.
-That list, at the time of writing, looks as follow:
+That list, at time of writing, looks as follow:
 
     // list of plugins that we cannot do without
     char const * g_minimum_plugins[] =
@@ -140,17 +142,18 @@ Some of the reasons for this break up are:
 ## snapcommunicator
 
 The Snap! Communicator is the center piece that allows all our servers
-(and comse clients) to all communicate together. It is capable of sending
+(and some clients) to all communicate together. It is capable of sending
 and receive messages from any number of machines. It will even be able
-to discover additional machines as they broadcast themselves.
+to discover additional machines as they broadcast themselves (with the
+infamous `GOSSIP` message.)
 
 The server is able to automatically send messages to the right machine.
 For example, certain backends (see `snapbackend`) only run on a few
-backend computers (computers that do not face the Internet.) WHenever
+backend computers (computers that do not face the Internet.) Whenever
 a modification to one of your websites happens, it quite often sends
 a `PING` to `snapcommunicator` which in turn forwards  that `PING` to
 the corresponding backend. That wakes up the backend immediately and
-gives it a chance of working on the new data.
+gives it a chance of working on the new data very quickly.
 
 
 ## snapdbproxy
@@ -163,13 +166,18 @@ drivers so we can use MySQL with Snap! instead of only Cassandra
 The utility is run as a server which is particularly useful because
 we want to connect once and stay connected to the Cassandra cluster.
 It saves a large amount of time to use this that way. A local
-connection is really fast. 2 to 5 remote connections, as is done
-with Cassandra, is very slow.
+connection to `snapdbproxy` is really fast. In contrast, two to five
+remote connections to a Cassandra cluster is very slow.
 
 Also, this way the `snapdbproxy` uses the full power of the Cassandra
 driver which allows for switching between connections when one
 goes down, making that capability transparently available to the
 developer.
+
+Finally, the Cassandra driver is multi-threaded and that causes many
+problems in some of our daemons which are not multi-thread safe (on
+purposes because it makes things way more complicated for usually very
+little benefits.)
 
 
 ## snapfirewall
@@ -183,15 +191,15 @@ There are several problems with handling the firewall:
 1. you want to make sure you do it right, so we thought that having
 a set of modules that do it all for you would resolve that issue.
 2. you want to run servers that are not `root`, so having a secure
-tool such as `iplock` allows you to run as someone else and still
-be able to add and remove rules from your website.
+tool such as `iplock` allows you to run as a non-root user and still
+be able to add and remove rules from your firewall.
 3. on a (re)boot you want your firewall setup before your servers
 are started, otherwise there would be a (albeit small) window of
-time when a hacker could access one or more of your servers.
-4. when a hacker is detected on computer A, it is going to still be
-a hacker on computer B, C, D, ... Z. Only blocking the hacker on
-computer A is not as proactive than blocking that hacker on every
-single computer all at once (okay, there is a tiny delay, but
+time when a hacker could access one or more of your services.
+4. when a hacker is detected and blocked on computer A, it is going
+to still be able to hack computers B, C, D, ... Z. Only blocking the
+hacker on computer A is not as proactive than blocking that hacker on
+every single computer all at once (okay, there is a tiny delay, but
 still, you block on computer A, it gets blocked on computer B to Z
 within less than a second!)
 
@@ -202,41 +210,48 @@ installed (email spammers, IoT hackers, Apache hackers, etc.)
 
 ## snapwatchdog
 
-The `snapwatchdog` service runs in the background of all your computer
-and gathers statistic data one a minute.
+The `snapwatchdog` service runs in the background of all your servers
+and gathers statistic data every minute.
 
 It will also verify that your computer is healthy by making sure
 that certain tools are running or not running.
 
 For example, a computer could be down because `snapserver` did not
-start. If you label the computer properly then `snapwatchdog`
+start. If you setup the computer properly then `snapwatchdog`
 knows what to expect on that system. If something is missing or
-something is there when it shouldn't be, the the watchdog sends
+something is there when it shouldn't be, then the watchdog sends
 the administrators a notification via email.
 
 The tool is a service. Once a minute it wakes up and creates a
 child. The child loads the `snapwatchdog` plugins which allow
 for various checks to be run. One of the plugins actually
-runs shell scripts that other projects install.
+runs shell scripts that other projects install. Plugins can
+also be offered by other projects (except the snapmanager project
+which is a snapwatchdog dependency.)
 
 For example, the `snapfirewall` has a script to check whether the
 `fail2ban-client` python script is running. Once in a while it
 wakes up and does part of its work and then gets stuck using
-100% of the CPU. If that process is detected running  for 3 minutes
-or more, then we send an email.
+100% of the CPU. If that process is detected running for 3 minutes
+or more, then the script generates an error which is then converted
+to an email.
+
+The Snap! Watchdog also detects high memory usage, high CPU usage,
+and high disk usage. Again, problems discovered get emailed to the
+cluster administrator.
 
 
 ## snapdb
 
-The `snapdb` utility is used  to check out the database from the
+The `snapdb` utility is used to check out the database from the
 command line. It is also capable of modifying it (drop a value,
 drop a row, add a new value, update an existing value.)
 
 This is particularly useful in our scripts. As a developer, I also
 often use it. The problem with `cqlsh` is that it can't handle blobs
 properly. We save all our data as blobs because that way we did avoid
-all sorts of conversions (when we used thrift). Now that we are using
-CQL, this is not so true anymore, unfortunately.
+all sorts of data conversions (when we used thrift). Now that we are
+using CQL, this is not so true anymore, unfortunately.
 
 
 ## snaplayout
@@ -246,7 +261,7 @@ this time it is not very advanced. For example there is no function
 to remove a theme.
 
 The tool allows you to make theme selections for a page and its children
-or the entire website.
+or an entire website.
 
 
 ## snaplock
@@ -257,11 +272,11 @@ at the time) would not be capable of using multiple computers for a
 lock. All those we checked would have one central computer that would
 do the lock/unlock work. If that computer failed, you would lose the
 existing locks and for a moment you could not use locks, possibly
-creating quite a problem (blocking all accesses until the lock gets
-repaired.)
+creating quite a problem (blocking all accesses until the lock computer
+gets repaired.)
 
 Our implementation, instead, is capable of doing a distributed lock.
-This means thatif any one computer goes down, `snaplock` continues to
+This means that if any one computer goes down, `snaplock` continues to
 work seemlessly. At some point we will write the necessary code to
 limit the number of computers used in a lock to just 3 to 5 instead
 of the entire cluster which makes it somewhat slow (we don't lock
@@ -290,17 +305,48 @@ handle backend tasks.
 The same binary is used to run many backends because backends are in most
 cases developed as plugins. This is done that way so the backends can
 run in an environment very similar to what you otherwise encounter
-when running your plugin because your server received a hit from a client.
+when running your plugin as your snapserver received a hit from a client.
+
+The core backend at time of writing are:
+
+1. **list::listjournal** -- a backend used to track changes to pages so we
+can effectively update lists that may contain said page; this backend runs
+on all the computer that run `snapserver` and a `snapbackend` that may
+generate a list (i.e. all `snapbackend` is probably the safest, it will
+be sleeping all the time if not really required.)
+2. **list::pagelist** -- a backend used to generate lists, it uses the data
+gathered by the list::listjournal backend to know which page to check
+against
+3. **images::images** -- a backend used to tweak images for your website,
+for example you may want to support a large image (4096x1024) as a
+header in your posts, but for smart phones, a 1024x256 would be more
+than enough (possibly even smaller) so you would write a script that
+generates many different sizes of images and then offer all those
+different sizes each time the image gets referenced
+4. **sendmail::sendmail** -- a backend used to actually send an email,
+whenever a front end generates an email, it doesn't send it for two
+main reasons: that computer may not have an MTA and it could take
+time to generate the email time we don't want the client to wait
+for; instead the email gets saved in the database and this process
+wakes up and sends the email at its leisure; note that gives the
+front end the possibility to create an email that will be sent some
+time later (i.e. you could schedule the email for the next day.)
 
 
 ## snaplistd
 
 Whenever a page gets modified, it needs to be checked against all your
-lists. This is how we make your lists efficient in the end. This
-backend is used to read such changes and send them to the list backend.
+lists. This is how we make your lists efficient in the end (i.e. the
+building of the lists is _slow_, however, accessing the lists is very
+fast as we build indexes for them.)
 
-This service has to run on all the computers that run `snapserver` and
-on most of not all backends.
+This backend is used to accept `snapcommunicator` messages of page
+changes as send by the `list::listjournal` backend and save those
+changes to MySQL. Later the `list::pagelist` reads the data from
+MySQL and works on it generating new or removing old index entries.
+
+This service has to run on all the computers that run `list::pagelist`
+and have access to MySQL.
 
 
 ## snapmanager
@@ -316,40 +362,56 @@ be installed on your current computer and others won't be. Except for
 that _small_ glitch, this is what we use to manage our clusters:
 run updates, install/remove a service, etc.
 
+You will have to visit each one of your server until that _small_
+glitch gets fixed. It is still extremely useful because the installation
+and management is all done from a nice HTML interface and this makes
+it very easy to manage your servers. The bundles that come along each
+part of the software will always correctly install and uninstall whatever
+they are managing, leaving you with just a few lines of data to enter
+in the interface.
+
+<p align="center">
+<img alt="Snap! Watchdog Screenshot"
+     src="https://snapwebsites.org/sites/snapwebsites.org/files/images/screenshot-watchdog-tab.png"
+     width="1386"
+     height="683"/>
+</p>
+
 
 ## snapbackup
 
 For smaller productions, you probably want to backup your Cassandra
 cluster. Once you have a large number of Cassandra node, this won't
-be possible, howeever, you will be able to be more confident that
+be possible, however, you will be able to be more confident that
 Cassandra is properly replicating and that the loss of data is minimal.
 
 This process is strongly recommended on any installations that use
-less 12 Cassandra nodes. Just make sure to have a computer with enough
-disk space for the backup. At the same time the disk space requirements
-of Cassandra are much higher than the requirements of the `snapbackup`
-as the data ends up compressed and linear in the backup. The Cassandra
-files include a large number of meta data, in comparison and they don't
-normally get compressed as well as the backups.
+less than 12 Cassandra nodes. Just make sure to have a computer with
+enough disk space for the backup. At the same time the disk space
+requirements of Cassandra are much higher than the requirements of
+the `snapbackup` as the data ends up compressed and linear in the
+backup. The Cassandra files include a large number of meta data
+in comparison and they don't normally get compressed as well as
+the backups.
 
 
 ## snapbounce
 
-You install `snapbounce` On the computer that handles the Postfix mail
+You install `snapbounce` on the computer that handles the Postfix mail
 server. It captures all the bounces and reports them to Snap! That way
-the `sendmail` plugin is capable of marking users as not reachable
-(at least through email).
+the `sendmail::sendmail` backend and plugin are capable of marking users
+as not reachable (at least through email.)
 
-The installation is automatic when you use the `snapmanager` browser
-interface (because, frankly, who knows how to capture bounced email
-from Postfix?)
+The installation of Postfix and `snapbounce` is automatic when you use
+the `snapmanager` browser interface (because, frankly, who knows how
+to capture bounced email from Postfix?)
 
 
 ## cassview
 
 This is a developer utility that gives you access to your Cassandra
-cluster in a GUI format. It lets you access the fields as Snap! manages
-them, making it easy to tweak some values for test purposes.
+cluster in a GUI. It lets you access the fields as Snap! manages
+them, making it easy to edit some values for test purposes.
 
 
 ## snapdatabase
@@ -358,6 +420,10 @@ This is just documentation at the moment. The idea would be to create
 our own database system specifically tailored to our needs instead of
 using a more broad system like Cassandra. Especially now that Cassandra
 imposses the use of CQL. Maybe one day.
+
+Another issue with Cassandra (or ScyllaDB) is that it does not manage
+complex indexes like Snap! requires. We'd want our `snapdatabase` to
+be capable of that feat directly within the cluster.
 
 
 # Bugs

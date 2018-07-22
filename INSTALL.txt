@@ -1,20 +1,22 @@
+
 * Compile, Build, Install
 
-This project uses cmake to generate the Makefile necessary to build the
-project.
+This project requires many other contribs and a main snapcpp project
+which is in charge of compiling everything.
 
-Here are the original installation info. We suggest you look for the packages
-from our PPA instead. Also check the bin/build-snap script for a way to build
-everything. You want to run bin/snap-ubuntu-packages once to make sure your
-developer box has all the necessary packages installed.
+Make sure to look at the snapcpp project and look at this script:
 
-   tar xf snapwebsites-0.1.0.tar.gz
-   mkdir build
-   cd build
-   cmake -DCMAKE_INSTALL_PREFIX=<where_you_want_it_to_go> ../snapwebsites-0.1.0
-   make
-   [sudo] make install
+    bin/build-snap
 
-This should work on all Unices. We have not yet worked on the project to
-get it to function under MS-Windows.
+That's probably the easiest way for you to get started on the development
+of the Snap! Websites. On Ubuntu, you can also run:
+
+    snap-ubuntu-packages --optional
+
+to first make sure that all the development dependencies are install.
+The --optional command line option is used to install a few extras which
+are not required by can be useful (i.e. documentation and test related.)
+
+The main project has a long README.md file with much more information
+about how to get started on the project.
 

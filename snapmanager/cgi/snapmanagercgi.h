@@ -74,6 +74,7 @@ public:
     virtual                     ~manager_cgi();
 
     static pointer_t            instance();
+    virtual std::string         server_type() const override;
 
     int                         error(char const * code, char const * msg, char const * details);
     void                        forbidden(std::string details);

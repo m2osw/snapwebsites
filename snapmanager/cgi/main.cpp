@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
 
             // mark that we started properly now that the logger is on
             //
-            SNAP_LOG_INFO("--------------------------------- snapmanager.cgi v" SNAPMANAGERCGI_VERSION_STRING " started on ")
+            SNAP_LOG_INFO("--------------------------------- snapmanager.cgi v" SNAPMANAGER_VERSION_STRING " started on ")
                          (cgi->get_server_name());
 
             if(!cgi->verify())

@@ -71,6 +71,11 @@ void manager_daemon::init(int argc, char * argv[])
 {
     manager::init(argc, argv);
 
+    // snapmanagerdaemon start "signal"
+    //
+    SNAP_LOG_INFO("--------------------------------- snapmanagerdaemon v" SNAPMANAGER_VERSION_STRING " started on ")
+                 (f_server_name);
+
     f_status_connection->set_server_name(f_server_name);
 
     // local_listen=... from snapcommunicator.conf
@@ -148,8 +153,6 @@ int manager_daemon::run()
     signal( SIGTSTP,  SIG_IGN );
     signal( SIGTTIN,  SIG_IGN );
     signal( SIGTTOU,  SIG_IGN );
-
-    SNAP_LOG_INFO("--------------------------------- snapmanagerdaemon v" SNAPMANAGERCGI_VERSION_STRING " started on ")(f_server_name);
 
     // initialize the communicator and its connections
     //

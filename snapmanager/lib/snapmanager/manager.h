@@ -123,7 +123,8 @@ public:
     static pointer_t                instance();
     virtual QString                 description() const override;
     virtual QString                 dependencies() const override;
-    virtual void                    bootstrap(snap::snap_child * snap);
+    virtual void                    bootstrap(snap::snap_child * snap) override;
+    virtual std::string             server_type() const;
 
     void                            load_plugins();
     std::vector<std::string>        get_list_of_servers();

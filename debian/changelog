@@ -1,3 +1,15 @@
+snapwebsites (1.5.97.0~xenial) xenial; urgency=high
+
+  * Fixed the watchdog manager plugin linkage problem.
+  * Renamed the snapmanager version as SNAPMANAGER_VERSION_... instead of
+    SNAPMANAGERCGI_VERSION_... since the CGI is not specifically the main
+    part of that project.
+  * Moved the snapmanagerdaemon start mark earlier, before loading plugins.
+  * Added a screenshot of the snapmanager interface for the docs.
+  * Updated various documentations.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 22 Jul 2018 14:58:49 -0700
+
 snapwebsites (1.5.96.0~xenial) xenial; urgency=high
 
   * Added a --verbose option to the mk script.
