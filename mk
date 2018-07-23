@@ -27,6 +27,12 @@ case "$1" in
     VERBOSE=1 make -C ../../BUILD/snapwebsites install
     ;;
 
+"-r"|"--release")
+    # Rebuild the release version
+    #
+    make -C ../../RELEASE/snapwebsites install
+    ;;
+
 "")
     # Default, just rebuild snapwebsites
     #
