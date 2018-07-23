@@ -190,8 +190,8 @@ bool manager_status::stop_now_prima() const
  *
  * Each computer in the Snap! cluster should be running an instance
  * of the snapmanagerdaemon system. This will gather basic information
- * about the state of the each system and send the information to
- * all the computers who have snapmanager.cgi active.
+ * about the state of each system and send the information to
+ * all the computers that have snapmanager.cgi active.
  *
  * \sa set_snapmanager_frontend()
  */

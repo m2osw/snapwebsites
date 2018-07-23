@@ -1333,7 +1333,7 @@ void self::on_process_plugin_message(snap::snap_communicator_message const & mes
     else if( command == "CGISTATUS" )
     {
         f_system_active = (message.get_integer_parameter("status") == 0);
-        SNAP_LOG_DEBUG("CGISTATUS recieved! f_system_active=")(f_system_active);
+        SNAP_LOG_DEBUG("CGISTATUS received! f_system_active=")(f_system_active);
         processed = true;
     }
 }

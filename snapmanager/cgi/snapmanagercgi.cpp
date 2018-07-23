@@ -1488,7 +1488,7 @@ int manager_cgi::process_post()
     //       exists in the status file for that one
     //
     //       "self::upgrade_required" disappears once the upgrade is
-    //       done so we have to also give manage it as a special case
+    //       done so we have to also manage it as a special case
     //
     if(plugin_name != "self"
     || (field_name != "refresh" && field_name != "upgrade_required"))
