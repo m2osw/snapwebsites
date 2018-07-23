@@ -1,3 +1,12 @@
+snapwebsites (1.5.98.0~xenial) xenial; urgency=high
+
+  * Applied other fix to snapbackup.cron.daily so all the log files get the
+    correct user/group.
+  * Fixed the part of the script which changes the permissions and compresses
+    the backups and do that only if the file was created.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 23 Jul 2018 01:08:00 -0700
+
 snapwebsites (1.5.97.0~xenial) xenial; urgency=high
 
   * Fixed the watchdog manager plugin linkage problem.
