@@ -41,6 +41,7 @@ class javascript_dynamic_plugin
 {
 public:
     virtual             ~javascript_dynamic_plugin() {}
+
     virtual int         js_property_count() const = 0;
     virtual QVariant    js_property_get(QString const & name) const = 0;
     virtual QString     js_property_name(int index) const = 0;
@@ -50,19 +51,23 @@ public:
 
 
 class javascript
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         javascript();
-                        ~javascript();
+                        javascript(javascript const & rhs) = delete;
+    virtual             ~javascript() override;
+
+    javascript &        operator = (javascript const & rhs) = delete;
+
+    static javascript * instance();
 
     // plugins::plugin implementation
-    static javascript * instance();
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // content signals
     void                on_process_attachment(libdbproxy::row::pointer_t file_row, content::attachment_file const & file);
@@ -79,7 +84,7 @@ private:
     void                content_update(int64_t variables_timestamp);
 
     snap_child *                            f_snap = nullptr;
-    QVector<javascript_dynamic_plugin *>    f_dynamic_plugins;
+    QVector<javascript_dynamic_plugin *>    f_dynamic_plugins = {};
 };
 
 

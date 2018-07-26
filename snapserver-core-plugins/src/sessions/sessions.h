@@ -83,8 +83,8 @@ public:
 
 
 class sessions
-        : public plugins::plugin
-        , public layout::layout_content
+    : public plugins::plugin
+    , public layout::layout_content
 {
 public:
     class session_info
@@ -157,13 +157,13 @@ public:
     private:
         session_info_type_t         f_type = session_info_type_t::SESSION_INFO_SECURE;
         session_id_t                f_session_id = 0;
-        QString                     f_session_key;
+        QString                     f_session_key = QString();
         int32_t                     f_session_random = 0;
-        QString                     f_plugin_owner;
-        QString                     f_page_path;
-        QString                     f_object_path; // exact path to user, form, etc.
-        QString                     f_user_agent;
-        QString                     f_remote_addr;
+        QString                     f_plugin_owner = QString();
+        QString                     f_page_path = QString();
+        QString                     f_object_path = QString(); // exact path to user, form, etc.
+        QString                     f_user_agent = QString();
+        QString                     f_remote_addr = QString();
         int32_t                     f_time_to_live = DEFAULT_TIME_TO_LIVE;
         time_t                      f_time_limit = 0;
         time_t                      f_login_limit = 0;
@@ -173,21 +173,25 @@ public:
     };
 
                             sessions();
-                            ~sessions();
+                            sessions(sessions const & rhs) = delete;
+    virtual                 ~sessions() override;
+
+    sessions &              operator = (sessions const & rhs) = delete;
+
+    static sessions *       instance();
 
     // plugins::plugin implementation
-    static sessions *       instance();
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // server signals
     void                    on_table_is_accessible(QString const & table_name, server::accessible_flag_t & accessible);
 
     // layout::layout_content implementation
-    virtual void            on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body);
+    virtual void            on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body) override;
 
     QString                 create_session(session_info & info);
     void                    save_session(session_info & info, bool const new_random);

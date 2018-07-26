@@ -183,9 +183,9 @@ public:
     QString                             to_string() const;
 
 private:
-    QString                             f_name;
+    QString                             f_name = QString();
     variable_type_t                     f_type = variable_type_t::EXPR_VARIABLE_TYPE_NULL;
-    libdbproxy::value        f_value;
+    libdbproxy::value                   f_value = libdbproxy::value();
 };
 
 
@@ -195,8 +195,8 @@ public:
     typedef void (*function_call_t)(variable_t & result, variable_t::variable_vector_t const & parameters);
     struct function_call_table_t
     {
-        char const *    f_name;
-        function_call_t f_function;
+        char const *    f_name = nullptr;
+        function_call_t f_function = function_call_t();
     };
     typedef QMap<QString, function_call_t> expr_node_functions_map_t;
 
@@ -247,7 +247,7 @@ public:
     }
 
 private:
-    expr_node_functions_map_t   f_functions;
+    expr_node_functions_map_t   f_functions = expr_node_functions_map_t();
     bool                        f_has_internal_functions = false;
 };
 
@@ -275,7 +275,7 @@ public:
     static void     set_cassandra_context(libdbproxy::context::pointer_t context);
 
 private:
-    QSharedPointer<expr_node_base>              f_program_tree;
+    QSharedPointer<expr_node_base>          f_program_tree = QSharedPointer<expr_node_base>();
 };
 
 

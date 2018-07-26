@@ -62,7 +62,7 @@ public:
 
 private:
     bool                        f_succeeded = false;
-    std::vector<QByteArray>     f_result;
+    std::vector<QByteArray>     f_result = std::vector<QByteArray>();
 };
 
 

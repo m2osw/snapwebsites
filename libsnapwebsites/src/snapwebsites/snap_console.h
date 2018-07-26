@@ -81,7 +81,7 @@ public:
 private:
     friend ncurses_impl;
 
-    std::shared_ptr<ncurses_impl>     f_impl;
+    std::shared_ptr<ncurses_impl>     f_impl = std::shared_ptr<ncurses_impl>();
 };
 
 

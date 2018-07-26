@@ -73,9 +73,9 @@ public:
 
 
 class images
-        : public plugins::plugin
-        , public server::backend_action
-        , public path::path_execute
+    : public plugins::plugin
+    , public server::backend_action
+    , public path::path_execute
 {
 public:
     enum class virtual_path_t
@@ -86,19 +86,23 @@ public:
     };
 
                         images();
-                        ~images();
+                        images(images const & rhs) = delete;
+    virtual             ~images() override;
+
+    images &            operator = (images const & rhs) = delete;
+
+    static images *     instance();
 
     // plugins implementation
-    static images *     instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server::backend_action implementation
-    virtual void        on_backend_action(QString const & action);
+    virtual void        on_backend_action(QString const & action) override;
 
     // server signals
     void                on_attach_to_session();
@@ -109,7 +113,7 @@ public:
     void                on_modified_link(links::link_info const & src);
 
     // path::path_execute implementation
-    virtual bool        on_path_execute(content::path_info_t & ipath);
+    virtual bool        on_path_execute(content::path_info_t & ipath) override;
 
     // path signals
     void                on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);
@@ -137,10 +141,10 @@ private:
 
     struct parameters_t
     {
-        snap_string_list                        f_params;
-        images_t                                f_image_stack;
-        content::path_info_t::map_path_info_t   f_image_ipaths;
-        QString                                 f_command; // mainly for errors
+        snap_string_list                        f_params = snap_string_list();
+        images_t                                f_image_stack = images_t();
+        content::path_info_t::map_path_info_t   f_image_ipaths = content::path_info_t::map_path_info_t();
+        QString                                 f_command = QString(); // mainly for errors
     };
 
     struct func_t
@@ -197,7 +201,7 @@ private:
     snap_child *                    f_snap = nullptr;
     snap_backend *                  f_backend = nullptr;
     bool                            f_ping_backend = false;
-    QString                         f_on_error; // execute this script on errors
+    QString                         f_on_error = QString(); // execute this script on errors
 
     static images::func_t const     g_commands[];
     static int const                g_commands_size;

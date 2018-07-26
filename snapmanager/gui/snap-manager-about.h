@@ -16,18 +16,24 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "ui_snap-manager-aboutbox.h"
 
-class snap_manager_about : public QDialog, public Ui_aboutSnapManager
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_snap-manager-aboutbox.h"
+class snap_manager_about
+    : public QDialog
+    , public Ui_aboutSnapManager
 {
     Q_OBJECT
 
 public:
-                snap_manager_about(QWidget *parent);
-    virtual     ~snap_manager_about();
+                snap_manager_about(QWidget * parent);
+    virtual     ~snap_manager_about() override;
 
 private:
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

@@ -65,35 +65,38 @@ public:
 
 
 class attachment
-        : public plugins::plugin
-        , public path::path_execute
-        , public server::backend_action
-        , public permission_error_callback::error_by_mime_type
+    : public plugins::plugin
+    , public path::path_execute
+    , public server::backend_action
+    , public permission_error_callback::error_by_mime_type
 {
 public:
                         attachment();
-                        ~attachment();
+                        attachment(attachment const & rhs) = delete;
+    virtual             ~attachment() override;
+
+    attachment &        operator = (attachment const & rhs) = delete;
 
     static attachment * instance();
 
     // plugins::plugin implementation
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signals
     void                on_register_backend_action(server::backend_action_set & actions);
 
     // server::backend_action implementation
-    virtual void        on_backend_action(QString const & action);
+    virtual void        on_backend_action(QString const & action) override;
 
     // path signals
     void                on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);
 
     // path::path_execute
-    virtual bool        on_path_execute(content::path_info_t & ipath);
+    virtual bool        on_path_execute(content::path_info_t & ipath) override;
 
     // content signal
     void                on_page_cloned(content::content::cloned_tree_t const & tree);
@@ -103,7 +106,7 @@ public:
     void                on_permit_redirect_to_login_on_not_allowed(content::path_info_t & ipath, bool & redirect_to_login);
 
     // permission_error_callback::error_by_mime_type
-    virtual void        on_handle_error_by_mime_type(snap_child::http_code_t err_code, QString const & err_name, QString const & err_description, QString const & path);
+    virtual void        on_handle_error_by_mime_type(snap_child::http_code_t err_code, QString const & err_name, QString const & err_description, QString const & path) override;
 
     int                 delete_all_attachments(content::path_info_t & ipath);
 

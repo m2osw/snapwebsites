@@ -258,13 +258,13 @@ public:
         int                         get_image_height() const { return f_image_height; }
 
     private:
-        QString                     f_name; // field name
-        QString                     f_filename;
-        QString                     f_original_mime_type;
-        QString                     f_mime_type;
+        QString                     f_name = QString(); // field name
+        QString                     f_filename = QString();
+        QString                     f_original_mime_type = QString();
+        QString                     f_mime_type = QString();
         int64_t                     f_creation_time = 0;        // time_t
         int64_t                     f_modification_time = 0;    // time_t
-        QByteArray                  f_data;
+        QByteArray                  f_data = QByteArray();
         uint32_t                    f_size = 0;
         uint32_t                    f_index = 0;
         uint32_t                    f_image_width = 0;
@@ -275,16 +275,16 @@ public:
 
     struct language_name_t
     {
-        char const *    f_language;         // full English name of the language
-        char const *    f_native;           // full Native name of the language
-        char const      f_short_name[3];    // expected name (xx); must be 2 characters
-        char const *    f_other_names;      // 3 or 4 letter names separated by commas; if NULL no extras
+        char const *    f_language = nullptr;           // full English name of the language
+        char const *    f_native = nullptr;             // full Native name of the language
+        char const      f_short_name[3] = { 0, 0, 0 };  // expected name (xx); must be 2 characters
+        char const *    f_other_names = nullptr;        // 3 or 4 letter names separated by commas; if NULL no extras
     };
 
     struct country_name_t
     {
-        char const      f_abbreviation[3];  // must be 2 characters
-        char const *    f_name;
+        char const      f_abbreviation[3] = { 0, 0, 0 }; // must be 2 characters
+        char const *    f_name = nullptr;
     };
 
     class locale_info_t
@@ -301,8 +301,8 @@ public:
         bool            operator == (locale_info_t const & rhs) const { return f_language == rhs.f_language && f_country == rhs.f_country; }
 
     private:
-        QString         f_language;
-        QString         f_country;
+        QString         f_language = QString();
+        QString         f_country = QString();
     };
     typedef QVector<locale_info_t> locale_info_vector_t;
 
@@ -469,23 +469,23 @@ protected:
     void                        site_redirect();
     snap_string_list            init_plugins(bool const add_defaults, QString const & introducer = QString());
 
-    server_pointer_t                            f_server;
+    server_pointer_t                            f_server = server_pointer_t();
     bool                                        f_is_child = false;
     pid_t                                       f_child_pid = 0;
-    tcp_client_server::bio_client::pointer_t    f_client;
-    libdbproxy::libdbproxy::pointer_t           f_cassandra;
-    libdbproxy::context::pointer_t              f_context;
+    tcp_client_server::bio_client::pointer_t    f_client = tcp_client_server::bio_client::pointer_t();
+    libdbproxy::libdbproxy::pointer_t           f_cassandra = libdbproxy::libdbproxy::pointer_t();
+    libdbproxy::context::pointer_t              f_context = libdbproxy::context::pointer_t();
     int64_t                                     f_start_date = 0; // time request arrived
     bool                                        f_ready = false; // becomes true just before the server::execute() call
-    environment_map_t                           f_env;
-    snap_uri                                    f_uri;
-    QString                                     f_site_key;
-    QString                                     f_original_site_key;
+    environment_map_t                           f_env = environment_map_t();
+    snap_uri                                    f_uri = snap_uri();
+    QString                                     f_site_key = QString();
+    QString                                     f_original_site_key = QString();
 
 private:
     struct http_header_t
     {
-        QString         f_header;
+        QString         f_header = QString();
         header_mode_t   f_modes = HEADER_MODE_UNDEFINED;
     };
     typedef QMap<QString, http_header_t>    header_map_t;
@@ -495,12 +495,15 @@ private:
         : public snap_thread::snap_runner
     {
     public:
-                        messenger_runner( snap_child * sc );
+                            messenger_runner( snap_child * sc );
+                            messenger_runner( messenger_runner const & rhs ) = delete;
 
-        virtual void    run() override;
+        messenger_runner &  operator = ( messenger_runner const & rhs ) = delete;
+
+        virtual void        run() override;
 
     private:
-        snap_child *    f_child;
+        snap_child *        f_child = nullptr;
     };
 
     class child_messenger
@@ -509,17 +512,20 @@ private:
     public:
         typedef std::shared_ptr<child_messenger> pointer_t;
 
-                        child_messenger( snap_child * s
+                            child_messenger( snap_child * s
                                  , std::string const & addr
                                  , int port
                                  );
+                            child_messenger(child_messenger & rhs) = delete;
 
-        virtual void    process_message( snap_communicator_message const & message ) override;
-        virtual void    process_connected() override;
+        child_messenger &   operator = (child_messenger & rhs) = delete;
+
+        virtual void        process_message( snap_communicator_message const & message ) override;
+        virtual void        process_connected() override;
 
     private:
-        snap_child *    f_child;
-        QString         f_service_name;
+        snap_child *        f_child = nullptr;
+        QString             f_service_name = QString();
     };
 
     friend class messenger_runner;
@@ -543,44 +549,44 @@ private:
     void                        connect_messenger();
     void                        stop_messenger();
 
-    libdbproxy::table::pointer_t        f_sites_table;
+    libdbproxy::table::pointer_t        f_sites_table = libdbproxy::table::pointer_t();
     bool                                f_new_content = false;
     bool                                f_is_being_initialized = false;
-    environment_map_t                   f_post;
-    post_file_map_t                     f_files;
-    environment_map_t                   f_browser_cookies;
+    environment_map_t                   f_post = environment_map_t();
+    post_file_map_t                     f_files = post_file_map_t();
+    environment_map_t                   f_browser_cookies = environment_map_t();
     bool                                f_has_post = false;
     mutable bool                        f_fixed_server_protocol = false;
-    QString                             f_domain_key;
-    QString                             f_website_key;
-    QString                             f_site_key_with_slash;
+    QString                             f_domain_key = QString();
+    QString                             f_website_key = QString();
+    QString                             f_site_key_with_slash = QString();
     QBuffer                             f_output;
-    header_map_t                        f_header;
-    http_link::map_t                    f_http_links;
-    cookie_map_t                        f_cookies;
+    header_map_t                        f_header = header_map_t();
+    http_link::map_t                    f_http_links = http_link::map_t();
+    cookie_map_t                        f_cookies = cookie_map_t();
     bool                                f_ignore_cookies = false;
     bool                                f_died = false; // die() was already called once
-    QString                             f_language;
-    QString                             f_country;
-    QString                             f_language_key;
+    QString                             f_language = QString();
+    QString                             f_country = QString();
+    QString                             f_language_key = QString();
     bool                                f_original_timezone_defined = false;
-    QString                             f_original_timezone;
+    QString                             f_original_timezone = QString();
     bool                                f_plugins_locales_was_not_ready = false;
-    locale_info_vector_t                f_plugins_locales;
-    locale_info_vector_t                f_browser_locales;
-    locale_info_vector_t                f_all_locales;
+    locale_info_vector_t                f_plugins_locales = locale_info_vector_t();
+    locale_info_vector_t                f_browser_locales = locale_info_vector_t();
+    locale_info_vector_t                f_all_locales = locale_info_vector_t();
     bool                                f_working_branch = false;
-    snap_version::version_number_t      f_branch;
-    snap_version::version_number_t      f_revision;
-    QString                             f_revision_key;
-    compression_vector_t                f_compressions;
-    cache_control_settings              f_client_cache_control;
-    cache_control_settings              f_server_cache_control;
-    cache_control_settings              f_page_cache_control;
+    snap_version::version_number_t      f_branch = snap_version::version_number_t();
+    snap_version::version_number_t      f_revision = snap_version::version_number_t();
+    QString                             f_revision_key = QString();
+    compression_vector_t                f_compressions = compression_vector_t();
+    cache_control_settings              f_client_cache_control = cache_control_settings();
+    cache_control_settings              f_server_cache_control = cache_control_settings();
+    cache_control_settings              f_page_cache_control = cache_control_settings();
     messenger_runner                    f_messenger_runner;
     snap::snap_thread                   f_messenger_thread;
-    snap_communicator::pointer_t        f_communicator;
-    child_messenger::pointer_t          f_messenger;
+    snap_communicator::pointer_t        f_communicator = snap_communicator::pointer_t();
+    child_messenger::pointer_t          f_messenger = child_messenger::pointer_t();
 };
 
 typedef std::vector<snap_child *> snap_child_vector_t;

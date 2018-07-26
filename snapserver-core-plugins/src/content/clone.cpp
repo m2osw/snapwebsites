@@ -186,6 +186,9 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
         {
         }
 
+        sub_function(sub_function const & rhs) = delete;
+        sub_function & operator = (sub_function const & rhs) = delete;
+
         void clone_tree()
         {
             // make sure the destination does not exist, if it does,
@@ -556,15 +559,15 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
         }
 
     private:
-        content *                                   f_content_plugin;
-        clone_info_t                                f_source;
-        clone_info_t                                f_destination;
-        int64_t const                               f_start_date;
-        libdbproxy::table::pointer_t     f_content_table;
-        libdbproxy::table::pointer_t     f_branch_table;
-        libdbproxy::table::pointer_t     f_revision_table;
-        cloned_tree_t                               f_clones;
-        bool                                        f_result = true;
+        content *                       f_content_plugin = nullptr;
+        clone_info_t                    f_source;
+        clone_info_t                    f_destination;
+        int64_t const                   f_start_date;
+        libdbproxy::table::pointer_t    f_content_table = libdbproxy::table::pointer_t();
+        libdbproxy::table::pointer_t    f_branch_table = libdbproxy::table::pointer_t();
+        libdbproxy::table::pointer_t    f_revision_table = libdbproxy::table::pointer_t();
+        cloned_tree_t                   f_clones;
+        bool                            f_result = true;
     };
 
     sub_function f(this, source, destination, f_snap->get_start_date());

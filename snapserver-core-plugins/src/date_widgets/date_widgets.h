@@ -52,20 +52,23 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class date_widgets
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                             date_widgets();
-                            ~date_widgets();
+                            date_widgets(date_widgets const & rhs) = delete;
+    virtual                 ~date_widgets() override;
+
+    date_widgets &          operator = (date_widgets const & rhs) = delete;
+
+    static date_widgets *   instance();
 
     // plugins::plugin implementation
-    static date_widgets *   instance();
-    //virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // editor signals
     void                    on_prepare_editor_form(editor::editor * e);

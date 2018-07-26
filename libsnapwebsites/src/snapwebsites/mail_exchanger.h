@@ -54,7 +54,7 @@ public:
 
 private:
     int             f_priority = 0;
-    std::string     f_domain;
+    std::string     f_domain = std::string();
 };
 
 
@@ -74,7 +74,7 @@ public:
 
 private:
     bool            f_domain_found = false;
-    mail_exchanger::mail_exchange_vector_t f_mail_exchangers;
+    mail_exchanger::mail_exchange_vector_t f_mail_exchangers = mail_exchanger::mail_exchange_vector_t();
 };
 
 

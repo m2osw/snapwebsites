@@ -107,48 +107,48 @@ char const * get_name(name_t name) __attribute__ ((const));
 class save_info_t
 {
 public:
-                                            save_info_t(content::path_info_t & p_ipath,
-                                                        QDomDocument & p_editor_widgets,
-                                                        libdbproxy::row::pointer_t p_revision_row,
-                                                        libdbproxy::row::pointer_t p_secret_row,
-                                                        libdbproxy::row::pointer_t p_draft_row);
+                                save_info_t(content::path_info_t & p_ipath,
+                                            QDomDocument & p_editor_widgets,
+                                            libdbproxy::row::pointer_t p_revision_row,
+                                            libdbproxy::row::pointer_t p_secret_row,
+                                            libdbproxy::row::pointer_t p_draft_row);
 
-    content::path_info_t &                  ipath();
+    content::path_info_t &      ipath();
 
-    QDomDocument &                          editor_widgets();
+    QDomDocument &              editor_widgets();
 
-    libdbproxy::row::pointer_t   revision_row() const;
-    libdbproxy::row::pointer_t   secret_row() const;
-    libdbproxy::row::pointer_t   draft_row() const;
+    libdbproxy::row::pointer_t  revision_row() const;
+    libdbproxy::row::pointer_t  secret_row() const;
+    libdbproxy::row::pointer_t  draft_row() const;
 
-    void                                    lock();
+    void                        lock();
 
-    void                                    mark_as_modified();
-    bool                                    modified() const;
-    void                                    mark_as_having_errors();
-    bool                                    has_errors() const;
+    void                        mark_as_modified();
+    bool                        modified() const;
+    void                        mark_as_having_errors();
+    bool                        has_errors() const;
 
 private:
-    content::path_info_t &                  f_ipath;
-    QDomDocument                            f_editor_widgets;
-    libdbproxy::row::pointer_t   f_revision_row;
-    libdbproxy::row::pointer_t   f_secret_row;
-    libdbproxy::row::pointer_t   f_draft_row;
-    bool                                    f_locked = false;
-    bool                                    f_modified = false;
-    bool                                    f_has_errors = false;
+    content::path_info_t &      f_ipath;
+    QDomDocument                f_editor_widgets = QDomDocument();
+    libdbproxy::row::pointer_t  f_revision_row = libdbproxy::row::pointer_t();
+    libdbproxy::row::pointer_t  f_secret_row = libdbproxy::row::pointer_t();
+    libdbproxy::row::pointer_t  f_draft_row = libdbproxy::row::pointer_t();
+    bool                        f_locked = false;
+    bool                        f_modified = false;
+    bool                        f_has_errors = false;
 };
 
 
 
 class editor
-        : public plugins::plugin
-        , public links::links_cloned
-        , public path::path_execute
-        , public layout::layout_content
-        , public form::form_post
-        , public layout::layout_boxes
-        , public javascript::javascript_dynamic_plugin
+    : public plugins::plugin
+    , public links::links_cloned
+    , public path::path_execute
+    , public layout::layout_content
+    , public form::form_post
+    , public layout::layout_boxes
+    , public javascript::javascript_dynamic_plugin
 {
 public:
     static int const    EDITOR_SESSION_ID_EDIT = 1;
@@ -181,8 +181,8 @@ public:
         content::path_info_t &  f_ipath;
         QString const &         f_page_name;
         params_map_t const &    f_params;
-        QString                 f_token;
-        QString                 f_result;
+        QString                 f_token = QString();
+        QString                 f_result = QString();
     };
 
     class value_to_string_info_t
@@ -213,14 +213,14 @@ public:
         status_t                        f_status = status_t::WORKING;
 
         content::path_info_t &          f_ipath;
-        QDomElement                     f_widget;
-        libdbproxy::value const & f_value;
+        QDomElement                     f_widget = QDomElement();
+        libdbproxy::value const &       f_value;
 
-        mutable QString                 f_widget_type;
-        mutable QString                 f_data_type;
-        QString                         f_type_name = "unknown";
+        mutable QString                 f_widget_type = QString();
+        mutable QString                 f_data_type = QString();
+        QString                         f_type_name = QString("unknown");
 
-        QString                         f_result;
+        QString                         f_result = QString();
     };
 
     class string_to_value_info_t
@@ -251,42 +251,46 @@ public:
         status_t                        f_status = status_t::WORKING;
 
         content::path_info_t &          f_ipath;
-        QDomElement                     f_widget;
+        QDomElement                     f_widget = QDomElement();
         QString const &                 f_data;
 
-        mutable QString                 f_widget_type;
-        mutable QString                 f_data_type;
-        QString                         f_type_name = "unknown";
+        mutable QString                 f_widget_type = QString();
+        mutable QString                 f_data_type = QString();
+        QString                         f_type_name = QString("unknown");
 
-        libdbproxy::value    f_result;
+        libdbproxy::value               f_result = libdbproxy::value();
     };
 
                         editor();
-                        ~editor();
+                        editor(editor const & rhs) = delete;
+    virtual             ~editor() override;
+
+    editor &            operator = (editor const & rhs) = delete;
+
+    static editor *     instance();
 
     // plugins::plugin implementation
-    static editor *     instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signals
     void                on_process_post(QString const & uri_path);
 
     // path::path_execute
-    virtual bool        on_path_execute(content::path_info_t & ipath);
+    virtual bool        on_path_execute(content::path_info_t & ipath) override;
 
     // path signals
     void                on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);
 
     // layout::layout_content
-    virtual void        on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body);
+    virtual void        on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body) override;
 
     // layout::layout_boxes
-    virtual void        on_generate_boxes_content(content::path_info_t & page_cpath, content::path_info_t & ipath, QDomElement & page, QDomElement & box);
+    virtual void        on_generate_boxes_content(content::path_info_t & page_cpath, content::path_info_t & ipath, QDomElement & page, QDomElement & box) override;
 
     // layout signals
     void                on_generate_header_content(content::path_info_t & path, QDomElement & header, QDomElement & metadata);
@@ -294,10 +298,10 @@ public:
     void                on_add_layout_from_resources(QString const & name);
 
     // links::links_cloned
-    virtual void        repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning);
+    virtual void        repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning) override;
 
     // form::form_post
-    virtual void        on_process_form_post(content::path_info_t & ipath, sessions::sessions::session_info const & info);
+    virtual void        on_process_form_post(content::path_info_t & ipath, sessions::sessions::session_info const & info) override;
 
     // form signals
     void                on_validate_post_for_widget(content::path_info_t & ipath, sessions::sessions::session_info & info,
@@ -326,10 +330,10 @@ public:
     SNAP_SIGNAL(editor_widget_type_is_secret, (QDomElement widget, content::permission_flag & is_public), (widget, is_public));
 
     // dynamic javascript property support
-    virtual int         js_property_count() const;
-    virtual QVariant    js_property_get(QString const & name) const;
-    virtual QString     js_property_name(int index) const;
-    virtual QVariant    js_property_get(int index) const;
+    virtual int         js_property_count() const override;
+    virtual QVariant    js_property_get(QString const & name) const override;
+    virtual QString     js_property_name(int index) const override;
+    virtual QVariant    js_property_get(int index) const override;
 
     bool                has_post_value( QString const & name ) const;
     QString             get_post_value( QString const & name ) const;
@@ -353,13 +357,13 @@ private:
     void                on_check_for_redirect(content::path_info_t & ipath);
 
     snap_child *            f_snap = nullptr;
-    QDomDocument            f_editor_form;          // XSL from editor-form.xsl + other plugin extensions
-    QString                 f_value_to_validate;    // for the JavaScript, the value of the field being checked right now (from either the POST, Draft, or Database)
-    value_map_t             f_post_values;          // in part for JavaScript, also caches all the values sent by the user
-    value_map_t             f_current_values;       // in part for JavaScript, also caches all the current values in the database
-    value_map_t             f_draft_values;         // in part for JavaScript, also caches all the values last saved along an error or an auto-save
-    value_map_t             f_default_values;       // validation fails if we do not have the default value
-    cassandra_value_map_t   f_converted_values;     // to avoid converting the values twice
+    QDomDocument            f_editor_form = QDomDocument();         // XSL from editor-form.xsl + other plugin extensions
+    QString                 f_value_to_validate = QString();        // for the JavaScript, the value of the field being checked right now (from either the POST, Draft, or Database)
+    value_map_t             f_post_values = value_map_t();          // in part for JavaScript, also caches all the values sent by the user
+    value_map_t             f_current_values = value_map_t();       // in part for JavaScript, also caches all the current values in the database
+    value_map_t             f_draft_values = value_map_t();         // in part for JavaScript, also caches all the values last saved along an error or an auto-save
+    value_map_t             f_default_values = value_map_t();       // validation fails if we do not have the default value
+    cassandra_value_map_t   f_converted_values = cassandra_value_map_t();     // to avoid converting the values twice
 };
 
 } // namespace editor

@@ -111,7 +111,7 @@ private:
     int64_t                                         f_statistics_frequency = 0;
     int64_t                                         f_statistics_period = 0;
     int64_t                                         f_statistics_ttl = 0;
-    std::vector< std::shared_ptr<watchdog_child> >  f_processes;
+    std::vector<std::shared_ptr<watchdog_child>>    f_processes = std::vector< std::shared_ptr<watchdog_child>>();
     bool                                            f_stopping = false;
     int64_t                                         f_snapcommunicator_connected = 0;
     int64_t                                         f_snapcommunicator_disconnected = 0;

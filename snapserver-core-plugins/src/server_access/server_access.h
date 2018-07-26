@@ -75,19 +75,24 @@ public:
 
 
 
-class server_access : public plugins::plugin
+class server_access
+    : public plugins::plugin
 {
 public:
                                 server_access();
-                                ~server_access();
+                                server_access(server_access const & rhs) = delete;
+    virtual                     ~server_access() override;
+
+    server_access &             operator = (server_access const & rhs) = delete;
+
+    static server_access *      instance();
 
     // plugins::plugin implementation
-    static server_access *      instance();
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     // server signals
     void                        on_output_result(QString const & uri_path, QByteArray & result);
@@ -114,13 +119,13 @@ private:
     SNAP_TEST_PLUGIN_TEST_DECL(test_ajax)
 
     snap_child *                f_snap = nullptr;
-    QDomDocument                f_ajax;
+    QDomDocument                f_ajax = QDomDocument();
     bool                        f_ajax_initialized = false;
     bool                        f_ajax_output = false;
     bool                        f_success = false;
-    QString                     f_ajax_redirect;
-    QString                     f_ajax_target;
-    data_map_t                  f_ajax_data;
+    QString                     f_ajax_redirect = QString();
+    QString                     f_ajax_target = QString();
+    data_map_t                  f_ajax_data = data_map_t();
 };
 
 

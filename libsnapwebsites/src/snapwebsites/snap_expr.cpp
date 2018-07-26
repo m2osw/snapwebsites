@@ -496,13 +496,11 @@ public:
         NODE_TYPE_VARIABLE
     };
 
-    static char const *type_names[static_cast<size_t>(node_type_t::NODE_TYPE_VARIABLE) + 1];
+    static char const * type_names[static_cast<size_t>(node_type_t::NODE_TYPE_VARIABLE) + 1];
 
     expr_node(node_type_t type)
         : f_type(type)
-        //, f_name("")
         , f_variable("")
-        //, f_children() -- auto-init
     {
     }
 
@@ -1984,10 +1982,10 @@ public:
             }
 
             variable_t::variable_vector_t const &   f_sub_results;
-            QString                                 f_format;
+            QString                                 f_format = QString();
             int32_t                                 f_position = 0;
             int32_t                                 f_index = 1;
-            QString                                 f_result;
+            QString                                 f_result = QString();
             int                                     f_last = EOF;
             int                                     f_flags = 0;
             int32_t                                 f_width = 0;
@@ -3553,10 +3551,10 @@ private:
 
     node_type_t             f_type = node_type_t::NODE_TYPE_VARIABLE;
 
-    QString                 f_name;
-    variable_t              f_variable;
+    QString                 f_name = QString();
+    variable_t              f_variable = variable_t();
 
-    expr_node_vector_t      f_children;
+    expr_node_vector_t      f_children = expr_node_vector_t();
 };
 
 

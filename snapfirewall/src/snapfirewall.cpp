@@ -61,13 +61,16 @@ class snap_firewall;
 
 
 class snap_firewall_interrupt
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<snap_firewall_interrupt>    pointer_t;
 
                                 snap_firewall_interrupt(snap_firewall * fw);
+                                snap_firewall_interrupt(snap_firewall_interrupt const & rhs) = delete;
     virtual                     ~snap_firewall_interrupt() override {}
+
+    snap_firewall_interrupt &   operator = (snap_firewall_interrupt const & rhs) = delete;
 
     // snap::snap_communicator::snap_signal implementation
     virtual void                process_signal() override;
@@ -86,12 +89,16 @@ private:
  * so we can handle incoming messages.
  */
 class messenger
-        : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
+    : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
 {
 public:
     typedef std::shared_ptr<messenger>    pointer_t;
 
                         messenger(snap_firewall * sfw, std::string const & addr, int port);
+                        messenger(messenger const & rhs) = delete;
+    virtual             ~messenger() override {}
+
+    messenger &         operator = (messenger const & rhs) = delete;
 
     // snap::snap_communicator::snap_tcp_client_permanent_message_connection implementation
     virtual void        process_message(snap::snap_communicator_message const & message);
@@ -100,7 +107,7 @@ public:
 
 private:
     // this is owned by a server function so no need for a smart pointer
-    snap_firewall *     f_snap_firewall;
+    snap_firewall *     f_snap_firewall = nullptr;
 };
 
 
@@ -122,18 +129,22 @@ private:
  * problem.
  */
 class reconnect_timer
-        : public snap::snap_communicator::snap_timer
+    : public snap::snap_communicator::snap_timer
 {
 public:
     typedef std::shared_ptr<reconnect_timer>        pointer_t;
 
                                 reconnect_timer(snap_firewall * sfw);
+                                reconnect_timer(reconnect_timer const & rhs) = delete;
+    virtual                     ~reconnect_timer() override {}
+
+    reconnect_timer &           operator = (reconnect_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void                process_timeout();
 
 private:
-    snap_firewall *             f_snap_firewall;
+    snap_firewall *             f_snap_firewall = nullptr;
 };
 
 
@@ -152,12 +163,16 @@ public:
     typedef std::shared_ptr<wakeup_timer>        pointer_t;
 
                                 wakeup_timer(snap_firewall * sfw);
+                                wakeup_timer(wakeup_timer const & rhs) = delete;
+    virtual                     ~wakeup_timer() override {}
+
+    wakeup_timer &              operator = (wakeup_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void                process_timeout();
 
 private:
-    snap_firewall *             f_snap_firewall;
+    snap_firewall *             f_snap_firewall = nullptr;
 };
 
 
@@ -297,9 +312,9 @@ private:
         bool                iplock(QString const & cmd);
 
         status_t            f_status = status_t::BLOCK_INFO_BANNED;
-        QString             f_scheme = "http";
-        QString             f_ip;
-        QString             f_reason;
+        QString             f_scheme = QString("http");
+        QString             f_ip = QString();
+        QString             f_reason = QString();
         int64_t             f_block_limit = 0LL;
         int64_t             f_ban_count = 0LL;
         int64_t             f_packet_count = 0LL;
@@ -315,23 +330,23 @@ private:
     void                        block_ip(snap::snap_communicator_message const & message);
     void                        unblock_ip(snap::snap_communicator_message const & message);
 
-    advgetopt::getopt                           f_opt;
-    snap::snap_config                           f_config;
-    QString                                     f_log_conf = "/etc/snapwebsites/logger/snapfirewall.properties";
-    QString                                     f_server_name;
-    QString                                     f_communicator_addr = "127.0.0.1";
-    int                                         f_communicator_port = 4040;
-    snap_firewall_interrupt::pointer_t          f_interrupt;
-    snap::snap_communicator::pointer_t          f_communicator;
-    snap::snap_cassandra                        f_cassandra;
-    libdbproxy::table::pointer_t                f_firewall_table;
-    bool                                        f_stop_received = false;
-    bool                                        f_debug = false;
-    bool                                        f_firewall_up = false;
-    messenger::pointer_t                        f_messenger;
-    reconnect_timer::pointer_t                  f_reconnect_timer;
-    wakeup_timer::pointer_t                     f_wakeup_timer;
-    block_info_t::block_info_vector_t           f_blocks;       // save here until connected to Cassandra
+    advgetopt::getopt                   f_opt;
+    snap::snap_config                   f_config;
+    QString                             f_log_conf = QString("/etc/snapwebsites/logger/snapfirewall.properties");
+    QString                             f_server_name = QString();
+    QString                             f_communicator_addr = QString("127.0.0.1");
+    int                                 f_communicator_port = 4040;
+    snap_firewall_interrupt::pointer_t  f_interrupt = snap_firewall_interrupt::pointer_t();
+    snap::snap_communicator::pointer_t  f_communicator = snap::snap_communicator::pointer_t();
+    snap::snap_cassandra                f_cassandra = snap::snap_cassandra();
+    libdbproxy::table::pointer_t        f_firewall_table = libdbproxy::table::pointer_t();
+    bool                                f_stop_received = false;
+    bool                                f_debug = false;
+    bool                                f_firewall_up = false;
+    messenger::pointer_t                f_messenger = messenger::pointer_t();
+    reconnect_timer::pointer_t          f_reconnect_timer = reconnect_timer::pointer_t();
+    wakeup_timer::pointer_t             f_wakeup_timer = wakeup_timer::pointer_t();
+    block_info_t::block_info_vector_t   f_blocks = block_info_t::block_info_vector_t();       // save here until connected to Cassandra
 };
 
 

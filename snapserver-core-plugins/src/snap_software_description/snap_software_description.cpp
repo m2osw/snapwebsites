@@ -420,6 +420,9 @@ void snap_software_description::on_backend_process()
         {
         }
 
+        restore_path_t(restore_path_t const & rhs) = delete;
+        restore_path_t & operator = (restore_path_t const & rhs) = delete;
+
         ~restore_path_t()
         {
             // reset the main URI

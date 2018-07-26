@@ -168,9 +168,9 @@ public:
     compare_t               compare(name const & rhs) const;
 
 private:
-    QString                 f_name;
-    QString                 f_namespace;
-    QString                 f_error;
+    QString                 f_name = QString();
+    QString                 f_namespace = QString();
+    QString                 f_error = QString();
 };
 
 
@@ -186,7 +186,7 @@ public:
 
 private:
     operator_t              f_operator = operator_t::OPERATOR_UNORDERED;
-    QString                 f_error;
+    QString                 f_error = QString();
 };
 
 
@@ -208,10 +208,10 @@ public:
     compare_t                   compare(version const & rhs) const;
 
 private:
-    mutable QString             f_version_string;
-    version_numbers_vector_t    f_version;
-    QString                     f_error;
-    version_operator            f_operator;
+    mutable QString             f_version_string = QString();
+    version_numbers_vector_t    f_version = version_numbers_vector_t();
+    QString                     f_error = QString();
+    version_operator            f_operator = version_operator();
 };
 
 
@@ -247,11 +247,11 @@ public:
     bool                        operator ! () const { return !is_valid(); }
 
 private:
-    QString                     f_error;
-    QString                     f_extension;
-    name                        f_name;
-    version                     f_version;
-    name                        f_browser;
+    QString                     f_error = QString();
+    QString                     f_extension = QString();
+    name                        f_name = name();
+    version                     f_version = version();
+    name                        f_browser = name();
 };
 
 
@@ -268,10 +268,10 @@ public:
     QString const &             get_error() const { return f_error; }
 
 private:
-    QString                     f_error;
-    name                        f_name;
-    version::vector_t           f_versions;
-    name::vector_t              f_browsers;
+    QString                     f_error = QString();
+    name                        f_name = name();
+    version::vector_t           f_versions = version::vector_t();
+    name::vector_t              f_browsers = name::vector_t();
 };
 typedef QVector<dependency>     dependency_vector_t;
 
@@ -280,6 +280,8 @@ class quick_find_version_in_source
 {
 public:
                                 quick_find_version_in_source();
+                                quick_find_version_in_source(quick_find_version_in_source const & rhs) = delete;
+    quick_find_version_in_source & operator = (quick_find_version_in_source const & rhs) = delete;
 
     bool                        find_version(char const * data, int const size);
 
@@ -303,13 +305,13 @@ private:
     char const *                f_data = nullptr;
     char const *                f_end = nullptr;
 
-    name                        f_name;
-    name                        f_layout;
-    version                     f_version;
-    name::vector_t              f_browsers;
-    QString                     f_error;
-    QString                     f_description;
-    dependency_vector_t         f_depends;
+    name                        f_name = name();
+    name                        f_layout = name();
+    version                     f_version = version();
+    name::vector_t              f_browsers = name::vector_t();
+    QString                     f_error = QString();
+    QString                     f_description = QString();
+    dependency_vector_t         f_depends = dependency_vector_t();
 };
 
 

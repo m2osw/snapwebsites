@@ -64,8 +64,8 @@ public:
 
 
 class messages
-        : public plugins::plugin
-        , public QtSerialization::QSerializationObject
+    : public plugins::plugin
+    , public QtSerialization::QSerializationObject
 {
 public:
     // version used in the message class (for serialization)
@@ -73,7 +73,7 @@ public:
     static int const MESSAGES_MINOR_VERSION = 0;
 
     class message
-            : public QtSerialization::QSerializationObject
+        : public QtSerialization::QSerializationObject
     {
     public:
         enum class message_type_t
@@ -104,22 +104,26 @@ public:
     private:
         message_type_t              f_type = message_type_t::MESSAGE_TYPE_DEBUG;
         int32_t                     f_id = -1;
-        QString                     f_title;
-        QString                     f_body;
-        QString                     f_widget_name;
+        QString                     f_title = QString();
+        QString                     f_body = QString();
+        QString                     f_widget_name = QString();
     };
 
                         messages();
-                        ~messages();
+                        messages(messages const & rhs) = delete;
+    virtual             ~messages() override;
+
+    messages &          operator = (messages const & rhs) = delete;
+
+    static messages *   instance();
 
     // plugins::plugin implementation
-    static messages *   instance();
-    virtual QString     settings_path() const;
-    virtual QString     description() const;
-    virtual QString     icon() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     description() const override;
+    virtual QString     icon() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     message &           set_http_error(snap_child::http_code_t err_code, QString err_name, QString const & err_description, QString const & err_details, bool err_security);
     message &           set_error(QString err_name, QString const & err_description, QString const & err_details, bool err_security);
@@ -136,12 +140,12 @@ public:
 
     // "internal" functions used to save the data serialized
     void                unserialize(QString const & data);
-    virtual void        readTag(QString const & name, QtSerialization::QReader & r);
+    virtual void        readTag(QString const & name, QtSerialization::QReader & r) override;
     QString             serialize() const;
 
 private:
     snap_child *                f_snap = nullptr;
-    QVector<message>            f_messages;
+    QVector<message>            f_messages = QVector<message>();
     int32_t                     f_error_count = 0;
     int32_t                     f_warning_count = 0;
 };

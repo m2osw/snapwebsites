@@ -333,13 +333,13 @@ public:
     tcp_client_server::bio_client::mode_t   connection_mode() const;
 
 private:
-    snap_communicator_server_pointer_t      f_communicator_server;
+    snap_communicator_server_pointer_t      f_communicator_server = snap_communicator_server_pointer_t();
     addr::addr const &                      f_my_address;
-    QMap<QString, int>                      f_all_ips;
+    QMap<QString, int>                      f_all_ips = QMap<QString, int>();
     int64_t                                 f_last_start_date = 0;
-    remote_snap_communicator_list_t         f_smaller_ips;      // we connect to smaller IPs
-    gossip_snap_communicator_list_t         f_gossip_ips;
-    service_connection_list_t               f_larger_ips;       // larger IPs connect to us
+    remote_snap_communicator_list_t         f_smaller_ips = remote_snap_communicator_list_t();      // we connect to smaller IPs
+    gossip_snap_communicator_list_t         f_gossip_ips = gossip_snap_communicator_list_t();
+    service_connection_list_t               f_larger_ips = service_connection_list_t();       // larger IPs connect to us
 };
 
 
@@ -349,7 +349,7 @@ private:
  * in this class.
  */
 class snap_communicator_server
-        : public std::enable_shared_from_this<snap_communicator_server>
+    : public std::enable_shared_from_this<snap_communicator_server>
 {
 public:
     typedef std::shared_ptr<snap_communicator_server>     pointer_t;
@@ -385,8 +385,8 @@ private:
     {
         typedef std::vector<message_cache>  vector_t;
 
-        time_t                              f_timeout_timestamp;        // when that message is to be removed from the cache whether it was sent or not
-        snap::snap_communicator_message     f_message;                  // the message
+        time_t                              f_timeout_timestamp = 0;                        // when that message is to be removed from the cache whether it was sent or not
+        snap::snap_communicator_message     f_message = snap::snap_communicator_message();  // the message
     };
 
     void                        drop_privileges();
@@ -395,36 +395,36 @@ private:
     void                        save_loadavg(snap::snap_communicator_message const & message);
     void                        register_for_loadavg(QString const & ip);
 
-    snap::server::pointer_t                             f_server;
+    snap::server::pointer_t                             f_server = snap::server::pointer_t();
 
-    QString                                             f_server_name;
+    QString                                             f_server_name = QString();
     int                                                 f_number_of_processors = 1;
-    QString                                             f_neighbors_cache_filename;
-    QString                                             f_username;
-    QString                                             f_groupname;
-    std::string                                         f_public_ip;        // f_listener IP address
-    snap::snap_communicator::pointer_t                  f_communicator;
-    snap::snap_communicator::snap_connection::pointer_t f_interrupt;        // TCP/IP
-    snap::snap_communicator::snap_connection::pointer_t f_local_listener;   // TCP/IP
-    snap::snap_communicator::snap_connection::pointer_t f_listener;         // TCP/IP
-    snap::snap_communicator::snap_connection::pointer_t f_ping;             // UDP/IP
-    snap::snap_communicator::snap_connection::pointer_t f_loadavg_timer;    // a 1 second timer to calculate load (used to load balance)
+    QString                                             f_neighbors_cache_filename = QString();
+    QString                                             f_username = QString();
+    QString                                             f_groupname = QString();
+    std::string                                         f_public_ip = std::string();        // f_listener IP address
+    snap::snap_communicator::pointer_t                  f_communicator = snap::snap_communicator::pointer_t();
+    snap::snap_communicator::snap_connection::pointer_t f_interrupt = snap::snap_communicator::snap_connection::pointer_t();        // TCP/IP
+    snap::snap_communicator::snap_connection::pointer_t f_local_listener = snap::snap_communicator::snap_connection::pointer_t();   // TCP/IP
+    snap::snap_communicator::snap_connection::pointer_t f_listener = snap::snap_communicator::snap_connection::pointer_t();         // TCP/IP
+    snap::snap_communicator::snap_connection::pointer_t f_ping = snap::snap_communicator::snap_connection::pointer_t();             // UDP/IP
+    snap::snap_communicator::snap_connection::pointer_t f_loadavg_timer = snap::snap_communicator::snap_connection::pointer_t();    // a 1 second timer to calculate load (used to load balance)
     float                                               f_last_loadavg = 0.0f;
-    addr::addr                                          f_my_address;
-    QString                                             f_local_services;
-    sorted_list_of_strings_t                            f_local_services_list;
-    QString                                             f_services_heard_of;
-    sorted_list_of_strings_t                            f_services_heard_of_list;
-    QString                                             f_explicit_neighbors;
-    sorted_list_of_strings_t                            f_all_neighbors;
-    sorted_list_of_strings_t                            f_registered_neighbors_for_loadavg;
-    remote_communicator_connections::pointer_t          f_remote_snapcommunicators;
+    addr::addr                                          f_my_address = addr::addr();
+    QString                                             f_local_services = QString();
+    sorted_list_of_strings_t                            f_local_services_list = sorted_list_of_strings_t();
+    QString                                             f_services_heard_of = QString();
+    sorted_list_of_strings_t                            f_services_heard_of_list = sorted_list_of_strings_t();
+    QString                                             f_explicit_neighbors = QString();
+    sorted_list_of_strings_t                            f_all_neighbors = sorted_list_of_strings_t();
+    sorted_list_of_strings_t                            f_registered_neighbors_for_loadavg = sorted_list_of_strings_t();
+    remote_communicator_connections::pointer_t          f_remote_snapcommunicators = remote_communicator_connections::pointer_t();
     size_t                                              f_max_connections = SNAP_COMMUNICATOR_MAX_CONNECTIONS;
     bool                                                f_shutdown = false;
     bool                                                f_debug_lock = false;
     bool                                                f_force_restart = false;
-    message_cache::vector_t                             f_local_message_cache;
-    std::map<QString, time_t>                           f_received_broadcast_messages;
+    message_cache::vector_t                             f_local_message_cache = message_cache::vector_t();
+    std::map<QString, time_t>                           f_received_broadcast_messages = (std::map<QString, time_t>());
     tcp_client_server::bio_client::mode_t               f_connection_mode = tcp_client_server::bio_client::mode_t::MODE_PLAIN;
 };
 
@@ -838,14 +838,14 @@ protected:
     snap_communicator_server::pointer_t     f_communicator_server;
 
 private:
-    sorted_list_of_strings_t                f_understood_commands;
+    sorted_list_of_strings_t                f_understood_commands = sorted_list_of_strings_t();
     int64_t                                 f_started_on = -1;
     int64_t                                 f_ended_on = -1;
     connection_type_t                       f_type = connection_type_t::CONNECTION_TYPE_DOWN;
-    QString                                 f_server_name;
-    QString                                 f_my_address;
-    sorted_list_of_strings_t                f_services;
-    sorted_list_of_strings_t                f_services_heard_of;
+    QString                                 f_server_name = QString();
+    QString                                 f_my_address = QString();
+    sorted_list_of_strings_t                f_services = sorted_list_of_strings_t();
+    sorted_list_of_strings_t                f_services_heard_of = sorted_list_of_strings_t();
     bool                                    f_remote_connection = false;
     bool                                    f_wants_loadavg = false;
 };
@@ -916,11 +916,14 @@ class gossip_to_remote_snap_communicator
     : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
 {
 public:
-    std::shared_ptr<gossip_to_remote_snap_communicator> pointer_t;
+    typedef std::shared_ptr<gossip_to_remote_snap_communicator> pointer_t;
 
     static int64_t const        FIRST_TIMEOUT = 5LL * 1000000L;  // 5 seconds before first attempt
 
-                                gossip_to_remote_snap_communicator(remote_communicator_connections::pointer_t rcs, QString const & addr, int port);
+                                gossip_to_remote_snap_communicator(
+                                          remote_communicator_connections::pointer_t rcs
+                                        , QString const & addr
+                                        , int port);
 
     // snap_connection implementation
     virtual void                process_timeout();
@@ -936,7 +939,7 @@ private:
     QString const               f_addr;
     int const                   f_port = 0;
     int64_t                     f_wait = FIRST_TIMEOUT;
-    remote_communicator_connections::pointer_t f_remote_communicators;
+    remote_communicator_connections::pointer_t f_remote_communicators = remote_communicator_connections::pointer_t();
 };
 
 
@@ -955,7 +958,10 @@ private:
  * \param[in] addr  The IP address of the remote snap communicator.
  * \param[in] port  The port to connect to that snap communicator.
  */
-gossip_to_remote_snap_communicator::gossip_to_remote_snap_communicator(remote_communicator_connections::pointer_t rcs, QString const & addr, int port)
+gossip_to_remote_snap_communicator::gossip_to_remote_snap_communicator(
+                  remote_communicator_connections::pointer_t rcs
+                , QString const & addr
+                , int port)
     : snap_tcp_client_permanent_message_connection(
                   addr.toUtf8().data()
                 , port
@@ -964,7 +970,6 @@ gossip_to_remote_snap_communicator::gossip_to_remote_snap_communicator(remote_co
                 , true)
     , f_addr(addr)
     , f_port(port)
-    //, f_wait(FIRST_TIMEOUT) -- auto-init
     , f_remote_communicators(rcs)
 {
 }
@@ -1869,7 +1874,7 @@ public:
 
 private:
     // this is owned by a server function so no need for a smart pointer
-    snap_communicator_server::pointer_t f_communicator_server;
+    snap_communicator_server::pointer_t f_communicator_server = snap_communicator_server::pointer_t();
 };
 
 

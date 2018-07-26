@@ -66,18 +66,22 @@ public:
 
 
 class cpu
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         cpu();
-                        ~cpu();
+                        cpu(cpu const & rhs) = delete;
+    virtual             ~cpu() override;
+
+    cpu &               operator = (cpu const & rhs) = delete;
+
+    static cpu *        instance();
 
     // plugins::plugin implementation
-    static cpu *        instance();
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signal
     void                on_process_watch(QDomDocument doc);
@@ -85,6 +89,7 @@ public:
 private:
     watchdog_child *    f_snap = nullptr;
 };
+
 
 } // namespace cpu
 } // namespace snap

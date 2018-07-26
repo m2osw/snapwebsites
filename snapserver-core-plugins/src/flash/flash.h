@@ -45,20 +45,25 @@ public:
 
 
 
-class flash : public plugins::plugin
+class flash
+    : public plugins::plugin
 {
 public:
                         flash();
-                        ~flash();
+                        flash(flash const & rhs) = delete;
+    virtual             ~flash() override;
+
+    flash &             operator = (flash const & rhs) = delete;
+
+    static flash *      instance();
 
     // plugins::plugin implementation
-    static flash *      instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
 private:
     void                content_update(int64_t variables_timestamp);

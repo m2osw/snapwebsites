@@ -49,8 +49,12 @@ namespace
     const int g_paging_size = 10;
 }
 
-snap_manager::snap_manager(QWidget *snap_parent)
+snap_manager::snap_manager(QWidget * snap_parent)
     : QMainWindow(snap_parent)
+    , f_domain_model()          // required because of -Weffc++
+    , f_params_row_model()      // required because of -Weffc++
+    , f_sites_table_model()     // required because of -Weffc++
+    , f_website_model()         // required because of -Weffc++
 {
     setupUi(this);
 

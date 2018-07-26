@@ -44,13 +44,16 @@ class manager_status;
 
 
 class manager_interrupt
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<manager_interrupt>  pointer_t;
 
                                 manager_interrupt(manager_daemon * md);
+                                manager_interrupt(manager_interrupt const & rhs) = delete;
     virtual                     ~manager_interrupt() override {}
+
+    manager_interrupt &         operator = (manager_interrupt const & rhs) = delete;
 
     // snap::snap_communicator::snap_signal implementation
     virtual void                process_signal() override;
@@ -61,12 +64,15 @@ private:
 
 
 class manager_messenger
-        : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
+    : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
 {
 public:
     typedef std::shared_ptr<manager_messenger>    pointer_t;
 
                                 manager_messenger(manager_daemon * md, std::string const & addr, int port);
+                                manager_messenger(manager_messenger const & rhs) = delete;
+
+    manager_messenger &         operator = (manager_messenger const & rhs) = delete;
 
     // snap::snap_communicator::snap_connection implementation
     //virtual void                process_timeout() override;
@@ -85,12 +91,15 @@ protected:
 
 
 class status_connection
-        : public snap::snap_communicator::snap_inter_thread_message_connection
+    : public snap::snap_communicator::snap_inter_thread_message_connection
 {
 public:
     typedef std::shared_ptr<status_connection>   pointer_t;
 
                                 status_connection(manager_daemon * md);
+                                status_connection(status_connection const & rhs) = delete;
+
+    status_connection &         operator = (status_connection const & rhs) = delete;
 
     void                        set_thread_b(manager_status * ms);
     void                        set_server_name(QString const & server_name);
@@ -102,7 +111,7 @@ public:
 private:
     manager_daemon *            f_manager_daemon = nullptr;
     manager_status *            f_manager_status = nullptr;
-    QString                     f_server_name;
+    QString                     f_server_name = QString();
 };
 
 
@@ -112,7 +121,10 @@ class manager_status
 {
 public:
                                     manager_status(manager_daemon *md, status_connection::pointer_t sc);
+                                    manager_status(manager_status const & rhs) = delete;
     virtual                         ~manager_status();
+
+    manager_status &                operator = (manager_status const & rhs) = delete;
 
     virtual void                    run() override;
 
@@ -128,10 +140,10 @@ private:
     int                             package_status(QString const & package_name, bool add_info_only_if_present);
 
     manager_daemon *                f_manager_daemon = nullptr;
-    status_connection::pointer_t    f_status_connection;
+    status_connection::pointer_t    f_status_connection = status_connection::pointer_t();
     bool                            f_running = true;
     bool                            f_resend_status = false;
-    snap::snap_string_list          f_snapmanager_frontend;
+    snap::snap_string_list          f_snapmanager_frontend = snap::snap_string_list();
 };
 
 
@@ -152,8 +164,8 @@ private:
     bool                            load(std::string const & uri);
     bool                            wget(std::string const & uri, std::string const & filename);
 
-    QString                         f_bundles_path;
-    std::vector<std::string>        f_bundle_uri;
+    QString                         f_bundles_path = QString();
+    std::vector<std::string>        f_bundle_uri = std::vector<std::string>();
 };
 
 
@@ -187,20 +199,20 @@ private:
     void                            send_ack( snap::snap_communicator_message const & message, bool const done = false );
     void                            send_nak( snap::snap_communicator_message const & message );
 
-    //QString                                     f_server_types;                         // sent to use by snapcommunicator
-    int                                         f_communicator_port = 4040;             // snap server port
-    QString                                     f_communicator_address = "127.0.0.1";   // snap server address
-    snap::snap_communicator::pointer_t          f_communicator;
-    manager_interrupt::pointer_t                f_interrupt;
-    manager_messenger::pointer_t                f_messenger;
-    status_connection::pointer_t                f_status_connection;
-    manager_status                              f_status_runner;
-    snap::snap_thread                           f_status_thread;
-    bundle_loader                               f_bundle_loader;
-    snap::snap_thread                           f_bundle_thread;
-    bool                                        f_force_restart = false;
-    //server_status                               f_status;           // our status
-    QString                                     f_output;           // commands output, to be sent to end user
+    //QString                             f_server_types;                         // sent to use by snapcommunicator
+    int                                 f_communicator_port = 4040;             // snap server port
+    QString                             f_communicator_address = "127.0.0.1";   // snap server address
+    snap::snap_communicator::pointer_t  f_communicator = snap::snap_communicator::pointer_t();
+    manager_interrupt::pointer_t        f_interrupt = manager_interrupt::pointer_t();
+    manager_messenger::pointer_t        f_messenger = manager_messenger::pointer_t();
+    status_connection::pointer_t        f_status_connection = status_connection::pointer_t();
+    manager_status                      f_status_runner;
+    snap::snap_thread                   f_status_thread;
+    bundle_loader                       f_bundle_loader;
+    snap::snap_thread                   f_bundle_thread;
+    bool                                f_force_restart = false;
+    //server_status                       f_status;           // our status
+    QString                             f_output = QString();   // commands output, to be sent to end user
 };
 
 

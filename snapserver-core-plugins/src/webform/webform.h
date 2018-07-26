@@ -37,20 +37,24 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class webform
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         webform();
-                        ~webform();
+                        webform(webform const & rhs) = delete;
+    virtual             ~webform() override;
+
+    webform &           operator = (webform const & rhs) = delete;
+
+    static webform *    instance();
 
     // plugins::plugin implementation
-    static webform *    instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
 private:
     void                content_update(int64_t variables_timestamp);

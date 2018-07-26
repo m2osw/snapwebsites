@@ -56,22 +56,26 @@ public:
 
 
 class test_plugin
-        : public plugins::plugin
-        , public path::path_execute
+    : public plugins::plugin
+    , public path::path_execute
 {
 public:
                             test_plugin();
-                            ~test_plugin();
+                            test_plugin(test_plugin const & rhs) = delete;
+    virtual                 ~test_plugin() override;
+
+    test_plugin &           operator = (test_plugin const & rhs) = delete;
+
+    static test_plugin *    instance();
 
     // plugins::plugin implementation
-    static test_plugin *    instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         help_uri() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         help_uri() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // server signals
     void                    on_process_post(QString const & uri_path);
@@ -88,8 +92,8 @@ public:
 private:
     void                    content_update(int64_t variables_timestamp);
 
-    snap_child *                            f_snap = nullptr;
-    libdbproxy::table::pointer_t f_test_results_table;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_test_results_table = libdbproxy::table::pointer_t();
 };
 
 

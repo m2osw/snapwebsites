@@ -64,18 +64,22 @@ public:
 
 
 class communicator
-        : public snap_manager::plugin_base
+    : public snap_manager::plugin_base
 {
 public:
                             communicator();
+                            communicator(communicator const & rhs) = delete;
     virtual                 ~communicator() override;
 
-    // plugins::plugin implementation
+    communicator &          operator = (communicator const & rhs) = delete;
+
     static communicator *   instance();
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+
+    // plugins::plugin implementation
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // manager overload
     virtual bool            display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri) override;

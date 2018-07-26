@@ -28,7 +28,10 @@
 #pragma GCC diagnostic pop
 
 
-class QHtmlSerializer : public QAbstractXmlReceiver
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+class QHtmlSerializer
+    : public QAbstractXmlReceiver
 {
 public:
                     QHtmlSerializer(QXmlNamePool namepool, QBuffer * output, bool const is_html = true);
@@ -55,12 +58,13 @@ private:
 
     void            closeElement();
 
-    QXmlNamePool                f_namepool;
-    QBuffer *                   f_output;
-    html_serializer_status_t    f_status;
-    QVector<QString>            f_element_stack;
+    QXmlNamePool                f_namepool = QXmlNamePool();
+    QBuffer *                   f_output = nullptr;
+    html_serializer_status_t    f_status = html_serializer_status_t::HTML_SERIALIZER_STATUS_READY;
+    QVector<QString>            f_element_stack = QVector<QString>();
     bool                        f_is_html = true; // ignore HTML empty tags
 };
+#pragma GCC diagnostic pop
 
 #endif
 // _QHTMLSERIALIZER_H

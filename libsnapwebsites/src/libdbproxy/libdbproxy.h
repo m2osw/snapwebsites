@@ -52,6 +52,9 @@ class CfDef;
 class ColumnDef;
 
 // library used to send database commands to the dbproxy daemon
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 class libdbproxy
     : public QObject
     , public std::enable_shared_from_this<libdbproxy>
@@ -107,15 +110,16 @@ private:
 
     friend class context;
 
-    proxy::pointer_t            f_proxy;
-    context::pointer_t          f_current_context;
+    proxy::pointer_t            f_proxy = proxy::pointer_t();
+    context::pointer_t          f_current_context = context::pointer_t();
     mutable bool                f_contexts_read = false;
-    contexts                    f_contexts;
-    QString                     f_cluster_name;
-    QString                     f_protocol_version;
-    QString                     f_partitioner;
+    contexts                    f_contexts = contexts();
+    QString                     f_cluster_name = QString();
+    QString                     f_protocol_version = QString();
+    QString                     f_partitioner = QString();
     consistency_level_t         f_default_consistency_level = CONSISTENCY_LEVEL_ONE;
 };
+#pragma GCC diagnostic pop
 
 } // namespace libdbproxy
 

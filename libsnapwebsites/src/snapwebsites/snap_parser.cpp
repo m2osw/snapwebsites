@@ -1718,24 +1718,22 @@ void grammar::add_choices(choices& c)
 struct parser_state;
 typedef QVector<parser_state *> state_array_t;
 typedef QMap<parser_state *, int> state_map_t;
+
 struct parser_state
 {
     parser_state(parser_state * parent, choices & c, int r)
-        //: f_lock(false) -- auto-init
-        //, f_line(-1) -- auto-init
         : f_parent(parent)
-        //, f_children() -- auto-init
         , f_choices(&c)
         , f_rule(r)
-        //, f_position(0) -- auto-init
-        //, f_node() -- auto-init
-        //, f_add_on_reduce() -- auto-init
     {
         if(parent != nullptr)
         {
             parent->f_children.push_back(this);
         }
     }
+
+    parser_state(parser_state const & rhs) = delete;
+    parser_state & operator = (parser_state const & rhs) = delete;
 
     ~parser_state()
     {
@@ -1945,15 +1943,16 @@ struct parser_state
 
     int32_t                         f_line = -1;
     parser_state *                  f_parent = nullptr;
-    state_array_t                   f_children;
+    state_array_t                   f_children = state_array_t();
 
     choices *                       f_choices = nullptr;
     int32_t                         f_rule = 0;
     int32_t                         f_position = 0;
 
-    QSharedPointer<token_node>      f_node;
-    state_array_t                   f_add_on_reduce;
+    QSharedPointer<token_node>      f_node = QSharedPointer<token_node>();
+    state_array_t                   f_add_on_reduce = state_array_t();
 };
+
 
 /** \brief Move to the next token in a rule.
  *

@@ -65,6 +65,8 @@ struct snap_rgba
 
 class snap_image;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class snap_image_buffer_t
 {
 public:
@@ -92,18 +94,20 @@ public:
     unsigned char *     get_buffer() const;
 
 private:
-    snap_image *                        f_owner; // parent has a shared pointer to us, which is enough!
-    QString                             f_mime_type;
-    QString                             f_format_version;
-    QString                             f_resolution_unit;
+    snap_image *                        f_owner = nullptr; // parent has a shared pointer to us, which is enough!
+    QString                             f_mime_type = QString();
+    QString                             f_format_version = QString();
+    QString                             f_resolution_unit = QString();
     int32_t                             f_xres = 0;
     int32_t                             f_yres = 0;
     int32_t                             f_width = 0;
     int32_t                             f_height = 0;
     int32_t                             f_depth = 0; // 1 or 3 or 4
     int32_t                             f_bits = 0;
-    QSharedPointer<unsigned char>       f_buffer;
+    QSharedPointer<unsigned char>       f_buffer = QSharedPointer<unsigned char>();
 };
+#pragma GCC diagnostic pop
+
 typedef QSharedPointer<snap_image_buffer_t>     smart_snap_image_buffer_t;
 typedef QVector<smart_snap_image_buffer_t>      snap_image_buffer_vector_t;
 
@@ -124,7 +128,7 @@ private:
     bool                        info_gif(unsigned char const * s, size_t l, unsigned char const * e);
 
     // each buffer represents one RGBA image
-    snap_image_buffer_vector_t  f_buffers;
+    snap_image_buffer_vector_t  f_buffers = snap_image_buffer_vector_t();
 };
 
 

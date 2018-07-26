@@ -68,14 +68,18 @@ class firewall
 {
 public:
                         firewall();
-                        ~firewall();
+                        firewall(firewall const & rhs) = delete;
+    virtual             ~firewall() override;
+
+    firewall &          operator = (firewall const & rhs) = delete;
+
+    static firewall *   instance();
 
     // plugins::plugin implementation
-    static firewall *   instance();
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signals
     void                on_process_watch(QDomDocument doc);

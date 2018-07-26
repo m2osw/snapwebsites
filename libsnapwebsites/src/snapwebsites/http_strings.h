@@ -59,10 +59,10 @@ public:
     private:
         typedef QMap<QString, QString>      parameters_t;
 
-        QString                     f_name;
+        QString                     f_name = QString();
         level_t                     f_level = DEFAULT_LEVEL(); // i.e.  q=0.8
         // TODO add support for any other parameter
-        parameters_t                f_param;
+        parameters_t                f_param = parameters_t();
     };
 
                             WeightedHttpString(QString const & str = QString());
@@ -77,9 +77,9 @@ public:
     QString const &         error_messages() const { return f_error_messages; }
 
 private:
-    QString                 f_str;
-    part_t::vector_t        f_parts; // do NOT use a map, we want to keep them in order
-    QString                 f_error_messages;
+    QString                 f_str = QString();
+    part_t::vector_t        f_parts = part_t::vector_t(); // do NOT use a map, we want to keep them in order
+    QString                 f_error_messages = QString();
 };
 
 

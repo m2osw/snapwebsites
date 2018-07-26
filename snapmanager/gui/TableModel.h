@@ -22,6 +22,8 @@
 
 #include <snapwebsites/dbutils.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class TableModel
     : public casswrapper::query_model
 {
@@ -40,9 +42,11 @@ public:
 
 private:
     typedef std::map<QString,QByteArray> sort_map_t;
-    sort_map_t                      f_sortMap;
-    std::shared_ptr<snap::dbutils>  f_dbutils;
+
+    sort_map_t                      f_sortMap = sort_map_t();
+    std::shared_ptr<snap::dbutils>  f_dbutils = std::shared_ptr<snap::dbutils>();
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

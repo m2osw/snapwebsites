@@ -77,21 +77,25 @@ public:
 
 
 class menu
-        : public plugins::plugin
-        , public layout::layout_content
+    : public plugins::plugin
+    , public layout::layout_content
 {
 public:
                         menu();
-                        ~menu();
+                        menu(menu const & rhs) = delete;
+    virtual             ~menu() override;
+
+    menu &              operator = (menu const & rhs) = delete;
+
+    static menu *       instance();
 
     // plugins::plugin implementation
-    static menu *       instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // layout::layout_content imlementation
     virtual void        on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);

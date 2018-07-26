@@ -103,9 +103,9 @@ public:
     int                 write(char const * buf, size_t size);
 
 private:
-    int                 f_socket;
-    int                 f_port;
-    std::string         f_addr;
+    int                 f_socket = -1;
+    int                 f_port = -1;
+    std::string         f_addr = std::string();
 };
 
 
@@ -137,7 +137,7 @@ private:
     int                 f_max_connections = MAX_CONNECTIONS;
     int                 f_socket = -1;
     int                 f_port = -1;
-    std::string         f_addr;
+    std::string         f_addr = std::string();
     int                 f_accepted_socket = -1;
     bool                f_keepalive = true;
     bool                f_auto_close = false;
@@ -187,9 +187,9 @@ public:
     private:
         size_t              f_verification_depth = 4;
         uint32_t            f_ssl_options = DEFAULT_SSL_OPTIONS;
-        std::string         f_ssl_certificate_path = "/etc/ssl/certs";
+        std::string         f_ssl_certificate_path = std::string("/etc/ssl/certs");
         bool                f_sni = true;
-        std::string         f_host;
+        std::string         f_host = std::string();
     };
 
                         bio_client(std::string const & addr, int port, mode_t mode = mode_t::MODE_PLAIN, options const & opt = options());
@@ -214,8 +214,8 @@ private:
 
                         bio_client(std::shared_ptr<BIO> bio);
 
-    std::shared_ptr<SSL_CTX>    f_ssl_ctx;
-    std::shared_ptr<BIO>        f_bio;
+    std::shared_ptr<SSL_CTX>    f_ssl_ctx = std::shared_ptr<SSL_CTX>();
+    std::shared_ptr<BIO>        f_bio = std::shared_ptr<BIO>();
 };
 
 
@@ -242,8 +242,8 @@ public:
 
 private:
     int                         f_max_connections = MAX_CONNECTIONS;
-    std::shared_ptr<SSL_CTX>    f_ssl_ctx;
-    std::shared_ptr<BIO>        f_listen;
+    std::shared_ptr<SSL_CTX>    f_ssl_ctx = std::shared_ptr<SSL_CTX>();
+    std::shared_ptr<BIO>        f_listen = std::shared_ptr<BIO>();
     bool                        f_keepalive = true;
 };
 

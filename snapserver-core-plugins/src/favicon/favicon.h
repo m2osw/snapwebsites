@@ -48,27 +48,31 @@ public:
 
 
 class favicon
-        : public plugins::plugin
-        , public path::path_execute
+    : public plugins::plugin
+    , public path::path_execute
 {
 public:
                             favicon();
-                            ~favicon();
+                            favicon(favicon const & rhs) = delete;
+    virtual                 ~favicon() override;
+
+    favicon &               operator = (favicon const & rhs) = delete;
+
+    static favicon *        instance();
 
     // plugins::plugin implementation
-    static favicon *        instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // server signal
     void                    on_improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag);
 
     // path::path_execute implementation
-    virtual bool            on_path_execute(content::path_info_t & url);
+    virtual bool            on_path_execute(content::path_info_t & url) override;
 
     // path signals
     void                    on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);

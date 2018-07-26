@@ -145,6 +145,18 @@ void fd_deleter(int * fd)
 
 
 
+//////////////////////////////////
+// Snap Communicator Dispatcher //
+//////////////////////////////////
+
+
+
+dispatcher_base::~dispatcher_base()
+{
+}
+
+
+
 ///////////////////////////////
 // Snap Communicator Message //
 ///////////////////////////////
@@ -2298,6 +2310,17 @@ void snap_communicator::connection_with_send_message::msg_reply_with_unknown(sna
 
 
 
+
+
+
+//////////////////////////////////
+// Connection with Send Message //
+//////////////////////////////////
+
+
+snap_communicator::connection_with_send_message::~connection_with_send_message()
+{
+}
 
 
 
@@ -6039,6 +6062,9 @@ public:
             set_name("snap_tcp_client_permanent_message_connection_impl::messenger");
         }
 
+        messenger(messenger const & rhs) = delete;
+        messenger & operator = (messenger const & rhs) = delete;
+
         // snap_connection implementation
         virtual void process_empty_buffer()
         {
@@ -6081,7 +6107,7 @@ public:
         }
 
     private:
-        snap_communicator::snap_tcp_client_permanent_message_connection *  f_parent;
+        snap_communicator::snap_tcp_client_permanent_message_connection *  f_parent = nullptr;
     };
 
     class thread_done_signal
@@ -6095,6 +6121,9 @@ public:
         {
             set_name("snap_tcp_client_permanent_message_connection_impl::thread_done_signal");
         }
+
+        thread_done_signal(thread_done_signal const & rhs) = delete;
+        thread_done_signal & operator = (thread_done_signal const & rhs) = delete;
 
         /** \brief This signal was emitted.
          *
@@ -6111,7 +6140,7 @@ public:
         }
 
     private:
-        snap_tcp_client_permanent_message_connection_impl *  f_parent_impl;
+        snap_tcp_client_permanent_message_connection_impl *  f_parent_impl = nullptr;
     };
 
     class runner
@@ -6128,6 +6157,10 @@ public:
             //, f_last_error("") -- auto-init
         {
         }
+
+
+        runner(runner const & rhs) = delete;
+        runner & operator = (runner const & rhs) = delete;
 
 
         /** \brief This is the actual function run by the thread.
@@ -6282,12 +6315,12 @@ public:
 
 
     private:
-        snap_tcp_client_permanent_message_connection_impl * f_parent_impl;
+        snap_tcp_client_permanent_message_connection_impl * f_parent_impl = nullptr;
         std::string const                                   f_address;
         int const                                           f_port;
         tcp_client_server::bio_client::mode_t const         f_mode;
-        tcp_client_server::bio_client::pointer_t            f_tcp_connection;
-        std::string                                         f_last_error;
+        tcp_client_server::bio_client::pointer_t            f_tcp_connection = tcp_client_server::bio_client::pointer_t();
+        std::string                                         f_last_error = std::string();
     };
 
 
@@ -6316,6 +6349,9 @@ public:
     {
     }
 
+
+    snap_tcp_client_permanent_message_connection_impl(snap_tcp_client_permanent_message_connection_impl const & rhs) = delete;
+    snap_tcp_client_permanent_message_connection_impl & operator = (snap_tcp_client_permanent_message_connection_impl const & rhs) = delete;
 
     /** \brief Destroy the permanent message connection.
      *
@@ -6651,12 +6687,12 @@ public:
 
 
 private:
-    snap_communicator::snap_tcp_client_permanent_message_connection *   f_parent;
-    thread_done_signal::pointer_t                                       f_thread_done;
+    snap_communicator::snap_tcp_client_permanent_message_connection *   f_parent = nullptr;
+    thread_done_signal::pointer_t                                       f_thread_done = thread_done_signal::pointer_t();
     runner                                                              f_thread_runner;
     snap::snap_thread                                                   f_thread;
-    messenger::pointer_t                                                f_messenger;
-    snap_communicator_message::vector_t                                 f_message_cache;
+    messenger::pointer_t                                                f_messenger = messenger::pointer_t();
+    snap_communicator_message::vector_t                                 f_message_cache = snap_communicator_message::vector_t();
     bool                                                                f_done = false;
 };
 

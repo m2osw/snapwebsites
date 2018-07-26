@@ -125,15 +125,18 @@ public:
 
     private:
         uint32_t            f_reference_count = 0;
-        pthread_mutex_t     f_mutex;
-        pthread_cond_t      f_condition;
+        pthread_mutex_t     f_mutex = pthread_mutex_t();
+        pthread_cond_t      f_condition = pthread_cond_t();
     };
 
     class snap_lock
     {
     public:
                             snap_lock(snap_mutex & mutex);
+                            snap_lock(snap_lock const & rhs) = delete;
                             ~snap_lock();
+
+        snap_lock &         operator = (snap_lock const & rhs) = delete;
 
         void                unlock();
 
@@ -147,7 +150,10 @@ public:
     {
     public:
                             snap_runner(QString const & name);
+                            snap_runner(snap_runner const & rhs) = delete;
         virtual             ~snap_runner();
+
+        snap_runner &       operator = (snap_runner const & rhs) = delete;
 
         virtual bool        is_ready() const;
         virtual bool        continue_running() const;
@@ -155,13 +161,13 @@ public:
         snap_thread *       get_thread() const;
 
     protected:
-        mutable snap_mutex  f_mutex;
+        mutable snap_mutex  f_mutex = snap_mutex();
 
     private:
         friend class snap_thread;
 
         snap_thread *       f_thread = nullptr;
-        QString const       f_name;
+        QString const       f_name = QString();
     };
 
 
@@ -341,7 +347,7 @@ public:
          * This variable member holds the actual data in this FIFO
          * object.
          */
-        items_t                 f_stack;
+        items_t                 f_stack = items_t();
     };
 
     class snap_thread_life
@@ -378,6 +384,8 @@ public:
             }
         }
 
+        snap_thread_life(snap_thread_life const & rhs) = delete;
+
         /** \brief Make sure the thread stops.
          *
          * This function requests that the attach thread stop. It will block
@@ -391,6 +399,8 @@ public:
             f_thread->stop();
             //SNAP_LOG_TRACE() << "snap_thread_life stopped!";
         }
+
+        snap_thread_life & operator = (snap_thread_life const & rhs) = delete;
 
     private:
         /** \brief The pointer to the thread being managed.
@@ -423,15 +433,15 @@ private:
     friend void *               func_internal_start(void * thread);
     void                        internal_run();
 
-    QString const               f_name;
-    snap_runner *               f_runner;
-    mutable snap_mutex          f_mutex;
+    QString const               f_name = QString();
+    snap_runner *               f_runner = nullptr;
+    mutable snap_mutex          f_mutex = snap_mutex();
     bool                        f_running = false;
     bool                        f_started = false;
     bool                        f_stopping = false;
     pthread_t                   f_thread_id = -1;
-    pthread_attr_t              f_thread_attr;
-    std::exception_ptr          f_exception;
+    pthread_attr_t              f_thread_attr = pthread_attr_t();
+    std::exception_ptr          f_exception = std::exception_ptr();
 };
 
 } // namespace snap

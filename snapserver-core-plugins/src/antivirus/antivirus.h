@@ -48,23 +48,27 @@ public:
 
 
 class antivirus
-        : public plugins::plugin
-        , public layout::layout_content
+    : public plugins::plugin
+    , public layout::layout_content
 {
 public:
                             antivirus();
-                            ~antivirus();
+                            antivirus(antivirus const & rhs) = delete;
+    virtual                 ~antivirus() override;
+
+    antivirus &             operator = (antivirus const & rhs) = delete;
+
+    static antivirus *      instance();
 
     // plugins::plugin implementation
-    static antivirus *      instance();
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // layout::layout_content implementation
-    virtual void            on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body);
+    virtual void            on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body) override;
 
     // content signals
     void                    on_check_attachment_security(content::attachment_file const & file, content::permission_flag & secure, bool const fast);

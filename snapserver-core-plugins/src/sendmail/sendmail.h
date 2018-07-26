@@ -128,25 +128,28 @@ public:
 
 
 class sendmail
-        : public plugins::plugin
-        , public server::backend_action
-        , public layout::layout_content
+    : public plugins::plugin
+    , public server::backend_action
+    , public layout::layout_content
 {
 public:
     static const sessions::sessions::session_info::session_id_t SENDMAIL_SESSION_ID_MESSAGE = 1;
     static const sessions::sessions::session_info::session_id_t SENDMAIL_SESSION_EMAIL_ENCRYPTION = 2;
 
-
                             sendmail();
-                            ~sendmail();
+                            sendmail(sendmail const & rhs) = delete;
+    virtual                 ~sendmail() override;
+
+    sendmail &              operator = (sendmail const & rhs) = delete;
+
+    static sendmail *       instance();
 
     // plugins::plugin implementation
-    static sendmail *       instance();
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t get_emails_table();
 
@@ -156,10 +159,10 @@ public:
     void                    on_token_help(filter::filter::token_help_t & help);
 
     // server::backend_action implementation
-    virtual void            on_backend_action(QString const & action);
+    virtual void            on_backend_action(QString const & action) override;
 
     // layout::layout_content
-    virtual void            on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body);
+    virtual void            on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body) override;
 
     // users signals
     void                    on_check_user_security(users::users::user_security_t & security);
@@ -192,7 +195,7 @@ private:
 
     snap_child *                    f_snap = nullptr;
     snap_backend *                  f_backend = nullptr;
-    email                           f_email; // email being processed
+    email                           f_email = email(); // email being processed
 };
 
 } // namespace sendmail

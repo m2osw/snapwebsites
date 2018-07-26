@@ -318,8 +318,7 @@ double epayment_product::value_t::get_float_value() const
  * \param[in] quantity  The quantity being purchased.
  */
 epayment_product::epayment_product(QString const & product, double const quantity, QString const & description)
-    : f_content_plugin(content::content::instance())
-    , f_revision_table(f_content_plugin->get_revision_table())
+    : f_revision_table(content::content::instance()->get_revision_table())
 {
     // we cannot call the set_property() functions because the product
     // and quantity are marked as "read-only" properties

@@ -50,7 +50,7 @@ public:
 
 
 class filter
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
     enum class token_t
@@ -68,15 +68,8 @@ public:
     struct parameter_t
     {
         token_t                 f_type = token_t::TOK_UNDEFINED;
-        QString                 f_name;
-        QString                 f_value;
-
-        parameter_t()
-            : f_type(token_t::TOK_UNDEFINED)
-            //, f_name("") -- auto-init
-            //, f_value("") -- auto-init
-        {
-        }
+        QString                 f_name = QString();
+        QString                 f_value = QString();
 
         bool is_null() const
         {
@@ -132,12 +125,12 @@ public:
     // TODO: change that in a class
     struct token_info_t
     {
-        QString                     f_name;
-        QVector<parameter_t>        f_parameters;
+        QString                     f_name = QString();
+        QVector<parameter_t>        f_parameters = QVector<parameter_t>();
         bool                        f_found = false;
         bool                        f_error = false;
         bool                        f_name_used = false;
-        QString                     f_replacement;
+        QString                     f_replacement = QString();
         QDomDocument &              f_xml;
 
         token_info_t(QDomDocument & xml)
@@ -343,7 +336,7 @@ public:
     private:
         content::path_info_t &  f_ipath;
         QDomDocument &          f_xml_document;
-        QString                 f_text; // i.e. input and result
+        QString                 f_text = QString(); // i.e. input and result
         bool                    f_changed = false;
         bool                    f_support_edit = true;
     };
@@ -367,9 +360,9 @@ public:
     private:
         int32_t                     f_words = 0;        // max. # of words
         int32_t                     f_tags = 0;         // max. # of tags
-        QString                     f_end_marker;       // i.e. usually "..." or "[...]" or a "read more" link
-        QString                     f_end_marker_uri;   // main page URI
-        QString                     f_end_marker_uri_title;
+        QString                     f_end_marker = QString();       // i.e. usually "..." or "[...]" or a "read more" link
+        QString                     f_end_marker_uri = QString();   // main page URI
+        QString                     f_end_marker_uri_title = QString();
     };
 
     class token_help_t
@@ -380,22 +373,26 @@ public:
         QString                     result();
 
     private:
-        QDomDocument                f_doc;
-        QDomElement                 f_root_tag;
-        QDomElement                 f_help_tag;
+        QDomDocument                f_doc = QDomDocument();
+        QDomElement                 f_root_tag = QDomElement();
+        QDomElement                 f_help_tag = QDomElement();
     };
 
                         filter();
-                        ~filter();
+                        filter(filter const & rhs) = delete;
+    virtual             ~filter() override;
+
+    filter &            operator = (filter const & rhs) = delete;
+
+    static filter *     instance();
 
     // plugins::plugin implementation
-    static filter *     instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(::snap::snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signals
     void                on_xss_filter(QDomNode & node, QString const & accepted_tags, QString const & accepted_attributes);

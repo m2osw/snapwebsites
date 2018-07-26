@@ -37,9 +37,9 @@ protected:
     virtual void        handleMessage(QtMsgType type, QString const & description, QUrl const & identifier, QSourceLocation const & sourceLocation);
 
 private:
-    QString             f_xsl;
-    QString             f_doc;
-    QString             f_error_description;
+    QString             f_xsl = QString();
+    QString             f_doc = QString();
+    QString             f_error_description = QString();
     QtMsgType           f_error_type = QtDebugMsg;
     bool                f_had_msg = false;
     bool                f_has_entities = false;

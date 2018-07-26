@@ -58,18 +58,22 @@ public:
 
 
 class self
-        : public snap_manager::plugin_base
+    : public snap_manager::plugin_base
 {
 public:
                             self();
+                            self(self const & rhs) = delete;
     virtual                 ~self() override;
 
-    // plugins::plugin implementation
+    self &                  operator = (self const & rhs) = delete;
+
     static self *           instance();
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+
+    // plugins::plugin implementation
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // manager overload
     virtual bool            display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri) override;
@@ -88,6 +92,7 @@ private:
     bool                    f_system_active   = false;    // false if in maintenance
     int                     f_backends_active = 0;        // count of all backends
 };
+
 
 } // namespace self
 } // namespace snap

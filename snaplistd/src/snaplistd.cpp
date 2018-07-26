@@ -317,9 +317,6 @@ void snaplistd::run()
 {
     // Stop on these signals, log them, then terminate.
     //
-    // Note: the handler uses the logger which the create_instance()
-    //       initializes
-    //
     signal( SIGSEGV, snaplistd::sighandler );
     signal( SIGBUS,  snaplistd::sighandler );
     signal( SIGFPE,  snaplistd::sighandler );

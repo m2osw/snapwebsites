@@ -47,19 +47,23 @@ public:
 
 
 class listener
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                                 listener();
-                                ~listener();
+                                listener(listener const & rhs) = delete;
+    virtual                     ~listener() override;
+
+    listener &                  operator = (listener const & rhs) = delete;
+
+    static listener *           instance();
 
     // plugins::plugin implementation
-    static listener *           instance();
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     // server signals
     void                        on_process_post(QString const & uri_path);

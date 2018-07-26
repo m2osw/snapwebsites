@@ -23,6 +23,8 @@
 #include <map>
 #include <vector>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class RowModel
     : public casswrapper::query_model
 {
@@ -63,10 +65,11 @@ public:
     void					doQuery();
 
 private:
-    std::vector<QByteArray> f_columns;
-    modified_map_t			f_columnsChanged;
-    QByteArray              f_rowKey;
+    std::vector<QByteArray> f_columns = std::vector<QByteArray>();
+    modified_map_t			f_columnsChanged = modified_map_t();
+    QByteArray              f_rowKey = QByteArray();
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

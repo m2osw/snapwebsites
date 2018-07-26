@@ -21,7 +21,6 @@
 
 #pragma once
 
-#include "ui_MainWindow.h"
 #include "CassandraModel.h"
 #include "KeyspaceModel.h"
 #include "TableModel.h"
@@ -30,15 +29,19 @@
 #include <casswrapper/session.h>
 #include <QtGui>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_MainWindow.h"
 class MainWindow
-        : public QMainWindow
-        , Ui::MainWindow
+    : public QMainWindow
+    , Ui::MainWindow
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    virtual ~MainWindow() override;
 
 private slots:
     void onShowRowsContextMenu( const QPoint& pos );
@@ -70,19 +73,20 @@ private:
     typedef std::shared_ptr<TableModel>     table_model_t;
     typedef std::shared_ptr<RowModel>       row_model_t;
 
-    cassandra_t      f_session;
-    keyspace_model_t f_contextModel;
-    table_model_t    f_tableModel;
-    row_model_t      f_rowModel;
-    QString          f_context;
-    QMenu            f_row_context_menu;
-    QMenu            f_col_context_menu;
-
     void connectCassandra ();
     void fillTableList    ();
     void saveValue        ();
     void saveValue        ( const QModelIndex &index );
+
+    cassandra_t      f_session = cassandra_t();
+    keyspace_model_t f_contextModel = keyspace_model_t();
+    table_model_t    f_tableModel = table_model_t();
+    row_model_t      f_rowModel = row_model_t();
+    QString          f_context = QString();
+    QMenu            f_row_context_menu;
+    QMenu            f_col_context_menu;
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

@@ -150,10 +150,10 @@ public:
         bool                    operator == (attachment const & rhs) const;
 
     private:
-        header_map_t            f_headers;
-        QByteArray              f_data;
+        header_map_t            f_headers = header_map_t();
+        QByteArray              f_data = QByteArray();
         bool                    f_is_sub_attachment = false;
-        vector_t                f_sub_attachments; // for HTML data (images, css, ...)
+        vector_t                f_sub_attachments = vector_t(); // for HTML data (images, css, ...)
     };
 
                             email();
@@ -211,14 +211,14 @@ public:
 
 private:
     bool                    f_branding = true;
-    QString                 f_cumulative;
-    QString                 f_site_key;
-    QString                 f_email_path;
-    QString                 f_email_key; // set on post_email()
+    QString                 f_cumulative = QString();
+    QString                 f_site_key = QString();
+    QString                 f_email_path = QString();
+    QString                 f_email_key = QString(); // set on post_email()
     time_t                  f_time = static_cast<time_t>(-1);
-    header_map_t            f_headers;
-    attachment::vector_t    f_attachments;
-    parameter_map_t         f_parameters;
+    header_map_t            f_headers = header_map_t();
+    attachment::vector_t    f_attachments = attachment::vector_t();
+    parameter_map_t         f_parameters = parameter_map_t();
 };
 
 

@@ -66,11 +66,11 @@ protected:
     // TODO: convert the port + addr into a libaddr addr object?
     //       (we use the f_addrinfo as is in the sendto() and bind() calls, though)
     //
-    snap::raii_fd_t     f_socket;
+    snap::raii_fd_t     f_socket = snap::raii_fd_t();
     int                 f_port = -1;
     mutable int         f_mtu_size = 0;
-    std::string         f_addr;
-    raii_addrinfo_t     f_addrinfo;
+    std::string         f_addr = std::string();
+    raii_addrinfo_t     f_addrinfo = raii_addrinfo_t();
 };
 
 

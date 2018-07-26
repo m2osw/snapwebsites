@@ -168,28 +168,30 @@ class snap_bounce
 public:
     typedef std::shared_ptr<snap_bounce> pointer_t;
 
-    static void create_instance( int argc, char * argv[] );
-    static pointer_t instance();
-    ~snap_bounce();
+    static void             create_instance( int argc, char * argv[] );
+    static pointer_t        instance();
 
-    void read_stdin();
-    void store_email();
+                            ~snap_bounce();
+
+    void                    read_stdin();
+    void                    store_email();
 
 private:
-    static pointer_t     f_instance;
-    advgetopt::getopt    f_opt;
-    snap::snap_config    f_config;
-    snap::snap_cassandra f_cassandra;
-    //std::string          f_recipient;
-    QStringList          f_email_body;
+                            snap_bounce( int argc, char *argv[] );
 
-    snap_bounce( int argc, char *argv[] );
+    void                    usage();
 
-    void usage();
+    static pointer_t        g_instance;
+
+    advgetopt::getopt       f_opt;
+    snap::snap_config       f_config = snap::snap_config();
+    snap::snap_cassandra    f_cassandra = snap::snap_cassandra();
+    //std::string             f_recipient;
+    snap::snap_string_list  f_email_body = snap::snap_string_list();
 };
 
 
-snap_bounce::pointer_t snap_bounce::f_instance;
+snap_bounce::pointer_t snap_bounce::g_instance;
 
 
 snap_bounce::snap_bounce( int argc, char * argv[] )
@@ -234,18 +236,18 @@ snap_bounce::~snap_bounce()
 
 void snap_bounce::create_instance( int argc, char * argv[] )
 {
-    f_instance.reset( new snap_bounce( argc, argv ) );
-    Q_ASSERT(f_instance);
+    g_instance.reset( new snap_bounce( argc, argv ) );
+    Q_ASSERT(g_instance);
 }
 
 
 snap_bounce::pointer_t snap_bounce::instance()
 {
-    if( !f_instance )
+    if( !g_instance )
     {
         throw std::invalid_argument( "snap_bounce instance must be created with create_instance()!" );
     }
-    return f_instance;
+    return g_instance;
 }
 
 

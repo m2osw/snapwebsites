@@ -47,20 +47,24 @@ public:
 
 
 class hashtag
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         hashtag();
-                        ~hashtag();
+                        hashtag(hashtag const & rhs) = delete;
+    virtual             ~hashtag() override;
+
+    hashtag &           operator = (hashtag const & rhs) = delete;
+
+    static hashtag *    instance();
 
     // plugins::plugin implementation
-    static hashtag *    instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // filter signals
     void                on_filter_text(filter::filter::filter_text_t & txt_filt);

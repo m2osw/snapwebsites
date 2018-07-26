@@ -603,6 +603,9 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
             status = "<p>The MTA was not yet tested through the Watchdog.</p>";
         }
 
+        struct stat st;
+        bool const has_root_emails(stat("/var/mail/root", &st) == 0);
+
         snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
                           "Send a test email"
                         , s.get_field_name()
@@ -610,6 +613,10 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                         , "<p>Enter an email address and click the Save button to make sure that"
                           " sendmail works as expected.</p>"
                         + status
+                        + (has_root_emails
+                            ? "<p><strong>WARNING:</strong> root user has emails on this computer."
+                              " This could mean that the MTA is not functional or incorrectly setup.</p>"
+                            : "")
                         ));
         f.add_widget(field);
         f.generate(parent, uri);
@@ -991,10 +998,11 @@ void watchdog::on_generate_content(QDomDocument doc, QDomElement output, QDomEle
                 // a glob(), this is much slower than getting the latest
                 // from the last_results.txt file, but it still works
                 //
+                typedef struct stat stat_t;
                 struct newest_t
                 {
-                    QString     f_filename;
-                    struct stat f_stat; // not initialized if f_filename.isEmpty() is true
+                    QString     f_filename = QString();
+                    stat_t      f_stat = stat_t(); // not initialized if f_filename.isEmpty() is true
                 };
                 newest_t newest;
                 auto newest_data = [&newest](QString const & filename)

@@ -77,19 +77,23 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class watchscripts
-        : public plugins::plugin
-        , private process::process_output_callback
+    : public plugins::plugin
+    , private process::process_output_callback
 {
 public:
                             watchscripts();
-                            ~watchscripts();
+                            watchscripts(watchscripts const & rhs) = delete;
+    virtual                 ~watchscripts() override;
+
+    watchscripts            operator = (watchscripts const & rhs) = delete;
+
+    static watchscripts *   instance();
 
     // plugins::plugin implementation
-    static watchscripts *   instance();
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // server signals
     void                    on_process_watch(QDomDocument doc);
@@ -106,23 +110,23 @@ private:
     QString                 generate_header(QString const & type);
 
     watchdog_child *        f_snap = nullptr;
-    QDomElement             f_watchdog;
+    QDomElement             f_watchdog = QDomElement();
     bool                    f_new_output_script = false;
     bool                    f_new_error_script = false;
     char                    f_last_output_byte = '\n';
     char                    f_last_error_byte = '\n';
-    QString                 f_watch_script_starter;
-    QString                 f_log_path;
-    QString                 f_log_subfolder;
-    QString                 f_scripts_output_log;
-    QString                 f_scripts_error_log;
-    QString                 f_script_filename;
-    std::shared_ptr<QFile>  f_output_file;
-    std::shared_ptr<QFile>  f_error_file;
-    time_t                  f_start_date;
-    QString                 f_output;
-    QString                 f_error;
-    QString                 f_email;
+    QString                 f_watch_script_starter = QString();
+    QString                 f_log_path = QString();
+    QString                 f_log_subfolder = QString();
+    QString                 f_scripts_output_log = QString();
+    QString                 f_scripts_error_log = QString();
+    QString                 f_script_filename = QString();
+    std::shared_ptr<QFile>  f_output_file = std::shared_ptr<QFile>();
+    std::shared_ptr<QFile>  f_error_file = std::shared_ptr<QFile>();
+    time_t                  f_start_date = time_t();
+    QString                 f_output = QString();
+    QString                 f_error = QString();
+    QString                 f_email = QString();
 };
 
 

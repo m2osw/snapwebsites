@@ -71,10 +71,10 @@ public:
 private:
     void                    evaluate(QString * output_string, QDomDocument * output_document);
 
-    QString                 f_xsl;
-    QString                 f_input; // document as a string
-    QMap<QString, QVariant> f_variables;
-    QDomDocument            f_doc;
+    QString                 f_xsl = QString();
+    QString                 f_input = QString(); // document as a string
+    QMap<QString, QVariant> f_variables = {};
+    QDomDocument            f_doc = QDomDocument();
 };
 
 } // namespace snap

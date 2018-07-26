@@ -104,10 +104,10 @@ public:
 
 
 class permissions
-        : public plugins::plugin
-        , public links::links_cloned
-        , public layout::layout_content
-        , public server::backend_action
+    : public plugins::plugin
+    , public links::links_cloned
+    , public layout::layout_content
+    , public server::backend_action
 {
 public:
     static int64_t const        EXPECTED_TIME_ACCURACY_EPSILON = 10000; // 10ms
@@ -154,14 +154,14 @@ public:
         void                    get_cache_table();
 
         snap_child *                    f_snap = nullptr;
-        QString                         f_user_path;
+        QString                         f_user_path = QString();
         content::path_info_t &          f_ipath;
-        QString                         f_action;
-        QString                         f_login_status;
-        set_t                           f_user_rights;
-        QString                         f_user_cache_key;
-        req_sets_t                      f_plugin_permissions;
-        QString                         f_plugin_cache_key;
+        QString                         f_action = QString();
+        QString                         f_login_status = QString();
+        set_t                           f_user_rights = set_t();
+        QString                         f_user_cache_key = QString();
+        req_sets_t                      f_plugin_permissions = req_sets_t();
+        QString                         f_plugin_cache_key = QString();
         bool                            f_using_user_cache = false;
         bool                            f_user_cache_reset = false;
         bool                            f_using_plugin_cache = false;
@@ -178,14 +178,18 @@ public:
     };
 
                             permissions();
-                            ~permissions();
+                            permissions(permissions const & rhs) = delete;
+    virtual                 ~permissions() override;
+
+    permissions &           operator = (permissions const & rhs) = delete;
+
+    static permissions *    instance();
 
     // plugins::plugin implementation
-    static permissions *    instance();
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // server::backend_action implementation
     virtual void            on_backend_action(QString const & action);
@@ -231,10 +235,10 @@ private:
     void                    check_permissions(QString const & email, QString const & page, QString const & action, QString const & status);
 
     snap_child *                f_snap = nullptr;
-    QString                     f_login_status;
+    QString                     f_login_status = QString();
     bool                        f_has_user_path = false;
-    QString                     f_user_path;
-    std::map<QString, bool>     f_valid_actions;
+    QString                     f_user_path = QString();
+    std::map<QString, bool>     f_valid_actions = std::map<QString, bool>();
 };
 
 } // namespace permissions

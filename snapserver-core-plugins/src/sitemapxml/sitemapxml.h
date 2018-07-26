@@ -74,8 +74,8 @@ public:
 
 
 class sitemapxml
-        : public plugins::plugin
-        , public path::path_execute
+    : public plugins::plugin
+    , public path::path_execute
 {
 public:
     class url_image
@@ -96,11 +96,11 @@ public:
         QString const & get_license_uri() const;
 
     private:
-        QString         f_uri;                  // the image URI
-        QString         f_title;                // the image title
-        QString         f_caption;              // the image caption / description
-        QString         f_geo_location;         // the location where the photo was taken (as a human name: Limerick, Ireland)
-        QString         f_license_uri;          // a URI to the license assigned to this image
+        QString         f_uri = QString();                  // the image URI
+        QString         f_title = QString();                // the image title
+        QString         f_caption = QString();              // the image caption / description
+        QString         f_geo_location = QString();         // the location where the photo was taken (as a human name: Limerick, Ireland)
+        QString         f_license_uri = QString();          // a URI to the license assigned to this image
     };
 
     class url_info
@@ -129,24 +129,28 @@ public:
         bool                        operator < (url_info const & rhs) const;
 
     private:
-        QString                     f_uri;                      // the page URI
+        QString                     f_uri = QString();          // the page URI
         float                       f_priority = 0.5f;          // 0.001 to 1.0, default 0.5
         time_t                      f_last_modification = 0;    // Unix date when it was last modified
         int                         f_frequency = 604800;       // number of seconds between modifications
-        url_image::vector_t         f_images;                   // an array of images
+        url_image::vector_t         f_images = url_image::vector_t();   // an array of images
     };
     typedef std::vector<url_info>        url_info_list_t;
 
                             sitemapxml();
-                            ~sitemapxml();
+                            sitemapxml(sitemapxml const & rhs) = delete;
+    virtual                 ~sitemapxml() override;
+
+    sitemapxml &            operator = (sitemapxml const & rhs) = delete;
+
+    static sitemapxml *     instance();
 
     // plugins::plugin implementation
-    static sitemapxml *     instance();
-    virtual QString         settings_path() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // server signals
     void                    on_backend_process();
@@ -155,7 +159,7 @@ public:
     void                    on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch);
 
     // path::path_execute implementation
-    virtual bool            on_path_execute(content::path_info_t & ipath);
+    virtual bool            on_path_execute(content::path_info_t & ipath) override;
 
     // robotstxt signals
     void                    on_generate_robotstxt(robotstxt::robotstxt * r);
@@ -173,7 +177,7 @@ private:
     void                    generate_sitemap_index(int32_t position);
 
     snap_child *            f_snap = nullptr;
-    url_info_list_t         f_url_info;
+    url_info_list_t         f_url_info = url_info_list_t();
 };
 
 } // namespace sitemapxml

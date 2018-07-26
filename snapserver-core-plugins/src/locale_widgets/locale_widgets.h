@@ -55,7 +55,8 @@ namespace locale_widgets
 
 
 
-class locale_widgets : public plugins::plugin
+class locale_widgets
+    : public plugins::plugin
 {
 public:
     // TODO: this seems to be duplicated from `class locale`
@@ -64,29 +65,33 @@ public:
     // continent and city all the other parameters will be empty
     struct timezone_info_t
     {
-        QString         f_2country;         // 2 letter country code
-        int64_t         f_longitude = 0;    // city longitude
-        int64_t         f_latitude = 0;     // city latitude
-        QString         f_timezone_name;    // the full name of the timezone as is
-        QString         f_continent;        // one of the 5 continents and a few other locations
-        QString         f_country_or_state; // likely empty (Used for Argentina, Kentucky, Indiana...)
-        QString         f_city;             // The main city for that timezone
-        QString         f_comment;          // likely empty, a comment about this timezone
+        QString         f_2country = QString();         // 2 letter country code
+        int64_t         f_longitude = 0;                // city longitude
+        int64_t         f_latitude = 0;                 // city latitude
+        QString         f_timezone_name = QString();    // the full name of the timezone as is
+        QString         f_continent = QString();        // one of the 5 continents and a few other locations
+        QString         f_country_or_state = QString(); // likely empty (Used for Argentina, Kentucky, Indiana...)
+        QString         f_city = QString();             // The main city for that timezone
+        QString         f_comment = QString();          // likely empty, a comment about this timezone
     };
     typedef QVector<timezone_info_t>    timezone_list_t;
 
                                 locale_widgets();
-                                ~locale_widgets();
+                                locale_widgets(locale_widgets const & rhs) = delete;
+    virtual                     ~locale_widgets() override;
+
+    locale_widgets &            operator = (locale_widgets const & rhs) = delete;
+
+    static locale_widgets *     instance();
 
     // plugin.cpp implementation
-    static locale_widgets *     instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             help_uri() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             help_uri() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     // editor signals
     void                        on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row);

@@ -124,12 +124,12 @@ public:
     void                set_parameters(snap_configurations::parameter_map_t const & params);
 
 private:
+    bool                actual_read_config_file(std::string const & filename, bool quiet);
+
     std::string const                       f_configuration_filename;
     std::string const                       f_override_filename;
-    snap_configurations::parameter_map_t    f_parameters;
+    snap_configurations::parameter_map_t    f_parameters = snap_configurations::parameter_map_t();
     bool                                    f_exists = false;
-
-    bool                actual_read_config_file(std::string const & filename, bool quiet);
 };
 
 

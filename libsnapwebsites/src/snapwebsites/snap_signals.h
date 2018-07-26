@@ -136,7 +136,7 @@
             return f_signal_##name.connect(slot); \
         } \
     private: \
-        signal_##name##_t f_signal_##name; \
+        signal_##name##_t f_signal_##name = signal_##name##_t(); \
         SNAP_SIGNAL_PROCESS_MODE_##mode(name, parameters, variables)
 
 

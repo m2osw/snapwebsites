@@ -60,11 +60,11 @@ public:
 
 
 class output
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
-        , public layout::layout_boxes
-        //, public javascript::javascript_dynamic_plugin
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
+    , public layout::layout_boxes
+    //, public javascript::javascript_dynamic_plugin
 {
 public:
     enum class phone_number_type_t
@@ -75,25 +75,29 @@ public:
     };
 
                         output();
-                        ~output();
+                        output(output const & rhs) = delete;
+    virtual             ~output();
+
+    output &            operator = (output const & rhs) = delete;
+
+    static output *     instance();
 
     // plugins::plugin implementation
-    static output *     instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // path::path_execute implementation
-    virtual bool        on_path_execute(content::path_info_t & ipath);
+    virtual bool        on_path_execute(content::path_info_t & ipath) override;
 
     // layout::layout_content implementation
-    virtual void        on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void        on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // layout::layout_boxes implementation
-    virtual void        on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes);
+    virtual void        on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes) override;
 
     // layout signals
     void                on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
@@ -117,7 +121,7 @@ private:
     typedef std::map<QString, bool> compression_extensions_map_t;
 
     snap_child *                    f_snap = nullptr;
-    compression_extensions_map_t    f_compression_extensions;
+    compression_extensions_map_t    f_compression_extensions = compression_extensions_map_t();
 };
 
 

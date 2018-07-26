@@ -110,16 +110,6 @@ robotstxt * robotstxt::instance()
 }
 
 
-///** \brief Send users to the plugin settings.
-// *
-// * This path represents this plugin settings.
-// */
-//QString robotstxt::settings_path() const
-//{
-//    return "/admin/settings/robotstxt";
-//}
-
-
 /** \brief A path or URI to a logo for this plugin.
  *
  * This function returns a 64x64 icons representing this plugin.

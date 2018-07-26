@@ -56,8 +56,8 @@ public:
     void                    process_message(snap::snap_communicator_message const & message);
 
 private:
-    snap::snap_communicator_message f_message;
-    QString                         f_result;
+    snap::snap_communicator_message f_message = snap::snap_communicator_message();
+    QString                         f_result = QString();
 };
 
 
@@ -114,12 +114,12 @@ private:
     void                        get_cluster_status(QDomDocument doc, QDomElement output);
     int                         is_logged_in(std::string & request_method);
 
-    snap::snap_uri              f_uri;
-    std::string                 f_communicator_address;
-    std::string                 f_cookie;
-    std::string                 f_user_name;
+    snap::snap_uri              f_uri = snap::snap_uri();
+    std::string                 f_communicator_address = std::string();
+    std::string                 f_cookie = std::string();
+    std::string                 f_user_name = std::string();
     int                         f_communicator_port = -1;
-    post_variables_t            f_post_variables;
+    post_variables_t            f_post_variables = post_variables_t();
 };
 
 

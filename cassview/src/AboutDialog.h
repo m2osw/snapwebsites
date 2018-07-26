@@ -21,19 +21,23 @@
 #pragma once
 
 #include <QDialog>
-#include "ui_AboutDialog.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_AboutDialog.h"
 class AboutDialog
-        : public QDialog
-        , public Ui::AboutDialog
+    : public QDialog
+    , public Ui::AboutDialog
 {
     Q_OBJECT
 
 public:
     explicit AboutDialog( QWidget *p = 0);
-    ~AboutDialog();
+    virtual ~AboutDialog();
 
 private:
 };
+#pragma GCC diagnostic pop
 
 // vim: ts=4 sw=4 et

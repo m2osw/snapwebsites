@@ -114,14 +114,14 @@ public:
 
     private:
         type_t              f_type = type_t::FILE_TYPE_REGULAR;
-        QByteArray          f_data;
-        QString             f_filename;
-        QString             f_user;
-        QString             f_group;
-        uid_t               f_uid;
-        gid_t               f_gid;
-        mode_t              f_mode;
-        time_t              f_mtime;
+        QByteArray          f_data = QByteArray();
+        QString             f_filename = QString();
+        QString             f_user = QString();
+        QString             f_group = QString();
+        uid_t               f_uid = 0;
+        gid_t               f_gid = 0;
+        mode_t              f_mode = 0;
+        time_t              f_mtime = 0;
     };
 
                             archiver_t(char const * name);
@@ -134,7 +134,7 @@ public:
     virtual void            rewind_file() = 0;
 
 protected:
-    QByteArray              f_archive;
+    QByteArray              f_archive = QByteArray();
 };
 
 //void register_compressor(compressor_t * compressor_name); -- automatic at this point

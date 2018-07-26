@@ -62,23 +62,27 @@ public:
 
 
 class feed
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
     static int const    DEFAULT_TEASER_WORDS = 200;
     static int const    DEFAULT_TEASER_TAGS  = 100;
 
                         feed();
-                        ~feed();
+                        feed(feed const & rhs) = delete;
+    virtual             ~feed() override;
+
+    feed &              operator = (feed const & rhs) = delete;
+
+    static feed *       instance();
 
     // plugins::plugin implementation
-    static feed *       instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signals
     void                on_backend_process();
@@ -95,7 +99,7 @@ private:
     void                mark_attachment_as_feed(snap::content::attachment_file & attachment);
 
     snap_child *        f_snap = nullptr;
-    QString             f_feed_parser_xsl;
+    QString             f_feed_parser_xsl = QString();
 };
 
 

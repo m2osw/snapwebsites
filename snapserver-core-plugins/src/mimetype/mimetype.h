@@ -56,18 +56,23 @@ public:
 
 
 
-class mimetype : public plugins::plugin
+class mimetype
+    : public plugins::plugin
 {
 public:
                         mimetype();
-                        ~mimetype();
+                        mimetype(mimetype const & rhs) = delete;
+    virtual             ~mimetype() override;
+
+    mimetype &          operator = (mimetype const & rhs) = delete;
+
+    static mimetype *   instance();
 
     // plugins::plugin implementation
-    static mimetype *   instance();
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     QString             mimetype_to_icon(QString const & mime_type);
     QString             mimetype_to_extension(QString const & mime_type);

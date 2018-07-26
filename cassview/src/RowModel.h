@@ -32,7 +32,7 @@ class RowModel
     Q_OBJECT
 
 public:
-    RowModel();
+                          RowModel();
 
     const QByteArray&     rowKey() const                     { return f_rowKey; }
     void                  setRowKey( const QByteArray& key ) { f_rowKey = key;  }
@@ -44,18 +44,18 @@ public:
 
     // Write access
     //
-    bool                setData( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole ) override;
+    bool                  setData( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole ) override;
 
     // Resizable methods
     //
-    bool                insertRows( int row, int count, const QModelIndex & parent = QModelIndex() ) override;
-    virtual bool        removeRows( int row, int count, const QModelIndex & parent = QModelIndex() ) override;
+    bool                  insertRows( int row, int count, const QModelIndex & parent = QModelIndex() ) override;
+    virtual bool          removeRows( int row, int count, const QModelIndex & parent = QModelIndex() ) override;
 
-    void                doQuery();
+    void                  doQuery();
 
 private:
-    QByteArray                      f_rowKey;
-    std::shared_ptr<snap::dbutils>  f_dbutils;
+    QByteArray                      f_rowKey = QByteArray();
+    std::shared_ptr<snap::dbutils>  f_dbutils = std::shared_ptr<snap::dbutils>();
 };
 
 

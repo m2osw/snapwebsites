@@ -32,10 +32,6 @@ std::string encode(std::string const & input, int flags)
     public:
         result(size_t input_length, int flags)
             : f_flags(flags)
-            //, f_buffer('\0') -- auto-init
-            //, f_result("") -- auto-init
-            //, f_line(0) -- auto-init
-            //, f_cr(false) -- auto-init
         {
             f_result.reserve(input_length * 2);
         }
@@ -241,7 +237,7 @@ std::string encode(std::string const & input, int flags)
     private:
         int32_t         f_flags = 0;
         char            f_buffer = 0;
-        std::string     f_result;
+        std::string     f_result = std::string();
         int32_t         f_line = 0;
         bool            f_cr = false;
     };
@@ -263,6 +259,9 @@ std::string decode(std::string const & input)
             , f_str(f_input.c_str())
         {
         }
+
+        result(result const & rhs) = delete;
+        result & operator = (result const & rhs) = delete;
 
         int from_hex(int c)
         {
@@ -357,8 +356,8 @@ std::string decode(std::string const & input)
         }
 
     private:
-        std::string     f_input;
-        std::string     f_result;
+        std::string     f_input = std::string();
+        std::string     f_result = std::string();
         char const *    f_str = nullptr;
     };
 

@@ -54,31 +54,35 @@ public:
 
 
 class info
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
 {
 public:
                             info();
-                            ~info();
+                            info(info const & rhs) = delete;
+    virtual                 ~info() override;
+
+    info &                  operator = (info const & rhs) = delete;
+
+    static info *           instance();
 
     // plugin implementation
-    static info *           instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // path_execute implementation
-    virtual bool            on_path_execute(content::path_info_t & ipath);
+    virtual bool            on_path_execute(content::path_info_t & ipath) override;
 
     // path signals
     void                    on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);
 
     // layout_content implementation
-    virtual void            on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void            on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // layout signals
     void                    on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);

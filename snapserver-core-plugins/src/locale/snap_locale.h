@@ -68,7 +68,8 @@ public:
 
 
 
-class locale : public plugins::plugin
+class locale
+    : public plugins::plugin
 {
 public:
     enum class parse_error_t
@@ -87,15 +88,15 @@ public:
             // full name although all parts except the language are
             // optional; the script is rare, the variant is used
             // quite a bit
-            QString                 f_language;
-            QString                 f_variant;
-            QString                 f_country;
-            QString                 f_script;
+            QString                 f_language = QString();
+            QString                 f_variant = QString();
+            QString                 f_country = QString();
+            QString                 f_script = QString();
         };
 
-        QString                 f_locale;           // name to use to setup this locale
-        locale_parameters_t     f_abbreviations;
-        locale_parameters_t     f_display_names;    // all names in "current" locale
+        QString                 f_locale = QString();                       // name to use to setup this locale
+        locale_parameters_t     f_abbreviations = locale_parameters_t();
+        locale_parameters_t     f_display_names = locale_parameters_t();    // all names in "current" locale
     };
     typedef QVector<locale_info_t>      locale_list_t;
 
@@ -103,28 +104,32 @@ public:
     // continent and city all the other parameters will be empty
     struct timezone_info_t
     {
-        QString         f_2country;         // 2 letter country code
-        int64_t         f_longitude = 0;    // city longitude
-        int64_t         f_latitude = 0;     // city latitude
-        QString         f_timezone_name;    // the full name of the timezone as is
-        QString         f_continent;        // one of the 5 continents and a few other locations
-        QString         f_country_or_state; // likely empty (Used for Argentina, Kentucky, Indiana...)
-        QString         f_city;             // The main city for that timezone
-        QString         f_comment;          // likely empty, a comment about this timezone
+        QString         f_2country = QString();         // 2 letter country code
+        int64_t         f_longitude = 0;                // city longitude
+        int64_t         f_latitude = 0;                 // city latitude
+        QString         f_timezone_name = QString();    // the full name of the timezone as is
+        QString         f_continent = QString();        // one of the 5 continents and a few other locations
+        QString         f_country_or_state = QString(); // likely empty (Used for Argentina, Kentucky, Indiana...)
+        QString         f_city = QString();             // The main city for that timezone
+        QString         f_comment = QString();          // likely empty, a comment about this timezone
     };
     typedef QVector<timezone_info_t>    timezone_list_t;
 
                                 locale();
-                                ~locale();
+                                locale(locale const & rhs) = delete;
+    virtual                     ~locale() override;
+
+    locale &                    operator = (locale const & rhs) = delete;
+
+    static locale *             instance();
 
     // plugin implementation
-    static locale *             instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     locale_list_t const &       get_locale_list();
     timezone_list_t const &     get_timezone_list();
@@ -146,10 +151,10 @@ public:
 
 private:
     snap_child *                f_snap = nullptr;
-    locale_list_t               f_locale_list;
-    timezone_list_t             f_timezone_list;
-    QString                     f_current_locale;
-    QString                     f_current_timezone;
+    locale_list_t               f_locale_list = locale_list_t();
+    timezone_list_t             f_timezone_list = timezone_list_t();
+    QString                     f_current_locale = QString();
+    QString                     f_current_timezone = QString();
 };
 
 
@@ -157,11 +162,14 @@ class safe_timezone
 {
 public:
                     safe_timezone(QString const new_timezone);
+                    safe_timezone(safe_timezone const & rhs) = delete;
                     ~safe_timezone();
+
+    safe_timezone & operator = (safe_timezone const & rhs) = delete;
 
 private:
     locale *        f_locale_plugin = nullptr;
-    QString         f_old_timezone;
+    QString         f_old_timezone = QString();
 };
 
 

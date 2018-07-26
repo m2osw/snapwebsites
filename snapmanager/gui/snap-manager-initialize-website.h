@@ -16,13 +16,18 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "ui_snap-manager-initialize-websitebox.h"
 
 #include <snapwebsites/snap_initialize_website.h>
 
 #include <QPointer>
 
-class snap_manager_initialize_website : public QDialog, public Ui_initializeWebsiteBox
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_snap-manager-initialize-websitebox.h"
+class snap_manager_initialize_website
+    : public QDialog
+    , public Ui_initializeWebsiteBox
 {
     Q_OBJECT
 
@@ -42,15 +47,16 @@ private slots:
 private:
     void            enableAll(bool enable);
 
-    QPointer<QPushButton>                       f_close_button;
-    QPointer<QPushButton>                       f_send_request_button;
-    QPointer<QLineEdit>                         f_snap_server_host;
-    QPointer<QLineEdit>                         f_snap_server_port;
-    QPointer<QLineEdit>                         f_website_url;
-    QPointer<QLineEdit>                         f_port;
-    snap::snap_initialize_website::pointer_t    f_initialize_website;
+    QPointer<QPushButton>                       f_close_button = QPointer<QPushButton>();
+    QPointer<QPushButton>                       f_send_request_button = QPointer<QPushButton>();
+    QPointer<QLineEdit>                         f_snap_server_host = QPointer<QLineEdit>();
+    QPointer<QLineEdit>                         f_snap_server_port = QPointer<QLineEdit>();
+    QPointer<QLineEdit>                         f_website_url = QPointer<QLineEdit>();
+    QPointer<QLineEdit>                         f_port = QPointer<QLineEdit>();
+    snap::snap_initialize_website::pointer_t    f_initialize_website = snap::snap_initialize_website::pointer_t();
     int32_t                                     f_timer_id = 0;
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

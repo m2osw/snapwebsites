@@ -129,13 +129,13 @@ public:
     static void             verify_name(QString const & name, bool can_be_empty = false, bool can_be_lowercase = true);
 
 private:
-    QString                 f_sent_from_server;
-    QString                 f_sent_from_service;
-    QString                 f_server;
-    QString                 f_service;
-    QString                 f_command;
-    parameters_t            f_parameters;
-    mutable QString         f_cached_message;
+    QString                 f_sent_from_server = QString();
+    QString                 f_sent_from_service = QString();
+    QString                 f_server = QString();
+    QString                 f_service = QString();
+    QString                 f_command = QString();
+    parameters_t            f_parameters = parameters_t();
+    mutable QString         f_cached_message = QString();
 };
 
 
@@ -144,6 +144,8 @@ class dispatcher_base
 {
 public:
     typedef std::shared_ptr<dispatcher_base>    pointer_t;
+
+    virtual                 ~dispatcher_base();
 
     virtual bool            dispatch(snap::snap_communicator_message & msg) = 0;
 
@@ -162,8 +164,11 @@ class snap_tcp_client_permanent_message_connection_impl;
 
 
 // WARNING: a snap_communicator object must be allocated and held in a shared pointer (see pointer_t)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 class snap_communicator
-        : public std::enable_shared_from_this<snap_communicator>
+    : public std::enable_shared_from_this<snap_communicator>
 {
 public:
     typedef std::shared_ptr<snap_communicator>      pointer_t;
@@ -188,7 +193,7 @@ public:
         virtual void                process_message(snap_communicator_message const & message);
 
     private:
-        dispatcher_base::pointer_t  f_dispatcher;
+        dispatcher_base::pointer_t  f_dispatcher = dispatcher_base::pointer_t();
     };
 
     class snap_connection
@@ -264,7 +269,7 @@ public:
         int64_t                     save_timeout_timestamp();
         int64_t                     get_saved_timeout_timestamp() const;
 
-        QString                     f_name;
+        QString                     f_name = QString();
         bool                        f_enabled = true;
         bool                        f_done = false;
         uint16_t                    f_event_limit = 5;                  // limit before giving other events a chance
@@ -280,6 +285,8 @@ public:
     class connection_with_send_message
     {
     public:
+        virtual                     ~connection_with_send_message();
+
         // new callback
         virtual bool                send_message(snap_communicator_message const & message, bool cache = false) = 0;
 
@@ -350,7 +357,7 @@ public:
         void                        thread_done();
 
     private:
-        int                         f_pipe[2];      // pipes
+        int                         f_pipe[2] = { -1, -1 };      // pipes
     };
 
     class snap_inter_thread_message_connection
@@ -384,13 +391,13 @@ public:
     private:
         pid_t                       f_creator_id = -1;
 
-        std::shared_ptr<int>        f_thread_a;
+        std::shared_ptr<int>        f_thread_a = std::shared_ptr<int>();
         snap::snap_thread::snap_fifo<snap_communicator_message>
-                                    f_message_a;
+                                    f_message_a = snap::snap_thread::snap_fifo<snap_communicator_message>();
 
-        std::shared_ptr<int>        f_thread_b;
+        std::shared_ptr<int>        f_thread_b = std::shared_ptr<int>();
         snap::snap_thread::snap_fifo<snap_communicator_message>
-                                    f_message_b;
+                                    f_message_b = snap::snap_thread::snap_fifo<snap_communicator_message>();
     };
 
     class snap_pipe_connection
@@ -414,7 +421,7 @@ public:
 
     private:
         pid_t                       f_parent = -1;  // the process that created these pipes (read/write to 0 if getpid() == f_parent, read/write to 1 if getpid() != f_parent)
-        int                         f_socket[2];    // socket pair
+        int                         f_socket[2] = { -1, -1 };    // socket pair
     };
 
     class snap_pipe_buffer_connection
@@ -436,8 +443,8 @@ public:
         virtual void                process_line(QString const & line) = 0;
 
     private:
-        std::string                 f_line; // do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
-        std::vector<char>           f_output;
+        std::string                 f_line = std::string(); // do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
+        std::vector<char>           f_output = std::vector<char>();
         size_t                      f_position = 0;
     };
 
@@ -503,9 +510,9 @@ public:
             bool                    operator < (event_t const & rhs) const;
 
         private:
-            std::string             f_watched_path;
-            event_mask_t            f_events = 0;
-            std::string             f_filename;
+            std::string             f_watched_path = std::string();
+            event_mask_t            f_events       = 0;
+            std::string             f_filename     = std::string();
         };
 
                                     snap_file_changed();
@@ -540,18 +547,18 @@ public:
             void                    merge_watch(int inotify, event_mask_t const events);
             void                    remove_watch(int inotify);
 
-            std::string             f_watched_path;
-            event_mask_t            f_events = SNAP_FILE_CHANGED_EVENT_NO_EVENTS;
-            uint32_t                f_mask = 0;
-            int                     f_watch = -1;
+            std::string             f_watched_path = std::string();
+            event_mask_t            f_events       = SNAP_FILE_CHANGED_EVENT_NO_EVENTS;
+            uint32_t                f_mask         = 0;
+            int                     f_watch        = -1;
         };
 
         bool                        merge_watch(std::string const & watched_path, event_mask_t const events);
         static uint32_t             events_to_mask(event_mask_t const events);
         static event_mask_t         mask_to_events(uint32_t const mask);
 
-        int                         f_inotify;
-        watch_t::map_t              f_watches;
+        int                         f_inotify = -1;
+        watch_t::map_t              f_watches = watch_t::map_t();
     };
 
     class snap_fd_connection
@@ -582,8 +589,8 @@ public:
         virtual ssize_t             write(void const * buf, size_t count);
 
     private:
-        int                         f_fd;
-        mode_t                      f_mode;
+        int                         f_fd = -1;
+        mode_t                      f_mode = mode_t::FD_MODE_RW;
     };
 
     class snap_fd_buffer_connection
@@ -610,8 +617,8 @@ public:
         virtual void                process_line(QString const & line) = 0;
 
     private:
-        std::string                 f_line; // input -- do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
-        std::vector<char>           f_output;
+        std::string                 f_line = std::string(); // input -- do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
+        std::vector<char>           f_output = std::vector<char>();
         size_t                      f_position = 0;
     };
 
@@ -635,7 +642,7 @@ public:
         virtual ssize_t             write(void const * buf, size_t count);
 
     private:
-        QString const               f_remote_address;
+        QString const               f_remote_address = QString();
     };
 
     class snap_tcp_server_connection
@@ -680,7 +687,7 @@ public:
         bool                        define_address();
 
         tcp_client_server::bio_client::pointer_t
-                                    f_client;
+                                    f_client = tcp_client_server::bio_client::pointer_t();
         struct sockaddr_storage     f_address = sockaddr_storage();
         socklen_t                   f_length = 0;
     };
@@ -709,8 +716,8 @@ public:
         virtual void                process_line(QString const & line) = 0;
 
     private:
-        std::string                 f_line; // input -- do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
-        std::vector<char>           f_output;
+        std::string                 f_line = std::string(); // input -- do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
+        std::vector<char>           f_output = std::vector<char>();
         size_t                      f_position = 0;
     };
 
@@ -733,7 +740,7 @@ public:
         virtual void                process_line(QString const & line) override;
 
     private:
-        QString                     f_remote_address;
+        QString                     f_remote_address = QString();
     };
 
     class snap_tcp_client_buffer_connection
@@ -758,8 +765,8 @@ public:
         virtual void                process_line(QString const & line) = 0;
 
     private:
-        std::string                 f_line; // input -- do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
-        std::vector<char>           f_output;
+        std::string                 f_line = std::string(); // input -- do NOT use QString because UTF-8 would break often... (since we may only receive part of messages)
+        std::vector<char>           f_output = std::vector<char>();
         size_t                      f_position = 0;
     };
 
@@ -816,7 +823,7 @@ public:
 
     private:
         std::shared_ptr<snap_tcp_client_permanent_message_connection_impl>
-                                    f_impl;
+                                    f_impl = std::shared_ptr<snap_tcp_client_permanent_message_connection_impl>();
         int64_t                     f_pause = 0;
         bool const                  f_use_thread = true;
     };
@@ -887,10 +894,10 @@ public:
 private:
                                         snap_communicator();
 
-    snap_connection::vector_t           f_connections;
+    snap_connection::vector_t           f_connections = snap_connection::vector_t();
     bool                                f_force_sort = true;
 };
-
+#pragma GCC diagnostic pop
 
 
 } // namespace snap

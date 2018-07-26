@@ -1828,12 +1828,12 @@ private:
 
     size_type               f_rows       = 0;
     size_type               f_columns    = 0;
-    std::vector<T>          f_vector;
+    std::vector<T>          f_vector     = std::vector<T>();
     value_type              f_luma_red   = HDTV_LUMA_RED;
     value_type              f_luma_green = HDTV_LUMA_GREEN;
     value_type              f_luma_blue  = HDTV_LUMA_BLUE;
 #ifdef _DEBUG
-    mutable std::string     f_last_hue_matrix;
+    mutable std::string     f_last_hue_matrix = std::string();
 #endif
 };
 

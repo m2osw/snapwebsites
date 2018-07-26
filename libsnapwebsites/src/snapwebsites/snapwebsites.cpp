@@ -516,12 +516,12 @@ namespace
 
     struct connection_t
     {
-        snap_communicator::pointer_t                    f_communicator;
-        snap_communicator::snap_connection::pointer_t   f_interrupt;
-        snap_communicator::snap_connection::pointer_t   f_listener;
-        snap_communicator::snap_connection::pointer_t   f_child_death_listener;
-        snap_communicator::snap_connection::pointer_t   f_messenger;
-        snap_communicator::snap_connection::pointer_t   f_cassandra_check_timer; // timer in case an error occurs that will not generate a CASSANDRAREADY
+        snap_communicator::pointer_t                    f_communicator = snap_communicator::pointer_t();
+        snap_communicator::snap_connection::pointer_t   f_interrupt = snap_communicator::snap_connection::pointer_t();
+        snap_communicator::snap_connection::pointer_t   f_listener = snap_communicator::snap_connection::pointer_t();
+        snap_communicator::snap_connection::pointer_t   f_child_death_listener = snap_communicator::snap_connection::pointer_t();
+        snap_communicator::snap_connection::pointer_t   f_messenger = snap_communicator::snap_connection::pointer_t();
+        snap_communicator::snap_connection::pointer_t   f_cassandra_check_timer = snap_communicator::snap_connection::pointer_t(); // timer in case an error occurs that will not generate a CASSANDRAREADY
     };
 
     /** \brief The pointers to communicator elements.
@@ -791,6 +791,7 @@ int64_t server::do_update(int64_t last_updated)
  */
 server::server()
     : f_parameters("snapserver")
+    , f_translator()        // forced to include because of -Weffc++
 {
     // set the plugin version
     set_version(SNAPWEBSITES_VERSION_MAJOR, SNAPWEBSITES_VERSION_MINOR);
@@ -1941,20 +1942,23 @@ void server::capture_zombies(pid_t child_pid)
  * to the process_signal() callback.
  */
 class signal_child_death
-        : public snap_communicator::snap_signal
+    : public snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<signal_child_death>     pointer_t;
 
                             signal_child_death(server * s);
+                            signal_child_death(signal_child_death const & rhs) = delete;
     virtual                 ~signal_child_death() override {}
+
+    signal_child_death &    operator = (signal_child_death const & rhs) = delete;
 
     // snap_communicator::snap_signal implementation
     virtual void            process_signal() override;
 
 private:
     // TBD: should this be a weak pointer?
-    server *                f_server;
+    server *                f_server = nullptr;
 };
 
 
@@ -2008,14 +2012,17 @@ public:
     typedef std::shared_ptr<cassandra_check_timer>  pointer_t;
 
                             cassandra_check_timer(server * s);
+                            cassandra_check_timer(cassandra_check_timer const & rhs) = delete;
     virtual                 ~cassandra_check_timer() override {}
+
+    cassandra_check_timer   operator = (cassandra_check_timer const & rhs) = delete;
 
     // snap_communicator::snap_connection implementation
     virtual void            process_timeout() override;
 
 private:
     // TBD: should this be a weak pointer?
-    server *                f_server;
+    server *                f_server = nullptr;
 };
 
 
@@ -2097,14 +2104,17 @@ public:
     typedef std::shared_ptr<messenger>    pointer_t;
 
                         messenger(server * s, std::string const & addr, int port, bool const use_thread = false );
+                        messenger(messenger const & rhs) = delete;
     virtual             ~messenger() override {}
+
+    messenger &         operator = (messenger const & rhs) = delete;
 
     // snap_communicator::snap_tcp_client_permanent_message_connection implementation
     virtual void        process_message(snap_communicator_message const & message) override;
     virtual void        process_connected() override;
 
 private:
-    server *            f_server;
+    server *            f_server = nullptr;
 };
 
 
@@ -2438,7 +2448,10 @@ public:
     typedef std::shared_ptr<server_interrupt>     pointer_t;
 
                         server_interrupt(server * s);
+                        server_interrupt(server_interrupt const & rhs) = delete;
     virtual             ~server_interrupt() override {}
+
+    server_interrupt    operator = (server_interrupt const & rhs) = delete;
 
     // snap::snap_communicator::snap_signal implementation
     virtual void        process_signal() override;
@@ -2493,14 +2506,17 @@ class listener_impl
 {
 public:
                     listener_impl(server * s, std::string const & addr, int port, std::string const & certificate, std::string const & private_key, int max_connections, bool reuse_addr);
+                    listener_impl(listener_impl const & rhs) = delete;
     virtual         ~listener_impl() override {}
+
+    listener_impl   operator = (listener_impl const & rhs) = delete;
 
     // snap_communicator::snap_tcp_server_connection implementation
     virtual void    process_accept() override;
 
 private:
     // this is owned by a server function so no need for a smart pointer
-    server *            f_server;
+    server *            f_server = nullptr;
 };
 
 

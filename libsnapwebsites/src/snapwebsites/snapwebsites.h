@@ -185,21 +185,24 @@ public:
 // the errors so they don't get in the way (quiet as in: the end users don't
 // see them; it's going to be logged anyway)
 class quiet_error_callback
-        : public permission_error_callback
+    : public permission_error_callback
 {
 public:
-                    quiet_error_callback(snap_child * snap, bool log);
+                            quiet_error_callback(snap_child * snap, bool log);
+                            quiet_error_callback(quiet_error_callback const & rhs) = delete;
 
-    virtual void    on_error(snap_child::http_code_t const err_code, QString const & err_name, QString const& err_description, QString const & err_details, bool const err_by_mime_type);
-    virtual void    on_redirect(QString const & err_name, QString const & err_description, QString const & err_details, bool err_security, QString const & path, snap_child::http_code_t const http_code);
+    quiet_error_callback &  operator = (quiet_error_callback const & rhs) = delete;
 
-    void            clear_error();
-    bool            has_error() const;
+    virtual void            on_error(snap_child::http_code_t const err_code, QString const & err_name, QString const& err_description, QString const & err_details, bool const err_by_mime_type) override;
+    virtual void            on_redirect(QString const & err_name, QString const & err_description, QString const & err_details, bool err_security, QString const & path, snap_child::http_code_t const http_code) override;
+
+    void                    clear_error();
+    bool                    has_error() const;
 
 private:
-    snap_child *                f_snap = nullptr;
-    bool                        f_log = false;
-    bool                        f_error = false;
+    snap_child *            f_snap = nullptr;
+    bool                    f_log = false;
+    bool                    f_error = false;
 };
 
 
@@ -238,7 +241,8 @@ public:
 
     private:
         typedef QMap<QString, backend_action *> actions_map_t;
-        actions_map_t           f_actions;
+
+        actions_map_t           f_actions = actions_map_t();
     };
 
     class accessible_flag_t
@@ -352,10 +356,10 @@ protected:
     static server::pointer_t    set_instance(pointer_t server);
 
     // See TODO in server::prepare_cassandra()
-    QString                                 f_snapdbproxy_addr;     // NO DEFAULT, if isEmpty() then we are not connected / cannot connect to snapdbproxy
-    int32_t                                 f_snapdbproxy_port = 0;
-    bool                                    f_snaplock = false;
-    snap_config                             f_parameters;
+    QString                     f_snapdbproxy_addr = QString();     // NO DEFAULT, if isEmpty() then we are not connected / cannot connect to snapdbproxy
+    int32_t                     f_snapdbproxy_port = 0;
+    bool                        f_snaplock = false;
+    snap_config                 f_parameters = snap_config();
 
 private:
     typedef std::shared_ptr<advgetopt::getopt>    getopt_ptr_t;
@@ -363,35 +367,35 @@ private:
     friend class server_interrupt;
     friend class listener_impl;
 
-    static void                             sighandler( int sig );
-    static void                             sigloghandler( int sig );
+    static void                 sighandler( int sig );
+    static void                 sigloghandler( int sig );
 
-    void                                    process_connection(tcp_client_server::bio_client::pointer_t client);
-    void                                    stop_thread_func();
-    void                                    stop(bool quitting);
+    void                        process_connection(tcp_client_server::bio_client::pointer_t client);
+    void                        stop_thread_func();
+    void                        stop(bool quitting);
 
-    static pointer_t                        g_instance;
+    static pointer_t            g_instance;
 
-    QTranslator                             f_translator;
-    QByteArray                              f_translation_xml;
+    QTranslator                 f_translator;
+    QByteArray                  f_translation_xml = QByteArray();
 
-    std::string                             f_servername;
-    bool                                    f_debug = false;
-    bool                                    f_foreground = false;
-    bool                                    f_backend = false;
-    bool                                    f_force_restart = false;
-    bool                                    f_firewall_is_active = false;
-    bool                                    f_firewall_up = false;
-    QMap<QString, bool>                     f_created_table;
+    std::string                 f_servername = std::string();
+    bool                        f_debug = false;
+    bool                        f_foreground = false;
+    bool                        f_backend = false;
+    bool                        f_force_restart = false;
+    bool                        f_firewall_is_active = false;
+    bool                        f_firewall_up = false;
+    QMap<QString, bool>         f_created_table = QMap<QString, bool>();
 
-    uint64_t                                f_connections_count = 0;
-    snap_child_vector_t                     f_children_running;
-    snap_child_vector_t                     f_children_waiting;
+    uint64_t                    f_connections_count = 0;
+    snap_child_vector_t         f_children_running = snap_child_vector_t();
+    snap_child_vector_t         f_children_waiting = snap_child_vector_t();
 
-    getopt_ptr_t                            f_opt;
+    getopt_ptr_t                f_opt = getopt_ptr_t();
 
 #ifdef SNAP_NO_FORK
-    bool                                    f_nofork = false;
+    bool                        f_nofork = false;
 #endif
 };
 

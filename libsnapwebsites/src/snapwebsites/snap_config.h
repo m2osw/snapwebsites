@@ -179,10 +179,10 @@ public:
                                 }
 
     private:
-        snap_configurations::pointer_t  f_config;
-        std::string const               f_configuration_filename;
-        std::string const               f_override_filename;
-        std::string const               f_parameter_name;
+        snap_configurations::pointer_t  f_config = snap_configurations::pointer_t();
+        std::string const               f_configuration_filename = std::string();
+        std::string const               f_override_filename = std::string();
+        std::string const               f_parameter_name = std::string();
     };
 
                             snap_config()
@@ -432,9 +432,9 @@ public:
                             }
 
 private:
-    snap_configurations::pointer_t  f_config;
-    std::string                     f_configuration_filename;
-    std::string                     f_override_filename;
+    snap_configurations::pointer_t  f_config = snap_configurations::pointer_t();
+    std::string                     f_configuration_filename = std::string();
+    std::string                     f_override_filename = std::string();
 };
 
 

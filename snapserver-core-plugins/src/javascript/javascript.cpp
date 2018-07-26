@@ -100,8 +100,6 @@ char const * get_name(name_t name)
  * This function is used to initialize the javascript plugin object.
  */
 javascript::javascript()
-    //: f_snap(nullptr) -- auto-init
-    //, f_dynamic_plugins() -- auto-init
 {
 }
 
@@ -229,18 +227,21 @@ void javascript::register_dynamic_plugin(javascript_dynamic_plugin * p)
  *
  * This class is used to iterate through the members of a dynamic plugin.
  */
-class javascript_dynamic_plugin_iterator : public QScriptClassPropertyIterator
+class javascript_dynamic_plugin_iterator
+    : public QScriptClassPropertyIterator
 {
 public:
     javascript_dynamic_plugin_iterator(javascript * js, QScriptEngine * engine, QScriptValue const & object_value, javascript_dynamic_plugin * plugin)
         : QScriptClassPropertyIterator::QScriptClassPropertyIterator(object_value)
         , f_javascript(js)
         , f_engine(engine)
-        //, f_pos(-1) -- auto-init
         , f_object(object_value)
         , f_plugin(plugin)
     {
     }
+
+    javascript_dynamic_plugin_iterator(javascript_dynamic_plugin_iterator const & rhs) = delete;
+    javascript_dynamic_plugin_iterator & operator = (javascript_dynamic_plugin_iterator const & rhs) = delete;
 
     //virtual QScriptValue::PropertyFlags flags() const;
 
@@ -303,7 +304,7 @@ private:
     javascript *                f_javascript = nullptr;
     QScriptEngine *             f_engine = nullptr;
     int32_t                     f_pos = -1;
-    QScriptValue                f_object;
+    QScriptValue                f_object = QScriptValue();
     javascript_dynamic_plugin * f_plugin = nullptr;
 };
 
@@ -320,7 +321,8 @@ private:
  *
  * In this case the layout plugin is queried for its parameter "name".
  */
-class dynamic_plugin_class : public QScriptClass
+class dynamic_plugin_class
+    : public QScriptClass
 {
 public:
     dynamic_plugin_class(javascript * js, QScriptEngine * script_engine, javascript_dynamic_plugin * plugin)
@@ -331,10 +333,13 @@ public:
 //printf("Yo! got a dpc %p\n", reinterpret_cast<void*>(this));
     }
 
-//~dynamic_plugin_class()
-//{
-//printf("dynamic_plugin_class destroyed... %p\n", reinterpret_cast<void*>(this));
-//}
+    virtual ~dynamic_plugin_class() override
+    {
+//std::cout << "dynamic_plugin_class destroyed... " << reinterpret_cast<void*>(this) << "\n";
+    }
+
+    dynamic_plugin_class(dynamic_plugin_class const & rhs) = delete;
+    dynamic_plugin_class operator = (dynamic_plugin_class const & rhs) = delete;
 
     // we don't currently support extensions
     //virtual bool supportsExtension(Extension extension) const { return false; }
@@ -355,10 +360,10 @@ public:
         return new javascript_dynamic_plugin_iterator(f_javascript, engine(), object, f_plugin);
     }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
     virtual QScriptValue property(QScriptValue const& object, QScriptString const& object_name, uint id)
     {
+        NOTUSED(object);
+        NOTUSED(id);
         QScriptValue result(f_plugin->js_property_get(object_name).toString());
         return result;
     }
@@ -366,9 +371,11 @@ public:
     virtual QScriptValue::PropertyFlags propertyFlags(QScriptValue const& object, QScriptString const& property_name, uint id)
     {
         // at some point we may want to allow read/write/delete...
+        NOTUSED(object);
+        NOTUSED(property_name);
+        NOTUSED(id);
         return QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::KeepExistingFlags;
     }
-#pragma GCC diagnostic pop
 
     virtual QScriptValue prototype() const
     {
@@ -376,19 +383,24 @@ public:
         return result;
     }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-    virtual QueryFlags queryProperty(QScriptValue const& object, QScriptString const& property_name, QueryFlags flags, uint * id)
+    virtual QueryFlags queryProperty(QScriptValue const & object, QScriptString const & property_name, QueryFlags flags, uint * id)
     {
+        NOTUSED(object);
+        NOTUSED(property_name);
+        NOTUSED(flags);
+        NOTUSED(id);
         return QScriptClass::HandlesReadAccess;
     }
 
-    virtual void setProperty(QScriptValue& object, QScriptString const& property_name, uint id, QScriptValue const& value)
+    virtual void setProperty(QScriptValue & object, QScriptString const & property_name, uint id, QScriptValue const & value)
     {
 //SNAP_LOG_TRACE() << "setProperty() called... not implemented yet\n";
+        NOTUSED(object);
+        NOTUSED(property_name);
+        NOTUSED(id);
+        NOTUSED(value);
         throw std::runtime_error("setProperty() not implemented yet");
     }
-#pragma GCC diagnostic pop
 
 private:
     javascript *                f_javascript = nullptr;
@@ -400,17 +412,20 @@ private:
  *
  * This class is used to iterate through the list of plugins.
  */
-class javascript_plugins_iterator : public QScriptClassPropertyIterator
+class javascript_plugins_iterator
+    : public QScriptClassPropertyIterator
 {
 public:
     javascript_plugins_iterator(javascript * js, QScriptEngine * engine, QScriptValue const & object_value)
         : QScriptClassPropertyIterator::QScriptClassPropertyIterator(object_value)
         , f_javascript(js)
         , f_engine(engine)
-        //, f_pos(-1) -- auto-init
         , f_object(object_value)
     {
     }
+
+    javascript_plugins_iterator(javascript_plugins_iterator const & rhs) = delete;
+    javascript_plugins_iterator & operator = (javascript_plugins_iterator const & rhs) = delete;
 
     //virtual QScriptValue::PropertyFlags flags() const;
 
@@ -480,7 +495,7 @@ private:
     javascript *                f_javascript = nullptr;
     QScriptEngine *             f_engine = nullptr;
     int32_t                     f_pos = -1;
-    QScriptValue                f_object;
+    QScriptValue                f_object = QScriptValue();
 };
 
 
@@ -496,7 +511,8 @@ private:
  *
  * In this case the layout plugin is queried for its parameter "name".
  */
-class plugins_class : public QScriptClass
+class plugins_class
+    : public QScriptClass
 {
 public:
     plugins_class(javascript * js, QScriptEngine * script_engine)
@@ -504,6 +520,13 @@ public:
         , f_javascript(js)
     {
     }
+
+    virtual ~plugins_class() override
+    {
+    }
+
+    plugins_class(plugins_class const & rhs) = delete;
+    plugins_class & operator = (plugins_class const & rhs) = delete;
 
     // we do not currently support extensions
     //virtual bool supportsExtension(Extension extension) const { return false; }
@@ -577,8 +600,9 @@ public:
 #pragma GCC diagnostic pop
 
 private:
-    QMap<QString, QSharedPointer<dynamic_plugin_class> >    f_dynamic_plugins;
-    javascript *                            f_javascript = nullptr;
+    QMap<QString, QSharedPointer<dynamic_plugin_class> >
+                            f_dynamic_plugins = {};
+    javascript *            f_javascript = nullptr;
 };
 
 

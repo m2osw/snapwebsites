@@ -35,20 +35,23 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class search
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                             search();
-                            ~search();
+                            search(search const & rhs) = delete;
+    virtual                 ~search() override;
+
+    search &                operator = (search const & rhs) = delete;
 
     // public plugins::plugin
     static search *         instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // server signals
     void                    on_improve_signature(QString const & path, QDomDocument doc, QDomElement signature);

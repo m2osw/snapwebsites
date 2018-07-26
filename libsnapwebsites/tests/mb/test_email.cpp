@@ -520,7 +520,7 @@ public:
 
 private:
     std::string::size_type      f_pos = 0;
-    std::string                 f_boundary;
+    std::string                 f_boundary = std::string();
 };
 
 

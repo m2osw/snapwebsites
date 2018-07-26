@@ -35,7 +35,6 @@ QHtmlSerializer::QHtmlSerializer(QXmlNamePool namepool, QBuffer *output, bool co
     : f_namepool(namepool)
     , f_output(output)
     , f_status(html_serializer_status_t::HTML_SERIALIZER_STATUS_READY)
-    //, f_element_stack() -- auto-init
     , f_is_html(is_html)
 {
 }

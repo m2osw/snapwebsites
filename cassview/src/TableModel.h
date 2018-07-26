@@ -33,6 +33,7 @@ class TableModel
 
 public:
     TableModel();
+    virtual ~TableModel() override {}
 
     void doQuery();
 
@@ -47,8 +48,9 @@ public:
 
 private:
     typedef std::map<QString,QByteArray> sort_map_t;
-    sort_map_t                      f_sortMap;
-    std::shared_ptr<snap::dbutils>  f_dbutils;
+
+    sort_map_t                      f_sortMap = sort_map_t();
+    std::shared_ptr<snap::dbutils>  f_dbutils = std::shared_ptr<snap::dbutils>();
     bool                            f_sortModel = false;
 };
 

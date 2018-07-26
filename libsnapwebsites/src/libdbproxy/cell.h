@@ -53,7 +53,7 @@ class row;
 // Cassandra Cell
 class cell
     : public QObject
-    , public std::enable_shared_from_this<cell>
+    //, public std::enable_shared_from_this<cell>
 {
 public:
     typedef std::shared_ptr<cell> pointer_t;
@@ -73,10 +73,10 @@ public:
     void add(int64_t value);
     cell& operator += (int64_t value);
     cell& operator ++ ();
-    cell& operator ++ (int);
+    //cell& operator ++ (int);
     cell& operator -= (int64_t value);
     cell& operator -- ();
-    cell& operator -- (int);
+    //cell& operator -- (int);
 
     void clearCache();
 
@@ -92,10 +92,10 @@ private:
     friend class row;
     friend class table;
 
-    std::weak_ptr<row>        f_row;
-    QByteArray                          f_key;
-    mutable bool                        f_cached = false;
-    value                     f_value;
+    std::weak_ptr<row>        f_row = std::weak_ptr<row>();
+    QByteArray                f_key = QByteArray();
+    mutable bool              f_cached = false;
+    value                     f_value = value();
 };
 
 // array of rows

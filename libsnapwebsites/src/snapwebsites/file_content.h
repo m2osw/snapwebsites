@@ -74,8 +74,8 @@ public:
     std::string const &         get_content() const;
 
 protected:
-    std::string                 f_filename;
-    std::string                 f_content;
+    std::string                 f_filename = std::string();
+    std::string                 f_content = std::string();
     bool                        f_temporary = false;
 };
 

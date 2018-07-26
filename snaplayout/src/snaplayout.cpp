@@ -272,9 +272,9 @@ private:
         {
         }
 
-        QString    f_filename;
-        QByteArray f_content;
-        time_t     f_filetime;
+        QString    f_filename = QString();
+        QByteArray f_content  = QByteArray();
+        time_t     f_filetime = time_t();
     };
     typedef std::vector<fileinfo_t>   fileinfo_list_t;
 
@@ -287,16 +287,15 @@ private:
 
     // Common attributes
     //
-    Session::pointer_t f_session;
-    fileinfo_list_t                 f_fileinfo_list;
-    getopt_ptr_t                    f_opt;
-    bool                            f_verbose = false;
+    Session::pointer_t      f_session = Session::pointer_t();
+    fileinfo_list_t         f_fileinfo_list = fileinfo_list_t();
+    getopt_ptr_t            f_opt = getopt_ptr_t();
+    bool                    f_verbose = false;
 };
 
 
 snap_layout::snap_layout(int argc, char * argv[])
     : f_session( Session::create() )
-    //, f_fileinfo_list -- auto-init
     , f_opt( new advgetopt::getopt( argc, argv, g_snaplayout_options, g_configuration_files, "SNAPSERVER_OPTIONS" ) )
     , f_verbose(f_opt->is_defined("verbose"))
 {

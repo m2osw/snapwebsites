@@ -30,14 +30,14 @@ public:
     void displayError();
 
 private:
-    QString f_what;
-    QString f_caption;
-    QString f_message;
-    QString f_fullMessage;
-
     void genMessage();
     void outputStdError();
     void showMessageBox();
+
+    QString f_what        = QString();
+    QString f_caption     = QString();
+    QString f_message     = QString();
+    QString f_fullMessage = QString();
 };
 
 // vim: ts=4 sw=4 et syntax=cpp.doxygen

@@ -372,6 +372,8 @@ public:
 
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class QDomXPath
 {
 public:
@@ -404,10 +406,11 @@ private:
     class QDomXPathImpl;
     friend class QDomXPathImpl;
 
-    QString                         f_xpath;
-    QDomXPathImpl *                 f_impl;
-    bind_vector_t                   f_variables;
+    QString                         f_xpath = QString();
+    QDomXPathImpl *                 f_impl = nullptr;
+    bind_vector_t                   f_variables = bind_vector_t();
 };
+#pragma GCC diagnostic pop
 
 #endif
 // _QXMLXPATH_H

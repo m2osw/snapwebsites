@@ -31,6 +31,41 @@
 SNAP_PLUGIN_EXTENSION_START(users)
 
 
+/** \brief Initializes a user_security_t object.
+ *
+ * This function initializes the user_security_t object with defaults.
+ *
+ * The following is an example showing how the user_security_t class
+ * is used to verify that a user has permission to do one things or
+ * another.
+ *
+ * \code
+ *  user_security_t security;
+ *  security.set_user_info(user_info, email, allow_example_domain);
+ *  security.set_password(password);
+ *  security.set_bypass_blacklist(true);
+ *  check_user_security(security);
+ *  if(!security.get_secure().allowed())
+ *  {
+ *      // get out, you're not allowed!
+ *      ...
+ *      return;
+ *  }
+ *  // user is allowed, go on
+ * \endcode
+ *
+ * The `check_user_security()` is a signal. Any number of plugin can
+ * participate in checking the security of a user. For example, a DOS
+ * attacker may be tracked by a DOS plugin. When that user attempts to
+ * create an account the DOS plugin may decide to return false because
+ * that user is now not considered safe.
+ */
+users::user_security_t::user_security_t()
+    : f_secure()  // required by -Weffc++
+{
+}
+
+
 /** \brief Setup the user_security_t object.
  *
  * This function sets the user_info, email (optional) and whether example

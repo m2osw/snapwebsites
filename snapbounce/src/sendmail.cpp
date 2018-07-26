@@ -116,10 +116,10 @@ private:
     bool                lock();
     bool                become_root();
 
-    args_t              f_args;
-    std::string         f_email;
-    std::string         f_msmtp_command;
-    snap::raii_fd_t     f_lock_fd;
+    args_t              f_args = args_t();
+    std::string         f_email = std::string();
+    std::string         f_msmtp_command = std::string();
+    snap::raii_fd_t     f_lock_fd = snap::raii_fd_t();
     bool                f_dequeue_emails = false;
     bool                f_no_dequeue = false;
     bool                f_locked = false;
@@ -677,6 +677,9 @@ int sendmail::dequeue()
             f_last_valid = f_emails;
         }
 
+        emails(emails const & rhs) = delete;
+        emails & operator = (emails const & rhs) = delete;
+
         ~emails()
         {
             if(f_valid)
@@ -941,14 +944,14 @@ int sendmail::dequeue()
         }
 
     private:
-        int const           f_fd;                       // the file description
-        char *              f_emails;                   // this is the start address, do not change it
-        char *              f_end;                      // end of file
-        char *              f_ptr = nullptr;            // current pointer
-        char *              f_last_valid = nullptr;     // end of last valid email
-        ssize_t const       f_size;                     // this is the total length, do not change it
-        bool                f_valid = false;            // whether this email object is valid
-        sendmail::args_t    f_args;                     // arguments as found in the email (X-Snap-Sendmail-Args or To)
+        int const           f_fd;                           // the file description
+        char *              f_emails = nullptr;             // this is the start address, do not change it
+        char *              f_end = nullptr;                // end of file
+        char *              f_ptr = nullptr;                // current pointer
+        char *              f_last_valid = nullptr;         // end of last valid email
+        ssize_t const       f_size;                         // this is the total length, do not change it
+        bool                f_valid = false;                // whether this email object is valid
+        sendmail::args_t    f_args = sendmail::args_t();    // arguments as found in the email (X-Snap-Sendmail-Args or To)
     };
 
     emails e(fd.get(), size);

@@ -278,7 +278,7 @@ std::cerr << QString("%1: SERVER: received command [%2]\n").arg(getpid()).arg(co
             }
 
         private:
-            snap::snap_communicator::snap_connection::pointer_t     f_listener;
+            snap::snap_communicator::snap_connection::pointer_t     f_listener = snap::snap_communicator::snap_connection::pointer_t();
         };
 
         class tcp_listener_impl
@@ -326,7 +326,7 @@ std::cerr << QString("%1: SERVER: received client connection\n").arg(getpid());
             }
 
         private:
-            client_impl::pointer_t  f_connection;
+            client_impl::pointer_t  f_connection = client_impl::pointer_t();
         };
 
         class udp_listener_impl
@@ -397,7 +397,7 @@ std::cerr << QString("%1: MESSAGE LISTENER: received UDP message \"%2\".\n").arg
             }
 
         private:
-            tcp_listener_impl::pointer_t    f_tcp_listener;
+            tcp_listener_impl::pointer_t    f_tcp_listener = tcp_listener_impl::pointer_t();
         };
 
         snap::snap_communicator::pointer_t communicator(snap::snap_communicator::instance());
@@ -418,7 +418,7 @@ std::cerr << QString("%1: MESSAGE LISTENER: received UDP message \"%2\".\n").arg
         // we are ready to start the client since we are now listening
         // for new connections
         //
-        pid_t child(fork());
+        pid_t const child(fork());
         if(child == 0)
         {
             // we are the child, run the client test

@@ -173,18 +173,18 @@ private:
 
     // f_original is the unchanged source (from constructor or
     // last set_uri() call)
-    QString                         f_original;
-    QString                         f_protocol = "http";
-    QString                         f_username;
-    QString                         f_password;
+    QString                         f_original = QString();
+    QString                         f_protocol = QString("http");
+    QString                         f_username = QString();
+    QString                         f_password = QString();
     int                             f_port = 80;
-    QString                         f_domain;
-    QString                         f_top_level_domain;
-    snap_string_list                f_sub_domains;
-    snap_string_list                f_path;
-    snap_uri_options_t              f_options;
-    snap_uri_options_t              f_query_strings;
-    QString                         f_anchor;
+    QString                         f_domain = QString();
+    QString                         f_top_level_domain = QString();
+    snap_string_list                f_sub_domains = snap_string_list();
+    snap_string_list                f_path = snap_string_list();
+    snap_uri_options_t              f_options = snap_uri_options_t();
+    snap_uri_options_t              f_query_strings = snap_uri_options_t();
+    QString                         f_anchor = QString();
 };
 
 
@@ -208,7 +208,7 @@ public:
     QString const & errmsg() const { return f_errmsg; }
 
 private:
-    QString        f_errmsg;
+    QString        f_errmsg = QString();
 };
 
 
@@ -464,7 +464,7 @@ private:
      *
      * \sa get_type()
      */
-    domain_variable_type_t f_type;
+    domain_variable_type_t f_type = DOMAIN_VARIABLE_TYPE_STANDARD;
 
     /** \brief The domain variable name.
      *
@@ -475,7 +475,7 @@ private:
      *
      * \sa get_name()
      */
-    QString f_name;
+    QString f_name = QString();
 
     /** \brief The value of this variable.
      *
@@ -487,7 +487,7 @@ private:
      * \sa get_value()
      * \sa set_value()
      */
-    QString f_value;
+    QString f_value = QString();
 
     /** \brief The default value of the variable.
      *
@@ -501,7 +501,7 @@ private:
      * \sa get_default()
      * \sa set_default()
      */
-    QString f_default;
+    QString f_default = QString();
 
     /** \brief Wether the value is required.
      *
@@ -631,7 +631,7 @@ private:
      * name should be read-only, although it gets defined after
      * we create instances of domain_info...
      */
-    QString f_name;
+    QString f_name = QString();
 
     /** \brief The list of variables attached to this domain.
      *
@@ -641,7 +641,7 @@ private:
      * they need to be used to parse input URLs in the exact order
      * they are specified here.
      */
-    QVector<QSharedPointer<domain_variable> > f_vars;
+    QVector<QSharedPointer<domain_variable> > f_vars = QVector<QSharedPointer<domain_variable> >();
 };
 
 
@@ -722,7 +722,7 @@ private:
      * domain_info where added to the domain_rules object
      * is preserved.
      */
-    QVector<QSharedPointer<domain_info> > f_info;
+    QVector<QSharedPointer<domain_info> > f_info = QVector<QSharedPointer<domain_info> >();
 };
 
 
@@ -843,11 +843,11 @@ public:
     void write(QtSerialization::QWriter & w) const;
 
 private:
-    website_variable_type_t     f_type;
-    website_variable_part_t     f_part;
-    QString                     f_name;
-    QString                     f_value;
-    QString                     f_default;
+    website_variable_type_t     f_type = website_variable_type_t();
+    website_variable_part_t     f_part = website_variable_part_t();
+    QString                     f_name = QString();
+    QString                     f_value = QString();
+    QString                     f_default = QString();
     bool                        f_required = false;
 };
 
@@ -890,8 +890,8 @@ public:
     void write(QtSerialization::QWriter & w) const;
 
 private:
-    QString                                     f_name;
-    QVector<QSharedPointer<website_variable> >  f_vars;
+    QString                                     f_name = QString();
+    QVector<QSharedPointer<website_variable> >  f_vars = QVector<QSharedPointer<website_variable> >();
 };
 
 
@@ -918,7 +918,7 @@ public:
     void            write(QtSerialization::QWriter & w) const;
 
 private:
-    QVector<QSharedPointer<website_info> > f_info;
+    QVector<QSharedPointer<website_info> > f_info = QVector<QSharedPointer<website_info> >();
 };
 
 

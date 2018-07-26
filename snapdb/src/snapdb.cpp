@@ -249,7 +249,7 @@ namespace
         }
     };
 }
-//namespace
+// no name namespace
 
 
 snapdb::snapdb(int argc, char * argv[])

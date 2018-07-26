@@ -95,10 +95,10 @@ private:
     void                generate_password_salt();
     void                encrypt_password();
 
-    std::string         f_plain_password;
-    std::string         f_encrypted_password;
-    std::string         f_salt;
-    std::string         f_digest = "sha512";
+    std::string         f_plain_password = std::string();
+    std::string         f_encrypted_password = std::string();
+    std::string         f_salt = std::string();
+    std::string         f_digest = std::string("sha512");
 };
 
 

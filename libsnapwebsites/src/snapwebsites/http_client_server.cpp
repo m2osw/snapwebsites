@@ -351,54 +351,51 @@ void http_request::set_post(std::string const & name, std::string const & value)
 
 void http_request::set_basic_auth(std::string const & username, std::string const & secret)
 {
-    struct uuencode
+    auto encode = [](std::string const & in, std::string & out)
     {
-        static void encode(std::string const & in, std::string & out)
-        {
-            // reset output (just in case)
-            out.clear();
+        // reset output (just in case)
+        out.clear();
 
-            // WARNING: following algorithm does NOT take any line length
-            //          in account; and it is deadly well optimized
-            unsigned char const *s(reinterpret_cast<unsigned char const *>(in.c_str()));
-            while(*s != '\0')
+        // WARNING: following algorithm does NOT take any line length
+        //          in account; and it is deadly well optimized
+        unsigned char const *s(reinterpret_cast<unsigned char const *>(in.c_str()));
+        while(*s != '\0')
+        {
+            // get 1 to 3 characters of input
+            out += g_base64[s[0] >> 2]; // & 0x3F not required
+            ++s;
+            if(s[0] != '\0')
             {
-                // get 1 to 3 characters of input
-                out += g_base64[s[0] >> 2]; // & 0x3F not required
+                out += g_base64[((s[-1] << 4) & 0x30) | ((s[0] >> 4) & 0x0F)];
                 ++s;
                 if(s[0] != '\0')
                 {
-                    out += g_base64[((s[-1] << 4) & 0x30) | ((s[0] >> 4) & 0x0F)];
-                    ++s;
-                    if(s[0] != '\0')
-                    {
-                        // 24 bits of input uses 4 base64 characters
-                        out += g_base64[((s[-1] << 2) & 0x3C) | ((s[0] >> 6) & 0x03)];
-                        out += g_base64[s[0] & 0x3F];
-                        s++;
-                    }
-                    else
-                    {
-                        // 16 bits of input uses 3 base64 characters + 1 pad
-                        out += g_base64[(s[-1] << 2) & 0x3C];
-                        out += '=';
-                        break;
-                    }
+                    // 24 bits of input uses 4 base64 characters
+                    out += g_base64[((s[-1] << 2) & 0x3C) | ((s[0] >> 6) & 0x03)];
+                    out += g_base64[s[0] & 0x3F];
+                    s++;
                 }
                 else
                 {
-                    // 8 bits of input uses 2 base64 characters + 2 pads
-                    out += g_base64[(s[-1] << 4) & 0x30];
-                    out += "==";
+                    // 16 bits of input uses 3 base64 characters + 1 pad
+                    out += g_base64[(s[-1] << 2) & 0x3C];
+                    out += '=';
                     break;
                 }
+            }
+            else
+            {
+                // 8 bits of input uses 2 base64 characters + 2 pads
+                out += g_base64[(s[-1] << 4) & 0x30];
+                out += "==";
+                break;
             }
         }
     };
 
     std::string const authorization_token(username + ":" + secret);
     std::string base64;
-    uuencode::encode(authorization_token, base64);
+    encode(authorization_token, base64);
 
     set_header("Authorization", "Basic " + base64);
 }
@@ -518,6 +515,9 @@ void http_response::read_response(tcp_client_server::bio_client::pointer_t conne
             , f_connection(connection)
         {
         }
+
+        reader(reader const & rhs) = delete;
+        reader & operator = (reader const & rhs) = delete;
 
         void process()
         {
@@ -703,8 +703,8 @@ SNAP_LOG_TRACE("body [")(f_response->get_response())("]...");
             }
         }
 
-        http_response *                             f_response;
-        tcp_client_server::bio_client::pointer_t    f_connection;
+        http_response *                             f_response = nullptr;
+        tcp_client_server::bio_client::pointer_t    f_connection = tcp_client_server::bio_client::pointer_t();
     } r(this, connection);
 
     r.process();

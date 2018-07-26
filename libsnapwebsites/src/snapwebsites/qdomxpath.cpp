@@ -554,19 +554,6 @@ struct token_t
         TOK_NCNAME
     };
 
-    /** \brief Initialize the token object.
-     *
-     * This function initializes the token object to its defaults
-     * which is an undefined token.
-     */
-    token_t()
-        : f_token(tok_t::TOK_UNDEFINED)
-        //, f_string("") -- auto-init
-        , f_integer(0)
-        , f_real(0.0)
-    {
-    }
-
     /** \brief Test whether the token is defined.
      *
      * This function checks whether the token is defined. If defined,
@@ -600,10 +587,10 @@ struct token_t
         f_token = tok_t::TOK_UNDEFINED;
     }
 
-    tok_t           f_token;
-    QString         f_string;
-    int64_t         f_integer;
-    double          f_real;
+    tok_t           f_token = tok_t::TOK_UNDEFINED;
+    QString         f_string = QString();
+    int64_t         f_integer = 0;
+    double          f_real = 0.0;
 };
 
 /** \brief An array of tokens.
@@ -665,16 +652,9 @@ typedef QVector<int> labels_t;
  */
 struct context_t
 {
-    context_t()
-        : f_position(-1)
-        //, f_nodes() -- auto-init
-        //, f_result() -- auto-init
-    {
-    }
-
-    int32_t                     f_position;
-    QDomXPath::node_vector_t    f_nodes;
-    QDomXPath::node_vector_t    f_result;
+    int32_t                     f_position = -1;
+    QDomXPath::node_vector_t    f_nodes = QDomXPath::node_vector_t();
+    QDomXPath::node_vector_t    f_result = QDomXPath::node_vector_t();
 };
 
 
@@ -1291,7 +1271,7 @@ private:
     //QDecimal                    f_decimal; // a 32:32 fix number (we need a fixed number class!)
     float                       f_single = 0.0f;
     double                      f_double = 0.0;
-    QString                     f_string;
+    QString                     f_string = QString();
 };
 
 
@@ -1811,8 +1791,8 @@ public:
     //}
 
 private:
-    atomic_vector_t             f_set;      // set of atomic values
-    QDomXPath::node_vector_t    f_node_set; // set of nodes -- use the node vector in the context to save space
+    atomic_vector_t             f_set = atomic_vector_t();      // set of atomic values
+    QDomXPath::node_vector_t    f_node_set = QDomXPath::node_vector_t(); // set of nodes -- use the node vector in the context to save space
     //context_t                   f_context;  // the current context
 };
 
@@ -1837,17 +1817,10 @@ struct function_t
 {
     typedef QMap<QString, variant_t> variables_t;
 
-    function_t()
-        : f_pc(0)
-        //, f_stack() -- auto-init
-        //, f_variables() -- auto-init
-    {
-    }
-
-    uint32_t                f_pc;
-    variant_vector_t        f_stack;
-    context_vector_t        f_contexts;
-    variables_t             f_variables;
+    uint32_t                f_pc = 0;
+    variant_vector_t        f_stack = variant_vector_t();
+    context_vector_t        f_contexts = context_vector_t();
+    variables_t             f_variables = variables_t();
 };
 
 
@@ -2069,21 +2042,9 @@ enum class node_type_t
  */
 QDomXPathImpl(QDomXPath *owner, const QString& xpath)
     : f_owner(owner)
-    //f_show_commands() -- auto-init
     , f_xpath(xpath)
     , f_start(f_xpath.data())
     , f_in(f_start)
-    //, f_unget_token() -- auto-init
-    //, f_last_token() -- auto-init
-    //, f_label_counter(0) -- auto-init
-    //, f_labels() -- auto-init
-    //, f_future_labels() -- auto-init
-    //, f_end_label("") -- auto-init
-    //, f_predicate_variable("") -- auto-init
-    //, f_result() -- auto-init -- not currently used
-    //, f_program_start_offset(...) -- see below
-    //, f_program() -- see below
-    //, f_functions() -- auto-init
 {
     f_program.push_back(QDomXPath::MAGIC[0]);
     f_program.push_back(QDomXPath::MAGIC[1]);
@@ -2106,6 +2067,9 @@ QDomXPathImpl(QDomXPath *owner, const QString& xpath)
     f_program_start_offset = f_program.size();
 }
 
+
+QDomXPathImpl(QDomXPathImpl const & rhs) = delete;
+QDomXPathImpl & operator = (QDomXPathImpl const & rhs) = delete;
 
 
 /** \brief While executing, read a byte.
@@ -8482,26 +8446,26 @@ const QDomXPath::program_t& getProgram() const
 
 
 private:
-    QDomXPath *                 f_owner;
+    QDomXPath *                 f_owner = nullptr;
     bool                        f_show_commands = false;
 
     // parser parameters
-    QString                     f_xpath;
-    const QChar *               f_start;
-    const QChar *               f_in;
-    token_t                     f_unget_token;
-    token_t                     f_last_token;
+    QString                     f_xpath = QString();
+    const QChar *               f_start = nullptr;
+    const QChar *               f_in = nullptr;
+    token_t                     f_unget_token = token_t();
+    token_t                     f_last_token = token_t();
     uint32_t                    f_label_counter = 0;
-    label_offsets_t             f_labels;
-    future_labels_t             f_future_labels;
-    QString                     f_end_label;
-    QString                     f_predicate_variable;
+    label_offsets_t             f_labels = label_offsets_t();
+    future_labels_t             f_future_labels = future_labels_t();
+    QString                     f_end_label = QString();
+    QString                     f_predicate_variable = QString();
 
     // execution environment
     //QDomXPath::node_vector_t    f_result;
     int32_t                     f_program_start_offset = -1;
-    QDomXPath::program_t        f_program;
-    function_vector_t           f_functions;
+    QDomXPath::program_t        f_program = QDomXPath::program_t();
+    function_vector_t           f_functions = function_vector_t();
 };
 
 

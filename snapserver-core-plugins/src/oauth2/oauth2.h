@@ -60,16 +60,20 @@ class oauth2
 {
 public:
                             oauth2();
-    virtual                 ~oauth2();
+                            oauth2(oauth2 const & rhs) = delete;
+    virtual                 ~oauth2() override;
+
+    oauth2 &                operator = (oauth2 const & rhs) = delete;
+
+    static oauth2 *         instance();
 
     // plugins::plugin implementation
-    static oauth2 *         instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // server signals
     void                    on_process_cookies();
@@ -78,7 +82,7 @@ public:
     void                    on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type);
 
     // path::path_execute implementation
-    virtual bool            on_path_execute(content::path_info_t & ipath);
+    virtual bool            on_path_execute(content::path_info_t & ipath) override;
 
     SNAP_SIGNAL_WITH_MODE(oauth2_authorized, (QString const & application), (application), NEITHER);
     SNAP_SIGNAL_WITH_MODE(oauth2_authenticated, (QString const & application), (application), NEITHER);

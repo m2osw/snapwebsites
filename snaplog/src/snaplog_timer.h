@@ -53,7 +53,7 @@ class snaplog;
  * that purpose.
  */
 class snaplog_timer
-        : public snap::snap_communicator::snap_timer
+    : public snap::snap_communicator::snap_timer
 {
 public:
     typedef std::shared_ptr<snaplog_timer>    pointer_t;
@@ -69,6 +69,9 @@ public:
      * \sa process_timeout()
      */
     snaplog_timer(snaplog * proxy);
+    snaplog_timer(snaplog_timer const & rhs) = delete;
+    virtual ~snaplog_timer() override {}
+    snaplog_timer & operator = (snaplog_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void process_timeout() override;

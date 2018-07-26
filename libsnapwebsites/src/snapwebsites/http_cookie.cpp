@@ -140,13 +140,6 @@ uint32_t http_token[4] = {
  * server.
  */
 http_cookie::http_cookie()
-    //: f_snap(NULL) -- auto-init
-    //, f_name("") -- auto-init
-    //, f_domain("") -- auto-init
-    //, f_path("") -- auto-init
-    //, f_expire() -- auto-init
-    //, f_secure(false) -- auto-init
-    //, f_http_only(false) -- auto-init
 {
 }
 
@@ -203,11 +196,7 @@ http_cookie::http_cookie()
 http_cookie::http_cookie(snap_child * snap, QString const & name, QString const & value)
     : f_snap(snap)
     , f_name(name)
-    //, f_domain("") -- auto-init
     , f_path("/")
-    //, f_expire() -- auto-init
-    //, f_secure(false) -- auto-init
-    //, f_http_only(false) -- auto-init
 {
     // XXX make this check only in debug-like versions
     int const max_len(f_name.length());
@@ -448,13 +437,17 @@ void http_cookie::set_session()
  */
 void http_cookie::set_expire(QDateTime const & date_time)
 {
-    time_t const seconds(date_time.toTime_t() - (f_snap ? f_snap->get_start_time() : time(nullptr)));
+    time_t const seconds(date_time.toTime_t() - (f_snap != nullptr
+                                                        ? f_snap->get_start_time()
+                                                        : time(nullptr)));
     if(seconds > 86400LL * 365LL)
     {
         // save 'now + 1 year' instead of date_time which is further in
         // the future and thus not HTTP 1.1 compatible
         //
-        int64_t const start_date(f_snap ? f_snap->get_start_date() : snap_child::get_current_date());
+        int64_t const start_date(f_snap != nullptr
+                                    ? f_snap->get_start_date()
+                                    : snap_child::get_current_date());
         f_expire = QDateTime::fromMSecsSinceEpoch(start_date / 1000LL + 86400LL * 1000LL);
     }
     else
@@ -494,7 +487,9 @@ void http_cookie::set_expire_in(int64_t seconds)
         seconds = 86400LL * 365LL;
     }
 
-    int64_t const start_date(f_snap ? f_snap->get_start_date() : snap_child::get_current_date());
+    int64_t const start_date(f_snap != nullptr
+                                ? f_snap->get_start_date()
+                                : snap_child::get_current_date());
     f_expire = QDateTime::fromMSecsSinceEpoch(start_date / 1000LL + seconds * 1000LL);
 }
 

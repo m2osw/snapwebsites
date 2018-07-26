@@ -64,6 +64,7 @@ class layout_content
 {
 public:
     virtual         ~layout_content() {} // ensure proper virtual tables
+
     virtual void    on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) = 0;
 };
 
@@ -72,6 +73,7 @@ class layout_boxes
 {
 public:
     virtual         ~layout_boxes() {} // ensure proper virtual tables
+
     virtual void    on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes) = 0;
 };
 
@@ -81,14 +83,18 @@ public:
 
 
 class layout
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         layout();
-                        ~layout();
+                        layout(layout const & rhs) = delete;
+    virtual             ~layout() override;
+
+    layout &            operator = (layout const & rhs) = delete;
+
+    static layout *     instance();
 
     // plugins::plugin implementation
-    static layout *     instance();
     virtual QString     icon() const override;
     virtual QString     description() const override;
     virtual QString     dependencies() const override;
@@ -129,9 +135,9 @@ private:
 
     void                generate_boxes(content::path_info_t & ipath, QString const & layout_name, QDomDocument doc);
 
-    snap_child *                            f_snap = nullptr;
-    libdbproxy::table::pointer_t f_content_table;
-    std::vector<QString>                    f_initialized_layout;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_content_table = libdbproxy::table::pointer_t();
+    std::vector<QString>            f_initialized_layout = std::vector<QString>();
 };
 
 

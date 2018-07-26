@@ -107,6 +107,9 @@ replace_configuration_value_t const    REPLACE_CONFIGURATION_VALUE_FILE_MUST_EXI
 replace_configuration_value_t const    REPLACE_CONFIGURATION_VALUE_TRIM_RESULT     =  0x0200;
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 class manager
     : public snap::plugins::plugin
     , public snap::snap_child
@@ -175,26 +178,27 @@ protected:
 
     bool const                      f_daemon = false;
     bool                            f_debug = false;
-    advgetopt::getopt::pointer_t    f_opt;
-    snap::snap_config               f_config;
-    QString                         f_server_name;
-    QString                         f_log_conf = "/etc/snapwebsites/logger/snapmanager.properties";
-    QString                         f_data_path = "/var/lib/snapwebsites";
+    advgetopt::getopt::pointer_t    f_opt = advgetopt::getopt::pointer_t();
+    snap::snap_config               f_config = snap::snap_config();
+    QString                         f_server_name = QString();
+    QString                         f_log_conf = QString("/etc/snapwebsites/logger/snapmanager.properties");
+    QString                         f_data_path = QString("/var/lib/snapwebsites");
     QString                         f_cluster_status_path = f_data_path + "/cluster-status";
     QString                         f_bundles_path = f_data_path + "/bundles";
-    QString                         f_public_ip;
-    QString                         f_plugins_path = "/usr/lib/snapwebsites/manager_plugins";
-    QString                         f_cache_path = "/var/cache/snapwebsites";
-    QString                         f_apt_check = "/usr/lib/update-notifier/apt-check";
-    QString                         f_reboot_required = "/run/reboot-required";
-    QString                         f_lock_path = "/run/lock/snapwebsites";
-    std::string                     f_signal_address = "127.0.0.1";
+    QString                         f_public_ip = QString();
+    QString                         f_plugins_path = QString("/usr/lib/snapwebsites/manager_plugins");
+    QString                         f_cache_path = QString("/var/cache/snapwebsites");
+    QString                         f_apt_check = QString("/usr/lib/update-notifier/apt-check");
+    QString                         f_reboot_required = QString("/run/reboot-required");
+    QString                         f_lock_path = QString("/run/lock/snapwebsites");
+    std::string                     f_signal_address = std::string("127.0.0.1");
     int                             f_signal_port = 4041;
-    std::vector<std::string>        f_bundle_uri;
+    std::vector<std::string>        f_bundle_uri = std::vector<std::string>();
 
 private:
     bool                            f_plugins_loaded = false;
 };
+#pragma GCC diagnostic pop
 
 
 } // snap_manager namespace

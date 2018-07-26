@@ -57,34 +57,38 @@ public:
 class ssh_config
 {
 public:
-    ssh_config( QString const & filepath );
+                            ssh_config( QString const & filepath );
 
-    bool read();
-    bool write();
+    bool                    read();
+    bool                    write();
 
-    QString get_entry( QString const& name, QString const& default_value = {} ) const;
-    void    set_entry( QString const& name, QString const& value );
+    QString                 get_entry( QString const& name, QString const& default_value = {} ) const;
+    void                    set_entry( QString const& name, QString const& value );
 
 private:
-    QString     f_filepath;
-    QStringList f_lines;
+    QString                 f_filepath = QString();
+    snap::snap_string_list  f_lines    = snap::snap_string_list();
 };
 
 
 
 class ssh
-        : public snap_manager::plugin_base
+    : public snap_manager::plugin_base
 {
 public:
                             ssh();
+                            ssh(ssh const & rhs) = delete;
     virtual                 ~ssh() override;
 
-    // plugins::plugin implementation
+    ssh &                   operator = (ssh const & rhs) = delete;
+
     static ssh *            instance();
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+
+    // plugins::plugin implementation
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // manager overload
     virtual bool            display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri) override;
@@ -98,6 +102,7 @@ private:
 
     snap_manager::manager * f_snap = nullptr;
 };
+
 
 } // namespace ssh
 } // namespace snap

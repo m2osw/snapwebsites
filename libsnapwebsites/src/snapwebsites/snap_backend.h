@@ -62,20 +62,20 @@ private:
     bool                        is_cron_action(QString const & action);
     bool                        is_ready(QString const & uri);
 
-    pid_t                                   f_parent_pid = -1;
-    libdbproxy::table::pointer_t f_sites_table;
-    libdbproxy::table::pointer_t f_backend_table;
-    QString                                 f_action;
-    QString                                 f_website;
-    int                                     f_not_ready_counter = 0;
-    int                                     f_error_count = 0;
-    bool                                    f_cron_action = false;
-    bool                                    f_stop_received = false;
-    bool                                    f_auto_retry_cassandra = false;
-    bool                                    f_emit_warning_about_missing_sites = true;
-    bool                                    f_pinged = false;
-    bool                                    f_global_lock = false;
-    bool                                    f_snaplock = false;
+    pid_t                       f_parent_pid = -1;
+    libdbproxy::table::pointer_t f_sites_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t f_backend_table = libdbproxy::table::pointer_t();
+    QString                     f_action = QString();
+    QString                     f_website = QString();
+    int                         f_not_ready_counter = 0;
+    int                         f_error_count = 0;
+    bool                        f_cron_action = false;
+    bool                        f_stop_received = false;
+    bool                        f_auto_retry_cassandra = false;
+    bool                        f_emit_warning_about_missing_sites = true;
+    bool                        f_pinged = false;
+    bool                        f_global_lock = false;
+    bool                        f_snaplock = false;
 };
 
 

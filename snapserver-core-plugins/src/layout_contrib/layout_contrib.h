@@ -38,14 +38,18 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class layout_contrib
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                             layout_contrib();
-                            ~layout_contrib();
+                            layout_contrib(layout_contrib const & rhs) = delete;
+    virtual                 ~layout_contrib() override;
+
+    layout_contrib &        operator = (layout_contrib const & rhs) = delete;
+
+    static layout_contrib * instance();
 
     // plugins::plugin implementation
-    static layout_contrib * instance();
     virtual QString         icon() const override;
     virtual QString         description() const override;
     virtual QString         dependencies() const override;
@@ -53,16 +57,16 @@ public:
     virtual void            bootstrap(snap_child *snap) override;
 
 private:
-    void                content_update(int64_t variables_timestamp);
-    void                do_layout_updates();
-    void                install_layout(QString const & layout_name);
-    void                finish_install_layout();
+    void                    content_update(int64_t variables_timestamp);
+    void                    do_layout_updates();
+    void                    install_layout(QString const & layout_name);
+    void                    finish_install_layout();
 
-    void                generate_boxes(content::path_info_t & ipath, QString const & layout_name, QDomDocument doc);
+    void                    generate_boxes(content::path_info_t & ipath, QString const & layout_name, QDomDocument doc);
 
-    snap_child *                            f_snap = nullptr;
-    libdbproxy::table::pointer_t f_content_table;
-    std::vector<QString>                    f_initialized_layout;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_content_table = libdbproxy::table::pointer_t();
+    std::vector<QString>            f_initialized_layout = std::vector<QString>();
 };
 
 

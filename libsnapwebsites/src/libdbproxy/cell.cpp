@@ -472,11 +472,11 @@ cell& cell::operator ++ ()
  * \sa add()
  * \sa operator + ()
  */
-cell& cell::operator ++ (int)
-{
-    add(1);
-    return *this;
-}
+//cell& cell::operator ++ (int)
+//{
+//    add(1);
+//    return *this;
+//}
 
 
 /** \brief Subtract from a counter.
@@ -546,11 +546,11 @@ cell& cell::operator -- ()
  * \sa add()
  * \sa operator - ()
  */
-cell& cell::operator -- (int)
-{
-    add(-1);
-    return *this;
-}
+//cell& cell::operator -- (int)
+//{
+//    add(-1);
+//    return *this;
+//}
 
 
 /** \brief Retrieve the current consistency level of this value.

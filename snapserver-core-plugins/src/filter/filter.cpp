@@ -903,7 +903,6 @@ void filter::on_token_filter(content::path_info_t & ipath, QDomDocument & xml)
     {
     public:
         filter_state_t(QDomDocument doc, content::path_info_t & path)
-            //: f_state() -- auto-init
         {
             state_t s;
             s.f_node = doc;
@@ -963,12 +962,12 @@ void filter::on_token_filter(content::path_info_t & ipath, QDomDocument & xml)
     private:
         struct state_t
         {
-            QDomNode                f_node;
-            QString                 f_owner;
-            content::path_info_t    f_ipath;
+            QDomNode                f_node = QDomNode();
+            QString                 f_owner = QString();
+            content::path_info_t    f_ipath = content::path_info_t();
         };
 
-        QVector<state_t>    f_state;
+        QVector<state_t>    f_state = QVector<state_t>();
     };
 
     // Avoid recursivity
@@ -1178,16 +1177,13 @@ bool filter::filter_text_impl(filter_text_t & txt_filt)
             , f_filter(f)
             , f_ipath(ipath)
             , f_xml(xml)
-            //, f_index(0)
-            //, f_extra_index(0)
             , f_text(text)
-            //, f_result("") -- auto-init
-            //, f_token("") -- auto-init
-            //, f_replacement("") -- auto-init
-            //, f_extra_input("") -- auto-init
             , f_support_edit(support_edit)
         {
         }
+
+        text_t(text_t const & rhs) = delete;
+        text_t operator = (text_t const & rhs) = delete;
 
         bool parse()
         {
@@ -1622,14 +1618,14 @@ bool filter::filter_text_impl(filter_text_t & txt_filt)
         snap_child *                f_snap = nullptr;
         filter *                    f_filter = nullptr;
         content::path_info_t        f_ipath;
-        QDomDocument                f_xml;
+        QDomDocument                f_xml = QDomDocument();
         int32_t                     f_index = 0;
         int32_t                     f_extra_index = 0;
-        QString                     f_text;
-        QString                     f_result;
-        QString                     f_token;
-        QString                     f_replacement;
-        QString                     f_extra_input;
+        QString                     f_text = QString();
+        QString                     f_result = QString();
+        QString                     f_token = QString();
+        QString                     f_replacement = QString();
+        QString                     f_extra_input = QString();
         bool                        f_support_edit = true;
     };
 

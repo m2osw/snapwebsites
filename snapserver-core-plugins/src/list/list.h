@@ -120,8 +120,8 @@ public:
     QString const &     get_uri() const { return f_uri; }
 
 private:
-    QByteArray          f_sort_key;
-    QString             f_uri;
+    QByteArray          f_sort_key = QByteArray();
+    QString             f_uri = QString();
 };
 typedef QVector<list_item_t> list_item_vector_t;
 
@@ -133,6 +133,9 @@ public:
     static int32_t const    DEFAULT_PAGE_SIZE = 20;
 
                         paging_t(snap_child * snap, content::path_info_t & ipath);
+
+                        paging_t(paging_t const & rhs) = delete;
+    paging_t &          operator = (paging_t const & rhs) = delete;
 
     list_item_vector_t  read_list();
 
@@ -175,7 +178,7 @@ private:
     snap_child *                    f_snap = nullptr;
     content::path_info_t &          f_ipath;                        // path to the list
     mutable bool                    f_retrieved_list_name = false;
-    mutable QString                 f_list_name;                    // name used in query string
+    mutable QString                 f_list_name = QString();        // name used in query string
     int32_t                         f_maximum_number_of_items = -1; // maximum number of items
     mutable int32_t                 f_number_of_items = -1;         // total number of items
     int32_t                         f_start_offset = -1;            // if -1, ignore
@@ -191,10 +194,10 @@ private:
 
 
 class list
-        : public plugins::plugin
-        , public server::backend_action
-        , public layout::layout_content
-        , public layout::layout_boxes
+    : public plugins::plugin
+    , public server::backend_action
+    , public layout::layout_content
+    , public layout::layout_boxes
 {
 public:
     static int const LIST_PROCESSING_LATENCY = 10 * 1000000; // 10 seconds in micro-seconds
@@ -223,6 +226,9 @@ public:
             f_list_plugin->set_priority(priority);
         }
 
+        safe_priority_t(safe_priority_t const & rhs) = delete;
+        safe_priority_t & operator = (safe_priority_t const & rhs) = delete;
+
         ~safe_priority_t()
         {
             f_list_plugin->set_priority(f_priority);
@@ -243,6 +249,9 @@ public:
             f_list_plugin->set_start_date_offset(start_date_offset);
         }
 
+        safe_start_date_offset_t(safe_start_date_offset_t const & rhs) = delete;
+        safe_start_date_offset_t & operator = (safe_start_date_offset_t const & rhs) = delete;
+
         ~safe_start_date_offset_t()
         {
             f_list_plugin->set_start_date_offset(f_start_date_offset);
@@ -254,18 +263,22 @@ public:
     };
 
                         list();
-                        ~list();
+                        list(list const & rhs) = delete;
+    virtual             ~list() override;
+
+    list &              operator = (list const & rhs) = delete;
+
+    static list *       instance();
 
     // plugins::plugin implementation
-    static list *       instance();
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server::backend_action implementation
-    virtual void        on_backend_action(QString const & action);
+    virtual void        on_backend_action(QString const & action) override;
 
     // server signals
     void                on_backend_process();
@@ -274,10 +287,10 @@ public:
     void                on_attach_to_session();
 
     // layout::layout_content implementation
-    virtual void        on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void        on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // layout::layout_boxes implementation
-    virtual void        on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes);
+    virtual void        on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes) override;
 
     // content signals
     void                on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type);
@@ -328,8 +341,8 @@ private:
 
     snap_child *                            f_snap = nullptr;
     snap_backend *                          f_backend = nullptr;
-    snap_expr::expr::expr_map_t             f_check_expressions;
-    snap_expr::expr::expr_map_t             f_item_key_expressions;
+    snap_expr::expr::expr_map_t             f_check_expressions = snap_expr::expr::expr_map_t();
+    snap_expr::expr::expr_map_t             f_item_key_expressions = snap_expr::expr::expr_map_t();
     bool                                    f_ping_backend = false;
     bool                                    f_list_link = false;
     priority_t                              f_priority = LIST_PRIORITY_NEW_PAGE;                // specific order in which pages should be worked on

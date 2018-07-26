@@ -98,10 +98,6 @@ public:
     typedef std::vector<link_info>      vector_t;
 
     link_info()
-        //: f_unique(false)
-        //, f_name("")
-        //, f_key("")
-        //, f_branch(snap_version::SPECIAL_VERSION_UNDEFINED)
     {
     }
 
@@ -180,10 +176,10 @@ public:
 
 private:
     bool                            f_unique = false;
-    QString                         f_name;
-    QString                         f_key;
-    snap_version::version_number_t  f_branch;
-    QString                         f_destination_cell_name;
+    QString                         f_name = QString();
+    QString                         f_key = QString();
+    snap_version::version_number_t  f_branch = snap_version::version_number_t();
+    QString                         f_destination_cell_name = QString();
 };
 
 
@@ -201,8 +197,8 @@ public:
     link_info const &           destination() const;
 
 private:
-    link_info                   f_source;
-    link_info                   f_destination;
+    link_info                   f_source = link_info();
+    link_info                   f_destination = link_info();
 };
 
 
@@ -225,20 +221,24 @@ public:
         LINK_CONTENT_MODE_DEFAULT = LINK_CONTENT_MODE_CURRENT_OR_NEWEST
     };
 
-    bool next_link(link_info & info);
+                    link_context(link_context const & rhs) = delete;
+
+    link_context    operator = (link_context const & rhs) = delete;
+
+    bool            next_link(link_info & info);
 
 private:
     friend class links;
 
     link_context(::snap::snap_child * snap, link_info const & info, mode_t const mode, const int count);
 
-    snap_child *                                    		f_snap = nullptr;
-    link_info                                       		f_info;
-    libdbproxy::row::pointer_t           		f_row;
-    libdbproxy::cell_range_predicate::pointer_t    f_column_predicate;
-    libdbproxy::cells                    		f_cells;
-    libdbproxy::cells::const_iterator    		f_cell_iterator;
-    link_info                                       		f_link;
+    snap_child *                                f_snap = nullptr;
+    link_info                                   f_info = link_info();
+    libdbproxy::row::pointer_t                  f_row = libdbproxy::row::pointer_t();
+    libdbproxy::cell_range_predicate::pointer_t f_column_predicate = libdbproxy::cell_range_predicate::pointer_t();
+    libdbproxy::cells                           f_cells = libdbproxy::cells();
+    libdbproxy::cells::const_iterator           f_cell_iterator = libdbproxy::cells::const_iterator();
+    link_info                                   f_link = link_info();
 };
 
 
@@ -248,30 +248,42 @@ private:
 class links_cloned
 {
 public:
-    virtual void        repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, link_info const & source, link_info const & destination, bool const cloning) = 0;
+    virtual             ~links_cloned() {}
+
+    virtual void        repair_link_of_cloned_page(
+                                  QString const & clone
+                                , snap_version::version_number_t branch_number
+                                , link_info const & source
+                                , link_info const & destination
+                                , bool const cloning) = 0;
 };
 
 
 
 
 
-class links : public plugins::plugin
-            , public server::backend_action
+class links
+    : public plugins::plugin
+    , public server::backend_action
 {
 public:
     static int const                READ_RECORD_COUNT = 1000;
     static int const                DELETE_RECORD_COUNT = 1000;
 
                                     links();
-                                    ~links();
+                                    links(links const & rhs) = delete;
+    virtual                         ~links();
+
+    links                           operator = (links const & rhs) = delete;
+
+    static links *                  instance();
 
     // plugins::plugin implementation
-    static links *                  instance();
-    virtual QString                 icon() const;
-    virtual QString                 description() const;
-    virtual QString                 dependencies() const;
-    virtual int64_t                 do_update(int64_t last_updated);
-    virtual void                    bootstrap(snap_child * snap);
+    virtual QString                 icon() const override;
+    virtual QString                 description() const override;
+    virtual QString                 dependencies() const override;
+    virtual int64_t                 do_update(int64_t last_updated) override;
+    virtual void                    bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t get_links_table();
 
@@ -314,9 +326,9 @@ private:
     SNAP_TEST_PLUGIN_TEST_DECL(test_unique_unique_create2_replace2_delete2)
     SNAP_TEST_PLUGIN_TEST_DECL(test_multiple_multiple_create_delete)
 
-    snap_child *                                    f_snap = nullptr;
-    libdbproxy::table::pointer_t         f_links_table;
-    libdbproxy::table::pointer_t         f_branch_table;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_links_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t    f_branch_table = libdbproxy::table::pointer_t();
 };
 
 } // namespace links

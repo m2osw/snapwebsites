@@ -16,7 +16,6 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "ui_snap-manager-createcontextbox.h"
 
 #include <snapwebsites/snap_string_list.h>
 
@@ -25,7 +24,13 @@
 
 #include <QPointer>
 
-class snap_manager_createcontext : public QDialog, public Ui_createContextBox
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_snap-manager-createcontextbox.h"
+class snap_manager_createcontext
+    : public QDialog
+    , public Ui_createContextBox
 {
     Q_OBJECT
 
@@ -47,13 +52,14 @@ private:
     void            close();
     //void            enableAll(bool enable);
 
-    QPointer<QPushButton>                       f_createcontext_button;
-    QPointer<QPushButton>                       f_cancel_button;
-    QPointer<QLineEdit>                         f_replication_factor;
-    QPointer<QComboBox>                         f_strategy;
-    QPointer<QTextEdit>                         f_data_centers;
-    QPointer<QLineEdit>                         f_snap_server_name;
+    QPointer<QPushButton>                       f_createcontext_button = QPointer<QPushButton>();
+    QPointer<QPushButton>                       f_cancel_button = QPointer<QPushButton>();
+    QPointer<QLineEdit>                         f_replication_factor = QPointer<QLineEdit>();
+    QPointer<QComboBox>                         f_strategy = QPointer<QComboBox>();
+    QPointer<QTextEdit>                         f_data_centers = QPointer<QTextEdit>();
+    QPointer<QLineEdit>                         f_snap_server_name = QPointer<QLineEdit>();
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

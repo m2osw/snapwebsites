@@ -58,21 +58,25 @@ public:
 
 
 class detectadblocker
-        : public plugins::plugin
-        , public path::path_execute
+    : public plugins::plugin
+    , public path::path_execute
 {
 public:
                             detectadblocker();
-                            ~detectadblocker();
+                            detectadblocker(detectadblocker const & rhs) = delete;
+    virtual                 ~detectadblocker() override;
+
+    detectadblocker &       operator = (detectadblocker const & rhs) = delete;
+
+    static detectadblocker *instance();
 
     // plugin implementation
-    static detectadblocker *instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // snapwebsites signals
     void                    on_detach_from_session();

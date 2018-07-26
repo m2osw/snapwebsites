@@ -181,7 +181,7 @@ private:
 
     private:
         type_t          f_type = type_t::TYPE_FLOAT;
-        QString         f_string;
+        QString         f_string = QString();
         int64_t         f_integer = 0;
         double          f_float = 0.0;
     };
@@ -200,15 +200,14 @@ private:
     // (see epayment_product_list::add_product(...) below)
     epayment_product(QString const & product, double const quantity, QString const & description);
 
-    mutable properties_t                                f_properties;
+    mutable properties_t                     f_properties = properties_t();
 
     // when checking parameters from the database, keep those pointers for
     // later fast reference
-    mutable verification_t                              f_verified = verification_t::VERIFICATION_NOT_DONE;
-    mutable content::path_info_t                        f_product_ipath;
-    mutable content::content *                          f_content_plugin = nullptr;
-    mutable libdbproxy::table::pointer_t     f_revision_table;
-    mutable libdbproxy::row::pointer_t       f_revision_row;
+    mutable verification_t                   f_verified = verification_t::VERIFICATION_NOT_DONE;
+    mutable content::path_info_t             f_product_ipath = content::path_info_t();
+    mutable libdbproxy::table::pointer_t     f_revision_table = libdbproxy::table::pointer_t();
+    mutable libdbproxy::row::pointer_t       f_revision_row = libdbproxy::row::pointer_t();
 };
 
 
@@ -217,7 +216,7 @@ private:
 class epayment_product_list
 {
 public:
-    epayment_product &       add_product(QString const & product, double const quantity, QString const & description);
+    epayment_product &      add_product(QString const & product, double const quantity, QString const & description);
 
     bool                    empty() const;
     size_t                  size() const;
@@ -230,7 +229,7 @@ public:
 private:
     typedef std::vector<epayment_product>   product_list_t;
 
-    product_list_t  f_products;
+    product_list_t          f_products = product_list_t();
 };
 
 
@@ -297,20 +296,24 @@ private:
 
 
 class epayment
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                                 epayment();
-                                ~epayment();
+                                epayment(epayment const & rhs) = delete;
+    virtual                     ~epayment() override;
+
+    epayment &                  operator = (epayment const & rhs) = delete;
+
+    static epayment *           instance();
 
     // plugins::plugin implementation
-    static epayment *           instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     // layout signals
     void                        on_generate_header_content(content::path_info_t & path, QDomElement & header, QDomElement & metadata);

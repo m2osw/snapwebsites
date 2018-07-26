@@ -66,18 +66,22 @@ public:
 
 
 class memory
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         memory();
-                        ~memory();
+                        memory(memory const & rhs) = delete;
+    virtual             ~memory() override;
+
+    memory &            operator = (memory const & rhs) = delete;
+
+    static memory *     instance();
 
     // plugins::plugin implementation
-    static memory *     instance();
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signal
     void                on_process_watch(QDomDocument doc);

@@ -19,6 +19,12 @@
 // ourselves
 //
 #include "snapwebsites/snap_config.h"
+
+// TODO: somehow we need to remove this dependency
+//       it is here to support the snaplog implementation but it creates
+//       a circular dependency (snap_communicator <-> log)
+//       See SNAP-623
+//
 #include "snapwebsites/snap_communicator.h"
 
 #include <memory>
@@ -91,7 +97,7 @@ private:
     char const *                        f_func = nullptr;
     int32_t                             f_line = 1;
     log_security_t                      f_security = log_security_t::LOG_SECURITY_SECURE;
-    QString                             f_message;
+    QString                             f_message = QString();
 };
 
 void set_progname               ( std::string const & progname );

@@ -737,6 +737,9 @@ void field_search::run()
         {
         }
 
+        auto_search(auto_search const & rhs) = delete;
+        auto_search & operator = (auto_search const & rhs) = delete;
+
         void cmd_field_name(QString const& field_name)
         {
             if(field_name.isEmpty())
@@ -1676,24 +1679,24 @@ void field_search::run()
             }
         }
 
-        content *                                       f_content_plugin = nullptr;
-        char const *                                    f_filename = nullptr;
-        char const *                                    f_function = nullptr;
-        int                                             f_line = 0;
-        snap_child *                                    f_snap = nullptr;
-        cmd_info_vector_t &                             f_program;
-        mode_t                                          f_mode = mode_t::SEARCH_MODE_FIRST;
-        QString const                                   f_site_key;
-        QString                                         f_revision_owner;
-        QString                                         f_field_name;
-        QString                                         f_self;
-        libdbproxy::table::pointer_t         f_current_table;
-        QDomElement                                     f_element;
-        bool                                            f_found_self = false;
-        bool                                            f_saved = false;
-        search_result_t                                 f_result;
-        variables_t                                     f_variables;
-        path_info_t                                     f_path_info;
+        content *                       f_content_plugin = nullptr;
+        char const *                    f_filename = nullptr;
+        char const *                    f_function = nullptr;
+        int                             f_line = 0;
+        snap_child *                    f_snap = nullptr;
+        cmd_info_vector_t &             f_program;
+        mode_t                          f_mode = mode_t::SEARCH_MODE_FIRST;
+        QString const                   f_site_key = QString();
+        QString                         f_revision_owner = QString();
+        QString                         f_field_name = QString();
+        QString                         f_self = QString();
+        libdbproxy::table::pointer_t    f_current_table = libdbproxy::table::pointer_t();
+        QDomElement                     f_element = QDomElement();
+        bool                            f_found_self = false;
+        bool                            f_saved = false;
+        search_result_t                 f_result = search_result_t();
+        variables_t                     f_variables = variables_t();
+        path_info_t                     f_path_info = path_info_t();
     } search(f_filename, f_function, f_line, f_snap, f_program);
 
     search.run();

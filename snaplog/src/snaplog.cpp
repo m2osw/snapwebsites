@@ -159,14 +159,6 @@ const advgetopt::getopt::option g_snaplog_options[] =
  */
 
 
-/** \brief The instance of the snaplog.
- *
- * This is the instance of the snaplog. The variable where the pointer
- * is kept.
- */
-snaplog::pointer_t                    snaplog::g_instance;
-
-
 /** \brief Initializes a snaplog object.
  *
  * This function parses the command line arguments, reads configuration

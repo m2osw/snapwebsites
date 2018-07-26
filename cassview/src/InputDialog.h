@@ -22,19 +22,23 @@
 
 #include <QDialog>
 
-#include "ui_InputDialog.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_InputDialog.h"
 class InputDialog
-        : public QDialog
-        , public Ui::InputDialog
+    : public QDialog
+    , public Ui::InputDialog
 {
     Q_OBJECT
 
 public:
-    explicit InputDialog(QWidget *prnt = 0);
-    ~InputDialog();
+    explicit InputDialog(QWidget * prnt = 0);
+    virtual ~InputDialog() override;
 
 private:
 };
+#pragma GCC diagnostic pop
 
 // vim: ts=4 sw=4 et

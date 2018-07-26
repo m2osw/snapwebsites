@@ -62,18 +62,22 @@ public:
 
 
 class snap_software_description
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                                             snap_software_description();
-    virtual                                 ~snap_software_description();
+                                            snap_software_description(snap_software_description const & rhs) = delete;
+    virtual                                 ~snap_software_description() override;
+
+    snap_software_description &             operator = (snap_software_description const & rhs) = delete;
+
+    static snap_software_description *      instance();
 
     // plugins::plugin implementation
-    static snap_software_description *      instance();
-    virtual QString                         description() const;
-    virtual QString                         dependencies() const;
-    virtual int64_t                         do_update(int64_t last_updated);
-    virtual void                            bootstrap(::snap::snap_child * snap);
+    virtual QString                         description() const override;
+    virtual QString                         dependencies() const override;
+    virtual int64_t                         do_update(int64_t last_updated) override;
+    virtual void                            bootstrap(::snap::snap_child * snap) override;
 
     // server signal
     void                                    on_backend_process();
@@ -100,15 +104,15 @@ private:
     bool                                    load_xsl_file(QString const & filename, QString & xsl);
 
     snap_child *                            f_snap = nullptr;
-    libdbproxy::row::pointer_t   f_snap_software_description_settings_row;
-    content::path_info_t::pointer_t         f_table_of_content_ipath;
-    QString                                 f_snap_software_description_parser_catalog_xsl;
-    QString                                 f_snap_software_description_parser_file_xsl;
-    QString                                 f_snap_software_description_parser_publisher_xsl;
-    QString                                 f_snap_software_description_parser_support_xsl;
-    QString                                 f_padfile_xsl;
-    QString                                 f_padmap_txt;
-    QDomDocument                            f_padlist_xml;
+    libdbproxy::row::pointer_t              f_snap_software_description_settings_row = libdbproxy::row::pointer_t();
+    content::path_info_t::pointer_t         f_table_of_content_ipath = content::path_info_t::pointer_t();
+    QString                                 f_snap_software_description_parser_catalog_xsl = QString();
+    QString                                 f_snap_software_description_parser_file_xsl = QString();
+    QString                                 f_snap_software_description_parser_publisher_xsl = QString();
+    QString                                 f_snap_software_description_parser_support_xsl = QString();
+    QString                                 f_padfile_xsl = QString();
+    QString                                 f_padmap_txt = QString();
+    QDomDocument                            f_padlist_xml = QDomDocument();
 };
 
 } // namespace snap_software_description

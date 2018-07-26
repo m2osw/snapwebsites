@@ -161,17 +161,17 @@ private:
                                 process(process const & rhs) = delete;
     process &                   operator = (process const & rhs) = delete;
 
-    QString const               f_name;
+    QString const               f_name = QString();
     mode_t                      f_mode = mode_t::PROCESS_MODE_COMMAND;
-    QString                     f_command;
-    snap_string_list            f_arguments;
-    environment_map_t           f_environment;
-    QByteArray                  f_input;
-    QByteArray                  f_output;
-    QByteArray                  f_error;
+    QString                     f_command = QString();
+    snap_string_list            f_arguments = snap_string_list();
+    environment_map_t           f_environment = environment_map_t();
+    QByteArray                  f_input = QByteArray();
+    QByteArray                  f_output = QByteArray();
+    QByteArray                  f_error = QByteArray();
     bool                        f_forced_environment = false;
     process_output_callback *   f_output_callback = nullptr;
-    snap_thread::snap_mutex     f_mutex;
+    snap_thread::snap_mutex     f_mutex = snap_thread::snap_mutex();
 };
 
 
@@ -231,7 +231,7 @@ public:
                                     proc_info(proc_info const &) = delete;
         proc_info&                  operator = (proc_info const &) = delete;
 
-        std::shared_ptr<proc_t>     f_proc;
+        std::shared_ptr<proc_t>     f_proc = std::shared_ptr<proc_t>();
         flags_t                     f_flags = 0;
         mutable int32_t             f_count = -1;
     };
@@ -246,7 +246,7 @@ public:
 private:
     int                         field_to_flag(field_t fld) const;
 
-    std::shared_ptr<PROCTAB>    f_proctab;
+    std::shared_ptr<PROCTAB>    f_proctab = std::shared_ptr<PROCTAB>();
     flags_t                     f_flags = 0;
 };
 

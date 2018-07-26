@@ -74,7 +74,7 @@ public:
 class form_post
 {
 public:
-    virtual ~form_post() {}
+    virtual                 ~form_post() {}
 
     virtual void            on_process_form_post(content::path_info_t & cpath, sessions::sessions::session_info const & info) = 0;
 };
@@ -84,13 +84,18 @@ class form : public plugins::plugin
 {
 public:
                                 form();
-                                ~form();
+                                form(form const & rhs) = delete;
+    virtual                     ~form() override;
+
+    form &                      operator = (form const & rhs) = delete;
 
     static form *               instance();
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(::snap::snap_child * snap);
+
+    // plugins::plugin implementation
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     QSharedPointer<libdbproxy::table> get_form_table();
 
@@ -130,10 +135,10 @@ private:
 
     snap_child *                f_snap = nullptr;
     bool                        f_form_initialized = false;
-    QDomDocument                f_form_elements;
-    QDomElement                 f_form_stylesheet;
-    QString                     f_form_elements_string;
-    QString                     f_form_title;
+    QDomDocument                f_form_elements = QDomDocument();
+    QDomElement                 f_form_stylesheet = QDomElement();
+    QString                     f_form_elements_string = QString();
+    QString                     f_form_title = QString();
 };
 
 } // namespace form

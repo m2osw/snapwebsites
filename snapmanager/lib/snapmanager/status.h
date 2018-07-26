@@ -64,9 +64,9 @@ public:
 
 private:
     state_t         f_state = state_t::STATUS_STATE_INFO;
-    QString         f_plugin_name;
-    QString         f_field_name;
-    QString         f_value;
+    QString         f_plugin_name = QString();
+    QString         f_field_name = QString();
+    QString         f_value = QString();
 };
 
 

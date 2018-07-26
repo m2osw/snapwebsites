@@ -20,6 +20,7 @@
 
 namespace quoted_printable
 {
+
 int const QUOTED_PRINTABLE_FLAG_BINARY         = 0x0001;
 int const QUOTED_PRINTABLE_FLAG_EDBIC          = 0x0002;
 int const QUOTED_PRINTABLE_FLAG_LFONLY         = 0x0004; // many sendmail(1) do not like \r\n somehow
@@ -27,6 +28,8 @@ int const QUOTED_PRINTABLE_FLAG_NO_LONE_PERIOD = 0x0008;
 
 std::string encode(std::string const & text, int flags = 0);
 std::string decode(std::string const & text);
+
 }
+// quoted_printable namespace
 
 // vim: ts=4 sw=4 et

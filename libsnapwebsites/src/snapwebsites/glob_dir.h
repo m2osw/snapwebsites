@@ -75,7 +75,7 @@ public:
     void            enumerate_glob( std::function<void (QString path)> func ) const;
 
 private:
-    glob_pointer_t  f_dir;
+    glob_pointer_t  f_dir = glob_pointer_t();
 };
 
 } // namespace snap

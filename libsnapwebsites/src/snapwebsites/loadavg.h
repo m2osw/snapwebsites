@@ -55,7 +55,7 @@ public:
     loadavg_item const *        find_least_busy() const;
 
 private:
-    loadavg_item::vector_t      f_items;
+    loadavg_item::vector_t      f_items = loadavg_item::vector_t();
 };
 
 

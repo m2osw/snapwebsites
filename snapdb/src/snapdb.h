@@ -79,19 +79,19 @@ private:
     void display_cell()          const;
     void set_cell()              const;
 
-    casswrapper::Session::pointer_t             f_session;
-    casswrapper::request_timeout::pointer_t     f_request_timeout;
-    QString                                     f_host      = "localhost";
-    int32_t                                     f_port      = 9042;
-    bool                                        f_use_ssl   = false;
-    int32_t                                     f_count     = 100;
-    QString                                     f_context   = "snap_websites";
-    QString                                     f_table;
-    QString                                     f_row;
-    QString                                     f_cell;
-    QString                                     f_value;
-    advgetopt::getopt::pointer_t                f_opt;
-    snap::snap_config                           f_config;
+    casswrapper::Session::pointer_t             f_session         = casswrapper::Session::pointer_t();
+    casswrapper::request_timeout::pointer_t     f_request_timeout = casswrapper::request_timeout::pointer_t();
+    QString                                     f_host            = QString("localhost");
+    int32_t                                     f_port            = 9042;
+    bool                                        f_use_ssl         = false;
+    int32_t                                     f_count           = 100;
+    QString                                     f_context         = QString("snap_websites");
+    QString                                     f_table           = QString();
+    QString                                     f_row             = QString();
+    QString                                     f_cell            = QString();
+    QString                                     f_value           = QString();
+    advgetopt::getopt::pointer_t                f_opt             = advgetopt::getopt::pointer_t();
+    snap::snap_config                           f_config          = snap::snap_config();
 };
 
 // vim: ts=4 sw=4 et

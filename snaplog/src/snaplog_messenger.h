@@ -48,17 +48,21 @@ class snaplog;
 
 
 class snaplog_messenger
-        : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
+    : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
 {
 public:
     typedef std::shared_ptr<snaplog_messenger>    pointer_t;
 
-                                snaplog_messenger(snaplog * proxy, std::string const & addr, int port);
+                            snaplog_messenger(snaplog * proxy, std::string const & addr, int port);
+                            snaplog_messenger(snaplog_messenger const & rhs) = delete;
+    virtual                 ~snaplog_messenger() override {}
+
+    snaplog_messenger &     operator = (snaplog_messenger const & rhs) = delete;
 
     // snap::snap_communicator::snap_tcp_client_permanent_message_connection implementation
-    virtual void                process_message(snap::snap_communicator_message const & message);
-    virtual void                process_connection_failed(std::string const & error_message);
-    virtual void                process_connected();
+    virtual void            process_message(snap::snap_communicator_message const & message);
+    virtual void            process_connection_failed(std::string const & error_message);
+    virtual void            process_connected();
 
 private:
     // this is owned by a snaplog function so no need for a smart pointer

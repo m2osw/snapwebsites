@@ -34,20 +34,20 @@ class CassandraModel
 {
     Q_OBJECT
 
-    public:
-        CassandraModel() {}
+public:
+                    CassandraModel() {}
 
-        void setCassandra( casswrapper::Session::pointer_t c );
+    void            setCassandra( casswrapper::Session::pointer_t c );
 
-        Qt::ItemFlags   flags       ( const QModelIndex & index ) const;
-        QVariant        data        ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
-        QVariant        headerData  ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
-        int             rowCount    ( const QModelIndex & parent = QModelIndex() ) const;
+    Qt::ItemFlags   flags       ( const QModelIndex & index ) const;
+    QVariant        data        ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+    QVariant        headerData  ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
+    int             rowCount    ( const QModelIndex & parent = QModelIndex() ) const;
 
-    private:
-        casswrapper::schema::SessionMeta::pointer_t f_sessionMeta;
+private:
+    void            reset();
 
-        void reset();
+    casswrapper::schema::SessionMeta::pointer_t f_sessionMeta = casswrapper::schema::SessionMeta::pointer_t();
 };
 
 

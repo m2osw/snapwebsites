@@ -43,13 +43,16 @@ class snaplistd;
 
 
 class snaplistd_interrupt
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<snaplistd_interrupt>     pointer_t;
 
                                 snaplistd_interrupt(snaplistd * sl);
+                                snaplistd_interrupt(snaplistd_interrupt const & rhs) = delete;
     virtual                     ~snaplistd_interrupt() override {}
+
+    snaplistd_interrupt &       operator = (snaplistd_interrupt const & rhs) = delete;
 
     // snap::snap_communicator::snap_signal implementation
     virtual void                process_signal() override;
@@ -61,13 +64,16 @@ private:
 
 
 class snaplistd_messenger
-        : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
+    : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
 {
 public:
     typedef std::shared_ptr<snaplistd_messenger>     pointer_t;
 
                                 snaplistd_messenger(snaplistd * sl, std::string const & addr, int port);
+                                snaplistd_messenger(snaplistd_messenger const & rhs) = delete;
     virtual                     ~snaplistd_messenger() override {}
+
+    snaplistd_messenger &       operator = (snaplistd_messenger const & rhs) = delete;
 
     // snap::snap_communicator::snap_tcp_client_permanent_message_connection implementation
     virtual void                process_message(snap::snap_communicator_message const & message) override;
@@ -77,25 +83,29 @@ public:
 protected:
     // this is owned by a snaplistd function so no need for a smart pointer
     // (and it would create a loop)
-    snaplistd *                  f_snaplistd = nullptr;
+    snaplistd *                 f_snaplistd = nullptr;
 };
 
 
 
 class snaplistd_mysql_timer
-        : public snap::snap_communicator::snap_timer
+    : public snap::snap_communicator::snap_timer
 {
 public:
     typedef std::shared_ptr<snaplistd_mysql_timer>    pointer_t;
 
-    snaplistd_mysql_timer(snaplistd * proxy);
+                                snaplistd_mysql_timer(snaplistd * proxy);
+                                snaplistd_mysql_timer(snaplistd_mysql_timer const & rhs) = delete;
+    virtual                     ~snaplistd_mysql_timer() override {}
+
+    snaplistd_mysql_timer &     operator = (snaplistd_mysql_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
-    virtual void process_timeout() override;
+    virtual void                process_timeout() override;
 
 private:
     // this is owned by a server function so no need for a smart pointer
-    snaplistd *             f_snaplistd = nullptr;
+    snaplistd *                 f_snaplistd = nullptr;
 };
 
 
@@ -132,17 +142,16 @@ private:
     void                        list_data(snap::snap_communicator_message const & message);
     void                        no_mysql();
 
-    static pointer_t                    f_instance;
     advgetopt::getopt                   f_opt;
     snap::snap_config                   f_config;
-    QString                             f_log_conf = "/etc/snapwebsites/logger/snaplistd.properties";
-    QString                             f_server_name;
-    QString                             f_communicator_addr = "localhost";
+    QString                             f_log_conf = QString("/etc/snapwebsites/logger/snaplistd.properties");
+    QString                             f_server_name = QString();
+    QString                             f_communicator_addr = QString("localhost");
     int                                 f_communicator_port = 4040;
-    snap::snap_communicator::pointer_t  f_communicator;
-    snaplistd_messenger::pointer_t      f_messenger;
-    snaplistd_interrupt::pointer_t      f_interrupt;
-    snaplistd_mysql_timer::pointer_t    f_mysql_timer;
+    snap::snap_communicator::pointer_t  f_communicator = snap::snap_communicator::pointer_t();
+    snaplistd_messenger::pointer_t      f_messenger = snaplistd_messenger::pointer_t();
+    snaplistd_interrupt::pointer_t      f_interrupt = snaplistd_interrupt::pointer_t();
+    snaplistd_mysql_timer::pointer_t    f_mysql_timer = snaplistd_mysql_timer::pointer_t();
     bool                                f_debug = false;
     bool                                f_debug_listd_messages = false;
     float                               f_mysql_connect_timer_index = 1.625f;

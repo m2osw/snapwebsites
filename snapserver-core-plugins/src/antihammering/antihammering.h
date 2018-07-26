@@ -51,20 +51,24 @@ public:
 
 
 class antihammering
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                             antihammering();
-                            ~antihammering();
+                            antihammering(antihammering const & rhs) = delete;
+    virtual                 ~antihammering() override;
+
+    antihammering &         operator = (antihammering const & rhs) = delete;
+
+    static antihammering *  instance();
 
     // plugins::plugin implementation
-    static antihammering *  instance();
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         settings_path() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         settings_path() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t get_antihammering_table();
 
@@ -77,8 +81,8 @@ public:
 private:
     void                    content_update(int64_t variables_timestamp);
 
-    snap_child *                            f_snap = nullptr;
-    libdbproxy::table::pointer_t f_antihammering_table;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_antihammering_table = libdbproxy::table::pointer_t();
 };
 
 

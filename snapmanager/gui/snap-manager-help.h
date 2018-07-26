@@ -16,18 +16,24 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "ui_snap-manager-helpbox.h"
 
-class snap_manager_help : public QMainWindow, public Ui_helpBrowser
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_snap-manager-helpbox.h"
+class snap_manager_help
+    : public QMainWindow
+    , public Ui_helpBrowser
 {
     Q_OBJECT
 
 public:
-    snap_manager_help(QWidget *parent);
-    virtual ~snap_manager_help();
+                snap_manager_help(QWidget * parent);
+    virtual     ~snap_manager_help();
 
 private:
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

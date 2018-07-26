@@ -154,6 +154,13 @@ public:
         }
     }
 
+    // we don't offer copying at the moment, although it would be possible
+    // we just don't use it so don't waste time developing it, but make sure
+    // we're safe in case we wanted to be able to...
+    //
+    fast_buffer(fast_buffer const & rhs) = delete;
+    fast_buffer & operator = (fast_buffer const & rhs) = delete;
+
     char * get()
     {
         return f_ptr;

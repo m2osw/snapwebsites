@@ -201,10 +201,10 @@ public:
     bool                        match(QString const & name, QString const & cmdline);
 
 private:
-    QString                     f_name;
-    QString                     f_command;
-    QString                     f_service;
-    QSharedPointer<QRegExp>     f_match;
+    QString                     f_name = QString();
+    QString                     f_command = QString();
+    QString                     f_service = QString();
+    QSharedPointer<QRegExp>     f_match = QSharedPointer<QRegExp>();
     bool                        f_mandatory = false;
     bool                        f_allow_duplicates = false;
     bool                        f_service_is_enabled = true;

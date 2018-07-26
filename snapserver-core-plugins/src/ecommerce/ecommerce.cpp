@@ -778,8 +778,8 @@ void ecommerce::on_preprocess_path(content::path_info_t& ipath, plugins::plugin 
             typedef uint32_t    operation_t;
             typedef double      quantity_t;
 
-            snap_string_list    f_attributes;
-            QString             f_product;
+            snap_string_list    f_attributes = snap_string_list();
+            QString             f_product = QString();
             operation_t         f_operation = '*';
             quantity_t          f_quantity = 1.0;
         };

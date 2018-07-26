@@ -81,8 +81,8 @@ public:
                             proxy();  // server
                             proxy(QString const & host, int port);  // client
 
-    order_result   sendOrder(order const & order);
-    order         receiveOrder(proxy_io & reader);
+    order_result            sendOrder(order const & order);
+    order                   receiveOrder(proxy_io & reader);
     bool                    sendResult(proxy_io & reader, order_result const & result);
 
     bool                    isConnected() const;
@@ -93,9 +93,9 @@ private:
     int                     bio_read(void * buf, size_t size);
     int                     bio_write(void const * buf, size_t size);
 
-    std::shared_ptr<BIO>    f_bio;
+    std::shared_ptr<BIO>    f_bio = std::shared_ptr<BIO>();
 
-    QString const           f_host;
+    QString const           f_host = QString();
     int const               f_port = 0;
 };
 

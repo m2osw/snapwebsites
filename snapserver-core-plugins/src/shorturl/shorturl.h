@@ -52,22 +52,26 @@ public:
 
 
 class shorturl
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
 {
 public:
                         shorturl();
-                        ~shorturl();
+                        shorturl(shorturl const & rhs) = delete;
+    virtual             ~shorturl() override;
+
+    shorturl &          operator = (shorturl const & rhs) = delete;
+
+    static shorturl *   instance();
 
     // plugins::plugin implementation
-    static shorturl *   instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t get_shorturl_table();
 
@@ -79,14 +83,14 @@ public:
     void                on_generate_header_content(content::path_info_t & path, QDomElement & header, QDomElement & metadata);
 
     // layout::layout_content implementation
-    virtual void        on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body);
+    virtual void        on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body) override;
 
     // path signals
     void                on_check_for_redirect(content::path_info_t & ipath);
     //void                on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);
 
     // path::path_execute implementation
-    virtual bool        on_path_execute(content::path_info_t & ipath);
+    virtual bool        on_path_execute(content::path_info_t & ipath) override;
 
     QString             get_shorturl(QString const & id, int base);
     QString             get_shorturl(uint64_t identifier);
@@ -96,8 +100,8 @@ public:
 private:
     void                content_update(int64_t variables_timestamp);
 
-    snap_child *                            f_snap = nullptr;
-    libdbproxy::table::pointer_t f_shorturl_table;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_shorturl_table = libdbproxy::table::pointer_t();
 };
 
 

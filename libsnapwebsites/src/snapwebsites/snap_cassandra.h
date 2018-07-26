@@ -64,10 +64,10 @@ public:
     bool                                        is_connected() const;
 
 private:
-    libdbproxy::libdbproxy::pointer_t          f_cassandra;
+    libdbproxy::libdbproxy::pointer_t           f_cassandra = libdbproxy::libdbproxy::pointer_t();
     QString                                     f_snapdbproxy_addr = "localhost";
     int                                         f_snapdbproxy_port = 4042;
-    QMap<QString, bool>                         f_created_table;
+    QMap<QString, bool>                         f_created_table = QMap<QString, bool>();
 };
 
 

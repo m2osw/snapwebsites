@@ -68,8 +68,8 @@ public:
 
 
 class robotstxt
-        : public plugins::plugin
-        , public path::path_execute
+    : public plugins::plugin
+    , public path::path_execute
 {
 public:
     static char const * ROBOT_NAME_ALL;
@@ -77,19 +77,22 @@ public:
     static char const * FIELD_NAME_DISALLOW;
 
                         robotstxt();
-                        ~robotstxt();
+                        robotstxt(robotstxt const & rhs) = delete;
+    virtual             ~robotstxt() override;
+
+    robotstxt &         operator = (robotstxt const & rhs) = delete;
+
+    static robotstxt *  instance();
 
     // plugins::plugin
-    static robotstxt *  instance();
-    //virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // path::path_execute implementation
-    virtual bool        on_path_execute(content::path_info_t & url);
+    virtual bool        on_path_execute(content::path_info_t & url) override;
 
     // layout signals
     void                on_generate_header_content(content::path_info_t & path, QDomElement & header, QDomElement & metadata);
@@ -110,17 +113,17 @@ private:
 
     struct robots_field_t
     {
-        QString     f_field;
-        QString     f_value;
+        QString     f_field = QString();
+        QString     f_value = QString();
     };
     typedef std::vector<robots_field_t>                     robots_field_array_t;
     typedef std::map<const QString, robots_field_array_t>   robots_txt_t;
 
     snap_child *        f_snap = nullptr;
-    robots_txt_t        f_robots_txt;
+    robots_txt_t        f_robots_txt = robots_txt_t();
 
-    QString             f_robots_path; // path that the cache represents
-    QString             f_robots_cache;
+    QString             f_robots_path = QString(); // path that the cache represents
+    QString             f_robots_cache = QString();
 };
 
 } // namespace robotstxt

@@ -2894,7 +2894,6 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
         parse_t(QString const & email_data, email & e, bool bounce_email)
             : f_lines(email_data.split('\n'))
             , f_max_lines(f_lines.size())
-            //, f_line(0) -- auto-init
             , f_email(e)
             , f_bounce_email(bounce_email)
         {
@@ -3446,12 +3445,12 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
         }
 
     private:
-        snap_string_list                f_lines;
+        snap_string_list                f_lines = snap_string_list();
         int                             f_max_lines = 0;
         int                             f_line = 0;
         email &                         f_email;
         bool                            f_bounce_email = false;
-        QVector<QCaseInsensitiveString> f_content_type_parameters;
+        QVector<QCaseInsensitiveString> f_content_type_parameters = QVector<QCaseInsensitiveString>();
     };
 
     parse_t p(email_data, e, bounce_email);

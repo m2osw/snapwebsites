@@ -76,8 +76,8 @@ public:
         bool                    get_drop() const;
 
     private:
-        QString                 f_name;
-        QString                 f_description;
+        QString                 f_name = QString();
+        QString                 f_description = QString();
         model_t                 f_model = model_t::MODEL_CONTENT;
         bool                    f_drop = false;
     };
@@ -90,7 +90,7 @@ public:
     static model_t                  string_to_model(QString const & model);
 
 private:
-    table_schema_t::map_t           f_schemas;
+    table_schema_t::map_t           f_schemas = table_schema_t::map_t();
 };
 
 

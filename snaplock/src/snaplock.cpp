@@ -366,9 +366,6 @@ void snaplock::run()
 {
     // Stop on these signals, log them, then terminate.
     //
-    // Note: the handler uses the logger which the create_instance()
-    //       initializes
-    //
     signal( SIGSEGV, snaplock::sighandler );
     signal( SIGBUS,  snaplock::sighandler );
     signal( SIGFPE,  snaplock::sighandler );

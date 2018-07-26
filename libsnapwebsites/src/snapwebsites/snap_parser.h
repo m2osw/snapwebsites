@@ -131,7 +131,7 @@ public:
 
 private:
     token_t         f_id = token_t::TOKEN_ID_NONE_ENUM;
-    QVariant        f_value;
+    QVariant        f_value = QVariant();
 };
 typedef QVector<QSharedPointer<token> >    vector_token_t;
 
@@ -152,6 +152,8 @@ public:
     };
 
                     lexer() { f_pos = f_input.begin(); }
+                    lexer(lexer const & rhs) = delete;
+    lexer &         operator = (lexer const & rhs) = delete;
     bool            eoi() const { return f_pos == f_input.end(); }
     uint32_t        line() const { return f_line; }
     void            set_input(QString const & input);
@@ -163,16 +165,17 @@ public:
 
 private:
     // list of keywords / identifiers
-    typedef QMap<QString, int> keywords_map_t;
+    typedef QMap<QString, int>      keywords_map_t;
 
-    QString                         f_input;
-    QString::const_iterator         f_pos;
+    QString                         f_input = QString();
+    QString::const_iterator         f_pos = QString::const_iterator();
     uint32_t                        f_line = 0;
-    keywords_map_t                  f_keywords;
+    keywords_map_t                  f_keywords = keywords_map_t();
     lexer_error_t                   f_error_code = lexer_error_t::LEXER_ERROR_NONE;
-    QString                         f_error_message;
+    QString                         f_error_message = QString();
     uint32_t                        f_error_line = 0;
 };
+
 
 class keyword
 {
@@ -187,12 +190,16 @@ private:
     static int      g_next_number;
 
     int             f_number = 0;
-    QString         f_identifier;
+    QString         f_identifier = QString();
 };
 
 class choices;
 class token_node;
 
+// TODO: remove these once we only have shared & weak pointers
+//
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class rule
 {
 public:
@@ -200,7 +207,7 @@ public:
 
                     rule() : f_parent(nullptr), f_reducer(nullptr) {}
                     rule(choices& c);
-                    rule(rule const& r);
+                    rule(rule const & r);
 
     void            add_rules(choices& c); // choices of rules
     void            add_choices(choices& c); // sub-rule
@@ -265,15 +272,17 @@ private:
         rule_data_t(keyword const & k);
 
         token_t             f_token = token_t::TOKEN_ID_NONE_ENUM;
-        QString             f_value;        // required value if not empty
-        keyword             f_keyword;      // the keyword
-        choices *           f_choices = nullptr;    // sub-rule if not null & token TOKEN_ID_CHOICES_ENUM
+        QString             f_value = QString();        // required value if not empty
+        keyword             f_keyword = keyword();      // the keyword
+        choices *           f_choices = nullptr;        // sub-rule if not null & token TOKEN_ID_CHOICES_ENUM
     };
 
     choices *               f_parent = nullptr;
-    QVector<rule_data_t>    f_tokens;
-    reducer_t               f_reducer;
+    QVector<rule_data_t>    f_tokens = QVector<rule_data_t>();
+    reducer_t               f_reducer = reducer_t();
 };
+#pragma GCC diagnostic pop
+
 // these have to be defined as friends of the class to enable
 // all possible cases
 rule & operator >> (token_id const & token_left, token_id const & token_right);
@@ -340,8 +349,8 @@ public:
     QString             to_string() const;
 
 private:
-    QString             f_name;
-    QVector<rule *>     f_rules;
+    QString             f_name = QString();
+    QVector<rule *>     f_rules = QVector<rule *>();
 };
 typedef QVector<choices *>            choices_array_t;
 
@@ -380,8 +389,8 @@ public:
 
 private:
     int32_t                             f_line = 0;
-    vector_token_t                      f_tokens;
-    QSharedPointer<parser_user_data>    f_user_data;
+    vector_token_t                      f_tokens = vector_token_t();
+    QSharedPointer<parser_user_data>    f_user_data = QSharedPointer<parser_user_data>();
 };
 
 class grammar
@@ -395,8 +404,8 @@ public:
     QSharedPointer<token_node>  get_result() const { return f_result; }
 
 private:
-    choices_array_t             f_choices;
-    QSharedPointer<token_node>  f_result;
+    choices_array_t             f_choices = choices_array_t();
+    QSharedPointer<token_node>  f_result = QSharedPointer<token_node>();
 };
 
 

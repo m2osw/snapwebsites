@@ -43,13 +43,16 @@ class snaplock;
 
 
 class snaplock_interrupt
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<snaplock_interrupt>     pointer_t;
 
                                 snaplock_interrupt(snaplock * sl);
+                                snaplock_interrupt(snaplock_interrupt const & rhs) = delete;
     virtual                     ~snaplock_interrupt() override {}
+
+    snaplock_interrupt &        operator = (snaplock_interrupt const & rhs) = delete;
 
     // snap::snap_communicator::snap_signal implementation
     virtual void                process_signal() override;
@@ -60,13 +63,16 @@ private:
 
 
 class snaplock_messenger
-        : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
+    : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
 {
 public:
     typedef std::shared_ptr<snaplock_messenger>     pointer_t;
 
                                 snaplock_messenger(snaplock * sl, std::string const & addr, int port);
+                                snaplock_messenger(snaplock_messenger const & rhs) = delete;
     virtual                     ~snaplock_messenger() override {}
+
+    snaplock_messenger &        operator = (snaplock_messenger const & rhs) = delete;
 
     // snap::snap_communicator::snap_tcp_client_permanent_message_connection implementation
     virtual void                process_message(snap::snap_communicator_message const & message) override;
@@ -81,12 +87,16 @@ protected:
 
 
 class snaplock_tool
-        : public snaplock_messenger
+    : public snaplock_messenger
 {
 public:
     typedef std::shared_ptr<snaplock_tool>    pointer_t;
 
                                 snaplock_tool(snaplock * sl, std::string const & addr, int port);
+                                snaplock_tool(snaplock_tool const & rhs) = delete;
+    virtual                     ~snaplock_tool() override {}
+
+    snaplock_tool &             operator = (snaplock_tool const & rhs) = delete;
 
     // snap::snap_communicator::snap_tcp_client_permanent_message_connection implementation
     virtual void                process_message(snap::snap_communicator_message const & message);
@@ -125,6 +135,8 @@ public:
                                 , QString const & server_name
                                 , QString const & service_name
                                 );
+                        snaplock_ticket(snaplock_ticket const & rhs) = delete;
+    snaplock_ticket &   operator = (snaplock_ticket const & rhs) = delete;
 
     void                entering();
     void                entered();
@@ -152,15 +164,15 @@ private:
     snaplock *                      f_snaplock = nullptr;
 
     // initialization
-    snaplock_messenger::pointer_t   f_messenger;
-    QString                         f_object_name;
+    snaplock_messenger::pointer_t   f_messenger = snaplock_messenger::pointer_t();
+    QString                         f_object_name = QString();
     time_t                          f_obtention_timeout = 0;
     int32_t                         f_lock_duration = 0;
-    QString                         f_server_name;
-    QString                         f_service_name;
+    QString                         f_server_name = QString();
+    QString                         f_service_name = QString();
 
     // initialized, entering
-    QString                         f_entering_key;
+    QString                         f_entering_key = QString();
     int                             f_entered_count = 0;
     bool                            f_get_max_ticket = false;
 
@@ -168,12 +180,12 @@ private:
     int                             f_max_ticket_count = 0;
     ticket_id_t                     f_our_ticket = NO_TICKET;
     bool                            f_added_ticket = false;
-    QString                         f_ticket_key;
+    QString                         f_ticket_key = QString();
 
     // ticket added, exiting
     int                             f_ticket_added_count = 0;
     bool                            f_added_ticket_quorum = false;
-    snaplock_ticket::key_map_t      f_still_entering;
+    snaplock_ticket::key_map_t      f_still_entering = snaplock_ticket::key_map_t();
 
     // exited, ticket ready
     bool                            f_ticket_ready = false;
@@ -197,7 +209,10 @@ public:
     static int64_t const        MIN_TIMEOUT     = 3; // in seconds
 
                                 snaplock( int argc, char * argv[] );
+                                snaplock( snaplock const & rhs ) = delete;
     virtual                     ~snaplock();
+
+    snaplock &                  operator = ( snaplock const & rhs ) = delete;
 
     void                        run();
     void                        process_message(snap::snap_communicator_message const & message);
@@ -212,9 +227,6 @@ public:
     static void                 sighandler( int sig );
 
 private:
-                                snaplock( snaplock const & ) = delete;
-    snaplock &                  operator = ( snaplock const & ) = delete;
-
     void                        usage(advgetopt::getopt::status_t status);
     void                        setup_firewall();
     void                        next_wakeup();
@@ -240,26 +252,25 @@ private:
     void                        cleanup();
     void                        send_lockready();
 
-    static pointer_t                            f_instance;
-    advgetopt::getopt                           f_opt;
-    snap::snap_config                           f_config;
-    QString                                     f_log_conf = "/etc/snapwebsites/logger/snaplock.properties";
-    QString                                     f_server_name;
-    QString                                     f_service_name = "snaplock";
-    QString                                     f_communicator_addr = "localhost";
-    int                                         f_communicator_port = 4040;
-    snap::snap_communicator::pointer_t          f_communicator;
-    QString                                     f_host_list = "localhost";
-    int                                         f_port = 9042;
-    int                                         f_max_pending_connections = 20;
-    snaplock_messenger::pointer_t               f_messenger;
-    snaplock_interrupt::pointer_t               f_interrupt;
-    bool                                        f_stop_received = false;
-    bool                                        f_debug = false;
-    bool                                        f_debug_lock_messages = false;
-    std::map<QString, bool>                     f_computers;
-    snaplock_ticket::object_map_t               f_entering_tickets;
-    snaplock_ticket::object_map_t               f_tickets;
+    advgetopt::getopt                   f_opt;
+    snap::snap_config                   f_config;
+    QString                             f_log_conf = QString("/etc/snapwebsites/logger/snaplock.properties");
+    QString                             f_server_name = QString();
+    QString                             f_service_name = QString("snaplock");
+    QString                             f_communicator_addr = QString("localhost");
+    int                                 f_communicator_port = 4040;
+    snap::snap_communicator::pointer_t  f_communicator = snap::snap_communicator::pointer_t();
+    QString                             f_host_list = QString("localhost");
+    int                                 f_port = 9042;
+    int                                 f_max_pending_connections = 20;
+    snaplock_messenger::pointer_t       f_messenger = snaplock_messenger::pointer_t();
+    snaplock_interrupt::pointer_t       f_interrupt = snaplock_interrupt::pointer_t();
+    bool                                f_stop_received = false;
+    bool                                f_debug = false;
+    bool                                f_debug_lock_messages = false;
+    std::map<QString, bool>             f_computers = std::map<QString, bool>();
+    snaplock_ticket::object_map_t       f_entering_tickets = snaplock_ticket::object_map_t();
+    snaplock_ticket::object_map_t       f_tickets = snaplock_ticket::object_map_t();
 };
 
 

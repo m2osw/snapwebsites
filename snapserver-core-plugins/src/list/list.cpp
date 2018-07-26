@@ -291,10 +291,10 @@ private:
     void                    process_data(QString const & acknowledgement_id);
     void                    mark_done();
 
-    std::string             f_data;
+    std::string             f_data = std::string();
     std::string::size_type  f_start = std::string::npos;
     std::string::size_type  f_pos = std::string::npos;
-    QString                 f_service_name;
+    QString                 f_service_name = QString();
     bool                    f_success = false;
     bool                    f_done = false;
     QString const           f_path;
@@ -303,7 +303,7 @@ private:
     int64_t                 f_keep_hour1 = -1;
     int64_t                 f_keep_hour2 = -1;
     int                     f_fd = -1;
-    std::string             f_filename;
+    std::string             f_filename = std::string();
     int                     f_did_work = 0;
 };
 

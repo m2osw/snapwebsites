@@ -66,21 +66,25 @@ public:
 
 
 class tracker
-        : public plugins::plugin
-        , public server::backend_action
+    : public plugins::plugin
+    , public server::backend_action
 {
 public:
                         tracker();
-                        ~tracker();
+                        tracker(tracker const & rhs) = delete;
+    virtual             ~tracker() override;
+
+    tracker &           operator = (tracker const & rhs) = delete;
+
+    static tracker *    instance();
 
     // plugins::plugin implementation
-    static tracker *    instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t get_tracker_table();
 
@@ -90,17 +94,17 @@ public:
     void                on_register_backend_action(server::backend_action_set & actions);
 
     // server::backend_action implementation
-    virtual void        on_backend_action(QString const & action);
+    virtual void        on_backend_action(QString const & action) override;
 
 private:
     void                initial_update(int64_t variables_timestamp);
     void                content_update(int64_t variables_timestamp);
     void                on_backend_tracking_data();
 
-    snap_child *                            f_snap = nullptr;
-    libdbproxy::table::pointer_t f_tracker_table;
-    QString                                 f_email;
-    QDomDocument                            f_doc;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_tracker_table = libdbproxy::table::pointer_t();
+    QString                         f_email = QString();
+    QDomDocument                    f_doc = QDomDocument();
 };
 
 

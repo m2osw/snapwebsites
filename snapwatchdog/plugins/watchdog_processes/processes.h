@@ -77,14 +77,18 @@ class processes
 {
 public:
                         processes();
-                        ~processes();
+                        processes(processes const & rhs) = delete;
+    virtual             ~processes() override;
+
+    processes &         operator = (processes const & rhs) = delete;
+
+    static processes *  instance();
 
     // plugins::plugin implementation
-    static processes *  instance();
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signals
     void                on_process_watch(QDomDocument doc);

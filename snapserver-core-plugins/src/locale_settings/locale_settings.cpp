@@ -443,10 +443,10 @@ void locale_settings::on_replace_token(content::path_info_t & ipath, QDomDocumen
             // full name although all parts except the language are
             // optional; the script is rare, the variant is used
             // quite a bit
-            QString                 f_language;
-            QString                 f_variant;
-            QString                 f_country;
-            QString                 f_script;
+            QString                 f_language = QString();
+            QString                 f_variant = QString();
+            QString                 f_country = QString();
+            QString                 f_script = QString();
         };
 
         QString                 f_locale;           // name to use to setup this locale

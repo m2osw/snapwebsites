@@ -46,6 +46,9 @@ namespace libdbproxy
 
 class libdbproxy;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 class context
     : public QObject
     , public std::enable_shared_from_this<context>
@@ -98,12 +101,13 @@ private:
     // Also, it cannot be a shared_ptr unless you make a restriction that
     // all instances must be allocated on the heap. Thus is the deficiency of
     // std::enabled_shared_from_this<>.
-    casswrapper::schema::KeyspaceMeta::pointer_t f_schema;
+    casswrapper::schema::KeyspaceMeta::pointer_t f_schema = casswrapper::schema::KeyspaceMeta::pointer_t();
     //
-    std::weak_ptr<libdbproxy>                   f_cassandra;
-    QString                                     f_context_name;
-    tables                            f_tables;
+    std::weak_ptr<libdbproxy>                   f_cassandra = std::weak_ptr<libdbproxy>();
+    QString                                     f_context_name = QString();
+    tables                                      f_tables = tables();
 };
+#pragma GCC diagnostic pop
 
 typedef QMap<QString, context::pointer_t> contexts;
 

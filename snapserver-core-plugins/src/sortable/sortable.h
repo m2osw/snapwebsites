@@ -56,19 +56,23 @@ public:
 
 
 class sortable
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         sortable();
-                        ~sortable();
+                        sortable(sortable const & rhs) = delete;
+    virtual             ~sortable() override;
+
+    sortable &          operator = (sortable const & rhs) = delete;
+
+    static sortable *   instance();
 
     // plugins::plugin implementation
-    static sortable *   instance();
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // editor signals
     void                on_prepare_editor_form(editor::editor * e);

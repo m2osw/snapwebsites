@@ -2442,9 +2442,8 @@ int snap_child::post_file_t::get_size() const
  */
 snap_child::snap_child(server_pointer_t s)
     : f_server(s)
-    //, f_child_pid(0) -- auto-init
-    //, f_socket(-1) -- auto-init
     , f_start_date(0)
+    , f_output()            // -Weffc++ forces us to have this one here
     , f_messenger_runner(this)
     , f_messenger_thread("background messenger connection thread", &f_messenger_runner)
 {
@@ -3274,26 +3273,15 @@ void snap_child::read_environment()
         read_env(snap_child * snap, tcp_client_server::bio_client::pointer_t client, environment_map_t & env, environment_map_t & browser_cookies, environment_map_t & post, post_file_map_t & files)
             : f_snap(snap)
             , f_client(client)
-            //, f_unget('\0') -- auto-init
-            //, f_running(true) -- auto-init
-            //, f_started(false) -- auto-init
             , f_env(env)
             , f_browser_cookies(browser_cookies)
-            //, f_name("") -- auto-init
-            //, f_value("") -- auto-init
-            //, f_has_post(false) -- auto-init
             , f_post(post)
             , f_files(files)
-            //, f_post_first() -- auto-init
-            //, f_post_header() -- auto-init
-            //, f_post_line() -- auto-init
-            //, f_post_content() -- auto-init
-            //, f_boundary() -- auto-init
-            //, f_end_boundary() -- auto-init
-            //, f_post_environment() -- auto-init
-            //, f_post_index(0) -- auto-init
         {
         }
+
+        read_env(read_env const & rhs) = delete;
+        read_env & operator = (read_env const & rhs) = delete;
 
         void die(QString const & details) const
         {
@@ -3885,26 +3873,26 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
     private:
         mutable snap_child *        f_snap = nullptr;
         tcp_client_server::bio_client::pointer_t
-                                    f_client;
+                                    f_client = tcp_client_server::bio_client::pointer_t();
         //char                        f_unget = 0;
         bool                        f_running = true;
         bool                        f_started = false;
 
         environment_map_t &         f_env;
         environment_map_t &         f_browser_cookies;
-        QString                     f_name;
-        QString                     f_value;
+        QString                     f_name = QString();
+        QString                     f_value = QString();
 
         bool                        f_has_post = false;
         environment_map_t &         f_post;
         post_file_map_t &           f_files;
         bool                        f_post_first = true;
         bool                        f_post_header = true;
-        QByteArray                  f_post_line;
-        QByteArray                  f_post_content;
-        QByteArray                  f_boundary;
-        QByteArray                  f_end_boundary;
-        environment_map_t           f_post_environment;
+        QByteArray                  f_post_line = QByteArray();
+        QByteArray                  f_post_content = QByteArray();
+        QByteArray                  f_boundary = QByteArray();
+        QByteArray                  f_end_boundary = QByteArray();
+        environment_map_t           f_post_environment = environment_map_t();
         uint32_t                    f_post_index = 0;
     };
 
@@ -9031,11 +9019,11 @@ time_t snap_child::string_to_date(QString const & date)
         parser_t(QString const & date)
             : f_date(date.simplified().toLower().toUtf8())
             , f_s(f_date.data())
-            //, f_time_info() -- initialized below
         {
-            // clear the info as default
-            memset(&f_time_info, 0, sizeof(f_time_info));
         }
+
+        parser_t(parser_t const & rhs) = delete;
+        parser_t & operator = (parser_t const & rhs) = delete;
 
         void skip_spaces()
         {
@@ -9445,9 +9433,9 @@ time_t snap_child::string_to_date(QString const & date)
             return parse_timezone();
         }
 
-        struct tm       f_time_info;
-        QByteArray      f_date;
-        char const *    f_s;
+        struct tm       f_time_info = tm();
+        QByteArray      f_date = QByteArray();
+        char const *    f_s = nullptr;
     } parser(date);
 
     if(!parser.parse())

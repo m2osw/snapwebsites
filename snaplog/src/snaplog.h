@@ -80,18 +80,16 @@ private:
     void                        mysql_ready();
     void                        no_mysql();
 
-    static pointer_t                        g_instance;
-
     advgetopt::getopt                       f_opt;
     snap::snap_config                       f_config;
-    QString                                 f_log_conf                  = "/etc/snapwebsites/logger/snaplog.properties";
-    QString                                 f_communicator_addr         = "127.0.0.1";
+    QString                                 f_log_conf                  = QString("/etc/snapwebsites/logger/snaplog.properties");
+    QString                                 f_communicator_addr         = QString("127.0.0.1");
     int                                     f_communicator_port         = 4040;
-    std::string                             f_server_name;
-    snap::snap_communicator::pointer_t      f_communicator;
-    snaplog_interrupt::pointer_t            f_interrupt;
-    snaplog_messenger::pointer_t            f_messenger;
-    snaplog_timer::pointer_t                f_timer;
+    std::string                             f_server_name               = std::string();
+    snap::snap_communicator::pointer_t      f_communicator              = snap::snap_communicator::pointer_t();
+    snaplog_interrupt::pointer_t            f_interrupt                 = snaplog_interrupt::pointer_t();
+    snaplog_messenger::pointer_t            f_messenger                 = snaplog_messenger::pointer_t();
+    snaplog_timer::pointer_t                f_timer                     = snaplog_timer::pointer_t();
     bool                                    f_ready                     = false;
     bool                                    f_force_restart             = false;
     bool                                    f_stop_received             = false;

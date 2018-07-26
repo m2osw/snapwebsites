@@ -37,6 +37,9 @@ class dynamic_plugin_t
 {
 public:
                         dynamic_plugin_t() {}
+                        dynamic_plugin_t(dynamic_plugin_t const & rhs) = delete;
+
+    dynamic_plugin_t    operator = (dynamic_plugin_t const & rhs) = delete;
 
     plugins::plugin *   get_plugin() const { return f_plugin; }
     void                set_plugin(plugins::plugin * p);
@@ -46,13 +49,9 @@ public:
     QString             get_renamed_path() const { return f_cpath_renamed; }
 
 private:
-                        // prevent copies or a user could reset the pointer!
-                        dynamic_plugin_t(dynamic_plugin_t const & rhs);
-                        dynamic_plugin_t & operator = (dynamic_plugin_t const & rhs);
-
     plugins::plugin *   f_plugin = nullptr;
     plugins::plugin *   f_plugin_if_renamed = nullptr;
-    QString             f_cpath_renamed;
+    QString             f_cpath_renamed = QString();
 };
 
 
@@ -60,20 +59,34 @@ class path_execute
 {
 public:
     virtual         ~path_execute() {} // ensure proper virtual tables
+
     virtual bool    on_path_execute(content::path_info_t & ipath) = 0;
 };
 
 
-class path_error_callback : public permission_error_callback
+class path_error_callback
+    : public permission_error_callback
 {
 public:
-    path_error_callback(snap_child * snap, content::path_info_t & ipath);
-    void set_plugin(plugins::plugin * p);
-    void set_autologout(bool autologout = true);
-    virtual void on_error(snap_child::http_code_t err_code, QString const & err_name, QString const & err_description, QString const & err_details, bool const err_by_mime_type);
-    virtual void on_redirect(
-            /* messages::set_error() */ QString const & err_name, QString const & err_description, QString const & err_details, bool err_security,
-            /* snap_child::page_redirect() */ QString const & path, snap_child::http_code_t const http_code);
+                            path_error_callback(snap_child * snap, content::path_info_t & ipath);
+                            path_error_callback(path_error_callback const & rhs) = delete;
+    virtual                 ~path_error_callback() override;
+
+    path_error_callback &   operator = (path_error_callback const & rhs) = delete;
+
+    void                    set_plugin(plugins::plugin * p);
+    void                    set_autologout(bool autologout = true);
+    virtual void            on_error(snap_child::http_code_t err_code
+                                   , QString const & err_name
+                                   , QString const & err_description
+                                   , QString const & err_details
+                                   , bool const err_by_mime_type);
+    virtual void            on_redirect(/* messages::set_error() */ QString const & err_name
+                                      , QString const & err_description
+                                      , QString const & err_details
+                                      , bool err_security
+                                      , /* snap_child::page_redirect() */ QString const & path
+                                      , snap_child::http_code_t const http_code);
 
 private:
     snap_child *            f_snap = nullptr;
@@ -84,17 +97,21 @@ private:
 
 
 class path
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         path();
-    virtual             ~path();
+                        path(path const & rhs) = delete;
+    virtual             ~path() override;
+
+    path &              operator = (path const & rhs) = delete;
+
+    static path *       instance();
 
     // plugins::plugin implementation
-    static path *       instance();
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signals
     void                on_init();
@@ -115,9 +132,9 @@ public:
     void                add_restore_link_to_signature_for(QString const page_path);
 
 private:
-    snap_child *                    f_snap = nullptr;
-    int64_t                         f_last_modified = 0;
-    snap_string_list                f_add_restore_link_to_signature;
+    snap_child *        f_snap = nullptr;
+    int64_t             f_last_modified = 0;
+    snap_string_list    f_add_restore_link_to_signature = snap_string_list();
 };
 
 } // namespace path

@@ -65,34 +65,38 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class ecommerce
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
 {
 public:
                                 ecommerce();
-    virtual                     ~ecommerce();
+                                ecommerce(ecommerce const & rhs) = delete;
+    virtual                     ~ecommerce() override;
+
+    ecommerce &                 operator = (ecommerce const & rhs) = delete;
+
+    static ecommerce *          instance();
 
     // plugins::plugin implementation
-    static ecommerce *          instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     // server signals
     void                        on_process_post(QString const & uri_path);
 
     // path::path_execute implementation
-    virtual bool                on_path_execute(content::path_info_t & ipath);
+    virtual bool                on_path_execute(content::path_info_t & ipath) override;
 
     // path signals
     void                        on_preprocess_path(content::path_info_t & ipath, plugins::plugin * path_plugin);
 
     // layout::layout_content implementation
-    virtual void                on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void                on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // layout signals
     void                        on_generate_header_content(content::path_info_t & path, QDomElement & header, QDomElement & metadata);

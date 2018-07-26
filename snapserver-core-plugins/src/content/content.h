@@ -267,6 +267,8 @@ public:
 
 class content;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class path_info_t
 {
 public:
@@ -298,6 +300,7 @@ public:
 
                                     status_t();
                                     status_t(status_type current_status);
+
         void                        set_status(status_type current_status);
         status_type                 get_status() const;
         bool                        valid_transition(status_t destination) const;
@@ -390,24 +393,24 @@ public:
 
     // Methods which allow direct access to the data values in the database
     //
-    bool                                content_key_exists()  const;
-    bool                                branch_key_exists()   const;
-    bool                                revision_key_exists() const;
+    bool                            content_key_exists()  const;
+    bool                            branch_key_exists()   const;
+    bool                            revision_key_exists() const;
     //
-    bool                                content_value_exists ( QString const& name ) const;
-    bool                                branch_value_exists  ( QString const& name ) const;
-    bool                                revision_value_exists( QString const& name ) const;
+    bool                            content_value_exists ( QString const& name ) const;
+    bool                            branch_value_exists  ( QString const& name ) const;
+    bool                            revision_value_exists( QString const& name ) const;
     //
-    const libdbproxy::value& get_content_value ( QString const& name ) const;
-    const libdbproxy::value& get_branch_value  ( QString const& name ) const;
-    const libdbproxy::value& get_revision_value( QString const& name ) const;
-    void                                set_content_value ( QString const& name, const libdbproxy::value& val );
-    void                                set_branch_value  ( QString const& name, const libdbproxy::value& val );
-    void                                set_revision_value( QString const& name, const libdbproxy::value& val );
+    libdbproxy::value const &       get_content_value ( QString const& name ) const;
+    libdbproxy::value const &       get_branch_value  ( QString const& name ) const;
+    libdbproxy::value const &       get_revision_value( QString const& name ) const;
+    void                            set_content_value ( QString const& name, const libdbproxy::value& val );
+    void                            set_branch_value  ( QString const& name, const libdbproxy::value& val );
+    void                            set_revision_value( QString const& name, const libdbproxy::value& val );
     //
-    void                                drop_content_cell ( QString const& name );
-    void                                drop_branch_cell  ( QString const& name );
-    void                                drop_revision_cell( QString const& name );
+    void                            drop_content_cell ( QString const& name );
+    void                            drop_branch_cell  ( QString const& name );
+    void                            drop_revision_cell( QString const& name );
 
 private:
     typedef QMap<QString, QString>  parameters_t;
@@ -415,34 +418,37 @@ private:
     void                            clear(bool keep_parameters = false);
 
     // auto-initialized
-    content *                       f_content_plugin = nullptr;
-    snap_child *                    f_snap = nullptr;
-    bool                            f_initialized = false;
+    content *                               f_content_plugin = nullptr;
+    snap_child *                            f_snap = nullptr;
+    bool                                    f_initialized = false;
 
     // user specified
-    QString                         f_key;
-    QString                         f_real_key;
-    QString                         f_cpath;
-    mutable snap_string_list        f_segments;
-    QString                         f_real_cpath;
-    bool                            f_main_page = false;
-    parameters_t                    f_parameters;
+    QString                                 f_key = QString();
+    QString                                 f_real_key = QString();
+    QString                                 f_cpath = QString();
+    mutable snap_string_list                f_segments = snap_string_list();
+    QString                                 f_real_cpath = QString();
+    bool                                    f_main_page = false;
+    parameters_t                            f_parameters = parameters_t();
 
     // generated internally
-    mutable snap_version::version_number_t  f_branch;
-    mutable snap_version::version_number_t  f_revision;
-    QString                                 f_revision_string;
-    mutable QString                         f_locale;
-    mutable QString                         f_branch_key;
-    mutable QString                         f_revision_key;
-    mutable QString                         f_draft_key;
-    mutable QString                         f_suggestion_key;
-    libdbproxy::table::pointer_t f_content_table;
-    libdbproxy::table::pointer_t f_branch_table;
-    libdbproxy::table::pointer_t f_revision_table;
+    mutable snap_version::version_number_t  f_branch = snap_version::version_number_t();
+    mutable snap_version::version_number_t  f_revision = snap_version::version_number_t();
+    QString                                 f_revision_string = QString();
+    mutable QString                         f_locale = QString();
+    mutable QString                         f_branch_key = QString();
+    mutable QString                         f_revision_key = QString();
+    mutable QString                         f_draft_key = QString();
+    mutable QString                         f_suggestion_key = QString();
+    libdbproxy::table::pointer_t            f_content_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t            f_branch_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t            f_revision_table = libdbproxy::table::pointer_t();
 };
+#pragma GCC diagnostic pop
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class field_search
 {
 public:
@@ -533,11 +539,11 @@ public:
         path_info_t &       get_ipath() const { return const_cast<path_info_t &>(f_path_info); }
 
     private:
-        command_t                       f_cmd = command_t::COMMAND_UNKNOWN;
-        libdbproxy::value    f_value;
-        QDomElement                     f_element;
-        search_result_t *               f_result = nullptr;
-        path_info_t                     f_path_info;
+        command_t           f_cmd = command_t::COMMAND_UNKNOWN;
+        libdbproxy::value   f_value = libdbproxy::value();
+        QDomElement         f_element = QDomElement();
+        search_result_t *   f_result = nullptr;
+        path_info_t         f_path_info = path_info_t();
     };
     typedef QVector<cmd_info_t> cmd_info_vector_t;
 
@@ -558,12 +564,13 @@ public:
 private:
     void                run();
 
-    char const *        f_filename;
-    char const *        f_function;
-    int                 f_line;
+    char const *        f_filename = nullptr;
+    char const *        f_function = nullptr;
+    int                 f_line = 0;
     snap_child *        f_snap = nullptr;
-    cmd_info_vector_t   f_program;
+    cmd_info_vector_t   f_program = cmd_info_vector_t();
 };
+#pragma GCC diagnostic pop
 
 field_search create_field_search(char const * filename, char const * func, int line, snap_child * snap);
 
@@ -573,6 +580,8 @@ field_search create_field_search(char const * filename, char const * func, int l
 
 typedef QVector<QString>            dependency_list_t;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class attachment_file
 {
 public:
@@ -617,41 +626,43 @@ public:
 
 private:
     snap_child *                    f_snap = nullptr;
-    snap_child::post_file_t         f_file;
+    snap_child::post_file_t         f_file = snap_child::post_file_t();
     bool                            f_multiple = false;
     bool                            f_has_cpath = false;
-    QString                         f_parent_cpath;
-    QString                         f_field_name;
-    QString                         f_attachment_cpath;
-    QString                         f_attachment_owner;
-    QString                         f_attachment_type;
-    mutable QString                 f_name;
+    QString                         f_parent_cpath = QString();
+    QString                         f_field_name = QString();
+    QString                         f_attachment_cpath = QString();
+    QString                         f_attachment_owner = QString();
+    QString                         f_attachment_type = QString();
+    mutable QString                 f_name = QString();
     int64_t                         f_creation_time = 0;
     int64_t                         f_update_time = 0;
-    dependency_list_t               f_dependencies;
+    dependency_list_t               f_dependencies = dependency_list_t();
     int                             f_revision_limit = 0;
 };
+#pragma GCC diagnostic pop
 
 
 class permission_flag
 {
 public:
                         permission_flag() {}
+                        permission_flag(permission_flag const & rhs) = delete;
+    permission_flag &   operator = (permission_flag const & rhs) = delete;
+
     bool                allowed() const { return f_allowed; }
     QString const &     reason() const { return f_reason; }
     void                not_permitted(QString const & reason = "");
 
 private:
-    // prevent copies or a user could reset the flag!
-                        permission_flag(permission_flag const & rhs) = delete;
-    permission_flag &   operator = (permission_flag const & rhs) = delete;
-
     bool                f_allowed = true;
-    QString             f_reason;
+    QString             f_reason = QString();
 };
 
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class journal_list
 {
 public:
@@ -667,18 +678,20 @@ private:
 
     void                finish_pages();
 
-    snap_child *                            f_snap = nullptr;
-    libdbproxy::table::pointer_t            f_journal_table;
-    QStringList                             f_url_list;
-    bool                                    f_finished_called = false;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_journal_table = libdbproxy::table::pointer_t();
+    snap_string_list                f_url_list = snap_string_list();
+    bool                            f_finished_called = false;
 };
+#pragma GCC diagnostic pop
 
 
 
 
-class content : public plugins::plugin
-              , public server::backend_action
-              , public links::links_cloned
+class content
+    : public plugins::plugin
+    , public server::backend_action
+    , public links::links_cloned
 {
 public:
     enum class param_type_t
@@ -705,13 +718,13 @@ public:
 
     struct content_attachment
     {
-        QString             f_owner;
-        QString             f_field_name;
-        QString             f_type;
-        QString             f_path;
-        QString             f_mime_type;
-        QString             f_filename;
-        dependency_list_t   f_dependencies;
+        QString             f_owner = QString();
+        QString             f_field_name = QString();
+        QString             f_type = QString();
+        QString             f_path = QString();
+        QString             f_mime_type = QString();
+        QString             f_filename = QString();
+        dependency_list_t   f_dependencies = dependency_list_t();
     };
 
     enum class param_revision_t
@@ -723,23 +736,28 @@ public:
 
     struct clone_info_t
     {
-        path_info_t             f_ipath;
-        //path_info_t::status_t   f_processing_state; -- we cannot have intermediate states
-        path_info_t::status_t   f_done_state;
+                                                clone_info_t()
+                                                    : f_ipath() // required with -Weffc++
+                                                {
+                                                }
+
+        path_info_t                             f_ipath;
+        //path_info_t::status_t                   f_processing_state; -- we cannot have intermediate states
+        path_info_t::status_t                   f_done_state = path_info_t::status_t();
     };
 
     struct cloned_branch_t
     {
-        snap_version::version_number_t          f_branch;
-        snap_version::version_numbers_vector_t  f_revisions;
+        snap_version::version_number_t          f_branch = snap_version::version_number_t();
+        snap_version::version_numbers_vector_t  f_revisions = snap_version::version_numbers_vector_t();
     };
     typedef std::vector<cloned_branch_t>    cloned_branches_t;
 
     struct cloned_page_t
     {
-        path_info_t                             f_source;
-        path_info_t                             f_destination;
-        cloned_branches_t                       f_branches;
+        path_info_t                             f_source = path_info_t();
+        path_info_t                             f_destination = path_info_t();
+        cloned_branches_t                       f_branches = cloned_branches_t();
     };
     typedef std::vector<cloned_page_t>      cloned_pages_t;
 
@@ -748,35 +766,38 @@ public:
         cloned_tree_t(clone_info_t & source, clone_info_t & destination)
             : f_source(source)
             , f_destination(destination)
-            //, f_pages() -- auto-init
         {
         }
 
         clone_info_t &                          f_source;
         clone_info_t &                          f_destination;
-        cloned_pages_t                          f_pages;
+        cloned_pages_t                          f_pages = cloned_pages_t();
     };
 
                         content();
-    virtual             ~content();
+                        content(content const & rhs) = delete;
+    virtual             ~content() override;
+
+    content &           operator = (content const & rhs) = delete;
+
+    static content *    instance();
 
     // plugins::plugin implementation
-    static content *    instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // links::links_cloned implementation
-    virtual void        repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning);
+    virtual void        repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning) override;
 
     // signal handling
     //void                on_execute(QString const & uri_path); // TODO: there is no method body!
     void                on_save_content();
     void                on_register_backend_action(server::backend_action_set & actions);
-    virtual void        on_backend_action(QString const & action);
+    virtual void        on_backend_action(QString const & action) override;
     void                on_backend_process();
     void                on_load_file(snap_child::post_file_t & file, bool & found);
     void                on_table_is_accessible(QString const & table_name, server::accessible_flag_t & accessible);
@@ -854,7 +875,7 @@ public:
     bool                is_final(QString const & key);
 
     // journal support
-    journal_list *       get_journal_list();
+    journal_list *      get_journal_list();
 
     SNAP_TEST_PLUGIN_SUITE_SIGNALS()
 
@@ -864,8 +885,8 @@ private:
     // from the <param> tags
     struct content_param
     {
-        QString                     f_name;
-        QMap<QString, QString>      f_data; // [locale] = <html>
+        QString                     f_name = QString();
+        QMap<QString, QString>      f_data = {}; // [locale] = <html>
         param_revision_t            f_revision_type = param_revision_t::PARAM_REVISION_GLOBAL;
         param_priority_t            f_priority = PARAM_DEFAULT_PRIORITY;
         bool                        f_overwrite = false;
@@ -876,10 +897,10 @@ private:
 
     struct content_link
     {
-        links::link_info                f_source;
-        links::link_info                f_destination;
-        snap_version::version_number_t  f_branch_source;
-        snap_version::version_number_t  f_branch_destination;
+        links::link_info                f_source = links::link_info();
+        links::link_info                f_destination = links::link_info();
+        snap_version::version_number_t  f_branch_source = snap_version::version_number_t();
+        snap_version::version_number_t  f_branch_destination = snap_version::version_number_t();
     };
     typedef QVector<content_link>   content_links_t;
 
@@ -887,13 +908,13 @@ private:
 
     struct content_block_t
     {
-        QString                     f_path;
-        QString                     f_moved_from;
-        QString                     f_owner;
-        content_params_t            f_params;
-        content_links_t             f_links;
-        content_links_t             f_remove_links;
-        content_attachments_t       f_attachments;
+        QString                     f_path = QString();
+        QString                     f_moved_from = QString();
+        QString                     f_owner = QString();
+        content_params_t            f_params = content_params_t();
+        content_links_t             f_links = content_links_t();
+        content_links_t             f_remove_links = content_links_t();
+        content_attachments_t       f_attachments = content_attachments_t();
         bool                        f_saved = false;
     };
     typedef QMap<QString, content_block_t>  content_block_map_t;
@@ -902,8 +923,8 @@ private:
     struct javascript_ref_t
     {
         //QByteArray                  f_md5;
-        QString                     f_name;
-        QString                     f_filename;
+        QString                     f_name = QString();
+        QString                     f_filename = QString();
     };
     typedef QVector<javascript_ref_t> javascript_ref_map_t;
 
@@ -930,24 +951,24 @@ private:
     SNAP_TEST_PLUGIN_TEST_DECL(test_journal_list)
 
     snap_child *                         f_snap = nullptr;
-    libdbproxy::table::pointer_t         f_content_table;
-    libdbproxy::table::pointer_t         f_secret_table;
-    libdbproxy::table::pointer_t         f_processing_table;
-    libdbproxy::table::pointer_t         f_cache_table;
-    libdbproxy::table::pointer_t         f_branch_table;
-    libdbproxy::table::pointer_t         f_revision_table;
-    libdbproxy::table::pointer_t         f_files_table;
-    content_block_map_t                  f_blocks;
+    libdbproxy::table::pointer_t         f_content_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t         f_secret_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t         f_processing_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t         f_cache_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t         f_branch_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t         f_revision_table = libdbproxy::table::pointer_t();
+    libdbproxy::table::pointer_t         f_files_table = libdbproxy::table::pointer_t();
+    content_block_map_t                  f_blocks = content_block_map_t();
     int32_t                              f_file_index = 0;
     bool                                 f_updating = false;
-    QMap<QString, bool>                  f_added_javascripts;
-    javascript_ref_map_t                 f_javascripts;
-    QMap<QString, bool>                  f_added_css;
+    QMap<QString, bool>                  f_added_javascripts = QMap<QString, bool>();
+    javascript_ref_map_t                 f_javascripts = javascript_ref_map_t();
+    QMap<QString, bool>                  f_added_css = QMap<QString, bool>();
 
     // Journaling support
     //
-    std::stack<journal_list *>           f_journal_list_stack;
-    std::vector<journal_list>            f_to_process;
+    std::stack<journal_list *>           f_journal_list_stack = std::stack<journal_list *>();
+    std::vector<journal_list>            f_to_process = std::vector<journal_list>();
 };
 
 //class content_box_execute

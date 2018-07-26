@@ -68,7 +68,7 @@ public:
     test_func_map_t const &         get_tests() const;
 
 private:
-    mutable test_func_map_t         f_tests;
+    mutable test_func_map_t         f_tests = test_func_map_t();
 };
 
 
@@ -245,20 +245,24 @@ private:
 
 
 class test_plugin_suite
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                                 test_plugin_suite();
-                                ~test_plugin_suite();
+                                test_plugin_suite(test_plugin_suite const & rhs) = delete;
+    virtual                     ~test_plugin_suite() override;
+
+    test_plugin_suite &         operator = (test_plugin_suite const & rhs) = delete;
+
+    static test_plugin_suite *  instance();
 
     // plugins::plugin implementation
-    static test_plugin_suite *  instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     test_list_t const &         get_test_list() const;
 
@@ -268,7 +272,7 @@ private:
     void                        content_update(int64_t variables_timestamp);
 
     snap_child *                f_snap = nullptr;
-    test_list_t                 f_tests;
+    test_list_t                 f_tests = test_list_t();
 };
 
 

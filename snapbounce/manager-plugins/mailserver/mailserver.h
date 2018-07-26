@@ -58,18 +58,22 @@ public:
 
 
 class mailserver
-        : public snap_manager::plugin_base
+    : public snap_manager::plugin_base
 {
 public:
                             mailserver();
+                            mailserver(mailserver const & rhs) = delete;
     virtual                 ~mailserver() override;
 
+    mailserver &            operator = (mailserver const & rhs) = delete;
+
+    static mailserver *     instance();
+
     // plugins::plugin implementation
-    static mailserver *        instance();
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // manager overload
     virtual bool            display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri) override;

@@ -141,7 +141,7 @@ private:
     int64_t             f_invalid_passwords_counter_lifetime = 1;
     int64_t             f_invalid_passwords_slowdown = 1;
     int64_t             f_blocked_user_counter = 5;
-    QString             f_blocked_user_firewall_duration = "week";
+    QString             f_blocked_user_firewall_duration = QString("week");
     int64_t             f_blocked_user_counter_lifetime = 5;
     bool                f_limit_duration = false;
     bool                f_check_blacklist = false;
@@ -164,7 +164,7 @@ public:
 private:
     void                passwords_to_list(QString const & passwords);
 
-    snap_string_list    f_list;
+    snap_string_list    f_list = snap_string_list();
     size_t              f_count = 0;
     size_t              f_skipped = 0;
 };
@@ -172,29 +172,33 @@ private:
 
 
 class password
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
 {
 public:
                         password();
-                        ~password();
+                        password(password const & rhs) = delete;
+    virtual             ~password() override;
+
+    password &          operator = (password const & rhs) = delete;
+
+    static password *   instance();
 
     // plugins::plugin implementation
-    static password *   instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // users signals
-    void on_check_user_security ( users::users::user_security_t    & security    );
-    void on_user_logged_in      ( users::users::user_logged_info_t & logged_info );
-    void on_save_password       ( users::users::user_info_t        & user_info, QString const & user_password, QString const & password_policy );
-    void on_invalid_password    ( users::users::user_info_t        & user_info, QString const & policy );
-    void on_blocked_user        ( users::users::user_info_t        & user_info, QString const & policy );
+    void                on_check_user_security ( users::users::user_security_t    & security    );
+    void                on_user_logged_in      ( users::users::user_logged_info_t & logged_info );
+    void                on_save_password       ( users::users::user_info_t        & user_info, QString const & user_password, QString const & password_policy );
+    void                on_invalid_password    ( users::users::user_info_t        & user_info, QString const & policy );
+    void                on_blocked_user        ( users::users::user_info_t        & user_info, QString const & policy );
 
     // path::path_execute implementation
     bool                on_path_execute(content::path_info_t & ipath);
@@ -209,7 +213,8 @@ public:
     // layout signals
     void                on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
 
-    libdbproxy::table::pointer_t get_password_table();
+    libdbproxy::table::pointer_t
+                        get_password_table();
     QString             check_password_against_policy(users::users::user_info_t user_info, QString const & user_password, QString const & policy);
     QString             create_password(QString const & policy = "users");
 
@@ -219,9 +224,9 @@ private:
     void                on_path_execute__blacklist_new_passwords(content::path_info_t & ipath);
     void                on_path_execute__blacklist_remove_passwords(content::path_info_t & ipath);
 
-    snap_child *                            f_snap = nullptr;
-    libdbproxy::table::pointer_t f_password_table;
-    bool                                    f_added_policy = false;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_password_table = libdbproxy::table::pointer_t();
+    bool                            f_added_policy = false;
 };
 
 

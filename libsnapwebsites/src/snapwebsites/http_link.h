@@ -58,6 +58,8 @@ public:
 
 class snap_child;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class http_link
 {
 public:
@@ -84,12 +86,13 @@ public:
     std::string         to_http_header() const;
 
 private:
-    snap_child *        f_snap = nullptr;   // the snap child that created this link
-    std::string         f_link;             // this link URI
-    std::string         f_rel;              // rel attribute, a.k.a. link name
-    bool                f_redirect = false; // whether to include this link in a redirect header
-    param_t             f_params;           // other attributes
+    snap_child *        f_snap = nullptr;           // the snap child that created this link
+    std::string         f_link = std::string();     // this link URI
+    std::string         f_rel = std::string();      // rel attribute, a.k.a. link name
+    bool                f_redirect = false;         // whether to include this link in a redirect header
+    param_t             f_params = param_t();       // other attributes
 };
+#pragma GCC diagnostic pop
 
 
 

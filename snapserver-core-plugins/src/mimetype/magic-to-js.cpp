@@ -256,7 +256,7 @@ public:
 
         // TODO: redefine controlled vars with the typedef's of this class
         char                        f_character = 0;
-        std::string                 f_string;
+        std::string                 f_string = std::string();
         int64_t                     f_integer = 0;
         double                      f_float = 0.0;
     };
@@ -277,12 +277,12 @@ private:
     token_t         get_string_token();
     token_t         get_number_token(mode_t mode, int c);
 
-    filenames_t                     f_filenames;
+    filenames_t                     f_filenames = filenames_t();
     size_t                          f_fpos = 0;
     int32_t                         f_line = 1;
     bool                            f_start_of_line = true;
-    std::shared_ptr<std::ifstream>  f_file; // current stream
-    std::vector<char>               f_unget;
+    std::shared_ptr<std::ifstream>  f_file = std::shared_ptr<std::ifstream>(); // current stream
+    std::vector<char>               f_unget = std::vector<char>();
 };
 
 
@@ -389,11 +389,6 @@ std::ostream& operator << (std::ostream& out, lexer::token_t const& token)
  */
 lexer::lexer(filenames_t fn)
     : f_filenames(fn)
-    //, f_fpos(0) -- auto-init
-    //, f_line(1) -- auto-init
-    //, f_start_of_line(true)
-    //, f_file(nullptr) -- auto-init
-    //, f_unget() -- auto-init
 {
     if(fn.size() > 0)
     {
@@ -1163,16 +1158,16 @@ public:
         std::string         get_string() const { return f_string; }
 
     private:
-        integer_t           f_level = 0;        // number of > at the start (0+)
-        integer_t           f_offset = 0;       // no support for indirections at this point (it's not that complicated, just time consuming to make sure it works right.)
+        integer_t           f_level = 0;                // number of > at the start (0+)
+        integer_t           f_offset = 0;               // no support for indirections at this point (it's not that complicated, just time consuming to make sure it works right.)
         type_t              f_type = type_t::ENTRY_TYPE_UNKNOWN;         // see enum
-        integer_t           f_mask = 0;         // defined with the type as in: "long&0xF0F0F0F0"
-        integer_t           f_maxlength = 0;    // search/<maxlength>
-        integer_t           f_flags = 0;        // [p]string/<flags>, and NOT (!)
-        std::string         f_mimetype;         // a string found after the !:mimetype ...
-        integer_t           f_integer = 0;      // compare with this integer
-        float_t             f_float = 0.0;      // compare with this float
-        std::string         f_string;           // compare with this string (may include '\0')
+        integer_t           f_mask = 0;                 // defined with the type as in: "long&0xF0F0F0F0"
+        integer_t           f_maxlength = 0;            // search/<maxlength>
+        integer_t           f_flags = 0;                // [p]string/<flags>, and NOT (!)
+        std::string         f_mimetype = std::string(); // a string found after the !:mimetype ...
+        integer_t           f_integer = 0;              // compare with this integer
+        float_t             f_float = 0.0;              // compare with this float
+        std::string         f_string = std::string();   // compare with this string (may include '\0')
     };
     typedef std::vector<entry_t::pointer_t>    entry_vector_t;
 
@@ -1190,10 +1185,10 @@ private:
     void                    output_header();
     void                    output_footer();
 
-    lexer::pointer_t        f_lexer;
+    lexer::pointer_t        f_lexer = lexer::pointer_t();
 
-    entry_vector_t          f_entries;
-    std::string             f_magic_name;
+    entry_vector_t          f_entries = entry_vector_t();
+    std::string             f_magic_name = std::string();
 };
 
 
@@ -3055,8 +3050,8 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
         }
 
         // variable members
-        entry_vector_t  f_entries;
-        bool            f_has_mime;
+        entry_vector_t  f_entries = entry_vector_t();
+        bool            f_has_mime = false;
     };
     recursive_output out(has_mime);
 

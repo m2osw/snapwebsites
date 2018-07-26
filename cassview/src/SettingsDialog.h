@@ -22,17 +22,20 @@
 
 #include <QtGui>
 
-#include "ui_SettingsDialog.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_SettingsDialog.h"
 class SettingsDialog
-        : public QDialog
-        , Ui::SettingsDialog
+    : public QDialog
+    , Ui::SettingsDialog
 {
     Q_OBJECT
 
 public:
     explicit SettingsDialog( QWidget *p = nullptr, const bool first_time = false );
-    ~SettingsDialog();
+    virtual ~SettingsDialog() override;
 
     static bool tryConnection( QWidget* p = nullptr );
 
@@ -49,12 +52,13 @@ private slots:
     void on_f_contextEdit_textChanged(const QString &arg1);
 
 private:
-    QVariant    f_server;
-    QVariant    f_port;
-    QVariant    f_useSSL;
-    QVariant    f_promptBeforeSave;
-    QVariant    f_contextName;
+    QVariant    f_server = QVariant();
+    QVariant    f_port = QVariant();
+    QVariant    f_useSSL = QVariant();
+    QVariant    f_promptBeforeSave = QVariant();
+    QVariant    f_contextName = QVariant();
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

@@ -394,6 +394,9 @@ int process::run()
             sigprocmask(SIG_BLOCK, &set, &f_signal_mask);
         }
 
+        raii_pipe(raii_pipe const & rhs) = delete;
+        raii_pipe & operator = (raii_pipe const & rhs) = delete;
+
         ~raii_pipe()
         {
             // make sure the f_file gets closed
@@ -442,8 +445,8 @@ int process::run()
 
     private:
         FILE *                      f_file = nullptr;
-        QString                     f_command;
-        sigset_t                    f_signal_mask;
+        QString                     f_command = QString();
+        sigset_t                    f_signal_mask = sigset_t();
     };
 
     raii_pipe rp(/*this,*/ f_command, f_arguments);
@@ -787,6 +790,8 @@ int process::run()
                 return -1;
             }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
             class out_t
                 : public snap_thread::snap_runner
             {
@@ -832,9 +837,10 @@ int process::run()
 
                 QByteArray &                    f_output;
                 int32_t                         f_pipe = -1;
-                std::function<bool(process * p, QByteArray const & output)> f_callback;
+                std::function<bool(process * p, QByteArray const & output)> f_callback = std::function<bool(process * p, QByteArray const & output)>();
                 process *                       f_process = nullptr;
             } out(f_output);
+#pragma GCC diagnostic pop
             out.f_pipe = inout.f_pipes[2];
             if(f_output_callback != nullptr)
             {

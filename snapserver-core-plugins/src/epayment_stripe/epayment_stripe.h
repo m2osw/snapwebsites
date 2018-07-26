@@ -120,23 +120,27 @@ public:
 
 
 class epayment_stripe
-        : public plugins::plugin
-        //, public path::path_execute
-        , public layout::layout_content
-        , public epayment_creditcard::epayment_creditcard_gateway_t
+    : public plugins::plugin
+    //, public path::path_execute
+    , public layout::layout_content
+    , public epayment_creditcard::epayment_creditcard_gateway_t
 {
 public:
                                 epayment_stripe();
-                                ~epayment_stripe();
+                                epayment_stripe(epayment_stripe const & rhs) = delete;
+    virtual                     ~epayment_stripe() override;
+
+    epayment_stripe &           operator = (epayment_stripe const & rhs) = delete;
+
+    static epayment_stripe *    instance();
 
     // plugins::plugin implementation
-    static epayment_stripe *    instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t     get_epayment_stripe_table();
 
@@ -148,7 +152,7 @@ public:
 
     // layout signals
     void                        on_generate_header_content(content::path_info_t & path, QDomElement & header, QDomElement & metadata);
-    virtual void                on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void                on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // filter signals
     void                        on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token);
@@ -157,8 +161,8 @@ public:
     void                        on_repeat_payment(content::path_info_t & first_invoice_ipath, content::path_info_t & previous_invoice_ipath, content::path_info_t & new_invoice_ipath);
 
     // epayment_creditcard::epayment_creditcard_gateway_t implementation
-    virtual void                gateway_features(epayment_creditcard::epayment_gateway_features_t & gateway_info);
-    virtual bool                process_creditcard(epayment_creditcard::epayment_creditcard_info_t & creditcard_info, editor::save_info_t & save_info);
+    virtual void                gateway_features(epayment_creditcard::epayment_gateway_features_t & gateway_info) override;
+    virtual bool                process_creditcard(epayment_creditcard::epayment_creditcard_info_t & creditcard_info, editor::save_info_t & save_info) override;
 
 private:
     void                        content_update(int64_t variables_timestamp);
@@ -171,14 +175,14 @@ private:
     std::string                 create_unique_request_id(QString const & main_id);
     void                        log_error(http_client_server::http_response::pointer_t response, libdbproxy::row::pointer_t row);
 
-    snap_child *                                f_snap = nullptr;
-    libdbproxy::table::pointer_t     f_epayment_stripe_table;
-    bool                                        f_debug_defined = false;
-    bool                                        f_debug = false;
-    bool                                        f_maximum_repeat_failures_defined = false;
-    bool                                        f_stripe_key_defined[2] = { false, false }; // 0- live, 1- test
-    int64_t                                     f_maximum_repeat_failures = 0;
-    QString                                     f_stripe_key[2]; // 0- live, 1- test
+    snap_child *                     f_snap = nullptr;
+    libdbproxy::table::pointer_t     f_epayment_stripe_table = libdbproxy::table::pointer_t();
+    bool                             f_debug_defined = false;
+    bool                             f_debug = false;
+    bool                             f_maximum_repeat_failures_defined = false;
+    bool                             f_stripe_key_defined[2] = { false, false }; // 0- live, 1- test
+    int64_t                          f_maximum_repeat_failures = 0;
+    QString                          f_stripe_key[2] = { QString(), QString() }; // 0- live, 1- test
 };
 
 

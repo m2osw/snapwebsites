@@ -149,13 +149,15 @@ snap_communicator::pointer_t        g_communicator;
  * on the SIGINT.
  */
 class backend_interrupt
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<backend_interrupt>  pointer_t;
 
                         backend_interrupt(snap_backend * b);
-    virtual             ~backend_interrupt() override {}
+                        backend_interrupt(backend_interrupt const & rhs) = delete;
+
+    backend_interrupt   operator = (backend_interrupt const & rhs) = delete;
 
     // snap::snap_communicator::snap_signal implementation
     virtual void        process_signal() override;
@@ -210,12 +212,15 @@ void backend_interrupt::process_signal()
  * to the process_signal() callback.
  */
 class signal_child_death
-        : public snap_communicator::snap_signal
+    : public snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<signal_child_death>     pointer_t;
 
                             signal_child_death(snap_backend * sb);
+                            signal_child_death(signal_child_death const & rhs) = delete;
+
+    signal_child_death &    operator = (signal_child_death const & rhs) = delete;
 
     // snap_communicator::snap_signal implementation
     virtual void            process_signal();
@@ -268,7 +273,7 @@ void signal_child_death::process_signal()
  * purpose.
  */
 class cassandra_timer
-        : public snap::snap_communicator::snap_timer
+    : public snap::snap_communicator::snap_timer
 {
 public:
     typedef std::shared_ptr<cassandra_timer>        pointer_t;
@@ -276,6 +281,9 @@ public:
     static int64_t const        MAX_START_INTERVAL = 60LL * 1000000LL; // 1 minute in microseconds
 
                                 cassandra_timer(snap_backend * sb);
+                                cassandra_timer(cassandra_timer const & rhs) = delete;
+
+    cassandra_timer &           operator = (cassandra_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void                process_timeout();
@@ -346,12 +354,15 @@ void cassandra_timer::process_timeout()
  * the various snapbackend service files.
  */
 class reconnect_timer
-        : public snap::snap_communicator::snap_timer
+    : public snap::snap_communicator::snap_timer
 {
 public:
     typedef std::shared_ptr<reconnect_timer>        pointer_t;
 
                                 reconnect_timer(snap_backend * sb);
+                                reconnect_timer(reconnect_timer const & rhs) = delete;
+
+    reconnect_timer &           operator = (reconnect_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void                process_timeout();
@@ -405,14 +416,17 @@ void reconnect_timer::process_timeout()
  * needs to be run against that website is ignored in this case.
  */
 class tick_timer
-        : public snap::snap_communicator::snap_timer
+    : public snap::snap_communicator::snap_timer
 {
 public:
     typedef std::shared_ptr<tick_timer>        pointer_t;
 
     static int64_t const        MAX_START_INTERVAL = 5LL * 60LL * 1000000LL; // 5 minutes in microseconds
 
-                                tick_timer( snap_backend * sb );
+                                tick_timer(snap_backend * sb);
+                                tick_timer(tick_timer const & rhs) = delete;
+
+    tick_timer &                operator = (tick_timer const & rhs) = delete;
 
     void                        configure(QDomElement e, QString const & binary_path, bool const debug);
 
@@ -488,7 +502,10 @@ class wakeup_timer
 public:
     typedef std::shared_ptr<wakeup_timer>        pointer_t;
 
-                                wakeup_timer( snap_backend * sb );
+                                wakeup_timer(snap_backend * sb);
+                                wakeup_timer(wakeup_timer const & rhs) = delete;
+
+    wakeup_timer &              operator = (wakeup_timer const & rhs) = delete;
 
     void                        configure(QDomElement e, QString const & binary_path, bool const debug);
 
@@ -554,12 +571,15 @@ void wakeup_timer::process_timeout()
  * so we can handle incoming messages.
  */
 class messenger
-        : public snap_communicator::snap_tcp_client_permanent_message_connection
+    : public snap_communicator::snap_tcp_client_permanent_message_connection
 {
 public:
     typedef std::shared_ptr<messenger>    pointer_t;
 
                         messenger(snap_backend * sb, QString const & action, std::string const & addr, int port);
+                        messenger(messenger const & rhs) = delete;
+
+    messenger &         operator = (messenger const & rhs) = delete;
 
     // snap::snap_communicator::snap_tcp_client_permanent_message_connection implementation
     virtual void        process_message(snap::snap_communicator_message const & message);
@@ -569,7 +589,7 @@ public:
 private:
     // this is owned by a server function so no need for a smart pointer
     snap_backend *      f_snap_backend = nullptr;
-    QString             f_action;
+    QString             f_action = QString();
 };
 
 
@@ -685,13 +705,16 @@ void messenger::process_connected()
  * which is implemented with the snap_pipe_message_connection class.
  */
 class child_connection
-        : public snap_communicator::snap_pipe_message_connection
+    : public snap_communicator::snap_pipe_message_connection
 {
 public:
     typedef std::shared_ptr<child_connection>   pointer_t;
 
                                 child_connection(snap_backend * sb, libdbproxy::context::pointer_t & context);
+                                child_connection(child_connection const & rhs) = delete;
     virtual                     ~child_connection() override {}
+
+    child_connection &          operator = (child_connection const & rhs) = delete;
 
     bool                        lock(QString const & uri);
     void                        unlock();
@@ -700,9 +723,9 @@ public:
     virtual void                process_message(snap_communicator_message const & message) override;
 
 private:
-    snap_backend *                              f_snap_backend = nullptr;
-    libdbproxy::context::pointer_t   f_context;
-    snap_lock::pointer_t                        f_lock;
+    snap_backend *                   f_snap_backend = nullptr;
+    libdbproxy::context::pointer_t   f_context = libdbproxy::context::pointer_t();
+    snap_lock::pointer_t             f_lock = snap_lock::pointer_t();
 };
 
 
@@ -729,7 +752,6 @@ child_connection::pointer_t g_child_connection;
 child_connection::child_connection(snap_backend * sb, libdbproxy::context::pointer_t & context)
     : f_snap_backend(sb)
     , f_context(context)
-    //, f_lock(nullptr)
 {
     set_name("child connection");
 }

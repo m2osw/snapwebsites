@@ -49,13 +49,16 @@ class snaplog;
 
 
 class snaplog_interrupt
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<snaplog_interrupt>      pointer_t;
 
                                 snaplog_interrupt(snaplog * sl);
+                                snaplog_interrupt(snaplog_interrupt const & rhs) = delete;
     virtual                     ~snaplog_interrupt() override {}
+
+    snaplog_interrupt &         operator = (snaplog_interrupt const & rhs) = delete;
 
     // snap::snap_communicator::snap_signal implementation
     virtual void                process_signal() override;

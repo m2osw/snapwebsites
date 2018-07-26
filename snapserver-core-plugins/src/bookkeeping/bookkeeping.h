@@ -63,25 +63,29 @@ public:
 
 
 class bookkeeping
-        : public plugins::plugin
-        , public path::path_execute
-        //, public layout::layout_content
+    : public plugins::plugin
+    , public path::path_execute
+    //, public layout::layout_content
 {
 public:
                             bookkeeping();
-                            ~bookkeeping();
+                            bookkeeping(bookkeeping const & rhs) = delete;
+    virtual                 ~bookkeeping() override;
+
+    bookkeeping &           operator = (bookkeeping const & rhs) = delete;
+
+    static bookkeeping *    instance();
 
     // plugin implementation
-    static bookkeeping *    instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     //// path_execute implementation
-    virtual bool            on_path_execute(content::path_info_t & ipath);
+    virtual bool            on_path_execute(content::path_info_t & ipath) override;
 
     //// path signals
     //void                    on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_bookkeeping);

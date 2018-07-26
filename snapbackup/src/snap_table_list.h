@@ -36,6 +36,10 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// snapwebsites lib
+//
+#include <snapwebsites/snap_string_list.h>
+
 // Qt lib
 //
 #include <QtCore>
@@ -57,11 +61,12 @@ public:
     QString tableName() const { return f_tableName; }
 
 private:
-    static name_to_list_t           f_list;
-    QString                         f_tableName;    // Name of the table
-    QStringList                     f_rowsToDump;   // If empty, backup all rows
-
     static void addEntry( const QString& name );
+
+    static name_to_list_t           g_list;
+
+    QString                         f_tableName = QString();    // Name of the table
+    snap::snap_string_list          f_rowsToDump = snap::snap_string_list();   // If empty, backup all rows
 };
 
 

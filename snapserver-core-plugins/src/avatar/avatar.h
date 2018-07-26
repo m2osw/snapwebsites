@@ -54,20 +54,24 @@ public:
 
 
 class avatar
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         avatar();
-                        ~avatar();
+                        avatar(avatar const & rhs) = delete;
+    virtual             ~avatar() override;
+
+    avatar &            operator = (avatar const & rhs) = delete;
+
+    static avatar *     instance();
 
     // plugins::plugin implementation
-    static avatar *     instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // filter signals
     void                on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token);
@@ -78,7 +82,7 @@ private:
     void                generate_avatars();
 
     snap_child *        f_snap = nullptr;
-    QString             f_avatar_parser_xsl;
+    QString             f_avatar_parser_xsl = QString();
 };
 
 

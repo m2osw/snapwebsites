@@ -35,20 +35,24 @@ const char * get_name(name_t name) __attribute__ ((const));
 
 
 class taxonomy
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                         taxonomy();
-                        ~taxonomy();
+                        taxonomy(taxonomy const & rhs) = delete;
+    virtual             ~taxonomy() override;
+
+    taxonomy &          operator = (taxonomy const & rhs) = delete;
+
+    static taxonomy *   instance();
 
     // plugins::plugin implementation
-    static taxonomy *   instance();
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual int64_t     do_dynamic_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual int64_t     do_dynamic_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // content signals implementation
     void                on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch);

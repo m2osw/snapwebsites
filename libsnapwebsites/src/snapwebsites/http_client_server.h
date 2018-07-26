@@ -81,14 +81,14 @@ public:
     void            set_body(std::string const& body);
 
 private:
-    std::string                 f_host;
-    std::string                 f_command;
-    std::string                 f_path;
+    std::string                 f_host = std::string();
+    std::string                 f_command = std::string();
+    std::string                 f_path = std::string();
     int32_t                     f_port = -1;
-    header_t                    f_headers;
-    header_t                    f_post;
-    std::string                 f_body;
-    std::vector<attachment_t>   f_attachments;  // not used yet (Also look in a way that allows us to avoid an extra copy)
+    header_t                    f_headers = header_t();
+    header_t                    f_post = header_t();
+    std::string                 f_body = std::string();
+    std::vector<attachment_t>   f_attachments = std::vector<attachment_t>();  // not used yet (Also look in a way that allows us to avoid an extra copy)
     bool                        f_has_body = false;
     bool                        f_has_data = false;
     bool                        f_has_post = false;
@@ -131,12 +131,12 @@ private:
 
     void            read_response(tcp_client_server::bio_client::pointer_t connection);
 
-    std::string                 f_original_header;
+    std::string                 f_original_header = std::string();
     protocol_t                  f_protocol = protocol_t::UNKNOWN;
     int32_t                     f_response_code = 0;
-    std::string                 f_http_message;
-    header_t                    f_header;
-    std::string                 f_response;
+    std::string                 f_http_message = std::string();
+    header_t                    f_header = header_t();
+    std::string                 f_response = std::string();
 };
 
 
@@ -156,8 +156,8 @@ public:
 
 private:
     bool                                        f_keep_alive = true;
-    tcp_client_server::bio_client::pointer_t    f_connection;
-    std::string                                 f_host;
+    tcp_client_server::bio_client::pointer_t    f_connection = tcp_client_server::bio_client::pointer_t();
+    std::string                                 f_host = std::string();
     int32_t                                     f_port = -1;
 };
 

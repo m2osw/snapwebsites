@@ -212,10 +212,12 @@ void check_lexer()
 ////////////////////////////////////////////
 //   PARSER                               //
 ////////////////////////////////////////////
-class domain_variable : public snap::parser::parser_user_data
+class domain_variable
+    : public snap::parser::parser_user_data
 {
 public:
-    enum domain_variable_type_t {
+    enum domain_variable_type_t
+    {
         DOMAIN_VARIABLE_TYPE_STANDARD = 0,
         DOMAIN_VARIABLE_TYPE_WEBSITE,
         DOMAIN_VARIABLE_TYPE_FLAG_WITH_DEFAULT,
@@ -226,8 +228,6 @@ public:
         : f_type(type),
           f_name(name),
           f_value(value)
-          //f_default("") -- auto-init
-          //f_required(false) -- auto-init
     {
     }
 
@@ -248,11 +248,11 @@ public:
     bool get_required() const { return f_required; }
 
 private:
-    domain_variable_type_t          f_type;
-    QString                         f_name;
-    QString                         f_value;
+    domain_variable_type_t          f_type = domain_variable_type_t();
+    QString                         f_name = QString();
+    QString                         f_value = QString();
 
-    QString                         f_default;  // this may be the default (flag) or forced (website) value
+    QString                         f_default = QString();  // this may be the default (flag) or forced (website) value
 
     bool                            f_required = false;
 };
@@ -285,9 +285,9 @@ public:
     }
 
 private:
-    QString                            f_name;
+    QString                    f_name = QString();
 
-    QVector<QSharedPointer<domain_variable> >        f_vars;
+    QVector<QSharedPointer<domain_variable> >        f_vars = QVector<QSharedPointer<domain_variable> >();
 };
 class domain_rules : public snap::parser::parser_user_data
 {
@@ -306,7 +306,7 @@ public:
     }
 
 private:
-    QVector<QSharedPointer<domain_info> >            f_info;
+    QVector<QSharedPointer<domain_info> >            f_info = QVector<QSharedPointer<domain_info> >();
 };
 
 

@@ -27,21 +27,25 @@ namespace char_chart
 {
 
 class char_chart
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
 {
 public:
                         char_chart();
-                        ~char_chart();
+                        char_chart(char_chart const & rhs) = delete;
+    virtual             ~char_chart() override;
+
+    char_chart &        operator = (char_chart const & rhs) = delete;
+
+    static char_chart * instance();
 
     // plugins::plugin implementation
-    static char_chart * instance();
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // path::path_execute implementation
     bool                on_path_execute(content::path_info_t & cpath);
@@ -50,7 +54,7 @@ public:
     void                on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);
 
     // layout::layout_content implementation
-    virtual void        on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body);
+    virtual void        on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body) override;
 
     // sitemapxml signals
     void                on_generate_sitemapxml(sitemapxml::sitemapxml * sitemap);
@@ -59,7 +63,7 @@ private:
     void                content_update(int64_t variables_timestamp);
 
     snap_child *        f_snap = nullptr;
-    QString             f_page;
+    QString             f_page = QString();
 };
 
 } // namespace char_chart

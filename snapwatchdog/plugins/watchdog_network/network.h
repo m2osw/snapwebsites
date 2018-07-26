@@ -69,14 +69,18 @@ class network
 {
 public:
                         network();
-                        ~network();
+                        network(network const & rhs) = delete;
+    virtual             ~network() override;
+
+    network &           operator = (network const & rhs) = delete;
+
+    static network *    instance();
 
     // plugins::plugin implementation
-    static network *    instance();
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // server signals
     void                on_init();
@@ -87,7 +91,7 @@ private:
     bool                verify_snapcommunicator_connection(QDomElement e);
 
     watchdog_child *    f_snap = nullptr;
-    QString             f_network_data_path;
+    QString             f_network_data_path = QString();
 };
 
 } // namespace network

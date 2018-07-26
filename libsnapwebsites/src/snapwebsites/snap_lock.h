@@ -70,7 +70,7 @@ public:
     time_t              get_timeout_date() const;
 
 private:
-    std::shared_ptr<lock_connection>    f_lock_connection;
+    std::shared_ptr<lock_connection>    f_lock_connection = std::shared_ptr<lock_connection>();
 };
 
 

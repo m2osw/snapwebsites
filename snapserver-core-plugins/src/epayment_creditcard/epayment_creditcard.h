@@ -150,31 +150,31 @@ public:
     bool                        get_subscription() const;
 
 private:
-    QString                     f_user_name;
-    QString                     f_creditcard_number;
-    QString                     f_security_code;
-    QString                     f_expiration_date_month;
-    QString                     f_expiration_date_year;
+    QString                     f_user_name = QString();
+    QString                     f_creditcard_number = QString();
+    QString                     f_security_code = QString();
+    QString                     f_expiration_date_month = QString();
+    QString                     f_expiration_date_year = QString();
 
-    QString                     f_billing_business_name;
-    QString                     f_billing_attention;
-    QString                     f_billing_address1;
-    QString                     f_billing_address2;
-    QString                     f_billing_city;
-    QString                     f_billing_province;
-    QString                     f_billing_postal_code;
-    QString                     f_billing_country;
+    QString                     f_billing_business_name = QString();
+    QString                     f_billing_attention = QString();
+    QString                     f_billing_address1 = QString();
+    QString                     f_billing_address2 = QString();
+    QString                     f_billing_city = QString();
+    QString                     f_billing_province = QString();
+    QString                     f_billing_postal_code = QString();
+    QString                     f_billing_country = QString();
 
-    QString                     f_delivery_business_name;
-    QString                     f_delivery_attention;
-    QString                     f_delivery_address1;
-    QString                     f_delivery_address2;
-    QString                     f_delivery_city;
-    QString                     f_delivery_province;
-    QString                     f_delivery_postal_code;
-    QString                     f_delivery_country;
+    QString                     f_delivery_business_name = QString();
+    QString                     f_delivery_attention = QString();
+    QString                     f_delivery_address1 = QString();
+    QString                     f_delivery_address2 = QString();
+    QString                     f_delivery_city = QString();
+    QString                     f_delivery_province = QString();
+    QString                     f_delivery_postal_code = QString();
+    QString                     f_delivery_country = QString();
 
-    QString                     f_phone;
+    QString                     f_phone = QString();
 
     bool                        f_subscription = false;
 };
@@ -191,8 +191,8 @@ public:
     QString                     get_name() const;
 
 private:
-    QString                     f_gateway;  // plugin name
-    QString                     f_name;     // display name
+    QString                     f_gateway = QString();  // plugin name
+    QString                     f_name = QString();     // display name
 };
 
 
@@ -200,6 +200,8 @@ private:
 class epayment_creditcard_gateway_t
 {
 public:
+    virtual                     ~epayment_creditcard_gateway_t() {}
+
     virtual void                gateway_features(epayment_gateway_features_t & gateway_info) = 0;
     virtual bool                process_creditcard(epayment_creditcard_info_t & creditcard_info, editor::save_info_t & save_info) = 0;
 };
@@ -208,21 +210,25 @@ public:
 
 
 class epayment_creditcard
-        : public plugins::plugin
-        , public epayment_creditcard_gateway_t
+    : public plugins::plugin
+    , public epayment_creditcard_gateway_t
 {
 public:
                                 epayment_creditcard();
-                                ~epayment_creditcard();
+                                epayment_creditcard(epayment_creditcard const & rhs) = delete;
+    virtual                     ~epayment_creditcard() override;
+
+    epayment_creditcard &       operator = (epayment_creditcard const & rhs) = delete;
+
+    static epayment_creditcard *instance();
 
     // plugins::plugin implementation
-    static epayment_creditcard *instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     // server signals
     void                        on_process_post(QString const & uri_path);
@@ -232,8 +238,8 @@ public:
     void                        on_save_editor_fields(editor::save_info_t & save_info);
 
     // epayment_creditcard::epayment_creditcard_gateway_t implementation
-    virtual void                gateway_features(epayment_gateway_features_t & gateway_info);
-    virtual bool                process_creditcard(epayment_creditcard_info_t & creditcard_info, editor::save_info_t & save_info);
+    virtual void                gateway_features(epayment_gateway_features_t & gateway_info) override;
+    virtual bool                process_creditcard(epayment_creditcard_info_t & creditcard_info, editor::save_info_t & save_info) override;
 
 private:
     void                        content_update(int64_t variables_timestamp);

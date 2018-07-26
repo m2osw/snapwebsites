@@ -17,6 +17,7 @@
 #pragma once
 
 #include <snapwebsites/snap_uri.h>
+#include <snapwebsites/snap_string_list.h>
 
 #include <QDomElement>
 #include <QString>
@@ -36,16 +37,17 @@ public:
     typedef std::vector<pointer_t>  vector_t;
 
                         widget(QString const & name);
+    virtual             ~widget() {}
 
     virtual void        generate(QDomElement parent) = 0;
 
 protected:
-    QString             f_name;
+    QString             f_name = QString();
 };
 
 
 class widget_description
-        : public widget
+    : public widget
 {
 public:
     typedef std::shared_ptr<widget_description> pointer_t;
@@ -55,13 +57,13 @@ public:
     virtual void        generate(QDomElement parent) override;
 
 private:
-    QString             f_label;
-    QString             f_description;
+    QString             f_label = QString();
+    QString             f_description = QString();
 };
 
 
 class widget_input
-        : public widget
+    : public widget
 {
 public:
     typedef std::shared_ptr<widget_input> pointer_t;
@@ -71,14 +73,14 @@ public:
     virtual void        generate(QDomElement parent) override;
 
 private:
-    QString             f_label;
-    QString             f_value;
-    QString             f_description;
+    QString             f_label = QString();
+    QString             f_value = QString();
+    QString             f_description = QString();
 };
 
 
 class widget_text
-        : public widget
+    : public widget
 {
 public:
     typedef std::shared_ptr<widget_text> pointer_t;
@@ -88,14 +90,14 @@ public:
     virtual void        generate(QDomElement parent) override;
 
 private:
-    QString             f_label;
-    QString             f_value;
-    QString             f_description;
+    QString             f_label = QString();
+    QString             f_value = QString();
+    QString             f_description = QString();
 };
 
 
 class widget_select
-        : public widget
+    : public widget
 {
 public:
     typedef std::shared_ptr<widget_select> pointer_t;
@@ -109,10 +111,10 @@ public:
     virtual void        generate(QDomElement parent) override;
 
 private:
-    QString             f_label;
-    QStringList         f_valueList;
-    QString             f_defaultValue;
-    QString             f_description;
+    QString                 f_label = QString();
+    snap::snap_string_list  f_valueList = snap::snap_string_list();
+    QString                 f_defaultValue = QString();
+    QString                 f_description = QString();
 };
 
 
@@ -141,10 +143,10 @@ public:
     void                add_widget(widget::pointer_t w);
 
 private:
-    QString             f_plugin_name;
-    QString             f_field_name;
+    QString             f_plugin_name = QString();
+    QString             f_field_name = QString();
     button_t            f_buttons = FORM_BUTTON_RESET | FORM_BUTTON_SAVE;
-    widget::vector_t    f_widgets;
+    widget::vector_t    f_widgets = widget::vector_t();
 };
 
 

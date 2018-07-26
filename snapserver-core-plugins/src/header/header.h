@@ -48,28 +48,32 @@ public:
 
 
 class header
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
 {
 public:
                         header();
-                        ~header();
+                        header(header const & rhs) = delete;
+    virtual             ~header() override;
+
+    header &            operator = (header const & rhs) = delete;
+
+    static header *     instance();
 
     // plugins::plugin implementation
-    static header *     instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     // path::path_execute implementation
-    virtual bool        on_path_execute(content::path_info_t & ipath);
+    virtual bool        on_path_execute(content::path_info_t & ipath) override;
 
     // layout::layout_content implementation
-    virtual void        on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void        on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // layout signals
     void                on_generate_header_content(content::path_info_t & ipath, QDomElement & header_dom, QDomElement & metadata);

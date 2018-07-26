@@ -58,20 +58,24 @@ public:
 
 
 class no_iframe
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
                             no_iframe();
-                            ~no_iframe();
+                            no_iframe(no_iframe const & rhs) = delete;
+    virtual                 ~no_iframe() override;
+
+    no_iframe &             operator = (no_iframe const & rhs) = delete;
+
+    static no_iframe *      instance();
 
     // plugin implementation
-    static no_iframe *      instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // layout signals
     void                    on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata);

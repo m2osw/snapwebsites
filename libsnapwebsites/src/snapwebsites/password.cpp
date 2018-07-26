@@ -484,8 +484,8 @@ bool password::get_password_from_console(std::string const & salt)
 
     private:
         bool f_valid = false;
-        int f_tty;
-        struct termios f_original;
+        int f_tty = -1;
+        struct termios f_original = termios();
     };
 
     safe_termios st(tty);

@@ -25,6 +25,8 @@ namespace snap_manager
 
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class server_status
 {
 public:
@@ -65,12 +67,13 @@ private:
     bool                    readline(QString & result);
     bool                    readvar(QString & name, QString & value);
 
-    QString                 f_filename;
-    status_t::map_t         f_statuses;
+    QString                 f_filename = QString();
+    status_t::map_t         f_statuses = status_t::map_t();
     int                     f_fd = -1;
     FILE *                  f_file = nullptr;
     bool                    f_has_error = false;
 };
+#pragma GCC diagnostic pop
 
 
 

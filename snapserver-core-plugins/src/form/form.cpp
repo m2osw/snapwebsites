@@ -711,12 +711,11 @@ QDomDocument const form::load_form(content::path_info_t & ipath, QString const &
     {
         doc_t()
             : f_doc("form")
-            //, f_error("") -- auto-init
         {
         }
 
-        QDomDocument    f_doc;
-        QString         f_error;
+        QDomDocument    f_doc = QDomDocument();
+        QString         f_error = QString();
     };
     static QMap<QString, doc_t> g_cached_form;
 

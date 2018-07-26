@@ -123,22 +123,26 @@ public:
 
 
 class epayment_paypal
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
 {
 public:
                                 epayment_paypal();
-                                ~epayment_paypal();
+                                epayment_paypal(epayment_paypal const & rhs) = delete;
+    virtual                     ~epayment_paypal() override;
+
+    epayment_paypal &           operator = (epayment_paypal const & rhs) = delete;
+
+    static epayment_paypal *    instance();
 
     // plugins::plugin implementation
-    static epayment_paypal *    instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t     get_epayment_paypal_table();
 
@@ -147,11 +151,11 @@ public:
     void                        on_process_post(QString const & uri_path);
 
     // path::path_execute implementation
-    virtual bool                on_path_execute(content::path_info_t & ipath);
+    virtual bool                on_path_execute(content::path_info_t & ipath) override;
 
     // layout signals
     void                        on_generate_header_content(content::path_info_t & path, QDomElement & header, QDomElement & metadata);
-    virtual void                on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void                on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // filter signals
     void                        on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token);
@@ -169,12 +173,12 @@ private:
     int8_t                      get_maximum_repeat_failures();
     std::string                 create_unique_request_id(QString const  & main_id);
 
-    snap_child *                                f_snap = nullptr;
-    libdbproxy::table::pointer_t     f_epayment_paypal_table;
-    bool                                        f_debug_defined = false;
-    bool                                        f_debug = false;
-    bool                                        f_maximum_repeat_failures_defined = false;
-    int64_t                                     f_maximum_repeat_failures = 0;
+    snap_child *                    f_snap = nullptr;
+    libdbproxy::table::pointer_t    f_epayment_paypal_table = libdbproxy::table::pointer_t();
+    bool                            f_debug_defined = false;
+    bool                            f_debug = false;
+    bool                            f_maximum_repeat_failures_defined = false;
+    int64_t                         f_maximum_repeat_failures = 0;
 };
 
 

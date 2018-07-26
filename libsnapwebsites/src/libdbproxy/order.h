@@ -102,7 +102,7 @@ public:
     bool                decodeOrder(unsigned char const * encoded_order, size_t size);
 
 private:
-    QString                         f_cql;
+    QString                         f_cql = QString();
     bool                            f_valid = true;
     bool                            f_blocking = true;
     bool                            f_clear_cluster_description = false;
@@ -114,7 +114,7 @@ private:
     int32_t                         f_paging_size = 0;
     int32_t                         f_cursor_index = -1;
     int32_t                         f_batch_index = -1;
-    std::vector<QByteArray>         f_parameter;
+    std::vector<QByteArray>         f_parameter = std::vector<QByteArray>();
 };
 
 

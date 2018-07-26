@@ -74,16 +74,20 @@ class cookie_consent_silktide
 {
 public:
                                 cookie_consent_silktide();
-                                ~cookie_consent_silktide();
+                                cookie_consent_silktide(cookie_consent_silktide const & rhs) = delete;
+    virtual                     ~cookie_consent_silktide() override;
+
+    cookie_consent_silktide &   operator = (cookie_consent_silktide const & rhs) = delete;
+
+    static cookie_consent_silktide * instance();
 
     // plugins::plugin implementation
-    static cookie_consent_silktide * instance();
-    virtual QString             settings_path() const;
-    virtual QString             icon() const;
-    virtual QString             description() const;
-    virtual QString             dependencies() const;
-    virtual int64_t             do_update(int64_t last_updated);
-    virtual void                bootstrap(snap_child * snap);
+    virtual QString             settings_path() const override;
+    virtual QString             icon() const override;
+    virtual QString             description() const override;
+    virtual QString             dependencies() const override;
+    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap(snap_child * snap) override;
 
     // content signals
     void                        on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata);

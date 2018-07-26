@@ -46,6 +46,9 @@ namespace libdbproxy
 class table;
 
 // Cassandra Row
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 class row
     : public QObject
     , public std::enable_shared_from_this<row>
@@ -54,59 +57,60 @@ public:
     typedef std::shared_ptr<row>  pointer_t;
     typedef QVector<value>        composite_column_names_t;
 
-    virtual ~row();
+    virtual             ~row();
 
-    QString rowName() const;
-    const QByteArray& rowKey() const;
+    QString             rowName() const;
+    const QByteArray&   rowKey() const;
 
-    int cellCount(const cell_predicate::pointer_t column_predicate = cell_predicate::pointer_t());
-    uint32_t readCells();
-    uint32_t readCells(cell_predicate::pointer_t column_predicate);
+    int                 cellCount(const cell_predicate::pointer_t column_predicate = cell_predicate::pointer_t());
+    uint32_t            readCells();
+    uint32_t            readCells(cell_predicate::pointer_t column_predicate);
 
-    cell::pointer_t getCell(const char* column_name);
-    cell::pointer_t getCell(const QString& column_name);
-    cell::pointer_t getCell(const QByteArray& column_key);
-    const cells& getCells() const;
+    cell::pointer_t     getCell(const char * column_name);
+    cell::pointer_t     getCell(const QString& column_name);
+    cell::pointer_t     getCell(const QByteArray& column_key);
+    const cells&        getCells() const;
 
-    cell::pointer_t findCell(const QString& column_name) const;
-    cell::pointer_t findCell(const QByteArray& column_key) const;
-    bool exists(const char* column_name) const;
-    bool exists(const QString& column_name) const;
-    bool exists(const QByteArray& column_key) const;
-    cell& operator [] (const char* column_name);
-    cell& operator [] (const QString& column_name);
-    cell& operator [] (const QByteArray& column_key);
-    const cell& operator [] (const char* column_name) const;
-    const cell& operator [] (const QString& column_name) const;
-    const cell& operator [] (const QByteArray& column_key) const;
+    cell::pointer_t     findCell(const QString& column_name) const;
+    cell::pointer_t     findCell(const QByteArray& column_key) const;
+    bool                exists(const char * column_name) const;
+    bool                exists(const QString& column_name) const;
+    bool                exists(const QByteArray& column_key) const;
+    cell&               operator [] (const char * column_name);
+    cell&               operator [] (const QString& column_name);
+    cell&               operator [] (const QByteArray& column_key);
+    const cell&         operator [] (const char * column_name) const;
+    const cell&         operator [] (const QString& column_name) const;
+    const cell&         operator [] (const QByteArray& column_key) const;
 
-    void clearCache();
+    void                clearCache();
 
-    void dropCell(const char *      column_name);
-    void dropCell(const QString&    column_name);
-    void dropCell(const QByteArray& column_key);
+    void                dropCell(const char *      column_name);
+    void                dropCell(const QString&    column_name);
+    void                dropCell(const QByteArray& column_key);
 
     std::shared_ptr<table> parentTable() const;
 
 private:
     row(std::shared_ptr<table> table, const QByteArray& row_key);
 
-    void insertValue(const QByteArray& column_key, const value& value);
-    bool getValue(const QByteArray& column_key, value& value);
-    void addValue(const QByteArray& column_key, int64_t value);
-    void closeCursor();
-
     friend class table;
     friend class cell;
+
+    void                insertValue(const QByteArray& column_key, const value& value);
+    bool                getValue(const QByteArray& column_key, value& value);
+    void                addValue(const QByteArray& column_key, int64_t value);
+    void                closeCursor();
 
     // f_table is a parent that has a strong shared pointer over us so it
     // cannot disappear before we do, thus only a bare pointer is enough here
     // (there isn't a need to use a QWeakPointer or QPointer either)
-    std::weak_ptr<table>      f_table;
-    QByteArray                          f_key;
-    cells                     f_cells;
-    int32_t                             f_cursor_index = -1;
+    std::weak_ptr<table>      f_table        = std::weak_ptr<table>();
+    QByteArray                f_key          = QByteArray();
+    cells                     f_cells        = cells();
+    int32_t                   f_cursor_index = -1;
 };
+#pragma GCC diagnostic pop
 
 // array of rows
 typedef QMap<QByteArray, row::pointer_t > rows;

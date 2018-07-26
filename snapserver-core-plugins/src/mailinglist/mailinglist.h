@@ -45,7 +45,7 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class mailinglist
-        : public plugins::plugin
+    : public plugins::plugin
 {
 public:
     class list
@@ -54,34 +54,41 @@ public:
         static const int LIST_MAJOR_VERSION = 1;
         static const int LIST_MINOR_VERSION = 0;
 
-        list(mailinglist * parent, QString const & list_name);
-        virtual ~list();
+                                list(mailinglist * parent, QString const & list_name);
+                                list(list const & rhs) = delete;
+        virtual                 ~list();
 
-        QString name() const;
-        virtual QString next();
+        list &                  operator = (list const & rhs) = delete;
+
+        QString                 name() const;
+        virtual QString         next();
 
     private:
-        mailinglist *                                           f_parent = nullptr;
-        QString const                                           f_name;
-        libdbproxy::table::pointer_t                 f_table;
-        libdbproxy::row::pointer_t                   f_row;
-        libdbproxy::cell_range_predicate::pointer_t    f_column_predicate;
-        libdbproxy::cells                            f_cells;
-        libdbproxy::cells::const_iterator            f_c;
-        bool                                                    f_done = false;
+        mailinglist *                               f_parent = nullptr;
+        QString const                               f_name = QString();
+        libdbproxy::table::pointer_t                f_table = libdbproxy::table::pointer_t();
+        libdbproxy::row::pointer_t                  f_row = libdbproxy::row::pointer_t();
+        libdbproxy::cell_range_predicate::pointer_t f_column_predicate = libdbproxy::cell_range_predicate::pointer_t();
+        libdbproxy::cells                           f_cells = libdbproxy::cells();
+        libdbproxy::cells::const_iterator           f_c = libdbproxy::cells::const_iterator();
+        bool                                        f_done = false;
     };
 
                         mailinglist();
-                        ~mailinglist();
+                        mailinglist(mailinglist const & rhs) = delete;
+    virtual             ~mailinglist() override;
+
+    mailinglist &       operator = (mailinglist const & rhs) = delete;
+
+    static mailinglist *instance();
 
     // plugins::plugin implementation
-    static mailinglist *instance();
-    virtual QString     settings_path() const;
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual int64_t     do_update(int64_t last_updated);
-    virtual void        bootstrap(snap_child * snap);
+    virtual QString     settings_path() const override;
+    virtual QString     icon() const override;
+    virtual QString     description() const override;
+    virtual QString     dependencies() const override;
+    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t get_mailinglist_table();
 

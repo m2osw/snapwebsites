@@ -172,11 +172,11 @@ public:
 
 
 class users
-        : public plugins::plugin
-        , public links::links_cloned
-        , public path::path_execute
-        , public layout::layout_content
-        , public layout::layout_boxes
+    : public plugins::plugin
+    , public links::links_cloned
+    , public path::path_execute
+    , public layout::layout_content
+    , public layout::layout_boxes
 {
 public:
     enum class login_mode_t
@@ -231,6 +231,8 @@ public:
         STATUS_INVALID_EMAIL    // user entered an invalid email
     };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
     class user_info_t
     {
     public:
@@ -238,8 +240,8 @@ public:
         typedef libdbproxy::value            value_t;
 
                                 user_info_t();
-                                user_info_t( QString      const & email_or_path );
-                                user_info_t( identifier_t const   id            );
+                                user_info_t(QString const & email_or_path);
+                                user_info_t(identifier_t const id);
 
         bool                    user_is_an_example_from_email() const;
 
@@ -293,17 +295,21 @@ public:
         void                    get_user_id_by_email();
         libdbproxy::row::pointer_t get_user_row() const;
 
-        mutable snap_child *    f_snap = nullptr;
-        mutable libdbproxy::table::pointer_t f_users_table;
+        mutable snap_child *    f_snap        = nullptr;
+        mutable libdbproxy::table::pointer_t
+                                f_users_table = libdbproxy::table::pointer_t();
         identifier_t            f_identifier  = IDENTIFIER_INVALID;
-        QString                 f_user_email;
-        mutable QString         f_user_key;
+        QString                 f_user_email  = QString();
+        mutable QString         f_user_key    = QString();
         status_t                f_status      = status_t::STATUS_UNDEFINED;
     };
+#pragma GCC diagnostic pop
 
     class user_security_t
     {
     public:
+                                    user_security_t();
+
         void                        set_user_info(user_info_t const & user_info, QString const & email = QString(), bool const allow_example_domain = false);
         user_info_t const &         get_user_info() const;
 
@@ -330,21 +336,24 @@ public:
         content::permission_flag &  get_secure();
 
     private:
-        user_info_t                 f_user_info;
-        QString                     f_email;
-        QString                     f_password = "!";
-        QString                     f_policy = "users";
+        user_info_t                 f_user_info = user_info_t();
+        QString                     f_email = QString();
+        QString                     f_password = QString("!");
+        QString                     f_policy = QString("users");
         bool                        f_bypass_blacklist = false;
         bool                        f_allow_example_domain = false;
         bool                        f_example = false;
-        content::permission_flag    f_secure;
+        content::permission_flag    f_secure; // assignment is forbidden
         status_t                    f_status = status_t::STATUS_VALID;
     };
 
     class user_logged_info_t
     {
     public:
-                                        user_logged_info_t(snap_child * snap, user_info_t const & user_info );
+                                        user_logged_info_t(snap_child * snap, user_info_t const & user_info);
+                                        user_logged_info_t(user_logged_info_t const & rhs) = delete;
+
+        user_logged_info_t &            operator = (user_logged_info_t const & rhs) = delete;
 
         content::path_info_t            user_ipath() const;
 
@@ -367,25 +376,29 @@ public:
 
     private:
         snap_child *                    f_snap = nullptr;
-        QString                         f_password_policy;
-        user_info_t                     f_user_info;
+        QString                         f_password_policy = QString();
+        user_info_t                     f_user_info; // assignment is forbidden
         identifier_t                    f_identifier = 0;
         bool                            f_force_password_change = false;
-        mutable QString                 f_uri;
+        mutable QString                 f_uri = QString();
     };
 
                             users();
-    virtual                 ~users();
+                            users(users const & rhs) = delete;
+    virtual                 ~users() override;
+
+    users &                 operator = (users const & rhs) = delete;
+
+    static users *          instance();
 
     // plugins::plugin implementation
-    static users *          instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual int64_t         do_dynamic_update(int64_t last_updated);
-    virtual void            bootstrap(::snap::snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual int64_t         do_dynamic_update(int64_t last_updated) override;
+    virtual void            bootstrap(::snap::snap_child * snap) override;
 
 
     static QString          basic_email_canonicalization(QString const & email);
@@ -409,10 +422,10 @@ public:
     void                    on_create_content(content::path_info_t & path, QString const & owner, QString const & type);
 
     // layout::layout_content implementation
-    virtual void            on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void            on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // layout::layout_boxes implementation (to be removed)
-    virtual void            on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes);
+    virtual void            on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes) override;
 
     // layout signals
     void                    on_generate_header_content(content::path_info_t & path, QDomElement & hader, QDomElement & metadata);
@@ -423,7 +436,7 @@ public:
     void                    on_token_help(filter::filter::token_help_t & help);
 
     // links::links_cloned implementation
-    virtual void            repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning);
+    virtual void            repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning) override;
 
     SNAP_SIGNAL_WITH_MODE( check_user_security,  (user_security_t & security),                       (security),          START_AND_DONE );
     SNAP_SIGNAL_WITH_MODE( user_registered,      (content::path_info_t & ipath, int64_t identifier), (ipath, identifier), NEITHER        );
@@ -490,13 +503,15 @@ private:
 
     snap_child *            f_snap = nullptr;
 
-    user_info_t             f_user_info;                        // user info including email address (may not be logged in)
-    QString                 f_hit = "undefined";                // type of hit, if not "transparent", we will update the time limit
+    user_info_t             f_user_info = user_info_t();        // user info including email address (may not be logged in)
+    QString                 f_hit = QString("undefined");       // type of hit, if not "transparent", we will update the time limit
     bool                    f_user_logged_in = false;           // user is logged in only if this is true
     bool                    f_administrative_logged_in = false; // user is logged in and has administrative rights if this is true
     bool                    f_has_user_messages = false;        // whether there were messages when on_detach_from_session() was called
-    QString                 f_user_changing_password_key;       // not quite logged in user
-    std::shared_ptr<sessions::sessions::session_info> f_info;   // user, logged in or anonymous, cookie related information
+    QString                 f_user_changing_password_key = QString();       // not quite logged in user
+    std::shared_ptr<sessions::sessions::session_info>
+                            f_info = std::shared_ptr<sessions::sessions::session_info>();
+                                                                // user, logged in or anonymous, cookie related information
 };
 
 } // namespace users

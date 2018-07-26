@@ -25,7 +25,8 @@
 #include <QXmlNamePool>
 #pragma GCC diagnostic pop
 
-class QDomReceiver : public QAbstractXmlReceiver
+class QDomReceiver
+    : public QAbstractXmlReceiver
 {
 public:
                     QDomReceiver(QXmlNamePool namepool, QDomDocument doc);
@@ -44,9 +45,9 @@ public:
     virtual void    startOfSequence();
 
 private:
-    QXmlNamePool    f_namepool;
-    QDomDocument    f_doc;
-    QDomElement     f_element;
+    QXmlNamePool    f_namepool = QXmlNamePool();
+    QDomDocument    f_doc = QDomDocument();
+    QDomElement     f_element = QDomElement();
 };
 
 #endif

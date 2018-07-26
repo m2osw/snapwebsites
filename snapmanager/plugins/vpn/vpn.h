@@ -58,18 +58,22 @@ public:
 
 
 class vpn
-        : public snap_manager::plugin_base
+    : public snap_manager::plugin_base
 {
 public:
                             vpn();
+                            vpn(vpn const & rhs) = delete;
     virtual                 ~vpn() override;
 
-    // plugins::plugin implementation
+    vpn &                   operator = (vpn const & rhs) = delete;
+
     static vpn *            instance();
-    virtual QString         description() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(snap_child * snap);
+
+    // plugins::plugin implementation
+    virtual QString         description() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(snap_child * snap) override;
 
     // manager overload
     virtual bool            display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri) override;
@@ -81,10 +85,11 @@ public:
     static bool             is_installed();
 
 private:
-    snap_manager::manager * f_snap = nullptr;
-
     QString                 get_server_ip() const;
+
+    snap_manager::manager * f_snap = nullptr;
 };
+
 
 } // namespace vpn
 } // namespace snap

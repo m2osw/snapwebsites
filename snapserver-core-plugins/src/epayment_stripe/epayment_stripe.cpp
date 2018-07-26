@@ -2719,12 +2719,14 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         raii_invoice_status_t(content::path_info_t & invoice_ipath)
             : f_epayment_plugin(epayment::epayment::instance())
             , f_invoice_ipath(invoice_ipath)
-            , f_final_state(epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED)
         {
             // mark invoice as being processed on creation
             //
             f_epayment_plugin->set_invoice_status(f_invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PROCESSING);
         }
+
+        raii_invoice_status_t(raii_invoice_status_t const & rhs) = delete;
+        raii_invoice_status_t operator = (raii_invoice_status_t const & rhs) = delete;
 
         ~raii_invoice_status_t()
         {
@@ -2746,9 +2748,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         }
 
     private:
-        epayment::epayment *    f_epayment_plugin;
+        epayment::epayment *    f_epayment_plugin = nullptr;
         content::path_info_t &  f_invoice_ipath;
-        epayment::name_t        f_final_state;
+        epayment::name_t        f_final_state = epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED;
     };
     raii_invoice_status_t safe_invoice_status(invoice_ipath);
 

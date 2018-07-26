@@ -24,6 +24,7 @@
 #include "snapwebsites/log.h"
 #include "snapwebsites/not_reached.h"
 #include "snapwebsites/not_used.h"
+#include "snapwebsites/raii_generic_deleter.h"
 
 // C++
 //
@@ -60,40 +61,9 @@ namespace
  * because otherwise we find ourselves with many freeaddrinfo()
  * calls (and that's not safe in case you have exceptions.)
  */
-class addrinfo_t
-{
-public:
-    /** \brief Initialize the structure pointer to nullptr.
-     *
-     * The constructor ensures that the pointer is nullptr.
-     */
-    addrinfo_t()
-        : f_addrinfo(nullptr)
-    {
-    }
+typedef std::unique_ptr<struct addrinfo, snap::raii_pointer_deleter<struct addrinfo, decltype(&::freeaddrinfo), &::freeaddrinfo>> addrinfo_t;
 
-    /** \brief Ensures that the structures get cleaned up.
-     *
-     * This function ensures that the addrinfo pointers get freed with a
-     * call to the freeaddrinfo().
-     *
-     * If no structure was allocated, nothing happens.
-     */
-    ~addrinfo_t()
-    {
-        if(f_addrinfo != nullptr)
-        {
-            freeaddrinfo(f_addrinfo);
-        }
-    }
 
-    /** \brief The address info.
-     *
-     * This is the address, it is public because we just use that internally
-     * in the client and server constructors (see below.)
-     */
-    struct addrinfo *   f_addrinfo;
-};
 
 
 /** \brief Data handled by each lock.
@@ -490,17 +460,19 @@ tcp_client::tcp_client(std::string const & addr, int port)
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    addrinfo_t addr_info;
     std::string port_str(decimal_port.str());
-    int r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &addr_info.f_addrinfo));
-    if(r != 0 || addr_info.f_addrinfo == nullptr)
+    struct addrinfo * addrinfo(nullptr);
+    int const r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &addrinfo));
+    if(r != 0
+    || addrinfo == nullptr)
     {
         int const e(errno);
         SNAP_LOG_FATAL("getaddrinfo() failed to parse the address and port strings (errno: ")(e)(" -- ")(strerror(e))(")");
         throw tcp_client_server_runtime_error("invalid address or port: \"" + addr + ":" + port_str + "\"");
     }
+    addrinfo_t addr_info(addrinfo);
 
-    f_socket = socket(addr_info.f_addrinfo->ai_family, SOCK_STREAM, IPPROTO_TCP);
+    f_socket = socket(addr_info.get()->ai_family, SOCK_STREAM, IPPROTO_TCP);
     if(f_socket < 0)
     {
         int const e(errno);
@@ -508,7 +480,7 @@ tcp_client::tcp_client(std::string const & addr, int port)
         throw tcp_client_server_runtime_error("could not create socket for client");
     }
 
-    if(connect(f_socket, addr_info.f_addrinfo->ai_addr, addr_info.f_addrinfo->ai_addrlen) < 0)
+    if(connect(f_socket, addr_info.get()->ai_addr, addr_info.get()->ai_addrlen) < 0)
     {
         int const e(errno);
         SNAP_LOG_FATAL("connect() failed to connect a socket (errno: ")(e)(" -- ")(strerror(e))(")");
@@ -800,15 +772,17 @@ tcp_server::tcp_server(std::string const & addr, int port, int max_connections, 
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    addrinfo_t addr_info;
     std::string port_str(decimal_port.str());
-    int r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &addr_info.f_addrinfo));
-    if(r != 0 || addr_info.f_addrinfo == nullptr)
+    struct addrinfo * addrinfo(nullptr);
+    int const r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &addrinfo));
+    if(r != 0
+    || addrinfo == nullptr)
     {
         throw tcp_client_server_runtime_error("invalid address or port: \"" + addr + ":" + port_str + "\"");
     }
+    addrinfo_t addr_info(addrinfo);
 
-    f_socket = socket(addr_info.f_addrinfo->ai_family, SOCK_STREAM, IPPROTO_TCP);
+    f_socket = socket(addr_info.get()->ai_family, SOCK_STREAM, IPPROTO_TCP);
     if(f_socket < 0)
     {
         int const e(errno);
@@ -826,7 +800,7 @@ tcp_server::tcp_server(std::string const & addr, int port, int max_connections, 
         snap::NOTUSED(setsockopt(f_socket, SOL_SOCKET, SO_REUSEADDR, &optval, optlen));
     }
 
-    if(bind(f_socket, addr_info.f_addrinfo->ai_addr, addr_info.f_addrinfo->ai_addrlen) < 0)
+    if(bind(f_socket, addr_info.get()->ai_addr, addr_info.get()->ai_addrlen) < 0)
     {
         close(f_socket);
         throw tcp_client_server_runtime_error("could not bind the socket to \"" + f_addr + "\"");

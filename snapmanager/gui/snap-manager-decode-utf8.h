@@ -16,26 +16,32 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "ui_snap-manager-decode-utf8-dialog.h"
 #include <QPointer>
 
-class snap_manager_decode_utf8 : public QDialog, public Ui_decodeUtf8SnapManager
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#include "ui_snap-manager-decode-utf8-dialog.h"
+class snap_manager_decode_utf8
+    : public QDialog
+    , public Ui_decodeUtf8SnapManager
 {
     Q_OBJECT
 
 public:
-    snap_manager_decode_utf8(QWidget *parent);
-    virtual ~snap_manager_decode_utf8();
+                        snap_manager_decode_utf8(QWidget * parent);
+    virtual             ~snap_manager_decode_utf8();
 
 private slots:
-    void on_clear_clicked();
-    void on_decode_clicked();
-    void on_encode_clicked();
-    void on_close_clicked();
+    void                on_clear_clicked();
+    void                on_decode_clicked();
+    void                on_encode_clicked();
+    void                on_close_clicked();
 
 private:
-    QPointer<QTextEdit>     f_data;
+    QPointer<QTextEdit> f_data = QPointer<QTextEdit>();
 };
+#pragma GCC diagnostic pop
 
 
 // vim: ts=4 sw=4 et

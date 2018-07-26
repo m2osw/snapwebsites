@@ -59,13 +59,17 @@ public:
     QString         get_status();
 
 private:
-    class snap_initialize_website_runner : public snap_thread::snap_runner
+    class snap_initialize_website_runner
+        : public snap_thread::snap_runner
     {
     public:
                         snap_initialize_website_runner(snap_initialize_website * parent,
                                                        QString const & snap_host, int snap_port, bool secure,
                                                        QString const & website_uri, int destination_port,
                                                        QString const & query_string, QString const & protocol);
+
+                        snap_initialize_website_runner(snap_initialize_website_runner const & rhs) = delete;
+        snap_initialize_website_runner & operator = (snap_initialize_website_runner const & rhs) = delete;
 
         // from class snap_thread
         virtual void    run();
@@ -79,7 +83,7 @@ private:
         void            send_init_command();
 
         snap_initialize_website *           f_parent = nullptr;
-        mutable snap_thread::snap_mutex     f_mutex;
+        mutable snap_thread::snap_mutex     f_mutex = snap_thread::snap_mutex();
         bool                                f_done = false;
         QString const                       f_snap_host;
         int32_t                             f_snap_port = 0;
@@ -88,11 +92,11 @@ private:
         int32_t const                       f_destination_port; // 'const' so it is mandatory anyway
         QString const                       f_query_string;     // 'const' so it is mandatory anyway
         QString const                       f_protocol;         // 'const' so it is mandatory anyway
-        std::deque<QString>                 f_message_queue;    // TODO: look into reusing the message queue from the thread with T = QString!?
+        std::deque<QString>                 f_message_queue = std::deque<QString>();    // TODO: look into reusing the message queue from the thread with T = QString!?
     };
 
-    std::unique_ptr<snap_initialize_website_runner>     f_website_runner;
-    std::unique_ptr<snap_thread>                        f_process_thread;
+    std::unique_ptr<snap_initialize_website_runner>     f_website_runner = std::unique_ptr<snap_initialize_website_runner>();
+    std::unique_ptr<snap_thread>                        f_process_thread = std::unique_ptr<snap_thread>();
 };
 
 

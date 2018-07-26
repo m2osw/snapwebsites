@@ -52,25 +52,29 @@ public:
 
 
 class users_ui
-        : public plugins::plugin
-        , public path::path_execute
-        , public layout::layout_content
-        , public layout::layout_boxes
-        , public form::form_post
+    : public plugins::plugin
+    , public path::path_execute
+    , public layout::layout_content
+    , public layout::layout_boxes
+    , public form::form_post
 {
 public:
                             users_ui();
-    virtual                 ~users_ui();
+                            users_ui(users_ui const & rhs) = delete;
+    virtual                 ~users_ui() override;
+
+    users_ui &              operator = (users_ui const & rhs) = delete;
+
+    static users_ui *       instance();
 
     // plugins::plugin implementation
-    static users_ui *       instance();
-    virtual QString         settings_path() const;
-    virtual QString         icon() const;
-    virtual QString         description() const;
-    virtual QString         help_uri() const;
-    virtual QString         dependencies() const;
-    virtual int64_t         do_update(int64_t last_updated);
-    virtual void            bootstrap(::snap::snap_child * snap);
+    virtual QString         settings_path() const override;
+    virtual QString         icon() const override;
+    virtual QString         description() const override;
+    virtual QString         help_uri() const override;
+    virtual QString         dependencies() const override;
+    virtual int64_t         do_update(int64_t last_updated) override;
+    virtual void            bootstrap(::snap::snap_child * snap) override;
 
     // server signals
     void                    on_attach_to_session();
@@ -84,10 +88,10 @@ public:
     void                    on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);
 
     // layout::layout_content implementation
-    virtual void            on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
+    virtual void            on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body) override;
 
     // layout::layout_boxes implementation
-    virtual void            on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes);
+    virtual void            on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes) override;
 
     // filter signals
     void                    on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token);
@@ -131,7 +135,7 @@ private:
     void                    editor_widget_load_email_address(QDomElement & widget, QString const & id);
 
     snap_child *            f_snap = nullptr;
-    QString                 f_user_changing_password_key;   // not quite logged in user
+    QString                 f_user_changing_password_key = QString();   // not quite logged in user
     bool                    f_user_changing_password_key_clear = true;
 };
 

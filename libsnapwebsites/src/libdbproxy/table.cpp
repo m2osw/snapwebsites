@@ -1092,6 +1092,8 @@ bool table::exists(const QByteArray& row_key) const
             f_cursor_index_ref = -1;
         }
 
+        save_current_cursor_index_t(save_current_cursor_index_t const & rhs) = delete;
+
         ~save_current_cursor_index_t()
         {
             try
@@ -1109,10 +1111,12 @@ bool table::exists(const QByteArray& row_key) const
             f_cursor_index_ref = f_saved_cursor_index;
         }
 
+        save_current_cursor_index_t & operator = (save_current_cursor_index_t const & rhs) = delete;
+
     private:
-        table *   f_table = nullptr;
+        table *             f_table = nullptr;
         int32_t &           f_cursor_index_ref;
-        int32_t             f_saved_cursor_index;
+        int32_t             f_saved_cursor_index = 0;
     };
     save_current_cursor_index_t save_cursor_index(const_cast<table *>(this), const_cast<table *>(this)->f_cursor_index);
 

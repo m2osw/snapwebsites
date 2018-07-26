@@ -479,13 +479,13 @@ private:
     //          The only way to modify those values once the fork() happened
     //          is by sending messages to the child process.
     //
-    std::string                             f_address;
-    QString                                 f_addr;
+    std::string                             f_address                   = std::string();
+    QString                                 f_addr                      = QString();
     int                                     f_port                      = 0;
     tcp_client_server::bio_client::mode_t   f_mode                      { tcp_client_server::bio_client::mode_t::MODE_PLAIN };
     connection_t                            f_selected_connection_type  { connection_t::UDP }; // never set to NONE; default to UDP unless user uses --tcp on command line
     connection_t                            f_connection_type           { connection_t::NONE };
-    tcp_message_connection::pointer_t       f_tcp_connection;
+    tcp_message_connection::pointer_t       f_tcp_connection            = tcp_message_connection::pointer_t();
 };
 
 
@@ -503,8 +503,11 @@ public:
         : snap_console(history_file)
         , f_connection(connection)
     {
-        f_console = this;
+        g_console = this;
     }
+
+    cui_connection(cui_connection const & rhs) = delete;
+    cui_connection & operator = (cui_connection const & rhs) = delete;
 
     void reset_prompt()
     {
@@ -520,7 +523,7 @@ public:
         snap::NOTUSED(count);
         snap::NOTUSED(c);
 
-        f_console->open_message_dialog();
+        g_console->open_message_dialog();
         return 0;
     }
 
@@ -735,12 +738,13 @@ private:
         output("  F2 -- create a message in a popup window");
     }
 
-    static cui_connection *     f_console /* = nullptr; done below because it's static */;
-    connection::weak_pointer_t  f_connection;
+    static cui_connection *     g_console /* = nullptr; done below because it's static */;
+
+    connection::weak_pointer_t  f_connection = connection::weak_pointer_t();
     WINDOW *                    f_win_message = nullptr;
 };
 
-cui_connection * cui_connection::f_console = nullptr;
+cui_connection * cui_connection::g_console = nullptr;
 
 
 
@@ -883,7 +887,7 @@ private:
     advgetopt::getopt                       f_opt;
     bool                                    f_gui = false;
     bool                                    f_cui = false;
-    connection::pointer_t                   f_connection;
+    connection::pointer_t                   f_connection = connection::pointer_t();
     //connection_handler::pointer_t           f_connection_handler;
 };
 

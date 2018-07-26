@@ -2807,7 +2807,7 @@ bool editor::validate_editor_post_for_widget_impl(
     private:
         QString const &         f_value;
         mutable bool            f_stripped_value_defined = false;
-        mutable QString         f_stripped_value;
+        mutable QString         f_stripped_value = QString();
     };
     value_handler_t value_handler(value);
 
@@ -4194,11 +4194,12 @@ QString editor::format_uri(QString const & format, content::path_info_t & ipath,
         parser(editor * e, QString const & format, content::path_info_t & ipath, QString const & page_name, params_map_t const & params)
             : f_editor(e)
             , f_format(format)
-            //, f_pos(0)
             , f_token_info(ipath, page_name, params)
-            //, f_result("")
         {
         }
+
+        parser(parser const & rhs) = delete;
+        parser operator = (parser const & rhs) = delete;
 
         void parse()
         {
@@ -4267,7 +4268,7 @@ QString editor::format_uri(QString const & format, content::path_info_t & ipath,
         QString const &             f_format;
         int32_t                     f_pos = 0;
         editor_uri_token            f_token_info;
-        QString                     f_result;
+        QString                     f_result = QString();
     };
     parser result(this, format, ipath, page_name, params);
     result.parse();

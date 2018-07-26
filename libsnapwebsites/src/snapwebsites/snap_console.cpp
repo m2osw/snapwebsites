@@ -78,6 +78,11 @@ public:
         {
         }
 
+        // avoid copies (simplify bare pointer management too)
+        //
+        io_pipe_connection(io_pipe_connection const & rhs) = delete;
+        io_pipe_connection & operator = (io_pipe_connection const & rhs) = delete;
+
         virtual void process_line(QString const & line) override
         {
             if(line.indexOf("error:") != -1)
@@ -137,6 +142,9 @@ public:
         }
         return ce->f_impl;
     }
+
+    ncurses_impl(ncurses_impl const & rhs) = delete;
+    ncurses_impl & operator = (ncurses_impl const & rhs) = delete;
 
     ~ncurses_impl()
     {
@@ -1125,16 +1133,16 @@ private:
     static snap_console *           f_snap_console; // initialized below (because it is static)
     FILE *                          f_ncurses_stdout = nullptr;
     FILE *                          f_ncurses_stderr = nullptr;
-    io_pipe_connection::pointer_t   f_stdout_pipe;
-    io_pipe_connection::pointer_t   f_stderr_pipe;
-    std::string                     f_history_filename = "~/.snap_history";
+    io_pipe_connection::pointer_t   f_stdout_pipe = io_pipe_connection::pointer_t();
+    io_pipe_connection::pointer_t   f_stderr_pipe = io_pipe_connection::pointer_t();
+    std::string                     f_history_filename = std::string("~/.snap_history");
     SCREEN *                        f_term = nullptr;
     WINDOW *                        f_win_main = nullptr;
     WINDOW *                        f_win_output = nullptr;
     WINDOW *                        f_win_input = nullptr;
     int                             f_screen_width = 0;
     int                             f_screen_height = 0;
-    std::deque<std::string>         f_output;
+    std::deque<std::string>         f_output = std::deque<std::string>();
     bool                            f_visual_mode = false;
     bool                            f_has_handlers = false;
     bool                            f_should_exit = false;
@@ -1143,6 +1151,7 @@ private:
     int                             f_input_available = 0;
     int                             f_input = 0;
 };
+
 
 //ncurses_impl::pointer_t   ncurses_impl::f_nc;
 snap_console *     ncurses_impl::f_snap_console = nullptr;

@@ -64,7 +64,10 @@ class plugin
 {
 public:
                                         plugin();
+                                        plugin(plugin const & rhs) = delete;
     virtual                             ~plugin() {}
+
+    plugin &                            operator = (plugin const & rhs) = delete;
 
     void                                set_version(int version_major, int version_minor);
     int                                 get_major_version() const;
@@ -82,8 +85,8 @@ public:
     virtual int64_t                     do_dynamic_update(int64_t last_updated);
 
 private:
-    QString const                       f_name;
-    QString const                       f_filename;
+    QString const                       f_name = QString();
+    QString const                       f_filename = QString();
     mutable int64_t                     f_last_modification = 0;
     int32_t                             f_version_major = 0;
     int32_t                             f_version_minor = 0;
@@ -112,15 +115,15 @@ public:
     int32_t             get_version_minor() const;
 
 private:
-    QString             f_name;
-    QString             f_filename;
+    QString             f_name = QString();
+    QString             f_filename = QString();
     int64_t             f_last_modification = 0;
-    QString             f_icon;
-    QString             f_description;
-    QString             f_categorization_tags;
-    QString             f_help_uri;
-    QString             f_settings_path;
-    QString             f_dependencies;
+    QString             f_icon = QString();
+    QString             f_description = QString();
+    QString             f_categorization_tags = QString();
+    QString             f_help_uri = QString();
+    QString             f_settings_path = QString();
+    QString             f_dependencies = QString();
     int32_t             f_version_major = 0;
     int32_t             f_version_minor = 0;
 };
@@ -216,6 +219,8 @@ bool                    verify_plugin_name(QString const & name);
         f_plugin->set_version(major, minor); \
         ::snap::plugins::register_plugin(#name, f_plugin); } \
     virtual ~plugin_##name##_factory() { delete f_plugin; } \
+    plugin_##name##_factory(plugin_##name##_factory const &) = delete; \
+    plugin_##name##_factory & operator = (plugin_##name##_factory const &) = delete; \
     name * instance() { return f_plugin; } \
     virtual int version_major() const { return major; } \
     virtual int version_minor() const { return minor; } \

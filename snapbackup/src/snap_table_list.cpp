@@ -52,7 +52,7 @@ snapTableList::snapTableList()
 
 void snapTableList::initList()
 {
-    if( f_list.isEmpty() )
+    if( g_list.isEmpty() )
     {
         // Ignore these tables by default
         //
@@ -72,10 +72,10 @@ void snapTableList::overrideTablesToDump( const QStringList& tables_to_dump )
 {
     for( auto const & table_name : tables_to_dump )
     {
-        auto iter(f_list.find(table_name));
-        if( iter != f_list.end() )
+        auto iter(g_list.find(table_name));
+        if( iter != g_list.end() )
         {
-            f_list.erase(iter);
+            g_list.erase(iter);
         }
     }
 }
@@ -83,7 +83,7 @@ void snapTableList::overrideTablesToDump( const QStringList& tables_to_dump )
 QStringList snapTableList::snapTableList::tablesToIgnore()
 {
     QStringList the_list;
-    for( auto const & entry : f_list )
+    for( auto const & entry : g_list )
     {
         the_list << entry.f_tableName;
     }
@@ -92,7 +92,7 @@ QStringList snapTableList::snapTableList::tablesToIgnore()
 
 bool snapTableList::canDumpRow( const QString& table_name, const QString& row_name )
 {
-    const auto& entry(f_list[table_name]);
+    const auto& entry(g_list[table_name]);
     if( entry.f_rowsToDump.isEmpty() )  return true;
     return entry.f_rowsToDump.contains( row_name );
 }
@@ -101,9 +101,9 @@ void snapTableList::addEntry( const QString& name )
 {
     snapTableList entry;
     entry.f_tableName = name;
-    f_list[name] = entry;
+    g_list[name] = entry;
 }
 
-snapTableList::name_to_list_t  snapTableList::f_list;
+snapTableList::name_to_list_t  snapTableList::g_list;
 
 // vim: ts=4 sw=4 et

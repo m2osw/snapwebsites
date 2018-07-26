@@ -44,6 +44,8 @@ public:
 
 class snap_child;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class http_cookie
 {
 public:
@@ -84,17 +86,18 @@ public:
     QString             to_http_header() const;
 
 private:
-    snap_child *                f_snap = nullptr;   // the snap child that created this cookie
-    QString                     f_name;             // name of the cookie
-    QByteArray                  f_value;            // the cookie value (binary buffer)
-    QString                     f_domain;           // domain for which the cookie is valid
-    QString                     f_path;             // path under which the cookie is valid
-    QDateTime                   f_expire;           // when to expire the cookie (if null, session, if past delete)
-    bool                        f_secure = false;   // only valid on HTTPS
-    bool                        f_http_only = false;// JavaScript cannot access this cookie
-    QString                     f_comment;          // verbatim comment
-    QString                     f_comment_url;      // verbatim comment
+    snap_child *        f_snap = nullptr;           // the snap child that created this cookie
+    QString             f_name = QString();         // name of the cookie
+    QByteArray          f_value = QByteArray();     // the cookie value (binary buffer)
+    QString             f_domain = QString();       // domain for which the cookie is valid
+    QString             f_path = QString();         // path under which the cookie is valid
+    QDateTime           f_expire = QDateTime();     // when to expire the cookie (if null, session, if past delete)
+    bool                f_secure = false;           // only valid on HTTPS
+    bool                f_http_only = false;        // JavaScript cannot access this cookie
+    QString             f_comment = QString();      // verbatim comment
+    QString             f_comment_url = QString();  // verbatim comment
 };
+#pragma GCC diagnostic pop
 
 
 

@@ -67,8 +67,11 @@ SNAP_PLUGIN_START(path, 1, 0)
 path_error_callback::path_error_callback(snap_child * snap, content::path_info_t & ipath)
     : f_snap(snap)
     , f_ipath(ipath)
-    //, f_plugin(nullptr)
-    //, f_autologout(false)
+{
+}
+
+
+path_error_callback::~path_error_callback()
 {
 }
 
