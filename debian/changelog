@@ -1,3 +1,13 @@
+snapwebsites (1.5.100.0~xenial) xenial; urgency=high
+
+  * Fixed the f_file and f_func whether we use the syslog() is used or not.
+  * Test the string pointer for NULL in case we log char * or wchar_t *.
+  * Log the URI when snap.cgi gets an I/O error to see when it happens.
+  * Added a script to show how to unblock one IP in the firewall.
+  * Created a document showing how the IP blocking works in snap.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 26 Jul 2018 23:42:30 -0700
+
 snapwebsites (1.5.99.0~xenial) xenial; urgency=high
 
   * Made code -Weffc++ compatible.
