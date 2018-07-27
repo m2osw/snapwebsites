@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Script to unblock one specific IP address
+
+if test -z "$1"
+then
+    echo "error: unblock-ip <ip-address-to-unblock>"
+    echo "  the <ip-address-to-unblock> is missing"
+    exit 1
+fi
+IP="$1"
+
+# `sudo` is useful to make sure logs get generated as expected.
+#
+# At this time this script is limited to the 'http' protocol.
+#
+# The UNBLOCK message is sent to all machines so the IP get
+# unblocked everywhere, not just this machine. `snapfirewall`
+# must be running since that is the daemon that accepts the
+# `UNBLOCK` command.
+#
+sudo snapsignal "*/UNBLOCK uri=http://$1"
+
+# vim: ts=4 sw=4 et

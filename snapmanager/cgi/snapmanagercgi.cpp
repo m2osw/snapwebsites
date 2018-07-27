@@ -530,7 +530,7 @@ bool manager_cgi::verify()
                 "404 Page Not Found",
                 nullptr,
                 "The REQUEST_URI cannot represent a proxy access.");
-            snap::server::block_ip(remote_addr, "year", "user tried to access snapmanager.cgi with a proxy");
+            snap::server::block_ip(remote_addr, "year", "user tried to access \"snapmanager.cgi\" with a proxy");
             return false;
         }
 

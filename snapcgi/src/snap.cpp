@@ -785,7 +785,8 @@ int snap_cgi::process()
         }
         else if(r == -1)
         {
-            SNAP_LOG_FATAL("an I/O error occurred while reading the response from the server");
+            char const * request_uri(getenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_REQUEST_URI)));
+            SNAP_LOG_FATAL("an I/O error occurred while reading the response from the server, the REQUEST_URI was: ")(request_uri);
             break;
         }
         else if(r == 0)

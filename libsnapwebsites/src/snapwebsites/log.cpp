@@ -924,8 +924,6 @@ logger::logger(log_level_t const log_level, char const * file, char const * func
     , f_func(func)
     , f_line(line)
     , f_security(log_security_t::LOG_SECURITY_NONE)
-    //, f_message() -- auto-init
-    //, f_ignore(false) -- auto-init
 {
 }
 
@@ -1026,6 +1024,15 @@ logger::~logger()
 
     }
 
+    if(f_file == nullptr)
+    {
+        f_file = "unknown-file";
+    }
+    if(f_func == nullptr)
+    {
+        f_func = "unknown-func";
+    }
+
     // TODO: instead of calling logger_exists() which is very expensive
     //       (because it uses a try/catch), we should instead have a flag
     //       to know whether a logger is properly configured; if so then
@@ -1037,14 +1044,6 @@ logger::~logger()
         // if not even configured, return immediately
         if(sll != -1)
         {
-            if(!f_file)
-            {
-                f_file = "unknown-file";
-            }
-            if(!f_func)
-            {
-                f_func = "unknown-func";
-            }
             syslog(sll, "%s (%s:%s: %d)", f_message.toUtf8().data(), f_file, f_func, static_cast<int32_t>(f_line));
         }
     }
@@ -1108,7 +1107,10 @@ logger & logger::operator () (char const * s)
 {
     // we assume UTF-8 because in our Snap environment most everything is
     // TODO: change control characters to \xXX
-    f_message += QString::fromUtf8(s);
+    if(s != nullptr)
+    {
+        f_message += QString::fromUtf8(s);
+    }
     return *this;
 }
 
@@ -1116,7 +1118,10 @@ logger & logger::operator () (char const * s)
 logger & logger::operator () (wchar_t const * s)
 {
     // TODO: change control characters to \xXX
-    f_message += QString::fromWCharArray(s);
+    if(s != nullptr)
+    {
+        f_message += QString::fromWCharArray(s);
+    }
     return *this;
 }
 

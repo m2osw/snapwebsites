@@ -207,7 +207,7 @@ compressor_t * get_compressor(QString const & compressor_name)
  *
  * \return A byte array with the compressed input data.
  */
-QByteArray compress(QString& compressor_name, const QByteArray& input, level_t level, bool text)
+QByteArray compress(QString & compressor_name, QByteArray const & input, level_t level, bool text)
 {
     // clamp the level, just in case
     //
@@ -329,10 +329,12 @@ QByteArray decompress(QString & compressor_name, QByteArray const & input)
  * This implementation makes use of the zlib library to do all the
  * compression and decompression work.
  */
-class gzip_t : public compressor_t
+class gzip_t
+    : public compressor_t
 {
 public:
-    gzip_t() : compressor_t("gzip")
+    gzip_t()
+        : compressor_t("gzip")
     {
     }
 
@@ -482,10 +484,12 @@ public:
 } g_gzip; // create statically
 
 
-class deflate_t : public compressor_t
+class deflate_t
+    : public compressor_t
 {
 public:
-    deflate_t() : compressor_t("deflate")
+    deflate_t()
+        : compressor_t("deflate")
     {
     }
 
@@ -718,7 +722,6 @@ time_t archiver_t::file_t::get_mtime() const
 
 
 archiver_t::archiver_t(char const * name)
-    //: f_archive() -- auto-init
 {
     if(g_archivers == nullptr)
     {
@@ -761,12 +764,12 @@ QByteArray archiver_t::get_archive() const
 
 
 
-class tar : public archiver_t
+class tar
+    : public archiver_t
 {
 public:
     tar()
         : archiver_t("tar")
-        //, f_pos(0) -- auto-init
     {
     }
 
