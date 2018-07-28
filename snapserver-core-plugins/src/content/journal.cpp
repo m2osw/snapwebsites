@@ -322,11 +322,11 @@ journal_list::~journal_list()
     if(!f_url_list.isEmpty())
     {
 #ifdef _DEBUG
-        SNAP_LOG_FATAL("URL list is not empty in ~journal_list(), did you call done()?");
+        SNAP_LOG_FATAL("URL list is not empty in journal_list::~journal_list(), did you call done()?");
         std::cerr << "See the logs for more info." << std::endl;
         std::terminate();
 #else
-        SNAP_LOG_ERROR("URL list is not empty in ~journal_list(), did you call done()?");
+        SNAP_LOG_ERROR("URL list is not empty in journal_list::~journal_list(), did you call done()?");
 #endif
     }
 }
