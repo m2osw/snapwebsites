@@ -1,3 +1,12 @@
+snapwebsites (1.5.102.0~xenial) xenial; urgency=high
+
+  * Actually the journal_list objects must be allocated because we can't have
+    a pointer to that object from a vector without the huge risk of having
+    that pointer invalidated at some point. It also fixes the done() and
+    destructor problems and I successfully create a company!
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 27 Jul 2018 22:35:33 -0700
+
 snapwebsites (1.5.101.0~xenial) xenial; urgency=high
 
   * Removed the test in the journal_list() destructor, it can't work because

@@ -206,11 +206,14 @@ SNAP_PLUGIN_EXTENSION_START(content)
  */
 journal_list * content::get_journal_list()
 {
-    f_to_process.push_back( journal_list(f_snap) );
-    f_journal_list_stack.push( &(f_to_process.back()) );
-    SNAP_LOG_DEBUG("content::get_journal_list(): f_to_process.size()=")(f_to_process.size())
+    journal_list * journal( new journal_list(f_snap) );
+    f_to_process.push_back( journal );
+    f_journal_list_stack.push( journal );
+    SNAP_LOG_DEBUG("content::get_journal_list(): created new journal_list: ")
+            (" f_to_process.size()=")(f_to_process.size())
             (", f_journal_list_stack.size()=")(f_journal_list_stack.size());
-    return f_journal_list_stack.top();
+
+    return journal;
 }
 
 
@@ -255,7 +258,7 @@ void content::journal_list_pop(journal_list * journal)
     }
 
     f_journal_list_stack.pop();
-    SNAP_LOG_DEBUG("f_journal_list_stack.size()=")(f_journal_list_stack.size());
+    SNAP_LOG_DEBUG("f_journal_list_stack.size() after pop() =")(f_journal_list_stack.size());
     //
     if( f_journal_list_stack.empty() )
     {
@@ -281,7 +284,8 @@ void content::finish_all_journals()
     SNAP_LOG_DEBUG("++++ f_to_process.size()=")(f_to_process.size());
     for( auto & list : f_to_process )
     {
-        list.finish_pages();
+        list->finish_pages();
+        delete list;
     }
 
     f_to_process.clear();
@@ -319,12 +323,6 @@ journal_list::journal_list( snap_child * snap )
  */
 journal_list::~journal_list()
 {
-#if 0
-// unfortunately we can't generate an error here because at this point
-// the journal_list objects get copied in the vector where they are
-// created (especially when the vector grows, although that should not
-// happen, I would imagine we'll never get that many journals.)
-//
     if(!f_url_list.isEmpty())
     {
 #ifdef _DEBUG
@@ -335,7 +333,6 @@ journal_list::~journal_list()
         SNAP_LOG_ERROR("URL list is not empty in journal_list::~journal_list(), did you call done()?");
 #endif
     }
-#endif
 }
 
 

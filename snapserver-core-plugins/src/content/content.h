@@ -968,7 +968,7 @@ private:
     // Journaling support
     //
     std::stack<journal_list *>           f_journal_list_stack = std::stack<journal_list *>();
-    std::vector<journal_list>            f_to_process = std::vector<journal_list>();
+    std::vector<journal_list *>          f_to_process = std::vector<journal_list *>();
 };
 
 //class content_box_execute
