@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwatchdog/plugins/disk/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_disk/CMakeLists.txt
 #
 # Description:
 #      Disk watchdog: report disk usage over time.

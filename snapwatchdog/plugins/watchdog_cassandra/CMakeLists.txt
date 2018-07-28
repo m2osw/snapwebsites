@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwatchdog/plugins/cassandra/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_cassandra/CMakeLists.txt
 #
 # Description:
 #      Cassandra watchdog.

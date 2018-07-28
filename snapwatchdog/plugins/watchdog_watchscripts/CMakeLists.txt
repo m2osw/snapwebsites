@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwatchdog/plugins/watchscripts/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_watchscripts/CMakeLists.txt
 #
 # Description:
 #      Watch scripts for snawatchdog.

@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwatchdog/plugins/processes/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_processes/CMakeLists.txt
 #
 # Description:
 #      Processes watchdog.

@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwatchdog/plugins/memory/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_memory/CMakeLists.txt
 #
 # Description:
 #      Memory watchdog: record memory usage over time.

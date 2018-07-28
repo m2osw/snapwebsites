@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwatchdog/plugins/cpu/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_cpu/CMakeLists.txt
 #
 # Description:
 #      CPU watchdog: record CPU usage over time.

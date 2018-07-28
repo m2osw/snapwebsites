@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwatchdog/plugins/network/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_network/CMakeLists.txt
 #
 # Description:
 #      Network watchdog.

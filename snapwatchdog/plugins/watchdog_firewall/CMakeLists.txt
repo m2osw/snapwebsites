@@ -1,6 +1,6 @@
 #
 # File:
-#      snapwatchdog/plugins/firewall/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_firewall/CMakeLists.txt
 #
 # Description:
 #      Firewall watchdog.
