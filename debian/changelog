@@ -1,3 +1,10 @@
+snapwebsites (1.5.101.0~xenial) xenial; urgency=high
+
+  * Removed the test in the journal_list() destructor, it can't work because
+    the vector implies copies which means done() isn't called.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 27 Jul 2018 22:35:33 -0700
+
 snapwebsites (1.5.100.0~xenial) xenial; urgency=high
 
   * Fixed the f_file and f_func whether we use the syslog() is used or not.

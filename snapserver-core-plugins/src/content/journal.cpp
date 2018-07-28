@@ -319,6 +319,12 @@ journal_list::journal_list( snap_child * snap )
  */
 journal_list::~journal_list()
 {
+#if 0
+// unfortunately we can't generate an error here because at this point
+// the journal_list objects get copied in the vector where they are
+// created (especially when the vector grows, although that should not
+// happen, I would imagine we'll never get that many journals.)
+//
     if(!f_url_list.isEmpty())
     {
 #ifdef _DEBUG
@@ -329,6 +335,7 @@ journal_list::~journal_list()
         SNAP_LOG_ERROR("URL list is not empty in journal_list::~journal_list(), did you call done()?");
 #endif
     }
+#endif
 }
 
 
