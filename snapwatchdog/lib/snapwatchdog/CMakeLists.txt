@@ -31,6 +31,11 @@
 
 project(snapwatchdog)
 
+snap_validate_xml(
+    watchdog-log-definitions.xml
+    watchdog-log-definitions.xsd
+)
+
 set( CMAKE_AUTOMOC TRUE )
 
 # Put the version in the header file
@@ -63,6 +68,7 @@ qt5_add_resources(SNAPWATCHDOG_RESOURCES_RCC
 
 add_library( ${PROJECT_NAME} SHARED
     snapwatchdog.cpp                            # Implements the core of the watchdog server
+    log_definitions.cpp
     ${SNAPWATCHDOG_MOC_CXX}
     ${SNAPWATCHDOG_RESOURCES_RCC}
 )
@@ -105,5 +111,19 @@ install(
     DESTINATION
         include/snapwatchdog
 )
+
+install(
+    FILES
+        watchdog-log-definitions.xml
+    DESTINATION
+        share/snapwebsites/snapwatchdog/log-definitions
+)
+install(
+        FILES
+                watchdog-log-definitions.xsd
+        DESTINATION
+                share/snapwebsites/xsd
+)
+
 
 # vim: ts=4 sw=4 et nocindent

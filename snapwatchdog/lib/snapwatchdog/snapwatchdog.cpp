@@ -1,4 +1,4 @@
-// Snap Websites Server -- snap watchdog daemon
+// Snap Websites Server -- snap watchdog library
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -537,6 +537,9 @@ char const * get_name(name_t name)
 
     case name_t::SNAP_NAME_WATCHDOG_FROM_EMAIL:
         return "from_email";
+
+    case name_t::SNAP_NAME_WATCHDOG_LOG_DEFINITIONS_PATH:
+        return "watchdog_log_definitions_path";
 
     case name_t::SNAP_NAME_WATCHDOG_LOG_PATH:
         return "log_path";

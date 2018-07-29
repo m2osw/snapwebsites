@@ -21,6 +21,7 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mounts.h>
 #include <snapwebsites/qdomhelpers.h>
@@ -28,7 +29,7 @@
 
 // C lib
 //
-#include <sys/statvfs.h>
+#include <sys/stat.h>
 
 // last entry
 //
@@ -36,611 +37,6 @@
 
 
 SNAP_PLUGIN_START(log, 1, 0)
-
-
-namespace
-{
-
-
-char const * g_server_configuration_filename = "snapserver";
-
-char const * g_configuration_apache2_maintenance = "/etc/apache2/snap-conf/snap-apache2-maintenance.conf";
-
-
-/** \brief Check whether a service is enabled or not.
- *
- * The Snap! Watchdog does view a missing process as normal if the
- * corresponding service is marked as disabled. This function tells
- * us whether the service is considered up and running or not.
- *
- * When the XML file includes the \<service> tag, it calls this
- * function. If the function returns false, then no further test
- * is done and the process entry is ignored.
- *
- * \note
- * This means a process that's turned off for maintenance does not
- * generate errors for being turned off during that time OR AFTER
- * IF YOU FORGET TO TURN IT BACK ON. A later version may want to
- * have a way to know whether the process is expected to be on and
- * if so still generate an error after X hours of being down...
- * (or once the system is back up, i.e., it's not in maintenance
- * mode anymore.) However, at this point we do not know which
- * snapbackend are expected to be running.
- *
- * \param[in] service_name  The name of the service, as systemd understands
- *            it, to check on.
- *
- * \return true if the service is marked as enabled.
- */
-bool is_service_enabled(QString const & service_name)
-{
-    snap::process p("query service status");
-    p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-    p.set_command("systemctl");
-    p.add_argument("is-enabled");
-    p.add_argument(service_name);
-    int const r(p.run());
-    SNAP_LOG_INFO("\"is-enabled\" query output (")(r)("): ")(p.get_output(true).trimmed());
-    return r == 0;
-}
-
-
-/** \brief Check whether a service is active or not.
- *
- * The Snap! Watchdog checks whether a service is considered active too.
- * A service may be marked as enabled but it may not be active.
- *
- * \param[in] service_name  The name of the service, as systemd understands
- *            it, to check on.
- *
- * \return true if the service is marked as active.
- */
-bool is_service_active(QString const & service_name)
-{
-    snap::process p("query service status");
-    p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-    p.set_command("systemctl");
-    p.add_argument("is-active");
-    p.add_argument(service_name);
-    int const r(p.run());
-    SNAP_LOG_INFO("\"is-active\" query output (")(r)("): ")(p.get_output(true).trimmed());
-    return r == 0;
-}
-
-
-/** \brief Check whether the system is in maintenance mode.
- *
- * This function checks whether the standard maintenance mode is currently
- * turn on or not. This is done by checking the maintenance Apache
- * configuration file and see whether the lines between ##MAINTENANCE-START##
- * and ##MAINTENANCE-END## are commented out or not.
- *
- * \return true if the maintenance mode is ON.
- */
-bool is_in_maintenance()
-{
-    snap::file_content conf(g_configuration_apache2_maintenance);
-    if(!conf.exists())
-    {
-        // the maintenance file doesn't exist, assume the worst, that
-        // we are not in maintenance
-        //
-        return false;
-    }
-
-    std::string const content(conf.get_content());
-    std::string::size_type const pos(content.find("##MAINTENANCE-START##"));
-    if(pos == std::string::npos)
-    {
-        // marker not found... consider we are live
-        //
-        return false;
-    }
-
-    char const * s(content.c_str() + pos + 21);
-    while(isspace(*s))
-    {
-        ++s;
-    }
-    if(*s == '#')
-    {
-        // not in maintenance, fields are commented out
-        //
-        return false;
-    }
-
-    std::string::size_type const ra_pos(content.find("Retry-After"));
-    if(ra_pos == std::string::npos)
-    {
-        // no Retry-After header?!
-        //
-        return false;
-    }
-
-    return true;
-}
-
-
-/** \brief Class used to read the list of processes to check.
- *
- * The class understands the following XML format:
- *
- * \code
- * <watchdog-processes>
- *   <process name="name" mandatory="mandatory" allow_duplicates="allow_duplicates">
- *      <command>...</command>
- *      <match>...</match>
- *   </process>
- *   <process name="..." ...>
- *      ...
- *   </process>
- *   ...
- * </watchdog-processes>
- * \endcode
- */
-class watchdog_process_t
-{
-public:
-    typedef std::vector<watchdog_process_t>     vector_t;
-
-                                watchdog_process_t(QString const & name, bool mandatory, bool allow_duplicates);
-
-    void                        set_mandatory(bool mandatory);
-    void                        set_command(QString const & command);
-    void                        set_service(QString const & service, bool backend);
-    void                        set_match(QString const & match);
-
-    QString const &             get_name() const;
-    bool                        is_mandatory() const;
-    bool                        is_backend() const;
-    bool                        allow_duplicates() const;
-    bool                        match(QString const & name, QString const & cmdline);
-
-private:
-    QString                     f_name = QString();
-    QString                     f_command = QString();
-    QString                     f_service = QString();
-    QSharedPointer<QRegExp>     f_match = QSharedPointer<QRegExp>();
-    bool                        f_mandatory = false;
-    bool                        f_allow_duplicates = false;
-    bool                        f_service_is_enabled = true;
-    bool                        f_service_is_active = true;
-    bool                        f_service_is_backend = false;
-};
-
-
-watchdog_process_t::vector_t    g_logs;
-
-
-/** \brief Initializes a watchdog_process_t class.
- *
- * This function initializes the watchdog_process_t making it ready to
- * run the match() command.
- *
- * To complete the setup, when available, the set_command() and
- * set_match() functions should be called.
- *
- * \param[in] name  The name of the command, in most cases this is the
- *            same as the terminal command line name.
- * \param[in] mandatory  Whether the process is mandatory (error with a
- *            very high priority if not found.)
- * \param[in] allow_duplicates  Whether this entry can be defined more than
- *            once within various XML files.
- */
-watchdog_process_t::watchdog_process_t(QString const & name, bool mandatory, bool allow_duplicates)
-    : f_name(name)
-    , f_mandatory(mandatory)
-    , f_allow_duplicates(allow_duplicates)
-{
-}
-
-
-/** \brief Set whether this process is mandatory or not.
- *
- * Change the mandatory flag.
- *
- * At the moment this is used by the loader to force the mandatory flag
- * when a duplicate is found and the new version is mandatory. In other
- * word, it is a logical or between all the instances of the process
- * found on the system.
- *
- * \param[in] mandatory  Whether this process is mandatory.
- */
-void watchdog_process_t::set_mandatory(bool mandatory)
-{
-    f_mandatory = mandatory;
-}
-
-
-/** \brief Set the name of the expected command.
- *
- * The name of the watchdog process may be different from the exact
- * terminal command name. For example, the cassandra process runs
- * using "java" and not "cassandra". In that case, the command would
- * be set "java".
- *
- * \param[in] command  The name of the command to seek.
- */
-void watchdog_process_t::set_command(QString const & command)
-{
-    f_command = command;
-}
-
-
-/** \brief Set the name of the service corresponding to this process.
- *
- * When testing whether a process is running, the watchdog can first
- * check whether that process is a service (i.e. when a service name was
- * specified in the XML.) When a process is a known service and the
- * service is disabled, then whether the service is running is none of
- * our concern. However, if enabled and the service is not running,
- * then there is a problem.
- *
- * \param[in] service  The name of the service to check.
- * \param[in] backend  Whether the service is a snapbackend.
- */
-void watchdog_process_t::set_service(QString const & service, bool backend)
-{
-    // we check whether the service is running just once here
-    // (otherwise we could end up calling that function once per
-    // process!)
-    //
-    f_service = service;
-    f_service_is_enabled = is_service_enabled(service);
-    f_service_is_active = is_service_active(service);
-    f_service_is_backend = backend;
-}
-
-
-/** \brief Define the match regular expression.
- *
- * If the process has a complex command line definition to be checked,
- * then this regular expression can be used. For example, to check
- * whether Cassandra is running, we search for a Java program which
- * runs the Cassandra system. This is done using a regular expression:
- *
- * \code
- *   <match>java.*org\.apache\.cassandra\.service\.CassandraDaemon</match>
- * \endcode
- *
- * (at the moment, though, we have a specialized Cassandra plugin and
- * thus this is not part of the list of processes in our XML files.)
- *
- * \param[in] match  A valid regular expression.
- */
-void watchdog_process_t::set_match(QString const & match)
-{
-    f_match = QSharedPointer<QRegExp>(new QRegExp(match));
-}
-
-
-/** \brief Get the name of the process.
- *
- * This function returns the name of the process. Note that the
- * terminal command line may be different.
- *
- * \return The name that process was given.
- */
-QString const & watchdog_process_t::get_name() const
-{
-    return f_name;
-}
-
-
-/** \brief Check whether this process is considered mandatory.
- *
- * This function returns the mandatory flag.
- *
- * By default processes are not considered mandatory. Add the
- * mandatory attribute to the tag to mark a process as mandatory.
- *
- * This flag tells us what priority to use when we generate an
- * error when a process can't be found. 60 when not mandatory
- * and 95 when mandatory.
- *
- * \return true if the mandatory flag is set.
- */
-bool watchdog_process_t::is_mandatory() const
-{
-    return f_mandatory;
-}
-
-
-/** \brief Check whether this process is a backend service.
- *
- * Whenever a process is marked as a service, it can also specifically
- * be marked as a backend service.
- *
- * A backend service is not forcibly expected to be running whenever
- * the system is put in maintenance mode. This flag is used to test
- * that specific status.
- *
- * \return true if the process was marked as a backend service.
- */
-bool watchdog_process_t::is_backend() const
-{
-    return f_service_is_backend;
-}
-
-
-/** \brief Wether duplicate definitions are allowed or not.
- *
- * If a process is required by more than one package, then it should
- * be defined in each one of them and it should be marked as a
- * possible duplicate.
- *
- * For example, the mysqld service is required by snaplog and snaplistd.
- * Both will have a defintion for mysqld (because one could be installed
- * on a backend and the other on another backend.) However, when they
- * both get installed on the same machine, you get two definitions with
- * the same process name. If this function returns false for either one,
- * then the setup throws.
- *
- * \return true if the process definitions can have duplicates for that process.
- */
-bool watchdog_process_t::allow_duplicates() const
-{
-    return f_allow_duplicates;
-}
-
-
-/** \brief Match the name and command line against this process definition.
- *
- * If this process is connected to a service, we check whether that service
- * is enabled. If not, then we assume that the user explicitly disabled
- * that service and thus we can't expect the process as running.
- *
- * If we have a command (\<command> tag) then the \p name must match
- * that parameter.
- *
- * If we have a regular expression (\<match> tag), then we match it against
- * the command line (\p cmdline).
- *
- * If there is is no command and no regular expression, then the name of
- * the process is compared directly against the \p command parameter and
- * it has to match that.
- *
- * \param[in] command  The command being checked, this is the command line
- *            very first parameter with the path stripped.
- * \param[in] cmdline  The full command line to compare against the
- *            match regular expression when defined.
- *
- * \return The function returns true if the process is a match.
- */
-bool watchdog_process_t::match(QString const & command, QString const & cmdline)
-{
-    if(!f_service.isEmpty())
-    {
-        // service possible states:
-        //
-        //  . disabled (and thus inactive)
-        //  . enabled
-        //  . active
-        //
-        // a service may also be marked as a backend; backends are
-        // further affected by the "backend_status" and "backends"
-        // fields found in the "snapserver.conf" file
-        //
-        if(!f_service_is_enabled)
-        {
-            // a regular service markedas disabled is not expected to be running
-            // so if disabled we return true (i.e. "all good")
-            //
-            // however, a backend which is disabled is not going to return true
-            // until the "backend_status" is "disabled" or the maintenance mode
-            // is turned on, in all other cases, disabled and/or not running
-            // backends are in error if the system is in standard run mode
-            //
-            if(!f_service_is_backend)
-            {
-                return true;
-            }
-
-            // this is a backend, check the "backend_status" flag
-            //
-            // note: configuration files are cached so the following is rather
-            //       fast the second time (i.e. access an std::map<>().)
-            //
-            snap_config snap_server_conf(g_server_configuration_filename);
-            if(snap_server_conf["backend_status"] == "disabled")
-            {
-                // no problem, the administrator disabled all the backends
-                //
-                return true;
-            }
-
-            // okay, now check whether that specific backend is expected to
-            // be running on this system because that varies "widely"
-            //
-            QString const expected_backends(snap_server_conf["backends"]);
-            snap_string_list valid_backends(expected_backends.split(','));
-            int const max(valid_backends.size());
-            for(int idx(0); idx < max; ++idx)
-            {
-                // in case the admin edited that list manually, we need to
-                // fix it before we use it (we should look into using our
-                // tokenize_string instead because it can auto-trims)
-                //
-                valid_backends[idx] = valid_backends[idx].trimmed();
-            }
-
-            if(!valid_backends.contains(f_service))
-            {
-                // all good, the administrator doesn't expect this backend
-                // to run on this computer
-                //
-                return true;
-            }
-        }
-    }
-
-    if(!f_command.isEmpty())
-    {
-        if(f_command != command)
-        {
-            return false;
-        }
-    }
-
-    if(f_match != nullptr)
-    {
-        if(f_match->indexIn(cmdline) == -1)
-        {
-            return false;
-        }
-    }
-
-    if(f_command.isEmpty()
-    && f_match == nullptr)
-    {
-        // if no command line and no match were specified then the name
-        // is the process name
-        //
-        if(f_name != command)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-
-
-/** \brief Load an XML file.
- *
- * This function loads one XML file and transform it in a
- * watchdog_process_t structure.
- *
- * param[in] processes_filename  The name of an XML file representing processes.
- */
-void load_xml(QString processes_filename)
-{
-    QFile input(processes_filename);
-    if(input.open(QIODevice::ReadOnly))
-    {
-        QDomDocument doc;
-        if(doc.setContent(&input, false)) // TODO: add error handling for debug
-        {
-            // we got the XML loaded
-            //
-            QDomNodeList processes(doc.elementsByTagName("process"));
-            int const max(processes.size());
-            for(int idx(0); idx < max; ++idx)
-            {
-                QDomNode p(processes.at(idx));
-                if(!p.isElement())
-                {
-                    continue;
-                }
-                QDomElement process(p.toElement());
-                QString const name(process.attribute("name"));
-                if(name.isEmpty())
-                {
-                    throw processes_exception_invalid_process_name("the name of a process cannot be the empty string");
-                }
-
-                bool const mandatory(process.hasAttribute("mandatory"));
-                bool const allow_duplicates(process.hasAttribute("allow_duplicates"));
-
-                auto it(std::find_if(
-                          g_processes.begin()
-                        , g_processes.end()
-                        , [name, allow_duplicates](auto & wprocess)
-                        {
-                            if(name == wprocess.get_name())
-                            {
-                                if(!allow_duplicates
-                                || !wprocess.allow_duplicates())
-                                {
-                                    throw processes_exception_invalid_process_name("found process \"" + name + "\" twice and duplicates are not allowed.");
-                                }
-                                return true;
-                            }
-                            return false;
-                        }));
-                if(it != g_processes.end())
-                {
-                    // skip the duplicate, we assume that the command,
-                    // match, etc. are identical enough for the system
-                    // to still work as expected
-                    //
-                    if(mandatory)
-                    {
-                        it->set_mandatory(true);
-                    }
-                    continue;
-                }
-
-                watchdog_process_t wp(name, mandatory, allow_duplicates);
-
-                QDomNodeList command_tags(process.elementsByTagName("command"));
-                if(command_tags.size() > 0)
-                {
-                    QDomNode command_node(command_tags.at(0));
-                    if(command_node.isElement())
-                    {
-                        QDomElement command(command_node.toElement());
-                        wp.set_command(command.text());
-                    }
-                }
-
-                QDomNodeList service_tags(process.elementsByTagName("service"));
-                if(service_tags.size() > 0)
-                {
-                    QDomNode service_node(service_tags.at(0));
-                    if(service_node.isElement())
-                    {
-                        QDomElement service(service_node.toElement());
-                        wp.set_service(service.text(), service.hasAttribute("backend"));
-                    }
-                }
-
-                QDomNodeList match_tags(process.elementsByTagName("match"));
-                if(match_tags.size() > 0)
-                {
-                    QDomNode match_node(match_tags.at(0));
-                    if(match_node.isElement())
-                    {
-                        QDomElement match(match_node.toElement());
-                        wp.set_match(match.text());
-                    }
-                }
-
-                g_processes.push_back(wp);
-            }
-        }
-    }
-}
-
-
-/** \brief Load the list of watchdog log definitions.
- *
- * This function loads the XML from the watchdog and other packages.
- *
- * \param[in] logs_path  The path to the list of XML files declaring
- *            log definitions that should be running.
- */
-void load_logs(QString logs_path)
-{
-    g_logs.clear();
-
-    // get the path to the processes XML files
-    //
-    if(logs_path.isEmpty())
-    {
-        logs_path = "/var/lib/snapwebsites/snapwatchdog/logs";
-    }
-
-    glob_dir const script_filenames(logs_path + "/*.xml", GLOB_ERR | GLOB_NOSORT | GLOB_NOESCAPE);
-    script_filenames.enumerate_glob(std::bind(&load_xml, std::placeholders::_1));
-}
-
-
-}
-// no name namespace
-
 
 
 /** \brief Get a fixed log plugin name.
@@ -656,8 +52,8 @@ char const * get_name(name_t name)
 {
     switch(name)
     {
-    case name_t::SNAP_NAME_WATCHDOG_LOG_DEFINITIONS_PATH:
-        return "watchdog_log_definitions_path";
+    case name_t::SNAP_NAME_WATCHDOG_LOG_IGNORE:
+        return "log_ignore";
 
     default:
         // invalid index
@@ -669,6 +65,10 @@ char const * get_name(name_t name)
 
 
 
+
+
+
+
 namespace
 {
 
@@ -677,7 +77,11 @@ namespace
 
 
 }
-// no-name namespace
+// no name namespace
+
+
+
+
 
 
 
@@ -726,7 +130,11 @@ log * log::instance()
  */
 QString log::description() const
 {
-    return "Check log file sizes and for errors or warnings.";
+    // IMPORTANT NOTE: the plugin does NOT check the contents of the
+    //                 log files, this is done by another tool which
+    //                 permanently listens for changes to log files
+    //
+    return "Check log files existance, size, ownership, and permissions.";
 }
 
 
@@ -785,16 +193,145 @@ void log::on_process_watch(QDomDocument doc)
 {
     SNAP_LOG_TRACE("log::on_process_watch(): processing");
 
-    load_logs(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_LOG_DEFINITIONS_PATH)));
+    QString const log_path(f_snap->get_server_parameter(watchdog::get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_LOG_DEFINITIONS_PATH)));
+    watchdog_log_t::vector_t log_defs(watchdog_log_t::load(log_path));
 
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "logs"));
 
     // check each log
     //
-    size_t const max_logs(g_logs.size());
+    size_t const max_logs(log_defs.size());
     for(size_t idx(0); idx < max_logs; ++idx)
     {
+        watchdog_log_t const & l(log_defs[idx]);
+        QString const & path(l.get_path());
+        snap::snap_string_list const & patterns(l.get_patterns());
+        f_found = false;
+        for(auto const & p : patterns)
+        {
+            glob_dir const log_filenames(path + "/" + p, GLOB_ERR | GLOB_NOSORT | GLOB_NOESCAPE);
+            log_filenames.enumerate_glob(std::bind(&log::check_log, this, std::placeholders::_1, l, e));
+        }
+        if(!f_found)
+        {
+            QDomElement log_tag(doc.createElement("log"));
+            e.appendChild(log_tag);
+
+            QString const err_msg(QString("no logs found for %1 which says it is mandatory to have at least one log file")
+                                                .arg(l.get_name()));
+            log_tag.setAttribute("error", err_msg);
+
+            f_snap->append_error(doc
+                               , "log"
+                               , err_msg
+                               , 85); // priority
+        }
+    }
+}
+
+
+void log::check_log(QString filename, watchdog_log_t const & l, QDomElement e)
+{
+    QDomDocument doc(e.ownerDocument());
+
+    off_t const max_size(l.get_max_size());
+    uid_t const uid(l.get_uid());
+    gid_t const gid(l.get_gid());
+    mode_t const mode(l.get_mode());
+    mode_t const mode_mask(l.get_mode_mask());
+    struct stat st;
+    if(stat(filename.toUtf8().data(), &st) == 0)
+    {
+        // found at least one log under that directory with that pattern
+        //
+        f_found = true;
+
+        QDomElement log_tag(doc.createElement("log"));
+        e.appendChild(log_tag);
+
+        log_tag.setAttribute("name", l.get_name());
+        log_tag.setAttribute("filename", filename);
+        log_tag.setAttribute("size", static_cast<qlonglong>(st.st_size));
+        log_tag.setAttribute("mode", st.st_mode);
+        log_tag.setAttribute("uid", st.st_uid);
+        log_tag.setAttribute("gid", st.st_gid);
+        log_tag.setAttribute("mtime", static_cast<qlonglong>(st.st_mtime)); // we could look into showing the timespec instead?
+
+        if(st.st_size > max_size)
+        {
+            // file is too big, generate an error about it!
+            //
+            QString const err_msg(QString("size of log file  %1 (%2) is %3, which is more than the maximum size of %4")
+                                                .arg(l.get_name())
+                                                .arg(filename)
+                                                .arg(st.st_size)
+                                                .arg(max_size));
+            log_tag.setAttribute("error", err_msg);
+
+            f_snap->append_error(doc
+                               , "log"
+                               , err_msg
+                               , st.st_size > max_size * 2 ? 73 : 58); // priority
+        }
+
+        if(uid != static_cast<uid_t>(-1)
+        && uid != st.st_uid)
+        {
+            // file ownership mismatch
+            //
+            QString const err_msg(QString("log file owner mismatched for %1 (%2), found %3 expected %4")
+                                                .arg(l.get_name())
+                                                .arg(filename)
+                                                .arg(st.st_uid)
+                                                .arg(uid));
+            log_tag.setAttribute("error", err_msg);
+
+            f_snap->append_error(doc
+                               , "log"
+                               , err_msg
+                               , 63); // priority
+        }
+
+        if(gid != static_cast<gid_t>(-1)
+        && gid != st.st_gid)
+        {
+            // file ownership mismatch
+            //
+            QString const err_msg(QString("log file group mismatched for %1 (%2), found %3 expected %4")
+                                                .arg(l.get_name())
+                                                .arg(filename)
+                                                .arg(st.st_gid)
+                                                .arg(gid));
+            log_tag.setAttribute("error", err_msg);
+
+            f_snap->append_error(doc
+                               , "log"
+                               , err_msg
+                               , 63); // priority
+        }
+
+        if(mode != 0
+        && (st.st_mode & mode_mask) != mode)
+        {
+            // file ownership mismatch
+            //
+            QString const err_msg(QString("log file mode mismatched %1 (%2), found %3 expected %4")
+                                                .arg(l.get_name())
+                                                .arg(filename)
+                                                .arg(st.st_mode, 0, 8)
+                                                .arg(mode, 0, 8));
+            log_tag.setAttribute("error", err_msg);
+
+            f_snap->append_error(doc
+                               , "log"
+                               , err_msg
+                               , 63); // priority
+        }
+    }
+    else
+    {
+        // file does not exist anymore or we have a permission problem?
     }
 }
 

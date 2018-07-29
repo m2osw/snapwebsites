@@ -498,8 +498,9 @@ images::virtual_path_t images::check_virtual_path(content::path_info_t & ipath, 
 {
     // is that path already going to be handled by someone else?
     // (avoid wasting time if that is the case)
-    if(plugin_info.get_plugin()
-    || plugin_info.get_plugin_if_renamed())
+    //
+    if(plugin_info.get_plugin() != nullptr
+    || plugin_info.get_plugin_if_renamed() != nullptr)
     {
         return virtual_path_t::VIRTUAL_PATH_INVALID;
     }
@@ -510,6 +511,7 @@ images::virtual_path_t images::check_virtual_path(content::path_info_t & ipath, 
     {
         // if it exists, it is not dynamic so ignore it (this should
         // never happen because it is tested in the path plugin!)
+        //
         return virtual_path_t::VIRTUAL_PATH_INVALID;
     }
 
@@ -538,56 +540,68 @@ images::virtual_path_t images::check_virtual_path(content::path_info_t & ipath, 
         // so for now, ignore such (and that gives a way for other plugins
         // to support similar capabilities as the images plugin, just at
         // a different level!)
+        //
         return virtual_path_t::VIRTUAL_PATH_INVALID;
     }
 
     // is the parent an attachment?
+    //
     QString const owner(content_table->getRow(parent_ipath.get_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_PRIMARY_OWNER))->getValue().stringValue());
     if(owner != content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT_PLUGIN))
     {
         // something is dearly wrong if empty... and if not the attachment
         // plugin, we assume we do not support this path
+        //
         return virtual_path_t::VIRTUAL_PATH_INVALID;
     }
 
     // verify that the attachment key exists
+    //
     libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());
     if(!revision_table->exists(parent_ipath.get_revision_key())
     || !revision_table->getRow(parent_ipath.get_revision_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT)))
     {
         // again, check whether we have an attachment...
+        //
         return virtual_path_t::VIRTUAL_PATH_INVALID;
     }
 
     // make sure that the page is NORMAL
+    //
     content::path_info_t::status_t status(parent_ipath.get_status());
     if(status.get_state() != content::path_info_t::status_t::state_t::NORMAL)
     {
         // this could be deleted or hidden...
+        //
         return virtual_path_t::VIRTUAL_PATH_INVALID;
     }
 
     // get the key of that attachment, it should be a file md5
+    //
     libdbproxy::value attachment_key(revision_table->getRow(parent_ipath.get_revision_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT))->getValue());
     if(attachment_key.size() != 16)
     {
         // no or invalid key?!
+        //
         return virtual_path_t::VIRTUAL_PATH_INVALID;
     }
 
     // the field name is the basename of the ipath preceeded by the
     // "content::attachment::data" default name
+    //
     QString const cpath(ipath.get_cpath());
     int const pos(cpath.lastIndexOf("/"));
     if(pos <= 0)
     {
         // what the heck happened?!
+        //
         return virtual_path_t::VIRTUAL_PATH_INVALID;
     }
     QString const filename(cpath.mid(pos + 1));
     QString field_name(QString("%1::%2").arg(content::get_name(content::name_t::SNAP_NAME_CONTENT_FILES_DATA)).arg(filename));
 
     // Does the file exist at this point?
+    //
     libdbproxy::table::pointer_t files_table(content_plugin->get_files_table());
     if(!files_table->exists(attachment_key.binaryValue())
     || !files_table->getRow(attachment_key.binaryValue())->exists(field_name))
@@ -595,16 +609,19 @@ images::virtual_path_t images::check_virtual_path(content::path_info_t & ipath, 
         // often, the original image can be used as is because the
         // sub-image is just an "optimization"; this has to be asked
         // by the end user by adding the fallback=ok query string
+        //
         snap_uri const & uri(f_snap->get_uri());
         if(!uri.has_query_option("fallback")
         || uri.query_option("fallback") != "ok")
         {
             // no fallback
+            //
             return virtual_path_t::VIRTUAL_PATH_NOT_AVAILABLE;
         }
 
         // the fallback option is set to "ok", check for the default
         // field; check the default attachment key
+        //
         field_name = content::get_name(content::name_t::SNAP_NAME_CONTENT_FILES_DATA);
         if(!files_table->exists(attachment_key.binaryValue())
         || !files_table->getRow(attachment_key.binaryValue())->exists(field_name))

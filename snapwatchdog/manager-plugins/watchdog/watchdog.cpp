@@ -531,6 +531,7 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                           "<ul>"
                             "<li>cpu</li>"
                             "<li>disk</li>"
+                            "<li>log</li>"
                             "<li>memory</li>"
                             "<li>network</li>"
                             "<li>processes</li>"
@@ -740,6 +741,7 @@ bool watchdog::apply_setting(QString const & button_name, QString const & field_
             //
             names << "cpu";
             names << "disk";
+            names << "log";
             names << "memory";
             names << "network";
             names << "processes";

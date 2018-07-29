@@ -1,3 +1,15 @@
+snapwebsites (1.5.103.0~xenial) xenial; urgency=high
+
+  * Finally found the problem with the permissions, for virtual pages, we
+    were creating a cache of their permissions which referenced them instead
+    of their parent page permissions. This was wrong.
+  * Added the watchdog log plugin as a functional plugin.
+  * Updated .conf/.xsl files, added .xml files to support the new log plugin.
+  * Added "log" as one of the default plugins to run on all machines.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 28 Jul 2018 23:17:31 -0700
+
 snapwebsites (1.5.102.0~xenial) xenial; urgency=high
 
   * Actually the journal_list objects must be allocated because we can't have

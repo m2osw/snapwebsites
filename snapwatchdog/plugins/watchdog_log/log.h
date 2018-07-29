@@ -1,5 +1,5 @@
-// Snap Websites Server -- Disk watchdog: report disk usage over time.
-// Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
+// Snap Websites Server -- Log watchdog: report log existance/size issues.
+// Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +18,8 @@
 
 // snapwatchdog lib
 //
-#include "snapwatchdog.h"
+#include "snapwatchdog/log_definitions.h"
+#include "snapwatchdog/snapwatchdog.h"
 
 // snapwebsites lib
 //
@@ -33,49 +34,49 @@
 
 namespace snap
 {
-namespace disk
+namespace log
 {
 
 enum class name_t
 {
-    SNAP_NAME_WATCHDOG_DISK_IGNORE
+    SNAP_NAME_WATCHDOG_LOG_IGNORE
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
 
 
 
-class disk_exception : public snap_exception
+class log_exception : public snap_exception
 {
 public:
-    disk_exception(char const *        what_msg) : snap_exception("disk", what_msg) {}
-    disk_exception(std::string const & what_msg) : snap_exception("disk", what_msg) {}
-    disk_exception(QString const &     what_msg) : snap_exception("disk", what_msg) {}
+    log_exception(char const *        what_msg) : snap_exception("log", what_msg) {}
+    log_exception(std::string const & what_msg) : snap_exception("log", what_msg) {}
+    log_exception(QString const &     what_msg) : snap_exception("log", what_msg) {}
 };
 
-class disk_exception_invalid_io : public disk_exception
+class log_exception_invalid_io : public log_exception
 {
 public:
-    disk_exception_invalid_io(char const *        what_msg) : disk_exception(what_msg) {}
-    disk_exception_invalid_io(std::string const & what_msg) : disk_exception(what_msg) {}
-    disk_exception_invalid_io(QString const &     what_msg) : disk_exception(what_msg) {}
+    log_exception_invalid_io(char const *        what_msg) : log_exception(what_msg) {}
+    log_exception_invalid_io(std::string const & what_msg) : log_exception(what_msg) {}
+    log_exception_invalid_io(QString const &     what_msg) : log_exception(what_msg) {}
 };
 
 
 
 
 
-class disk
+class log
     : public plugins::plugin
 {
 public:
-                        disk();
-                        disk(disk const & rhs) = delete;
-    virtual             ~disk() override;
+                        log();
+                        log(log const & rhs) = delete;
+    virtual             ~log() override;
 
-    disk &              operator = (disk const & rhs) = delete;
+    log &               operator = (log const & rhs) = delete;
 
-    static disk *       instance();
+    static log *        instance();
 
     // plugins::plugin implementation
     virtual QString     description() const override;
@@ -87,9 +88,12 @@ public:
     void                on_process_watch(QDomDocument doc);
 
 private:
+    void                check_log(QString filename, watchdog_log_t const & l, QDomElement e);
+
     watchdog_child *    f_snap = nullptr;
+    bool                f_found = false;
 };
 
-} // namespace disk
+} // namespace log
 } // namespace snap
 // vim: ts=4 sw=4 et

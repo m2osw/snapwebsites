@@ -797,10 +797,20 @@ bool permissions::sets_t::read_from_plugin_cache()
 //return false;
 
     // already read that cacne data?
+    //
     if(f_using_plugin_cache)
     {
         // cache already read
+        //
         return true;
+    }
+
+    // virtual pages can't have anything in the cache, instead they should
+    // end up using their parent's page cache
+    //
+    if(!f_ipath.get_parameter("renamed_path").isEmpty())
+    {
+        return false;
     }
 
     QString const & cache_key(get_plugin_cache_key());
@@ -811,14 +821,17 @@ bool permissions::sets_t::read_from_plugin_cache()
     || !details::g_cache_table->getRow(f_ipath.get_key())->exists(cache_key))
     {
         // no cache available, let the caller compute this one
+        //
         f_plugin_cache_reset = true;
         return false;
     }
 
     // cache entry exists, read it
+    //
     libdbproxy::value cache_value(details::g_cache_table->getRow(f_ipath.get_key())->getCell(cache_key)->getValue());
 
     // check the timestamp
+    //
     int64_t const timestamp(cache_value.safeInt64Value());
     libdbproxy::value const last_updated_value(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_PERMISSIONS_LAST_UPDATED)));
     int64_t const last_updated(last_updated_value.safeInt64Value());
@@ -826,6 +839,7 @@ bool permissions::sets_t::read_from_plugin_cache()
     {
         // the cache is present but out of date, let the caller compute
         // a new version
+        //
         f_plugin_cache_reset = true;
         return false;
     }
@@ -860,6 +874,7 @@ bool permissions::sets_t::read_from_plugin_cache()
     }
 
     // convert the cached value in what the caller expects
+    //
     QString const all_plugin_permissions(cache_value.stringValue(sizeof(int64_t)));
     QString plugin_name;
     int start(0);
@@ -878,6 +893,7 @@ bool permissions::sets_t::read_from_plugin_cache()
             {
                 // by returning true the cache will be rebuilt and hopefully
                 // correctly so we don't get an empty string here!
+                //
                 return true;
             }
             f_plugin_permissions[plugin_name].push_back(all_plugin_permissions.mid(start, pos - start));
@@ -919,6 +935,15 @@ void permissions::sets_t::save_to_plugin_cache()
     //
     if(f_using_plugin_cache
     || !f_modified_plugin_permissions)
+    {
+        return;
+    }
+
+    // DO NOT cache anything for a virtual path, those get their permissions
+    // from their parent (in most cases) or some other page and it should
+    // be read from that other page's cache instead if necessary
+    //
+    if(!f_ipath.get_parameter("renamed_path").isEmpty())
     {
         return;
     }
@@ -1289,22 +1314,6 @@ bool permissions::sets_t::is_root() const
  */
 bool permissions::sets_t::allowed() const
 {
-    if(f_user_rights.isEmpty()
-    || f_plugin_permissions.isEmpty())
-    {
-#ifdef DEBUG
-#ifdef SHOW_RIGHTS
-        SNAP_LOG_DEBUG("--- intersection of these sets is empty; user is not allowed access to that page!");
-#endif
-#endif
-        // if the plugins added nothing, there are no rights to compare
-        // or worst, the user has no rights at all (Should not happen,
-        // although someone could add a plugin testing something such as
-        // your IP address to strip you off all your rights unless you
-        // have an IP address considered "valid")
-        return false;
-    }
-
 #ifdef DEBUG
 #ifdef SHOW_RIGHTS
 SNAP_LOG_DEBUG("final USER RIGHTS:");
@@ -1325,6 +1334,22 @@ for(req_sets_t::const_iterator pp(f_plugin_permissions.begin());
 }
 #endif
 #endif
+
+    if(f_user_rights.isEmpty()
+    || f_plugin_permissions.isEmpty())
+    {
+#ifdef DEBUG
+#ifdef SHOW_RIGHTS
+        SNAP_LOG_DEBUG("--- intersection of these sets is definitely empty since one of the two sets is sempty; user is not allowed access to that page!");
+#endif
+#endif
+        // if the plugins added nothing, there are no rights to compare
+        // or worst, the user has no rights at all (Should not happen,
+        // although someone could add a plugin testing something such as
+        // your IP address to strip you off all your rights unless you
+        // have an IP address considered "valid")
+        return false;
+    }
 
     int const max_rights(f_user_rights.size());
     for(req_sets_t::const_iterator pp(f_plugin_permissions.begin());
@@ -1749,11 +1774,13 @@ bool permissions::get_plugin_permissions_impl(permissions * perms, sets_t & sets
     // the user plugin cannot include the permissions plugin (since the
     // permissions plugin includes the user plugin) so we implement this
     // user plugin feature in the permissions
+    //
     content::path_info_t & ipath(sets.get_ipath());
     if(ipath.get_cpath().left(5) == "user/")
     {
         // user/### cannot be a dynamic path so we do not need to check
         // for a possibly renamed ipath at this level
+        //
         QString const user_id(ipath.get_cpath().mid(5));
         QByteArray id_str(user_id.toUtf8());
         char const * s;
@@ -1782,6 +1809,7 @@ SNAP_LOG_DEBUG("from ")(user_id)(" -> ");
     // content plugin feature in the permissions
     //
     // this very page may be assigned direct permissions
+    //
     libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     QString const site_key(f_snap->get_site_key_with_slash());
     QString key(ipath.get_parameter("renamed_path"));
@@ -1799,6 +1827,7 @@ SNAP_LOG_DEBUG("from ")(user_id)(" -> ");
             //     dynamic_plugin_t::set_plugin_if_renamed()
             //
             // although really we let other plugins choose what to do next
+            //
             return true;
         }
         ipath.set_real_path(key);
@@ -2037,10 +2066,14 @@ void permissions::on_validate_action(content::path_info_t & ipath, QString const
         if(!user_info.is_valid())
         {
             // special case of spammers
+            //
             if(users_plugin->user_is_a_spammer())
             {
                 // force a redirect on error, but not from the home page
-                if(ipath.get_cpath() != "" && redirect_to_login && redirect_method)
+                //
+                if(ipath.get_cpath() != ""
+                && redirect_to_login
+                && redirect_method)
                 {
                     // spammers are expected to have enough rights to access
                     // the home page so we try to redirect them there
@@ -2069,6 +2102,7 @@ void permissions::on_validate_action(content::path_info_t & ipath, QString const
             if(ipath.get_cpath() == "login")
             {
                 // An IP, Agent, etc. based test could get us here...
+                //
                 err_callback.on_error(snap_child::http_code_t::HTTP_CODE_ACCESS_DENIED,
                         "Access Denied",
                         action != "view"
@@ -2078,10 +2112,12 @@ void permissions::on_validate_action(content::path_info_t & ipath, QString const
                         true);
                 return;
             }
-            if(!redirect_to_login || !redirect_method)
+            if(!redirect_to_login
+            || !redirect_method)
             {
                 // The login page is accessible but we do not want to redirect
                 // on this file (i.e. probably an attachment)
+                //
                 err_callback.on_error(snap_child::http_code_t::HTTP_CODE_ACCESS_DENIED,
                         "Access Denied",
                         action != "view"

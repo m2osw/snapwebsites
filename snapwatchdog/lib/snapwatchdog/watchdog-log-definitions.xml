@@ -18,13 +18,23 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 -->
 <watchdog-log-definitions>
-  <log name="snapwebsites">
+  <log name="snapwebsites" mandatory="mandatory">
     <path>/var/log/snapwebsites</path>
     <pattern>*.log</pattern>
-    <max-size>10Mb</max-size>
+    <max-size>12Mb</max-size>
+    <max-age>90</max-age>
     <search>
       <regex report-as="error">SEGV</regex>
+    </search>
+  </log>
+  <log name="snapwebsites_secure" secure="secure">
+    <path>/var/log/snapwebsites/secure</path>
+    <pattern>*.log</pattern>
+    <max-size>12Mb</max-size>
+    <max-age>90</max-age>
     <search>
+      <regex report-as="error">SEGV</regex>
+    </search>
   </log>
 </watchdog-log-definitions>
 <!--

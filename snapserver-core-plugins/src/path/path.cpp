@@ -669,10 +669,13 @@ plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_erro
         {
             // a plugin (such as the attachment, images, or search plugins)
             // may take care of this path by renaming it
+            //
             owner_plugin = dp.get_plugin_if_renamed();
             if(owner_plugin != nullptr)
             {
-                ipath.set_parameter("renamed_path", dp.get_renamed_path());
+                QString renamed_path(dp.get_renamed_path());
+                ipath.set_parameter("renamed_path", renamed_path);
+                SNAP_LOG_TRACE("Path was renamed from [")(ipath.get_cpath())("] to [")(renamed_path)("]");
             }
         }
     }

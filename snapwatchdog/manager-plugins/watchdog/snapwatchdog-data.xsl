@@ -291,6 +291,44 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             </div>
           </xsl:if>
 
+          <!-- one log entry per log file probed -->
+          <xsl:variable name="logs_count" select="count(watchdog/logs)"/>
+          <xsl:if test="$logs_count > 0">
+            <div id="logs-section">
+              <h2>Logs</h2>
+<p>(TODO convert the mode and make size human readable--with byte size in a title=... and uid/gid should be in text too)</p>
+              <table class="table-with-borders">
+                <thead>
+                  <tr>
+                    <th>Group</th>
+                    <th>Filename</th>
+                    <th>Size</th>
+                    <th>User ID</th>
+                    <th>Group ID</th>
+                    <th>Mode</th>
+                    <th>Last Modified Date</th>
+                    <th>Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- TODO: look in a way to get group names shown once -->
+                  <xsl:for-each select="watchdog/logs/log">
+                    <tr>
+                      <td><xsl:value-of select="@name"/></td>
+                      <td><xsl:value-of select="@filename"/></td>
+                      <td class="align-right"><xsl:value-of select="@size"/></td>
+                      <td class="align-right"><xsl:value-of select="@uid"/></td>
+                      <td class="align-right"><xsl:value-of select="@gid"/></td>
+                      <td class="align-right"><xsl:value-of select="@mode"/></td>
+                      <td class="align-right"><xsl:value-of select="xs:dateTime('1970-01-01T00:00:00') + @mtime div 1 * xs:dayTimeDuration('PT1S')"/></td>
+                      <td><xsl:value-of select="@error"/></td>
+                    </tr>
+                  </xsl:for-each>
+                </tbody>
+              </table>
+            </div>
+          </xsl:if>
+
           <!-- cassandra has a process when running -->
           <xsl:variable name="cassandra_count" select="count(watchdog/cassandra)"/>
           <xsl:if test="$cassandra_count > 0">
@@ -347,7 +385,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             </div>
           </xsl:if>
 
-          <!-- watchdscripts a set of results, one per script -->
+          <!-- watchdscripts has a set of results, one per script -->
           <xsl:variable name="watchscripts_count" select="count(watchdog/watchscripts)"/>
           <xsl:if test="$watchscripts_count > 0">
             <div id="watchscripts-section">

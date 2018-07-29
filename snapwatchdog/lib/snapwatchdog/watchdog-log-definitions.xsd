@@ -32,15 +32,26 @@
       <xsd:element name="path" type="tPath" minOccurs="1" maxOccurs="1"/>
       <xsd:element name="pattern" type="tPattern"/>
       <xsd:element name="max-size" type="tMaxSize"/>
+      <xsd:element name="max-age" type="tMaxAge"/>
+      <xsd:element name="owner-name" type="name" minOccurs="0"/>
+      <xsd:element name="group-name" type="name" minOccurs="0"/>
+      <xsd:element name="mode" type="tMode" minOccurs="0"/>
       <xsd:element name="search" type="tSearch" minOccurs="0" maxOccurs="1"/>
     </xsd:all>
     <xsd:attribute name="name" type="name"/>
     <xsd:attribute name="mandatory" type="tMandatory" use="optional"/>
+    <xsd:attribute name="secure" type="tSecure" use="optional"/>
   </xsd:complexType>
 
   <xsd:simpleType name="tMandatory">
     <xsd:restriction base="name">
       <xsd:enumeration value="mandatory"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="tSecure">
+    <xsd:restriction base="name">
+      <xsd:enumeration value="secure"/>
     </xsd:restriction>
   </xsd:simpleType>
 
@@ -70,7 +81,87 @@
         The maximum size of these log files.
       </xsd:documentation>
     </xsd:annotation>
-    <xsd:restriction base="xsd:string"/>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[0-9]+[kmgKMG][bB]"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="tMaxAge">
+    <xsd:annotation>
+      <xsd:documentation>
+        The maximum number of days the file can be kept. The age test reads
+        the oldest log file and check for a date (the first it finds should
+        represents the age of the file.) If that date was more than the
+        number of days defined by the max-age tag then the file gets
+        reported.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:integer"/>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="tMode">
+    <xsd:annotation>
+      <xsd:documentation>
+        The mode the file is expected to have. You may include a mask which
+        means that you do not have to test all the bits. You may also use
+        letters (as in chmod(1)) to specify the mode and mask.
+
+        The numeric syntax uses one or two octal numbers of 3 or 4 digits
+        seperated by a slash. For example, the following makes sure that
+        only the user (owner of the file) has write permissions and
+        that all execution permissions are turned off:
+
+          0200/0333
+
+        On the other hand, you could forcibly want the file to have this
+        exact mode:
+
+          0640
+
+        The letters are defined with three parts:
+
+          &lt;who&gt;&lt;operator&gt;&lt;perms&gt;
+
+        where:
+
+          &lt;who&gt; -- defines which section of the permissions are being
+          checked, the supported sections are:
+
+            . u -- the user (owner) of the mode (0700)
+            . g -- the group of the mode (0070)
+            . o -- the others of the mode (0007)
+            . a -- all of them (0777)
+
+          &lt;operator&gt; -- defines how the flags are going to be used;
+          these are slight different from the chmod command line tool
+
+            . + -- the specified flags must be set for that specific user
+            . - -- the specified flags must not be set for that specific user
+            . = -- the specified flags must match one to one
+
+          &lt;perms&gt; -- defines a set of permissions that are to be set
+          or not; these are:
+
+            . r -- the read flag (444)
+            . w -- the write flag (222)
+            . x -- the execute flag (111)
+            . s -- the user or group flag (6000)
+            . t -- the sticky flag (1000)
+
+          the r/w/x flags are ANDed as is with the ugoa flags; the 's' flag
+          is 4000 if 'u' or 'a' were specified, and 2000 if 'g' or 'a' were
+          specified; the 't' is always added if present
+
+          You do not specified a mode mask with letters, instead the operator
+          defines it for you. The '+' uses the mode as is, the '-' uses the
+          mode as is and then set the mode itself to zero; the '=' sets the
+          mask to 07777. If you need something different, you may have to
+          use the numeric syntax instead, especially because we do not support
+          multiple entries. So the example above (0640) can't be represented
+          with the letters scheme.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:integer"/>
   </xsd:simpleType>
 
   <xsd:complexType name="tSearch">
@@ -85,7 +176,7 @@
       </xsd:documentation>
     </xsd:annotation>
     <xsd:all>
-      <xsd:element name="regex" type="tRegex" minOccurs="1" maxOccurs="unlimited"/>
+      <xsd:element name="regex" type="tRegex" minOccurs="1"/>
     </xsd:all>
   </xsd:complexType>
 
@@ -98,10 +189,12 @@
     <xsd:restriction base="xsd:string"/>
   </xsd:simpleType>
 
-  <xsd:simpleType name="tRegex">
+  <xsd:complexType name="tRegex">
     <xsd:annotation>
       <xsd:documentation>
         A regex used to check the log contents, one line at a time.
+        When a match is found, the report-as is used to know how it
+        will get reported to the administrator.
       </xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -109,7 +202,7 @@
         <xsd:attribute name="report-as" type="tReportAs" use="optional" default="error"/>
       </xsd:extension>
     </xsd:simpleContent>
-  </xsd:simpleType>
+  </xsd:complexType>
 
   <xsd:simpleType name="tReportAs">
     <xsd:restriction base="name">
@@ -117,7 +210,7 @@
       <xsd:enumeration value="info"/>
       <xsd:enumeration value="warning"/>
       <xsd:enumeration value="error"/>
-      <xsd:enumeration value="fatal-error"/>
+      <xsd:enumeration value="fatal_error"/>
     </xsd:restriction>
   </xsd:simpleType>
 
