@@ -208,7 +208,7 @@ void cpu::on_process_watch(QDomDocument doc)
         {
             cache_path = "/var/cache/snapwebsites/snapwatchdog";
         }
-        QString high_cpu_usage_filename(cache_path + "/high_cpu_usage.txt");
+        QString const high_cpu_usage_filename(cache_path + "/high_cpu_usage.txt");
 
         double max_avg1(smp_num_cpus);
         if(max_avg1 > 1.0) // with 1 CPU, go up to 100%

@@ -136,6 +136,53 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             </div>
           </xsl:if>
 
+          <!-- APT info -->
+          <xsl:variable name="apt_count" select="count(watchdog/apt)"/>
+          <xsl:if test="$apt_count > 0">
+            <div id="apt-section">
+              <h2>Package Updates Current Status</h2>
+<p>(TODO convert to readable date &amp; sizes)</p>
+              <table class="name-value">
+                <tr>
+                  <th>Time of Last Check:</th>
+                  <td><xsl:value-of select="xs:dateTime('1970-01-01T00:00:00') + watchdog/apt/@last-updated div 1 * xs:dayTimeDuration('PT1S')"/></td>
+                </tr>
+                <tr>
+                  <th>Status:</th>
+                  <td>
+                    <xsl:choose>
+                      <xsl:when test="watchdog/apt/@total-updates and watchdog/apt/@security-updates">
+                        <xsl:copy-of select="@totals-updates"/> updates are available
+                        <br/>
+                        and
+                        <br/>
+                        <xsl:copy-of select="watchdog/apt/@security-updates"/> security updates are available
+                      </xsl:when>
+                      <xsl:when test="watchdog/apt/@total-updates">
+                        <xsl:copy-of select="@totals-updates"/> updates are available
+                      </xsl:when>
+                      <!--xsl:when test="watchdog/apt/@security-updates" either you have both or only a total so this case is not necessary -->
+                      <xsl:when test="watchdog/apt/@error">
+                        Unknown status, errors occurred while checking for
+                        updates. You may need to check this system for
+                        additional information about this.
+                      </xsl:when>
+                      <xsl:otherwise>
+                        System is up to date.
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </td>
+                </tr>
+                <xsl:if test="watchdog/apt/@error">
+                  <tr>
+                    <th>Error:</th>
+                    <td><xsl:copy-of select="watchdog/apt/@error"/></td>
+                  </tr>
+                </xsl:if>
+              </table>
+            </div>
+          </xsl:if>
+
           <!-- CPU info -->
           <xsl:variable name="cpu_count" select="count(watchdog/cpu)"/>
           <xsl:if test="$cpu_count > 0">

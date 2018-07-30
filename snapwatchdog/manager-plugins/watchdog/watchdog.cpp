@@ -60,6 +60,17 @@ namespace
 {
 
 
+char const * g_default_watchdog_plugins = "apt"
+                                         ",cpu"
+                                         ",disk"
+                                         ",log"
+                                         ",memory"
+                                         ",network"
+                                         ",processes"
+                                         ",watchscripts"
+                                         ;
+
+
 char const * g_configuration_filename = "snapwatchdog";
 
 char const * g_configuration_d_filename = "/etc/snapwebsites/snapwebsites.d/snapwatchdog.conf";
@@ -521,6 +532,15 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
         plugin_names_list.sort();
         QString const plugin_names_lined(plugin_names_list.join('\n'));
 
+        // we "dynamically" generate the list of default plugins so that
+        // way we can have it defined once; "unfortunately" C/C++ does
+        // not have a way to prepare a string at compile time without
+        // writing complex templates...
+        //
+        QString const default_plugins_string(g_default_watchdog_plugins);
+        snap::snap_string_list const default_plugins(default_plugins_string.split(','));
+        QString const default_plugins_list(default_plugins.join("</li><li>"));
+
         snap_manager::widget_text::pointer_t field(std::make_shared<snap_manager::widget_text>(
                           "List of Watchdog plugins to run on this system"
                         , s.get_field_name()
@@ -529,13 +549,7 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                             " one per line. Spaces and tabs will be ignored.</p>"
                           "<p>The current default is:</p>"
                           "<ul>"
-                            "<li>cpu</li>"
-                            "<li>disk</li>"
-                            "<li>log</li>"
-                            "<li>memory</li>"
-                            "<li>network</li>"
-                            "<li>processes</li>"
-                            "<li>watchscripts</li>"
+                            "<li>" + default_plugins_list + "</li>"
                           "</ul>"
                           "<p>The plugins currently available on this system are:</p>"
                           "<ul>"
@@ -739,13 +753,8 @@ bool watchdog::apply_setting(QString const & button_name, QString const & field_
         {
             // restore to the default list of plugins
             //
-            names << "cpu";
-            names << "disk";
-            names << "log";
-            names << "memory";
-            names << "network";
-            names << "processes";
-            names << "watchscripts";
+            QString const default_plugins_string(g_default_watchdog_plugins);
+            names = default_plugins_string.split(',');
         }
         else
         {

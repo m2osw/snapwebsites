@@ -1,3 +1,12 @@
+snapwebsites (1.5.104.0~xenial) xenial; urgency=high
+
+  * Added new watchdog plugin named apt to report the status from apt-check.
+  * Changed the way we list the default list of watchdog plugins using one
+    string and dynamically showing the list.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 29 Jul 2018 23:23:32 -0700
+
 snapwebsites (1.5.103.0~xenial) xenial; urgency=high
 
   * Finally found the problem with the permissions, for virtual pages, we

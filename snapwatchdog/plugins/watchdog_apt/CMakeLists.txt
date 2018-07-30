@@ -1,9 +1,9 @@
 #
 # File:
-#      snapwatchdog/plugins/watchdog_memory/CMakeLists.txt
+#      snapwatchdog/plugins/watchdog_aptCMakeLists.txt
 #
 # Description:
-#      Memory watchdog: record memory usage over time.
+#      apt watchdog: check our apt-check results and report them to the user
 #
 # Documentation:
 #      See the CMake documentation.
@@ -29,7 +29,7 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(watchdog_memory)
+project(watchdog_apt)
 
 find_package( ProcPS )
 find_package( Qt5Core REQUIRED )
@@ -45,14 +45,14 @@ include_directories(
     ${snapwatchdog_SOURCE_DIR}
 )
 
-
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    memory.qrc
+    apt.qrc
 )
 
 
+
 add_library(${PROJECT_NAME} SHARED
-    memory.cpp
+    apt.cpp
     ${SNAP_MANAGER_MOC_CXX}
     ${SNAP_MANAGER_RESOURCES_RCC}
 )
@@ -60,6 +60,7 @@ add_library(${PROJECT_NAME} SHARED
 target_link_libraries(${PROJECT_NAME}
     Qt5::Core
     Qt5::Xml
+    ${PROCPS_LIBRARIES}
 )
 
 install(
@@ -70,10 +71,8 @@ install(
 )
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(
-    FILES
-        ${HEADER_FILES}
-    DESTINATION
-        include/snapwatchdog/plugins/memory
+    FILES ${HEADER_FILES}
+    DESTINATION include/snapwatchdog/plugins/apt
 )
 
 # vim: ts=4 sw=4 et

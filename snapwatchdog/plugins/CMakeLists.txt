@@ -47,6 +47,7 @@ set( PLUGIN_INSTALL_DIR lib/snapwebsites/watchdog_plugins )
 ################################################################################
 # Keep the plugins in alphabetical order for ease of management
 #
+add_subdirectory(watchdog_apt)
 add_subdirectory(watchdog_cassandra)
 add_subdirectory(watchdog_cpu)
 add_subdirectory(watchdog_disk)

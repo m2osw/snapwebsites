@@ -231,7 +231,7 @@ QString manager::count_packages_that_can_be_updated(bool check_cache)
         }
     }
 
-    SNAP_LOG_ERROR("the snapmanagercgi library could not run \"")(f_apt_check)("\" successfully or the output was invalid.");
+    SNAP_LOG_ERROR("the snapmanager library could not run \"")(f_apt_check)("\" successfully or the output was invalid.");
 
     {
         QFile cache(cache_filename);
@@ -243,7 +243,7 @@ QString manager::count_packages_that_can_be_updated(bool check_cache)
         }
         else
         {
-            SNAP_LOG_ERROR("the snapmanagercgi library could not create \"")(cache_filename)("\".");
+            SNAP_LOG_ERROR("the snapmanager library could not create \"")(cache_filename)("\".");
         }
     }
 
