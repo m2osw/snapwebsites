@@ -141,7 +141,6 @@ snap_build_xml_targets()
 install(
     PROGRAMS
         scripts/reset-db.sh
-        scripts/run-server.sh
     DESTINATION
         ./
 )

@@ -2648,12 +2648,26 @@ void list::on_register_backend_action(server::backend_action_set & actions)
  * snapsignal pagelist/STOP
  * \endcode
  *
- * However, if you are running snapinit, you want to STOP snapinit
- * instead:
+ * You may stop the entire cluster using the `SHUTDOWN` event instead
+ * and by sending it to `snapcommunicator`:
  *
  * \code
- * snapinit stop
+ * snapsingal snapcommunicator/SHUTDOWN
  * \endcode
+ *
+ * The `snapcommunicator` will propagate the `SHUTDOWN` signal to all
+ * the other daemons.
+ *
+ * However, now that we are using systemd to control our daemons, it is
+ * preferable to use the stop command this way:
+ *
+ * \code
+ * systemctl stop pagelist
+ * \endcode
+ *
+ * Otherwise systemd will restart the daemon since it will think it
+ * die unexpectendly. The `systemctl` command can be used to start
+ * and stop all the backends and daemons that Snap! comes with.
  *
  * \param[in] action  The action this function is being called with.
  */

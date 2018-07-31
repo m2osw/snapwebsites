@@ -284,12 +284,7 @@ std::string snaplog::server_name() const
  * This function initializes the snaplog object further and then
  * listens for events.
  *
- * This specific daemon listens for two sets of events:
- *
- * \li Events sent via the snapcommunicator system; mainly used to
- *     REGISTER this as a server; tell the snapinit service that we
- *     are running; and accept a STOP to quit the application
- * \li New network connections to process Cassandra CQL commands.
+ * This specific daemon listens for SNAPLOG events from snapcommunicator.
  */
 void snaplog::run()
 {
@@ -319,8 +314,7 @@ void snaplog::run()
     f_interrupt.reset(new snaplog_interrupt(this));
     f_communicator->add_connection(f_interrupt);
 
-    // create a messenger to communicate with the Snap Communicator process
-    // and snapinit as required
+    // create a messenger to communicate with the snapcommunicator process
     //
     f_messenger = std::make_shared<snaplog_messenger>(this, f_communicator_addr.toUtf8().data(), f_communicator_port);
     f_communicator->add_connection(f_messenger);
@@ -555,6 +549,17 @@ void snaplog::process_message(snap::snap_communicator_message const & message)
 
     QString const command(message.get_command());
 
+// TODO: make use of a switch() or even better: a map a la snapinit -- see SNAP-464
+//       (I have it written, it uses a map like scheme, we now need to convert all
+//       the process_message() in using the new scheme which can calls a separate
+//       function for each message you support!)
+
+    if(command == "SNAPLOG")
+    {
+        add_message_to_db( message );
+        return;
+    }
+
     if(command == "LOG")
     {
         // logrotate just rotated the logs, we have to reconfigure
@@ -566,7 +571,7 @@ void snaplog::process_message(snap::snap_communicator_message const & message)
 
     if(command == "STOP")
     {
-        // Someone is asking us to leave (probably snapinit)
+        // Someone is asking us to leave
         //
         stop(false);
         return;
@@ -612,15 +617,9 @@ void snaplog::process_message(snap::snap_communicator_message const & message)
 
         // list of commands understood by service
         //
-        reply.add_parameter("list", "SNAPLOG,HELP,LOG,QUITTING,READY,RELOADCONFIG,STOP,UNKNOWN");
+        reply.add_parameter("list", "HELP,LOG,QUITTING,READY,RELOADCONFIG,SNAPLOG,STOP,UNKNOWN");
 
         f_messenger->send_message(reply);
-        return;
-    }
-
-    if(command == "SNAPLOG")
-    {
-        add_message_to_db( message );
         return;
     }
 

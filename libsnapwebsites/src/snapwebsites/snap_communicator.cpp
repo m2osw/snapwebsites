@@ -551,12 +551,12 @@ QString snap_communicator_message::to_message() const
  *
  * Some services send a message expecting an answer directly sent back
  * to them. Yet, those services may have multiple instances in your cluster
- * (i.e. snapinit and snapcommunicator run on all computers, snapwatchdog,
- * snapfirewall, snaplock, snapdbproxy are likely to run on most computers,
- * etc.) This parameter defines which computer, specifically, the message
- * came from. Thus, you can use that information to send the message back
- * to that specific computer. The snapcommunicator on that computer will
- * then forward the message to the specified service.
+ * (i.e. snapcommunicator runs on all computers, snapwatchdog, snapfirewall,
+ * snaplock, snapdbproxy are likely to run on most computers, etc.)
+ * This parameter defines which computer the message came from. Thus,
+ * you can use that information to send the message back to that
+ * specific computer. The snapcommunicator on that computer will
+ * then forward the message to the specified service instance.
  *
  * If empty (the default,) then the normal snapcommunicator behavior is
  * used (i.e. send to any instance of the service that is available.)
@@ -1153,7 +1153,7 @@ snap_communicator_message::parameters_t const & snap_communicator_message::get_a
  * A few valid names:
  *
  * \li commands: PING, STOP, LOCK, LOCKED, QUITTING, UNKNOWN, LOCKEXITING
- * \li services: snapinit, snapcommunicator, snapserver, MyOwnService
+ * \li services: snapcommunicator, snapserver, snaplock, MyOwnService
  * \li parameters: URI, name, IP, TimeOut
  *
  * At this point all our services use lowercase, but this is not enforced.

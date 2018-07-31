@@ -123,7 +123,7 @@ void content::on_backend_action(QString const & action)
     if(action == snap::get_name(snap::name_t::SNAP_NAME_CORE_SNAPBACKEND))
     {
         // special case to handle the standard backend processes that
-        // run through the snapinit CRON mechanism
+        // run through the CRON mechanism handled by systemd
         //
         f_snap->backend_process();
     }

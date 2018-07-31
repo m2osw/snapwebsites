@@ -268,6 +268,11 @@ void manager_daemon::process_message(snap::snap_communicator_message const & mes
 
     QString const command(message.get_command());
 
+// TODO: make use of a map a la snapinit -- see SNAP-464
+//       (I have it written, it uses a map like scheme, we now need to convert all
+//       the process_message() in using the new scheme which can calls a separate
+//       function for each message you support!)
+
     switch(command[0].unicode())
     {
     case 'D':
@@ -459,7 +464,7 @@ void manager_daemon::process_message(snap::snap_communicator_message const & mes
         }
         else if(command == "STOP")
         {
-            // Someone is asking us to leave (probably snapinit)
+            // Someone is asking us to leave
             //
             stop(false);
             return;

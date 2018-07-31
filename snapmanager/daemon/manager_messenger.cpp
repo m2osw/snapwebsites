@@ -103,9 +103,9 @@ void manager_messenger::process_message(snap::snap_communicator_message const & 
  * because snapcommunicator is not running or because the
  * configuration information for the snapmanagerdaemon is wrong...
  *
- * With snapinit the snapcommunicator should always already
- * be running so this error should not happen once everything
- * is properly setup.
+ * With systemd the snapcommunicator should already be running
+ * although this is not 100% guaranteed. So getting this
+ * error from time to time is considered normal.
  *
  * \param[in] error_message  An error message.
  */

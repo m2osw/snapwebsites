@@ -404,9 +404,9 @@ void messenger::process_message(snap::snap_communicator_message const & message)
  * because snapcommunicator is not running or because the
  * information given to the snapwatchdog is wrong...
  *
- * With snapinit the snapcommunicator should always already
- * be running so this error should not happen once everything
- * is properly setup.
+ * With systemd the snapcommunicator should already be running
+ * although this is not 100% guaranteed. So getting this
+ * error from time to time is considered normal.
  *
  * \param[in] error_message  An error message.
  */
@@ -1019,7 +1019,7 @@ void watchdog_server::process_message(snap::snap_communicator_message const & me
         snap::snap_communicator_message reply;
         reply.set_command("COMMANDS");
 
-        // list of commands understood by snapinit
+        // list of commands understood by snapwatchdog
         //
         reply.add_parameter("list", "CASSANDRAREADY,HELP,LOG,NOCASSANDRA,QUITTING,READY,RUSAGE,STOP,UNKNOWN");
 

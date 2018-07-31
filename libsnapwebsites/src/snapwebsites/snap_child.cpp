@@ -9619,11 +9619,24 @@ void snap_child::backend_process()
  * when you run the following command:
  *
  * \code
- *      snapinit --list
+ *      snapbackend --action list
  * \endcode
  *
- * At time of writing, we have the following backends: "images::images",
- * "list::pagelist", and "sendmail::sendmail".
+ * At time of writing, we have the following action backends:
+ *
+ * \li images::images
+ * \li list::listjournal
+ * \li list::pagelist
+ * \li sendmail::sendmail
+ *
+ * Note that the CRON like backend is not listed here. It does not itself
+ * use a name. However, the list of backend will be longer, only most of
+ * the other names are just functions (actions) that can be run once and
+ * not an actual backend that will run until disabled.
+ *
+ * For example, the "permissions::makeroot" is used to mark a registered
+ * use as a root user on Snap! That action does not accept a PING since
+ * it runs once and quits immediately.
  *
  * \param[in] service_name  The name of the backend (service) to ping.
  */

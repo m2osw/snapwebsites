@@ -1454,7 +1454,7 @@ public:
         //
         set_connection_type(connection_type_t::CONNECTION_TYPE_DOWN);
 
-        // make sure that if we were a connection understanding STATUS
+        // make sure that if we had a connection understanding STATUS
         // we do not send that status
         //
         remove_command("STATUS");

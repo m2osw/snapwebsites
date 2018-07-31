@@ -1,4 +1,4 @@
-# Snap Manager Daemon (code started by snapinit)
+# Snap Manager Daemon
 /var/log/snapwebsites/snapmanagerdaemon.log {
     weekly
     maxsize 10M
@@ -32,7 +32,7 @@
 }
 
 # We use this specific file whenever we download the bundles.
-# Only errors get output in the file which most the time should remain empty.
+# Only errors get output in the file which most of the time should remain empty.
 /var/log/snapwebsites/snapmanager-bundle.log {
     weekly
     maxsize 1M

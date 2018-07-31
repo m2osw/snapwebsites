@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snaplock/tests/snap_lock.cpp
+ *      snaplock/tests/test_snap_lock.cpp
  *
  * Description:
  *      Test the snap_lock class to make sure that the lock works
@@ -30,18 +30,13 @@
  *      some updates.
  *
  *      IMPORTANT: the test assumes that a context named "snap_websites"
- *      exists (you can create it work snapmanager at this time.)
+ *      exists (you can create it with snapcreatecontext at this time.)
  *      It will save the value in the domains table under a row
  *      name '*test_snap_lock*' and a cell named 'counter'.
  *
  *      Before you can actually run this test, you need to have
  *      snaplock running on all the computers you want to test
- *      with. This is generally done by running snapinit.
- *
- *      snapinit will define the name of the server for all the
- *      daemons that it starts. This is an important aspect of
- *      the lock mechanism which needs to be capable of sorting
- *      the bakery tickets once assigned.
+ *      with. This should not be a production system, though.
  *
  *      Once setup, you start one instance of the test per computer.
  *      The test automatically fork()'s a number of times equal to
@@ -50,9 +45,9 @@
  *      You may also want to use -n to run for more than 1 minute.
  *      So something like the following:
  *
- *        snap_lock -h 127.0.0.1 -i 4 -n 120
+ *        test_snap_lock -h 127.0.0.1 -i 4 -n 120
  *
- *      To run a full test, you must run snap_lock on multiple
+ *      To run a full test, you must run test_snap_lock on multiple
  *      computers. Otherwise you will not be testing the lock
  *      between multiple front ends, back ends, etc. The more
  *      the merrier.
@@ -106,15 +101,24 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-using namespace cassvalue;
-using namespace casswrapper;
+
+namespace
+{
+
+int const DEFAULT_PROCESS_COUNT = 3;
+int const DEFAULT_REPEAT        = 3;
+
+}
+// no name namespace
+
+
 
 int main(int argc, char *argv[])
 {
     std::cout << "+ snap version" << snap::server::version() << std::endl;
 
-    int process_count(3);
-    int repeat(3);
+    int process_count(DEFAULT_PROCESS_COUNT);
+    int repeat(DEFAULT_REPEAT);
     int obtention_timeout(snap::snap_lock::SNAP_LOCK_DEFAULT_TIMEOUT);
     int duration_timeout(snap::snap_lock::SNAP_LOCK_DEFAULT_TIMEOUT);
     const char * cassandra_host("127.0.0.1:9042"); // address and port to a Cassandra node
@@ -129,12 +133,12 @@ int main(int argc, char *argv[])
             std::cout << "    --help | -h    print out this help screen" << std::endl;
             std::cout << "    --cassandra    indicates the cassandra IP address, you may also include the port (127.0.0.1:4040 by default)" << std::endl;
             std::cout << "    --communicator indicates the snapcommunicator IP address, you may also include the port (127.0.0.1:4040 by default)" << std::endl;
-            std::cout << "    -i             indicates the number of process to spawn total (parallel execution on a single computer)" << std::endl;
-            std::cout << "    -n             indicates the number of time each process will increment the counter" << std::endl;
+            std::cout << "    -i             indicates the number of processes to spawn total (parallel execution on a single computer; default is " << DEFAULT_PROCESS_COUNT << ")" << std::endl;
+            std::cout << "    -n             indicates the number of time each process will increment the counter (" << DEFAULT_REPEAT << ")" << std::endl;
             std::cout << "    -o             change the obtention timeout from the default (" << snap::snap_lock::SNAP_LOCK_DEFAULT_TIMEOUT << ") to this value" << std::endl;
             std::cout << "    -t             change the duration timeout from the default (" << snap::snap_lock::SNAP_LOCK_DEFAULT_TIMEOUT << ") to this value" << std::endl;
-            std::cout << "To run the test you need to run snapinit and make sure snapcommunicator" << std::endl;
-            std::cout << "and snaplock are both running. Then you can run this test:" << std::endl;
+            std::cout << "To run the test you need to run snapcommunicator and snaplock" << std::endl;
+            std::cout << "Then you can run this test:" << std::endl;
             std::cout << "  tests/test_snap_lock -i 4 -n 60" << std::endl;
             exit(1);
         }
@@ -257,7 +261,7 @@ int main(int argc, char *argv[])
                 QString cassandra_addr("127.0.0.1");
                 int cassandra_port(9042);
                 tcp_client_server::get_addr_port(cassandra_host, cassandra_addr, cassandra_port, "tcp");
-                Session::pointer_t cassandra_session(Session::create());
+                casswrapper::Session::pointer_t cassandra_session(casswrapper::Session::create());
                 cassandra_session->connect(cassandra_addr, cassandra_port);
                 std::cout << "+ Cassandra Cluster for child " << getpid() << " ready." << std::endl;
 
@@ -275,18 +279,18 @@ int main(int argc, char *argv[])
 
                         // read current value
                         {
-                            auto q( Query::create(cassandra_session));
+                            auto q( casswrapper::Query::create(cassandra_session));
                             // key = '*test_snap_lock*'
                             // column1 = 'counter'
                             q->query("SELECT value FROM snap_websites.domains WHERE key = 0x2a746573745f736e61705f6c6f636b2a AND column1 = 0x636f756e746572", 0);
-                            q->setConsistencyLevel(Query::consistency_level_t::level_quorum);
+                            q->setConsistencyLevel(casswrapper::Query::consistency_level_t::level_quorum);
                             q->start();
 
                             // the very first time the value does not exist
                             if(q->nextRow())
                             {
                                 QByteArray const value(q->getByteArrayColumn("value"));
-                                v = safeInt32Value(value);
+                                v = cassvalue::safeInt32Value(value);
                             }
                         }
 
@@ -298,13 +302,13 @@ int main(int argc, char *argv[])
                         // write new value
                         {
                             QByteArray value;
-                            setInt32Value(value, v);
+                            cassvalue::setInt32Value(value, v);
 
-                            auto q( Query::create(cassandra_session));
+                            auto q( casswrapper::Query::create(cassandra_session));
                             // key = '*test_snap_lock*'
                             // column1 = 'counter'
                             q->query("INSERT INTO snap_websites.domains (key, column1, value) VALUES (0x2a746573745f736e61705f6c6f636b2a, 0x636f756e746572, ?)", 1);
-                            q->setConsistencyLevel(Query::consistency_level_t::level_quorum);
+                            q->setConsistencyLevel(casswrapper::Query::consistency_level_t::level_quorum);
                             q->bindByteArray(0, value);
                             q->start();
                         }
@@ -325,7 +329,15 @@ int main(int argc, char *argv[])
             std::cout << std::endl;
             exit(0);
         }
-        children.push_back(child);
+        else if(child == -1)
+        {
+                int const e(errno);
+                std::cerr << "could not create child, fork() failed with " << e << " -- " << strerror(e) << std::endl;
+        }
+        else
+        {
+            children.push_back(child);
+        }
     }
 
     // now wait on those children

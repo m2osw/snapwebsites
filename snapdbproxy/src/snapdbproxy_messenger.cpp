@@ -3,9 +3,9 @@
  *      snapdbproxy/src/snapdbproxy_messenger.cpp
  *
  * Description:
- *      Messager Class implementation. The messenger is used to send/receive
- *      messages mainly from snapinit to REGISTER the proxy and to accept
- *      the STOP function.
+ *      Messenger Class implementation. The messenger of the snapdbproxy
+ *      is primarily used to handle the CASSANDRASTATUS message to know
+ *      whether the `snapdbproxy` daemon is connected to Cassandra or not.
  *
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
@@ -85,7 +85,7 @@ snapdbproxy_messenger::snapdbproxy_messenger(snapdbproxy * proxy, std::string co
  *
  * This callback is called whenever a message is received from
  * Snap! Communicator. The message is immediately forwarded to the
- * snap_firewall object which is expected to process it and reply
+ * snapdbproxy object which is expected to process it and reply
  * if required.
  *
  * \param[in] message  The message we just received.
@@ -101,11 +101,13 @@ void snapdbproxy_messenger::process_message(snap::snap_communicator_message cons
  * This function is called whenever the messengers fails to
  * connect to the snapcommunicator server. This could be
  * because snapcommunicator is not running or because the
- * configuration information for the snapfirewall is wrong...
+ * configuration information for the snapdbproxy is wrong...
  *
- * With snapinit the snapcommunicator should always already
- * be running so this error should not happen once everything
- * is properly setup.
+ * Note that it is not abnormal as snapcommunicator may not
+ * have been started yet when snapdbproxy is started. This
+ * is okay because we have a messenger system that is resilient.
+ * However, in normal circumstances, this error should very
+ * rarely if ever happen.
  *
  * \param[in] error_message  An error message.
  */

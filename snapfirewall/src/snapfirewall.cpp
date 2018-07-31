@@ -530,9 +530,9 @@ void messenger::process_message(snap::snap_communicator_message const & message)
  * because snapcommunicator is not running or because the
  * configuration information for the snapfirewall is wrong...
  *
- * With snapinit the snapcommunicator should always already
- * be running so this error should not happen once everything
- * is properly setup.
+ * With systemd the snapcommunicator should already be running
+ * although this is not 100% guaranteed. So getting this
+ * error from time to time is considered normal.
  *
  * \param[in] error_message  An error message.
  */
@@ -2011,6 +2011,9 @@ void snap_firewall::process_message(snap::snap_communicator_message const & mess
     QString const command(message.get_command());
 
 // TODO: make use of a switch() or even better: a map a la snapinit -- see SNAP-464
+//       (I have it written, it uses a map like scheme, we now need to convert all
+//       the process_message() in using the new scheme which can calls a separate
+//       function for each message you support!)
 
     if(command == "BLOCK")
     {
@@ -2039,7 +2042,7 @@ void snap_firewall::process_message(snap::snap_communicator_message const & mess
 
     if(command == "STOP")
     {
-        // Someone is asking us to leave (probably snapinit)
+        // Someone is asking us to leave
         //
         stop(false);
         return;

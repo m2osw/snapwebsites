@@ -3,9 +3,7 @@
  *      snaplog/src/snaplog_messenger.cpp
  *
  * Description:
- *      Messager Class implementation. The messenger is used to send/receive
- *      messages mainly from snapinit to REGISTER the proxy and to accept
- *      the STOP function.
+ *      Messager Class implementation. Our main message is the SNAPLOG message.
  *
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
@@ -55,12 +53,12 @@
 
 /** \brief The messenger initialization.
  *
- * The messenger is a connection to the snapcommunicator server.
+ * The messenger is a connection to the `snapcommunicator` server.
  *
- * In most cases we receive BLOCK, STOP, and LOG messages from it. We
- * implement a few other messages too (HELP, READY...)
+ * In most cases we receive `SNAPLOG` messages. We
+ * implement the few other standard messages too (HELP, READY...)
  *
- * We use a permanent connection so if the snapcommunicator restarts
+ * We use a permanent connection so if the `snapcommunicator` restarts
  * for whatever reason, we reconnect automatically.
  *
  * \note
@@ -109,9 +107,9 @@ void snaplog_messenger::process_message(snap::snap_communicator_message const & 
  * because snapcommunicator is not running or because the
  * configuration information for the snapfirewall is wrong...
  *
- * With snapinit the snapcommunicator should always already
- * be running so this error should not happen once everything
- * is properly setup.
+ * With systemd the snapcommunicator should already be running
+ * although this is not 100% guaranteed. So getting this
+ * error from time to time is considered normal.
  *
  * \param[in] error_message  An error message.
  */

@@ -72,8 +72,8 @@ b) setup the firewall:
 
    b.2) open local ports for local communication (i.e. so one can access
         Cassandra nodes, other front ends, etc.); this includes UDP as
-	well as TCP since we use both (i.e. snapcommunicator and snapinit
-	both accept one way UDP messages)
+	well as TCP since we use both (i.e. `snapcommunicator`
+	accepts one way UDP messages)
 
    b.3) Eventually allow DNS (53) and NTP (123) ports (TCP/UDP)
 
@@ -152,7 +152,7 @@ f) setup a node after you gave it a type (we may want to say that the
    f.0) snap base: This gets installed on all systems (right now we 
                    do not yet do that, but that's the long term plan)
 
-	install snapinit, snapcommunicator, snapmanager.cgi, snapwatchdog,
+	install snapcommunicator, snapmanager.cgi, snapwatchdog,
 	snapdbproxy, snapfirewall; auto-start all if the database is
 	ready, otherwise avoid the snapdbproxy and snapfirewall (argh!)
 

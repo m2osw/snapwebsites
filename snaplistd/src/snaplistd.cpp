@@ -524,7 +524,7 @@ void snaplistd::process_message(snap::snap_communicator_message const & message)
     case 'S':
         if(command == "STOP")
         {
-            // Someone is asking us to leave (probably snapinit)
+            // Someone is asking us to leave
             //
             stop(false);
             return;

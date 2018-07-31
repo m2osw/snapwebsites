@@ -91,9 +91,8 @@ manager_status::~manager_status()
  * requests from snapmanager.cgi (these should be 100% private
  * computers if you have an in house stack of computers.)
  *
- * The list includes hosts name. The same name you define in
- * the snapinit.conf file. If undefined there, then that name
- * would be your hostname.
+ * The list of snapmanager frontends is read from the `snapmanager.conf`
+ * configuration file parameter named `snapmanager_frontend`.
  *
  * If the list is undefined (remains empty) then the messages
  * are broadcast to all computers.

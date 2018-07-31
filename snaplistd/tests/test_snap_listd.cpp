@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
             std::cout << "    -n             indicates the number of time each process will increment the counter" << std::endl;
             std::cout << "    -o             change the obtention timeout from the default (" << snap::snap_lock::SNAP_LOCK_DEFAULT_TIMEOUT << ") to this value" << std::endl;
             std::cout << "    -t             change the duration timeout from the default (" << snap::snap_lock::SNAP_LOCK_DEFAULT_TIMEOUT << ") to this value" << std::endl;
-            std::cout << "To run the test you need to run snapinit and make sure snapcommunicator" << std::endl;
+            std::cout << "To run the test you need to make sure snapcommunicator" << std::endl;
             std::cout << "and snaplock are both running. Then you can run this test:" << std::endl;
             std::cout << "  tests/test_snap_lock -i 4 -n 60" << std::endl;
             exit(1);

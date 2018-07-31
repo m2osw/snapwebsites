@@ -652,9 +652,11 @@ void messenger::process_message(snap::snap_communicator_message const & message)
  * because snapcommunicator is not running or because the
  * information for the snapbackend is wrong...
  *
- * With snapinit the snapcommunicator should always already
- * be running so this error should not happen once everything
- * is properly setup.
+ * Note that it is not abnormal as snapcommunicator may not
+ * have been started yet when snapdbproxy is started. This
+ * is okay because we have a messenger system that is resilient.
+ * However, in normal circumstances, this error should very
+ * rarely if ever happen.
  *
  * \param[in] error_message  An error message.
  */
@@ -1228,7 +1230,7 @@ void snap_backend::process_tick()
                 // if we are connected to cassandra but are not marked ready
                 // that means the "sites" table is not yet defined
                 //
-                if(f_cassandra)
+                if(f_cassandra != nullptr)
                 {
                     SNAP_LOG_FATAL("snap_backend::process_tick(): The \"sites\" table does not even exist, we cannot yet run a backend action.");
                     exit(1);
@@ -1249,7 +1251,7 @@ void snap_backend::process_tick()
                 }
             }
 
-            if(!f_cassandra)
+            if(f_cassandra == nullptr)
             {
                 SNAP_LOG_WARNING("snap_backend::process_tick(): not yet connected to snapdbproxy.");
             }
@@ -1262,10 +1264,11 @@ void snap_backend::process_tick()
                 SNAP_LOG_WARNING("snap_backend::process_tick(): The \"sites\" table is still empty or nonexistent! Waiting before starting the \"")(f_action)("\" backend processing (a CRON action).");
             }
 
+            // TBD: keep this the way it is or use the CASSANDRAREADY signal?
+            //
             // the website is not ready, wait another 10 seconds and try
-            // again (with the new snapinit, not yet implemented, we should
-            // not need this one, although keeping it is certainly a
-            // nice extra security feature...)
+            // again; if I'm correct, this should not happen anymore with
+            // the current installation process...
             //
             // here we use the timeout date to not have to change the
             // ticking clock
@@ -1533,7 +1536,7 @@ void snap_backend::process_message(snap::snap_communicator_message const & messa
 
     if(command == "STOP")
     {
-        // Someone is asking us to leave (probably snapinit)
+        // Someone is asking us to leave
         //
         stop(false);
         return;
@@ -2079,12 +2082,7 @@ void snap_backend::capture_zombies(pid_t pid)
  * has a "core::last_updated" field defined.
  *
  * \todo
- * We want to support a background way to upgrade websites. Our current
- * update while accessing the site is okay for small updates, but large
- * upgrades are likely to break everything. So we want to have a way
- * for a backend (snapinit on startup?) to upgrade all websites. Thus,
- * we will want to check a flag to know whether a website was successfully
- * upgraded and if not return false.
+ * We want to support a mostly automated upgrade process. See SNAP-188.
  *
  * \param[in] uri  The domain name of a website or an empty string.
  *

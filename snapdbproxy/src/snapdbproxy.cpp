@@ -372,10 +372,12 @@ bool snapdbproxy::use_ssl() const
  *
  * This specific daemon listens for two sets of events:
  *
- * \li Events sent via the snapcommunicator system; mainly used to
- *     REGISTER this as a server; tell the snapinit service that we
- *     are running; and accept a STOP to quit the application
- * \li New network connections to process Cassandra CQL commands.
+ * \li Events sent via the snapcommunicator system; one of the main
+ *     event is the CASSANDRASTATUS which is replied to with either a
+ *     CASSANDRAREADY or a NOCASSANDRA message; very useful for other
+ *     daemons to know once they can start using Cassandra
+ * \li New network connections (not through snapcommunicator) to process
+ *     Cassandra CQL commands.
  */
 void snapdbproxy::run()
 {
@@ -419,8 +421,7 @@ void snapdbproxy::run()
     f_listener = std::make_shared<snapdbproxy_listener>(this, f_snapdbproxy_addr.toUtf8().data(), f_snapdbproxy_port, f_max_pending_connections, true);
     f_communicator->add_connection(f_listener);
 
-    // create a messenger to communicate with the Snap Communicator process
-    // and snapinit as required
+    // create a messenger to communicate with snapcommunicator
     //
     f_messenger = std::make_shared<snapdbproxy_messenger>(this, f_communicator_addr.toUtf8().data(), f_communicator_port);
     f_communicator->add_connection(f_messenger);
@@ -533,7 +534,10 @@ void snapdbproxy::process_message(snap::snap_communicator_message const & messag
 
     QString const command(message.get_command());
 
-// TODO: use a map statement (see poor old snapinit...)
+// TODO: make use of a switch() or even better: a map a la snapinit -- see SNAP-464
+//       (I have it written, it uses a map like scheme, we now need to convert all
+//       the process_message() in using the new scheme which can calls a separate
+//       function for each message you support!)
 
     if(command == "CASSANDRASTATUS")
     {
@@ -628,7 +632,7 @@ void snapdbproxy::process_message(snap::snap_communicator_message const & messag
 
     if(command == "STOP")
     {
-        // Someone is asking us to leave (probably snapinit)
+        // Someone is asking us to leave
         //
         stop(false);
         return;

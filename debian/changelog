@@ -3,6 +3,8 @@ snapwebsites (1.5.104.0~xenial) xenial; urgency=high
   * Added new watchdog plugin named apt to report the status from apt-check.
   * Changed the way we list the default list of watchdog plugins using one
     string and dynamically showing the list.
+  * Removed most references to snapinit which is not part of snap anymore.
+  * Removed the run-server.sh which would start snapinit.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sun, 29 Jul 2018 23:23:32 -0700

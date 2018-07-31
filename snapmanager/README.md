@@ -103,10 +103,9 @@ that could contradict our own installation features.
 ## Following VPS Computers: Installing `snapmanagerdaemon`
 
 On the other computers, you want to install the `snapmanagerdaemon` package.
-This starts `snapinit`, `snapcommunicator`, and `snapmanagerdaemon`. By
-default `snapcommunicator` will not be communicating with any neighbors.
-However, `snapmanagercgi` will offer you to include neighbors IP addresses.
-[TODO: ONE IMPLEMENTED--neighbors editing is not yet in place]
+This starts `snapcommunicator` and `snapmanagerdaemon`. By default
+`snapcommunicator` will not be communicating with any neighbors.
+However, `snapmanagercgi` will offer you to add the IP addresses of neighbors.
 By doing so, you automatically create the cluster.
 
     sudo apt-get install snapmanagerdaemon
@@ -117,6 +116,10 @@ screens without having to access your backend servers at any time.
 As mentioned in the previous section, you should install `snapmanagercgi`
 on all computers if you need to install OpenVPN before you can add
 the `snapcommunicator` neighbors.
+
+A VPN is not considered necessary on a shared local network as long as
+each computer has a firewall properly installed. Make sure to add the
+`firewall` bundle before you add the neighbors.
 
 
 # About `snapmanager.cgi`
