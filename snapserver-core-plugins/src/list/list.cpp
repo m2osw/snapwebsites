@@ -275,7 +275,7 @@ int g_unique_id = 0;
  * which would slow down the entire cluster quite a bit.
  */
 class listdata_connection
-        : public snap_communicator::snap_tcp_blocking_client_message_connection
+    : public snap_communicator::snap_tcp_blocking_client_message_connection
 {
 public:
                             listdata_connection(QString const & list_data_path);
@@ -1883,17 +1883,6 @@ int32_t paging_t::get_page_size() const
  * This function is used to initialize the list plugin object.
  */
 list::list()
-    //: f_snap(nullptr) -- auto-init
-    //, f_backend(nullptr) -- auto-init
-    //, f_list_table(nullptr) -- auto-init
-    //, f_listref_table(nullptr) -- auto-init
-    //, f_check_expressions() -- auto-init
-    //, f_item_key_expressions() -- auto-init
-    //, f_ping_backend(false) -- auto-init
-    //, f_list_link(false) -- auto-init
-    //, f_priority(LIST_PRIORITY_NEW_PAGE) -- auto-init
-    //, f_start_date_offset(LIST_PROCESSING_LATENCY) -- auto-init
-    //, f_date_limit(0) -- auto-init
 {
 }
 
@@ -2688,7 +2677,8 @@ void list::on_backend_action(QString const & action)
         int const did_work(send_data_to_journal());
         if(did_work != 0)
         {
-            // now it's the PAGELIST's turn, wake it up ASAP since we did some work
+            // now it's the PAGELIST's turn, wake it up ASAP since
+            // we did some work
             //
             f_snap->udp_ping(get_name(name_t::SNAP_NAME_LIST_PAGELIST));
         }
@@ -2981,6 +2971,7 @@ int list::send_data_to_journal()
 int list::generate_new_lists(QString const & site_key)
 {
     content::content * content_plugin(content::content::instance());
+    links::links * links_plugin(links::links::instance());
     libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
 
     int did_work(0);
@@ -2990,18 +2981,47 @@ int list::generate_new_lists(QString const & site_key)
     content::path_info_t ipath;
     ipath.set_path(site_key + get_name(name_t::SNAP_NAME_LIST_TAXONOMY_PATH));
     links::link_info info(get_name(name_t::SNAP_NAME_LIST_TYPE), false, ipath.get_key(), ipath.get_branch());
-    QSharedPointer<links::link_context> link_ctxt(links::links::instance()->new_link_context(info));
+    QSharedPointer<links::link_context> link_ctxt(links_plugin->new_link_context(info));
     links::link_info child_info;
     while(link_ctxt->next_link(child_info))
     {
-        QString const key(child_info.key());
-        content::path_info_t list_ipath;
-        list_ipath.set_path(key);
-        libdbproxy::value last_updated(branch_table->getRow(list_ipath.get_branch_key())->getCell(get_name(name_t::SNAP_NAME_LIST_LAST_UPDATED))->getValue());
-        if(last_updated.nullValue()
-        || last_updated.int64Value() == 0)
+        try
         {
-            lists_to_work_on.push_back(list_ipath.get_key());
+            QString const key(child_info.key());
+            content::path_info_t list_ipath;
+            list_ipath.set_path(key);
+            libdbproxy::value last_updated(branch_table->getRow(list_ipath.get_branch_key())->getCell(get_name(name_t::SNAP_NAME_LIST_LAST_UPDATED))->getValue());
+            if(last_updated.nullValue()
+            || last_updated.int64Value() == 0)
+            {
+                lists_to_work_on.push_back(list_ipath.get_key());
+            }
+        }
+        catch(content::content_exception_data_missing const & e)
+        {
+            // this error happens if the link we just tried is somehow invalid
+            // (we had a bug in the destroy that would leave invalid links
+            // behind)
+            //
+            // this could happen in the "split second" it takes to delete
+            // a link--we still had the link available, it gets deleted,
+            // then we us it here
+            //
+            SNAP_LOG_WARNING("detected an invalid list link (")
+                            (child_info.key())
+                            (" with name ")
+                            (child_info.destination_cell_name())
+                            (") from the list types (")
+                            (ipath.get_key())
+                            ("), forcibly removing it.");
+
+            // don't call the delete_link(), it deletes way too much for us
+            //links::link_info delete_info(info);
+            //delete_info.set_name(child_info.destination_cell_name());
+            //links_plugin->delete_link(delete_info);
+
+            libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_key()));
+            src_row->dropCell(child_info.destination_cell_name());
         }
     }
 
@@ -3328,7 +3348,7 @@ int list::generate_all_lists(QString const & site_key)
                 {
                     return loop_timeout_sec;
                 }
-                SNAP_LOG_WARNING("invalid number or timeout too small (under 1s) in list::looptimeout");
+                SNAP_LOG_WARNING("invalid number or timeout too small (under 1s) in ")(field_name);
             }
             return default_timeout;
         };
@@ -3414,6 +3434,10 @@ int list::generate_all_lists(QString const & site_key)
                                     ("]");
                 }
 
+                // THIS IS THE CALL THAT DOES THE WORK IN THIS LOOP
+                //
+                // check that specific "row_key" against the lists
+                //
                 did_work |= generate_all_lists_for_page(site_key, row_key, update_request_time);
 
                 // we handled that page for all the lists that we have on
@@ -3550,6 +3574,8 @@ int list::generate_all_lists_for_page(QString const & site_key, QString const & 
 
     int did_work(0);
 
+    // go through all the lists that exist in this database
+    //
     content::path_info_t ipath;
     ipath.set_path(site_key + get_name(name_t::SNAP_NAME_LIST_TAXONOMY_PATH));
     links::link_info info(get_name(name_t::SNAP_NAME_LIST_TYPE), false, ipath.get_key(), ipath.get_branch());

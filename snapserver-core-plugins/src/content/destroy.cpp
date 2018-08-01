@@ -100,47 +100,71 @@ bool content::destroy_page_impl(path_info_t & ipath)
 {
     links::links * links_plugin(links::links::instance());
 
+    SNAP_LOG_DEBUG("received request to destroy page at [")
+                  (ipath.get_key())
+                  ("]");
+
     // here we check whether we have children, because if we do
     // we have to delete the children first
-    try
+    //
+    links::link_info_pair::vector_t all_links(links_plugin->list_of_links(ipath.get_key()));
+    for(auto const & l : all_links)
     {
-        links::link_info link_info(get_name(name_t::SNAP_NAME_CONTENT_CHILDREN), false, ipath.get_key(), ipath.get_branch());
-        QSharedPointer<links::link_context> link_ctxt(links_plugin->new_link_context(link_info));
-        links::link_info link_child_info;
-        while(link_ctxt->next_link(link_child_info))
+        try
         {
-            path_info_t child_ipath;
-            child_ipath.set_path(link_child_info.key());
-            destroy_page(child_ipath);
+            // we want to read the entire list of links and then work only
+            // on children, since the code working on the children will
+            // delete some links, it is wise to have a copy first otherwise
+            // the next_link() function will fail in various ways as we
+            // delete things under its feet (the Cassandra cursors do not
+            // play well with DROPs)
+            //
+            if(l.source().name() == get_name(name_t::SNAP_NAME_CONTENT_CHILDREN))
+            {
+                path_info_t child_ipath;
+                child_ipath.set_path(l.destination().key());
+                destroy_page(child_ipath);
+            }
         }
-    }
-    catch( std::exception const & x )
-    {
-        SNAP_LOG_ERROR("exception caught while attempting to destroy page [")(ipath.get_key())("], what=[")(x.what())("]!");
-    }
-    catch( ... )
-    {
-        SNAP_LOG_ERROR("unknown exception caught while attempting to destroy page [")(ipath.get_key())("]!");
+        catch( std::exception const & x )
+        {
+            SNAP_LOG_ERROR("exception caught while attempting to destroy page [")(ipath.get_key())("], what=[")(x.what())("]!");
+        }
+        catch( ... )
+        {
+            SNAP_LOG_ERROR("unknown exception caught while attempting to destroy page [")(ipath.get_key())("]!");
+        }
     }
 
     // the links plugin cannot include content.h (at least not the
     // header) so we have to implement the deletion of all the links
     // on this page here
-    try
+    //
+    for(auto const & l : all_links)
     {
-        links::link_info_pair::vector_t all_links(links_plugin->list_of_links(ipath.get_key()));
-        for(auto const & l : all_links)
+        try
         {
-            links_plugin->delete_this_link(l.source(), l.destination());
+            // the children links should already be deleted in the previous
+            // loop so we don't want to do it here
+            //
+            if(l.source().name() != get_name(name_t::SNAP_NAME_CONTENT_CHILDREN))
+            {
+                SNAP_LOG_TRACE("destroy page delete link: source [")
+                              (l.source().key())
+                              ("] destination [")
+                              (l.destination().key())
+                              ("]");
+                links_plugin->delete_this_link(l.source(), l.destination());
+            }
         }
-    }
-    catch( std::exception const & x )
-    {
-        SNAP_LOG_ERROR("exception caught while attempting to unlink page [")(ipath.get_key())("], what=[")(x.what())("]!");
-    }
-    catch( ... )
-    {
-        SNAP_LOG_ERROR("unknown exception caught while attempting to unlink page [")(ipath.get_key())("]!");
+        catch( std::exception const & x )
+        {
+            SNAP_LOG_ERROR("exception caught while attempting to unlink page [")(ipath.get_key())("], what=[")(x.what())("]!");
+        }
+        catch( ... )
+        {
+            SNAP_LOG_ERROR("unknown exception caught while attempting to unlink page [")(ipath.get_key())("]!");
+        }
     }
 
     return true;
@@ -172,6 +196,7 @@ void content::destroy_page_done(path_info_t & ipath)
     // (i.e. some things did not get deleted) then you will want to use
     // a manual process... look into using cassview to delete the remains
     // and fix the corresponding plugins for next time.
+    //
     if(!content_table->exists(key))
     {
         return;
@@ -179,6 +204,10 @@ void content::destroy_page_done(path_info_t & ipath)
 
     // Revisions
     {
+        // IMPORTANT NOTE: we cannot delete the revisions while we are
+        //                 listing them; so here we just record them
+        //                 in a vector, the next loop will drop them
+        //
         // WARNING: to destroy all possible revisions, we currently go
         //          through the list using a full index through the
         //          entire revision table which is SLOW; remember that
@@ -199,6 +228,7 @@ void content::destroy_page_done(path_info_t & ipath)
             if(count == 0)
             {
                 // no more revisions to process
+                //
                 break;
             }
             libdbproxy::rows const rows(revision_table->getRows());
@@ -206,15 +236,18 @@ void content::destroy_page_done(path_info_t & ipath)
                     o != rows.end(); ++o)
             {
                 // within each row, check all the columns
+                //
                 libdbproxy::row::pointer_t row(*o);
                 QString const revision_key(QString::fromUtf8(o.key().data()));
                 if(!revision_key.startsWith(key))
                 {
                     // not this page, try another key
+                    //
                     continue;
                 }
 
                 // this was part of this page
+                //
                 revision_keys.push_back(revision_key);
             }
         }

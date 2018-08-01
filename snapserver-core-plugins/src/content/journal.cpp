@@ -96,7 +96,8 @@
  *   +-----+----+                       +--------+--------+
  *         ^                                     |
  *         |                                     | Creation Never Finished
- *         |                                     | (part run on backend)
+ *         |                                     | (asynchronous part
+ *         |                                     | run on backend)
  *         |                                     v
  *         |                            +--------+--------+
  *         |  Page Removed              |                 |

@@ -16,6 +16,7 @@ do
 	#
 	echo "snapstop --service $PID # from $pid_file"
 	BUILD/snapwebsites/snapcommunicator/src/snapstop --service $PID
+	rm $pid_file
 done
 
 

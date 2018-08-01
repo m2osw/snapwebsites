@@ -1,10 +1,14 @@
 #!/bin/sh -e
 #
 
-# Delete old files and empty directories under /var/cache/snapwebsites
+# Delete old files
 #
 find /var/cache/snapwebsites/* -type f -atime +31 -delete
-find /var/cache/snapwebsites/* -type d -exec rmdir --ignore-fail-on-non-empty "{}" \;
+
+# Delete empty directories
+# We use the xargs to avoid errors from find
+#
+find /var/cache/snapwebsites/* -type d -print0 | xargs -r0 -- rmdir --ignore-fail-on-non-empty
 
 # Unfortunately, at this time the www-data user cannot write under
 # our /var/cache/snapwebsites directory (we may open it later?)

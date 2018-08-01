@@ -5,6 +5,17 @@ snapwebsites (1.5.104.0~xenial) xenial; urgency=high
     string and dynamically showing the list.
   * Removed most references to snapinit which is not part of snap anymore.
   * Removed the run-server.sh which would start snapinit.
+  * Tried a way to hide the install output in mk but it's too slow.
+  * Fixed the snapbase monthly cron so we don't get errors on a dir. delete.
+  * Finally removed the commented out start script. The random works.
+  * Added code to allow for the start script to stop, still need testing.
+  * Added a removal of PID files in the stop.
+  * Fixed the snapbackend journal age use, the value can be tainted.
+  * Handle exceptions in the destroy_page_impl() on a per link basis. Also
+    read all the links once first, then delete children and remaining links.
+  * Added the destination cell name to all link_info so when we detect a
+    broken link (in the list for now) we can delete it.
+  * Fixed a bug in the sendmail plugin, a name_t was not defined in the switch.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sun, 29 Jul 2018 23:23:32 -0700

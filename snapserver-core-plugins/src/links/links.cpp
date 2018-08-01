@@ -902,9 +902,7 @@ link_context::link_context(snap_child * snap
                          , int const count)
     : f_snap(snap)
     , f_info(info)
-    //, f_row() -- auto-init
     , f_column_predicate( std::make_shared<libdbproxy::cell_range_predicate>() )
-    //, f_link() -- auto-init
 {
     // TODO: verify that unicity is defined as expected in info and the db?
     //
@@ -914,6 +912,7 @@ link_context::link_context(snap_child * snap
     // the info and keep it in the context for retrieval;
     // if not unique, then we read the first 1,000 links and
     // make them available in the context to the caller
+    //
     if(f_info.is_unique())
     {
         // TODO: we have to somehow remove this content dependency (circular
@@ -988,6 +987,7 @@ link_context::link_context(snap_child * snap
 
                         link_info in;
                         in.from_data(f_cell_iterator.value()->getValue().stringValue());
+                        in.set_destination_cell_name(QString::fromUtf8(f_cell_iterator.key()));
 
                         if(!last_info.is_defined())
                         {
@@ -1118,6 +1118,7 @@ link_context::link_context(snap_child * snap
         // since we are loading these links from the links index we do
         // not need to specify the column names in the column predicate
         // it will automatically read all the data from that row
+        //
         libdbproxy::table::pointer_t links_table(links::links::instance()->get_links_table());
         QString const link_key(f_info.link_key());
         if(links_table->exists(link_key))
@@ -1128,12 +1129,18 @@ link_context::link_context(snap_child * snap
             }
 
             f_row = links_table->getRow(link_key);
+
             // WARNING: Here the column names are the keys, not the link names...
+            //
             f_column_predicate->setCount(count);
             f_column_predicate->setIndex(); // behave like an index
+
             // we MUST clear the cache in case we read the same list of links twice
+            //
             f_row->clearCache();
+
             // at this point begin() == end()
+            //
             f_cells = f_row->getCells(); // <- this is VERY important in case someone wants to delete cells
             f_cell_iterator = f_cells.begin();
         }
@@ -1269,7 +1276,8 @@ bool link_context::next_link(link_info & info)
             //      (i.e. the row name is URI#<branch>/<name>, and thus
             //      all the values will be "links::<name>-...")
             //
-            if(name.isEmpty() || name == link_name.left(name.length()))
+            if(name.isEmpty()
+            || name == link_name.left(name.length()))
             {
                 // TODO: find the fastest way to determine the uniqueness?
                 //       (right now we do not read that information...)
@@ -1287,13 +1295,16 @@ bool link_context::next_link(link_info & info)
                 //
                 // dash_pos + 2 because the unique number is at least 1
                 // character and we can definitively skip the '-'
+                //
                 int const hash_pos(link_name.indexOf('#', dash_pos + 2));
+
                 info.set_branch(static_cast<int64_t>(link_name.mid(hash_pos + 1).toLongLong()));
 
                 // the key (URI) of the destination
                 int const pos(link_key_and_branch.indexOf("#"));
                 QString const link_key(link_key_and_branch.mid(0, pos));
                 info.set_key(link_key);
+                info.set_destination_cell_name(f_info.name());
 
                 return true;
             }
@@ -1305,24 +1316,26 @@ bool link_context::next_link(link_info & info)
     return false;
 }
 
-/** \brief Return the key of the link.
- *
- * This is the key of the row, without the site key, where the column
- * of this link is saved (although the link may not exist.)
- *
- * \return The key of the row where the link is saved.
- */
+
+///** \brief Return the key of the link.
+// *
+// * This is the key of the row, without the site key, where the column
+// * of this link is saved (although the link may not exist.)
+// *
+// * \return The key of the row where the link is saved.
+// */
 //const QString& link_context::key() const
 //{
 //    return f_info.key();
 //}
 
-/** \brief Return the name of the link.
- *
- * This is the name of the column without the "links::" namespace.
- *
- * \return The name of the column where the link is saved.
- */
+
+///** \brief Return the name of the link.
+// *
+// * This is the name of the column without the "links::" namespace.
+// *
+// * \return The name of the column where the link is saved.
+// */
 //const QString& link_context::name() const
 //{
 //    return f_info.name();
@@ -1785,6 +1798,10 @@ QSharedPointer<link_context> links::new_link_context(link_info const & info
  * able to access them without first having to list them. Also this
  * function is considered SLOW.
  *
+ * \todo
+ * Add a parameter so we can list a specific branch instead of the
+ * current branch.
+ *
  * \param[in] path  The path to the list to be read.
  *
  * \return An array of names with each one of the links.
@@ -1813,6 +1830,7 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
     column_predicate->setEndCellKey(links_namespace_end);
 
     // loop until all cells are handled
+    //
     for(;;)
     {
         row->readCells(column_predicate);
@@ -1820,10 +1838,12 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
         if(cells.isEmpty())
         {
             // no more cells
+            //
             break;
         }
 
         // handle one batch
+        //
         for(libdbproxy::cells::const_iterator c(cells.begin());
                 c != cells.end();
                 ++c)
@@ -1832,12 +1852,13 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
 
             link_info src;
             src.set_key(ipath.get_key());
+            src.set_branch(ipath.get_branch());
 
             QString const cell_name(cell->columnName());
             int const hash(cell_name.indexOf('#'));
             if(hash == -1)
             {
-                throw links_exception_invalid_name("cell name includes no '-' and no '#' which is not valid for a link");
+                throw links_exception_invalid_name("cell name includes no '#' which is not valid for a link");
             }
             int pos(hash);
             int const dash(cell_name.indexOf('-'));
@@ -1846,7 +1867,7 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
                 pos = dash;
             }
             QString const link_name(cell_name.mid(start_pos, pos - start_pos));
-            src.set_name(link_name, dash == -1);
+            src.set_name(link_name, dash == -1); // if dash == -1 then link_name is a unique name
 
             // the multiple link number cannot be saved in the link_info
             // at this point... so we ignore it. For what we need links
@@ -1857,11 +1878,19 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
             //    ... // nothing we can do with this one for now
             //}
 
+            // THE FOLLOWING IS INCORRECT, the branch in the name is used
+            // to create a unique name per branch of the DESTINATION so there
+            // is a repeat (since the value of that link also includes that
+            // branch number) but that doesn't change the fact that we have
+            // to use the branch from the ipath (done above) and not from
+            // the cell name as we're trying to do here
+            //
             // the branch is defined after the '#'
-            QString const branch_number(cell_name.mid(hash + 1));
-            src.set_branch(branch_number.toLong());
+            //QString const branch_number(cell_name.mid(hash + 1));
+            //src.set_branch(branch_number.toLong());
 
             // this one we have all the data in the cell's value
+            //
             link_info dst;
             dst.from_data(cell->getValue().stringValue());
 
@@ -1904,8 +1933,8 @@ link_info_pair::vector_t links::list_of_links(QString const & path)
  * partially created and deleted.
  *
  * \param[in] info  The key and name of the link to be deleted.
- * \param[in] delete_record_count  The record count of the rows to select
- *                                 to be deleted.
+ * \param[in] delete_record_count  The number of the rows for deleting to
+ *                                 select at once.
  */
 void links::delete_link(link_info const & info, int const delete_record_count)
 {
@@ -2036,7 +2065,7 @@ void links::delete_link(link_info const & info, int const delete_record_count)
                 // this value represents the multi-name
                 // (i.e. <link namespace>::<link name>-<server name>-<number>)
                 //
-                QString dest_cell_multi_name(destination_link.stringValue());
+                QString const dest_cell_multi_name(destination_link.stringValue());
                 if(dst_row->exists(dest_cell_multi_name))
                 {
                     dst_row->dropCell(dest_cell_multi_name);

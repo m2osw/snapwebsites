@@ -506,19 +506,32 @@ void content::on_backend_process()
     backend_process_status();
     backend_process_files();
     //
-    // TODO: use "get_server_parameter()" function
-    // to read such parameters. You get a QString that you can change to a number
-    // with toInt() or toLong() or such.
-    //
+    int64_t age(5); // Five minute age default
     QString const age_in_minutes(f_snap->get_server_parameter("backend_journal_age"));
-    if( age_in_minutes.isEmpty() )
+    if( !age_in_minutes.isEmpty() )
     {
-        backend_process_journal( 5 ); // Five minute age default
+        bool ok(false);
+        age = age_in_minutes.toLongLong(&ok, 10);
+        if(!ok)
+        {
+            // revert to the default on failure
+            //
+            age = 5;
+        }
+        else if(age < 1)
+        {
+            // minimum 1 min.
+            //
+            age = 1;
+        }
+        else if(age > 1440 * 30)
+        {
+            // maximum 30 days
+            //
+            age = 1440 * 30;
+        }
     }
-    else
-    {
-        backend_process_journal( age_in_minutes.toLongLong() );
-    }
+    backend_process_journal( age );
 }
 
 
@@ -884,6 +897,7 @@ void content::backend_process_journal( int64_t const age_in_minutes )
         if( count == 0 )
         {
             // last page was processed, done.
+            //
             break;
         }
 

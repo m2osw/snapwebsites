@@ -92,6 +92,9 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_SENDMAIL_BYPASS_BLACKLIST:
         return "Bypass-Blacklist";
 
+    case name_t::SNAP_NAME_SENDMAIL_CREATED:
+        return "sendmail::created";
+
     case name_t::SNAP_NAME_SENDMAIL_EMAIL:
         return "sendmail::email";
 

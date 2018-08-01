@@ -19,7 +19,9 @@
 
 HERE=`pwd`
 
-# Add the snapupgrader for snapmanagerdaemon to find the compiled one on a programmer system
+# Add the snapupgrader for snapmanagerdaemon to find the compiled one on
+# a programmer's system
+#
 PATH=${HERE}/BUILD/snapwebsites/snapmanagercgi/upgrader:${PATH}
 
 mkdir -p ${HERE}/tmp
@@ -62,7 +64,7 @@ do
 	then
 		BASENAME=`basename $cmd`
 	fi
-	echo $PID >tmp/${BASENAME}.pid
+	echo $PID >${HERE}/tmp/${BASENAME}.pid
 
 	# add one random pause to further prove that it does not need to
 	# all sort exactly at the same time
@@ -75,29 +77,6 @@ done
 
 
 
-# # First we start snapcommunicator which is required by other processes
-# BUILD/snapwebsites/snapcommunicator/src/snapcommunicator &
-# 
-# # Wait a tad bit for the initialization process to get done
-# sleep 2
-# 
-# # Write a programmer tool to create a barrier? It seems to me that the
-# # other tools needto be smart enough to wait for snapcommunicator to be
-# # ready to connect to otherwise we will miss it in many cases anyway.
-# 
-# # Start other services (comment out if you do not want to start such and such)
-# BUILD/snapwebsites/snaplog/src/snaplog &
-# BUILD/snapwebsites/snaplock/src/snaplock &
-# BUILD/snapwebsites/snapdbproxy/src/snapdbproxy &
-# BUILD/snapwebsites/snapfirewall/src/snapfirewall &
-# BUILD/snapwebsites/snapserver/src/snapserver &
-# BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action images::images &
-# BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action list::pagelist &
-# BUILD/snapwebsites/snapbackend/src/snapbackend --cron-action sendmail::sendmail --param GLOBAL_LOCK=1 &
-# BUILD/snapwebsites/snapmanagercgi/daemon/snapmanagerdaemon &
-# BUILD/snapwebsites/snapwatchdog/src/snapwatchdogserver &
-
-
 # For the CRON task, run it once in a while...
 #
 # TODO: find a way to exit if all the other processes exit...
@@ -107,7 +86,41 @@ done
 #
 while true
 do
-	sleep 300
+	n=1
+	while [ $n -le 300]
+	do
+		RUNNING=false
+		for idx in $ORDER
+		do
+			VARNAME=DAEMON${idx}
+			cmd=`eval echo \\\$\${VARNAME}`
+			BASENAME=`echo $cmd | grep :: | sed -e 's/.* [a-z]\+::\([a-z]\+\).*/\1/'`
+			if test -z "$BASENAME"
+			then
+				BASENAME=`basename $cmd`
+			fi
+			if test -f ${HERE}/tmp/${BASENAME}.pid
+			then
+				# at least one daemon is considered to be
+				# running (the stop script deletes these
+				# files)
+				#
+				RUNNING=true
+				break;
+			fi
+		done
+
+		if ! $RUNNING
+		then
+			# none of the daemons are running, exit now
+			#
+			exit 0;
+		fi
+
+		sleep 1
+
+		n=`expr $n + 1`
+	done
 
 	# Run this one blocking to avoid having two instances running
 	# simultaneously

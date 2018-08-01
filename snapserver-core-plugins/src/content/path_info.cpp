@@ -626,7 +626,7 @@ snap_version::version_number_t path_info_t::get_branch(bool create_new_if_requir
         if(snap_version::SPECIAL_VERSION_UNDEFINED == f_branch)
         {
             QString const & key(f_real_key.isEmpty() ? f_key : f_real_key);
-            bool working_branch(branch_selection == branch_selection_t::BRANCH_SELECTION_USER_SELECT
+            bool const working_branch(branch_selection == branch_selection_t::BRANCH_SELECTION_USER_SELECT
                             ? get_working_branch()
                             : branch_selection == branch_selection_t::BRANCH_SELECTION_WORKING);
             f_branch = f_content_plugin->get_current_branch(key, working_branch);
@@ -932,6 +932,7 @@ QString path_info_t::get_draft_key(int64_t user_identifier) const
             // when create_new_if_required is set to false, then the locale
             // parameter is never used; i.e. a draft cannot be created if
             // we have no branch
+            //
             get_branch(false, "");
         }
 
