@@ -92,12 +92,13 @@ glob_dir::glob_dir()
  *
  * \param[in] path  The path including the Unix shell wildcards.
  * \param[in] flags  A set of GLOB_... flags.
+ * \param[in] allow_empty  Just return on an empty glob().
  *
  * \sa set_path()
  */
-glob_dir::glob_dir( char const * path, int const flags )
+glob_dir::glob_dir( char const * path, int const flags, bool allow_empty )
 {
-    set_path( path, flags );
+    set_path( path, flags, allow_empty );
 }
 
 
@@ -108,12 +109,13 @@ glob_dir::glob_dir( char const * path, int const flags )
  *
  * \param[in] path  The path including the Unix shell wildcards.
  * \param[in] flags  A set of GLOB_... flags.
+ * \param[in] allow_empty  Just return on an empty glob().
  *
  * \sa set_path()
  */
-glob_dir::glob_dir( std::string const & path, int const flags )
+glob_dir::glob_dir( std::string const & path, int const flags, bool allow_empty )
 {
-    set_path( path, flags );
+    set_path( path, flags, allow_empty );
 }
 
 
@@ -124,12 +126,13 @@ glob_dir::glob_dir( std::string const & path, int const flags )
  *
  * \param[in] path  The path including the Unix shell wildcards.
  * \param[in] flags  A set of GLOB_... flags.
+ * \param[in] allow_empty  Just return on an empty glob().
  *
  * \sa set_path()
  */
-glob_dir::glob_dir( QString const & path, int const flags )
+glob_dir::glob_dir( QString const & path, int const flags, bool allow_empty )
 {
-    set_path( path, flags );
+    set_path( path, flags, allow_empty );
 }
 
 
@@ -139,12 +142,13 @@ glob_dir::glob_dir( QString const & path, int const flags )
  *
  * \param[in] path  The path including the Unix shell wildcards.
  * \param[in] flags  A set of GLOB_... flags.
+ * \param[in] allow_empty  Just return on an empty glob().
  */
-void glob_dir::set_path( char const * path, int const flags )
+void glob_dir::set_path( char const * path, int const flags, bool allow_empty )
 {
     if(path != nullptr)
     {
-        set_path(std::string(path), flags);
+        set_path(std::string(path), flags, allow_empty);
     }
 }
 
@@ -171,8 +175,9 @@ void glob_dir::set_path( char const * path, int const flags )
  *
  * \param[in] path  The path including the Unix shell wildcards.
  * \param[in] flags  A set of GLOB_... flags.
+ * \param[in] allow_empty  Just return on an empty glob().
  */
-void glob_dir::set_path( std::string const & path, int const flags )
+void glob_dir::set_path( std::string const & path, int const flags, bool allow_empty )
 {
     f_dir = glob_pointer_t( new glob_t );
     *f_dir = glob_t();
@@ -193,6 +198,10 @@ void glob_dir::set_path( std::string const & path, int const flags )
             break;
 
         case GLOB_NOMATCH:
+            if(allow_empty)
+            {
+                return;
+            }
             err_msg = QString("glob() could not find any files matching the specified glob pattern: \"%1\".")
                                 .arg(QString::fromUtf8(path.c_str()));
             break;
@@ -214,10 +223,11 @@ void glob_dir::set_path( std::string const & path, int const flags )
  *
  * \param[in] path  The path including the Unix shell wildcards.
  * \param[in] flags  A set of GLOB_... flags.
+ * \param[in] allow_empty  Just return on an empty glob().
  */
-void glob_dir::set_path( QString const & path, int const flags )
+void glob_dir::set_path( QString const & path, int const flags, bool allow_empty )
 {
-    set_path(path.toUtf8().data(), flags);
+    set_path(path.toUtf8().data(), flags, allow_empty);
 }
 
 

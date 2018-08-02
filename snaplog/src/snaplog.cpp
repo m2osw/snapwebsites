@@ -175,6 +175,7 @@ snaplog::snaplog(int argc, char * argv[])
     , f_config( "snaplog" )
 {
     // --help
+    //
     if( f_opt.is_defined( "help" ) )
     {
         usage(advgetopt::getopt::status_t::no_error);
@@ -182,6 +183,7 @@ snaplog::snaplog(int argc, char * argv[])
     }
 
     // --version
+    //
     if(f_opt.is_defined("version"))
     {
         std::cerr << SNAPLOG_VERSION_STRING << std::endl;
@@ -191,15 +193,17 @@ snaplog::snaplog(int argc, char * argv[])
 
     // read the configuration file
     //
-    if(f_opt.is_defined( "config"))
+    if(f_opt.is_defined("config"))
     {
         f_config.set_configuration_path( f_opt.get_string("config") );
     }
 
     // --debug
+    //
     f_debug = f_opt.is_defined("debug");
 
     // local_listen=... from snapcommunicator.conf
+    //
     tcp_client_server::get_addr_port(QString::fromUtf8(f_config("snapcommunicator", "local_listen").c_str()), f_communicator_addr, f_communicator_port, "tcp");
 
     // setup the logger: --nolog, --logfile, or config file log_config
@@ -217,6 +221,7 @@ snaplog::snaplog(int argc, char * argv[])
         if(f_config.has_parameter("log_config"))
         {
             // use .conf definition when available
+            //
             f_log_conf = f_config["log_config"];
         }
         snap::logging::configure_conffile(f_log_conf);

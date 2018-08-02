@@ -24,6 +24,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/plugins.h>
+#include <snapwebsites/snap_string_list.h>
 
 // Qt lib
 //
@@ -97,7 +98,7 @@ private:
     void                    retrieve_bundles_status(snap_manager::server_status & server_status);
     bool                    install_bundle(bool const install, QString const & bundle_name, std::set<QString> & services);
     QString                 get_list_of_available_plugins();
-    void                    get_plugin_names(QString processes_filename, QString * plugin_names);
+    void                    get_plugin_names(QString processes_filename, snap_string_list * plugin_names);
 
     snap_manager::manager * f_snap = nullptr;
 };

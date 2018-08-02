@@ -36,7 +36,7 @@ case "$1" in
 "")
     # Default, just rebuild snapwebsites
     #
-    make -C ../../BUILD/snapwebsites install
+    make -C ../../BUILD/snapwebsites install | grep -v " Up-to-date: "
 
     # The following is a bit better as it does not print out all the
     # installation stuff, but it does the first part twice which is

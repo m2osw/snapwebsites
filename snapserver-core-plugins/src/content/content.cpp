@@ -1027,9 +1027,11 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
 
     // note: we do not need to test whether the home page ("") allows
     //       for children; if not we would have a big problem!
+    //
     if(!ipath.get_cpath().isEmpty())
     {
         // parent path is the path without the last "/..." part
+        //
         int const pos(ipath.get_cpath().lastIndexOf('/'));
         if(pos >= 0)
         {
@@ -1037,6 +1039,7 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
             if(is_final(parent_key))
             {
                 // the user was trying to add content under a final leaf
+                //
                 f_snap->die(snap_child::http_code_t::HTTP_CODE_FORBIDDEN, "Final Parent",
                         QString("Page \"%1\" cannot be added under \"%2\" since \"%2\" is marked as final.")
                                     .arg(key).arg(parent_key),
@@ -1055,7 +1058,8 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
     //status.reset_state(path_info_t::status_t::state_t::CREATE);
     //ipath.set_status(status);
 
-    // save the owner
+    // save the owner first
+    //
     row->getCell(primary_owner)->setValue(owner);
 
     SNAP_LOG_DEBUG("Started creation of page \"")(ipath.get_key())("\".");

@@ -681,7 +681,7 @@ void listdata_connection::process_data(QString const & acknowledgement_id)
                 //
                 if(errno != ENOENT)
                 {
-                    SNAP_LOG_DEBUG("could not open file \"")(f_filename)("\" for reading");
+                    SNAP_LOG_DEBUG("could not open file \"")(f_filename)("\" for reading or writing");
                 }
                 continue;
             }
@@ -689,7 +689,10 @@ void listdata_connection::process_data(QString const & acknowledgement_id)
             //
             if(chownnm(QString::fromUtf8(f_filename.c_str()), "snapwebsites", "snapwebsites") != 0)
             {
-                SNAP_LOG_WARNING("could not properly change the ownership to snapwebsites:snapwebsites");
+                // as a programmer, if you're not running as snapwebsites, this
+                // warning is normal (I most often run as myself)
+                //
+                SNAP_LOG_WARNING("could not properly change the ownership of a list journal file to snapwebsites:snapwebsites");
             }
 
             if(flock(f_fd, LOCK_EX) != 0)
@@ -2233,6 +2236,13 @@ void list::on_modified_content(content::path_info_t & ipath)
         SNAP_LOG_ERROR("could not open file \"")(journal_filename)("\" for writing");
         return;
     }
+    if(chownnm(QString::fromUtf8(journal_filename.c_str()), "snapwebsites", "snapwebsites") != 0)
+    {
+        // as a programmer, if you're not running as snapwebsites, this
+        // warning is normal (I most often run as myself)
+        //
+        SNAP_LOG_WARNING("could not properly change the ownership of a list journal file to snapwebsites:snapwebsites");
+    }
 
     // create a block so fd gets closed ASAP (since we have a lock on it,
     // it is best this way)
@@ -2258,10 +2268,20 @@ void list::on_modified_content(content::path_info_t & ipath)
     // scripts (this could certainly be optimized but really the scripts
     // are compiled so quickly that it won't matter.)
     //
-    libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
-    QString const branch_key(ipath.get_branch_key());
-    branch_table->getRow(branch_key)->dropCell(get_name(name_t::SNAP_NAME_LIST_TEST_SCRIPT)); // was using start_date instead of "now"...
-    branch_table->getRow(branch_key)->dropCell(get_name(name_t::SNAP_NAME_LIST_ITEM_KEY_SCRIPT)); // was using start_date instead of "now"...
+    try
+    {
+        libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
+        QString const branch_key(ipath.get_branch_key());
+        branch_table->getRow(branch_key)->dropCell(get_name(name_t::SNAP_NAME_LIST_TEST_SCRIPT)); // was using start_date instead of "now"...
+        branch_table->getRow(branch_key)->dropCell(get_name(name_t::SNAP_NAME_LIST_ITEM_KEY_SCRIPT)); // was using start_date instead of "now"...
+    }
+    catch(std::exception const & e)
+    {
+        SNAP_LOG_WARNING("reseting the list scripts failed with an exception: ")(e.what());
+
+        // ignore that exception, the pagelist backend will be responsible
+        // for cleaning up this mess
+    }
 
     f_ping_backend = true;
 }
@@ -3699,28 +3719,75 @@ int list::generate_list_for_page(content::path_info_t & page_ipath, content::pat
     {
         libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
         if(!content_table->exists(page_ipath.get_key())
-        || !content_table->getRow(page_ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
+        || !content_table->getRow(page_ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))
+        || !branch_table->exists(page_ipath.get_branch_key()))
         {
-            // the page is not ready yet, let it be for a little longer, it will
-            // be taken in account by the standard process
-            // (at this point we may not even have the branch/revision data)
+            // the page is not ready yet or it was destroyed
             //
-            return 0;
+            // we have to make sure the list does not include a link
+            // to that page (in the worst case scenario, a link was
+            // created and not correctly deleted)
+            //
+            // if not quite ready yet, let it be for a little longer, it will
+            // be taken in account by the standard process (i.e. we may have
+            // been awaken for another page and picked up this one too early;
+            // although since we have the journal in place, I don't think
+            // that can happen anymore)
+            //
+
+            // clear the cache before reading the list of items
+            //
+            list_row->clearCache();
+
+            std::vector<QString> cells_to_delete;
+
+            char const * ordered_pages(get_name(name_t::SNAP_NAME_LIST_ORDERED_PAGES));
+
+            auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
+            column_predicate->setStartCellKey(QString("%1::").arg(ordered_pages));
+            column_predicate->setEndCellKey(QString("%1;").arg(ordered_pages));
+            column_predicate->setCount(100);
+            column_predicate->setIndex(); // behave like an index
+            for(;;)
+            {
+                list_row->readCells(column_predicate);
+                libdbproxy::cells const cells(list_row->getCells());
+                if(cells.empty())
+                {
+                    // all columns read
+                    //
+                    break;
+                }
+                for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
+                {
+                    // check the value, if it's a match, add to the list
+                    // of cells to drop
+                    //
+                    if(cell_iterator.value()->getValue().stringValue() == page_ipath.get_key())
+                    {
+                        cells_to_delete.push_back(cell_iterator.key());
+                    }
+                }
+            }
+
+            for(auto c : cells_to_delete)
+            {
+                SNAP_LOG_DEBUG("found list key [")
+                              (c)
+                              ("] for invalid page [")
+                              (page_ipath.get_key())
+                              (" -- dropping!");
+                list_row->dropCell(c);
+            }
+
+            if(!cells_to_delete.empty())
+            {
+                did_work = 1;
+            }
+
+            return did_work;
         }
 
-        // TODO: testing just the row is not enough to know whether it was deleted
-        //       (I think we will also always have content::created in the
-        //       branch assuming it was properly created)
-        //
-        //       Note: since we are now using CQL, it is likely working right.
-        //
-        if(!branch_table->exists(page_ipath.get_branch_key()))
-        {
-            // branch disappeared... ignore
-            // (it could have been deleted or moved--i.e. renamed)
-            //
-            return 0;
-        }
         libdbproxy::row::pointer_t page_branch_row(branch_table->getRow(page_ipath.get_branch_key()));
 
         QString const link_name(get_name(name_t::SNAP_NAME_LIST_LINK));

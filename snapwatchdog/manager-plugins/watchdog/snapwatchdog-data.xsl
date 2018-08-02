@@ -152,14 +152,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                   <td>
                     <xsl:choose>
                       <xsl:when test="watchdog/apt/@total-updates and watchdog/apt/@security-updates">
-                        <xsl:copy-of select="@totals-updates"/> updates are available
+                        <xsl:value-of select="@totals-updates"/> updates are available
                         <br/>
                         and
                         <br/>
-                        <xsl:copy-of select="watchdog/apt/@security-updates"/> security updates are available
+                        <xsl:value-of select="watchdog/apt/@security-updates"/> security updates are available
                       </xsl:when>
                       <xsl:when test="watchdog/apt/@total-updates">
-                        <xsl:copy-of select="@totals-updates"/> updates are available
+                        <xsl:value-of select="@totals-updates"/> updates are available
                       </xsl:when>
                       <!--xsl:when test="watchdog/apt/@security-updates" either you have both or only a total so this case is not necessary -->
                       <xsl:when test="watchdog/apt/@error">
@@ -176,7 +176,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                 <xsl:if test="watchdog/apt/@error">
                   <tr>
                     <th>Error:</th>
-                    <td><xsl:copy-of select="watchdog/apt/@error"/></td>
+                    <td><xsl:value-of select="watchdog/apt/@error"/></td>
                   </tr>
                 </xsl:if>
               </table>
@@ -362,6 +362,42 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                   <xsl:for-each select="watchdog/logs/log">
                     <tr>
                       <td><xsl:value-of select="@name"/></td>
+                      <td><xsl:value-of select="@filename"/></td>
+                      <td class="align-right"><xsl:value-of select="@size"/></td>
+                      <td class="align-right"><xsl:value-of select="@uid"/></td>
+                      <td class="align-right"><xsl:value-of select="@gid"/></td>
+                      <td class="align-right"><xsl:value-of select="@mode"/></td>
+                      <td class="align-right"><xsl:value-of select="xs:dateTime('1970-01-01T00:00:00') + @mtime div 1 * xs:dayTimeDuration('PT1S')"/></td>
+                      <td><xsl:value-of select="@error"/></td>
+                    </tr>
+                  </xsl:for-each>
+                </tbody>
+              </table>
+            </div>
+          </xsl:if>
+
+          <!-- one list entry per list file probed -->
+          <xsl:variable name="journals_count" select="count(watchdog/list/journal)"/>
+          <xsl:if test="$journals_count > 0">
+            <div id="lists-section">
+              <h2>Lists</h2>
+<p>(TODO convert the mode and make size human readable--with byte size in a title=... and uid/gid should be in text too)</p>
+              <table class="table-with-borders">
+                <thead>
+                  <tr>
+                    <th>Filename</th>
+                    <th>Size</th>
+                    <th>User ID</th>
+                    <th>Group ID</th>
+                    <th>Mode</th>
+                    <th>Last Modified Date</th>
+                    <th>Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- TODO: look in a way to get group names shown once -->
+                  <xsl:for-each select="watchdog/list/journal">
+                    <tr>
                       <td><xsl:value-of select="@filename"/></td>
                       <td class="align-right"><xsl:value-of select="@size"/></td>
                       <td class="align-right"><xsl:value-of select="@uid"/></td>

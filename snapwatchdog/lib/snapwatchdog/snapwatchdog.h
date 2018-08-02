@@ -46,7 +46,8 @@ enum class name_t
     SNAP_NAME_WATCHDOG_SERVERSTATS,
     SNAP_NAME_WATCHDOG_STATISTICS_FREQUENCY,
     SNAP_NAME_WATCHDOG_STATISTICS_PERIOD,
-    SNAP_NAME_WATCHDOG_STATISTICS_TTL
+    SNAP_NAME_WATCHDOG_STATISTICS_TTL,
+    SNAP_NAME_WATCHDOG_USER_GROUP
 };
 char const * get_name(name_t name) __attribute__ ((const));
 } // watchdog namespace

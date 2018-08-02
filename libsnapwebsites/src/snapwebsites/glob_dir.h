@@ -63,13 +63,13 @@ public:
     typedef std::unique_ptr<glob_t, raii_pointer_deleter<glob_t, decltype(&::globfree), &::globfree>> glob_pointer_t;
 
                     glob_dir();
-                    glob_dir( char const * path, int const flags = 0 );
-                    glob_dir( std::string const & path, int const flags = 0 );
-                    glob_dir( QString const & path, int const flags = 0 );
+                    glob_dir( char const * path, int const flags = 0, bool allow_empty = false );
+                    glob_dir( std::string const & path, int const flags = 0, bool allow_empty = false );
+                    glob_dir( QString const & path, int const flags = 0, bool allow_empty = false );
 
-    void            set_path( char const * path, int const flags = 0 );
-    void            set_path( std::string const & path, int const flags = 0 );
-    void            set_path( QString const & path, int const flags = 0 );
+    void            set_path( char const * path, int const flags = 0, bool allow_empty = false );
+    void            set_path( std::string const & path, int const flags = 0, bool allow_empty = false );
+    void            set_path( QString const & path, int const flags = 0, bool allow_empty = false );
 
     void            enumerate_glob( std::function<void (std::string path)> func ) const;
     void            enumerate_glob( std::function<void (QString path)> func ) const;

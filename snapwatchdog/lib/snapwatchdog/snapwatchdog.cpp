@@ -559,6 +559,9 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_WATCHDOG_STATISTICS_TTL:
         return "statistics_ttl";
 
+    case name_t::SNAP_NAME_WATCHDOG_USER_GROUP:
+        return "user_group";
+
     default:
         // invalid index
         throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_...");

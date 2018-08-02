@@ -111,9 +111,10 @@ snap_clear_css_targets()
 snap_clear_js_targets()
 snap_clear_xml_targets()
 
-add_subdirectory( conf  )
-add_subdirectory( src   )
-add_subdirectory( doc   )
+add_subdirectory( conf             )
+add_subdirectory( src              )
+add_subdirectory( watchdog-plugins )
+add_subdirectory( doc              )
 
 ##
 ## Analyse css, xml and javascript

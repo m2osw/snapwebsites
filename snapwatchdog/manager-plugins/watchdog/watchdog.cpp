@@ -869,37 +869,50 @@ bool watchdog::apply_setting(QString const & button_name, QString const & field_
  */
 QString watchdog::get_list_of_available_plugins()
 {
-    QString available_plugins;
+    snap_string_list available_plugins;
 
     char const * plugins_path_variable_name(snap::get_name(snap::name_t::SNAP_NAME_CORE_PARAM_PLUGINS_PATH));
     snap_config snap_watchdog_conf(g_configuration_filename);
-    std::string const & plugins_path(snap_watchdog_conf[plugins_path_variable_name]);
-    try
+    std::string const & plugins_paths(snap_watchdog_conf[plugins_path_variable_name]);
+
+    std::vector<std::string> paths;
+    tokenize_string(paths, plugins_paths, ":", true, " ");
+
+    for(auto p : paths)
     {
-        glob_dir const plugin_filenames(plugins_path + "/*watchdog_*.so", GLOB_ERR | GLOB_NOESCAPE);
-        plugin_filenames.enumerate_glob(std::bind(&watchdog::get_plugin_names, this, std::placeholders::_1, &available_plugins));
-    }
-    catch(glob_dir_exception const &)
-    {
-        // on a developer system files are going to be in a subfolder
-        // so try again just in case
-        //
         try
         {
-            glob_dir const plugin_filenames(plugins_path + "/watchdog_*/*watchdog_*.so", GLOB_ERR | GLOB_NOESCAPE);
+            // we do not need to have glob() sort for us since we may have multiple
+            // lists and they would not be properly sorted in the end, instead
+            // we sort our available_plugins list of strings before we return
+            //
+            glob_dir const plugin_filenames(p + "/*watchdog_*.so", GLOB_ERR | GLOB_NOESCAPE | GLOB_NOSORT);
             plugin_filenames.enumerate_glob(std::bind(&watchdog::get_plugin_names, this, std::placeholders::_1, &available_plugins));
         }
         catch(glob_dir_exception const &)
         {
-            // reading that list failed?!
-            // (we presentthe error as a list item since we are
-            // going to be added inside a list)
+            // on a developer system files are going to be in a subfolder
+            // so try again just in case
             //
-            available_plugins += "<li><strong style=\"color: red\">An error occurred while reading the list of available plugins.</li>";
+            try
+            {
+                glob_dir const plugin_filenames(p + "/watchdog_*/*watchdog_*.so", GLOB_ERR | GLOB_NOESCAPE | GLOB_NOSORT);
+                plugin_filenames.enumerate_glob(std::bind(&watchdog::get_plugin_names, this, std::placeholders::_1, &available_plugins));
+            }
+            catch(glob_dir_exception const &)
+            {
+                // reading that list failed?!
+                // (we presentthe error as a list item since we are
+                // going to be added inside a list)
+                //
+                available_plugins << "<li><strong style=\"color: red\">An error occurred while reading the list of available plugins.</li>";
+            }
         }
     }
 
-    return available_plugins;
+    available_plugins.sort();
+
+    return available_plugins.join("");
 }
 
 
@@ -911,7 +924,7 @@ QString watchdog::get_list_of_available_plugins()
  *
  * \param[in] plugin_filename  The name of one plugin.
  */
-void watchdog::get_plugin_names(QString plugin_filename, QString * available_plugins)
+void watchdog::get_plugin_names(QString plugin_filename, snap_string_list * available_plugins)
 {
     int const basename_pos(plugin_filename.lastIndexOf('/') + 1);
     int name_pos(plugin_filename.indexOf('_', basename_pos));
@@ -930,7 +943,7 @@ void watchdog::get_plugin_names(QString plugin_filename, QString * available_plu
     {
         extension_pos = plugin_filename.length();
     }
-    *available_plugins += "<li>" + plugin_filename.mid(name_pos, extension_pos - name_pos) + "</li>";
+    *available_plugins << "<li>" + plugin_filename.mid(name_pos, extension_pos - name_pos) + "</li>";
 }
 
 

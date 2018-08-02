@@ -1,3 +1,22 @@
+snapwebsites (1.5.105.0~xenial) xenial; urgency=high
+
+  * Added an auto-fix for the lists that are found to be broken (i.e. some
+    destination pages do not exist because they were destroyed.)
+  * Fixed the list_data_path in the server.conf file (I still had
+    list_journal_path)
+  * Added a new watchdog plugin to check out the list process.
+  * Allow for the on_modified_content() to work in the list even if the
+    branch is "broken" (i.e. the page was deleted.)
+  * Added a grep -v to reduce the Install output when running mk.
+  * Added an option to avoid the throw in glob_dir() when the output is empty.
+  * Added a chownnm() for the journal file after creation.
+  * Added a user_group entry to define the expected journal user/group names.
+  * Fixed the snapwatchdog-data.xsl, some entries need value-of.
+  * Added an entry to the snapwatchdog-data.xsl to support the list.
+  * Fixed the get_list_of_available_plugins() to support any number of paths.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  1 Aug 2018 15:39:27 -0700
+
 snapwebsites (1.5.104.0~xenial) xenial; urgency=high
 
   * Added new watchdog plugin named apt to report the status from apt-check.

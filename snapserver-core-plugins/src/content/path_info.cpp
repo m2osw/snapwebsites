@@ -488,8 +488,9 @@ path_info_t::status_t path_info_t::get_status() const
         return result;
     }
 
-    // we set the consistency of the cell to QUORUM to make sure
+    // we force the consistency of the cell to QUORUM to make sure
     // we read the last written value
+    //
     libdbproxy::cell::pointer_t cell(f_content_table->getRow(f_key)->getCell(get_name(name_t::SNAP_NAME_CONTENT_STATUS)));
     cell->setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
     libdbproxy::value const & value(cell->getValue());
