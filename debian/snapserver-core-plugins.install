@@ -63,6 +63,7 @@ debian/tmp/usr/lib/snapwebsites/plugins/libusers.so                        usr/l
 debian/tmp/usr/lib/snapwebsites/plugins/libusers_ui.so                     usr/lib/snapwebsites/plugins/
 debian/tmp/usr/lib/snapwebsites/plugins/libversions.so                     usr/lib/snapwebsites/plugins/
 debian/tmp/usr/lib/snapwebsites/plugins/libwebform.so                      usr/lib/snapwebsites/plugins/
+debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_list.so       usr/lib/snapwebsites/watchdog_plugins/
 debian/tmp/usr/lib/snapwebsites/tables/content-tables.xml                  usr/lib/snapwebsites/tables/
 debian/tmp/usr/lib/snapwebsites/tables/mailinglist-tables.xml              usr/lib/snapwebsites/tables/
 debian/tmp/usr/lib/snapwebsites/tables/epayment_paypal-tables.xml          usr/lib/snapwebsites/tables/
