@@ -409,7 +409,7 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
         QString const backend_names_lined(backend_names_list.join('\n'));
 
         snap_manager::widget_text::pointer_t field(std::make_shared<snap_manager::widget_text>(
-                    "Enable or disable ALL backend services"
+                    "Select backend services to run on this system"
                     , s.get_field_name()
                     , backend_names_lined
                     , "<p>Select the exact list of backends to run on this system."
@@ -429,6 +429,12 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
         f.generate(parent, uri);
         return true;
     }
+
+    // **************** WARNING ******************
+    // the second part of this display_value() function only handles
+    // service fields where the name has to be "<service>::<field>"
+    // anything else has to be placed before this comment
+    // **************** WARNING ******************
 
     int const pos(s.get_field_name().indexOf("::"));
     if(pos <= 0)
@@ -483,8 +489,7 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
             snap_manager::form f(
                       get_plugin_name()
                     , s.get_field_name()
-                    ,   snap_manager::form::FORM_BUTTON_RESET
-                      | snap_manager::form::FORM_BUTTON_SAVE
+                    ,   snap_manager::form::FORM_BUTTON_NONE
                     );
 
             // the old code would allow us to change the status of each

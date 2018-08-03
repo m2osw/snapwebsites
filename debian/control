@@ -672,7 +672,7 @@ Architecture: any
 # package on his machine without using bundles...
 Depends: ${shlibs:Depends}, ${misc:Depends}, html2text,
     libqrencode3 (>= 3.4), snapbase, libqt5sql5, libqt5sql5-mysql
-Recommends: snapserver
+Recommends: snapserver, snapwatchdog
 Suggests: clamav
 Description: Fast Websites: powerful CMS for Apache written in C++.
  Snap! C++ runs your CMS using binary code written in C and C++.

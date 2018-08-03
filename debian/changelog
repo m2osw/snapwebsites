@@ -1,3 +1,14 @@
+snapwebsites (1.5.107.0~xenial) xenial; urgency=high
+
+  * Added snapwatchdog as a recommended package when installing
+    snapserver-core-plugins.
+  * Fixed the label of the box used to select the list of backends to run on
+    a system (it was a copy paste from the "all service enable/disable")
+  * Removed the Reset & Save buttons from the backend services, there is
+    nothing to edit or save now.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  2 Aug 2018 20:48:11 -0700
+
 snapwebsites (1.5.106.0~xenial) xenial; urgency=high
 
   * Fixed the package in which the libsnapwatchdog_list.so goes.
