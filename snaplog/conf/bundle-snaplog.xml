@@ -35,8 +35,8 @@ CREATE TABLE snaplog.log
   , server      VARCHAR(25)
   , service     VARCHAR(25)
   , level       VARCHAR(10)
-  , msgid       VARCHAR(20)
-  , ipaddr      TEXT
+  , msgid       TEXT
+  , ipaddr      VARCHAR(15)
   , file        VARCHAR(120)
   , line        INT
   , func        VARCHAR(100)
