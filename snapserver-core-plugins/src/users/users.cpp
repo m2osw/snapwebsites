@@ -390,11 +390,6 @@ const char * get_name(name_t name)
  * This function initializes the users plugin.
  */
 users::users()
-    //: f_snap(nullptr) -- auto-init
-    //, f_user_info() -- auto-init
-    //, f_user_logged_in(false) -- auto-init
-    //, f_user_changing_password_key() -- auto-init
-    //, f_info(nullptr) -- auto-init
 {
 }
 
@@ -933,6 +928,7 @@ QString users::get_user_cookie_name()
 void users::on_process_cookies()
 {
     // prevent cookies on a set of method that do not require them
+    //
     QString const method(f_snap->snapenv(get_name(snap::name_t::SNAP_NAME_CORE_REQUEST_METHOD)));
     if(method == "HEAD"
     || method == "TRACE")
@@ -944,9 +940,11 @@ void users::on_process_cookies()
     bool create_new_session(true);
 
     // get cookie name
+    //
     QString const user_cookie_name(get_user_cookie_name());
 
     // any snap session?
+    //
     if(f_snap->cookie_is_defined(user_cookie_name))
     {
         // is that session a valid user session?
@@ -2227,6 +2225,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
         libdbproxy::value value;
 
         // existing users have a unique identifier
+        //
         if( !user_info.is_user() )
         {
             messages::messages::instance()->set_error(
@@ -2259,6 +2258,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
         // although the user exists, as in, has an account on this Snap!
         // website, that account may not be attached to this website so
         // we need to verify that before moving further.
+        //
         libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
         content::path_info_t ipath(logged_info.user_ipath());
         if(!content_table->exists(ipath.get_key()))
@@ -2268,6 +2268,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
 
         // before we actually log the user in we must make sure he is
         // not currently blocked or not yet active
+        //
         links::link_info user_status_info(get_name(name_t::SNAP_NAME_USERS_STATUS), true, ipath.get_key(), ipath.get_branch());
         QSharedPointer<links::link_context> link_ctxt(links::links::instance()->new_link_context(user_status_info));
         links::link_info status_info;
@@ -2281,6 +2282,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
             // this means the user is either a new user (not yet verified)
             // or he is blocked
             // either way it means he cannot log in at this time!
+            //
             if(status_info.key() == site_key + get_name(name_t::SNAP_NAME_USERS_NEW_PATH))
             {
                 validation_required = true;
@@ -2322,27 +2324,33 @@ QString users::login_user(QString const & email, QString const & password, bool 
             {
                 // compute the hash of the password
                 // (1) get the digest
+                //
                 value = user_info.get_value(name_t::SNAP_NAME_USERS_PASSWORD_DIGEST);
                 QString const digest(value.stringValue());
 
-                // (2) we need the passord (passed as a parameter now)
+                // (2) we need the password (passed as a parameter now)
+                //
                 //QString const password(f_snap->postenv("password"));
 
                 // (3) get the salt in a buffer
+                //
                 value = user_info.get_value(name_t::SNAP_NAME_USERS_PASSWORD_SALT);
                 QByteArray const salt(value.binaryValue());
 
                 // (4) compute the expected hash
+                //
                 QByteArray hash;
                 encrypt_password(digest, password, salt, hash);
 
                 // (5) retrieved the saved hash
+                //
                 value = user_info.get_value(name_t::SNAP_NAME_USERS_PASSWORD);
                 QByteArray const saved_hash(value.binaryValue());
 
                 // (6) compare both hashes
                 // (note: at this point I do not trust the == operator of the QByteArray
                 // object; will it work with '\0' bytes???)
+                //
                 valid_password = hash.size() == saved_hash.size()
                               && memcmp(hash.data(), saved_hash.data(), hash.size()) == 0;
 
@@ -2377,9 +2385,11 @@ QString users::login_user(QString const & email, QString const & password, bool 
             {
 //SNAP_LOG_TRACE("valid password");
                 // User credentials are correct, create a session & cookie
+                //
                 create_logged_in_user_session(user_info);
 
                 // Copy the previous login date and IP to the previous fields
+                //
                 if(user_info.value_exists(get_name(name_t::SNAP_NAME_USERS_LOGIN_ON)))
                 {
                     user_info.set_value( name_t::SNAP_NAME_USERS_PREVIOUS_LOGIN_ON, user_info.get_value(name_t::SNAP_NAME_USERS_LOGIN_ON) );
@@ -2390,15 +2400,18 @@ QString users::login_user(QString const & email, QString const & password, bool 
                 }
 
                 // Save the date when the user logged in
+                //
                 value.setInt64Value(f_snap->get_start_date());
                 user_info.set_value(name_t::SNAP_NAME_USERS_LOGIN_ON, value);
 
                 // Save the user IP address when logging in
+                //
                 value.setStringValue(f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_REMOTE_ADDR)));
                 user_info.set_value(name_t::SNAP_NAME_USERS_LOGIN_IP, value);
 
                 // Save the user latest session so we can implement the
                 // "one session per user" feature (which is the default)
+                //
                 user_info.set_value(name_t::SNAP_NAME_USERS_LOGIN_SESSION, f_info->get_session_key());
 
                 // Tell all the other plugins that the user is now logged in
@@ -2412,14 +2425,17 @@ QString users::login_user(QString const & email, QString const & password, bool 
                 user_logged_in(logged_info);
 
                 // user got logged out by a plugin and not redirected?!
+                //
                 if(f_user_info.is_user())
                 {
                     // make sure user locale/timezone get used on next
                     // locale/timezone access
+                    //
                     locale::locale::instance()->reset_locale();
 
                     // send a signal that the user is ready (this signal is also
                     // sent when we have a valid cookie)
+                    //
                     logged_in_user_ready();
 
                     if(password.isEmpty())
@@ -2543,12 +2559,14 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
     // user about the fact
     //
     QString const previous_session(user_info.get_value(name_t::SNAP_NAME_USERS_LOGIN_SESSION).stringValue());
-    if(!previous_session.isEmpty() && previous_session != f_info->get_session_key())
+    if(!previous_session.isEmpty()
+    && previous_session != f_info->get_session_key())
     {
         // Administrator can turn off that feature
         //
         libdbproxy::value const multisessions(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_MULTISESSIONS)));
-        if(multisessions.nullValue() || !multisessions.signedCharValue())
+        if(multisessions.nullValue()
+        || !multisessions.signedCharValue())
         {
             // close other session
             //

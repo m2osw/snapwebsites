@@ -275,20 +275,6 @@ char const * get_name(name_t name)
  *                   matter what)
  */
 sessions::session_info::session_info()
-    //: f_type(SESSION_INFO_SECURE) -- auto-init
-    //, f_session_id(0) -- auto-init
-    //, f_session_key("") -- auto-init
-    //, f_session_random("") -- auto-init
-    //, f_plugin_owner("") -- auto-init
-    //, f_page_path("") -- auto-init
-    //, f_object_path("") -- auto-init
-    //, f_user_agent("") -- auto-init
-    //, f_time_to_live(300) -- auto-init (5 min.)
-    //, f_time_limit(0) -- auto-init
-    //, f_login_limit(0) -- auto-init
-    //, f_date(0) -- auto-init
-    //, f_creation_date(0) -- auto-init
-    //, f_check_flags(CHECK_HTTP_USER_AGENT) -- auto-init
 {
 }
 

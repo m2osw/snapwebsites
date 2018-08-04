@@ -2523,11 +2523,13 @@ list_item_vector_t list::read_list(content::path_info_t & ipath, int start, int 
     for(;;)
     {
         // clear the cache before reading the next load
+        //
         list_row->readCells(column_predicate);
         libdbproxy::cells const cells(list_row->getCells());
         if(cells.empty())
         {
             // all columns read
+            //
             break;
         }
         for(libdbproxy::cells::const_iterator cell_iterator(cells.begin()); cell_iterator != cells.end(); ++cell_iterator)
@@ -2539,6 +2541,7 @@ list_item_vector_t list::read_list(content::path_info_t & ipath, int start, int 
             else
             {
                 // we keep the sort key in the item
+                //
                 list_item_t item;
                 item.set_sort_key(cell_iterator.key().mid(len));
                 item.set_uri(cell_iterator.value()->getValue().stringValue());
@@ -2546,6 +2549,7 @@ list_item_vector_t list::read_list(content::path_info_t & ipath, int start, int 
                 if(result.size() == count)
                 {
                     // we got the count we wanted, return now
+                    //
                     return result;
                 }
             }
