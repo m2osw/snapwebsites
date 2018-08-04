@@ -17,12 +17,38 @@
 # will go on forever...
 #
 
+
+QUIET=false
 HERE=`pwd`
 
 # Add the snapupgrader for snapmanagerdaemon to find the compiled one on
 # a programmer's system
 #
 PATH=${HERE}/BUILD/snapwebsites/snapmanagercgi/upgrader:${PATH}
+
+while ! test -z "$1"
+do
+	OPTION="$1"
+	shift
+	case "$OPTION" in
+	"--help")
+		echo "Usage: $0 [--quiet]"
+		echo "where --quiet is used to send the output to /dev/null"
+		echo "useful to avoid the heavy output and to debug this script"
+		exit 1
+		;;
+
+	"--quiet")
+		QUIET=true
+		;;
+
+	"*")
+		echo "error: unknown command line option $1"
+		exit 1
+		;;
+
+	esac
+done
 
 mkdir -p ${HERE}/tmp
 
@@ -46,6 +72,7 @@ DAEMON13="BUILD/snapwebsites/snaplistd/src/snaplistd"
 ORDER=`seq 1 13 | shuf`
 PAUSE=`seq 1 20 | shuf | awk 'NR==1 {print; exit}'`
 
+echo "---------------- start daemons"
 for idx in $ORDER
 do
 	# Dynamic variable selection in Bourne Shell (and others)
@@ -56,7 +83,12 @@ do
 	# Now start the command
 	#
 	echo $cmd
-	$cmd &
+	if $QUIET
+	then
+		$cmd >/dev/null 2>&1 &
+	else
+		$cmd &
+	fi
 	PID=$!
 
 	BASENAME=`echo $cmd | grep :: | sed -e 's/.* [a-z]\+::\([a-z]\+\).*/\1/'`
@@ -84,10 +116,11 @@ done
 #       we can sleep 1 second, use `if kill --pid $PID 0 ...` and if true
 #       we can sleep some more, if false it is dead, exit immediately.)
 #
+echo "---------------- start backend once every 5 min."
 while true
 do
 	n=1
-	while [ $n -le 300]
+	while [ $n -le 300 ]
 	do
 		RUNNING=false
 		for idx in $ORDER
@@ -106,7 +139,7 @@ do
 				# files)
 				#
 				RUNNING=true
-				break;
+				break
 			fi
 		done
 
@@ -114,7 +147,8 @@ do
 		then
 			# none of the daemons are running, exit now
 			#
-			exit 0;
+			echo "All daemons are gone, exiting."
+			exit 0
 		fi
 
 		sleep 1
@@ -127,4 +161,4 @@ do
 	#
 	BUILD/snapwebsites/snapbackend/src/snapbackend
 done
-
+# NOTREACHED

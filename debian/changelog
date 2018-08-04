@@ -1,3 +1,12 @@
+snapwebsites (1.5.109.0~xenial) xenial; urgency=high
+
+  * Fixed the multi-link destination cell name, we have to use "link_name".
+  * Fixed the msgid and ipaddr types in the snaplog bundle.
+  * Added a --quiet command line option to the start script.
+  * Added a couple of write to ease debug of start script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri,  3 Aug 2018 03:24:05 -0700
+
 snapwebsites (1.5.108.0~xenial) xenial; urgency=high
 
   * Fixed the msgid and ipaddr types in the snaplog bundle.

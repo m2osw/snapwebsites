@@ -3029,19 +3029,27 @@ int list::generate_new_lists(QString const & site_key)
             //
             SNAP_LOG_WARNING("detected an invalid list link (")
                             (child_info.key())
-                            (" with name ")
-                            (child_info.destination_cell_name())
-                            (") from the list types (")
+                            (" with name \"")
+                            (child_info.source_cell_name())
+                            ("\") from the list types (")
                             (ipath.get_key())
                             ("), forcibly removing it.");
 
             // don't call the delete_link(), it deletes way too much for us
+            // plus the child_info.source_cell_name() is the full name
+            // of the link (with all decorations) and not just the basic
+            // name such as "list::type"... (so it could be something
+            // like "links::list::link-snap1-45#1")
             //links::link_info delete_info(info);
-            //delete_info.set_name(child_info.destination_cell_name());
+            //delete_info.set_name(child_info.source_cell_name());
             //links_plugin->delete_link(delete_info);
 
             libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_key()));
-            src_row->dropCell(child_info.destination_cell_name());
+            QString const source_cell_name(child_info.source_cell_name());
+            if(!source_cell_name.isEmpty())
+            {
+                src_row->dropCell(source_cell_name);
+            }
         }
     }
 

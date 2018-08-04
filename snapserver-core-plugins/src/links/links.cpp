@@ -1281,6 +1281,7 @@ bool link_context::next_link(link_info & info)
             {
                 // TODO: find the fastest way to determine the uniqueness?
                 //       (right now we do not read that information...)
+                info.set_source_cell_name(link_name);
 
                 // name is part of link_name after the namespace and before
                 // the unique number which starts with a '-'

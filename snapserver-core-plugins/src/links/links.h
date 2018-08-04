@@ -120,6 +120,10 @@ public:
         f_unique = unique;
         f_name = new_name;
     }
+    void set_source_cell_name(QString const & new_name)
+    {
+        f_source_cell_name = new_name;
+    }
     void set_destination_cell_name(QString const & new_name)
     {
         f_destination_cell_name = new_name;
@@ -143,6 +147,10 @@ public:
     }
     QString cell_name(link_info const & dst) const;
     QString cell_name(link_info const & dst, QString const & unique_number) const;
+    QString source_cell_name() const // WARNING: not always defined! (for now, only in next_link() of multi-link supports it)
+    {
+        return f_source_cell_name;
+    }
     QString destination_cell_name() const
     {
         return f_destination_cell_name;
@@ -179,6 +187,7 @@ private:
     QString                         f_name = QString();
     QString                         f_key = QString();
     snap_version::version_number_t  f_branch = snap_version::version_number_t();
+    QString                         f_source_cell_name = QString();
     QString                         f_destination_cell_name = QString();
 };
 
