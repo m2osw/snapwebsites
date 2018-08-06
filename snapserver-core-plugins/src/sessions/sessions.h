@@ -90,6 +90,8 @@ public:
     class session_info
     {
     public:
+        typedef std::shared_ptr<session_info>       pointer_t;
+
         enum class session_info_type_t : uint32_t
         {
             SESSION_INFO_SECURE,        // think PCI Compliant website (credit card payment, etc.)
@@ -131,6 +133,8 @@ public:
         void                set_administrative_login_limit(time_t time_limit);
         void                set_date(int64_t date);
         void                set_creation_date(int64_t date);
+
+        QString             generate_session_key();
 
         void                set_check_flags(check_flag_t flags);
         check_flag_t        add_check_flags(check_flag_t flags);
@@ -197,6 +201,7 @@ public:
     void                    save_session(session_info & info, bool const new_random);
     void                    load_session(QString const & session_id, session_info & info, bool use_once = true);
     bool                    session_exists(QString const & website_key, QString const & session_key);
+    bool                    destroy_session(session_info & info);
 
     void                    attach_to_session(session_info const & info, QString const & name, QString const & data);
     QString                 detach_from_session(session_info const & info, QString const & name);

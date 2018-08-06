@@ -315,6 +315,9 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_CORE_SITE_READY:
         return "core::site_ready";
 
+    case name_t::SNAP_NAME_CORE_SITE_SECURE:
+        return "core::site_secure";
+
     case name_t::SNAP_NAME_CORE_SITE_SHORT_NAME:
         return "core::site_short_name";
 

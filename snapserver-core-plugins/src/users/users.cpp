@@ -879,10 +879,10 @@ QString users::get_user_cookie_name()
         for(int i(0); i < (COOKIE_NAME_SIZE - 2); i += 3)
         {
             // we can generate 4 characters with every 3 bytes we read
-            int a(buf[i + 0] & 0x3F);
-            int b(buf[i + 1] & 0x3F);
-            int c(buf[i + 2] & 0x3F);
-            int d((buf[i + 0] >> 6) | ((buf[i + 1] >> 4) & 0x0C) | ((buf[i + 2] >> 2) & 0x30));
+            int       a(buf[i + 0] & 0x3F);
+            int const b(buf[i + 1] & 0x3F);
+            int const c(buf[i + 2] & 0x3F);
+            int const d((buf[i + 0] >> 6) | ((buf[i + 1] >> 4) & 0x0C) | ((buf[i + 2] >> 2) & 0x30));
             if(i == 0 && a >= 52)
             {
                 a &= 0x1F; // force a letter as character 0
@@ -927,6 +927,14 @@ QString users::get_user_cookie_name()
  */
 void users::on_process_cookies()
 {
+    // on the POST from the /login page, we are already logged in so
+    // there is no need for us to check anything here in that case
+    //
+    if(user_is_logged_in())
+    {
+        return;
+    }
+
     // prevent cookies on a set of method that do not require them
     //
     QString const method(f_snap->snapenv(get_name(snap::name_t::SNAP_NAME_CORE_REQUEST_METHOD)));
@@ -934,6 +942,7 @@ void users::on_process_cookies()
     || method == "TRACE")
     {
         // do not log the user on HEAD and TRACE methods
+        //
         return;
     }
 
@@ -948,11 +957,13 @@ void users::on_process_cookies()
     if(f_snap->cookie_is_defined(user_cookie_name))
     {
         // is that session a valid user session?
+        //
         QString const session_cookie(f_snap->cookie(user_cookie_name));
         if(load_login_session(session_cookie, *f_info, false) == LOGIN_STATUS_OK)
         {
             // this session qualifies as a log in session
             // so now verify the user
+            //
             QString const path(f_info->get_object_path());
             bool ok(false);
             identifier_t const id( path.mid(6).toLongLong(&ok) );
@@ -970,6 +981,7 @@ void users::on_process_cookies()
     }
 
     // complete reset?
+    //
     if(create_new_session)
     {
         // we may have some spurious data in the f_info structure
@@ -1006,12 +1018,18 @@ void users::on_process_cookies()
         if(uri.has_query_option(qs_hit))
         {
             // the user specified an action
+            //
             f_hit = uri.query_option(qs_hit);
             if(f_hit != get_name(name_t::SNAP_NAME_USERS_HIT_USER)
             && f_hit != get_name(name_t::SNAP_NAME_USERS_HIT_CHECK)
             && f_hit != get_name(name_t::SNAP_NAME_USERS_HIT_TRANSPARENT))
             {
-                SNAP_LOG_WARNING("received an unknown type of hit \"")(f_hit)("\", forcing to \"user\"");
+                // tainted query string
+                //
+                SNAP_LOG_WARNING("received an unknown type of hit \"")
+                                (f_hit)
+                                ("\", forcing to \"user\"");
+
                 f_hit = get_name(name_t::SNAP_NAME_USERS_HIT_USER);
             }
         }
@@ -1143,13 +1161,14 @@ void users::on_process_cookies()
     }
 
     // push new cookie info back to the browser
+    //
     http_cookie cookie(
             f_snap,
             user_cookie_name,
             QString("%1/%2").arg(f_info->get_session_key()).arg(f_info->get_session_random())
         );
     cookie.set_expire_in(f_info->get_time_to_live());
-    cookie.set_http_only(); // make it a tad bit safer
+    make_cookie_secure(cookie);
     f_snap->set_cookie(cookie);
 //std::cerr << "user session id [" << f_info->get_session_key() << "] [" << f_user_key << "]\n";
 
@@ -1157,10 +1176,12 @@ void users::on_process_cookies()
     {
         // make sure user locale/timezone get used on next
         // locale/timezone access
+        //
         locale::locale::instance()->reset_locale();
 
         // send a signal that the user is ready (this signal is also
         // sent when we have a valid cookie)
+        //
         logged_in_user_ready();
     }
 }
@@ -1238,21 +1259,27 @@ users::login_status_t users::load_login_session(QString const & session_cookie, 
 {
     login_status_t authenticated(LOGIN_STATUS_OK);
 
+    // get the session & random number from the cookie
+    //
     snap_string_list const parameters(session_cookie.split("/"));
     QString const session_key(parameters[0]);
     int random_value(-1);
     if(parameters.size() > 1)
     {
         bool ok(false);
-        random_value = parameters[1].toInt(&ok);
+        random_value = parameters[1].toInt(&ok, 10);
         if(!ok || random_value < 0)
         {
-            SNAP_LOG_INFO("cookie included an invalid random key, ")(parameters[1])(" is not a valid decimal number or is negative.");
+            SNAP_LOG_INFO("cookie included an invalid random key, ")
+                         (parameters[1])
+                         (" is not a valid decimal number or is negative.");
+
             authenticated |= LOGIN_STATUS_INVALID_RANDOM_NUMBER;
         }
     }
 
     // load the session in the specified info object
+    //
     sessions::sessions::instance()->load_session(session_key, info, false);
 
     // the session must be be valid (duh!)
@@ -1266,7 +1293,11 @@ users::login_status_t users::load_login_session(QString const & session_cookie, 
     if(session_type != sessions::sessions::session_info::session_info_type_t::SESSION_INFO_VALID
     && session_type != sessions::sessions::session_info::session_info_type_t::SESSION_INFO_OUT_OF_DATE)
     {
-        SNAP_LOG_INFO("cookie refused because session is not marked as valid, ")(static_cast<int>(session_type));
+        SNAP_LOG_INFO("cookie \"")
+                     (session_key)
+                     ("\" refused because session is not marked as valid, ")
+                     (static_cast<int>(session_type));
+
         authenticated |= LOGIN_STATUS_INVALID_SESSION;
     }
 
@@ -1282,7 +1313,11 @@ users::login_status_t users::load_login_session(QString const & session_cookie, 
     if(random_value >= 0
     && info.get_session_random() != random_value)
     {
-        SNAP_LOG_INFO("cookie would be refused because random key ")(random_value)(" does not match ")(info.get_session_random());
+        SNAP_LOG_INFO("cookie would be refused because random key ")
+                     (random_value)
+                     (" does not match ")
+                     (info.get_session_random());
+
         //authenticated |= LOGIN_STATUS_RANDOM_MISMATCH;
         //                       -- there should be a flag because
         //                          in many cases it kicks someone
@@ -1304,8 +1339,12 @@ users::login_status_t users::load_login_session(QString const & session_cookie, 
     //
     if(info.get_user_agent() != f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_HTTP_USER_AGENT)))
     {
-        SNAP_LOG_INFO("cookie refused because user agent \"")(f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_HTTP_USER_AGENT)))
-                        ("\" does not match \"")(f_info->get_user_agent())("\"");
+        SNAP_LOG_INFO("cookie refused because user agent \"")
+                     (f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_HTTP_USER_AGENT)))
+                     ("\" does not match \"")
+                     (info.get_user_agent())
+                     ("\"");
+
         authenticated |= LOGIN_STATUS_USER_AGENT_MISMATCH;
     }
 
@@ -1313,7 +1352,9 @@ users::login_status_t users::load_login_session(QString const & session_cookie, 
     QString const path(info.get_object_path());
     if(path.left(6) != user_info_t::get_full_anonymous_path())
     {
-        SNAP_LOG_INFO("cookie refused because the path does not start with \"/user/\", ")(path);
+        SNAP_LOG_INFO("cookie refused because the path does not start with \"/user/\", ")
+                     (path);
+
         authenticated |= LOGIN_STATUS_UNEXPECTED_PATH;
     }
 
@@ -1328,7 +1369,11 @@ users::login_status_t users::load_login_session(QString const & session_cookie, 
     if(check_time_limit
     && f_snap->get_start_time() >= info.get_time_limit())
     {
-        SNAP_LOG_INFO("cookie is acceptable but time limit is passed. Now: ")(f_snap->get_start_time())(" >= Limit: ")(info.get_time_limit());
+        SNAP_LOG_INFO("cookie is acceptable but time limit is passed. Now: ")
+                     (f_snap->get_start_time())
+                     (" >= Limit: ")
+                     (info.get_time_limit());
+
         authenticated |= LOGIN_STATUS_PASSED_LOGIN_LIMIT;
     }
 
@@ -1560,6 +1605,7 @@ void users::user_logout()
     if( !f_user_info.is_user() )
     {
         // just in case, make sure the flag is false
+        //
         f_user_logged_in = false;
         return;
     }
@@ -1572,24 +1618,29 @@ void users::user_logout()
     // the software is requesting to log the user out
     //
     // "cancel" the session
+    //
     f_info->set_object_path(user_info_t::get_full_anonymous_path());
 
     // extend the session even on logout
+    //
     int64_t const total_session_duration(get_total_session_duration());
     f_info->set_time_to_live(total_session_duration);
 
     // Save the date when the user logged out
+    //
     libdbproxy::value value;
     value.setInt64Value(f_snap->get_start_date());
     f_user_info.set_value(name_t::SNAP_NAME_USERS_LOGOUT_ON, value);
 
     // Save the user IP address when logged out
+    //
     value.setStringValue(f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_REMOTE_ADDR)));
     f_user_info.set_value(name_t::SNAP_NAME_USERS_LOGOUT_IP, value);
 
     sessions::sessions::instance()->save_session(*f_info, false);
 
     // Login session was destroyed so we really do not need it here anymore
+    //
     QString const last_login_session(f_user_info.get_value(get_name(name_t::SNAP_NAME_USERS_LOGIN_SESSION)).stringValue());
     if(last_login_session == f_info->get_session_key())
     {
@@ -1975,7 +2026,7 @@ void users::verify_user(content::path_info_t & ipath)
                 QString("%1/%2").arg(f_info->get_session_key()).arg(f_info->get_session_random())
             );
         cookie.set_expire_in(f_info->get_time_to_live());
-        cookie.set_http_only(); // make it a tad bit safer
+        make_cookie_secure(cookie);
         f_snap->set_cookie(cookie);
 
         // Save the date when the user logged out
@@ -2193,7 +2244,7 @@ void users::verify_user(content::path_info_t & ipath)
  * mechanism is used to log the user in his account.
  *
  * If the \p password parameter is empty, the system creates a user session
- * without verify the user password. This is the case where another
+ * without verifying the user password. This is the case where another
  * mechanism must have been used to properly log the user before calling
  * this function.
  *
@@ -2203,7 +2254,7 @@ void users::verify_user(content::path_info_t & ipath)
  * the login fails.
  *
  * \param[in] email  The user email address.
- * \param[in] password  The password to log the user in.
+ * \param[in] password  The password to log the user with.
  * \param[out] validation_required  Whether the user needs to validate his account.
  * \param[in] login_mode  The mode used to log in: full, verification.
  * \param[in] password_policy  The policy used to log the user in.
@@ -2312,6 +2363,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
                 // note that the status will not change until the user saves
                 // his new password so this redirection will happen again and
                 // again until the password gets changed
+                //
                 logged_info.force_password_change();
             }
             // ignore other statuses at this point
@@ -2466,7 +2518,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
                             libdbproxy::value login_redirect(f_snap->get_site_parameter(get_name(name_t::SNAP_NAME_USERS_LOGIN_REDIRECT)));
                             if(login_redirect.nullValue())
                             {
-                                // by default redirect to user profile
+                                // by default redirect to user's profile
                                 //
                                 logged_info.set_uri("user/me");
                             }
@@ -2507,6 +2559,53 @@ QString users::login_user(QString const & email, QString const & password, bool 
 }
 
 
+/** \brief Make the cookie secure on secure sites.
+ *
+ * If the site is marked as a secure site (i.e. a site that only runs on
+ * HTTPS), then the user cookie is to be marked as a secure cookie.
+ *
+ * Note that any other plugin that uses its own cookie (if absolutely
+ * required, because it should use the user cookie in most cases) can
+ * also call this function to mark their own cookie as secure when
+ * the website is marked as a secure website.
+ *
+ * The function also marks that cookie as Http-Only so JavaScript code
+ * can't access it. Note that this does not prevent JavaScript code to
+ * create it's own version of the cookie.
+ *
+ * \note
+ * The users plugin also sets the timeout of the cookie using the
+ * following code, but this function is not in charge so you can
+ * have your own timeout:
+ *
+ * \code
+ *      // f_info represents a user's session
+ *      //
+ *      cookie.set_expire_in(f_info->get_time_to_live());
+ * \endcode
+ *
+ * \param[in,out] cookie  The cookie to mark as secure if required.
+ */
+void users::make_cookie_secure(http_cookie & cookie)
+{
+    // prevent JavaScript from accessing the cookie
+    //
+    cookie.set_http_only();
+
+    // verify that the website is marked as a secure website
+    //
+    libdbproxy::value const secure_site(f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_SECURE)));
+    signed char const secure(secure_site.safeSignedCharValue());
+    if(secure)
+    {
+        // the website is always using HTTPS so we can mark the cookie
+        // as secure as a result
+        //
+        cookie.set_secure();
+    }
+}
+
+
 /** \brief Actually mark user as logged in.
  *
  * NEVER call that function to log a user in. This function is called
@@ -2521,6 +2620,23 @@ QString users::login_user(QString const & email, QString const & password, bool 
  */
 void users::create_logged_in_user_session( user_info_t const & user_info )
 {
+    sessions::sessions * sessions_plugin(sessions::sessions::instance());
+
+    // later we check the old session key with the "previous session key"
+    // so we need to have a copy of the old session before generating the
+    // new one
+    //
+    QString const old_session_key(f_info->get_session_key());
+
+    // this is a new session so we want to generate a new session key
+    // but first we have to destroy the old session in the database
+    //
+    sessions::sessions::session_info::session_info_type_t session_type(f_info->get_session_type());
+    sessions_plugin->destroy_session(*f_info);
+    f_info->set_session_type(sessions::sessions::session_info::session_info_type_t::SESSION_INFO_USER);
+    f_info->generate_session_key();
+    f_info->set_session_type(session_type);
+
     // log the user in by adding the correct object path
     // the other parameters were already defined in the
     // on_process_cookies() function
@@ -2545,7 +2661,7 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
 
     // save the info in the session
     //
-    sessions::sessions::instance()->save_session(*f_info, true); // force new random session number
+    sessions_plugin->save_session(*f_info, true); // force new random session number
 
     // add another parameter so we always know whether the user was
     // logged in before even if he logs out and becomes anonymous again
@@ -2558,9 +2674,15 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
     // we want to cancel it and also display a message to the
     // user about the fact
     //
+    // TODO: there could be many previous sessions, this should be a loop
+    //       and all the previous sessions should be removed not just one
+    //       (especially, you could have two people login in two different
+    //       browsers and it could happen in parallel to were we log the
+    //       user twice and don't notice the previous session)
+    //
     QString const previous_session(user_info.get_value(name_t::SNAP_NAME_USERS_LOGIN_SESSION).stringValue());
     if(!previous_session.isEmpty()
-    && previous_session != f_info->get_session_key())
+    && previous_session != old_session_key)
     {
         // Administrator can turn off that feature
         //
@@ -2584,10 +2706,10 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
             //            are detaching from "old_session" and not the
             //            current session
             //
-            NOTUSED(sessions::sessions::instance()->detach_from_session(old_session, get_name(name_t::SNAP_NAME_USERS_LOGIN_REFERRER)));
-            NOTUSED(sessions::sessions::instance()->detach_from_session(old_session, referrer_identifier(user_info)));
+            NOTUSED(sessions_plugin->detach_from_session(old_session, get_name(name_t::SNAP_NAME_USERS_LOGIN_REFERRER)));
+            NOTUSED(sessions_plugin->detach_from_session(old_session, referrer_identifier(user_info)));
 
-            sessions::sessions::instance()->save_session(old_session, false);
+            sessions_plugin->save_session(old_session, false);
 
             // if the user could have been logged in, emit a warning
             //
@@ -2601,7 +2723,7 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
                     "Two Sessions",
                     "We detected that you had another session opened. The other session was closed.",
                     QString("users::login_user() deleted old session \"%1\" for user \"%2\".")
-                                 .arg(old_session.get_session_key())
+                                 .arg(old_session_key)
                                  .arg(user_info.get_user_key())
                 );
 
@@ -2617,14 +2739,17 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
                 QString("%1/%2").arg(f_info->get_session_key()).arg(f_info->get_session_random())
             );
     cookie.set_expire_in(f_info->get_time_to_live());
-    cookie.set_http_only(); // make it a tad bit safer
+    make_cookie_secure(cookie);
     f_snap->set_cookie(cookie);
 
     // this is now the current user
+    //
     f_user_info = user_info;
-    // we just logged in so we are logged in
+
+    // we just logged in the user so he is logged in
     // (although the user_logged_in() signal could log the
     // user out if something is awry)
+    //
     f_user_logged_in = true;
 }
 

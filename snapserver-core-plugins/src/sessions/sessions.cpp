@@ -681,6 +681,119 @@ void sessions::session_info::set_creation_date(int64_t date)
 }
 
 
+/** \brief Generate a new session key.
+ *
+ * The session identifier used in your cookie is defined by this key along
+ * a random session number. The cookie name is defined in the `sites` table
+ * and is randomly generated too. The format of the cookie data is:
+ *
+ * \code
+ * <session key>/<random>
+ * \endcode
+ *
+ * In most cases, you do not want to change the session identifier. This gives
+ * you a way to keep track of the same user for a long time. However, any time
+ * a user logs in and to avoid session fixation, we need to change the
+ * identifier (even though we use an HTTP-Only Secure cookie, it does not
+ * prevent potential man in the middle problems.)
+ *
+ * Any even that you judge as being important enough that a new session
+ * identifier would make sense, call this function.
+ *
+ * To be able to call this function, the type of the session must be
+ * properly defined and be one of:
+ *
+ * \li session_info::session_info_type_t::SESSION_INFO_SECURE
+ * \li session_info::session_info_type_t::SESSION_INFO_USER
+ * \li session_info::session_info_type_t::SESSION_INFO_FORM
+ *
+ * A session you reload from the database will have a session type which
+ * shows as an error or "Valid". To reassign a new key to such a session,
+ * you must make sure to changing the session info type.
+ *
+ * \note
+ * The function resets the creation date to 0 since in effect, creation
+ * a new key is very much the same as creating a new session and therefore
+ * we need a new creation date and this is done by setting it to 0 here
+ * so it actually gets saved in the save_session() function.
+ *
+ * \important
+ * Note that the functionality may fail if the browser continues to use the
+ * old cookie for a few requests just after it sent the login and we replied
+ * for a new page. It may be required to sleep a little to make sure the
+ * browser doesn't continue to use the old session identifier. However, this
+ * should work as long as you make changes at the time an HTML page is being
+ * loaded (opposed to a time when an image, icon, sound, CSS, JS, etc.file
+ * gets loaded.)
+ *
+ * \warning
+ * The caller is responsible for canceling the existing session and
+ * saving the new session to the database. The session_info can't be
+ * responsible for such.
+ *
+ * \return The function returns a copy of the new session key.
+ */
+QString sessions::session_info::generate_session_key()
+{
+    // TODO? Need we set a specific OpenSSL random generator?
+    //       Although the default works for session identifiers
+    //       someone could change that under our feet (since it
+    //       looks like those functions have a global context)
+
+    int size(0);
+    switch(f_type)
+    {
+    case session_info::session_info_type_t::SESSION_INFO_SECURE:
+        size = 16;
+        break;
+
+    case session_info::session_info_type_t::SESSION_INFO_USER:
+        size = 8;
+        break;
+
+    case session_info::session_info_type_t::SESSION_INFO_FORM:
+        size = 4;
+        break;
+
+    default:
+        throw snap_logic_exception("generate_session_key() was used with an unexpected session type");
+
+    }
+
+    // the maximum size we currently use is 16 bytes (128 bits)
+    //
+    unsigned char buf[16];
+    if(static_cast<size_t>(size) > sizeof(buf))
+    {
+        throw std::logic_error("maximum buffer size not properly updated?");
+    }
+
+    // generate the session identifier
+    //
+    int const r(RAND_bytes(buf, size));
+    if(r != 1)
+    {
+        throw sessions_exception_no_random_data("RAND_bytes() could not generate a random number.");
+    }
+
+    // transform the random bytes to a string in hex
+    //
+    f_session_key.clear();
+    for(int i(0); i < size; ++i)
+    {
+        QString const hex(QString("%1").arg(static_cast<int>(buf[i]), 2, 16, static_cast<QChar>('0')));
+        f_session_key += hex;
+    }
+
+    // we are creating a new entry so the creation date has to be zero
+    // otherwise it won't save the SNAP_NAME_SESSIONS_CREATION_DATE
+    //
+    f_creation_date = 0;
+
+    return f_session_key;
+}
+
+
 /** \brief Force the specified checks for this session.
  *
  * Sessions support a certain number of checks that are not mandatory.
@@ -1290,6 +1403,7 @@ void sessions::clean_session_table(int64_t variables_timestamp)
         if(count == 0)
         {
             // no more sessions to process
+            //
             break;
         }
         libdbproxy::rows const rows(sessions_table->getRows());
@@ -1297,11 +1411,13 @@ void sessions::clean_session_table(int64_t variables_timestamp)
                 o != rows.end(); ++o)
         {
             // do not work on standalone websites
+            //
             if((*o)->exists(used_up))
             {
                 if((*o)->exists(id))
                 {
                     // read the value so that way we get the TTL
+                    //
                     libdbproxy::value value((*o)->getCell(id)->getValue());
                     value.setCharValue(1);
                     (*o)->getCell(used_up)->setValue(value);
@@ -1309,6 +1425,7 @@ void sessions::clean_session_table(int64_t variables_timestamp)
                 else
                 {
                     // this is the last field, delete it
+                    //
                     (*o)->dropCell(used_up);
                 }
             }
@@ -1409,6 +1526,7 @@ void sessions::on_generate_main_content(content::path_info_t & ipath, QDomElemen
 QString sessions::create_session(session_info & info)
 {
     // creating a session of less than 1 minute?!
+    //
     time_t const time_limit(info.get_time_limit());
     int32_t const time_to_live(info.get_time_to_live());
     int64_t const now(f_snap->get_start_time());
@@ -1420,68 +1538,36 @@ QString sessions::create_session(session_info & info)
 
     // make sure that we have at least one path defined
     // (this is our session key so it is required)
+    //
     if(info.get_page_path().isEmpty() && info.get_object_path().isEmpty())
     {
         throw sessions_exception_invalid_parameter("any session must have at least one path defined.");
     }
 
+    // there is always a user agent name and it can't be empty
+    //
     if(info.get_user_agent().isEmpty())
     {
         throw sessions_exception_invalid_parameter("all sessions must have a user agent specified.");
     }
 
+    // we need a creation date, we could put now, but your code should know
+    // how to do that before calling this function
+    //
     if(info.get_creation_date() != 0)
     {
         throw sessions_exception_invalid_parameter("the sessions plugin is the only one in charge of setting up the creation date of the session.");
     }
 
-    // TODO? Need we set a specific OpenSSL random generator?
-    //       Although the default works for session identifiers
-    //       someone could change that under our feet (since it
-    //       looks like those functions have a global context)
+    // generate a session key
+    //
+    QString const session_key(info.generate_session_key());
 
-    // the maximum size we currently use is 16 bytes (128 bits)
-    unsigned char buf[16];
-
-    int size(0);
-    switch(info.get_session_type())
-    {
-    case session_info::session_info_type_t::SESSION_INFO_SECURE:
-        size = 16;
-        break;
-
-    case session_info::session_info_type_t::SESSION_INFO_USER:
-        size = 8;
-        break;
-
-    case session_info::session_info_type_t::SESSION_INFO_FORM:
-        size = 4;
-        break;
-
-    default:
-        throw snap_logic_exception("used an undefined session type in create_session()");
-
-    }
-
-    // generate the session identifier
-    int const r(RAND_bytes(buf, size));
-    if(r != 1)
-    {
-        throw sessions_exception_no_random_data("RAND_bytes() could not generate a random number.");
-    }
-
-    // make the key specific to that website and append the session identifier
-    QString result;
-    for(int i(0); i < size; ++i)
-    {
-        QString const hex(QString("%1").arg(static_cast<int>(buf[i]), 2, 16, static_cast<QChar>('0')));
-        result += hex;
-    }
-    info.set_session_key(result);
-
+    // save in the sessions table
+    //
     save_session(info, true);
 
-    return result;
+    return session_key;
 }
 
 
@@ -1637,6 +1723,7 @@ void sessions::save_session(session_info & info, bool const new_random)
 void sessions::load_session(QString const & session_key, session_info & info, bool use_once)
 {
     // reset this info (although it is likely already brand new...)
+    //
     info = session_info();
 
     QString const key(f_snap->get_website_key() + "/" + session_key);
@@ -1646,6 +1733,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     {
         // if the key does not exist it was either tempered with
         // or the database already deleted it (i.e. it timed out)
+        //
+        SNAP_LOG_DEBUG("session [")(key)("] not found in session table.");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1656,11 +1745,14 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
         // XXX
         // if we get a problem here it is probably something else
         // than a missing row...
+        //
+        SNAP_LOG_DEBUG("could not read row for session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
 
     // save the key as it is not unlikely that the rest will work
+    //
     info.set_session_key(session_key);
 
     libdbproxy::value value;
@@ -1669,6 +1761,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.size() != sizeof(int32_t))
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the identifier (ID) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1678,6 +1772,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.nullValue())
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the plugin owner (PLUGIN_OWNER) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1699,6 +1795,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the check flag (CHECK_FLAG) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1708,6 +1806,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.size() != sizeof(int32_t))
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the time to live (TIME_TO_LIVE) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1717,6 +1817,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the time limit (TIME_LIMIT) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1726,6 +1828,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the login time (LOGIN_TIME) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1735,6 +1839,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the date (DATE) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1744,6 +1850,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.size() != sizeof(int64_t))
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the creation date (CREATION_DATE) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1753,6 +1861,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     if(value.size() != sizeof(int32_t))
     {
         // row timed out between calls
+        //
+        SNAP_LOG_DEBUG("could not read the random (RANDOM) of session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_MISSING);
         return;
     }
@@ -1767,6 +1877,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     libdbproxy::value used_up_value(row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->getValue());
     if(!used_up_value.nullValue())
     {
+        SNAP_LOG_DEBUG("could not read the used up (USED_UP) of session [")(key)("] is not null");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_USED_UP);
         return;
     }
@@ -1777,6 +1888,7 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
         // IMPORTANT NOTE:
         // As a side effect, since we just read values with a TTL
         // this 'value' variable already has the expected TTL!
+        //
         value.setCharValue(1);
         row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->setValue(value);
     }
@@ -1807,12 +1919,67 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
     }
     if(time_limit < now)
     {
+        SNAP_LOG_DEBUG("the session is out of date (OUT_OF_DATE) for session [")(key)("]");
         info.set_session_type(session_info::session_info_type_t::SESSION_INFO_OUT_OF_DATE);
         return;
     }
 
     // only case when it is 100% valid
+    //
     info.set_session_type(session_info::session_info_type_t::SESSION_INFO_VALID);
+}
+
+
+/** \brief Destroy the specified session.
+ *
+ * The function adds a "sessions::used_up" field to the session in the
+ * database. This "breaks" the session and trying to reuse it later
+ * won't work. The session will be gone.
+ *
+ * The session key will be used up until it times out, though.
+ *
+ * \note
+ * If the session doesn't exist in the database, the used_up field is
+ * not added to not waste time (although that means that sessin identifier
+ * can be reused immediately.)
+ *
+ * \warning
+ * The session type is changed to SESSION_INFO_USED_UP. If you want to
+ * reuse the session after this call, make sure to change that type
+ * back to what you need.
+ *
+ * \param[in] info  The session to destroy.
+ *
+ * \return true when a used_up field is added, false otherwise.
+ */
+bool sessions::destroy_session(session_info & info)
+{
+    QString const key(f_snap->get_website_key() + "/" + info.get_session_key());
+
+    libdbproxy::table::pointer_t table(get_sessions_table());
+    if(!table->exists(key))
+    {
+        // that session doesn't even exist
+        //
+        return false;
+    }
+
+    libdbproxy::row::pointer_t row(table->getRow(key));
+    if(!row)
+    {
+        // that session doesn't have a row afterall
+        //
+        return false;
+    }
+
+    libdbproxy::value value;
+    value.setTtl(info.get_ttl(f_snap->get_start_time()));
+    value.setCharValue(1);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->setValue(value);
+
+    info.set_session_type(session_info::session_info_type_t::SESSION_INFO_USED_UP);
+
+    return true;
 }
 
 
@@ -1944,9 +2111,9 @@ QString sessions::detach_from_session(session_info const & info, QString const &
 
 /** \brief Get a session variable and leave it in the session.
  *
- * Variables that have to leave across many accesses should be read using
- * the get_from_session() function which reads the variable but does not
- * delete it.
+ * Variables that have to live across many user accesses should be read
+ * using the get_from_session() function which reads the variable but does
+ * not delete it.
  *
  * \param[in] info  The key of the session to read from.
  * \param[in] name  The name of the cell where the data was saved.
@@ -1960,16 +2127,17 @@ QString sessions::get_from_session(session_info const & info, QString const & na
     libdbproxy::table::pointer_t table(get_sessions_table());
     if(!table->exists(key))
     {
-        return "";
+        return QString();
     }
 
     libdbproxy::row::pointer_t row(table->getRow(key));
     if(!row)
     {
-        return "";
+        return QString();
     }
 
     // if not defined, we will get an empty string which is what is expected
+    //
     libdbproxy::value value(row->getCell(name)->getValue());
 
     return value.stringValue();

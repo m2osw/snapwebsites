@@ -2953,6 +2953,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
     {
         // this is a bug! die() on the spot
         // (here we ARE in the child process!)
+        //
         die(
             http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE,
             "Server Bug",
@@ -2964,8 +2965,10 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
     if(f_child_pid != 0)
     {
         // this is a bug!
+        //
         // WARNING: At this point we CANNOT call the die() function
         //          (we are not the child and have the wrong socket)
+        //
         SNAP_LOG_FATAL("BUG: snap_child::process() called when the process is still in use.");
         return false;
     }
@@ -3008,11 +3011,13 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
 
         // keep that one in release so we can at least know of all
         // the hits to the server
+        //
         output_session_log( "new" );
 
         // now we connect to the DB
         // move all possible work that does not required the DB before
         // this line so we avoid a network connection altogether
+        //
         NOTUSED(connect_cassandra(true));  // since we pass 'true', the returned value will always be true
 
         canonicalize_domain();      // using the URI, find the domain core::rules and start the canonicalization process
@@ -3020,6 +3025,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
 
         // check whether this website has a redirect and apply it if necessary
         // (not a full 301, just show site B instead of site A)
+        //
         site_redirect();
 
         // start the plugins and their initialization
@@ -3027,6 +3033,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         snap_string_list list_of_plugins(init_plugins(true));
 
         // run updates if any
+        //
         if(f_is_being_initialized)
         {
             update_plugins(list_of_plugins);
@@ -3069,6 +3076,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         canonicalize_options();    // find the language, branch, and revision specified by the user
 
         // finally, "execute" the page being accessed
+        //
         execute();
 
         // we could delete ourselves but really only the socket is an
@@ -6817,6 +6825,7 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
             QString const html(error_body(err_code, err_name, err_description));
 
             // in case there are any cookies, send them along too
+            //
             output_result(HEADER_MODE_ERROR, html.toUtf8());
         }
     }
@@ -7527,8 +7536,10 @@ void snap_child::output_cookies()
         {
             // the to_http_header() ensures only ASCII characters
             // are used so we can use toLatin1() below
+            //
             QString cookie_header(it.value().to_http_header() + "\n");
-//printf("snap session = [%s]?\n", cookie_header.toLatin1().data());
+//SNAP_LOG_DEBUG("snap child output cookie = [")(cookie_header.toLatin1().data())("]?");
+
             write(cookie_header.toLatin1().data());
         }
     }
@@ -8128,6 +8139,7 @@ void snap_child::execute()
 {
     // prepare the output buffer
     // reserver 64Kb at once to avoid many tiny realloc()
+    //
     f_output.buffer().reserve(64 * 1024);
     f_output.open(QIODevice::ReadWrite);
 
@@ -8135,6 +8147,7 @@ void snap_child::execute()
     //      we should force switch to 1.1 with a 101 response about here
     // TBD Apache may already take care of such things
     // TBD It may also be used to switch between HTTP and SHTTP
+    //
     //if(snapenv("SERVER_PROTOCOL").toUpper() == "HTTP/1.0")
     //{
     //    // if the Upgrade header was specified check whether it includes
@@ -8161,13 +8174,16 @@ void snap_child::execute()
     // Status is set to HTTP/1.1 or 1.0 depending on the incoming protocol
     // DO NOT PUT A STATUS OF 200 FOR FastCGI TAKES CARE OF IT
     // Sending a status of 200 to Apache results in a status of 500 Internal Server Error
+    //
     //set_header("Status", QString("%1 200 OK").arg(snapenv("SERVER_PROTOCOL")));
 
     // Normally Apache overwrites this information
+    //
     set_header("Server", "Snap! C++", HEADER_MODE_EVERYWHERE);
 
     // The Date field is added by Apache automatically
     // adding it here generates a 500 Internal Server Error
+    //
     //QDateTime date(QDateTime().toUTC());
     //date.setTime_t(f_start_date / 1000000); // micro-seconds
     //set_header("Date", date.toString("ddd, dd MMM yyyy hh:mm:ss' GMT'"));
@@ -8181,14 +8197,17 @@ void snap_child::execute()
     f_page_cache_control.set_must_revalidate(true);
 
     // We are snapwebsites
+    //
     set_header(get_name(name_t::SNAP_NAME_CORE_X_POWERED_BY_HEADER), "snapwebsites", HEADER_MODE_EVERYWHERE);
 
-    // By default we expect [X]HTML in the output
+    // By default we expect [X]HTML 5 in the output
+    //
     set_header(get_name(name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER), "text/html; charset=utf-8", HEADER_MODE_EVERYWHERE);
 
     // XXX I moved that up here from just before sending the output because
     //     it seems that all answers should use this flag (because even pages
     //     that represent errors may end up reusing the same connection.)
+    //
     QString const connection(snapenv("HTTP_CONNECTION"));
 //std::cout << "HTTP_CONNECTION=[" << connection << "]\n";
     if(connection.toLower() == "keep-alive")
@@ -8242,6 +8261,7 @@ void snap_child::execute()
         // path::primary_owner of the content that match f_uri.path() and
         // then calls the corresponding on_path_execute() function of that
         // primary owner
+        //
         server->execute(f_uri.path());
 
         // TODO: look into moving this call to the exit() function since
@@ -8253,6 +8273,7 @@ void snap_child::execute()
         // not make it in this session (i.e. a message that was posted
         // after messages were added to the current page, or this page
         // did not make use of the messages that were detached earlier)
+        //
         server->attach_to_session();
 
         if(f_output.buffer().size() == 0)

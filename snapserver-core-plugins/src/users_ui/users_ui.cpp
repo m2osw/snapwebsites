@@ -824,7 +824,7 @@ void users_ui::show_user(content::path_info_t & ipath, QDomElement & page, QDomE
 {
     QString user_path(ipath.get_cpath());
     int64_t identifier(0);
-    QString user_id(user_path.mid(5));
+    QString const user_id(user_path.mid(5));
     if( user_id == "me" || user_id == "password" )
     {
         users::users * users_plugin(users::users::instance());

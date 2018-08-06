@@ -479,6 +479,7 @@ public:
     bool                    is_transparent_hit();
     bool                    authenticated_user(identifier_t const id, sessions::sessions::session_info * info);
     void                    create_logged_in_user_session(user_info_t const & user_info);
+    void                    make_cookie_secure(http_cookie & cookie);
     void                    user_logout();
 
     QString                 get_user_email(QString const & user_path) const;
@@ -509,8 +510,8 @@ private:
     bool                    f_administrative_logged_in = false; // user is logged in and has administrative rights if this is true
     bool                    f_has_user_messages = false;        // whether there were messages when on_detach_from_session() was called
     QString                 f_user_changing_password_key = QString();       // not quite logged in user
-    std::shared_ptr<sessions::sessions::session_info>
-                            f_info = std::shared_ptr<sessions::sessions::session_info>();
+    sessions::sessions::session_info::pointer_t
+                            f_info = sessions::sessions::session_info::pointer_t();
                                                                 // user, logged in or anonymous, cookie related information
 };
 
