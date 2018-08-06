@@ -1,3 +1,11 @@
+snapwebsites (1.5.110.0~xenial) xenial; urgency=high
+
+  * Added the core::site_secure flag. If 1, then the user cookie is made secure.
+  * Regenerate the cookie key on a login to avoid session fixations.
+  * Added a destroy_session() function to delete the old session.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon,  6 Aug 2018 02:49:19 -0700
+
 snapwebsites (1.5.109.0~xenial) xenial; urgency=high
 
   * Fixed the multi-link destination cell name, we have to use "link_name".
