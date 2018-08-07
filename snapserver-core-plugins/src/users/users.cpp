@@ -2596,7 +2596,7 @@ void users::make_cookie_secure(http_cookie & cookie)
     //
     libdbproxy::value const secure_site(f_snap->snapenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_SECURE)));
     signed char const secure(secure_site.safeSignedCharValue());
-    if(secure)
+    if(secure != 0)
     {
         // the website is always using HTTPS so we can mark the cookie
         // as secure as a result
