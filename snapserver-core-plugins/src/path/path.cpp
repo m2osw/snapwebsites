@@ -1071,11 +1071,50 @@ bool path::check_for_redirect_impl(content::path_info_t & ipath)
                 //       the destination; if so then do the redirect,
                 //       otherwise there is no need to redirect
                 //
-                f_snap->page_redirect(moved_ipath.get_key(),
-                            snap_child::http_code_t::HTTP_CODE_MOVED_PERMANENTLY,
-                            "Redirect to the new version of this page.",
-                            QString("This page (%1) was moved so we are redirecting this user to the new location (%2).")
-                                    .arg(ipath.get_key()).arg(moved_ipath.get_key()));
+                // TODO: define the 24h lapse (86400LL) before the 301
+                //       in the server.conf file?
+                //
+                libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
+                int64_t const start_date(f_snap->get_start_date());
+                int64_t const last_changed(content_table
+                                            ->getRow(moved_ipath.get_key())
+                                            ->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_STATUS_CHANGED))
+                                            ->getValue()
+                                            .int64Value());
+                if(last_changed + 86400LL * 1000000LL < start_date) // at least 24 hours?
+                {
+                    // tweak caches for a 301 to full caching
+                    //
+                    // since this is a MOVED we will always do a 301... although
+                    // we can cache for just 1 month or so instead of 1 year
+                    //
+                    cache_control_settings & server_cache(f_snap->server_cache_control());
+                    server_cache.set_no_store(false);
+                    server_cache.set_must_revalidate(false);
+                    server_cache.set_max_age(86400 * 30); // 1 day x 30 in seconds (TBD transform to a value one can tweak in our .conf?)
+
+                    cache_control_settings & page_cache(f_snap->page_cache_control());
+                    page_cache.set_no_store(false);
+                    page_cache.set_must_revalidate(false);
+                    page_cache.set_max_age(86400 * 30); // 1 day x 30 in seconds (TBD transform to a value one can tweak in our .conf?)
+                    //page_cache.set_public(true); -- TBD: we may need to do this here as we would not know later whether this is public or not
+
+                    f_snap->page_redirect(moved_ipath.get_key(),
+                                snap_child::http_code_t::HTTP_CODE_MOVED_PERMANENTLY,
+                                "Redirect to the new version of this page.",
+                                QString("This page (%1) was moved so we are redirecting this user to the new location (%2).")
+                                        .arg(ipath.get_key()).arg(moved_ipath.get_key()));
+                }
+                else
+                {
+                    // it was less than 24h so we use a 302 instead
+                    //
+                    f_snap->page_redirect(moved_ipath.get_key(),
+                                snap_child::http_code_t::HTTP_CODE_FOUND,
+                                "Redirect to the new version of this page.",
+                                QString("This page (%1) was moved so we are redirecting this user to the new location (%2). At this point we are using a 302 Found to avoid caching and because the move has happened less than 24h ago.")
+                                        .arg(ipath.get_key()).arg(moved_ipath.get_key()));
+                }
                 NOTREACHED();
             }
             // else -- TODO: if the destination status is MOVED, we can process it too!

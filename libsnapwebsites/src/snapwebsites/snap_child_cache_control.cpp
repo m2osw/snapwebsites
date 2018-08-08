@@ -44,7 +44,14 @@ namespace snap
  * being said, I don't see how the user could tweak the browser
  * to do such a thing.
  *
+ * \note
+ * This returns a constant cache_control_settings object because there
+ * is no reason for anyone to modify this value.
+ *
  * \return A constant reference to the client cache control info.
+ *
+ * \sa server_cache_control()
+ * \sa page_cache_control()
  */
 cache_control_settings const & snap_child::client_cache_control() const
 {
@@ -63,7 +70,21 @@ cache_control_settings const & snap_child::client_cache_control() const
  * include values, the smallest value should be kept. You can do so
  * using the update_...() functions.
  *
- * \return A constant reference to the client cache control info.
+ * \todo
+ * Right now there is no real priority between the server and page
+ * settings. I think the page should have priority, but that's
+ * complicated to know what that means... unless we add a flag for
+ * each field to know whether someone changed that field or not
+ * (if changed in the page, use that field and totally ignore the
+ * server field.) The server field is then checked and used no matter
+ * what.
+ *
+ * See the attachment.cpp and path.cpp files (plugins) for use examples.
+ *
+ * \return A reference to the server cache control info.
+ *
+ * \sa page_cache_control()
+ * \sa client_cache_control()
  */
 cache_control_settings & snap_child::server_cache_control()
 {
@@ -71,21 +92,35 @@ cache_control_settings & snap_child::server_cache_control()
 }
 
 
-/** \brief Retrieve a reference tot he Cache-Control data from the client.
+/** \brief Retrieve a reference to the Cache-Control data from the page.
  *
- * The client has the possibility to send the server a Cache-Control
- * field. This function can be used to retrieve a reference to that
- * data. It is somewhat complicated to convert all the fields of
- * the Cache-Control field so it is done by the snap_child object
- * in cache_control_settings objects.
+ * The page has the ability to have its own Cache-Control settings. This
+ * function is used to retrieve a reference to that cache data and tweak it.
  *
- * In most cases, plugins are only interested by 'max-stale' and
- * 'min-fresh' if they deal with the cache. The 'no-transform'
- * may be useful to download the original of a document, that
- * being said, I don't see how the user could tweak the browser
- * to do such a thing.
+ * It is rather complicated to properly handle all the Cache-Control fields
+ * so it is done by the snap_child and cache_control_settings objects.
  *
- * \return A constant reference to the client cache control info.
+ * This control settings are usually given priority over the server cache
+ * control settings since they are specific to a given page.
+ *
+ * If you are programming a plugin that control caches server wide,
+ * then you want to use the server_cache_control() instead.
+ *
+ * \todo
+ * Right now there is no real priority between the server and page
+ * settings. I think the page should have priority, but that's
+ * complicated to know what that means... unless we add a flag for
+ * each field to know whether someone changed that field or not
+ * (if changed in the page, use that field and totally ignore the
+ * server field.) The server field is then checked and used no matter
+ * what.
+ *
+ * See the attachment.cpp and path.cpp files (plugins) for use examples.
+ *
+ * \return A reference to the page cache control info.
+ *
+ * \sa server_cache_control()
+ * \sa client_cache_control()
  */
 cache_control_settings & snap_child::page_cache_control()
 {
@@ -394,9 +429,11 @@ void snap_child::set_cache_control()
         set_header("Expires", "Sat,  1 Jan 2000 00:00:00 GMT", HEADER_MODE_EVERYWHERE);
 
         // I put all the possible "do not cache anything" in this case
+        //
         cache_control_fields << "no-cache";
 
         // put no-store only if specified somewhere (client, page, plugins)
+        //
         if(f_client_cache_control.get_no_store()
         || f_page_cache_control.get_no_store()
         || f_server_cache_control.get_no_store())
@@ -405,6 +442,7 @@ void snap_child::set_cache_control()
         }
 
         // put must-revalidate if specified by page or plugins
+        //
         if(f_page_cache_control.get_must_revalidate()
         || f_server_cache_control.get_must_revalidate())
         {
@@ -412,6 +450,7 @@ void snap_child::set_cache_control()
         }
 
         // this is to make sure IE understands that it is not to cache anything
+        //
         cache_control_fields << "post-check=0"; // IE special background processing
         cache_control_fields << "pre-check=0";  // IE special "really too late" flag
 
@@ -446,6 +485,8 @@ void snap_child::set_cache_control()
         //cache_control_fields << QString("pre-check=%1").arg(max_age);
 
         // choose between public and private (or neither)
+        // private has priority over public (obviously?!)
+        //
         if(f_page_cache_control.get_private()
         || f_server_cache_control.get_private())
         {
@@ -464,7 +505,8 @@ void snap_child::set_cache_control()
         // IMPORTANT NOTE: here max_age cannot be 0 or -1
         //
         int64_t const s_maxage(f_page_cache_control.minimum(f_page_cache_control.get_s_maxage(), f_server_cache_control.get_s_maxage()));
-        if(s_maxage != cache_control_settings::IGNORE_VALUE && s_maxage < max_age)
+        if(s_maxage != cache_control_settings::IGNORE_VALUE
+        && s_maxage < max_age)
         {
             // request for intermediate proxies to not cache data for more
             // than the specified value; we do not send this header if
@@ -489,14 +531,17 @@ void snap_child::set_cache_control()
             // if we don't add must-revalidate, we may instead
             // add proxy-revalidate which asks the proxy cache
             // to always revalidate
+            //
             cache_control_fields << "proxy-revalidate";
             public_data = false;
         }
 
         // so is the data considered public for HTTP/1.0?
+        //
         if(public_data)
         {
             // make sure that the Pragma is not defined
+            //
             set_header("Pragma", "", HEADER_MODE_EVERYWHERE);
 
             // use our start date (which is converted from micro-seconds

@@ -16,6 +16,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /** \file
+ * \brief Handle short URLs on a Snap! website.
  *
  * The shorturl plugin is used to generate URIs that are as short as
  * possible for any one page you create on your website. These short
@@ -333,6 +334,16 @@ void shorturl::on_check_for_redirect(content::path_info_t & ipath)
             //       shorturl plugin so an administrator can see who
             //       used which shorturl
 
+            cache_control_settings & server_cache(f_snap->server_cache_control());
+            server_cache.set_no_store(false);
+            server_cache.set_must_revalidate(false);
+            server_cache.set_max_age(cache_control_settings::AGE_MAXIMUM);
+
+            cache_control_settings & page_cache(f_snap->page_cache_control());
+            page_cache.set_no_store(false);
+            page_cache.set_must_revalidate(false);
+            page_cache.set_max_age(cache_control_settings::AGE_MAXIMUM);
+
             // redirect the user
             //
             http_link link(f_snap, ipath.get_key().toUtf8().data(), "shortlink");
@@ -341,7 +352,12 @@ void shorturl::on_check_for_redirect(content::path_info_t & ipath)
 
             // SEO wise, using HTTP_CODE_FOUND (and probably HTTP_CODE_SEE_OTHER)
             // is not as good as HTTP_CODE_MOVED_PERMANENTLY...
-            f_snap->page_redirect(url, snap_child::http_code_t::HTTP_CODE_MOVED_PERMANENTLY);
+            f_snap->page_redirect(url,
+                                snap_child::http_code_t::HTTP_CODE_MOVED_PERMANENTLY,
+                                "Redirect from the short URL to the actual page.",
+                                QString("This URL (%1) represents a short URL, redirecting to the actual page (%2).")
+                                        .arg(ipath.get_key())
+                                        .arg(url));
             NOTREACHED();
         }
 

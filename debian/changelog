@@ -1,3 +1,12 @@
+snapwebsites (1.5.112.0~xenial) xenial; urgency=high
+
+  * Change 301's so caching is turned ON (so browsers don't have to hit
+    the server over and over again on those.)
+  * Changed the 301 to a 302 when a page was moved less than 24h ago.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  7 Aug 2018 21:33:33 -0700
+
 snapwebsites (1.5.111.0~xenial) xenial; urgency=high
 
   * Set the type of core::site_secure flag to int8.

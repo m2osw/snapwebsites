@@ -215,8 +215,6 @@ SNAP_PLUGIN_EXTENSION_START(content)
  * \sa set_status()
  */
 path_info_t::status_t::status_t()
-    //: f_error(error_t::NO_ERROR)
-    //, f_state(state_t::UNKNOWN_STATE)
 {
 }
 
@@ -236,8 +234,6 @@ path_info_t::status_t::status_t()
  * \sa set_status()
  */
 path_info_t::status_t::status_t(status_type current_status)
-    //: f_error(error_t::NO_ERROR)
-    //, f_state(state_t::UNKNOWN_STATE)
 {
     set_status(current_status);
 }
@@ -281,6 +277,7 @@ void path_info_t::status_t::set_status(status_type current_status)
     //case state_t::CREATE:           // this state is never saved
     default:
         // any other status is not understood by this version of snap
+        //
         f_error = error_t::UNSUPPORTED;
         return;
 

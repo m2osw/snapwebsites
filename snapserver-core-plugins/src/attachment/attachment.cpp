@@ -575,7 +575,7 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
             //
             {
                 // this is considered a valid entry so we can setup the
-                // cache to last "forever"; a script with its version
+                // cache to last "forever"; a script with a specific version
                 // NEVER changes; you always have to bump the version
                 // to get the latest changes
                 //

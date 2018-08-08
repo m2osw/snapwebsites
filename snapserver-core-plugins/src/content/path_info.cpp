@@ -504,17 +504,31 @@ path_info_t::status_t path_info_t::get_status() const
             // page not being created yet
             //
             result.set_error(status_t::error_t::UNDEFINED);
+
+            // TODO: add the page to some form of journal which will check
+            //       that page again later and if the status is still
+            //       undefined we need to act one way or the other (i.e. add
+            //       the status or destroy the page)
         }
         else
         {
             // page is being created now
             //
             result.reset_state(status_t::state_t::CREATE);
+
+            // TODO: add the page to some form of journal which will check
+            //       that page again later and if the status is still
+            //       undefined we need to act one way or the other (i.e. add
+            //       the status or destroy the page)
         }
         return result;
     }
 
     // we have a status
+    //
+    // the validity of that status number is checked by the
+    // set_status() function (See switch())
+    //
     result.set_status(static_cast<status_t::status_type>(value.uint32Value()));
 
     return result;

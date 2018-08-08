@@ -7324,11 +7324,13 @@ void snap_child::output_headers(header_mode_t modes)
     // The Cache-Control information are not output until here because
     // we have a couple of settings (page and server) and it is just
     // way to complicated to recompute the correct caches each time
+    //
     set_cache_control();
 
     // Output the status first (we may want to order the HTTP header
     // fields by type and output them ordered by type as defined in
     // the HTTP reference chapter 4.2)
+    //
     if(has_header(get_name(name_t::SNAP_NAME_CORE_STATUS_HEADER)) && (f_header["status"].f_modes & modes) != 0)
     {
         // If status is defined, it should not be 200
@@ -7336,6 +7338,7 @@ void snap_child::output_headers(header_mode_t modes)
     }
 
     // Now output all the other headers except the cookies
+    //
     for(header_map_t::const_iterator it(f_header.begin());
                                      it != f_header.end();
                                      ++it)
