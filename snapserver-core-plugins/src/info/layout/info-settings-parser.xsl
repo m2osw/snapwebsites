@@ -99,6 +99,33 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						</div>
 					</fieldset>
 
+					<fieldset class="test-site">
+						<legend>Site Setup</legend>
+
+						<!-- canonical domain widget -->
+						<div class="editor-block">
+							<label for="canonical_domain_widget" class="editor-title">Canonical Domain:</label>
+							<xsl:copy-of select="page/body/info/site_setup/canonical_domain/node()"/>
+						</div>
+
+						<!-- site secure widget -->
+						<div class="editor-block">
+							<xsl:copy-of select="page/body/info/site_setup/site_secure/node()"/>
+							<br/>
+							<p>Please make sure that the Site Setup / Canonical Domain is defined when this flag is set.</p>
+						</div>
+					</fieldset>
+
+					<fieldset class="test-site">
+						<legend>Test Site</legend>
+
+						<!-- show home widget -->
+						<div class="editor-block">
+							<xsl:copy-of select="page/body/info/test_site/test_site/node()"/>
+							<br/>
+							<p>Please make sure that the Site Setup / Canonical Domain is defined when this flag is set.</p>
+						</div>
+					</fieldset>
 				</div>
 			</div>
 		</output>

@@ -1,3 +1,9 @@
+snapwebsites (1.5.113.0~xenial) xenial; urgency=high
+
+  * Added capability to edit various core::... 
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  8 Aug 2018 00:53:07 -0700
+
 snapwebsites (1.5.112.0~xenial) xenial; urgency=high
 
   * Change 301's so caching is turned ON (so browsers don't have to hit

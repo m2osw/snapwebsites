@@ -174,7 +174,7 @@ int64_t info::do_update(int64_t last_updated)
 {
     SNAP_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 4, 7, 1, 45, 41, content_update);
+    SNAP_PLUGIN_UPDATE(2018, 8, 7, 22, 56, 5, content_update);
 
     SNAP_PLUGIN_UPDATE_EXIT();
 }
@@ -317,6 +317,7 @@ void info::on_generate_page_content(content::path_info_t & ipath, QDomElement & 
 void info::on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
     // our settings pages are like any standard pages
+    //
     output::output::instance()->on_generate_main_content(ipath, page, body);
 }
 
@@ -352,6 +353,15 @@ void info::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
 
     value = settings_row->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL))->getValue();
     f_snap->set_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_ADMINISTRATOR_EMAIL), value);
+
+    value = settings_row->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_CANONICAL_DOMAIN))->getValue();
+    f_snap->set_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_CANONICAL_DOMAIN), value);
+
+    value = settings_row->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_SECURE))->getValue();
+    f_snap->set_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_SITE_SECURE), value);
+
+    value = settings_row->getCell(snap::get_name(snap::name_t::SNAP_NAME_CORE_TEST_SITE))->getValue();
+    f_snap->set_site_parameter(snap::get_name(snap::name_t::SNAP_NAME_CORE_TEST_SITE), value);
 }
 
 

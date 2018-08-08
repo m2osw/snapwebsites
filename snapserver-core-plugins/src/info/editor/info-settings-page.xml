@@ -30,6 +30,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     <tabindex refid="breadcrumbs_home_label"/>
     <tabindex refid="show_home"/>
     <tabindex refid="show_current_page"/>
+    <tabindex refid="canonical_domain"/>
+    <tabindex refid="site_secure"/>
+    <tabindex refid="test_site"/>
   </taborder>
 
   <widget id="editor-session" type="hidden" field="editor::session" path="editor/session">
@@ -78,6 +81,31 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     <tooltip>If checked, then show the Current Page URL in your breadcrumbs (note that the current page is always included, it gets hidden using CSS.)</tooltip>
     <help>Help</help>
     <value>1</value>
+  </widget>
+
+  <!-- Site Setup -->
+  <widget id="canonical_domain" type="line-edit" field="core::canonical_domain" path="info/site_setup/canonical_domain" no-toolbar="no-toolbar" auto-save="string">
+    <tooltip>Enter the canonical domain name, including the protocol. This is particularly important for test sites to sent search engines to the official website.</tooltip>
+    <help>Help</help>
+    <background-value>Canonical Domain</background-value>
+  </widget>
+  <widget id="site_secure" type="checkmark" field="core::site_secure" path="info/site_setup/site_secure" auto-save="int8">
+    <label>Mark Site as Only Secure (If all pages must be connected using HTTPS)</label>
+    <tooltip>Make sure to mark the site as Secure if all pages are HTTPS. This will
+      force the user cookie to be secure.</tooltip>
+    <help>Help</help>
+    <value>0</value>
+  </widget>
+
+  <!-- Test Site -->
+  <widget id="test_site" type="checkmark" field="core::test_site" path="info/test_site/test_site" auto-save="int8">
+    <label>Test Site (ONLY FOR TEST SITES, MAKES YOUR SITE INVISIBLE IN SEARCH ENGINES)</label>
+    <tooltip>Select "Test Site" ONLY FOR TEST SITES. This changes the site to make
+      it invisible. It will NOT be indexed in any decent search engines, especially
+      those that follow the rules such as Google, Yahoo!, Bing, Yandex,
+      etc.</tooltip>
+    <help>Help</help>
+    <value>0</value>
   </widget>
 
 </editor-form>
