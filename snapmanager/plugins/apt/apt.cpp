@@ -397,7 +397,7 @@ bool apt::display_value ( QDomElement parent
                                                        , s.get_value()
                                                        , "<p>Available options:</p>"
                                                        " <b>none</b>, <b>stable</b>, <b>unstable</b>, or <b><i>codename</i></b>"
-                                                       ", where <i>codename</i> any the name of the distribution"
+                                                       ", where <i>codename</i> is the name of the distribution"
                                                        ", or <b>none</b> to remove the pin entirely."
                                                        ));
         f.add_widget(field);

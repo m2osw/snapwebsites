@@ -1,3 +1,13 @@
+snapwebsites (1.5.114.0~xenial) xenial; urgency=high
+
+  * Added another try/catch to clean a list. A link could have been created
+    between a page and the list-type taxonomy type, that link was not being
+    cleaned up automatically.
+  * Fixed various bundle descriptions.
+  * Fixed the mkdir of the /etc/rkhunter.d to use -p in case it already exists.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  8 Aug 2018 18:20:22 -0700
+
 snapwebsites (1.5.113.0~xenial) xenial; urgency=high
 
   * Added capability to edit various core::... 

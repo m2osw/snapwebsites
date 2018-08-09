@@ -308,7 +308,10 @@ public:
     void                set_start_date_offset(int64_t offset_us);
     int64_t             get_start_date_offset() const;
 
-    int                 generate_list_for_page(content::path_info_t & page_key, content::path_info_t & list_ipath, int64_t update_request_time);
+    int                 generate_list_for_page(content::path_info_t & page_key
+                                             , content::path_info_t & list_ipath
+                                             , int64_t update_request_time
+                                             , links::link_info * child_info = nullptr);
 
     list_item_vector_t  read_list(content::path_info_t & ipath, int start, int count);
     QString             generate_list(content::path_info_t & ipath, content::path_info_t & list_ipath, int start = 0, int count = -1, QString const & theme = "qrc:/xsl/list/default");

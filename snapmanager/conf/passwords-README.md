@@ -55,8 +55,8 @@ Password Salt
 At this time you have no control over the salt. It is exactly 32 bytes
 and used as two 16 bytes numbers to randomly modify the password hashing.
 This is very useful to make sure that passwords remain safe even when
-more than one user decide to use the exact same password as another.
-That way, both hashing will will not look alike.
+more than one user decide to use the exact same password. That way, both
+hashings will not look alike.
 
 
 Password Hashing
@@ -74,12 +74,13 @@ the security also comes from the fact that the passwords directory is
 protected by praying eyes as it is only accessible by the root user.
 
 The `snappassword` tool requires the user to be root to manage the password
-files.
+files. It can be used to add new users, delete existing users, check the
+validity of the password of an existing user, and update a password.
 
 The `snapmanager.cgi` has to send a message to `snapmanagerdaemon` in order
 to know whether a user gave us the correct password and can be logged in.
-This means only the password of a login in user will eventually exist in
-`snapmanager.cgi`.
+This is because `snapmanager.cgi` cannot itself become root to run that test
+directly.
 
 
 _This file is part of the [snapcpp project](https://snapwebsites.org/)._

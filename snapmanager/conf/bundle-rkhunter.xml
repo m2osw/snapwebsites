@@ -15,21 +15,24 @@
       <label>Contact Email Address</label>
       <description>
         The email address of the person to contact when rkhunter finds
-        problems on a computer. If you want to email a list, use one
-        email address and set it as a broadcast in your mail system
-        (instead of trying to as rkhunter to email a long list of
-        people.) So enter exactly one email address here.
+        problems on a computer. If you want the email sent to a list of
+        users, enter one email address and set it up as a broadcast
+        email in your mail system (instead of trying to have rkhunter
+        email a long list of people.) So enter exactly one email address
+        here. You can change it again later.
       </description>
     </field>
   </fields>
   <packages>rkhunter</packages>
   <postinst>
     # rkhunter knows about /etc/rkhunter.d but it does not create it!?
-    mkdir /etc/rkhunter.d
+    mkdir -p /etc/rkhunter.d
 
     # change the setup for snap purposes
     cat &gt;/etc/rkhunter.d/50-snap.conf &lt;&lt;EOF
 # Specific settings for a Snap! system
+#
+# See also "/etc/default/rkhunter"
 
 # Email a message to this address
 #MAIL-ON-WARNING=$BUNDLE_INSTALLATION_CONTACT_EMAIL
@@ -71,14 +74,16 @@ ALLOWDEVFILE=/dev/shm/byobu-*/.last.screen/*
 PORT_PATH_WHITELIST=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java:TCP:7000
 EOF
 
-    # change the CRON_DAILY_RUN to yes
+    # change a few of the defaults in the rkhunter default
+    # file (we could put them in our .conf above, but it
+    # makes more sense there for those variables)
     #
     sed -i.bak \
         -e 's/CRON_DAILY_RUN=""/CRON_DAILY_RUN="true"/' \
         -e 's/CRON_DB_UPDATE=""/CRON_DB_UPDATE="true"/' \
         -e 's/APT_AUTOGEN="false"/APT_AUTOGEN="true"/' \
         -e 's/NICE="0"/NICE="19"/' \
-        -e 's/REPORT_EMAIL="root"/REPORT_EMAIL="'$BUNDLE_INSTALLATION_CONTACT_EMAIL'"/' \
+        -e 's/REPORT_EMAIL="root"/REPORT_EMAIL="'"$BUNDLE_INSTALLATION_CONTACT_EMAIL"'"/' \
               /etc/default/rkhunter
 
     # do a refresh now otherwise we are likely to have errors up front

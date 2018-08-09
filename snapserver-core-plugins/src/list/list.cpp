@@ -3029,7 +3029,7 @@ int list::generate_new_lists(QString const & site_key)
             //
             // this could happen in the "split second" it takes to delete
             // a link--we still had the link available, it gets deleted,
-            // then we us it here
+            // then we use it here
             //
             SNAP_LOG_WARNING("detected an invalid list link (")
                             (child_info.key())
@@ -3048,10 +3048,10 @@ int list::generate_new_lists(QString const & site_key)
             //delete_info.set_name(child_info.source_cell_name());
             //links_plugin->delete_link(delete_info);
 
-            libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_key()));
             QString const source_cell_name(child_info.source_cell_name());
             if(!source_cell_name.isEmpty())
             {
+                libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_key()));
                 src_row->dropCell(source_cell_name);
             }
         }
@@ -3178,7 +3178,7 @@ int list::generate_new_list_for_all_descendants(content::path_info_t & list_ipat
     {
         content::path_info_t child_ipath;
         child_ipath.set_path(child_info.key());
-        did_work |= generate_list_for_page(child_ipath, list_ipath, INT64_MAX);
+        did_work |= generate_list_for_page(child_ipath, list_ipath, INT64_MAX, &child_info);
 
         if(descendants)
         {
@@ -3220,7 +3220,7 @@ int list::generate_new_list_for_type(QString const & site_key, content::path_inf
     {
         content::path_info_t child_ipath;
         child_ipath.set_path(child_info.key());
-        did_work |= generate_list_for_page(child_ipath, list_ipath, INT64_MAX);
+        did_work |= generate_list_for_page(child_ipath, list_ipath, INT64_MAX, &child_info);
     }
 
     return did_work;
@@ -3652,7 +3652,7 @@ int list::generate_all_lists_for_page(QString const & site_key, QString const & 
         content::path_info_t list_ipath;
         list_ipath.set_path(key);
 //SNAP_LOG_WARNING("generate list \"")(list_ipath.get_key())("\" for page \"")(page_ipath.get_key());
-        int const did_work_on_list(generate_list_for_page(page_ipath, list_ipath, update_request_time));
+        int const did_work_on_list(generate_list_for_page(page_ipath, list_ipath, update_request_time, &child_info));
         if(did_work_on_list != 0)
         {
             did_work |= did_work_on_list;
@@ -3697,17 +3697,77 @@ int list::generate_all_lists_for_page(QString const & site_key, QString const & 
  * \param[in,out] page_ipath  The path to the page being tested.
  * \param[in,out] list_ipath  The path to the list being worked on.
  * \param[in] update_request_time  The time when the last change was registered.
+ * \param[in] child_info  If avaialble, a poitner to the corresponding
+ *                        child_info which is used to delete the list link
+ *                        in case we can't access the branch.
  *
  * \return Zero (0) if nothing happens, 1 if the list was modified.
  */
-int list::generate_list_for_page(content::path_info_t & page_ipath, content::path_info_t & list_ipath, int64_t update_request_time)
+int list::generate_list_for_page(content::path_info_t & page_ipath
+                               , content::path_info_t & list_ipath
+                               , int64_t update_request_time
+                               , links::link_info * child_info)
 {
     // whether the function did change something: 0 no, 1 yes
     int did_work(0);
 
     content::content * content_plugin(content::content::instance());
     libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
-    libdbproxy::row::pointer_t list_row(branch_table->getRow(list_ipath.get_branch_key()));
+    libdbproxy::row::pointer_t list_row;
+
+    // the list may have been blown up (destroyed) because the journal
+    // kept that page for too long and a list it was marked as and the
+    // link to it was not correctly removed
+    try
+    {
+        list_row = branch_table->getRow(list_ipath.get_branch_key());
+    }
+    catch(content::content_exception_data_missing const & e)
+    {
+        // this error happens if the link we just tried is somehow invalid
+        // (we had a bug in the destroy that would leave invalid links
+        // behind)
+        //
+        // this could happen in the "split second" it takes to delete
+        // a link--we still had the link available, it gets deleted,
+        // then we use it here
+        //
+        content::path_info_t ipath;  // this is the list type in our taxonomy tree
+        QString const site_key(f_snap->get_site_key_with_slash());
+        ipath.set_path(site_key + get_name(name_t::SNAP_NAME_LIST_TAXONOMY_PATH));
+        SNAP_LOG_WARNING("detected an invalid list link (")
+                        (list_ipath.get_key())
+                        (" with name \"")
+                        (child_info == nullptr ? "<unknown>" : child_info->source_cell_name())
+                        ("\") from the list types (")
+                        (ipath.get_key())
+                        ("), forcibly removing it if name is known.");
+
+        // don't call the delete_link(), it deletes way too much for us
+        // plus the child_info.source_cell_name() is the full name
+        // of the link (with all decorations) and not just the basic
+        // name such as "list::type"... (so it could be something
+        // like "links::list::link-snap1-45#1")
+        //links::link_info delete_info(info);
+        //delete_info.set_name(child_info.source_cell_name());
+        //links_plugin->delete_link(delete_info);
+
+        if(child_info != nullptr)
+        {
+            QString const source_cell_name(child_info->source_cell_name());
+            if(!source_cell_name.isEmpty())
+            {
+                libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_key()));
+                src_row->dropCell(source_cell_name);
+            }
+        }
+
+        // without a list we can't do much more here
+        // but make sure to go on because other lists
+        // may need some help
+        //
+        return did_work;
+    }
 
     // check whether we already updated that page
     // (because the same page may be listed many times in the list table)

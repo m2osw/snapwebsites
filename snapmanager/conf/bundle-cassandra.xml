@@ -12,15 +12,21 @@
   <fields>
     <field name="cluster_name" type="input">
       <label>Cluster Name</label>
-      <description>Enter the name of your Cassandra cluster. <strong>All the nodes must have the same cluster name.</strong></description>
+      <description>Enter the name of your Cassandra cluster.
+        <strong>All the nodes must have the same cluster name.</strong></description>
     </field>
     <field name="seeds" type="input">
       <label>Seeds</label>
-      <description>Indicate Cassandra seed nodes IP addresses separated by commas.</description>
+      <description>Indicate Cassandra seed nodes IP addresses separated by
+        commas. If you are planning to test with a single node, keep this empty.</description>
     </field>
     <field name="listen_address" type="input">
       <label>Listen Address</label>
-      <description>Indicate the private IP address of this node (Try ifconfig and take the address for tun0 or eth0, make sure to use the secured IP address if you are using OpenVPN).</description>
+      <description>Indicate the private IP address of this node. Try ifconfig
+        (or search in the "Self" tab for if:&lt;name&gt;) and take the address
+        for tun0, eth0, eth1, etc. Make sure to use the secured IP address if
+        you are using OpenVPN. Private networks generally do not require the
+        use of SSH or VPN.</description>
     </field>
   </fields>
   <preinst>
