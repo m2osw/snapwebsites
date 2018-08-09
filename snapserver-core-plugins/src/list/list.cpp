@@ -3051,7 +3051,7 @@ int list::generate_new_lists(QString const & site_key)
             QString const source_cell_name(child_info.source_cell_name());
             if(!source_cell_name.isEmpty())
             {
-                libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_key()));
+                libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_branch_key()));
                 src_row->dropCell(source_cell_name);
             }
         }
@@ -3757,7 +3757,7 @@ int list::generate_list_for_page(content::path_info_t & page_ipath
             QString const source_cell_name(child_info->source_cell_name());
             if(!source_cell_name.isEmpty())
             {
-                libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_key()));
+                libdbproxy::row::pointer_t src_row(branch_table->getRow(ipath.get_branch_key()));
                 src_row->dropCell(source_cell_name);
             }
         }

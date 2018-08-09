@@ -29,7 +29,13 @@ then
 
     systemctl daemon-reload
 
-    for pkg in snapbackend snapimages snaplistjournal snappagelist snapsendmail
+    # For the snapbackend, we have to disable the timer
+    #
+    for pkg in snapbackend.timer \
+               snapimages \
+               snaplistjournal \
+               snappagelist \
+               snapsendmail
     do
         # Start with everything disabled. `snapmanager` will allow the user to
         # enable as needed.

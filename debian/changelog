@@ -1,3 +1,12 @@
+snapwebsites (1.5.116.0~xenial) xenial; urgency=high
+
+  * Fixed the dropCell(), for the branch table we have to use the branch key.
+  * Fixed the disable on services, snapbackend needs the ".timer" to be
+    disabled (need testing to make sure the backend doesn't run permanently.)
+  * Removed duplicated .service files from snapbackend and snapfirewall.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  8 Aug 2018 21:59:39 -0700
+
 snapwebsites (1.5.115.0~xenial) xenial; urgency=high
 
   * snapwatchdog.install would put the log-definitions in the wrong place.
