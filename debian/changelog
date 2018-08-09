@@ -1,3 +1,10 @@
+snapwebsites (1.5.117.0~xenial) xenial; urgency=high
+
+  * Removing the */INSTALL.txt files, they were nearly all the same and they
+    don't get installed, also we have a top INSTALL.txt.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  9 Aug 2018 00:33:23 -0700
+
 snapwebsites (1.5.116.1~xenial) xenial; urgency=high
 
   * Removed the other .service duplicate (the ones under debian/... which

@@ -1,2 +1,0 @@
-Sun Oct  9 14:31:17 PDT 2016
-We need a better INSTALL file!
