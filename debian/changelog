@@ -1,7 +1,15 @@
+snapwebsites (1.5.116.1~xenial) xenial; urgency=high
+
+  * Removed the other .service duplicate (the ones under debian/... which
+    do not get auto-installed because they don't have a one to one name to
+    a package.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  8 Aug 2018 22:36:05 -0700
+
 snapwebsites (1.5.116.0~xenial) xenial; urgency=high
 
   * Fixed the dropCell(), for the branch table we have to use the branch key.
-  * Fixed the disable on services, snapbackend needs the ".timer" to be
+  * Fixed the disable of services, snapbackend needs the ".timer" to be
     disabled (need testing to make sure the backend doesn't run permanently.)
   * Removed duplicated .service files from snapbackend and snapfirewall.
 
