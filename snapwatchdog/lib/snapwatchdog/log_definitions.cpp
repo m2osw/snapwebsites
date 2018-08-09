@@ -701,10 +701,10 @@ watchdog_log_t::vector_t watchdog_log_t::load(QString log_definitions_path)
     //
     if(log_definitions_path.isEmpty())
     {
-        log_definitions_path = "/var/lib/snapwebsites/snapwatchdog/logs";
+        log_definitions_path = "/usr/share/snapwebsites/snapwatchdog/log-definitions";
     }
 
-    glob_dir const log_filenames(log_definitions_path + "/*.xml", GLOB_ERR | GLOB_NOSORT | GLOB_NOESCAPE);
+    glob_dir const log_filenames(log_definitions_path + "/*.xml", GLOB_NOSORT | GLOB_NOESCAPE, true);
     log_filenames.enumerate_glob(std::bind(&load_xml, std::placeholders::_1, &result));
 
     return result;

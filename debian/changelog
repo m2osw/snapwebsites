@@ -1,3 +1,11 @@
+snapwebsites (1.5.115.0~xenial) xenial; urgency=high
+
+  * snapwatchdog.install would put the log-definitions in the wrong place.
+  * Fixed the default path to log-definitions in the code.
+  * Allow for an empty list of log-definitions, just in case.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed,  8 Aug 2018 19:58:41 -0700
+
 snapwebsites (1.5.114.0~xenial) xenial; urgency=high
 
   * Added another try/catch to clean a list. A link could have been created
