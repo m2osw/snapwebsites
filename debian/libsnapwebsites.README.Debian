@@ -1,6 +1,12 @@
-snapwebsites for Debian
+snapwebsites for Ubuntu
 -----------------------
 
-The snapwebsites project actually includes many packages.
+The snapwebsites project includes many packages.
+
+The libsnapwebsites project includes the library database proxy library
+used to access Cassandra and the libsnapwebsites.so which has a very
+large number of functions used by all the other packages.
+
+The package includes the description of the core tables with their fields.
 
  -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 20 Nov 2013 08:49:55 -0800

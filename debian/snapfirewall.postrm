@@ -26,8 +26,14 @@ then
     #
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/snapwatchdog
     rm -rf ${SNAPWATCHDOG_LIB_DIR}/scripts-output/firewall-fail2ban-client-running.txt
-    rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}/scripts-output
-    rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}
+    if test -d ${SNAPWATCHDOG_LIB_DIR}/scripts-output
+    then
+        rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}/scripts-output
+    fi
+    if test -d ${SNAPWATCHDOG_LIB_DIR}
+    then
+        rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}
+    fi
 
     # Since we place files in the fail2ban folder, the folder
     # may not get removed properly

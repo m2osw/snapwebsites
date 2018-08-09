@@ -19,14 +19,15 @@ then
     # remove all the directories that are empty
     #
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
-    for subdir in data script-files
+    for dir in ${SNAPWATCHDOG_LIB_DIR}/data \
+               ${SNAPWATCHDOG_LIB_DIR}/script-files \
+               ${SNAPWATCHDOG_LIB_DIR}
     do
-        rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}/${subdir}
+        if test -d "${dir}"
+        then
+            rmdir --ignore-fail-on-non-empty "${dir}"
+        fi
     done
-
-    # Just in case, the main directory may be empty now
-    #
-    rmdir --ignore-fail-on-non-empty ${SNAPWATCHDOG_LIB_DIR}
 
     # delete all logs
     #

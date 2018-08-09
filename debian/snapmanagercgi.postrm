@@ -29,7 +29,7 @@ then
     # delete sessions
     #
     rm -rf /var/lib/snapwebsites/sessions/snapmanager
-    if test -e /var/lib/snapwebsites/sessions
+    if test -d /var/lib/snapwebsites/sessions
     then
         rmdir --ignore-fail-on-non-empty /var/lib/snapwebsites/sessions
     fi

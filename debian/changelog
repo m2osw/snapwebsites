@@ -1,3 +1,12 @@
+snapwebsites (1.5.118.0~xenial) xenial; urgency=high
+
+  * Protected some rmdir in postinst scripts or they could fail.
+  * Added a preinst to mask snapbackends so they don't start automatically.
+  * Fixing the README.Debian worked, we can have them by prepending the package
+    name (just like for most of the other files.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  9 Aug 2018 13:54:24 -0700
+
 snapwebsites (1.5.117.0~xenial) xenial; urgency=high
 
   * Removing the */INSTALL.txt files, they were nearly all the same and they
