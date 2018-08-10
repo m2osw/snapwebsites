@@ -71,7 +71,6 @@ namespace
  */
 void load_xml(QString log_definitions_filename, watchdog_log_t::vector_t * result)
 {
-SNAP_LOG_WARNING("loading from [")(log_definitions_filename)("]");
     QFile input(log_definitions_filename);
     if(input.open(QIODevice::ReadOnly))
     {
@@ -82,7 +81,6 @@ SNAP_LOG_WARNING("loading from [")(log_definitions_filename)("]");
             //
             QDomNodeList logs(doc.elementsByTagName("log"));
             int const max(logs.size());
-SNAP_LOG_WARNING("got max [")(max)("]");
             for(int idx(0); idx < max; ++idx)
             {
                 QDomNode p(logs.at(idx));
@@ -457,7 +455,6 @@ SNAP_LOG_WARNING("got max [")(max)("]");
                     }
                 }
 
-SNAP_LOG_WARNING("add to result... ")(wl.get_name());
                 result->push_back(wl);
             }
         }

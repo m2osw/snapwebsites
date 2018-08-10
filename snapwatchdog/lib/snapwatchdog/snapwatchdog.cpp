@@ -248,7 +248,7 @@ void cassandra_check_timer::process_timeout()
     //
     snap_communicator_message cassandra_ready;
     cassandra_ready.set_command("CASSANDRAREADY");
-    f_watchdog_server->process_message(cassandra_ready);
+    f_watchdog_server->dispatch(cassandra_ready);
 }
 
 
@@ -338,7 +338,7 @@ public:
     virtual                     ~messenger() override {}
 
     // snap::snap_communicator::snap_tcp_client_permanent_message_connection implementation
-    virtual void                process_message(snap::snap_communicator_message const & message) override;
+    //virtual void                process_message(snap::snap_communicator_message const & message) override; -- we set the dispatcher on this one too
     virtual void                process_connection_failed(std::string const & error_message) override;
     virtual void                process_connected() override;
 
@@ -382,19 +382,21 @@ messenger::messenger(watchdog_server::pointer_t ws, std::string const & addr, in
 }
 
 
-/** \brief Pass messages to the Snap Backend.
- *
- * This callback is called whenever a message is received from
- * Snap! Communicator. The message is immediately forwarded to the
- * watchdog_server object which is expected to process it and reply
- * if required.
- *
- * \param[in] message  The message we just received.
- */
-void messenger::process_message(snap::snap_communicator_message const & message)
-{
-    f_watchdog_server->process_message(message);
-}
+// We directly use the dispatcher
+///** \brief Pass messages to the Snap Backend.
+// *
+// * This callback is called whenever a message is received from
+// * Snap! Communicator. The message is immediately forwarded to the
+// * watchdog_server object which is expected to process it and reply
+// * if required.
+// *
+// * \param[in] message  The message we just received.
+// */
+//void messenger::process_message(snap::snap_communicator_message const & message)
+//{
+//    snap::snap_communicator_message copy(message);
+//    f_watchdog_server->dispatch(copy);
+//}
 
 
 /** \brief The messenger could not connect to snapcommunicator.
@@ -504,6 +506,28 @@ void sigchld_connection::process_signal()
 
 
 
+/** \brief List of snapwatchdog commands
+ *
+ * The following table defines the commands understood by snapwatchdog
+ * that are not defined as a default by add_snap_communicator_commands().
+ */
+snap::dispatcher<watchdog_server>::dispatcher_match::vector_t const g_snapwatchdog_service_messages =
+{
+    {
+        "NOCASSANDRA"
+      , &watchdog_server::msg_nocassandra
+    },
+    {
+        "CASSANDRAREADY"
+      , &watchdog_server::msg_cassandraready
+    },
+    {
+        "RUSAGE"
+      , &watchdog_server::msg_rusage
+    }
+};
+
+
 } // no name namespace
 
 
@@ -570,6 +594,8 @@ char const * get_name(name_t name)
     NOTREACHED();
 }
 
+
+
 }
 
 
@@ -579,10 +605,16 @@ char const * get_name(name_t name)
  * snapwatchdog server configuration file.
  */
 watchdog_server::watchdog_server()
-    : f_server_start_date(time(nullptr))
+    : dispatcher(this, g_snapwatchdog_service_messages)
+    , f_server_start_date(time(nullptr))
     , f_snapcommunicator_disconnected(snap_child::get_current_date())
 {
     server::set_config_filename("snapwatchdog");
+
+    add_snap_communicator_commands();
+#ifdef _DEBUG
+    set_trace();
+#endif
 }
 
 
@@ -677,6 +709,7 @@ void watchdog_server::watchdog()
     //
     g_messenger.reset(new messenger(instance(), communicator_addr.toUtf8().data(), communicator_port));
     g_communicator->add_connection(g_messenger);
+    g_messenger->set_dispatcher(shared_from_this());
 
     // add the ticker, this wakes the system up once in a while so
     // we can gather statistics at a given interval
@@ -692,6 +725,17 @@ void watchdog_server::watchdog()
     // now start the run() loop
     //
     g_communicator->run();
+}
+
+
+/** \brief Send a message via the messenger.
+ *
+ * This function is an override which allows the watchdog server to
+ * handle messages through the dispatcher.
+ */
+bool watchdog_server::send_message(snap_communicator_message const & message, bool cache)
+{
+    return g_messenger->send_message(message, cache);
 }
 
 
@@ -934,148 +978,231 @@ void watchdog_server::init_parameters()
 }
 
 
-/** \brief Process a message received from the watchdog server.
- *
- * The process for the watchdog server handles events incoming from
- * Snap Communicator using this function.
- *
- * \param[in] message  The message we just received.
- */
-void watchdog_server::process_message(snap::snap_communicator_message const & message)
+///** \brief Process a message received from the watchdog server.
+// *
+// * The process for the watchdog server handles events incoming from
+// * Snap Communicator using this function.
+// *
+// * \param[in] message  The message we just received.
+// */
+//void watchdog_server::process_message(snap::snap_communicator_message const & message)
+//{
+//    SNAP_LOG_TRACE("received message [")(message.to_message())("]");
+//
+//    QString const command(message.get_command());
+//
+//// ******************* TCP and UDP messages
+//
+//    // someone sent "snapwatchdog/STOP" to snapcommunicator
+//    //
+//    if(command == "STOP"
+//    || command == "QUITTING")
+//    {
+//        stop(command == "QUITTING");
+//        return;
+//    }
+//
+//// ******************* TCP only messages
+//
+//    if(command == "READY")
+//    {
+//        // TBD: should we wait on this signal before we start the g_tick_timer?
+//        //      since we do not need the snap communicator, probably not useful
+//        //      (however, we want to have Cassandra and we know Cassandra is
+//        //      ready only after a we got the CASSANDRAREADY anyway...)
+//        //
+//
+//        // request snapdbproxy to send us a status signal about
+//        // Cassandra, after that one call, we will receive the
+//        // changes in status just because we understand them.
+//        //
+//        snap::snap_communicator_message isdbready_message;
+//        isdbready_message.set_command("CASSANDRASTATUS");
+//        isdbready_message.set_service("snapdbproxy");
+//        g_messenger->send_message(isdbready_message);
+//
+//        return;
+//    }
+//
+//    if(command == "LOG")
+//    {
+//        SNAP_LOG_INFO("Logging reconfiguration.");
+//        logging::reconfigure();
+//        return;
+//    }
+//
+//    if(command == "NOCASSANDRA")
+//    {
+//        // we lost Cassandra, "disconnect" from snapdbproxy until we
+//        // get CASSANDRAREADY again
+//        //
+//        f_snapdbproxy_addr.clear();
+//        f_snapdbproxy_port = 0;
+//
+//        return;
+//    }
+//
+//    if(command == "CASSANDRAREADY")
+//    {
+//        // connect to Cassandra and verify that a "serverstats"
+//        // table exists
+//        //
+//        bool timer_required(false);
+//        if(!check_cassandra(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS), timer_required))
+//        {
+//            if(timer_required && g_cassandra_check_timer != nullptr)
+//            {
+//                g_cassandra_check_timer->set_enable(true);
+//            }
+//        }
+//
+//        return;
+//    }
+//
+//    // all have to implement the HELP command
+//    //
+//    if(command == "HELP")
+//    {
+//        snap::snap_communicator_message reply;
+//        reply.set_command("COMMANDS");
+//
+//        // list of commands understood by snapwatchdog
+//        //
+//        reply.add_parameter("list", "CASSANDRAREADY,HELP,LOG,NOCASSANDRA,QUITTING,READY,RUSAGE,STOP,UNKNOWN");
+//
+//        g_messenger->send_message(reply);
+//        return;
+//    }
+//
+//    if(command == "RUSAGE")
+//    {
+//        // Can connect to Cassandra yet?
+//        //
+//        // We now support running without Cassandra
+//        //
+//        //if(f_snapdbproxy_addr.isEmpty())
+//        //{
+//        //    return;
+//        //}
+//
+//        // a process just sent us its RUSAGE just before exiting
+//        // (note that a UDP message is generally used to send that info
+//        // so we are likely to miss some of those statistics)
+//        //
+//        watchdog_child::pointer_t child(std::make_shared<watchdog_child>(instance(), false));
+//
+//        // we use a child because we need to connect to the database
+//        // so that call returns immediately after the fork() call
+//        //
+//        if(child->record_usage(message))
+//        {
+//            // the fork() succeeded, keep the child as a process
+//            //
+//            f_processes.push_back(child);
+//        }
+//        return;
+//    }
+//
+//    if(command == "UNKNOWN")
+//    {
+//        SNAP_LOG_ERROR("we sent unknown command \"")(message.get_parameter("command"))("\" and probably did not get the expected result.");
+//        return;
+//    }
+//
+//    // unknown command is reported and process goes on
+//    //
+//    SNAP_LOG_ERROR("unsupported command \"")(command)("\" was received on the TCP connection.");
+//    {
+//        snap::snap_communicator_message reply;
+//        reply.set_command("UNKNOWN");
+//        reply.add_parameter("command", command);
+//        g_messenger->send_message(reply);
+//    }
+//}
+
+
+void watchdog_server::msg_nocassandra(snap::snap_communicator_message & message)
 {
-    SNAP_LOG_TRACE("received message [")(message.to_message())("]");
+    snap::NOTUSED(message);
 
-    QString const command(message.get_command());
-
-// ******************* TCP and UDP messages
-
-    // someone sent "snapwatchdog/STOP" to snapcommunicator
+    // we lost Cassandra, "disconnect" from snapdbproxy until we
+    // get CASSANDRAREADY again
     //
-    if(command == "STOP"
-    || command == "QUITTING")
-    {
-        stop(command == "QUITTING");
-        return;
-    }
+    f_snapdbproxy_addr.clear();
+    f_snapdbproxy_port = 0;
+}
 
-// ******************* TCP only messages
 
-    if(command == "READY")
-    {
-        // TBD: should we wait on this signal before we start the g_tick_timer?
-        //      since we do not need the snap communicator, probably not useful
-        //      (however, we want to have Cassandra and we know Cassandra is
-        //      ready only after a we got the CASSANDRAREADY anyway...)
-        //
+void watchdog_server::msg_cassandraready(snap::snap_communicator_message & message)
+{
+    snap::NOTUSED(message);
 
-        // request snapdbproxy to send us a status signal about
-        // Cassandra, after that one call, we will receive the
-        // changes in status just because we understand them.
-        //
-        snap::snap_communicator_message isdbready_message;
-        isdbready_message.set_command("CASSANDRASTATUS");
-        isdbready_message.set_service("snapdbproxy");
-        g_messenger->send_message(isdbready_message);
-
-        return;
-    }
-
-    if(command == "LOG")
-    {
-        SNAP_LOG_INFO("Logging reconfiguration.");
-        logging::reconfigure();
-        return;
-    }
-
-    if(command == "NOCASSANDRA")
-    {
-        // we lost Cassandra, "disconnect" from snapdbproxy until we
-        // get CASSANDRAREADY again
-        //
-        f_snapdbproxy_addr.clear();
-        f_snapdbproxy_port = 0;
-
-        return;
-    }
-
-    if(command == "CASSANDRAREADY")
-    {
-        // connect to Cassandra and verify that a "serverstats"
-        // table exists
-        //
-        bool timer_required(false);
-        if(!check_cassandra(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS), timer_required))
-        {
-            if(timer_required && g_cassandra_check_timer != nullptr)
-            {
-                g_cassandra_check_timer->set_enable(true);
-            }
-        }
-
-        return;
-    }
-
-    // all have to implement the HELP command
+    // connect to Cassandra and verify that a "serverstats"
+    // table exists
     //
-    if(command == "HELP")
+    bool timer_required(false);
+    if(!check_cassandra(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS), timer_required))
     {
-        snap::snap_communicator_message reply;
-        reply.set_command("COMMANDS");
-
-        // list of commands understood by snapwatchdog
-        //
-        reply.add_parameter("list", "CASSANDRAREADY,HELP,LOG,NOCASSANDRA,QUITTING,READY,RUSAGE,STOP,UNKNOWN");
-
-        g_messenger->send_message(reply);
-        return;
-    }
-
-    if(command == "RUSAGE")
-    {
-        // Can connect to Cassandra yet?
-        //
-        // We now support running without Cassandra
-        //
-        //if(f_snapdbproxy_addr.isEmpty())
-        //{
-        //    return;
-        //}
-
-        // a process just sent us its RUSAGE just before exiting
-        // (note that a UDP message is generally used to send that info
-        // so we are likely to miss some of those statistics)
-        //
-        watchdog_child::pointer_t child(std::make_shared<watchdog_child>(instance(), false));
-
-        // we use a child because we need to connect to the database
-        // so that call returns immediately after the fork() call
-        //
-        if(child->record_usage(message))
+        if(timer_required
+        && g_cassandra_check_timer != nullptr)
         {
-            // the fork() succeeded, keep the child as a process
+            // it did not quite work, setup a timer so the snapwatchdog
+            // daemon gets awaken again later to attempt a new connect
             //
-            f_processes.push_back(child);
+            g_cassandra_check_timer->set_enable(true);
         }
-        return;
-    }
-
-    if(command == "UNKNOWN")
-    {
-        SNAP_LOG_ERROR("we sent unknown command \"")(message.get_parameter("command"))("\" and probably did not get the expected result.");
-        return;
-    }
-
-    // unknown command is reported and process goes on
-    //
-    SNAP_LOG_ERROR("unsupported command \"")(command)("\" was received on the TCP connection.");
-    {
-        snap::snap_communicator_message reply;
-        reply.set_command("UNKNOWN");
-        reply.add_parameter("command", command);
-        g_messenger->send_message(reply);
     }
 }
 
+
+void watchdog_server::msg_rusage(snap::snap_communicator_message & message)
+{
+    // Can connect to Cassandra yet?
+    //
+    // We now support running without Cassandra
+    //
+    //if(f_snapdbproxy_addr.isEmpty())
+    //{
+    //    return;
+    //}
+
+    // a process just sent us its RUSAGE just before exiting
+    // (note that a UDP message is generally used to send that info
+    // so we are likely to miss some of those statistics)
+    //
+    watchdog_child::pointer_t child(std::make_shared<watchdog_child>(instance(), false));
+
+    // we use a child because we need to connect to the database
+    // so that call returns immediately after the fork() call
+    //
+    if(child->record_usage(message))
+    {
+        // the fork() succeeded, keep the child as a process
+        //
+        f_processes.push_back(child);
+    }
+}
+
+
+void watchdog_server::ready(snap::snap_communicator_message & message)
+{
+    snap::NOTUSED(message);
+
+    // TBD: should we wait on this signal before we start the g_tick_timer?
+    //      since we do not need the snap communicator, probably not useful
+    //      (however, we want to have Cassandra and we know Cassandra is
+    //      ready only after a we got the CASSANDRAREADY anyway...)
+    //
+
+    // request snapdbproxy to send us a status signal about
+    // Cassandra, after that one call, we will receive the
+    // changes in status just because we understand them.
+    //
+    snap::snap_communicator_message isdbready_message;
+    isdbready_message.set_command("CASSANDRASTATUS");
+    isdbready_message.set_service("snapdbproxy");
+    g_messenger->send_message(isdbready_message);
+}
 
 
 void watchdog_server::stop(bool quitting)

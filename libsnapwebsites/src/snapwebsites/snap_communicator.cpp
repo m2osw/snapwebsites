@@ -30,6 +30,7 @@
 #include "snapwebsites/not_reached.h"
 #include "snapwebsites/not_used.h"
 #include "snapwebsites/qstring_stream.h"
+#include "snapwebsites/snap_communicator_dispatcher.h"
 #include "snapwebsites/string_replace.h"
 
 // addr lib
@@ -151,6 +152,10 @@ void fd_deleter(int * fd)
 
 
 
+/** \brief The dispatcher base destructor.
+ *
+ * This destructor is virtual allowing clean derivation at all levels.
+ */
 dispatcher_base::~dispatcher_base()
 {
 }
@@ -1220,7 +1225,16 @@ snap_communicator::snap_dispatcher_support::~snap_dispatcher_support()
 
 /** \brief Define a dispatcher to execute your functions.
  *
- * This dispatcher function 
+ * The dispatcher to use to dispatch messages when received. The dispatch
+ * happens by matching the command name with the dispatcher_match and
+ * calling the corresponding function.
+ *
+ * If no match is found, then nothing gets executed by the dispatcher and
+ * your default process_message() function gets called instead. If you
+ * use a "match all" type of entry in your dispatcher, then your
+ * process_message() function never gets called.
+ *
+ * \param[in] d  The pointer to your dispatcher object.
  */
 void snap_communicator::snap_dispatcher_support::set_dispatcher(dispatcher_base::pointer_t d)
 {
@@ -1228,25 +1242,67 @@ void snap_communicator::snap_dispatcher_support::set_dispatcher(dispatcher_base:
 }
 
 
-/** \brief Define a dispatcher to execute your functions.
+/** \brief Get the dispatcher used to execute your message functions.
  *
- * This dispatcher function 
+ * This function returns the dispatcher one set with the set_dispatcher()
+ * function. It may be a nullptr.
+ *
+ * \return The pointer to the dispatcher used to execite messages.
  */
-bool snap_communicator::snap_dispatcher_support::try_dispatching_message(snap::snap_communicator_message & msg)
+dispatcher_base::pointer_t snap_communicator::snap_dispatcher_support::get_dispatcher() const
 {
-    if(f_dispatcher)
+    return f_dispatcher;
+}
+
+
+/** \brief Dispatcher the specified message.
+ *
+ * This dispatcher function searches for a function that matches the
+ * command of the specified \p message.
+ *
+ * The dispatcher handles a vector of dispatcher_match structures each
+ * of which defines a message that this daemon understands. The dispatch
+ * is done on a match as determined the the f_match() static function.
+ *
+ * The function executes the f_execute() function on a match. If none of
+ * the dispatcher_match entries match the input message, then the default
+ * process resumes, which is to call the process_message() function. This
+ * is done as a fallback and it should only be used if you want to be
+ * able to handle very complex cases as in the snapcommunicator. In most
+ * cases, having a function that handles your command(s) will be more
+ * than enough.
+ *
+ * If you called the add_snap_communicator_commands() function on your
+ * dispatcher, it won't be necessary to implement the process_message()
+ * since it adds a last entry which is a "catch all" entry. This entry
+ * uses the function that replies to the user with the UNKNOWN message.
+ * Assuming you do not do anything extraordinary, you just need to
+ * implement the ready() and stop() functions. If you have dynamic
+ * commands that the default msg_help() wont' understand, then you
+ * need to also implement the help() function.
+ *
+ * \param[in,out] message  The message being dispatched.
+ *
+ * \return true if the dispatcher handled the message, false if the
+ *         process_message() function was called instead.
+ */
+bool snap_communicator::snap_dispatcher_support::dispatch_message(snap::snap_communicator_message & message)
+{
+    if(f_dispatcher != nullptr)
     {
         // we have a dispatcher installed, try to dispatch that message
         //
-        if(f_dispatcher->dispatch(msg))
+        if(f_dispatcher->dispatch(message))
         {
             return true;
         }
     }
 
-    // either there was not dispatcher installed or the message is
-    // not in the list of the dispatcher
+    // either there was no dispatcher installed or the message is
+    // not in the list of messages handled by this dispatcher
     //
+    process_message(message);
+
     return false;
 }
 
@@ -2267,6 +2323,188 @@ void snap_communicator::snap_connection::connection_removed()
 //////////////////////////////////
 
 
+/** \brief Initialize a connection_with_send_message object.
+ *
+ * This constructor initializes a connectopm which supports a send_message()
+ * function. This allows that object to send a certain number of default
+ * messages such as the UNKNOWN message automatically.
+ */
+snap_communicator::connection_with_send_message::~connection_with_send_message()
+{
+}
+
+
+
+/** \brief Build the HELP reply and send it.
+ *
+ * When a daemon registers with the snapcommunicator, it sends a REGISTER
+ * command. As a result, the daemon is sent a HELP command which must be
+ * answered with a COMMAND and the list of commands that this connection
+ * supports.
+ *
+ * \note
+ * If the environment logger is not currently configured, this message
+ * gets ignored.
+ *
+ * \param[in] message  The HELP message.
+ *
+ * \sa msg_ready()
+ */
+void snap_communicator::connection_with_send_message::msg_help(snap_communicator_message & message)
+{
+    NOTUSED(message);
+
+    bool need_user_help(true);
+    snap_string_list commands;
+
+    snap_dispatcher_support * dispatcher_support(dynamic_cast<snap_dispatcher_support *>(this));
+    if(dispatcher_support != nullptr)
+    {
+        dispatcher_base::pointer_t d(dispatcher_support->get_dispatcher());
+        if(d != nullptr)
+        {
+            need_user_help = d->get_commands(commands);
+        }
+    }
+
+    // the user has unknown commands in his list of commands so we have
+    // to let him enter them "manually"
+    //
+    if(need_user_help)
+    {
+        help(commands);
+    }
+
+    // Now prepare the COMMAND message and send it
+    //
+    // Note: we turn off the caching on this message, it does not make sense
+    //       because if snapcommunicator is not running, then caching won't
+    //       happen work anyway (i.e. snapcommunicator has to send HELP first
+    //       and then we send the reply, if it has to restart, then just
+    //       sending COMMANDS will fail.)
+    //
+    snap::snap_communicator_message reply;
+    reply.set_command("COMMANDS");
+    reply.add_parameter("list", commands.join(","));
+    if(!send_message(reply, false))
+    {
+        SNAP_LOG_WARNING("could not reply with COMMANDS message to \"")(message.get_command())("\"");
+    }
+}
+
+
+/** \brief Reconfigure the logger.
+ *
+ * Whenever the logrotate runs or some changes are maed to the log
+ * definitions, the corresponding daemons need to reconfigure their
+ * logger to make use of the new file and settings. This command is
+ * used for the purpose.
+ *
+ * \note
+ * If the environment logger is not currently configured, this message
+ * gets ignored.
+ *
+ * \param[in] message  The STOP message.
+ */
+void snap_communicator::connection_with_send_message::msg_log(snap_communicator_message & message)
+{
+    NOTUSED(message);
+
+    if(snap::logging::is_configured())
+    {
+        // send log in the old file and format
+        //
+        SNAP_LOG_INFO("-------------------- Logging reconfiguration request.");
+
+        // reconfigure
+        //
+        snap::logging::reconfigure();
+
+        // send log to new file and format
+        //
+        SNAP_LOG_INFO("-------------------- Logging reconfiguration done.");
+    }
+}
+
+
+/** \brief Call you stop() function with true.
+ *
+ * This command means that someone is asking your daemon to quit as soon as
+ * possible because the Snap! environment is being asked to shutdown.
+ *
+ * The value 'true' means that all the daemons are being asked to stop and
+ * not just you.
+ *
+ * \param[in] message  The STOP message.
+ *
+ * \sa msg_stop()
+ */
+void snap_communicator::connection_with_send_message::msg_quitting(snap_communicator_message & message)
+{
+    NOTUSED(message);
+
+    stop(true);
+}
+
+
+/** \brief Call you ready() function with the message.
+ *
+ * All daemons using the snapcommunicator daemon have to have a ready()
+ * function which gets called once the HELP and COMMAND message were
+ * handled. This is why your daemon is expected to be ready to start
+ * working. Some daemon, though, start working immediately no matter
+ * what (i.e. snapwatchdog and snapfirewall do work either way.)
+ *
+ * \param[in] message  The READY message.
+ *
+ * \sa msg_help()
+ */
+void snap_communicator::connection_with_send_message::msg_ready(snap_communicator_message & message)
+{
+    // pass the message so any additional info can be accessed.
+    //
+    ready(message);
+}
+
+
+/** \brief Call you stop() function with false.
+ *
+ * This command means that someone is asking your daemon to stop.
+ *
+ * The value 'false' means just your daemon was asked to stop and not the
+ * entire system to shutdown (otherwise you would receive a QUITTING command
+ * instead.)
+ *
+ * \param[in] message  The STOP message.
+ *
+ * \sa msg_quitting()
+ */
+void snap_communicator::connection_with_send_message::msg_stop(snap_communicator_message & message)
+{
+    NOTUSED(message);
+
+    stop(false);
+}
+
+
+/** \brief Handle the UNKNOWN message.
+ *
+ * Whenever we send a command to another daemon, that command can be refused
+ * by sending an UNKNOWN reply. This function handles the UNKNOWN command
+ * by simply recording that as an error in the logs.
+ *
+ * \param[in] message  The UNKNOWN message we just received.
+ */
+void snap_communicator::connection_with_send_message::msg_log_unknown(snap_communicator_message & message)
+{
+    // we sent a command that the other end did not understand
+    // and got an UNKNOWN reply
+    //
+    SNAP_LOG_ERROR("we sent unknown command \"")
+                  (message.get_parameter("command"))
+                  ("\" and probably did not get the expected result.");
+}
+
 
 /** \brief Send the UNKNOWN message as a reply.
  *
@@ -2308,19 +2546,80 @@ void snap_communicator::connection_with_send_message::msg_reply_with_unknown(sna
 }
 
 
-
-
-
-
-
-//////////////////////////////////
-// Connection with Send Message //
-//////////////////////////////////
-
-
-snap_communicator::connection_with_send_message::~connection_with_send_message()
+/** \brief The default help() function does nothing.
+ *
+ * This implementation does nothing. It is expected that you reimplement
+ * this function depending on your daemon's need.
+ *
+ * The help() function gets called whenever the list of commands can't be
+ * 100% defined automatically.
+ *
+ * Your function is expected to add commands to the \p commands parameter
+ * as in:
+ *
+ * \code
+ *      commands << "MSG1";
+ *      commands << "MSG2";
+ *      commands << "MSG3";
+ * \endcode
+ *
+ * This allows you to handle those three messages with a single entry in
+ * your list of dispatcher_match objects with a regular expression such
+ * as "MSG[1-3]".
+ *
+ * \param[in,out] commands  List of commands to update.
+ */
+void snap_communicator::connection_with_send_message::help(snap_string_list & commands)
 {
+    NOTUSED(commands);
+
+    // do nothing by default -- user is expected to overload this function
+    //
+    SNAP_LOG_WARNING("default help() function was called.");
 }
+
+
+/** \brief The default ready() function does nothing.
+ *
+ * This implementation does nothing. It is expected that you reimplement
+ * this function depending on your daemon's need. Most often this function
+ * is the one that really starts your daemons process.
+ *
+ * \param[in,out] message  The READY message.
+ */
+void snap_communicator::connection_with_send_message::ready(snap_communicator_message & message)
+{
+    NOTUSED(message);
+
+    // do nothing by default -- user is expected to overload this function
+    //
+    SNAP_LOG_WARNING("default ready() function was called.");
+}
+
+
+/** \brief The default stop() function does nothing.
+ *
+ * This implementation does nothing. It is expected that you reimplement
+ * this function depending on your daemon's need.
+ *
+ * \param[in] quitting  Whether the QUITTING (true) or STOP (false) command
+ *                      was received.
+ */
+void snap_communicator::connection_with_send_message::stop(bool quitting)
+{
+    NOTUSED(quitting);
+
+    // do nothing by default -- user is expected to overload this function
+    //
+    SNAP_LOG_WARNING("default stop() function was called.");
+}
+
+
+
+
+
+
+
 
 
 
@@ -3618,10 +3917,7 @@ void snap_communicator::snap_pipe_message_connection::process_line(QString const
     snap_communicator_message message;
     if(message.from_message(line))
     {
-        if(!try_dispatching_message(message))
-        {
-            process_message(message);
-        }
+        dispatch_message(message);
     }
     else
     {
@@ -5104,10 +5400,7 @@ void snap_communicator::snap_tcp_client_message_connection::process_line(QString
     snap_communicator_message message;
     if(message.from_message(line))
     {
-        if(!try_dispatching_message(message))
-        {
-            process_message(message);
-        }
+        dispatch_message(message);
     }
     else
     {
@@ -5949,10 +6242,7 @@ void snap_communicator::snap_tcp_server_client_message_connection::process_line(
     snap_communicator_message message;
     if(message.from_message(line))
     {
-        if(!try_dispatching_message(message))
-        {
-            process_message(message);
-        }
+        dispatch_message(message);
     }
     else
     {
@@ -6100,10 +6390,7 @@ public:
             // (this messenger) is not given a dispatcher
             //
             snap_communicator_message copy(message);
-            if(!f_parent->try_dispatching_message(copy))
-            {
-                f_parent->process_message(copy);
-            }
+            f_parent->dispatch_message(copy);
         }
 
     private:
@@ -7250,10 +7537,7 @@ void snap_communicator::snap_udp_server_message_connection::process_read()
         if(message.from_message(udp_message))
         {
             // we received a valid message, process it
-            if(!try_dispatching_message(message))
-            {
-                process_message(message);
-            }
+            dispatch_message(message);
         }
         else
         {
@@ -7313,6 +7597,8 @@ void snap_communicator::snap_udp_server_message_connection::process_read()
  *
  *          // now that we have a dispatcher, this  would probably use
  *          // that mechanism instead of a list of if()/else if()
+ *          //
+ *          // Please, consider using the dispatcher instead
  *          //
  *          virtual void process_message(snap_communicator_message const & message)
  *          {

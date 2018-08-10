@@ -23,6 +23,7 @@
 #include "snapwebsites/udp_client_server.h"
 #include "snapwebsites/not_used.h"
 //#include "snapwebsites/log.h" -- not sensible here at this time because log.h includes snap_communicator.h -- See Jira SNAP-623
+#include "snapwebsites/snap_string_list.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
@@ -147,6 +148,7 @@ public:
 
     virtual                 ~dispatcher_base();
 
+    virtual bool            get_commands(snap_string_list & commands) = 0;
     virtual bool            dispatch(snap::snap_communicator_message & msg) = 0;
 
 private:
@@ -187,7 +189,8 @@ public:
         virtual                     ~snap_dispatcher_support();
 
         void                        set_dispatcher(dispatcher_base::pointer_t d);
-        bool                        try_dispatching_message(snap::snap_communicator_message & msg);
+        dispatcher_base::pointer_t  get_dispatcher() const;
+        bool                        dispatch_message(snap::snap_communicator_message & msg);
 
         // new callback
         virtual void                process_message(snap_communicator_message const & message);
@@ -290,7 +293,17 @@ public:
         // new callback
         virtual bool                send_message(snap_communicator_message const & message, bool cache = false) = 0;
 
+        virtual void                msg_help(snap_communicator_message & message);
+        virtual void                msg_log(snap_communicator_message & message);
+        virtual void                msg_quitting(snap_communicator_message & message);
+        virtual void                msg_ready(snap_communicator_message & message);
+        virtual void                msg_stop(snap_communicator_message & message);
+        virtual void                msg_log_unknown(snap_communicator_message & message);
         virtual void                msg_reply_with_unknown(snap_communicator_message & message);
+
+        virtual void                help(snap_string_list & commands);
+        virtual void                ready(snap_communicator_message & message);
+        virtual void                stop(bool quitting);
     };
 
     class snap_timer

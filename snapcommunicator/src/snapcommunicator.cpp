@@ -2362,7 +2362,9 @@ void snap_communicator_server::verify_command(base_connection::pointer_t connect
  * \param[in] message  The message were were just sent.
  * \param[in] udp  If true, this was a UDP message.
  */
-void snap_communicator_server::process_message(snap::snap_communicator::snap_connection::pointer_t connection, snap::snap_communicator_message const & message, bool udp)
+void snap_communicator_server::process_message(snap::snap_communicator::snap_connection::pointer_t connection
+                                             , snap::snap_communicator_message const & message
+                                             , bool udp)
 {
     // messages being broadcast to us have a unique ID, if that ID is
     // one we already received we must ignore the message altogether;
@@ -4259,16 +4261,19 @@ void snap_communicator_server::send_status(
     reply.add_parameter("cache", "no");
 
     // the name of the service is the name of the connection
+    //
     reply.add_parameter("service", connection->get_name());
 
     base_connection::pointer_t base_connection(std::dynamic_pointer_cast<base_connection>(connection));
     if(base_connection)
     {
         // check whether the connection is now up or down
+        //
         base_connection::connection_type_t const type(base_connection->get_connection_type());
         reply.add_parameter("status", type == base_connection::connection_type_t::CONNECTION_TYPE_DOWN ? "down" : "up");
 
         // get the time when it was considered up
+        //
         int64_t const up_since(base_connection->get_connection_started());
         if(up_since != -1)
         {
@@ -4276,6 +4281,7 @@ void snap_communicator_server::send_status(
         }
 
         // get the time when it was considered down (if not up yet, this will be skipped)
+        //
         int64_t const down_since(base_connection->get_connection_ended());
         if(down_since != -1)
         {
@@ -4309,12 +4315,14 @@ void snap_communicator_server::send_status(
             if(!sc)
             {
                 // not a service_connection, ignore (i.e. servers)
+                //
                 continue;
             }
 
             if(sc->understand_command("STATUS"))
             {
                 // send that STATUS message
+                //
                 //verify_command(sc, reply); -- we reach this line only if the command is understood
                 sc->send_message(reply);
             }

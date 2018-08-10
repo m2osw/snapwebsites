@@ -22,6 +22,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/snapwebsites.h>
+#include <snapwebsites/snap_communicator_dispatcher.h>
 
 // Qt lib
 //
@@ -75,8 +76,13 @@ class watchdog_child;
 
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 class watchdog_server
     : public server
+    , public snap_communicator::connection_with_send_message
+    , public snap::dispatcher<watchdog_server>
+    , public std::enable_shared_from_this<watchdog_server>
 {
 public:
     typedef std::shared_ptr<watchdog_server>         pointer_t;
@@ -90,6 +96,7 @@ public:
     virtual void        show_version();
     int64_t             get_statistics_period() const { return f_statistics_period; }
     int64_t             get_statistics_ttl() const { return f_statistics_ttl; }
+    void                ready(snap::snap_communicator_message & message);
     void                stop(bool quitting);
     void                set_snapcommunicator_connected(bool status);
     void                set_snapcommunicator_disconnected(bool status);
@@ -99,10 +106,15 @@ public:
 
     SNAP_SIGNAL_WITH_MODE(process_watch, (QDomDocument doc), (doc), NEITHER);
 
-    // internal functions
+    virtual bool        send_message(snap_communicator_message const & message, bool cache = false) override;
+
+    // internal functions (these are NOT derived)
     void                process_tick();
     void                process_sigchld();
-    void                process_message(snap::snap_communicator_message const & message);
+
+    void                msg_nocassandra(snap::snap_communicator_message & message);
+    void                msg_cassandraready(snap::snap_communicator_message & message);
+    void                msg_rusage(snap::snap_communicator_message & message);
 
 private:
     void                define_server_name();
@@ -118,6 +130,7 @@ private:
     int64_t                                         f_snapcommunicator_connected = 0;
     int64_t                                         f_snapcommunicator_disconnected = 0;
 };
+#pragma GCC diagnostic pop
 
 
 class watchdog_child

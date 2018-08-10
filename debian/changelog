@@ -1,3 +1,22 @@
+snapwebsites (1.5.119.0~xenial) xenial; urgency=high
+
+  * SNAP-648 -- Remove the backends=... from snapserver.conf on a purge of
+    snapbackend.
+  * Transformed the snapwatchdog server message dispatcher from a set of
+    if() statements to a snap dispatcher used on itself and the messenger.
+  * Removed a few logs that I used for debug purposes and inadvertendly
+    checked in.
+  * Removed the `systemctl stop <snapbackend service>` from the postrm:
+    (1) it's automatically done in the prerm and (2) it would be too late,
+    it has to be done in prerm.
+  * Changed the try_dispatching_message() in a dispatch_message() since we
+    can call process_message() from within it and save on many dual calls.
+  * Handle the default snap communicator messages within the snap_communicator
+    library object (HELP, LOG, QUITTING, READY, STOP, UNKNOWN)
+  * Created a get_commands() to have an automatic "HELP" implementation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  9 Aug 2018 20:00:57 -0700
+
 snapwebsites (1.5.118.0~xenial) xenial; urgency=high
 
   * Protected some rmdir in postinst scripts or they could fail.

@@ -17,7 +17,7 @@
 #pragma once
 
 #include "snapwebsites/snap_communicator.h"
-#include "snapwebsites/log.h" // should be in the snap_communicator.h but can't really
+#include "snapwebsites/log.h" // should be in the snap_communicator.h but can't at the moment
 
 namespace snap
 {
@@ -73,6 +73,14 @@ namespace snap
  * again.)
  *
  * \note
+ * The T parameter of this template is often referenced as a "connection"
+ * because it is expected to be a connection. There is actually no such
+ * constraint on that object. It just needs to understand the dispatcher
+ * usage which is to call the dispatch() function whenever a message is
+ * received. Also it needs to implement any f_execute() function as
+ * defined in its dispatch_match vector.
+ *
+ * \note
  * This is documented here because it is a template and we cannot do
  * that in the .cpp (at least older versions of doxygen could not.)
  */
@@ -99,14 +107,33 @@ public:
      * \li f_expr -- the "expression" to be matched to the command name
      *               for example "HELP".
      * \li f_execute -- the function offset to execute on a match.
-     * \li f_match -- the function to check whether the expression is a match.
+     * \li f_match -- the function to check whether the expression is a match;
+     *                it has a default of one_to_one_match() which means the
+     *                f_expr string is viewed as a plain string defining the
+     *                message name as is.
      *
      * The command name is called "f_expr" but some matching functions may
      * make use of the "f_expr" parameter as an expression such as a
-     * regular expression. (such function will be added with time.)
+     * regular expression. Such functions will be added here with time, you
+     * may also have your own, of course. The match function is expected to
+     * be a static or standalone function.
      */
     struct dispatcher_match
     {
+        /** \brief Define a vector of dispatcher_match objects.
+         *
+         * This function includes an array of dispatcher_match objects.
+         * Whenever you define dispatcher_match objects, you want to
+         * use the C++11 syntax to create a vector.
+         *
+         * \important
+         * We are NOT using a match because the matching may make use
+         * of complex functions that support things such as complex as
+         * regular expressions. In other words, the name of the message
+         * may not just be a simple string.
+         */
+        typedef std::vector<dispatcher_match>       vector_t;
+
         /** \brief The execution function.
          *
          * This type defines the execution function. We give it the message
@@ -175,8 +202,13 @@ public:
          *
          * For other match functions, this would be whatever type of
          * expression supported by those other functions.
+         *
+         * \note
+         * Effective C++ doesn't like bare pointers, but there is no real
+         * reason for us to waste time and memory by having an std::string
+         * here. It's going to always be a constant pointer anyway.
          */
-        char const *        f_expr;
+        char const *        f_expr = nullptr;
 
         /** \brief The execute function.
          *
@@ -195,7 +227,7 @@ public:
          *
          * The execution is started by calling the run() function.
          */
-        execute_func_t      f_execute;
+        execute_func_t      f_execute = nullptr;
 
         /** \brief The match function.
          *
@@ -208,7 +240,7 @@ public:
          *
          * The matching is done in the match() function.
          */
-        match_func_t        f_match = &dispatcher<T>::dispatcher_match::one_to_one_match;
+        match_func_t        f_match = &snap::dispatcher<T>::dispatcher_match::one_to_one_match;
 
         /** \brief Run the execution function if this is a match.
          *
@@ -254,6 +286,30 @@ public:
 
             return false;
         }
+
+        /** \brief Check whether f_match is one_to_one_match().
+         *
+         * This function checks whether the f_match function was defined
+         * to one_to_one_match()--the default--and if so returns true.
+         *
+         * \return true if f_match is the one_to_one_match() function.
+         */
+        bool match_is_one_to_one_match() const
+        {
+            return f_match == &snap::dispatcher<T>::dispatcher_match::one_to_one_match;
+        }
+
+        /** \brief Check whether f_match is always_match().
+         *
+         * This function checks whether the f_match function was defined
+         * to always_match() and if so returns true.
+         *
+         * \return true if f_match is the always_match() function.
+         */
+        bool match_is_always_match() const
+        {
+            return f_match == &snap::dispatcher<T>::dispatcher_match::always_match;
+        }
     };
 
 private:
@@ -274,7 +330,7 @@ private:
      * The number of items is calculated in the constructor
      * and saved in the f_matches_count parameter.
      */
-    dispatcher_match const *    f_matches = nullptr;
+    typename snap::dispatcher<T>::dispatcher_match::vector_t  f_matches = {};
 
     /** \brief Defines the number of matches in the f_matches array.
      *
@@ -316,11 +372,122 @@ public:
      * \param[in] matches  The array of dispatch keywords and functions.
      * \param[in] matches_size  The sizeof() of the matches array.
      */
-    dispatcher<T>(T * connection, dispatcher_match const * matches, size_t matches_size)
+    dispatcher<T>(T * connection, typename snap::dispatcher<T>::dispatcher_match::vector_t matches)
         : f_connection(connection)
         , f_matches(matches)
-        , f_matches_count(matches_size / sizeof(dispatcher_match))
     {
+    }
+
+    // prevent copies
+    dispatcher<T>(dispatcher<T> const & rhs) = delete;
+    dispatcher<T> & operator = (dispatcher<T> const & rhs) = delete;
+
+    /** \brief Add a default array of possible matches.
+     *
+     * In Snap! a certain number of messages are always exactly the same
+     * and these can be implemented internally so each daemon doesn't have
+     * to duplicate that work over and over again. These are there in part
+     * because the snapcommunicator expects those messages there.
+     *
+     * IMPORTANT NOTE: If you add your own version in your dispatcher_match
+     * vector, then these will be ignored since your version will match first
+     * and the dispatcher uses the first function only.
+     *
+     * This array currently includes:
+     *
+     * \li HELP -- msg_help() -- returns the list of all the messages
+     * \li LOG -- msg_log() -- reconfigure() the logger
+     * \li QUITTING -- msg_quitting() -- calls stop(true);
+     * \li READY -- msg_ready() -- calls ready() -- snapcommunicator always
+     *              sends that message so it has to be supported
+     * \li STOP -- msg_stop() -- calls stop(false);
+     * \li UNKNOWN -- msg_log_unknown() -- in case we receive a message we
+     *                don't understand
+     * \li * -- msg_reply_with_unknown() -- the last entry will be a grab
+     *          all pattern which returns the UNKNOWN message automatically
+     *          for you
+     *
+     * The msg_...() functions must be declared in your class T. If you
+     * use the system connection_with_send_message class then they're
+     * already defined there.
+     *
+     * The HELP response is automatically built from the f_matches.f_expr
+     * strings. However, if the function used to match the expression is
+     * not one_to_one_match(), then that string doesn't get used.
+     *
+     * If any message can't be determine (i.e. the function is not the
+     * one_to_one_match()) then the user help() function gets called and
+     * we expect that function to add any dynamic message the daemon
+     * understands.
+     *
+     * The LOG message reconfigures the logger if the is_configure() function
+     * says it is configured. In any other circumstances, nothing happens.
+     *
+     * Note that the UNKNOWN message is understood and just logs the message
+     * received. This allows us to see that WE sent a message that the receiver
+     * (not us) does not understand and adjust our code accordingly (i.e. add
+     * support for that message in that receiver or maybe fixed the spelling.)
+     */
+    void add_snap_communicator_commands()
+    {
+        // avoid more than one realloc()
+        //
+        f_matches.reserve(f_matches.size() + 7);
+
+        {
+            typename snap::dispatcher<T>::dispatcher_match m;
+            m.f_expr = "HELP";
+            m.f_execute = &T::msg_help;
+            //m.f_match = <default>;
+            f_matches.push_back(m);
+        }
+        {
+            typename snap::dispatcher<T>::dispatcher_match m;
+            m.f_expr = "LOG";
+            m.f_execute = &T::msg_log;
+            //m.f_match = <default>;
+            f_matches.push_back(m);
+        }
+        {
+            typename snap::dispatcher<T>::dispatcher_match m;
+            m.f_expr = "QUITTING";
+            m.f_execute = &T::msg_quitting;
+            //m.f_match = <default>;
+            f_matches.push_back(m);
+        }
+        {
+            typename snap::dispatcher<T>::dispatcher_match m;
+            m.f_expr = "READY";
+            m.f_execute = &T::msg_ready;
+            //m.f_match = <default>;
+            f_matches.push_back(m);
+        }
+        {
+            typename snap::dispatcher<T>::dispatcher_match m;
+            m.f_expr = "STOP";
+            m.f_execute = &T::msg_stop;
+            //m.f_match = <default>;
+            f_matches.push_back(m);
+        }
+        {
+            typename snap::dispatcher<T>::dispatcher_match m;
+            m.f_expr = "UNKNOWN";
+            m.f_execute = &T::msg_log_unknown;
+            //m.f_match = <default>;
+            f_matches.push_back(m);
+        }
+        {
+            typename snap::dispatcher<T>::dispatcher_match m;
+            m.f_expr = nullptr; // any other message
+            m.f_execute = &T::msg_reply_with_unknown;
+            m.f_match = &snap::dispatcher<T>::dispatcher_match::always_match;
+            f_matches.push_back(m);
+        }
+    }
+
+    typename snap::dispatcher<T>::dispatcher_match::vector_t const & get_matches() const
+    {
+        return f_matches;
     }
 
     /** \brief The dispatch function.
@@ -356,6 +523,12 @@ public:
                           ("\".");
         }
 
+        // go in order to execute matches
+        //
+        // remember that a dispatcher with just a set of well defined command
+        // names is a special case (albeit frequent) and we can't process
+        // using a map (a.k.a. fast binary search) as a consequence
+        //
         for(size_t i(0); i < f_matches_count; ++i)
         {
             if(f_matches[i].execute(f_connection, msg))
@@ -386,6 +559,58 @@ public:
     void set_trace(bool trace = true)
     {
         f_trace = trace;
+    }
+
+    /** \brief Retrieve the list of commands.
+     *
+     * This function transforms the vector of f_matches in a list of
+     * commands in a QStringList.
+     *
+     * \param[in,out] commands  The place where the list of commands is saved.
+     *
+     * \return true if the commands were all determined, false if some need
+     *         help from the user of this dispatcher.
+     */
+    virtual bool get_commands(snap_string_list & commands) override
+    {
+        bool need_user_help(false);
+        for(auto const & m : f_matches)
+        {
+            if(m.f_expr == nullptr)
+            {
+                if(!m.match_is_always_match())
+                {
+                    // this is a "special case" where the user has
+                    // a magical function which does not require an
+                    // expression at all (i.e. "hard coded" in a
+                    // function)
+                    //
+                    need_user_help = true;
+                }
+                //else -- always match is the last entry and that just
+                //        means we can return UNKNOWN on an unknown message
+            }
+            else if(m.match_is_one_to_one_match())
+            {
+                // add the f_expr as is since it represents a command
+                // as is
+                //
+                // note: the fromUtf8() is not extremely important
+                //       since commands have to be uppercase letters
+                //       and digits and the underscore it would work
+                //       with fromLatin1() too
+                //
+                commands << QString::fromUtf8(m.f_expr);
+            }
+            else
+            {
+                // this is not a one to one match, so possibly a
+                // full regex or similar
+                //
+                need_user_help = true;
+            }
+        }
+        return need_user_help;
     }
 };
 
