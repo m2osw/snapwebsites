@@ -323,26 +323,11 @@ private:
 
     /** \brief The array of possible matches.
      *
-     * This is the array of your messages with the corresponding
+     * This is the vector of your messages with the corresponding
      * match and execute functions. This is used to go through
      * the matches and execute (dispatch) as required.
-     *
-     * The number of items is calculated in the constructor
-     * and saved in the f_matches_count parameter.
      */
     typename snap::dispatcher<T>::dispatcher_match::vector_t  f_matches = {};
-
-    /** \brief Defines the number of matches in the f_matches array.
-     *
-     * Since we pass a static array (opposed to a vector because the
-     * vector needs to be dynamically allocated, as far as I know),
-     * we want to know the size of the array, which we get in the
-     * constructor.
-     *
-     * The value here is already divided by the size of the
-     * `dispatcher_match` structure size.
-     */
-    size_t                      f_matches_count = 0;
 
     /** \brief Tell whether messages should be traced or not.
      *
@@ -529,9 +514,9 @@ public:
         // names is a special case (albeit frequent) and we can't process
         // using a map (a.k.a. fast binary search) as a consequence
         //
-        for(size_t i(0); i < f_matches_count; ++i)
+        for(auto const & m : f_matches)
         {
-            if(f_matches[i].execute(f_connection, msg))
+            if(m.execute(f_connection, msg))
             {
                 return true;
             }

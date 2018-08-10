@@ -1,3 +1,9 @@
+snapwebsites (1.5.121.0~xenial) xenial; urgency=high
+
+  * Fixed the loop over the dispatch match (it still used the f_match_count.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Aug 2018 02:58:24 -0700
+
 snapwebsites (1.5.120.0~xenial) xenial; urgency=high
 
   * Added a delete on a bundle file so they get reloaded from the remote server.

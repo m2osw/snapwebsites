@@ -338,7 +338,7 @@ public:
     virtual                     ~messenger() override {}
 
     // snap::snap_communicator::snap_tcp_client_permanent_message_connection implementation
-    //virtual void                process_message(snap::snap_communicator_message const & message) override; -- we set the dispatcher on this one too
+    //virtual void                process_message(snap::snap_communicator_message const & message) override; //-- we set the dispatcher on this one too
     virtual void                process_connection_failed(std::string const & error_message) override;
     virtual void                process_connected() override;
 
