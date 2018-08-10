@@ -1,3 +1,10 @@
+snapwebsites (1.5.122.0~xenial) xenial; urgency=high
+
+  * SNAP-546: Added a way to setup the name of a child process.
+  * Set the name of snap_child and process children.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Aug 2018 04:02:59 -0700
+
 snapwebsites (1.5.121.0~xenial) xenial; urgency=high
 
   * Fixed the loop over the dispatch match (it still used the f_match_count.)

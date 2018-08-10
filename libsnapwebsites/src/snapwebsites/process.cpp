@@ -27,6 +27,7 @@
 //
 #include <proc/readproc.h>
 #include <stdio.h>
+#include <sys/prctl.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -614,12 +615,18 @@ int process::run()
     {
     case -1:
         // fork failed
+        //
         return -1;
 
     case 0:
         // child
+        //
         try
         {
+            // set name of child process
+            //
+            set_process_name(f_name);
+
             // convert arguments so we can use them with execvpe()
             //
             std::vector<char const *> args_strings;
@@ -1082,6 +1089,54 @@ QByteArray process::get_binary_error(bool reset)
         f_error.clear();
     }
     return error;
+}
+
+
+/** \brief Set the process name.
+ *
+ * This is an overload, check out the set_process_name() with char const *.
+ *
+ * \param[in] name  The new process name.
+ */
+void process::set_process_name(QString const & name)
+{
+    set_process_name(name.toUtf8().data());
+}
+
+
+/** \brief Set the process name.
+ *
+ * This is an overload, check out the set_process_name() with char const *.
+ *
+ * \param[in] name  The new process name.
+ */
+void process::set_process_name(std::string const & name)
+{
+    set_process_name(name.c_str());
+}
+
+
+/** \brief Set the process name.
+ *
+ * Whenever creating a child process (with fork() or pthread()) it is
+ * possible to change the name so tools such as `ps` or `htop` give
+ * a different name.
+ *
+ * \note
+ * The name may get truncated.
+ *
+ * \todo
+ * Look into a way to change the argv[0] as well.
+ *
+ * \param[in] name  The new name for the current process.
+ */
+void process::set_process_name(char const * name)
+{
+    if(name != nullptr
+    && *name != '\0')
+    {
+        prctl(PR_SET_NAME, name);
+    }
 }
 
 

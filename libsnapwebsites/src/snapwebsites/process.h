@@ -156,6 +156,10 @@ public:
     QString                     get_error(bool reset = false);
     QByteArray                  get_binary_error(bool reset = false);
 
+    static void                 set_process_name(QString const & name);
+    static void                 set_process_name(std::string const & name);
+    static void                 set_process_name(char const * name);
+
 private:
     // prevent copies
                                 process(process const & rhs) = delete;

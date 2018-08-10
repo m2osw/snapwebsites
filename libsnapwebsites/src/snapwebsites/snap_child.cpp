@@ -20,12 +20,15 @@
 
 #include "snapwebsites/snap_child.h"
 
+// snapwebsites lib
+//
 #include "snapwebsites/compression.h"
 #include "snapwebsites/http_strings.h"
 #include "snapwebsites/log.h"
 #include "snapwebsites/mail_exchanger.h"
 #include "snapwebsites/mkgmtime.h"
 #include "snapwebsites/not_used.h"
+#include "snapwebsites/process.h"
 #include "snapwebsites/qdomhelpers.h"
 #include "snapwebsites/qlockfile.h"
 #include "snapwebsites/snap_image.h"
@@ -34,12 +37,24 @@
 #include "snapwebsites/snap_lock.h"
 #include "snapwebsites/snap_magic.h"
 
+// dbproxy lib
+//
 #include <libdbproxy/exception.h>
+
+// Qt Serialization lib
+//
 #include <QtSerialization/QSerialization.h>
+
+// tld lib
+//
 #include <libtld/tld.h>
 
+// C++ lib
+//
 #include <sstream>
 
+// C lib
+//
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -47,8 +62,13 @@
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 
+// Qt lib
+//
 #include <QDirIterator>
 
+
+// last entry
+//
 #include "snapwebsites/poison.h"
 
 
@@ -2862,6 +2882,8 @@ pid_t snap_child::fork_child()
         //
         try
         {
+            process::set_process_name("snap_child");
+
             prctl(PR_SET_PDEATHSIG, SIGHUP);
 
             // Since we are in the child instance, we don't want the same object as was running in the server.

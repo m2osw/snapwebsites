@@ -157,6 +157,8 @@ int main(int argc, char * argv[])
             return 0;
         }
 
+        snap::process::set_process_name("snap-upgrader");
+
         // leave my parents session
         //
         setsid();
