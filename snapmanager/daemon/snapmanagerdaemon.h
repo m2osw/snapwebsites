@@ -185,7 +185,8 @@ public:
     void                            process_message(snap::snap_communicator_message const & message);
     virtual void                    forward_message(snap::snap_communicator_message const & message) override;
     void                            unreachable_message(snap::snap_communicator_message const & message);
-    virtual snap::snap_string_list const & get_snapmanager_frontend() const override;
+    virtual snap::snap_string_list const &
+                                    get_snapmanager_frontend() const override;
     virtual bool                    stop_now_prima() const override;
     void                            stop(bool quitting);
 

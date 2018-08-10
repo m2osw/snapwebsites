@@ -135,8 +135,10 @@ public:
     QString const &                 get_public_ip() const;
     std::string const &             get_signal_address() const;
     int                             get_signal_port() const;
-    virtual snap::snap_string_list const & get_snapmanager_frontend() const;
-    std::vector<std::string> const & get_bundle_uri() const;
+    virtual snap::snap_string_list const &
+                                    get_snapmanager_frontend() const;
+    std::vector<std::string> const &
+                                    get_bundle_uri() const;
     std::vector<std::string>        get_list_of_bundles() const;
     QString const &                 get_bundles_path() const;
     QString const &                 get_data_path() const;

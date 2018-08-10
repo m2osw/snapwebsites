@@ -1,3 +1,9 @@
+snapwebsites (1.5.120.0~xenial) xenial; urgency=high
+
+  * Added a delete on a bundle file so they get reloaded from the remote server.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  9 Aug 2018 23:18:13 -0700
+
 snapwebsites (1.5.119.0~xenial) xenial; urgency=high
 
   * SNAP-648 -- Remove the backends=... from snapserver.conf on a purge of

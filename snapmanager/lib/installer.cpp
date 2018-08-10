@@ -378,6 +378,14 @@ void manager::reset_aptcheck()
     //
     QString const bundles_status_filename(QString("%1/bundles.status").arg(f_bundles_path));
     unlink(bundles_status_filename.toUtf8().data());
+
+    // delete the bundles.last-update-time as well so that way on a restart
+    // the snapmanagerdaemon will reload the latest bundles automatically
+    // (the current version requires a restart because the bundles are loaded
+    // by a thread which we start only once at the start of snapmanagerdaemon)
+    //
+    QString const bundles_last_update_time_filename(QString("%1/bundles.last-update-time").arg(f_bundles_path));
+    unlink(bundles_last_update_time_filename.toUtf8().data());
 }
 
 
@@ -500,7 +508,10 @@ std::string manager::lock_filename() const
 }
 
 
-bool manager::installer(QString const & bundle_name, std::string const & command, std::string const & install_values, std::set<QString> & affected_services)
+bool manager::installer(QString const & bundle_name
+                      , std::string const & command
+                      , std::string const & install_values
+                      , std::set<QString> & affected_services)
 {
     bool success(true);
 

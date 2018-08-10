@@ -1104,7 +1104,11 @@ bool self::display_value(QDomElement parent, snap_manager::status_t const & s, s
  * \return true if the new_value was applied and the affected_services
  *         should be sent their RELOADCONFIG message.
  */
-bool self::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
+bool self::apply_setting(QString const & button_name
+                       , QString const & field_name
+                       , QString const & new_value
+                       , QString const & old_or_installation_value
+                       , std::set<QString> & affected_services)
 {
     // refresh is a special case in the "self" plugin only
     //
@@ -1147,8 +1151,12 @@ bool self::apply_setting(QString const & button_name, QString const & field_name
                                                                                     , backendstatus);
         }
 
-        // message sent...
+        // messages sent...
         //
+        // we also ask for the snapmanagerdaemon to restart otherwise
+        // the bundles would not get reloaded from the remote server
+        //
+        affected_services.insert("snapmanagerdaemon");
         return true;
     }
 
@@ -1194,6 +1202,7 @@ bool self::apply_setting(QString const & button_name, QString const & field_name
         // TBD: we need to add something to the affected_services?
         //      (the snapupgrader tool should restart the whole stack
         //      anyway so we should be fine...)
+        //
         return true;
     }
 
