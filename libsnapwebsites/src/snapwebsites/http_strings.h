@@ -48,6 +48,8 @@ public:
                                     part_t(QString const & name);
 
         QString const &             get_name() const;
+        QString const &             get_value() const;  // in case the first name has a "name=value" part
+        void                        set_value(QString const & value);
         level_t                     get_level() const;
         void                        set_level(level_t const level);
         QString                     get_parameter(QString const & name) const;
@@ -60,6 +62,7 @@ public:
         typedef QMap<QString, QString>      parameters_t;
 
         QString                     f_name = QString();
+        QString                     f_value = QString();
         level_t                     f_level = DEFAULT_LEVEL(); // i.e.  q=0.8
         // TODO add support for any other parameter
         parameters_t                f_param = parameters_t();

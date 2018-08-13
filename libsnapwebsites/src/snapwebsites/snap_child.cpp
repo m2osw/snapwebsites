@@ -4794,7 +4794,10 @@ void snap_child::canonicalize_domain()
     if(!table->exists(f_domain_key))
     {
         // this domain doesn't exist; i.e. that's a 404
-        die(http_code_t::HTTP_CODE_NOT_FOUND, "Domain Not Found", "This website does not exist. Please check the URI and make corrections as required.", "User attempt to access \"" + f_domain_key + "\" which is not defined as a domain.");
+        die(http_code_t::HTTP_CODE_NOT_FOUND,
+                    "Domain Not Found",
+                    "This website does not exist. Please check the URI and make corrections as required.",
+                    "User attempt to access \"" + f_domain_key + "\" which is not defined as a domain.");
         NOTREACHED();
     }
 
@@ -4804,7 +4807,10 @@ void snap_child::canonicalize_domain()
     {
         // Null value means an empty string or undefined column and either
         // way it's wrong here
-        die(http_code_t::HTTP_CODE_NOT_FOUND, "Domain Not Found", "This website does not exist. Please check the URI and make corrections as required.", "User attempt to access domain \"" + f_domain_key + "\" which does not have a valid core::rules entry.");
+        die(http_code_t::HTTP_CODE_NOT_FOUND,
+                    "Domain Not Found",
+                    "This website does not exist. Please check the URI and make corrections as required.",
+                    "User attempt to access domain \"" + f_domain_key + "\" which does not have a valid core::rules entry.");
         NOTREACHED();
     }
 
@@ -4954,10 +4960,12 @@ void snap_child::canonicalize_domain()
 void snap_child::canonicalize_website()
 {
     // retrieve website table
+    //
     QString const table_name(get_name(name_t::SNAP_NAME_WEBSITES));
     libdbproxy::table::pointer_t table(f_context->getTable(table_name));
 
     // row for that website exists?
+    //
     if(!table->exists(f_website_key))
     {
         // this website doesn't exist; i.e. that's a 404
@@ -4966,11 +4974,13 @@ void snap_child::canonicalize_website()
     }
 
     // get the core::rules
+    //
     libdbproxy::value value(table->getRow(f_website_key)->getCell(QString(get_name(name_t::SNAP_NAME_CORE_RULES)))->getValue());
     if(value.nullValue())
     {
         // Null value means an empty string or undefined column and either
         // way it's wrong here
+        //
         die(http_code_t::HTTP_CODE_NOT_FOUND, "Website Not Found", "This website does not exist. Please check the URI and make corrections as required.", "User attempt to access website \"" + f_website_key + "\" which does not have a valid core::rules entry.");
         NOTREACHED();
     }
@@ -5081,18 +5091,22 @@ void snap_child::canonicalize_website()
         {
             // one of protocol, port, or query string failed
             // (path is checked below)
+            //
             continue;
         }
         // now check the path, if empty assume it matches and
         // also we have no extra options
+        //
         QString canonicalized_path;
         if(!re_path.isEmpty())
         {
             // match from the start, but it doesn't need to match the whole path
+            //
             QRegExp regex("^" + re_path);
             if(regex.indexIn(uri_path) != -1)
             {
                 // we found the site including a path!
+                //
                 // TODO: should we keep the length of the captured data and
                 //       remove it from the path sent down the road?
                 //       (note: if you have a path such as /blah/foo and
@@ -5101,9 +5115,11 @@ void snap_child::canonicalize_website()
                 //       However, if the path is only used for options such
                 //       as languages, those options should be removed from
                 //       the original path.
+                //
                 snap_string_list captured(regex.capturedTexts());
 
                 // note captured[0] is the full matching pattern, we ignore it
+                //
                 for(int v = 0; v < vmax; ++v)
                 {
                     QSharedPointer<website_variable> var(info->get_variable(v));
@@ -5115,6 +5131,7 @@ void snap_child::canonicalize_website()
                         if(var->get_required())
                         {
                             // required, use default if empty
+                            //
                             if(path_value.isEmpty()
                             || var->get_type() == website_variable::WEBSITE_VARIABLE_TYPE_WEBSITE)
                             {
@@ -5123,11 +5140,13 @@ void snap_child::canonicalize_website()
                             f_uri.set_option(var->get_name(), path_value);
 
                             // these make up the final canonicalized domain name
+                            //
                             canonicalized_path += "/" + snap_uri::urlencode(path_value, "~");
                         }
                         else if(!path_value.isEmpty())
                         {
                             // optional path, set only if not empty
+                            //
                             if(var->get_type() == website_variable::WEBSITE_VARIABLE_TYPE_WEBSITE)
                             {
                                 path_value = var->get_default();
@@ -5137,6 +5156,7 @@ void snap_child::canonicalize_website()
                         else
                         {
                             // optional with a default, use it
+                            //
                             path_value = var->get_default();
                             if(!path_value.isEmpty())
                             {
@@ -5156,6 +5176,7 @@ void snap_child::canonicalize_website()
         {
             // now we've got the protocol, port, query strings, and paths
             // so we can build the final URI that we'll use as the site key
+            //
             QString canonicalized;
             f_uri.set_option("protocol", protocol);
             canonicalized += protocol + "://" + f_website_key;
@@ -6790,6 +6811,7 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
     if(f_died)
     {
         // avoid loops
+        //
         return;
     }
     f_died = true;
@@ -6797,14 +6819,17 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
     try
     {
         // define a default error name if undefined
+        //
         define_http_name(err_code, err_name);
 
         // log the error
+        //
         SNAP_LOG_FATAL("snap child process: ")(err_details)(" (")(static_cast<int>(err_code))(" ")(err_name)(": ")(err_description)(")");
 
         if(f_is_being_initialized)
         {
             // send initialization process the info about the error
+            //
             trace(QString("Error: die() called: %1 (%2 %3: %4)\n").arg(err_details).arg(static_cast<int>(err_code)).arg(err_name).arg(err_description));
             trace("#END\n");
         }
@@ -6822,6 +6847,7 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
                        HEADER_MODE_ERROR);
 
             // Make sure that the session is re-attached
+            //
             if(f_cassandra)
             {
                 server::pointer_t server( f_server.lock() );
@@ -6835,6 +6861,7 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
             // content type is HTML, we reset this header because it could have
             // been changed to something else and prevent the error from showing
             // up in the browser
+            //
             set_header(get_name(name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER),
                        "text/html; charset=utf8",
                        HEADER_MODE_EVERYWHERE);
@@ -6845,6 +6872,12 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
             //       (but probably only for 403 and 404 pages?)
 
             QString const html(error_body(err_code, err_name, err_description));
+
+            // In case someone changed the cache controls, make sure the
+            // cache is turned off and errors are public
+            //
+            f_server_cache_control.set_no_cache(true);
+            f_page_cache_control.set_no_cache(true);
 
             // in case there are any cookies, send them along too
             //
@@ -7353,9 +7386,11 @@ void snap_child::output_headers(header_mode_t modes)
     // fields by type and output them ordered by type as defined in
     // the HTTP reference chapter 4.2)
     //
-    if(has_header(get_name(name_t::SNAP_NAME_CORE_STATUS_HEADER)) && (f_header["status"].f_modes & modes) != 0)
+    if(has_header(get_name(name_t::SNAP_NAME_CORE_STATUS_HEADER))
+    && (f_header["status"].f_modes & modes) != 0)
     {
         // If status is defined, it should not be 200
+        //
         write((f_header["status"].f_header + "\n").toLatin1().data());
     }
 

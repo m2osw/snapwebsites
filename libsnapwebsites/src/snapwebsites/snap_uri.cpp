@@ -70,18 +70,6 @@ const website_variable::website_variable_type_t website_variable::WEBSITE_VARIAB
  * \sa set_anchor()
  */
 snap_uri::snap_uri()
-    //: f_original("") -- auto-init
-    //, f_protocol("http") --auto-init
-    //, f_username("") -- auto-init
-    //, f_password("") -- auto-init
-    //, f_port(80) -- auto-init
-    //, f_domain("") -- auto-init
-    //, f_top_level_domain("") -- auto-init
-    //, f_sub_domains() -- auto-init
-    //, f_path() -- auto-init
-    //, f_options() -- auto-init
-    //, f_query_strings() -- auto-init
-    //, f_anchor("") -- auto-init
 {
 }
 
@@ -263,6 +251,7 @@ bool snap_uri::set_uri(QString const & uri)
     if(!u->isNull())
     {
         // skip the '/'
+        //
         ++u;
         for(s = u; !u->isNull() && u->unicode() != '?' && u->unicode() != '#'; ++u)
         {
@@ -271,15 +260,18 @@ bool snap_uri::set_uri(QString const & uri)
                 if(s != u)
                 {
                     // decode right here since we just separate one segment
+                    //
                     uri_path << urldecode(QString(s, static_cast<int>(u - s)));
                 }
                 // skip the '/'
+                //
                 s = u + 1;
             }
         }
         if(s != u)
         {
             // last segment when it does not end with '/'
+            //
             uri_path << urldecode(QString(s, static_cast<int>(u - s)));
         }
     }
@@ -362,32 +354,38 @@ bool snap_uri::set_uri(QString const & uri)
     if(!u->isNull() && u->unicode() == '#')
     {
         ++u;
+
         // we need to decode the string so we add the whole string here
+        //
         QString p(u);
         p = urldecode(p);
         if(!p.isEmpty() && p[0] == '!')
         {
             // what do we do here?!
+            //
             // it seems to me that we should not get those here, but that
             // could be from someone who wrote the URL in their document.
-            // also, the ! should be encoded... (%21)
+            //
             u = p.constData();
             for(s = u; !u->isNull(); ++u)
             {
                 if(u->unicode() == '/')
                 {
                     // encode right here since we have separate strings
+                    //
                     if(s != u)
                     {
                         uri_path << urldecode(QString(s, static_cast<int>(u - s)));
                     }
                     // skip the '/'
+                    //
                     s = u + 1;
                 }
             }
             if(s != u)
             {
                 // last path that doesn't end with '/'
+                //
                 uri_path << urldecode(QString(s, static_cast<int>(u - s)));
             }
         }
@@ -402,6 +400,7 @@ bool snap_uri::set_uri(QString const & uri)
     // to "/" and we do not verify that all the paths exist... (i.e.
     // if "c" does not exist under "/a/b" (folder /a/b/c), then it should
     // be an error to use "/a/b/c/.." since "/a/b/c" cannot be computed.)
+    //
     int max_path(uri_path.size());
     for(int i(0); i < max_path; ++i)
     {
@@ -410,6 +409,7 @@ bool snap_uri::set_uri(QString const & uri)
             if(i == 0 || max_path < 2)
             {
                 // the path starts with a ".." or has too many ".."
+                //
                 return false;
             }
             uri_path.removeAt(i);
@@ -420,9 +420,11 @@ bool snap_uri::set_uri(QString const & uri)
     }
 
     // totally unchanged URI, but only if it is considered valid
+    //
     f_original = uri;
 
     // now decode all the entries that may be encoded
+    //
     f_protocol = uri_protocol;
     f_username = urldecode(username);
     f_password = urldecode(password);
@@ -437,6 +439,7 @@ bool snap_uri::set_uri(QString const & uri)
 
     // options come from parsing the sub-domains, query strings and paths
     // and at this point we do not have that information...
+    //
     f_options.clear();
 
     f_query_strings = query_strings;
@@ -519,11 +522,16 @@ QString snap_uri::get_uri(bool use_hash_bang) const
     uri += "/";
 
     // path if no hash bang
+    //
     QString const p(path());
     if(!use_hash_bang && p.length() > 0)
     {
         // avoid a double slash if possible
-        // XXX: should the path not have a starting slash?
+        //
+        // XXX: should the path not have a leading slash?
+        //      (as far as I know path() never return a path with a leading
+        //      slash; but we would need a test to make sure of it)
+        //
         if(p[0] == '/')
         {
             uri += p.mid(1);

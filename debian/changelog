@@ -1,3 +1,26 @@
+snapwebsites (1.5.123.0~xenial) xenial; urgency=high
+
+  * SNAP-199: Added support for caches in snap.cgi.
+  * To get the new cache to work properly, added a hack, see SNAP-650.
+  * Possibly fixed a security issue in the die() funtion, it now calls the
+    set_no_cache(true) to make sure that error pages don't get cached.
+  * Fixed a bug with last_modified, if both are -1, we do not want a 304.
+  * Added the ETag for CSS/JS files.
+  * Mark the CSS/JS file as immutable which means avoiding many hits.
+  * Changed the update_...()  functions in the cache to use minimum().
+  * Added two cache directories so snap.cgi can save caheable files there.
+  * Fixed HTTP Weighted Strings to support values and quoted strings.
+  * Fixed the libdbproxy so snapcreatetables stops crashing creating tables.
+  * Added the model name in the comment so looking at table descriptions gives
+    us that info for when the table was created.
+  * SNAP-442: Added a DESCRIBE CLUSTER ANEW so we can force a reload of the
+    cluster meta data from the Cassandra cluster.
+  * SNAP-399: Added support for Cache-Tag-like headers along cache_control.
+  * Finally found the bug in the BIO class, when r == 0 we could end up
+    returning -1 instead of 0. It's now returning 0 as expected.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 11 Aug 2018 16:34:29 -0700
+
 snapwebsites (1.5.122.0~xenial) xenial; urgency=high
 
   * SNAP-546: Added a way to setup the name of a child process.

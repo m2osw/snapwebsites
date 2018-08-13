@@ -84,7 +84,7 @@ public:
     // context functions (the database [Cassandra keyspace])
     context::pointer_t          currentContext() const { return f_current_context; }
     context::pointer_t          getContext(QString const & context_name);
-    contexts const &            getContexts() const;
+    contexts const &            getContexts(bool reset = false) const;
 
     context::pointer_t          findContext(QString const & context_name) const;
     context &                   operator[] (QString const & context_name);

@@ -15,15 +15,29 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "snapwebsites/snap_child.h"
 
+// snapwebsites lib
+//
 #include "snapwebsites/log.h"
 #include "snapwebsites/not_reached.h"
 #include "snapwebsites/snapwebsites.h"
 
+// Qt lib
+//
 #include <QLocale>
 
+// boost lib
+//
+#include <boost/algorithm/string/join.hpp>
+
+
+// last entry
+//
 #include "snapwebsites/poison.h"
+
 
 
 namespace snap
@@ -71,6 +85,7 @@ cache_control_settings const & snap_child::client_cache_control() const
  * using the update_...() functions.
  *
  * \todo
+ * See: SNAP-650
  * Right now there is no real priority between the server and page
  * settings. I think the page should have priority, but that's
  * complicated to know what that means... unless we add a flag for
@@ -167,23 +182,26 @@ bool snap_child::no_caching() const
  * When the ETag values are equal, this function kills the child process
  * after sending an HTTP 304 reply to the user and to the logger.
  *
- * The reply does not include any HTML to avoid wasting time because
- * in most cases there is absolutely no need for such since the browser
- * is expected to display its cache and not any data from this reply.
+ * The reply does not include any HTML because it is not allowed by the
+ * specification (and there is no point since the client will reuse its
+ * cache anyway.)
  *
  * \note
  * The header fields must include the following if they were
  * there with the 200 reply:
  *
- * \li Cache-Control,
- * \li Content-Location,
- * \li Date,
- * \li ETag,
- * \li Expires, and
- * \li Vary.
+ * \li Cache-Control
+ * \li Content-Location
+ * \li Date
+ * \li ETag
+ * \li Expires
+ * \li Vary
  *
  * \warning
  * This function does not return when the 304 reply is sent.
+ *
+ * \see
+ * https://tools.ietf.org/html/rfc7232#section-4.1
  */
 void snap_child::not_modified()
 {
@@ -195,6 +213,24 @@ void snap_child::not_modified()
         if(no_caching())
         {
             // never caching this data, never send the 304.
+            //
+            return;
+        }
+        if(f_page_cache_control.get_public()
+        || f_server_cache_control.get_public())
+        {
+            // See SNAP-650
+            //
+            // let snap.cgi cache this one for us, right now we don't yet
+            // have snap.cgi converted to a real proxy so we have to reply
+            // with a full 200 OK response to make that cache work... once
+            // we have a correct proxy, we will re-enable a 304 Not Modified
+            // response even for snap.cgi which can then update its caches
+            // accordingly (i.e. if snap.cgi does not have a cache, it can
+            // send a request without conditionals and save the new response
+            // and if it already has a file, it can include conditionals
+            // that are defined from that file.)
+            //
             return;
         }
 
@@ -219,16 +255,19 @@ void snap_child::not_modified()
             f_died = true;
 
             // define a default error name if undefined
+            //
             QString err_name;
             define_http_name(http_code_t::HTTP_CODE_NOT_MODIFIED, err_name);
 
             // log the fact we are sending a 304
+            //
             SNAP_LOG_INFO("snap_child_cache_control.cpp:not_modified(): replying with HTTP 304 for ")(f_uri.path())(" (1)");
 
             if(f_is_being_initialized)
             {
                 // send initialization process the info about the fact
                 // (this should never occur, we may instead want to call die()?)
+                //
                 trace(QString("Error: not_modified() called: %1\n").arg(f_uri.path()));
                 trace("#END\n");
             }
@@ -242,20 +281,15 @@ void snap_child::not_modified()
                                 .arg(err_name),
                            HEADER_MODE_EVERYWHERE);
 
-                // content type is HTML, we reset this header because it could have
-                // been changed to something else and prevent the error from showing
-                // up in the browser
-                //set_header(get_name(name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER),
-                //           "text/html; charset=utf8",
-                //           HEADER_MODE_EVERYWHERE);
-                //
                 // Remove the Content-Type header, this is simpler than requiring
                 // the correct content type information
+                //
                 set_header(get_name(name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER),
                            "",
                            HEADER_MODE_EVERYWHERE);
 
                 // since we are going to exit without calling the attach_to_session()
+                //
                 server::pointer_t server( f_server.lock() );
                 if(!server)
                 {
@@ -264,17 +298,20 @@ void snap_child::not_modified()
                 server->attach_to_session();
 
                 // in case there are any cookies, send them along too
+                //
                 output_headers(HEADER_MODE_NO_ERROR);
 
-                // no data to output with 304
+                // no data to output with 304 (it's forbidden)
             }
 
             // the cache worked as expected
+            //
             exit(0);
         }
 
         // No "If-None-Match" header found, so check fo the next
         // possible modification check which is the "If-Modified-Since"
+        //
         QString const if_modified_since(snapenv("HTTP_IF_MODIFIED_SINCE"));
         QString const last_modified_str(get_header("Last-Modified"));
         if(!if_modified_since.isEmpty()
@@ -282,29 +319,37 @@ void snap_child::not_modified()
         {
             time_t const modified_since(string_to_date(if_modified_since));
             time_t const last_modified(string_to_date(last_modified_str));
+
             // TBD: should we use >= instead of == here?
-            if(modified_since == last_modified)
+            // (see in snapcgi/src/snap.cpp too)
+            //
+            if(modified_since == last_modified
+            && modified_since != -1)
             {
                 // this or die() was already called, forget it
                 //
                 if(f_died)
                 {
                     // avoid loops
+                    //
                     return;
                 }
                 f_died = true;
 
                 // define a default error name if undefined
+                //
                 QString err_name;
                 define_http_name(http_code_t::HTTP_CODE_NOT_MODIFIED, err_name);
 
                 // log the fact we are sending a 304
+                //
                 SNAP_LOG_INFO("snap_child_cache_control.cpp:not_modified(): replying with HTTP 304 for ")(f_uri.path())(" (2)");
 
                 if(f_is_being_initialized)
                 {
                     // send initialization process the info about the fact
                     // (this should never occur, we may instead want to call die()?)
+                    //
                     trace(QString("Error: not_modified() called: %1\n").arg(f_uri.path()));
                     trace("#END\n");
                 }
@@ -312,26 +357,22 @@ void snap_child::not_modified()
                 {
                     // On error we do not return the HTTP protocol, only the Status field
                     // it just needs to be first to make sure it works right
+                    //
                     set_header("Status",
                                QString("%1 %2\n")
                                     .arg(static_cast<int>(http_code_t::HTTP_CODE_NOT_MODIFIED))
                                     .arg(err_name),
                                HEADER_MODE_EVERYWHERE);
 
-                    // content type is HTML, we reset this header because it could have
-                    // been changed to something else and prevent the error from showing
-                    // up in the browser
-                    //set_header(get_name(name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER),
-                    //           "text/html; charset=utf8",
-                    //           HEADER_MODE_EVERYWHERE);
-                    //
                     // Remove the Content-Type header, this is simpler than requiring
                     // the correct content type information
+                    //
                     set_header(get_name(name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER),
                                "",
                                HEADER_MODE_EVERYWHERE);
 
                     // since we are going to exit without calling the attach_to_session()
+                    //
                     server::pointer_t server( f_server.lock() );
                     if(!server)
                     {
@@ -340,22 +381,26 @@ void snap_child::not_modified()
                     server->attach_to_session();
 
                     // in case there are any cookies, send them along too
+                    //
                     output_headers(HEADER_MODE_NO_ERROR);
 
-                    // no data to output with 304
+                    // no data to output with 304 (it's forbidden)
                 }
 
                 // the cache worked as expected
+                //
                 exit(0);
             }
         }
 
         // No match from client, must return normally
+        //
         return;
     }
     catch(...)
     {
         // ignore all errors because at this point we must die quickly.
+        //
         SNAP_LOG_FATAL("snap_child_cache_control.cpp:not_modified(): try/catch caught an exception");
     }
 
@@ -371,8 +416,15 @@ void snap_child::not_modified()
  * information and generates the corresponding HTTP headers. This funciton
  * is called just before we output the HTTP headers in the output buffer.
  *
- * See the cache_control_settings class for details about all the possible cache
- * options.
+ * The HTTP headers generated by this function are:
+ *
+ * \li Cache-Control
+ * \li Pragma
+ * \li Expires
+ * \li Cache-Tag (see snapserver.conf and add_tags() for details)
+ *
+ * See the cache_control_settings class for details about all the possible
+ * cache options.
  *
  * By default the cache controls are not modified meaning that the page is
  * marked as 'no-cache'. In other words, it won't be cached at all. The
@@ -386,6 +438,11 @@ void snap_child::not_modified()
  * This function gives us one single point where the Cache-Control field
  * (and equivalent HTTP/1.0) are set so it makes it a lot easier to make
  * sure that the fields are set appropriately in all cases.
+ *
+ * \note
+ * The Cache-Tag field may be renamed in the snapserver.conf file. If no
+ * cache tags were specified with the add_tag() function, then the field
+ * doesn't get generated.
  */
 void snap_child::set_cache_control()
 {
@@ -484,22 +541,6 @@ void snap_child::set_cache_control()
         //cache_control_fields << QString("post-check=%1").arg(max_age);
         //cache_control_fields << QString("pre-check=%1").arg(max_age);
 
-        // choose between public and private (or neither)
-        // private has priority over public (obviously?!)
-        //
-        if(f_page_cache_control.get_private()
-        || f_server_cache_control.get_private())
-        {
-            cache_control_fields << "private";
-            public_data = false;
-        }
-        else if(f_page_cache_control.get_public()
-             || f_server_cache_control.get_public())
-        {
-            cache_control_fields << "public";
-        }
-
-
         // any 's-maxage' info?
         //
         // IMPORTANT NOTE: here max_age cannot be 0 or -1
@@ -516,6 +557,113 @@ void snap_child::set_cache_control()
             cache_control_fields << QString("s-maxage=%1").arg(s_maxage);
         }
 
+        // although we specify max-age in case a browser doesn't understand
+        // immutable, we want the immutable flag as well if true in the
+        // page or server; this means the data never dies out (we set the
+        // CSS and JS files to immutable because their version has to be
+        // changed whenever you make changes to those files.)
+        //
+        if(f_page_cache_control.get_immutable()
+        || f_server_cache_control.get_immutable())
+        {
+            cache_control_fields << "immutable";
+        }
+
+        // choose between public and private (or "neither"--the default is
+        // private, really, but we leave that out if none was set to true)
+        //
+        // private has priority over public
+        //
+        if(f_page_cache_control.get_private()
+        || f_server_cache_control.get_private())
+        {
+            cache_control_fields << "private";
+            public_data = false;
+        }
+        else if(f_page_cache_control.get_public()
+             || f_server_cache_control.get_public())
+        {
+            cache_control_fields << "public";
+
+            // when the cache is made public, we may need to output
+            // a no-cache and private fields with lists of field names
+            //
+            cache_control_settings::fields_t all_revalidate_fields(f_page_cache_control.get_revalidate_field_names());
+            cache_control_settings::fields_t const server_revalidate_fields(f_server_cache_control.get_revalidate_field_names());
+            all_revalidate_fields.insert(server_revalidate_fields.begin(), server_revalidate_fields.end());
+            if(!all_revalidate_fields.empty())
+            {
+                // note that this value must be quoted in part because it
+                // can include commas
+                //
+                bool add_comma(false);
+                QString fields_to_revalidate("no-cache=\"");
+                for(auto t : all_revalidate_fields)
+                {
+                    if(add_comma)
+                    {
+                        fields_to_revalidate += ',';
+                    }
+                    // field name must be quoted
+                    //
+                    fields_to_revalidate += QString::fromUtf8(t.c_str());
+                    add_comma = true;
+                }
+
+                // although thelist may not be empty, each string within
+                // the list may be empty and in that case we do not want
+                // to have a "no-cache" field by itself
+                //
+                if(add_comma)
+                {
+                    // close the quotation mark
+                    //
+                    fields_to_revalidate += "\"";
+                    cache_control_fields << fields_to_revalidate;
+                }
+            }
+
+            cache_control_settings::fields_t all_private_fields(f_page_cache_control.get_private_field_names());
+            cache_control_settings::fields_t const server_private_fields(f_server_cache_control.get_private_field_names());
+            all_private_fields.insert(server_private_fields.begin(), server_private_fields.end());
+            if(!all_private_fields.empty())
+            {
+                // note that this value must be quoted in part because it
+                // can include commas
+                //
+                bool add_comma(false);
+                QString fields_to_never_cache("private=\"");
+                for(auto t : all_private_fields)
+                {
+                    if(add_comma)
+                    {
+                        fields_to_never_cache += ',';
+                    }
+                    // field name must be quoted
+                    //
+                    fields_to_never_cache += QString::fromUtf8(t.c_str());
+                    add_comma = true;
+                }
+                // although thelist may not be empty, each string within
+                // the list may be empty and in that case we do not want
+                // to have a "no-cache" field by itself
+                //
+                if(add_comma)
+                {
+                    // close the quotation mark
+                    //
+                    fields_to_never_cache += "\"";
+                    cache_control_fields << fields_to_never_cache;
+                }
+            }
+        }
+        else
+        {
+            // remember, the default is "private"
+            //
+            public_data = false;
+        }
+
         // whether the client should always revalidate with the server
         // (which means we get a hit, so try not to use that option!)
         //
@@ -523,7 +671,6 @@ void snap_child::set_cache_control()
         || f_server_cache_control.get_must_revalidate())
         {
             cache_control_fields << "must-revalidate";
-            public_data = false;
         }
         else if(f_page_cache_control.get_proxy_revalidate()
              || f_server_cache_control.get_proxy_revalidate())
@@ -533,7 +680,6 @@ void snap_child::set_cache_control()
             // to always revalidate
             //
             cache_control_fields << "proxy-revalidate";
-            public_data = false;
         }
 
         // so is the data considered public for HTTP/1.0?
@@ -566,6 +712,42 @@ void snap_child::set_cache_control()
             set_header("Pragma", "no-cache", HEADER_MODE_EVERYWHERE);
             set_header("Expires", "Sat,  1 Jan 2000 00:00:00 GMT", HEADER_MODE_EVERYWHERE);
         }
+
+        // check whether there are cache tags to add here
+        //
+        cache_control_settings::tags_t all_tags(f_page_cache_control.get_tags());
+        cache_control_settings::tags_t const server_tags(f_server_cache_control.get_tags());
+        all_tags.insert(server_tags.begin(), server_tags.end());
+        if(!all_tags.empty())
+        {
+            // we have tags, let's see whether we have HTTP field names
+            //
+            QString const cache_tags_param(get_server_parameter("cache_tags"));
+            if(!cache_tags_param.isEmpty())
+            {
+                QString cache_tags;
+                for(auto t : all_tags)
+                {
+                    if(!t.empty())
+                    {
+                        if(!cache_tags.isEmpty())
+                        {
+                            cache_tags += ',';
+                        }
+                        cache_tags += QString::fromUtf8(t.c_str());
+                    }
+                }
+                snap_string_list const cache_tag_names(cache_tags_param.split(","));
+                for(auto name : cache_tag_names)
+                {
+                    QString const n(name.trimmed());
+                    if(!n.isEmpty())
+                    {
+                        set_header(n, cache_tags);
+                    }
+                }
+            }
+        }
     }
 
     set_header("Cache-Control", cache_control_fields.join(","), HEADER_MODE_EVERYWHERE);
@@ -573,5 +755,4 @@ void snap_child::set_cache_control()
 
 
 } // namespace snap
-
 // vim: ts=4 sw=4 et

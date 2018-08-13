@@ -38,8 +38,6 @@ namespace http_strings
  * we convert the class to only use the STL library.)
  */
 WeightedHttpString::part_t::part_t()
-    //: f_name("") -- auto-init
-    //, f_level(DEFAULT_LEVEL) -- auto-init
 {
 }
 
@@ -54,7 +52,6 @@ WeightedHttpString::part_t::part_t()
  */
 WeightedHttpString::part_t::part_t(QString const & name)
     : f_name(name)
-    //, f_level(DEFAULT_LEVEL)
 {
 }
 
@@ -74,6 +71,44 @@ WeightedHttpString::part_t::part_t(QString const & name)
 QString const & WeightedHttpString::part_t::get_name() const
 {
     return f_name;
+}
+
+
+/** \brief Retrieve the value of this part.
+ *
+ * By default, a part is not expected to include a value, but there
+ * are many strings in HTTP headers that accept a syntax where parameters
+ * can be given a value. For example, in the Cache-Control field, we
+ * can have a "max-age=123" parameter. This function returns the "123".
+ * The name ("max-age") is returned by the get_name() function.
+ *
+ * In a weighted HTTP string such as a string of language definitions,
+ * the named value has no value. It is expected to represent a flag
+ * which is set (i.e. do not interpret a part with an empty string
+ * as "false").
+ *
+ * \return The value of this part of the string.
+ */
+QString const & WeightedHttpString::part_t::get_value() const
+{
+    return f_value;
+}
+
+
+/** \brief This function is used to setup the value of a part.
+ *
+ * This function defines the value of a part. By default a part is just
+ * defined and its value is the empty string (it is still viewed as being
+ * "true", but without anything more than that.)
+ *
+ * The function is called by the parser when it finds a part name followed
+ * by an equal sign.
+ *
+ * \param[in] value  The new value of this part.
+ */
+void WeightedHttpString::part_t::set_value(QString const & value)
+{
+    f_value = value;
 }
 
 
@@ -232,22 +267,35 @@ WeightedHttpString::WeightedHttpString(QString const & str)
 
 /** \brief Parse a weighted HTTP string.
  *
- * This function parses a weighted HTTP string with the standard format:
+ * This function parses an "extended weighted HTTP string".
+ *
+ * By extended we means that we support more than just weights
+ * so as to support lists of parameters like in the Cache-Control
+ * field. The extensions are two folds:
+ *
+ * \li The first name can be a parameter with a value (a=b)
+ * \li The value of a parameter can be a string of characters
+ *
+ * As a result, the supported string format is as follow:
  *
  * \code
- *      start: strings
- *      strings: name opt_params
- *             | strings ',' name opt_params
- *      opt_params: <empty>
- *                | ';' param
- *                | opt_params ';' param
- *      param: param_name '=' param_value
- *      name: CHAR - [,;]
- *      param_name: CHAR [,;=]
- *      param_value: name
+ *      start: params
+ *      params: options
+ *            | params ',' options
+ *      options: opt
+ *             | options ';' opt
+ *      opt: opt_name
+ *         | opt_name '=' opt_value
+ *      opt_name: CHAR - [,;=]
+ *      opt_value: token
+ *               | quoted_string
+ *      token: CHAR - [,;]
+ *      quoted_string: '"' CHAR '"'
+ *                   | "'" CHAR "'"
  * \endcode
  *
- * For example, the following defines a few language strings:
+ * For example, the following defines a few language strings
+ * with their weights ("levels"):
  *
  * \code
  *      fr;q=0.8,en;q=0.5,de;q=0.1
@@ -260,8 +308,7 @@ WeightedHttpString::WeightedHttpString(QString const & str)
  * \li de, level 0.1
  *
  * Note that the input can be in any order. The vector is returned in the
- * order it was read (first is most important if no levels at all were
- * specified).
+ * order it was read (first is most important if no levels were specified).
  *
  * If you want to sort by level, make sure to retrieve the vector with
  * get_parts() and then sort it with sort_by_level().
@@ -289,7 +336,10 @@ WeightedHttpString::WeightedHttpString(QString const & str)
  * \todo
  * We may want to ameliorate the implementation to really limit all
  * the characters to what is clearly supported in HTTP/1.1 (Which
- * is the same in HTTP/2)
+ * is the same in HTTP/2.) On the other hand, being "flexible" is not
+ * always a bad thing as long as the use of data coming from a client
+ * is properly checked for possibly tainted parameters (things that
+ * could be doggy and as such need to be ignored.)
  *
  * \param[in] str  A weight HTTP string to parse.
  * \param[in] reset  Reset the existing weighted HTTP strings if true.
@@ -308,8 +358,8 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
     }
     else
     {
-        pos = f_str.length();
         f_str += ",";
+        pos = f_str.length();
         f_str += str;
     }
 
@@ -328,7 +378,7 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
             break;
         }
         char const * v(s);
-        while(*s != '\0' && *s != ',' && *s != ';')
+        while(*s != '\0' && *s != ',' && *s != ';' && *s != '=' && *s != ' ' && *s != '\t')
         {
             ++s;
         }
@@ -342,9 +392,6 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
         //
         //       so the maximum size is 8 + 1 + 8 = 17 (1 to 8 characters,
         //       the dash, 1 to 8 characters) and the smallest is 1.
-        //
-        // TODO: add support for a value assigned to the first entry?
-        //       (and thus mark it a part as well)
         //
         QString name(QString::fromUtf8(v, static_cast<int>(s - v)));
         name = name.simplified();
@@ -362,6 +409,64 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
         //
         part_t part(name);
 
+        // we allow spaces after the name and before the ';', '=', and ','
+        //
+        while(*s == ' ' || *s == '\t')
+        {
+            ++s;
+        }
+
+        // check whether that parameter has a value
+        //
+        if(*s == '=')
+        {
+            ++s;
+
+            // allow spaces after an equal sign
+            //
+            while(*s == ' ' || *s == '\t')
+            {
+                ++s;
+            }
+
+            // values can be quoted
+            //
+            if(*s == '"' || *s == '\'')
+            {
+                auto const quote(*s);
+                ++s;
+                v = s;
+                while(*s != '\0' && *s != quote)
+                {
+                    // accept any character within the quotes
+                    // no backslash supported
+                    //
+                    ++s;
+                }
+                part.set_value(QString::fromUtf8(v, static_cast<int>(s - v)));
+                if(*s == quote)
+                {
+                    ++s;
+                }
+
+                // allow spaces after the closing quote
+                //
+                while(*s == ' ' || *s == '\t')
+                {
+                    ++s;
+                }
+            }
+            else
+            {
+                v = s;
+                while(*s != '\0' && *s != ';' && *s != ',')
+                {
+                    ++s;
+                }
+                part.set_value(QString::fromUtf8(v, static_cast<int>(s - v)).simplified());
+            }
+        }
+
         // XXX: should we check whether another part with the same
         //      name already exists in the resulting vector?
 
@@ -370,17 +475,22 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
         //
         while(*s == ';')
         {
-            ++s;
-            // no need to skip spaces here because we later simplify the
-            // parameter name
+            // skip spaces and extra ';'
+            //
+            do
+            {
+                ++s;
+            }
+            while(*s == ';' || *s == ' ' || *s == '\t');
+
+            // read parameter name
             //
             v = s;
             while(*s != '\0' && *s != ',' && *s != ';' && *s != '=')
             {
                 ++s;
             }
-            QString param_name(QString::fromUtf8(v, static_cast<int>(s - v)));
-            param_name = param_name.simplified();
+            QString const param_name(QString::fromUtf8(v, static_cast<int>(s - v)).simplified());
 
             // TODO: we want to check that `param_name` validity (i.e. `token`)
             //       all the following separators are not considered legal
@@ -399,21 +509,47 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
                 QString param_value;
                 if(*s == '=')
                 {
-                    // TODO: the value may be a quoted string, the quotes
-                    //       need to be removed and separators within the
-                    //       quotes are to be accepted as part of the value
-                    //
                     ++s;
-                    v = s;
-                    while(*s != '\0' && *s != ',' && *s != ';')
+                    while(*s == ' ' || *s == '\t')
                     {
                         ++s;
                     }
-                    param_value = QString::fromUtf8(v, static_cast<int>(s - v));
-                    param_value = param_value.trimmed();
+                    if(*s == '\'' || *s == '"')
+                    {
+                        char const quote(*s);
+                        ++s;
+                        v = s;
+                        while(*s != '\0' && *s != quote)
+                        {
+                            ++s;
+                        }
+                        param_value = QString::fromUtf8(v, static_cast<int>(s - v)).trimmed();
+                        if(*s == quote)
+                        {
+                            ++s;
+                        }
+
+                        // allow spaces after the closing quote
+                        //
+                        while(*s == ' ' || *s == '\t')
+                        {
+                            ++s;
+                        }
+                    }
+                    else
+                    {
+                        v = s;
+                        while(*s != '\0' && *s != ',' && *s != ';')
+                        {
+                            ++s;
+                        }
+                        param_value = QString::fromUtf8(v, static_cast<int>(s - v)).simplified();
+                    }
                 }
                 part.add_parameter(param_name, param_value);
 
+                // handle parameters we understand
+                //
                 if(param_name == "q")
                 {
                     bool ok(false);
@@ -443,19 +579,26 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
                 // TODO add support for other parameters, "charset" is one of
                 //      them in the Accept header which we want to support
             }
-            else if(*s == '=')
+            if(*s != '\0' && *s != ';' && *s != ',')
             {
-                // just ignore that entry...
+                f_error_messages += "found a spurious character in a weighted string.\n";
+
+                // ignore that entry...
+                //
                 ++s;
                 while(*s != '\0' && *s != ',' && *s != ';')
                 {
                     ++s;
                 }
-
-                f_error_messages += "found a spurious equal sign in a weighted string.\n";
             }
         }
+
         f_parts.push_back(part);
+
+        if(*s != ',' && *s != '\0')
+        {
+            f_error_messages += "part not ended by a comma or end of string.\n";
+        }
     }
 
     if(!f_error_messages.isEmpty())

@@ -158,10 +158,7 @@ namespace libdbproxy
  * \param[in] table_name  The name of the table definition being created.
  */
 table::table(context::pointer_t context, const QString& table_name)
-    //: f_schema() -- auto-init
-    //f_from_cassandra(false) -- auto-init
     : f_context(context)
-    //f_rows() -- auto-init
 {
     // cache the name because we need it for each other we send
     //

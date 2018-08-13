@@ -693,14 +693,6 @@ namespace libdbproxy
  * \sa setDefaultConsistencyLevel()
  */
 libdbproxy::libdbproxy()
-    // f_proxy( nullptr )
-    // f_current_context(nullptr) -- auto-init
-    // f_contexts() -- auto-init
-    // f_cluster_name("") -- auto-init
-    // f_protocol_version("") -- auto-init
-    // f_partitioner("") -- auto-init
-    // f_snitch("") -- auto-init
-    // f_default_consistency_level( CONSISTENCY_LEVEL_ONE )
 {
 }
 
@@ -791,12 +783,36 @@ bool libdbproxy::connect( QString const & host, int const port )
 
     // get cluster information
     //
-    f_default_consistency_level = CONSISTENCY_LEVEL_QUORUM;
+    class save_consistency_t
+    {
+    public:
+        save_consistency_t(consistency_level_t & org)
+            : f_org(org)
+            , f_save(org)
+        {
+            // always force QUORUM for this SELECT
+            //
+            org = CONSISTENCY_LEVEL_QUORUM;
+        }
+
+        ~save_consistency_t()
+        {
+            f_org = f_save;
+        }
+
+    private:
+        consistency_level_t &   f_org;
+        consistency_level_t     f_save;
+    };
+
+    // use RAII object to save the default consistency level
+    //
+    save_consistency_t save_consistency(f_default_consistency_level);
+
     order local_table;
     local_table.setCql( "SELECT cluster_name,native_protocol_version,partitioner FROM system.local", order::type_of_result_t::TYPE_OF_RESULT_ROWS );
     local_table.setColumnCount(3);
     order_result const local_table_result(f_proxy->sendOrder(local_table));
-    f_default_consistency_level = CONSISTENCY_LEVEL_ONE; // reset back to the default
 
     // even just cluster info cannot be retrieved, forget it
     //
@@ -805,7 +821,7 @@ bool libdbproxy::connect( QString const & host, int const port )
         throw exception( "Error reading database table system.local!" );
     }
 
-    // got success but not data?!
+    // got success but no data?!
     //
     if( local_table_result.resultCount() != 3 )
     {
@@ -994,6 +1010,10 @@ context::pointer_t libdbproxy::getContext( QString const & context_name )
 context::pointer_t libdbproxy::getContext( casswrapper::schema::KeyspaceMeta::pointer_t keyspace_meta )
 {
     // get the list of existing contexts
+    //
+    // we have to make that call to make sure that the contexts actually
+    // get created
+    //
     contexts const & cs(getContexts());
 
     // already exists?
@@ -1090,7 +1110,9 @@ void libdbproxy::retrieveContextMeta( context::pointer_t c, QString const & cont
         throw exception( "libdbproxy::retrieveContextMeta(): called when not connected" );
     }
 
-    // note: the "DESCRIBE CLUSTER" is ignored
+    // TODO: Calling the DESCRIBE CLUSTER each time is slow
+    //       (TBD: although we really only do it once for
+    //       the snap_websites context?)
     //
     order describe_cluster;
     describe_cluster.setCql( "DESCRIBE CLUSTER", order::type_of_result_t::TYPE_OF_RESULT_DESCRIBE );
@@ -1132,9 +1154,19 @@ void libdbproxy::retrieveContextMeta( context::pointer_t c, QString const & cont
  *
  * You must be connected for this function to work.
  *
+ * \warning
+ * You should nearly never use 'true' for the \p reset parameter. This
+ * will cause a terrible slowness. However, using the parameter is
+ * useful when you run a command that manages the context, table, or
+ * column definitions. For example, the snapcreatetables sets that
+ * flag to true to make sure that it has the latest version of the
+ * context.
+ *
+ * \param[in] reset  Whether to reset the context description.
+ *
  * \return A reference to the internal map of contexts.
  */
-contexts const & libdbproxy::getContexts() const
+contexts const & libdbproxy::getContexts(bool reset) const
 {
     if(!f_proxy)
     {
@@ -1143,11 +1175,12 @@ contexts const & libdbproxy::getContexts() const
 
     if( !f_contexts_read )
     {
-        // note: the "DESCRIBE CLUSTER" is ignored
-        //
 //int64_t n(timeofday());
         order describe_cluster;
-        describe_cluster.setCql( "DESCRIBE CLUSTER", order::type_of_result_t::TYPE_OF_RESULT_DESCRIBE );
+        describe_cluster.setCql(
+                          reset ? "DESCRIBE CLUSTER ANEW"
+                                : "DESCRIBE CLUSTER"
+                        , order::type_of_result_t::TYPE_OF_RESULT_DESCRIBE );
         order_result const describe_cluster_result(f_proxy->sendOrder(describe_cluster));
 
         if(!describe_cluster_result.succeeded())

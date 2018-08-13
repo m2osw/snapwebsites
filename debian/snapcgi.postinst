@@ -21,6 +21,15 @@ then
     chown www-data:www-data ${SNAPSECURECGI_LOG}
     chmod 640 ${SNAPSECURECGI_LOG}
 
+    # Make sure the cache folders exist, although they may get deleted
+    # if unused for too long...
+    #
+    WWWCACHEDIR=/var/lib/snapwebsites/www
+    mkdir -p ${WWWCACHEDIR}
+    mkdir -p ${WWWCACHEDIR}/temporary
+    mkdir -p ${WWWCACHEDIR}/permanent
+    chown -R www-data:www-data ${WWWCACHEDIR}
+
     # Copy user editable files (which are not installed directly from
     # our package so we do not get warnings when updating)
     #

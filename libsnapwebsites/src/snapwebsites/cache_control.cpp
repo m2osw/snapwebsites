@@ -25,6 +25,10 @@
 #include "snapwebsites/log.h"
 #include "snapwebsites/not_reached.h"
 
+// boost lib
+//
+#include <boost/algorithm/string.hpp>
+
 
 // last include
 //
@@ -45,17 +49,6 @@ namespace snap
  * have cache control data in the form of a standard HTTP string.
  */
 cache_control_settings::cache_control_settings()
-    //: f_max_age(0) -- auto-init
-    //, f_max_stale(IGNORE_VALUE) -- auto-init
-    //, f_min_fresh(IGNORE_VALUE) -- auto-init
-    //, f_must_revalidate(false) -- auto-init
-    //, f_no_cache(false) -- auto-init
-    //, f_no_store(false) -- auto-init
-    //, f_no_transform(false) -- auto-init
-    //, f_only_if_cached(false) -- auto-init
-    //, f_private(false) -- auto-init
-    //, f_public(false) -- auto-init
-    //, f_s_maxage(IGNORE_VALUE) -- auto-init
 {
 }
 
@@ -72,17 +65,6 @@ cache_control_settings::cache_control_settings()
  * \sa set_cache_info()
  */
 cache_control_settings::cache_control_settings(QString const & info, bool const internal_setup)
-    //: f_max_age(0) -- auto-init
-    //, f_max_stale(IGNORE_VALUE) -- auto-init
-    //, f_min_fresh(IGNORE_VALUE) -- auto-init
-    //, f_must_revalidate(false) -- auto-init
-    //, f_no_cache(false) -- auto-init
-    //, f_no_store(false) -- auto-init
-    //, f_no_transform(false) -- auto-init
-    //, f_only_if_cached(false) -- auto-init
-    //, f_private(false) -- auto-init
-    //, f_public(false) -- auto-init
-    //, f_s_maxage(IGNORE_VALUE) -- auto-init
 {
     set_cache_info(info, internal_setup);
 }
@@ -156,18 +138,17 @@ void cache_control_settings::set_cache_info(QString const & info, bool const int
     //       what we are dealing with...
 
     // parse the data with the weighted HTTP string implementation
+    //
     http_strings::WeightedHttpString client_cache_control(info);
 
     // no go through the list of parts and handle them appropriately
+    //
     http_strings::WeightedHttpString::part_t::vector_t const & cache_control_parts(client_cache_control.get_parts());
     for(auto const & c : cache_control_parts)
     {
         // get the part name
+        //
         QString name(c.get_name());
-        if(name.isEmpty())
-        {
-            continue;
-        }
 
         bool negate(false);
         if(internal_setup)
@@ -176,8 +157,14 @@ void cache_control_settings::set_cache_info(QString const & info, bool const int
             if(negate)
             {
                 // remove the negate flag
+                //
                 name = name.mid(1);
             }
+        }
+
+        if(name.isEmpty())
+        {
+            continue;
         }
 
         // TODO: add code to check whether 'negate' (!) was used with
@@ -186,23 +173,35 @@ void cache_control_settings::set_cache_info(QString const & info, bool const int
         // do a switch first to save a tad bit of time
         switch(name[0].unicode())
         {
-        case 'm':
-            if(name.startsWith("max-age="))
+        case 'i':
+            if(name == "immutable")
             {
-                set_max_age(name.mid(8));
+                set_immutable(!negate);
+            }
+            break;
+
+        case 'm':
+            if(name == "max-age")
+            {
+                set_max_age(c.get_value());
             }
             else if(name == "max-stale")
             {
-                // any good ol' stale data can be returned
-                set_max_stale(0);
+                QString const & value(c.get_value());
+                if(value.isEmpty())
+                {
+                    // any stale data can be returned
+                    //
+                    set_max_stale(0);
+                }
+                else
+                {
+                    set_max_stale();
+                }
             }
-            else if(name.startsWith("max-stale="))
+            else if(name == "min-fresh")
             {
-                set_max_stale(name.mid(10));
-            }
-            else if(name.startsWith("min-fresh="))
-            {
-                set_min_fresh(name.mid(10));
+                set_min_fresh(c.get_value());
             }
             else if(name == "must-revalidate")
             {
@@ -213,9 +212,21 @@ void cache_control_settings::set_cache_info(QString const & info, bool const int
         case 'n':
             if(name == "no-cache")
             {
-                // TODO: add support for field specific caching selection
-                //       (i.e. no-cache=secret-key)
-                set_no_cache(!negate);
+                QString const & value(c.get_value());
+                if(value.isEmpty())
+                {
+                    set_no_cache(!negate);
+                }
+                else
+                {
+                    // list of fields that require revalidation
+                    //
+                    snap_string_list const list(value.split(","));
+                    for(auto const & l : list)
+                    {
+                        add_revalidate_field_name(l);
+                    }
+                }
             }
             else if(name == "no-store")
             {
@@ -237,9 +248,21 @@ void cache_control_settings::set_cache_info(QString const & info, bool const int
         case 'p':
             if(name == "private")
             {
-                // TODO: add support for field specific caching selection
-                //       (i.e. private=secret-key)
-                set_private(!negate);
+                QString const & value(c.get_value());
+                if(value.isEmpty())
+                {
+                    set_private(!negate);
+                }
+                else
+                {
+                    // list of fields that require revalidation
+                    //
+                    snap_string_list list(value.split(","));
+                    for(auto l : list)
+                    {
+                        add_private_field_name(l);
+                    }
+                }
             }
             else if(name == "proxy-revalidate")
             {
@@ -252,9 +275,9 @@ void cache_control_settings::set_cache_info(QString const & info, bool const int
             break;
 
         case 's':
-            if(name.startsWith("s-maxage="))
+            if(name == "s-maxage")
             {
-                set_s_maxage(name.mid(9));
+                set_s_maxage(c.get_value());
             }
             break;
 
@@ -377,6 +400,44 @@ void cache_control_settings::set_proxy_revalidate(bool const proxy_revalidate)
 }
 
 
+/** \brief Set whether the resource is immutable or not.
+ *
+ * This function sets whether the resource is immutable. Browsers that
+ * understand this flag will never check the server again for that
+ * specific resource as long as they keep it in their caches.
+ *
+ * Immutable means that it will never change. This is true for all
+ * our CSS and JS files because these are versioned and any changes
+ * to those files require a change in their version.
+ *
+ * \param[in] immutable  Whether the file is immutable or not.
+ */
+void cache_control_settings::set_immutable(bool const immutable)
+{
+    f_immutable = immutable;
+}
+
+
+/** \brief Get whether the data was marked immutable.
+ *
+ * This function returns true if the data attached to that resource
+ * is considered immutable.
+ *
+ * For example, JS and CSS files are always considered immutable. This
+ * is because we have a version and if you want to modify those files,
+ * you must increase the version accordingly.
+ *
+ * Browsers that support the immutable flag never check the server
+ * again because the file will be saved permanently in their caches.
+ *
+ * \return true if the resource is considered immutable.
+ */
+bool cache_control_settings::get_immutable() const
+{
+    return f_immutable;
+}
+
+
 /** \brief Get the current value of the 'proxy-revalidate' flag.
  *
  * This function returns the current value of the 'proxy-revalidate'
@@ -450,6 +511,281 @@ void cache_control_settings::set_public(bool const public_cache)
 bool cache_control_settings::get_public() const
 {
     return f_public;
+}
+
+
+/** \brief Add a field name that needs to get revalidated by proxy caches.
+ *
+ * The Cache-Control header can include a no-cache parameter that includes
+ * a list of field names that should not be cached and be revalidated
+ * whenever a new client request is received.
+ *
+ * Note that means there are three possibilities with the no-cache parameters:
+ *
+ * \li the parameter is not present, caching may still not be allowed
+ *     (i.e. max-age=0)
+ * \li the parameter is present on its own, absolutely no caching is possible
+ * \li the parameter is set to a list of field names, in which case caching
+ *     is allowed, but the specified fields must be revalidated from the
+ *     server (and should probably not be saved in the cache)
+ *
+ * \note
+ * If the string is empty after left and right trimming the request to
+ * add a field name is ignored.
+ *
+ * References:
+ *
+ * https://tools.ietf.org/html/rfc7234#section-5.2.2
+ *
+ * \param[in] field_name  The name of the HTTP header field which needs to
+ *                        never be cached.
+ *
+ * \sa add_private_field_name()
+ */
+void cache_control_settings::add_revalidate_field_name(std::string const & field_name)
+{
+    // we just have to insert, it will be inserted just once
+    //
+    std::string name(boost::trim_copy(field_name));
+    if(!name.empty())
+    {
+        f_revalidate_field_names.insert(name);
+    }
+}
+
+
+/** \brief Add a field name that needs to never be cached.
+ *
+ * This function is an overload of the add_never_cache_field_name() with
+ * an std::string parameter.
+ *
+ * \param[in] field_name  The name of the HTTP header field which needs to
+ *                        never be cached.
+ */
+void cache_control_settings::add_revalidate_field_name(QString const & field_name)
+{
+    add_revalidate_field_name(std::string(field_name.toUtf8().data()));
+}
+
+
+/** \brief Add a field name that needs to never be cached.
+ *
+ * This function is an overload of the add_never_cache_field_name() with
+ * an std::string parameter.
+ *
+ * \note
+ * The function accepts a nullptr and ignores the request in that situation.
+ *
+ * \param[in] field_name  The name of the HTTP header field which needs to
+ *                        never be cached.
+ */
+void cache_control_settings::add_revalidate_field_name(char const * field_name)
+{
+    if(field_name != nullptr)
+    {
+        add_revalidate_field_name(std::string(field_name));
+    }
+}
+
+
+/** \brief Retrieve the existing list of field names to never cache.
+ *
+ * The Cache-Control field can include a no-cache="<list of field names>".
+ * This is that list.
+ *
+ * By default this list is empty (Contrary to the private list which
+ * includes the "Set-Cookie".)
+ *
+ * For certain pages that require the "Set-Cookie" or some other user
+ * fields, such should be added to this list. That way the cache will
+ * make sure to revalidate the page conditionally.
+ *
+ * Other fields that are specific to a user need to be added to this
+ * list with one of the add_revalidate_field_name() functions.
+ *
+ * \return A list of field names.
+ */
+cache_control_settings::tags_t const & cache_control_settings::get_revalidate_field_names() const
+{
+    return f_revalidate_field_names;
+}
+
+
+/** \brief Add a field name that needs to remain private.
+ *
+ * The Cache-Control header can include a private parameter that includes
+ * a list of field names that need to not be cached, except by private
+ * caches (i.e. client browser).
+ *
+ * Note that means there are three possibilities with the private parameters:
+ *
+ * \li the parameter is not present, the data is considered private anyway
+ * \li the parameter is present on its own, all data is considered private
+ * \li the parameter is set to a list of field names, in which case caching
+ *     is allowed, but the specified fields must be removed from the HTTP
+ *     header before caching the header
+ *
+ * Note that this is different from the no-cache parameter which requires
+ * a hit to the server to revalidate the header. In case of the private
+ * parameter, no revalidation is required. We can simply send the cache
+ * without the private fields (which with Snap! C++ is fine for pretty
+ * much all our attachments.)
+ *
+ * \note
+ * If the string is empty after left and right trimming the request to
+ * add a field name is ignored.
+ *
+ * References:
+ *
+ * https://tools.ietf.org/html/rfc7234#section-5.2.2
+ *
+ * \param[in] field_name  The name of the HTTP header field which needs to
+ *                        never be cached.
+ *
+ * \sa add_revalidate_field_name()
+ */
+void cache_control_settings::add_private_field_name(std::string const & field_name)
+{
+    // we just have to insert, it will be inserted just once
+    //
+    std::string name(boost::trim_copy(field_name));
+    if(!name.empty())
+    {
+        f_private_field_names.insert(name);
+    }
+}
+
+
+/** \brief Add a field name that needs to never be cached.
+ *
+ * This function is an overload of the add_private_field_name() with
+ * an std::string parameter.
+ *
+ * \param[in] field_name  The name of the HTTP header field which needs to
+ *                        never be cached.
+ */
+void cache_control_settings::add_private_field_name(QString const & field_name)
+{
+    add_private_field_name(std::string(field_name.toUtf8().data()));
+}
+
+
+/** \brief Add a field name that needs to never be cached.
+ *
+ * This function is an overload of the add_private_field_name() with
+ * an std::string parameter.
+ *
+ * \note
+ * The function accepts a nullptr and ignores the request in that situation.
+ *
+ * \param[in] field_name  The name of the HTTP header field which needs to
+ *                        never be cached.
+ */
+void cache_control_settings::add_private_field_name(char const * field_name)
+{
+    if(field_name != nullptr)
+    {
+        add_private_field_name(std::string(field_name));
+    }
+}
+
+
+/** \brief Retrieve the existing list of field names to never cache.
+ *
+ * The Cache-Control field can include a private="<list of field names>".
+ * This is that list.
+ *
+ * By default, this list is set to "Set-Cookie" which is more than likely
+ * a field that include many user specific data such as a session
+ * identifier.
+ *
+ * Other fields that are specific to a user need to be added to this
+ * list with one of the add_private_field_name() functions.
+ *
+ * \return A list of field names.
+ */
+cache_control_settings::tags_t const & cache_control_settings::get_private_field_names() const
+{
+    return f_private_field_names;
+}
+
+
+/** \brief Add a tag to the existing list of tags.
+ *
+ * This function adds the specified tag_name parameter to the list of
+ * tags to send to the client. This is used by CDN systems to allow
+ * for segregation of files to be cached.
+ *
+ * Note that a page which cache is turned off (i.e. Cache-Control has
+ * the no-cache parameter set) does not get tagged. These tags will be
+ * ignored in that situation.
+ *
+ * By default we use the "Cache-Tag" HTTP header as defined by CloudFlare.
+ * The name can be changed in the snapserver.conf file. You may also
+ * add multiple names. Drupal uses "X-Drupal-Cache-Tags". Akamai uses
+ * "Edge-Cache-Tag".
+ *
+ * References:
+ *
+ * https://support.cloudflare.com/hc/en-us/articles/206596608-How-to-Purge-Cache-Using-Cache-Tags-Enterprise-only-
+ *
+ * https://www.drupal.org/docs/8/api/cache-api/cache-tags
+ *
+ * https://learn.akamai.com/en-us/webhelp/fast-purge/fast-purge/GUID-9AEF6978-697F-410C-A347-8155FDB535C8.html
+ *
+ * \param[in] tag_name  The name of the tag to add to the list.
+ */
+void cache_control_settings::add_tag(std::string const & tag_name)
+{
+    // we just have to insert, it will be inserted just once
+    //
+    f_tags.insert(tag_name);
+}
+
+
+/** \brief Add a tag to the existing list of tags.
+ *
+ * This function adds the specified tag_name parameter to the list
+ * of tags to send to proxy caches.
+ *
+ * This is an overload version of the add_tag() with a std::string.
+ *
+ * \param[in] tag_name  The name of the tag to add to the list.
+ */
+void cache_control_settings::add_tag(QString const & tag_name)
+{
+    add_tag(std::string(tag_name.toUtf8().data()));
+}
+
+
+/** \brief Add a tag to the existing list of tags.
+ *
+ * This function adds the specified tag_name parameter to the list
+ * of tags to send to proxy caches.
+ *
+ * This is an overload version of the add_tag() with a std::string.
+ *
+ * \param[in] tag_name  The name of the tag to add to the list.
+ */
+void cache_control_settings::add_tag(char const * tag_name)
+{
+    add_tag(std::string(tag_name));
+}
+
+
+/** \brief Retrieve the existing list of cache tags.
+ *
+ * Various CDN systems accept a cache tag. This function returns the
+ * list of tags that will be used with that HTTP header.
+ *
+ * By default, this is expected to be empty and no tag will be added
+ * anywhere.
+ *
+ * \return A list of tag names.
+ */
+cache_control_settings::tags_t const & cache_control_settings::get_tags() const
+{
+    return f_tags;
 }
 
 
@@ -541,13 +877,10 @@ void cache_control_settings::update_max_age(int64_t max_age)
     if(max_age > AGE_MAXIMUM)
     {
         // 1 year in seconds
+        //
         max_age = AGE_MAXIMUM;
     }
-    if(max_age >= 0
-    && (f_max_age == IGNORE_VALUE || max_age < f_max_age))
-    {
-        f_max_age = max_age;
-    }
+    f_max_age = minimum(f_max_age, max_age);
 }
 
 
@@ -796,13 +1129,10 @@ void cache_control_settings::update_s_maxage(int64_t s_maxage)
     if(s_maxage >= AGE_MAXIMUM)
     {
         // 1 year in seconds
+        //
         s_maxage = AGE_MAXIMUM;
     }
-    if(s_maxage >= 0
-    && (f_s_maxage == IGNORE_VALUE || s_maxage < f_s_maxage))
-    {
-        f_s_maxage = s_maxage;
-    }
+    f_s_maxage = minimum(f_s_maxage, s_maxage);
 }
 
 
@@ -835,7 +1165,7 @@ int64_t cache_control_settings::get_s_maxage() const
 /** \brief How long of a 'stale' is accepted by the client.
  *
  * The client may asks for data that is stale. Assuming that
- * a cache may keep data after it stale, the client may
+ * a cache may keep data after it became stale, the client may
  * retrieve that data if they specified the stale parameter.
  *
  * A value of zero means that any stale data is acceptable.
@@ -1072,6 +1402,9 @@ bool cache_control_settings::get_only_if_cached() const
  * If the value is larger than AGE_MAXIMUM, it will be clamped at
  * AGE_MAXIMUM.
  *
+ * \note
+ * The function only accepts decimal numbers.
+ *
  * \param[in] max_age  The maximum age decimal number defined as a string.
  *
  * \return The number of seconds the string represents
@@ -1081,13 +1414,14 @@ int64_t cache_control_settings::string_to_seconds(QString const & max_age)
 {
     if(max_age.isEmpty())
     {
-        // undefined / invalid
+        // undefined / invalid (not 0)
+        //
         return IGNORE_VALUE;
     }
 
     QByteArray const utf8(max_age.toUtf8());
     char const * s(utf8.data());
-    char const * start(s);
+    char const * const start(s);
     int64_t result(0);
     for(; *s != '\0'; ++s)
     {
@@ -1096,6 +1430,7 @@ int64_t cache_control_settings::string_to_seconds(QString const & max_age)
         || s - start > 9) // too large! (for 1 year in seconds we need 8 digits maximum)
         {
             // invalid
+            //
             return IGNORE_VALUE;
         }
         result = result * 10 + *s - '0';
@@ -1125,9 +1460,11 @@ int64_t cache_control_settings::string_to_seconds(QString const & max_age)
 int64_t cache_control_settings::minimum(int64_t const a, int64_t const b)
 {
     // if a or b are -1, then return the other
+    //
     if(a == IGNORE_VALUE)
     {
-        // in this case the value may return -1.
+        // in this case the value may return -1
+        //
         return b;
     }
     if(b == IGNORE_VALUE)
@@ -1136,6 +1473,7 @@ int64_t cache_control_settings::minimum(int64_t const a, int64_t const b)
     }
 
     // normal std::min() otherwise
+    //
     return std::min(a, b);
 }
 

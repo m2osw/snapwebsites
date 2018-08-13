@@ -317,5 +317,31 @@ snap_tables::model_t snap_tables::string_to_model(QString const & model)
 }
 
 
+/** \brief Transform a model to a string.
+ *
+ * This function transforms the specified \p model enumeration number
+ * in a display string so it can be displayed.
+ *
+ * \exception snap_table_invalid_xml_exception
+ * If the specified \p model number is not valid this exception is raised.
+ *
+ * \param[in] model  The model to transform.
+ *
+ * \return A string representing the model.
+ */
+QString snap_tables::model_to_string(model_t model)
+{
+    size_t const idx(static_cast<size_t>(model));
+    if(idx < sizeof(model_name_values) / sizeof(model_name_values[0]))
+    {
+        return QString::fromUtf8(model_name_values[idx].f_name);
+    }
+
+    // invalid enumeration number?
+    //
+    throw snap_table_invalid_xml_exception(QString("model_t \"%1\" is not a valid model enumeration").arg(static_cast<int>(model)));
+}
+
+
 } // namespace snap
 // vim: ts=4 sw=4 et

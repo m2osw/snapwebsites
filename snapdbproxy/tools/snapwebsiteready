@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Mark as website as ready in case a tool failed and the website is
+# Mark a website as ready in case a tool failed and the website is
 # in a "weird" state (i.e. marked as not ready.)
 
 while test "$1" != ""

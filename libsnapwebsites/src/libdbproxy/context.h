@@ -56,9 +56,9 @@ class context
 public:
     typedef std::shared_ptr<context>  pointer_t;
 
-    virtual ~context();
+    virtual             ~context();
 
-    const QString& contextName() const;
+    const QString&      contextName() const;
 
     // fields
     //
@@ -66,34 +66,35 @@ public:
     casswrapper::schema::Value::map_t&       fields();
 
     // tables
-    table::pointer_t getTable(const QString& table_name);
-    const tables& getTables();
+    table::pointer_t    getTable(const QString& table_name);
+    const tables&       getTables();
+    table::pointer_t    createTable(const QString& table_name);
 
-    table::pointer_t findTable(const QString& table_name);
-    table& operator[] (const QString& table_name);
-    const table& operator[] (const QString& table_name) const;
+    table::pointer_t    findTable(const QString& table_name);
+    table&              operator [] (const QString& table_name);
+    const table&        operator [] (const QString& table_name) const;
 
     // Context maintenance
-    void create();
-    void update();
-    void drop();
-    void dropTable(const QString& table_name);
-    void clearCache();
-    void loadTables();
+    void                create();
+    void                update();
+    void                drop();
+    void                dropTable(const QString& table_name);
+    void                clearCache();
+    void                loadTables();
 
-    std::shared_ptr<libdbproxy> parentCassandra() const;
+    std::shared_ptr<libdbproxy>     parentCassandra() const;
 
 private:
-    void makeCurrent();
-    context(std::shared_ptr<libdbproxy> cassandra, const QString& context_name);
-    context(context const &) = delete;
-    context & operator = (context const &) = delete;
-
-    void resetSchema();
-    void parseContextDefinition( casswrapper::schema::KeyspaceMeta::pointer_t keyspace );
-    QString getKeyspaceOptions();
-
     friend class libdbproxy;
+
+    void                makeCurrent();
+                        context(std::shared_ptr<libdbproxy> cassandra, const QString& context_name);
+                        context(context const &) = delete;
+                        context & operator = (context const &) = delete;
+
+    void                resetSchema();
+    void                parseContextDefinition( casswrapper::schema::KeyspaceMeta::pointer_t keyspace );
+    QString             getKeyspaceOptions();
 
     // f_cassandra is a parent that has a strong shared pointer over us so it
     // cannot disappear before we do, thus only a bare pointer is enough here

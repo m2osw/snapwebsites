@@ -37,6 +37,8 @@
 #include "libdbproxy/context.h"
 #include "libdbproxy/libdbproxy.h"
 
+#include "snapwebsites/log.h"
+
 #include <casswrapper/schema.h>
 
 #include <stdexcept>
@@ -227,6 +229,13 @@ casswrapper::schema::Value::map_t& context::fields()
  * You can test whether the result is null with the isNull() function
  * of the std::shared_ptr<> class.
  *
+ * \note
+ * In the old days, I used this function to get a table and prepare it to
+ * add it to the Cassandra cluster. Now that doesn't work right because
+ * the table description is missing in the situation where the table doesn't
+ * exist yet in the database. You must call the createTable() instead for
+ * now.
+ *
  * \param[in] table_name  The name of the table to retrieve.
  *
  * \return A shared pointer to the table definition found or a null shared pointer.
@@ -234,7 +243,7 @@ casswrapper::schema::Value::map_t& context::fields()
 table::pointer_t context::getTable(const QString& table_name)
 {
     table::pointer_t t( findTable( table_name ) );
-    if( t != table::pointer_t() )
+    if( t != nullptr )
     {
         return t;
     }
@@ -242,6 +251,42 @@ table::pointer_t context::getTable(const QString& table_name)
     // this is a new table, allocate it
     t.reset( new table(shared_from_this(), table_name) );
     f_tables.insert( table_name, t );
+    return t;
+}
+
+
+/** \brief Create a new table in Cassandra.
+ *
+ * In the old days, we could use the getTable() for both functions, but
+ * the newer version requires a call to the parseTableDefinition() function
+ * to make things work properly and get the table in Cassandra. Making
+ * that call in the getTable() causes problems so instead I created this
+ * function. I don't think this is 100% correct, but for now it works.
+ * So this function as a whole is a TBD.
+ *
+ * Note that if the table already exists, then this function doesn't
+ * hurt. It won't try to re-create the table.
+ *
+ * To make the table permanent in the Cassandra cluster, you must still
+ * call the table->create() function after you setup the various parameters
+ * (i.e. compression, compaction, GC, etc.)
+ *
+ * \param[in] table_name  The name of the table to create.
+ *
+ * \return A pointer to the new Cassandra table.
+ */
+table::pointer_t context::createTable(const QString& table_name)
+{
+    table::pointer_t t( findTable( table_name ) );
+    if( t != nullptr )
+    {
+        return t;
+    }
+
+    // this is a new table, allocate it
+    t.reset( new table(shared_from_this(), table_name) );
+    f_tables.insert( table_name, t );
+    t->parseTableDefinition(f_schema->createTable(table_name));
     return t;
 }
 
@@ -291,9 +336,9 @@ table::pointer_t context::findTable(const QString& table_name)
 #endif
 
     tables::const_iterator it(f_tables.find(table_name));
-    if(it == f_tables.end()) {
-        table::pointer_t null;
-        return null;
+    if(it == f_tables.end())
+    {
+        return table::pointer_t();
     }
     return *it;
 }
@@ -540,7 +585,7 @@ QString context::generateReplicationStanza() const
 void context::parseContextDefinition( casswrapper::schema::KeyspaceMeta::pointer_t keyspace_meta )
 {
     f_schema = keyspace_meta;
-    for( const auto pair : keyspace_meta->getTables() )
+    for( const auto pair : f_schema->getTables() )
     {
         table::pointer_t t(getTable(pair.first));
         t->parseTableDefinition(pair.second);

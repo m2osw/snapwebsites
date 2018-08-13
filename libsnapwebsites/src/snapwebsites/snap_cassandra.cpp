@@ -87,7 +87,7 @@ void snap_cassandra::disconnect()
 
 libdbproxy::context::pointer_t snap_cassandra::get_snap_context()
 {
-    if( !f_cassandra )
+    if( f_cassandra == nullptr )
     {
         QString msg("You must connect to cassandra first!");
         SNAP_LOG_FATAL(msg);
@@ -95,7 +95,7 @@ libdbproxy::context::pointer_t snap_cassandra::get_snap_context()
     }
 
     // we need to read all the contexts in order to make sure the
-    // findContext() works
+    // findContext() works properly
     //
     f_cassandra->getContexts();
     QString const context_name(snap::get_name(snap::name_t::SNAP_NAME_CONTEXT));
@@ -163,6 +163,14 @@ libdbproxy::table::pointer_t snap_cassandra::get_table(QString const & table_nam
  */
 void snap_cassandra::create_table_list()
 {
+    if(f_cassandra != nullptr)
+    {
+        // in this specific case we want to do a getContexts() with true
+        // so the DESCRIBE CLUSTER resets the context (in case someone
+        // did change the context/tables without a tool offered by Snap!)
+        //
+        f_cassandra->getContexts(true);
+    }
     libdbproxy::context::pointer_t context(get_snap_context());
     if(!context)
     {
@@ -196,8 +204,9 @@ void snap_cassandra::create_table_list()
         QString const table_name(s.second.get_name());
 
         // does table exist?
+        //
         libdbproxy::table::pointer_t table(context->findTable(table_name));
-        if(!table
+        if(table == nullptr
         && !s.second.get_drop())
         {
             SNAP_LOG_INFO("creating table \"")(table_name)("\"");
@@ -206,7 +215,7 @@ void snap_cassandra::create_table_list()
             //
             // setup the name in the "constructor"
             //
-            table = context->getTable(table_name);
+            table = context->createTable(table_name);
 
             // other fields make use of a map
             //
@@ -215,13 +224,16 @@ void snap_cassandra::create_table_list()
             //
             auto & table_fields(table->fields());
 
+            // get the model for this table
+            //
+            snap_tables::model_t const model(s.second.get_model());
+
             // setup the comment for information
             //
-            table_fields["comment"] = QVariant(s.second.get_name());
+            table_fields["comment"] = QVariant(s.second.get_name() + " (" + snap_tables::model_to_string(model) + ")");
 
             // how often we want the mem[ory] tables to be flushed out
             //
-            snap_tables::model_t const model(s.second.get_model());
             switch(model)
             {
             case snap_tables::model_t::MODEL_LOG:
@@ -466,7 +478,7 @@ void snap_cassandra::create_table_list()
                 sleep(10);
             }
         }
-        else if(table
+        else if(table != nullptr
              && s.second.get_drop())
         {
             SNAP_LOG_INFO("droping table \"")(table_name)("\"");

@@ -113,10 +113,10 @@ public:
     void                rollbackBatch();
 
 private:
-    table(std::shared_ptr<context> context, const QString& table_name);
-
     friend class context;
     friend class row;
+
+                        table(std::shared_ptr<context> context, const QString& table_name);
 
     void                setFromCassandra();
     void                parseTableDefinition( casswrapper::schema::TableMeta::pointer_t table_meta );
@@ -139,17 +139,18 @@ private:
 
     QString             getTableOptions() const;
 
-    casswrapper::schema::TableMeta::pointer_t   f_schema = casswrapper::schema::TableMeta::pointer_t();
+    casswrapper::schema::TableMeta::pointer_t
+                            f_schema = casswrapper::schema::TableMeta::pointer_t();
 
-    bool                      f_from_cassandra = false;
-    std::weak_ptr<context>    f_context = std::weak_ptr<context>();
-    QString                   f_context_name = QString();
-    QString                   f_table_name = QString();
-    rows                      f_rows = rows();
+    bool                    f_from_cassandra = false;
+    std::weak_ptr<context>  f_context = std::weak_ptr<context>();
+    QString                 f_context_name = QString();
+    QString                 f_table_name = QString();
+    rows                    f_rows = rows();
 
-    proxy::pointer_t          f_proxy = proxy::pointer_t();
-    int32_t                   f_cursor_index = -1;
-    int32_t                   f_batch_index  = -1;
+    proxy::pointer_t        f_proxy = proxy::pointer_t();
+    int32_t                 f_cursor_index = -1;
+    int32_t                 f_batch_index  = -1;
 };
 #pragma GCC diagnostic pop
 

@@ -70,7 +70,9 @@
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
+#include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/not_reached.h>
+#include <snapwebsites/snap_uri.h>
 #include <snapwebsites/snapwebsites.h>
 #include <snapwebsites/tcp_client_server.h>
 
@@ -82,7 +84,18 @@
 //
 #include <advgetopt/advgetopt.h>
 
+// boost lib
+//
+#include <boost/algorithm/string.hpp>
 
+// C++ lib
+//
+#include <fstream>
+
+
+// avoid leak detection from the -fsanitize option
+// (who cares, we run then exit right away)
+//
 extern "C" {
 char const * __asan_default_options()
 {
@@ -183,16 +196,46 @@ public:
     int                 process();
 
 private:
+    typedef std::map<std::string, std::string>      field_map_t;
+    enum class cache_state_t
+    {
+        CACHE_STATE_FIELD_NAME,          // text up to space or ':', if '\n' header end reached
+        CACHE_STATE_FIELD_SEPARATOR,     // the ':' (accept spaces too)
+        CACHE_STATE_FIELD_DATA_START,    // skip spaces until something else appears
+        CACHE_STATE_FIELD_DATA,          // field data
+        CACHE_STATE_FIELD_CONTINUE,      // '\n' found in field data, if '\t' or space(s) continue field data otherwise new FIELD_NAME
+
+        CACHE_STATE_FIELD_CACHE,         // we found a header that tells us caching is possible
+        CACHE_STATE_FIELD_NO_CACHE       // we found a header that tells us no cache can be created by snap.cgi
+    };
+
+    int                 check_permanent_cache();
+    void                cache_data(char const * data, size_t size);
+    void                check_headers();
+    void                temporary_to_permanent_cache();
+    int                 delete_cache_file(std::string const & filename);
+    int                 rename_cache_file(std::string const & from_filename, std::string const & to_filename);
+
     advgetopt::getopt   f_opt;
-    int                 f_port = -1;    // snap server port
-    std::string         f_address;      // snap server address
+    int                 f_port = 4004;                              // snap server port
+    std::string         f_address = std::string("127.0.0.1");       // snap server address
+    std::vector<char>   f_cache = {};   // to save outgoing data to see whether to cache it on disk or not
+    cache_state_t       f_cache_state = cache_state_t::CACHE_STATE_FIELD_NAME;
+    size_t              f_cache_pos = 0;
+    std::string         f_cache_field_name = std::string();
+    std::string         f_cache_field_data = std::string();
+    field_map_t         f_cache_fields = {};
+    std::string         f_cache_permanent_filename = std::string();
+    std::string         f_cache_temporary_filename = std::string();
+    std::shared_ptr<std::ofstream>
+                        f_cache_file = std::shared_ptr<std::ofstream>();
+    snap::cache_control_settings
+                        f_client_ccs = snap::cache_control_settings();
 };
 
 
 snap_cgi::snap_cgi( int argc, char * argv[] )
     : f_opt(argc, argv, g_snapcgi_options, g_configuration_files, "SNAPCGI_OPTIONS")
-    , f_port(4004)
-    , f_address("127.0.0.1")
 {
     if(f_opt.is_defined("version"))
     {
@@ -205,7 +248,19 @@ snap_cgi::snap_cgi( int argc, char * argv[] )
         exit(1);
     }
 
+    // most requests are under 64Kb, larger once are often images, JS, CSS
+    // files that we want to cache if allowed
+    //
+    f_cache.reserve(64 * 1024);
+
+    // max-age defaults to 0 which is not correct for client's cache
+    // information (although with the current cache implementation here
+    // it works the same as IGNORE_VALUE, later versions may change)
+    //
+    f_client_ccs.set_max_age(snap::cache_control_settings::IGNORE_VALUE);
+
     // read log-config and setup the logger
+    //
     std::string logconfig(f_opt.get_string("log-config"));
     snap::logging::configure_conffile( logconfig.c_str() );
 }
@@ -565,7 +620,8 @@ int snap_cgi::process()
     }
 
 #ifdef _DEBUG
-    SNAP_LOG_DEBUG("processing request_method=")(request_method);
+    SNAP_LOG_DEBUG("processing request_method=")(request_method)
+                  (" request_uri=")(getenv("REQUEST_URI"));
 #endif
     SNAP_LOG_DEBUG("f_address=")(f_address)(", f_port=")(f_port)(", secure=")(secure ? "true" : "false");
 
@@ -574,6 +630,28 @@ int snap_cgi::process()
         sigemptyset(&set);
         sigaddset(&set, SIGPIPE);
         sigprocmask(SIG_BLOCK, &set, nullptr);
+    }
+
+    if(check_permanent_cache() == 0)
+    {
+        // it succeeded, we returned the cache data, no need to go further
+        // (and we avoided hitting the snapserver / cassandra combo!)
+        //
+        return 0;
+    }
+    f_cache_fields.clear();
+    if(f_client_ccs.get_only_if_cached())
+    {
+        // the client wanted something from the cache and avoid hitting
+        // the server, we can't do that so we have to reply with a 504
+        //
+        return error("504 Gateway Timeout"
+                   , "This page is not currently cached. Please verify that the URI is valid."
+                   , "The user request included the \"Cache-Control: only-if-cached\" parameter.");
+    }
+    if(f_cache_permanent_filename.empty())
+    {
+        f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
     }
 
     tcp_client_server::bio_client socket(
@@ -682,6 +760,9 @@ int snap_cgi::process()
                 int const break_char(is_multipart ? '\n' : '&');
                 for(;;)
                 {
+                    // TODO: handle potential read problems...
+                    //       (here we read from Apache, our stdin, a pipe)
+                    //
                     int const c(getchar());
                     if(c == break_char || c == EOF)
                     {
@@ -766,10 +847,24 @@ int snap_cgi::process()
                 // there is not point in calling error() from here because
                 // the connection is probably broken anyway, just report
                 // the problem in to the logger
+                //
                 SNAP_LOG_FATAL("an I/O error occurred while sending the response to the client");
                 return 1;
             }
             wrote += r;
+
+            try
+            {
+                cache_data(buf, r);
+            }
+            catch(std::exception const & e)
+            {
+                SNAP_LOG_ERROR("cache_data() generated an exception: ")(e.what());
+            }
+            catch(...)
+            {
+                SNAP_LOG_ERROR("cache_data() generated an unknown exception.");
+            }
 
 // to get a "verbose" CGI (For debug purposes)
 #if 0
@@ -785,8 +880,15 @@ int snap_cgi::process()
         }
         else if(r == -1)
         {
+            int const e(errno);
             char const * request_uri(getenv(snap::get_name(snap::name_t::SNAP_NAME_CORE_REQUEST_URI)));
-            SNAP_LOG_FATAL("an I/O error occurred while reading the response from the server, the REQUEST_URI was: ")(request_uri);
+            SNAP_LOG_FATAL("an I/O error occurred while reading the response from the server, the REQUEST_URI was: ")
+                          (request_uri)
+                          (" (errno: ")
+                          (e)
+                          (" -- ")
+                          (strerror(e))
+                          (")");
             break;
         }
         else if(r == 0)
@@ -811,12 +913,1007 @@ int snap_cgi::process()
         }
     }
 
-    // TODO: handle potential read problems...
+    // so, everything worked, if we have a cache file, now is the time to
+    // close it and save it in the cache area
+    //
+    // the f_cache_file pointer is set back to nullptr in case of failure
+    //
+    temporary_to_permanent_cache();
+
 #ifdef _DEBUG
     SNAP_LOG_DEBUG("Closing connection...");
 #endif
     return 0;
 }
+
+
+int snap_cgi::check_permanent_cache()
+{
+    // get the client's request cache info because this is important
+    // to eventually skip the cached data, accept stale data, etc.
+    //
+    char const * const client_cache_control(getenv("HTTP_CACHE_CONTROL"));
+    if(client_cache_control != nullptr
+    && *client_cache_control != '\0')
+    {
+        f_client_ccs.set_cache_info(QString::fromUtf8(client_cache_control), false);
+
+        // if the client requests a "no-store" in terms of caches, we
+        // comply by not defining the permanent cache filename
+        //
+        // I'm not so sure this makes sense here, but I prefer to follow
+        // the client's wishes for this one
+        //
+        if(f_client_ccs.get_no_store())
+        {
+            return -1;
+        }
+    }
+
+    // our permanent cache is only for a GET
+    //
+    char const * const request_method(getenv("REQUEST_METHOD"));
+    if(request_method == nullptr
+    || strcmp(request_method, "GET") != 0)
+    {
+        // don't actually attempt to cache anything if method is not a GET
+        //
+        return -1;
+    }
+
+    // okay, we have a valid GET, let's see the request path
+    //
+    // WARNING: in reality, this cache MUST use a one to one parsing of the
+    //          URI information as the snapserver does in snap_child; the
+    //          following is a very rough approximation; very advanced
+    //          features just won't work right with this cache that you
+    //          should turn off by setting the permanent_cache_path to
+    //          the empty string
+    //
+
+    snap::snap_uri uri;
+
+    // protocol
+    {
+        char const * protocol("http");
+        char const * const https(getenv("HTTPS"));
+        if(https != nullptr)
+        {
+            if(strcmp(https, "on") == 0)
+            {
+                protocol = "https";
+            }
+        }
+        uri.set_protocol(protocol);
+    }
+
+    // host
+    {
+        char const * const http_host(getenv("HTTP_HOST"));
+        if(http_host == nullptr)
+        {
+            return -1;
+        }
+        std::string host;
+
+        // the HTTP_HOST parameter may include the port after a colon
+        // make sure to remove it otherwise snap_uri gets "confused"
+        //
+        char const * const port(strchr(http_host, ':'));
+        if(port != nullptr)
+        {
+            // ignore port in the host part
+            //
+            host = std::string(http_host, port - http_host);
+        }
+        else
+        {
+            // no port, use full host info
+            //
+            host = http_host;
+        }
+        if(host.empty())
+        {
+            // this can probably not happen, but this is tainted data
+            //
+            return -1;
+        }
+
+        uri.set_domain(QString::fromUtf8(host.c_str()));
+    }
+
+    // port
+    {
+        char const * const port(getenv("SERVER_PORT"));
+        if(port == nullptr)
+        {
+            // the port is mandatory, 80 and 443 are defaults but still
+            // need to be specified by Apache
+            //
+            return -1;
+        }
+        uri.set_port(port);
+    }
+
+    // query string
+    {
+        char const * const query_string(getenv("QUERY_STRING"));
+        if(query_string != nullptr)
+        {
+            uri.set_query_string(query_string);
+        }
+    }
+
+    // path
+    {
+        char const * const request_uri(getenv("REQUEST_URI"));
+        if(request_uri == nullptr)
+        {
+            return -1;
+        }
+        std::string path;
+        char const * const query_string(strchr(request_uri, '?'));
+        if(query_string != nullptr)
+        {
+            // there is a repeat of the query string in the REQUEST_URI
+            //
+            path = std::string(request_uri, query_string - request_uri);
+        }
+        else
+        {
+            // the whole URI is the path
+            //
+            path = request_uri;
+        }
+        if(path.length() > 2048)
+        {
+            return -1;
+        }
+        uri.set_path(QString::fromUtf8(path.c_str()));
+    }
+
+    // from the URI, calculate the permanent cache path and filename
+    {
+        QString canonicalized(uri.get_uri());
+
+        // we want to change the protocol separators (://) to "_"
+        // but the rest of the path has to remain as is so it can be
+        // really long (i.e. 2048 is used above)
+        //
+        // WARNING: QString::replace() will replace all instances, we only
+        //          want the first one to be converted
+        //
+        int const pos(canonicalized.indexOf("://"));
+        if(pos > 0)
+        {
+            // replace just that one instance
+            //
+            canonicalized = canonicalized.mid(0, pos)
+                          + "_"
+                          + canonicalized.mid(pos + 3);
+        }
+
+        // the urlencode() function is good enough for us here and quite
+        // sensible since it uses the same characters as what the browser
+        // uses; also we leave a few characters alone as they can appear
+        // as is in a filename anyway; especially, we keep all slashes
+        // as is because filenames are limited to a length much smaller
+        // than what a URI path can be in Snap! C++
+        //
+        canonicalized = snap::snap_uri::urlencode(canonicalized, ",/=~");
+
+        // get the user defined path to the permanent folder
+        //
+        std::string permanent_cache_path("/var/lib/snapwebsites/www/permanent");
+        if(f_opt.is_defined("permanent-cache-path"))
+        {
+            permanent_cache_path = f_opt.get_string("permanent-cache-path");
+        }
+
+        if(snap::mkdir_p(permanent_cache_path) != 0)
+        {
+            SNAP_LOG_WARNING("could not access the permanent cache path (")
+                            (permanent_cache_path)
+                            (")");
+            return -1;
+        }
+
+        f_cache_permanent_filename = permanent_cache_path + "/" + canonicalized;
+    }
+
+    // the no-cache flag in a request is similar to a "must revalidate",
+    // in our current implementation means we totally ignore our cache
+    //
+    if(f_client_ccs.get_no_cache())
+    {
+        return -1;
+    }
+
+    // does that file exist?
+    //
+    std::ifstream cp(f_cache_permanent_filename, std::ios_base::in | std::ios_base::binary);
+    if(!cp.is_open())
+    {
+        // no cached file, all is fine
+        //
+        return -1;
+    }
+
+    // read the header
+    //
+    std::vector<std::string> lines;
+    bool first(true);
+    size_t offset(0);
+    for(;;)
+    {
+        std::string line;
+        for(;;)
+        {
+            char c;
+            cp.get(c);
+            if(cp.eof()
+            || cp.fail())
+            {
+                // if we reach eof() before we can determine whether the
+                // cached file is still valid, it's too late
+                //
+                delete_cache_file(f_cache_permanent_filename);
+                return -1;
+            }
+            if(c == '\n')
+            {
+                break;
+            }
+            line += c;
+        }
+        if(line.empty())
+        {
+            // an empty line means end of header
+            //
+            break;
+        }
+        if(!first
+        && (line[0] == ' ' || line[0] == '\t'))
+        {
+            // concatenate
+            //
+            size_t const max(line.length());
+            size_t p(0);
+            for(; p < max; ++p)
+            {
+                if(line[p] != ' '
+                || line[p] != '\t')
+                {
+                    break;
+                }
+            }
+            if(p < max)
+            {
+                size_t const last_line(lines.size() - 1);
+                lines[last_line] += ' ';
+                lines[last_line] += std::string(line.c_str() + p, max - p);
+            }
+        }
+        else
+        {
+            if(first)
+            {
+                offset = line.length() + 1;
+            }
+            lines.push_back(line);
+        }
+        first = false;
+    }
+
+    // put the fields in the f_cache_fields map
+    //
+    for(auto l : lines)
+    {
+        std::string::size_type const pos(l.find(':'));
+        if(pos > 0)
+        {
+            QString const name(QString::fromUtf8(l.substr(0, pos).c_str()).trimmed().toLower());
+            QString const value(QString::fromUtf8(l.substr(pos + 1).c_str()).trimmed());
+            f_cache_fields[name.toUtf8().data()] = value.toUtf8().data();
+        }
+    }
+
+    // now search for the various fields that tell us whether we have
+    // a valid cache for this request, we may have to return a 304 too
+    //
+    auto const snap_cgi_date(f_cache_fields.find("x-snap-cgi-date"));
+    if(snap_cgi_date == f_cache_fields.end())
+    {
+        // this should not happen, we are managing our own cache and
+        // handle this field specifically
+        //
+        SNAP_LOG_ERROR("missing X-Snap-CGI-Date field.");
+        delete_cache_file(f_cache_permanent_filename);
+        exit(1);
+        return 0; // this is not correct so we can't return
+    }
+
+    time_t const date(std::stol(snap_cgi_date->second));
+    if(date <= 0)
+    {
+        // this should not happen since we are managing the cache
+        // and very specifically this date
+        //
+        SNAP_LOG_ERROR("invalid X-Snap-CGI-Date field (")
+                      (snap_cgi_date->second)
+                      (").");
+        delete_cache_file(f_cache_permanent_filename);
+        exit(1);
+        return 0; // this is not correct so we can't return
+    }
+
+    // check for the Cache-Control to make sure the file is not out of date
+    //
+    auto const cache_control(f_cache_fields.find("cache-control"));
+    if(cache_control == f_cache_fields.end())
+    {
+        // this should not happen, we don't save requests without a
+        // Cache-Control field in our cache (i.e. because those are
+        // viewed as private)
+        //
+        SNAP_LOG_ERROR("missing Cache-Control field.");
+        delete_cache_file(f_cache_permanent_filename);
+        exit(1);
+        return 0; // this is not correct so we can't return
+    }
+
+    snap::cache_control_settings const ccs(QString::fromUtf8(cache_control->second.c_str()), false);
+
+    int64_t max_age(ccs.get_s_maxage());
+    if(-1 == max_age)
+    {
+        max_age = ccs.get_max_age();
+    }
+
+    // client may define a specific maximum age that will override the server
+    // defined maximum age (now found in the headers); however, if the server
+    // max_age is smaller we keep the server's max_age. The RFC says:
+    //
+    // \par
+    // The "max-age" request directive indicates that the client is
+    // unwilling to accept a response whose age is greater than the
+    // specified number of seconds.
+    //
+    // a client's max_age=0 parameter means use the server defined
+    // max-age which is the default
+    //
+    // note: the RFC may imply that if stale is also defined, then
+    // max-age should be ignored
+    //
+    int64_t const client_max_age(f_client_ccs.get_max_age());
+    if(client_max_age > 0 && client_max_age < max_age)
+    {
+        max_age = client_max_age;
+    }
+
+    // the client may request that the cache remains fresh (opposed to
+    // becoming stale) for at least this many more seconds; in many
+    // cases this won't be a problem (i.e. JS stay fresh for a long time)
+    // but many of our pages time out immediately (no caching at all)
+    // anyway
+    //
+    int64_t client_min_fresh(f_client_ccs.get_min_fresh());
+    if(client_min_fresh < 0)
+    {
+        client_min_fresh = 0;
+    }
+
+    time_t const now(time(nullptr));
+    if(now > date + max_age - client_min_fresh)
+    {
+        // if min-fresh=... was specified, we ignore stale=..., both
+        // together doesn't make sense anyway and min-fresh is more
+        // constraining
+        //
+        if(client_min_fresh > 0)
+        {
+            // this cached data may not even be stale yet
+            // so for sure we want to keep it
+            //
+            //delete_cache_file(f_cache_permanent_filename);
+
+            return -1;
+        }
+
+        // check client's stale parameter
+        //
+        // 1. stale is not defined, then it is IGNORE_VALUE and that means
+        //    we see the cached file as invalid
+        //
+        // 2. stale is defined, set to an invalid value, then it gets set
+        //    to IGNORE_VALUE and point (1) applies
+        //
+        // 3. stale is defined, set to zero (0), then whatever the age of
+        //    the file, return the cached data
+        //
+        // 4. stale is defined, set to a non zero value, then add that to
+        //    the date when the data became stale and see whether the
+        //    data is really that much older and if so don't return the
+        //    cache
+        //
+        // Note: that a stale larger then AGE_MAXIMUM is clamped to that
+        // limit, which is 1 year. So you can get a cache file that
+        // became stale for another year (a file that was given a maximum
+        // age of 1 year + 1 year of stale can therefore be cahed for
+        // a total of about 2 years, theoretically)
+        //
+        int64_t const max_stale(f_client_ccs.get_max_stale());
+        if(max_stale == snap::cache_control_settings::IGNORE_VALUE
+        || (max_stale > 0 && now > date + max_age + max_stale))
+        {
+            // this cached data has become stale, we keep it because some
+            // requests may include a stale parameter (as shown in the
+            // condition above)
+            //
+            // also, the max_age parameter may be "tweaked" by the client
+            // which means that we can't rely on that parameter to know
+            // that our data is stale
+            //
+            //delete_cache_file(f_cache_permanent_filename);
+
+            return -1; // this is not correct so we can't return
+        }
+    }
+
+    // the cache is up to date, the user may have a condition in his
+    // header, though
+    //
+    // first check for the ETag
+    //
+    char const * const if_none_match(getenv("HTTP_IF_NONE_MATCH"));
+    if(if_none_match != nullptr     // defined
+    && *if_none_match != '\0')      // not an empty string
+    {
+        auto const etag(f_cache_fields.find("etag"));
+        if(etag != f_cache_fields.end())
+        {
+            // there is an 'ETag' field, get the value and compare
+            // against the user's
+            //
+            if(etag->second == if_none_match)
+            {
+                // this is the same, return 304
+                //
+                // As per RFC, the 304 can include the following fields:
+                //
+                //   Date              -- done by Apache, mandatory
+                //   ETag              -- same as in 200 OK response
+                //   Content-Location  -- same as in 200 OK response
+                //   Expires           -- if changed since last request (?)
+                //   Cache-Control     -- if changed since last request (?)
+                //   Vary              -- if changed since last request (?)
+                //
+                // TODO: create a function because we do this twice so far...
+                //
+                QString err_name;
+                snap::snap_child::define_http_name(snap::snap_child::http_code_t::HTTP_CODE_NOT_MODIFIED, err_name);
+                std::cout << "Status: "
+                          << static_cast<int>(snap::snap_child::http_code_t::HTTP_CODE_NOT_MODIFIED)
+                          << " "
+                          << err_name << std::endl;
+
+                // So we don't do these at this time because it's really not
+                // necessary although we could send the Cache-Control and ETag
+                //for(auto l : lines)
+                //{
+                //    std::cout << l;
+                //}
+
+                // end of header
+                //
+                std::cout << std::endl;
+                return 0;
+            }
+        }
+    }
+
+    // the ETag was not defined or not equal, try the last modification
+    // date instead
+    //
+    char const * const if_modified_since(getenv("HTTP_IF_MODIFIED_SINCE"));
+    if(if_modified_since != nullptr
+    && *if_modified_since != '\0')
+    {
+        auto const last_modified_str(f_cache_fields.find("last-modified"));
+        if(last_modified_str != f_cache_fields.end())
+        {
+            time_t const modified_since(snap::snap_child::string_to_date(QString::fromUtf8(if_modified_since)));
+            time_t const last_modified(snap::snap_child::string_to_date(QString::fromUtf8(last_modified_str->second.c_str())));
+
+            // TBD: should we use >= instead of == here?
+            // (see in libsnapwebsites/src/snapwebsites/snap_child_cache_control.cpp too)
+            //
+            if(modified_since == last_modified
+            && modified_since != -1)
+            {
+                // this is the same, return 304
+                //
+                // As per RFC, the 304 can include the following fields:
+                //
+                //   Date              -- done by Apache, mandatory
+                //   ETag              -- same as in 200 OK response
+                //   Content-Location  -- same as in 200 OK response
+                //   Expires           -- if changed since last request (?)
+                //   Cache-Control     -- if changed since last request (?)
+                //   Vary              -- if changed since last request (?)
+                //
+                QString err_name;
+                snap::snap_child::define_http_name(snap::snap_child::http_code_t::HTTP_CODE_NOT_MODIFIED, err_name);
+                std::cout << "Status:"
+                          << static_cast<int>(snap::snap_child::http_code_t::HTTP_CODE_NOT_MODIFIED)
+                          << " "
+                          << err_name << std::endl;
+
+                std::cout << "Server:Snap! C++" << std::endl;
+
+                // So we don't do these at this time because it's really not
+                // necessary although we could send the Cache-Control and ETag
+                //for(auto l : lines)
+                //{
+                //    std::cout << l;
+                //}
+
+                // end of header
+                //
+                std::cout << std::endl;
+                return 0;
+            }
+        }
+    }
+
+    // rewind, but don't include the X-Snap-CGI-Date field which
+    // is always the first (we save it that way in our cache for
+    // ourselves)
+    //
+    cp.seekg(offset, std::ios::beg);
+    //cp.seekg(0, std::ios::beg);
+
+    // send it to Apache which will transmit to the client
+    //
+    char buf[4096];
+    for(;;)
+    {
+        cp.read(buf, sizeof(buf));
+        size_t const r(cp.gcount());
+        if(r > 0)
+        {
+            if(fwrite(buf, r, 1, stdout) != 1)
+            {
+                // in this case we want to exit but we want to
+                // keep the cached file
+                //
+                SNAP_LOG_FATAL("an I/O error occurred while sending the response to the client");
+                exit(1);
+                return 0; // this is not correct so we can't return
+            }
+        }
+        if(cp.eof())
+        {
+            // it all worked!
+            //
+            // return 0 meaning that we sent a response and
+            // can exit ASAP
+            //
+            return 0;
+        }
+        if(cp.fail())
+        {
+            SNAP_LOG_FATAL("an I/O error occurred while reading the response from cache file \"")
+                          (f_cache_permanent_filename)
+                          ("\".");
+            delete_cache_file(f_cache_permanent_filename);
+            exit(1);
+            return 0; // this is not correct so we can't return
+        }
+    }
+}
+
+
+void snap_cgi::cache_data(char const * data, size_t size)
+{
+    switch(f_cache_state)
+    {
+    case cache_state_t::CACHE_STATE_FIELD_CACHE:
+        // save to our file, it's not yet in the cache (because we're
+        // still writing to it) but it's coming soon!
+        //
+        f_cache_file->write(data, size);
+        if(f_cache_file->fail())
+        {
+            // the write failed, don't cache anything
+            //
+            f_cache_file.reset();
+            f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
+            snap::NOTUSED(delete_cache_file(f_cache_temporary_filename));
+        }
+        return;
+
+    case cache_state_t::CACHE_STATE_FIELD_NO_CACHE:
+        // no caching allowed, just ignore these calls
+        //
+        return;
+
+    default:
+        // in other cases, we are still reading the header so save that
+        // data and move forward
+        //
+        f_cache.insert(f_cache.end(), data, data + size);
+        break;
+
+    }
+
+    while(f_cache_pos < f_cache.size())
+    {
+        char const c(f_cache[f_cache_pos]);
+        ++f_cache_pos;
+        switch(f_cache_state)
+        {
+        case cache_state_t::CACHE_STATE_FIELD_CONTINUE:
+            if(c == ' ' || c == '\t')
+            {
+                // Go to CACHE_STATE_FIELD_DATA_START next so we trim
+                // extraneous spaces
+                //
+                f_cache_state = cache_state_t::CACHE_STATE_FIELD_DATA_START;
+
+                // we're going to remove all the spaces and tabs so we must
+                // add a space here
+                //
+                f_cache_field_data += ' ';
+                break;
+            }
+            f_cache_state = cache_state_t::CACHE_STATE_FIELD_NAME;
+
+            SNAP_LOG_DEBUG("got a new field: [")(f_cache_field_name)("] = \"")(f_cache_field_data)("\"");
+            f_cache_fields[f_cache_field_name] = f_cache_field_data;
+            f_cache_field_name.clear();
+            f_cache_field_data.clear();
+            /*FALLTHROUGH*/
+        case cache_state_t::CACHE_STATE_FIELD_NAME:
+            switch(c)
+            {
+            case '\n':
+                if(!f_cache_field_name.empty())
+                {
+                    // a field name without a colon?
+                    //
+                    SNAP_LOG_WARNING("field name not terminated by a colon (:).");
+                    f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
+                    f_cache.clear();
+                    return;
+                }
+
+                // we found the end of the header and no cache definitions
+                // what do we do now?! we should cache this data, but for
+                // now I'll just mark it as no-caching and we can adjust
+                // that later
+                //
+                check_headers();
+                return;
+
+            case ':':
+                // we found the field name/data separator, now read the data
+                //
+                f_cache_state = cache_state_t::CACHE_STATE_FIELD_DATA_START;
+                break;
+
+            case ' ':
+            case '\t':
+                // wait until we find the ':'
+                //
+                f_cache_state = cache_state_t::CACHE_STATE_FIELD_SEPARATOR;
+                break;
+
+            default:
+                if(c >= 'A' && c <= 'Z')
+                {
+                    // force to lowercase
+                    //
+                    f_cache_field_name += c | 0x20;
+                }
+                else if((c < 'a' || c > 'z')
+                     && (c < '0' || c > '9')
+                     && c != '_'
+                     && c != '-')
+                {
+                    // invalid character for a field name
+                    //
+                    SNAP_LOG_WARNING("field name include an unexpected character ('")(c)("').");
+                    f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
+                    f_cache.clear();
+                    return;
+                }
+                else
+                {
+                    // other characters are kept as is
+                    //
+                    f_cache_field_name += c;
+                }
+                break;
+
+            }
+            break;
+
+        case cache_state_t::CACHE_STATE_FIELD_SEPARATOR:
+            switch(c)
+            {
+            case ' ':
+            case '\t':
+                // skip spaces and tabs after a field name
+                //
+                break;
+
+            case ':':
+                f_cache_state = cache_state_t::CACHE_STATE_FIELD_DATA_START;
+                break;
+
+            default:
+                // we bumped in what looks like an invalid header field
+                //
+                SNAP_LOG_WARNING("invalid header field character found ('")(c)("'), expected spaces, tabs, or a colon.");
+                f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
+                f_cache.clear();
+                return;
+
+            }
+            break;
+
+        case cache_state_t::CACHE_STATE_FIELD_DATA_START:
+            // trim leading spaces
+            //
+            if(c == ' ' || c == '\t')
+            {
+                break;
+            }
+            f_cache_state = cache_state_t::CACHE_STATE_FIELD_DATA;
+            /*FALLTHROUGH*/
+        case cache_state_t::CACHE_STATE_FIELD_DATA:
+            if(c == '\n')
+            {
+                // found end of field?
+                //
+                f_cache_state = cache_state_t::CACHE_STATE_FIELD_CONTINUE;
+                break;
+            }
+            f_cache_field_data += c;
+            break;
+
+        default:
+            throw std::logic_error("invalid state for cache_data() header checking loop");
+
+        }
+    }
+}
+
+
+void snap_cgi::check_headers()
+{
+    // by default assume the worst
+    //
+    f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
+
+    auto const status(f_cache_fields.find("status"));
+    if(status != f_cache_fields.end())
+    {
+        std::string::size_type const pos(status->second.find(' '));
+        if(pos != std::string::npos)
+        {
+            std::string const code(status->second.substr(0, pos));
+            int const status_code(std::stoi(code));
+            if(status_code != 200)
+            {
+                f_cache.clear();
+                return;
+            }
+        }
+    }
+
+    snap::cache_control_settings ccs;
+    auto const cache_control(f_cache_fields.find("cache-control"));
+    if(cache_control != f_cache_fields.end())
+    {
+        ccs.set_must_revalidate(false); // the RFC default is `false` but we use `true` for Snap! -- which is "safer"
+        ccs.set_cache_info(QString::fromUtf8(cache_control->second.c_str()), false);
+//SNAP_LOG_WARNING
+//    ("must-revalidate=")(ccs.get_must_revalidate() ? "true" : "false")
+//    (" proxy-revalidate=")(ccs.get_proxy_revalidate() ? "true" : "false")
+//    (" private=")(ccs.get_private() ? "true" : "false")
+//    (" public=")(ccs.get_public() ? "true" : "false")
+//    (" no-cache=")(ccs.get_no_cache() ? "true" : "false")
+//    (" s-maxage=")(ccs.get_s_maxage())
+//;
+        if(
+           !ccs.get_must_revalidate()       // no proxy caching
+        && !ccs.get_proxy_revalidate()      // too complicated for now
+        && !ccs.get_private()               // never cache private data
+        &&  ccs.get_public()                // for now ignore if not specifically marked as public!
+        && !ccs.get_no_cache()              // crystal clear
+        &&  ccs.get_s_maxage() != 0         // no share cache if "s-maxage=0"
+        )
+        {
+            f_cache_state = cache_state_t::CACHE_STATE_FIELD_CACHE;
+        }
+    }
+
+    // TODO: handle other fields too?
+    //
+    //       Snap! creates the Cache-Control tag and the others
+    //       (such as Expires and Pragma) define the same thing
+    //       so we should not have to do anything with them,
+
+    if(f_cache_state == cache_state_t::CACHE_STATE_FIELD_CACHE)
+    {
+        // caching allowed, save the data read so far to a .http file
+        //
+        std::string cache_path("/var/lib/snapwebsites/www/temporary");
+        if(f_opt.is_defined("temporary-cache-path"))
+        {
+            cache_path = f_opt.get_string("temporary-cache-path");
+        }
+
+        f_cache_temporary_filename = cache_path + "/" + std::to_string(getpid()) + ".http";
+        f_cache_file.reset(new std::ofstream(f_cache_temporary_filename, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary));
+        if(f_cache_file->is_open())
+        {
+            QString const date(QString("X-Snap-CGI-Date:%1\n").arg(time(nullptr)));
+            QByteArray const date_bytes(date.toUtf8());
+            f_cache_file->write(date_bytes.data(), date_bytes.size());
+
+            // the cache must not include fields that are considered
+            // private so we save the headers except those marked private
+            // or in need of revalidation
+            //
+            snap::cache_control_settings::fields_t all_names;
+
+            auto add_excluded_names = [](snap::cache_control_settings::fields_t & result,
+                                         snap::cache_control_settings::fields_t const & names)
+                    {
+                        for(auto & n : names)
+                        {
+                            result.insert(boost::algorithm::to_lower_copy(n));
+                        }
+                    };
+            add_excluded_names(all_names, ccs.get_private_field_names());
+            add_excluded_names(all_names, ccs.get_revalidate_field_names());
+
+            for(auto const & f : f_cache_fields)
+            {
+                if(std::find(all_names.begin(), all_names.end(), f.first) == all_names.end())
+                {
+                    *f_cache_file << f.first << ":" << f.second << std::endl;
+                }
+            }
+            *f_cache_file << std::endl;
+
+            // sanity check
+            //
+            if(f_cache_pos > f_cache.size())
+            {
+                throw std::logic_error("cache position (f_cache_pos) too large while saving file to cache");
+            }
+
+            // do not re-save the header, only the data
+            //
+            f_cache_file->write(f_cache.data() + f_cache_pos, f_cache.size() - f_cache_pos);
+
+            if(f_cache_file->fail())
+            {
+                // the first write failed, don't cache anything
+                //
+                f_cache_file.reset();
+            }
+        }
+        else
+        {
+            // could not open cache file
+            //
+            // TODO report to snapwatchdog
+            //
+            f_cache_file.reset();
+        }
+        if(f_cache_file == nullptr)
+        {
+            // something failed, no caching
+            //
+            f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
+            snap::NOTUSED(delete_cache_file(f_cache_temporary_filename));
+        }
+    }
+
+    // release the memory used so far, no need to waste it
+    //
+    f_cache.clear();
+}
+
+
+void snap_cgi::temporary_to_permanent_cache()
+{
+    // if we don't have a cache file, ignore
+    //
+    if(f_cache_file == nullptr)
+    {
+        return;
+    }
+
+    // the f_cache_temporary_filename is the name of the temporary cache file
+    // we want to move it to the permanent location now
+    //
+    int r(delete_cache_file(f_cache_permanent_filename));
+    if(r == -1 && errno == ENOENT)
+    {
+        // ignore this error
+        //
+        r = 0;
+    }
+    if(r == 0)
+    {
+        r = snap::mkdir_p(f_cache_permanent_filename, true);
+        if(r == 0)
+        {
+            r = rename_cache_file(f_cache_temporary_filename, f_cache_permanent_filename);
+        }
+    }
+
+    // on failure unlink the temporary file
+    //
+    // if renamed successfully no matter since the file was moved to
+    // the new location, otherwise it could pile up for nothing in
+    // our temporary cache folder
+    //
+    if(r != 0)
+    {
+        snap::NOTUSED(delete_cache_file(f_cache_temporary_filename));
+    }
+}
+
+
+int snap_cgi::rename_cache_file(std::string const & from_filename, std::string const & to_filename)
+{
+    int const r(rename(from_filename.c_str(), to_filename.c_str()));
+    if(r != 0)
+    {
+        int const e(errno);
+        SNAP_LOG_ERROR("could not rename file \"")
+                      (from_filename)
+                      (" to file \"")
+                      (to_filename)
+                      ("\" (errno: ")
+                      (e)
+                      (" -- ")
+                      (strerror(e))
+                      (".)");
+    }
+
+    return r;
+}
+
+
+int snap_cgi::delete_cache_file(std::string const & filename)
+{
+    int const r(unlink(filename.c_str()));
+    if(r != 0)
+    {
+        int const e(errno);
+        SNAP_LOG_ERROR("could not delete cache file \"")
+                      (filename)
+                      ("\" (errno: ")
+                      (e)
+                      (" -- ")
+                      (strerror(e))
+                      (".)");
+        // make sure to restore the error in this case
+        //
+        errno = e;
+    }
+
+    return r;
+}
+
 
 
 int main(int argc, char * argv[])

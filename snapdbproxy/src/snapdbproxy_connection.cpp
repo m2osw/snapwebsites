@@ -121,10 +121,7 @@ snapdbproxy_connection::snapdbproxy_connection
         )
     : snap_runner("snapdbproxy_connection")
     , f_snapdbproxy(proxy)
-    //, f_proxy()
     , f_session(session)
-    //, f_cursors() -- auto-init
-    //, f_client(nullptr) -- auto-init
     , f_socket(client->get_socket())
     , f_cassandra_host_list(cassandra_host_list)
     , f_cassandra_port(cassandra_port)
@@ -637,7 +634,23 @@ void snapdbproxy_connection::declare_batch(libdbproxy::order const & order)
 
 void snapdbproxy_connection::describe_cluster(libdbproxy::order const & order)
 {
-    snap::NOTUSED(order);
+    QString const cql(order.cql());
+
+    // we can use DESCRIBE CLUSTER ANEW to reset the current description
+    //
+    // it is used when we create tables and could be used in some other
+    // situations later
+    //
+    // this test is really weak, we may want to consider using a much
+    // stronger test which verifies the CQL command in full
+    //
+    if(cql.indexOf("ANEW") >= 0)
+    {
+        // making the cluster description empty will force a new
+        // retrieval from the Cassandra cluster instead of our cache
+        //
+        g_cluster_description.clear();
+    }
 
     libdbproxy::order_result result;
 

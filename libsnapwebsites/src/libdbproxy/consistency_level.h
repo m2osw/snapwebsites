@@ -50,21 +50,6 @@ namespace libdbproxy
 // to have to include Thirft in our public header files.
 typedef int consistency_level_t;
 
-const consistency_level_t CONSISTENCY_LEVEL_DEFAULT = -1;
-
-const consistency_level_t CONSISTENCY_LEVEL_ONE           = 1;
-const consistency_level_t CONSISTENCY_LEVEL_QUORUM        = 2;
-const consistency_level_t CONSISTENCY_LEVEL_LOCAL_QUORUM  = 3;
-const consistency_level_t CONSISTENCY_LEVEL_EACH_QUORUM   = 4;
-const consistency_level_t CONSISTENCY_LEVEL_ALL           = 5;
-const consistency_level_t CONSISTENCY_LEVEL_ANY           = 6;
-const consistency_level_t CONSISTENCY_LEVEL_TWO           = 7;
-const consistency_level_t CONSISTENCY_LEVEL_THREE         = 8;
-
-
-// TODO: moved the doc. from the .cpp file so we do not lose it, but it
-//       would not work right at this time...
-//       (also right now we always force QUORUM no matter what)
 
 /** \brief Ask the system to use the default consistency level.
  *
@@ -76,24 +61,28 @@ const consistency_level_t CONSISTENCY_LEVEL_THREE         = 8;
  *
  * Details http://www.datastax.com/docs/1.0/dml/data_consistency
  */
+const consistency_level_t CONSISTENCY_LEVEL_DEFAULT = -1;
 
 /** \brief Read/Write to one computer.
  *
  * Read/Write the data to the one computer we're connected to. Do not
  * duplicate the data.
  */
+const consistency_level_t CONSISTENCY_LEVEL_ONE           = 1;
 
 /** \brief Read/Write to a quorum of computers.
  *
  * Read/Write the data to the total number of all the computers divided
  * by 2 plus one. This ensures data safety.
  */
+const consistency_level_t CONSISTENCY_LEVEL_QUORUM        = 2;
 
 /** \brief Read/Write to a quorum of local computers.
  *
  * Read/Write the data to the total number of local computers divided by 2
  * plus one. This ensures data safety.
  */
+const consistency_level_t CONSISTENCY_LEVEL_LOCAL_QUORUM  = 3;
 
 /** \brief Read/Write to a quorum of computers in each data center.
  *
@@ -104,11 +93,13 @@ const consistency_level_t CONSISTENCY_LEVEL_THREE         = 8;
  * This is generally the best value if you have multiple centers
  * and want to have safe data.
  */
+const consistency_level_t CONSISTENCY_LEVEL_EACH_QUORUM   = 4;
 
 /** \brief Read/Write to all computers.
  *
  * Read/Write the data to all the computers.
  */
+const consistency_level_t CONSISTENCY_LEVEL_ALL           = 5;
 
 /** \brief Read/Write to any computer.
  *
@@ -116,19 +107,22 @@ const consistency_level_t CONSISTENCY_LEVEL_THREE         = 8;
  * to is too slow or filled up, then another may be selected for
  * this data.
  */
+const consistency_level_t CONSISTENCY_LEVEL_ANY           = 6;
 
 /** \brief Read/Write to two computers.
  *
  * Read/Write the data to two computers.
  */
+const consistency_level_t CONSISTENCY_LEVEL_TWO           = 7;
 
 /** \brief Read/Write to three computers.
  *
  * Read/Write the data to three computers.
  */
+const consistency_level_t CONSISTENCY_LEVEL_THREE         = 8;
+
 
 
 }
 // namespace libdbproxy
-
 // vim: ts=4 sw=4 et

@@ -254,12 +254,6 @@ namespace
 
 snapdb::snapdb(int argc, char * argv[])
     : f_session( casswrapper::Session::create() )
-    //, f_host("localhost") --auto-init
-    //, f_port(9042) -- auto-init -- default to connect to snapdbproxy
-    //, f_count(100) -- auto-init
-    //, f_context("snap_websites") -- auto-init
-    //, f_table("") -- auto-init
-    //, f_row("") -- auto-init
     , f_opt( new advgetopt::getopt( argc, argv, g_snapdb_options, g_configuration_files, nullptr ) )
     , f_config( "snapdb" )
 {

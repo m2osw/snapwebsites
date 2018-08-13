@@ -50,24 +50,24 @@ class snap_cassandra
 public:
     typedef std::shared_ptr<snap_cassandra>     pointer_t;
 
-                                                snap_cassandra();
-                                                ~snap_cassandra();
+                                        snap_cassandra();
+                                        ~snap_cassandra();
 
-    void                                        connect();
-    void                                        disconnect();
-    libdbproxy::context::pointer_t   get_snap_context();
-    void                                        create_table_list();
-    libdbproxy::table::pointer_t     get_table(QString const & table_name);
+    void                                connect();
+    void                                disconnect();
+    libdbproxy::context::pointer_t      get_snap_context();
+    void                                create_table_list();
+    libdbproxy::table::pointer_t        get_table(QString const & table_name);
 
-    QString                                     get_snapdbproxy_addr() const;
-    int32_t                                     get_snapdbproxy_port() const;
-    bool                                        is_connected() const;
+    QString                             get_snapdbproxy_addr() const;
+    int32_t                             get_snapdbproxy_port() const;
+    bool                                is_connected() const;
 
 private:
-    libdbproxy::libdbproxy::pointer_t           f_cassandra = libdbproxy::libdbproxy::pointer_t();
-    QString                                     f_snapdbproxy_addr = "localhost";
-    int                                         f_snapdbproxy_port = 4042;
-    QMap<QString, bool>                         f_created_table = QMap<QString, bool>();
+    libdbproxy::libdbproxy::pointer_t   f_cassandra = libdbproxy::libdbproxy::pointer_t();
+    QString                             f_snapdbproxy_addr = "localhost";
+    int                                 f_snapdbproxy_port = 4042;
+    QMap<QString, bool>                 f_created_table = QMap<QString, bool>();
 };
 
 

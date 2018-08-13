@@ -88,6 +88,7 @@ public:
     table_schema_t::map_t const &   get_schemas() const;
 
     static model_t                  string_to_model(QString const & model);
+    static QString                  model_to_string(model_t model);
 
 private:
     table_schema_t::map_t           f_schemas = table_schema_t::map_t();

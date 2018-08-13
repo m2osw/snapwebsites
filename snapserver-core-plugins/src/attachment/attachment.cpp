@@ -314,8 +314,12 @@ bool attachment::check_for_uncompressed_file(content::path_info_t & ipath, path:
     if(field_name)
     {
         // use the MD5 sum
+        //
         QString const md5sum(dbutils::key_to_string(attachment_key.binaryValue()));
         f_snap->set_header("ETag", md5sum);
+
+        cache_control_settings & page_cache_control(f_snap->page_cache_control());
+        page_cache_control.add_tag("attachment");
 
         // user may mark a page with the "no-cache" type in which case
         // we want to skip on setting up the cache
@@ -349,7 +353,6 @@ bool attachment::check_for_uncompressed_file(content::path_info_t & ipath, path:
 
             // cache control for the page
             //
-            cache_control_settings & page_cache_control(f_snap->page_cache_control());
             page_cache_control.set_max_age(3600);  // cache for 1h
             page_cache_control.set_must_revalidate(false); // default is true
 
@@ -523,7 +526,8 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
     }
 
     // retrieve the md5 which has to be exactly 16 bytes
-    libdbproxy::value attachment_key(revision_table->getRow(revision_key)->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT))->getValue());
+    //
+    libdbproxy::value const attachment_key(revision_table->getRow(revision_key)->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT))->getValue());
     if(attachment_key.size() != 16)
     {
         return false;
@@ -554,18 +558,46 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
                 f_snap->set_header("Content-Encoding", "gzip", snap_child::HEADER_MODE_NO_ERROR);
             }
 
-            // use the version since it is a unique number
-            // NO NO NO, we need to use the Last-Modified only (or max-age)
-            // but ETag would mean we'd get to send a 304 each time which
-            // is not necessary since the version is in the URI!
-            //f_snap->set_header("ETag", version);
+            // use the MD5 sum
+            //
+            // note that all versions get the same MD5SUM but so it the
+            // Last-Modified so I don't think that will make any difference
+            // at this point
+            //
+            QString const md5sum(dbutils::key_to_string(attachment_key.binaryValue()));
+            f_snap->set_header("ETag", md5sum);
 
             // get the last modification time of this very version
+            //
             libdbproxy::value revision_modification(revision_table->getRow(revision_key)->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED))->getValue());
             QDateTime expires(QDateTime().toUTC());
             expires.setTime_t(revision_modification.safeInt64Value() / 1000000);
             QLocale us_locale(QLocale::English, QLocale::UnitedStates);
             f_snap->set_header("Last-Modified", us_locale.toString(expires, "ddd, dd MMM yyyy hh:mm:ss' GMT'"), snap_child::HEADER_MODE_EVERYWHERE);
+
+            cache_control_settings & page_cache_control(f_snap->page_cache_control());
+
+            page_cache_control.add_tag("attachment");
+            switch(field_name ? name : fallback_name)
+            {
+            case content::name_t::SNAP_NAME_CONTENT_FILES_DATA_MINIFIED:
+                page_cache_control.add_tag("minified");
+                break;
+
+            case content::name_t::SNAP_NAME_CONTENT_FILES_DATA_MINIFIED_GZIP_COMPRESSED:
+                page_cache_control.add_tag("minified");
+                page_cache_control.add_tag("compressed");
+                break;
+
+            case content::name_t::SNAP_NAME_CONTENT_FILES_DATA_GZIP_COMPRESSED:
+                page_cache_control.add_tag("compressed");
+                break;
+
+            default:
+                // no specific tags
+                break;
+
+            }
 
             // user may mark a page with the "no-cache" type in which case
             // we want to skip on setting up the cache
@@ -573,6 +605,7 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
             // this makes me think that we need a cache control defined in
             // the content plugin
             //
+            //if(...)
             {
                 // this is considered a valid entry so we can setup the
                 // cache to last "forever"; a script with a specific version
@@ -582,6 +615,7 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
                 cache_control_settings & server_cache_control(f_snap->server_cache_control());
                 server_cache_control.set_max_age(cache_control_settings::AGE_MAXIMUM);
                 server_cache_control.set_must_revalidate(false); // default is true
+                server_cache_control.set_immutable(true); // never changes (because of the version)
 
                 // check whether this file is public (can be saved in proxy
                 // caches, i.e. is viewable by a visitor) or private (only
@@ -598,9 +632,9 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
 
                 // cache control for the page
                 //
-                cache_control_settings & page_cache_control(f_snap->page_cache_control());
                 page_cache_control.set_max_age(cache_control_settings::AGE_MAXIMUM);
                 page_cache_control.set_must_revalidate(false); // default is true
+                page_cache_control.set_immutable(true); // never changes (because of the version)
 
                 // we set the ETag header and cache information so we can
                 // call the not_modified() function now;
@@ -613,6 +647,7 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
             }
 
             // tell the path plugin that we know how to handle this one
+            //
             plugin_info.set_plugin_if_renamed(this, attachment_ipath.get_cpath());
             ipath.set_parameter("attachment_field", content::get_name(field_name ? name : fallback_name));
             ipath.set_parameter("attachment_version", version);
@@ -625,6 +660,7 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
         || must_be_compressed)
         {
             // compressed and uncompressed checked, nothing more we can do
+            //
             break;
         }
 
@@ -770,6 +806,9 @@ SNAP_LOG_TRACE("**** getting revision key for ipath=")(ipath.get_key())(", cpath
         QString const md5sum(dbutils::key_to_string(attachment_key.binaryValue()));
         f_snap->set_header("ETag", md5sum);
 
+        cache_control_settings & page_cache_control(f_snap->page_cache_control());
+        page_cache_control.add_tag("attachment");
+
         // user may mark a page with the "no-cache" type in which case
         // we want to skip on setting up the cache
         //
@@ -802,7 +841,6 @@ SNAP_LOG_TRACE("**** getting revision key for ipath=")(ipath.get_key())(", cpath
 
             // cache control for the page
             //
-            cache_control_settings & page_cache_control(f_snap->page_cache_control());
             page_cache_control.set_max_age(3600);  // cache for 1h before rechecking
             page_cache_control.set_must_revalidate(false); // default is true
 

@@ -272,12 +272,12 @@ void bio_initialize()
  *
  * \param[in] sni  Whether SNI is ON (true) or OFF (false).
  */
-void bio_log_errors()
+int bio_log_errors()
 {
     // allow for up to 5 errors in one go, but we have a HUGE problem
     // at this time as in some cases the same error is repeated forever
     //
-    for(;;)
+    for(int i(0);; ++i)
     {
         char const * filename(nullptr);
         int line(0);
@@ -288,7 +288,7 @@ void bio_log_errors()
         {
             // no more errors
             //
-            return;
+            return i;
         }
 
         // get corresponding messages too
@@ -2083,10 +2083,13 @@ int bio_client::read(char * buf, size_t size)
         {
             return 0;
         }
-        // the BIO generated an error
-        bio_log_errors();
-        errno = EIO;
-        return -1;
+        if(r != 0)
+        {
+            // the BIO generated an error
+            bio_log_errors();
+            errno = EIO;
+            return -1;
+        }
     }
     return r;
 }
@@ -2266,9 +2269,6 @@ int bio_client::write(char const * buf, size_t size)
  */
 bio_server::bio_server(addr::addr const & addr_port, int max_connections, bool reuse_addr, std::string const & certificate, std::string const & private_key, mode_t mode)
     : f_max_connections(max_connections <= 0 ? MAX_CONNECTIONS : max_connections)
-    //, f_bio(nullptr) -- auto-init
-    //, f_ssl_ctx(nullptr) -- auto-init
-    //, f_keepalive(true) -- auto-init
 {
     if(f_max_connections < 5)
     {
