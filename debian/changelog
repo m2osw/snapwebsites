@@ -1,3 +1,9 @@
+snapwebsites (1.5.123.1~xenial) xenial; urgency=high
+
+  * Fixed the set_max_stale() with a value.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 13 Aug 2018 05:00:14 -0700
+
 snapwebsites (1.5.123.0~xenial) xenial; urgency=high
 
   * SNAP-199: Added support for caches in snap.cgi.

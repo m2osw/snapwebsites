@@ -196,7 +196,7 @@ void cache_control_settings::set_cache_info(QString const & info, bool const int
                 }
                 else
                 {
-                    set_max_stale();
+                    set_max_stale(value);
                 }
             }
             else if(name == "min-fresh")
