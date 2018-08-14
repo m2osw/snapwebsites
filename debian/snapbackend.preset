@@ -1,0 +1,8 @@
+# systemd file defining the few services we want to have start as disabled
+
+disable snapbackend.service
+disable snapbackend.timer
+disable snapimages.service
+enable snaplistjournal.service
+disable snappagelist.service
+disable snapsendmail.service

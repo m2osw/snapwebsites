@@ -469,7 +469,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           </xsl:if>
 
           <!-- watchdscripts has a set of results, one per script -->
-          <xsl:variable name="watchscripts_count" select="count(watchdog/watchscripts)"/>
+          <xsl:variable name="watchscripts_count" select="count(watchdog/watchscripts/script)"/>
           <xsl:if test="$watchscripts_count > 0">
             <div id="watchscripts-section">
               <h2>Watchscripts</h2>

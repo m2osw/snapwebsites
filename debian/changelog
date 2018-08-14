@@ -1,3 +1,10 @@
+snapwebsites (1.5.126.0~xenial) xenial; urgency=high
+
+  * Added a .preset file (to see whether that works in the packager.)
+  * Fixed the count of watchdog scripts in the XSL file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 Aug 2018 21:02:18 -0700
+
 snapwebsites (1.5.125.0~xenial) xenial; urgency=high
 
   * Added two new command line options to the snap.cgi tool.
