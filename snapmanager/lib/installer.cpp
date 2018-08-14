@@ -1472,112 +1472,84 @@ service_status_t manager::string_to_service_status(std::string const & status)
 }
 
 
-void manager::service_apply_status(std::string const & service_name, service_status_t const status)
+void manager::service_apply_status(std::string const & service_name, service_status_t const status, std::string const & wanted_by)
 {
+    auto systemctl = [](QString const & command, QString const & service, QString const & extra = QString())
+        {
+            // setup process
+            //
+            snap::process p(command + " service");
+            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
+            p.set_command("systemctl");
+            p.add_argument(command);
+            p.add_argument(service);
+            if(!extra.isEmpty())
+            {
+                p.add_argument(extra);
+            }
+
+            // run process
+            //
+            int const r(p.run());
+
+            // show process stdout
+            //
+            SNAP_LOG_INFO("\"")
+                         (command)
+                         ("\" function output: ")
+                         (p.get_output(true));
+
+            // if no success, emit an error
+            //
+            if(r != 0)
+            {
+                SNAP_LOG_ERROR(command)
+                              (" of service \"")
+                              (service)
+                              ("\" failed.")
+                              (extra.isEmpty() ? "" : " (" + extra + ")");
+            }
+        };
+
+    auto systemctl_enable = [wanted_by, systemctl](QString const & service)
+        {
+            if(wanted_by.empty())
+            {
+                systemctl("enable", service);
+            }
+            else
+            {
+                std::vector<std::string> wants;
+                snap::NOTUSED(snap::tokenize_string(wants, wanted_by, " ", true, " "));
+                for(auto const & w : wants)
+                {
+                    systemctl("add-wants", QString::fromUtf8(w.c_str()), service);
+                }
+            }
+        };
+
     QString service(QString::fromUtf8(service_name.c_str()));
     switch(status)
     {
     case service_status_t::SERVICE_STATUS_DISABLED:
-        {
-            snap::process p("stop service");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("systemctl");
-            p.add_argument("stop");
-            p.add_argument(service);
-            int const r(p.run());
-            SNAP_LOG_INFO("\"stop\" function output: ")(p.get_output(true));
-            if(r != 0)
-            {
-                SNAP_LOG_ERROR("stop of service \"")(service_name)("\" failed.");
-            }
-        }
-        {
-            snap::process p("disable service");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("systemctl");
-            p.add_argument("disable");
-            p.add_argument(service);
-            int const r(p.run());
-            SNAP_LOG_INFO("\"disable\" function output: ")(p.get_output(true));
-            if(r != 0)
-            {
-                SNAP_LOG_ERROR("disable of service \"")(service_name)("\" failed.");
-            }
-        }
+        systemctl("stop", service);
+        systemctl("disable", service);
         break;
 
     case service_status_t::SERVICE_STATUS_ENABLED:
-        {
-            snap::process p("stop service");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("systemctl");
-            p.add_argument("stop");
-            p.add_argument(service);
-            int const r(p.run());
-            SNAP_LOG_INFO("\"stop\" function output: ")(p.get_output(true));
-            if(r != 0)
-            {
-                SNAP_LOG_ERROR("stop of service \"")(service_name)("\" failed.");
-            }
-        }
-        {
-            snap::process p("enable service");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("systemctl");
-            p.add_argument("enable");
-            p.add_argument(service);
-            int const r(p.run());
-            SNAP_LOG_INFO("\"enable\" function output: ")(p.get_output(true));
-            if(r != 0)
-            {
-                SNAP_LOG_ERROR("enable of service \"")(service_name)("\" failed.");
-            }
-        }
+        systemctl("stop", service);
+        systemctl_enable(service);
         break;
 
     case service_status_t::SERVICE_STATUS_ACTIVE:
-        {
-            snap::process p("enable service");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("systemctl");
-            p.add_argument("enable");
-            p.add_argument(service);
-            int const r(p.run());
-            SNAP_LOG_INFO("\"enable\" function output: ")(p.get_output(true));
-            if(r != 0)
-            {
-                SNAP_LOG_ERROR("enable of service \"")(service_name)("\" failed.");
-            }
-        }
-        {
-            snap::process p("start service");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("systemctl");
-            p.add_argument("start");
-            p.add_argument(service);
-            int const r(p.run());
-            SNAP_LOG_INFO("\"start\" function output: ")(p.get_output(true));
-            if(r != 0)
-            {
-                SNAP_LOG_ERROR("start of service \"")(service_name)("\" failed.");
-            }
-        }
+        systemctl_enable(service);
+        systemctl("start", service);
         if(service.endsWith(".timer"))
         {
             // the service needs a kick otherwise it never starts until
             // the next reboot
             //
-            snap::process p("start service");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("systemctl");
-            p.add_argument("start");
-            p.add_argument(service.left(service.length() - 6));
-            int const r(p.run());
-            SNAP_LOG_INFO("\"start\" function output: ")(p.get_output(true));
-            if(r != 0)
-            {
-                SNAP_LOG_ERROR("start of service \"")(service_name)("\" failed.");
-            }
+            systemctl("start", service.left(service.length() - 6));
         }
         break;
 

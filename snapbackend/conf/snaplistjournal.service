@@ -25,6 +25,9 @@ LimitNPROC=1000
 #LimitCORE=10G
 
 [Install]
+# Note: this one backend we want to have it enabled by default so we keep
+#       the WantedBy=... definition
+#
 WantedBy=multi-user.target
 
 # vim: syntax=dosini

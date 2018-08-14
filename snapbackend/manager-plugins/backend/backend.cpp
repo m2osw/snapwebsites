@@ -67,6 +67,7 @@ struct backend_services
     char const *        f_service_name       = nullptr;
     char const *        f_service_executable = nullptr;
     char const *        f_recovery           = nullptr;     // default Service::RestartSec value
+    char const *        f_wanted_by          = nullptr;     // static services require this with `systemctl add-wants <wanted-by> <service-name>`
     int                 f_nice               = 0;           // default nice value
 };
 
@@ -74,11 +75,41 @@ backend_services const g_not_found;
 
 backend_services const g_services[5] =
 {
-    { "snapbackend",        "/usr/bin/snapbackend", nullptr,  5 },
-    { "snapimages",         "/usr/bin/snapbackend", "1h",    10 },
-    { "snaplistjournal",    "/usr/bin/snapbackend", "5min",   3 },
-    { "snappagelist",       "/usr/bin/snapbackend", "5min",   3 },
-    { "snapsendmail",       "/usr/bin/snapbackend", "1h",     7 }
+    {
+        /* f_service_name       */ "snapbackend",
+        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_recovery           */ nullptr,
+        /* f_wanted_by          */ nullptr,
+        /* f_nice               */ 5
+    },
+    {
+        /* f_service_name       */ "snapimages",
+        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_recovery           */ "1h",
+        /* f_wanted_by          */ "multi-user.target",
+        /* f_nice               */ 10
+    },
+    {
+        /* f_service_name       */ "snaplistjournal",
+        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_recovery           */ "5min",
+        /* f_wanted_by          */ nullptr,
+        /* f_nice               */ 3
+    },
+    {
+        /* f_service_name       */ "snappagelist",
+        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_recovery           */ "5min",
+        /* f_wanted_by          */ "multi-user.target",
+        /* f_nice               */ 3
+    },
+    {
+        /* f_service_name       */ "snapsendmail",
+        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_recovery           */ "1h",
+        /* f_wanted_by          */ "multi-user.target",
+        /* f_nice               */ 7
+    }
 };
 
 
@@ -854,12 +885,17 @@ bool backend::apply_setting( QString const     & button_name
 
 
 
-bool backend::change_service_status( QString const & exe_path, QString const & unit_name, snap_manager::service_status_t status )
+bool backend::change_service_status( QString const & exe_path
+                                   , QString const & unit_name
+                                   , snap_manager::service_status_t status
+                                   , char const * wanted_by )
 {
     bool changed(false);
     if( f_snap->service_status( exe_path.toUtf8().data(), unit_name.toUtf8().data() ) != status )
     {
-        f_snap->service_apply_status( unit_name.toUtf8().data(), status );
+        f_snap->service_apply_status( unit_name.toUtf8().data()
+                                    , status
+                                    , std::string(wanted_by == nullptr ? "" : wanted_by) );
         changed = true;
     }
 
@@ -912,7 +948,7 @@ void backend::update_all_services()
         QString const unit_name(QString("%1%2")
                             .arg(service_info.f_service_name)
                             .arg(service_info.f_recovery != nullptr ? "" : ".timer"));
-        change_service_status(service_info.f_service_executable, unit_name, to_status);
+        change_service_status(service_info.f_service_executable, unit_name, to_status, service_info.f_wanted_by);
     }
 
     send_status();

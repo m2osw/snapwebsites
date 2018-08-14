@@ -1,6 +1,8 @@
 snapwebsites (1.5.131.0~xenial) xenial; urgency=high
 
   * Restored the preset files so they are there as expected.
+  * Implemented the "add-wants" command for static packages.
+  * Removed the WantedBy=... from another 4 files & added a comment about why.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Aug 2018 13:08:53 -0700

@@ -28,6 +28,9 @@ LimitNPROC=1000
 #LimitCORE=10G
 
 [Install]
-WantedBy=multi-user.target
+# Note: We do not need the WantedBy=... definition on this one since the
+#       snapbackend gets started by the snapbackend.timer instead
+#
+#WantedBy=multi-user.target
 
 # vim: syntax=dosini

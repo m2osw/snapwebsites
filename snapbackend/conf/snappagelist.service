@@ -26,6 +26,26 @@ LimitNPROC=1000
 #LimitCORE=10G
 
 [Install]
-WantedBy=multi-user.target
+# WARNING:
+#  We do not want to have this backend running on installation, so we cannot
+#  have a WantedBy=... definition for it.
+#
+#  This causes two side effects:
+#
+#    1. We don't have to disable the service after installation,
+#       it is disabled by default.
+#
+#    2. We have to use a special command to enable this service properly,
+#       namely, do this:
+#
+#       sudo systemctl add-wants multi-user.target snappagelist.service
+#
+#    3. To start and stop, you do the same
+#
+#    4. To disable you do the same, just remember that deletes a link that
+#       systemd does not know about so you have explicitly recreate it as
+#       in point (2).
+#
+#WantedBy=multi-user.target
 
 # vim: syntax=dosini
