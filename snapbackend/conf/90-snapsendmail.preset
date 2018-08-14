@@ -1,0 +1,18 @@
+# systemd file defining the few services we want to have start as disabled
+#
+# To change these values, create a file with th same name under:
+#
+#    /etc/systemd/system-preset/90-snapbackend.preset
+#
+# However, remember that you must replace the entire file. There are other
+# ways to override the values, but this is the most legal as an administrator.
+#
+# If a different package wants to overwrite the defaults, then it has to
+# create a file with a lower priority (i.e. "85-snapsendmail.preset") and
+# place it under /lib/systemd/system-preset
+#
+# More info:
+# https://www.freedesktop.org/software/systemd/man/systemd.preset.html
+#
+
+disable snapsendmail.service

@@ -1,3 +1,11 @@
+snapwebsites (1.5.126.1~xenial) xenial; urgency=high
+
+  * Took a closer look to the documentation, the preset files are expected
+    to be named after the unit name, not the package.
+  * Fixed the installation too, it has to be manual and include a priority.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 Aug 2018 23:59:58 -0700
+
 snapwebsites (1.5.126.0~xenial) xenial; urgency=high
 
   * Added a .preset file (to see whether that works in the packager.)
