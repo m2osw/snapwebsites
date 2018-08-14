@@ -1,3 +1,11 @@
+snapwebsites (1.5.128.0~xenial) xenial; urgency=high
+
+  * Added the list of Postfix processes to watch.
+  * Added clamav-freshclam daemon to watch when the server is active.
+  * Added cron as a daemon to watch the default list of processes.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Aug 2018 02:59:06 -0700
+
 snapwebsites (1.5.127.0~xenial) xenial; urgency=high
 
   * Removed the postinst for loop that would manually disable the services.

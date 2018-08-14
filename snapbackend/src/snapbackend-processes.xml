@@ -39,6 +39,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     <match>--cron-action list::listjournal</match>
   </process>
   <process name="snaplock" mandatory="mandatory" allow_duplicates="allow_duplicates"/>
+  <process name="clamav" mandatory="mandatory">
+    <command>freshclam</command>
+    <service>clamav-freshclam</service>
+  </process>
 </watchdog-processes>
 <!--
 vim: ts=2 sw=2 et
