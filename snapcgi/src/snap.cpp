@@ -159,6 +159,22 @@ namespace
         {
             '\0',
             advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
+            "permanent-cache-path",
+            nullptr,
+            "Define a path to a folder were permanent files are saved while caching a page. Usually under /var/lib.",
+            advgetopt::getopt::argument_mode_t::required_argument
+        },
+        {
+            '\0',
+            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
+            "temporary-cache-path",
+            nullptr,
+            "Define a path to a folder were temporary files are saved while attempting to cache a page. This could be under /run.",
+            advgetopt::getopt::argument_mode_t::required_argument
+        },
+        {
+            '\0',
+            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
             "use-ssl",
             nullptr,
             "Whether SSL should be used to connect to snapserver. Set to \"true\" or \"false\".",
@@ -1756,6 +1772,10 @@ void snap_cgi::check_headers()
             cache_path = f_opt.get_string("temporary-cache-path");
         }
 
+        // TODO: consider using open() with the O_TMPFILE flag which means
+        //       that the file gets unlinked() automatically on exit
+        //       the rename() needs to then change to a linkat() instead
+        //
         f_cache_temporary_filename = cache_path + "/" + std::to_string(getpid()) + ".http";
         f_cache_file.reset(new std::ofstream(f_cache_temporary_filename, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary));
         if(f_cache_file->is_open())
