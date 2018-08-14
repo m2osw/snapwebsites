@@ -17,3 +17,14 @@
 
 disable snapbackend.service
 disable snapbackend.timer
+
+disable snapimages.service
+enable snaplistjournal.service
+disable snappagelist.service
+disable snapsendmail.service
+
+
+#snapbackend/conf/90-snapimages.preset                                               lib/systemd/system-preset/
+#snapbackend/conf/90-snaplistjournal.preset                                          lib/systemd/system-preset/
+#snapbackend/conf/90-snappagelist.preset                                             lib/systemd/system-preset/
+#snapbackend/conf/90-snapsendmail.preset                                             lib/systemd/system-preset/

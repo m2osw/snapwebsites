@@ -7,7 +7,3 @@ snapbackend/conf/snaplistjournal.service                                        
 snapbackend/conf/snappagelist.service                                               lib/systemd/system/
 snapbackend/conf/snapsendmail.service                                               lib/systemd/system/
 snapbackend/conf/90-snapbackend.preset                                              lib/systemd/system-preset/
-snapbackend/conf/90-snapimages.preset                                               lib/systemd/system-preset/
-snapbackend/conf/90-snaplistjournal.preset                                          lib/systemd/system-preset/
-snapbackend/conf/90-snappagelist.preset                                             lib/systemd/system-preset/
-snapbackend/conf/90-snapsendmail.preset                                             lib/systemd/system-preset/
