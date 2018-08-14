@@ -28,33 +28,6 @@ then
     snapsignal snapdbproxy/NEWTABLE
 
     systemctl daemon-reload
-
-    # For the snapbackend, we have to disable the timer
-    # but also we want to disable the snapbackend itself
-    # otherwise it runs forever
-    #
-    # Note: these daemons won't be running on installation
-    #       because we mask them in the preinst script;
-    #       here we disable and unmask them
-    #
-    # IMPORTANT: the snaplistjournal is ON by default as
-    #            defined in the "backends=..." variable of
-    #            the snapserver.conf file therefore it's not
-    #            included here (that variable should probably
-    #            be checked, though!)
-    #
-    for pkg in snapbackend.timer \
-               snapbackend \
-               snapimages \
-               snappagelist \
-               snapsendmail
-    do
-        # Start with everything disabled. `snapmanager` will allow the user to
-        # enable as needed.
-        #
-        systemctl disable ${pkg}
-        systemctl unmask ${pkg}
-    done
 fi
 
 

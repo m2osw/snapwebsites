@@ -427,8 +427,8 @@ bool watchdog_process_t::match(QString const & command, QString const & cmdline)
         //
         if(!f_service_is_enabled)
         {
-            // a regular service markedas disabled is not expected to be running
-            // so if disabled we return true (i.e. "all good")
+            // a regular service marked as disabled is not expected to be
+            // running so if disabled we return true (i.e. "all good")
             //
             // however, a backend which is disabled is not going to return true
             // until the "backend_status" is "disabled" or the maintenance mode
@@ -793,6 +793,7 @@ void processes::on_process_watch(QDomDocument doc)
         if(info == nullptr)
         {
             // some process(es) missing?
+            //
             size_t const max_re(g_processes.size());
             for(size_t j(0); j < max_re; ++j)
             {

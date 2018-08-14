@@ -1,3 +1,11 @@
+snapwebsites (1.5.127.0~xenial) xenial; urgency=high
+
+  * Removed the postinst for loop that would manually disable the services.
+  * Removing the preinst since we can use the preset instead. Although it
+    looks like it worked, I have to test again with the new scripts.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Aug 2018 01:51:36 -0700
+
 snapwebsites (1.5.126.1~xenial) xenial; urgency=high
 
   * Took a closer look to the documentation, the preset files are expected
