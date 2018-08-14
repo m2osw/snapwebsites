@@ -141,7 +141,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:if test="$apt_count > 0">
             <div id="apt-section">
               <h2>Package Updates Current Status</h2>
-<p>(TODO convert to readable date &amp; sizes)</p>
               <table class="name-value">
                 <tr>
                   <th>Time of Last Check:</th>
@@ -188,7 +187,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:if test="$cpu_count > 0">
             <div id="cpu-section">
               <h2>CPU</h2>
-<p>(TODO convert to readable date &amp; sizes)</p>
+<p>(TODO convert to readable sizes)</p>
               <table class="name-value">
                 <tr>
                   <th>Time of Boot:</th>
@@ -263,7 +262,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:if test="$memory_count > 0">
             <div id="memory-section">
               <h2>Memory</h2>
-<p>(TODO convert to readable date &amp; sizes)</p>
+<p>(TODO convert to readable sizes)</p>
               <table class="name-value">
                 <tr>
                   <th>Total Memory:</th>
@@ -306,7 +305,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:if test="$disk_count > 0">
             <div id="disk-section">
               <h2>Disk Partitions</h2>
-<p>(TODO convert to readable date &amp; sizes)</p>
+<p>(TODO convert to readable sizes)</p>
               <table class="table-with-borders">
                 <thead>
                   <tr>
@@ -417,6 +416,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:if test="$cassandra_count > 0">
             <div id="cassandra-section">
               <h2>Cassandra</h2>
+<p>(TODO this should be part of a file in snapdbproxy)</p>
               <table class="table-with-borders">
                 <xsl:call-template name="process_table_header"/>
                 <tbody>
@@ -431,6 +431,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:if test="$firewall_count > 0">
             <div id="firewall-section">
               <h2>Firewall</h2>
+<p>(TODO this should be part of a file in snapfirewall)</p>
               <table class="table-with-borders">
                 <xsl:call-template name="process_table_header"/>
                 <tbody>
@@ -445,6 +446,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:if test="$network_count > 0">
             <div id="network-section">
               <h2>Network</h2>
+<p>(TODO this should be part of a file in snapcommunicator)</p>
               <table class="table-with-borders">
                 <xsl:call-template name="process_table_header"/>
                 <tbody>
@@ -468,7 +470,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             </div>
           </xsl:if>
 
-          <!-- watchdscripts has a set of results, one per script -->
+          <!-- watchscripts has a set of results, one per script -->
           <xsl:variable name="watchscripts_count" select="count(watchdog/watchscripts/script)"/>
           <xsl:if test="$watchscripts_count > 0">
             <div id="watchscripts-section">

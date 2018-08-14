@@ -11,6 +11,7 @@ then
     # WARNING: This is done in snapbase.postrm instead because
     #          these logs are common to snapserver and snapbackend
     #
+    #PACKAGENAME=snapserver
     #rm -f /var/log/snapwebsites/${PACKAGENAME}.log
     #rm -f /var/log/snapwebsites/secure/${PACKAGENAME}.log
 

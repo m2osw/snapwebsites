@@ -25,6 +25,6 @@ LimitNPROC=1000
 #LimitCORE=10G
 
 [Install]
-WantedBy=multi-user.target
+#WantedBy=multi-user.target
 
 # vim: syntax=dosini
