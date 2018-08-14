@@ -60,9 +60,11 @@ namespace
             advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
             "domain",
             nullptr,
-            "the domain and sub-domain for which a site is to be created (i.e. install.snap.website)."
+            "The domain and sub-domain for which a site is to be created (i.e. install.snap.website)."
             " You may also include parameters after a '?'. At this time we understand the 'install-latyouts'."
-            " For example, you could use --domain install.snap.website?install-layouts=beautiful.",
+            " For example, you could use --domain install.snap.website?install-layouts=beautiful."
+            " Note that if the domain and/or website were not yet described in the database, default"
+            " definitions get added automatically.",
             advgetopt::getopt::argument_mode_t::required_argument
         },
         {
@@ -70,7 +72,7 @@ namespace
             advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
             "help",
             nullptr,
-            "show this help output",
+            "Show this help output.",
             advgetopt::getopt::argument_mode_t::no_argument
         },
         {
@@ -78,7 +80,7 @@ namespace
             advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
             "port",
             nullptr,
-            "the port used to access this website (usually 80 or 443)",
+            "The port used to access this website (usually 80 or 443.)",
             advgetopt::getopt::argument_mode_t::required_argument
         },
         {
@@ -86,7 +88,9 @@ namespace
             advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
             "protocol",
             nullptr,
-            "the protocol used to access this website (HTTP or HTTPS), defaults to HTTP if port is 80 and to HTTPS if port is 443, required for any other port",
+            "The protocol used to access this website (HTTP or HTTPS),"
+            " defaults to HTTP if port is 80 and to HTTPS if port is 443,"
+            " required for any other port.",
             advgetopt::getopt::argument_mode_t::optional_argument
         },
         {
@@ -94,7 +98,7 @@ namespace
             advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
             "version",
             nullptr,
-            "show the version of %p and exit",
+            "Show the version of %p and exit.",
             advgetopt::getopt::argument_mode_t::no_argument
         },
         {

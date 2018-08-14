@@ -301,7 +301,7 @@ void watchscripts::on_process_watch(QDomDocument doc)
         f_error_file.reset();
     }
 
-    glob_dir const script_filenames(scripts_path + "/*", GLOB_ERR | GLOB_NOSORT | GLOB_NOESCAPE);
+    glob_dir const script_filenames(scripts_path + "/*", GLOB_NOSORT | GLOB_NOESCAPE, true);
     script_filenames.enumerate_glob(std::bind(&watchscripts::process_script, this, std::placeholders::_1));
 
     // release memory (it could be somewhat large)
@@ -313,6 +313,16 @@ void watchscripts::on_process_watch(QDomDocument doc)
 
 void watchscripts::process_script(QString script_filename)
 {
+    // skip any README file
+    //
+    // (specifically, we install a file named watchdogscripts_README.md
+    // in the folder as a placeholder with documentation)
+    //
+    if(script_filename.contains("README"))
+    {
+        return;
+    }
+
     // setup the variable used while running a script
     //
     f_new_output_script = true;
