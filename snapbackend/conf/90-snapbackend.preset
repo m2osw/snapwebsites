@@ -1,6 +1,6 @@
 # systemd file defining the few services we want to have start as disabled
 #
-# To change these values, create a file with th same name under:
+# To change these values, create a file with the same name under:
 #
 #    /etc/systemd/system-preset/90-snapbackend.preset
 #
@@ -8,7 +8,7 @@
 # ways to override the values, but this is the most legal as an administrator.
 #
 # If a different package wants to overwrite the defaults, then it has to
-# create a file with a lower priority (i.e. "85-snapimages.preset") and
+# create a file with a lower priority (i.e. "85-snapbackend.preset") and
 # place it under /lib/systemd/system-preset
 #
 # More info:
@@ -17,14 +17,3 @@
 
 disable snapbackend.service
 disable snapbackend.timer
-
-disable snapimages.service
-enable snaplistjournal.service
-disable snappagelist.service
-disable snapsendmail.service
-
-
-#snapbackend/conf/90-snapimages.preset                                               lib/systemd/system-preset/
-#snapbackend/conf/90-snaplistjournal.preset                                          lib/systemd/system-preset/
-#snapbackend/conf/90-snappagelist.preset                                             lib/systemd/system-preset/
-#snapbackend/conf/90-snapsendmail.preset                                             lib/systemd/system-preset/

@@ -1,6 +1,6 @@
 # systemd file defining the few services we want to have start as disabled
 #
-# To change these values, create a file with th same name under:
+# To change these values, create a file with the same name under:
 #
 #    /etc/systemd/system-preset/90-snapbackend.preset
 #
