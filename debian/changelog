@@ -1,3 +1,12 @@
+snapwebsites (1.5.124.0~xenial) xenial; urgency=high
+
+  * Applied a fix to the snapwatchdog installation so a scripts folder
+    always exists when installing this package.
+  * Enhanced the snapinstallwebsite help screen so we see that by default
+    the "domains" and "websites" entries get created if not yet present.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 13 Aug 2018 05:00:14 -0700
+
 snapwebsites (1.5.123.1~xenial) xenial; urgency=high
 
   * Fixed the set_max_stale() with a value.
