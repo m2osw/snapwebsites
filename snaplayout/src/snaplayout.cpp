@@ -339,7 +339,8 @@ snap_layout::snap_layout(int argc, char * argv[])
     && !f_opt->is_defined("remove-theme")
     && !f_opt->is_defined("extract"))
     {
-        for( int idx(0); idx < f_opt->size( "--" ); ++idx )
+        int const max(f_opt->size( "--" ));
+        for( int idx(0); idx < max; ++idx )
         {
             QString const filename ( f_opt->get_string( "--", idx ).c_str() );
             const int e(filename.lastIndexOf("."));

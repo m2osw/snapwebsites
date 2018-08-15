@@ -47,6 +47,8 @@ function spin_globe(rotate)
  * This object is used to handle feedback. It creates a box at the bottom
  * right of the screen with messagessuch as errors and success and various
  * other things that just happen.
+ *
+ * @constructor
  */
 function Feedback()
 {
@@ -81,8 +83,19 @@ function Feedback()
 
 }
 
+
+/** \brief The Feedback Object Instance
+ *
+ * This instance is created once the DOM document is ready.
+ */
 Feedback.FeedbackInstance = null; // static
 
+
+/** \brief Define a date format.
+ *
+ * Define a date format used by the toLocaleDateString() function to display
+ * the date when the feedback was received.
+ */
 Feedback.DateFormat = {
         year: "numeric",
         month: "2-digit",
@@ -92,13 +105,39 @@ Feedback.DateFormat = {
         second: "2-digit"
     };
 
+
+/** \brief The block used to display feedback to the end users.
+ *
+ * This parameter holds the jQuery() object used to display the various
+ * feedback message we want to show the user.
+ */
 Feedback.prototype.feedback_block = null;
+
+
+/** \brief The list of messages.
+ *
+ * The jQuery() object used to append messages in the Feedback object.
+ *
+ * This is an HTML list (i.e. \<li> objects.)
+ */
 Feedback.prototype.message_list = null;
 
-/** \brief Emit a feedback message so the user knows somthing is happening.
+
+/** \brief Emit a feedback message so the user knows something is happening.
  *
- * \param[in] level  One of "error", "warning" or "info".
- * \param[in] msg  The feedback message to display.
+ * This function accepts an error message along a level representing the
+ * seriousness of the message (i.e. debug, info, warning, error.)
+ *
+ * The function shows the ".feedback-message" object and appens a new
+ * message in a new \<div> tag. The message output uses the level and
+ * message parameters to create that sub-\<div> tag.
+ *
+ * If there are already five messages, then the first (oldest) message
+ * gets removed and the new one appended. This allows for any number of
+ * messages to be received. Otherwise it could become really slow.
+ *
+ * @param {string} level  One of "error", "warning" or "info".
+ * @param {string} msg  The feedback message to display.
  */
 Feedback.prototype.message = function(level, msg)
 {
@@ -129,28 +168,41 @@ Feedback.prototype.message = function(level, msg)
     // scroll to the bottom otherwise it's hard to see the last message
     //
     this.message_list.scrollTop(this.message_list[0].scrollHeight);
-}
+};
 
 
-
-
-
+/** \brief A map of FieldDiv objects.
+ *
+ * This parameter holds a map of FieldDiv objects.
+ */
 var div_map = {};
 
-function FieldDiv( the_form )
+
+
+/** \brief The FieldDiv object constructor.
+ *
+ * The screen is composed of tabs. Each tab is attached to a \<div>
+ * tag. This object manages those tags.
+ *
+ * @param {Object} the_form  The object representing a form.
+ *
+ * @constructor
+ */
+function FieldDiv(the_form)
 {
     var jq_form = jQuery(the_form),
         that = this;
 
-    this.parent_tr      = upTo(the_form,"tr");
-    this.parent_div     = jQuery( upTo(this.parent_tr,"div") );
-    this.button_name    = jq_form.data("button_name");
+    this.parent_tr = upTo(the_form, "tr");
+    this.parent_div = jQuery(upTo(this.parent_tr, "div"));
+    this.button_name = jq_form.data("button_name");
     this.form_post_data = jq_form.serialize();
-    this.form_data      = {};
- 
-    jQuery.each( jq_form.serializeArray(), function(i,element) {
-        that.form_data[element.name] = element.value;
-    });
+    this.form_data = {};
+
+    jQuery.each(jq_form.serializeArray(), function(i, element)
+        {
+            that.form_data[element.name] = element.value;
+        });
 
     jQuery(this.parent_tr).addClass("modified");
     spin_globe(true);
@@ -159,83 +211,88 @@ function FieldDiv( the_form )
     // If you set save_form_data to 'true', it will first
     // save the embedded form data, useful for POSTs.
     //
-    this.replace_div = function( response )
-    {
-        this.parent_div.html(response);
-    }
+    this.replace_div = function(response)
+        {
+            this.parent_div.html(response);
+        };
 
     this.get_field_id = function()
-    {
-        return this.form_data["plugin_name"] + "::" + this.form_data["field_name"];
-    }
+        {
+            return this.form_data["plugin_name"] + "::" + this.form_data["field_name"];
+        };
 
     this.is_modified = function()
-    {
-        return this.parent_div.find("tr[class='modified']").length > 0;
-    }
+        {
+            return this.parent_div.find("tr[class='modified']").length > 0;
+        };
 
     this.get_post_data = function()
-    {
-        return this.form_post_data + "&" + this.button_name + "=";
-    }
+        {
+            return this.form_post_data + "&" + this.button_name + "=";
+        };
 
     this.check_status = function()
-    {
-        hook_up_form_events();
-        if( this.is_modified() )
         {
-            spin_globe(true);
-            this.button_name = "status";
-            var that = this;
-            setTimeout( function() { that.emit_ajax_request(); }, 1000 ); // Check status after 1 second.
-        }
-        else
-        {
-            spin_globe(false);
-        }
-    }
+            hook_up_form_events();
+            if(this.is_modified())
+            {
+                spin_globe(true);
+                this.button_name = "status";
+                var that = this;
+                setTimeout(function()
+                        {
+                            that.emit_ajax_request();
+                        }, 1000); // Check status after 1 second.
+            }
+            else
+            {
+                spin_globe(false);
+            }
+        };
 
     this.emit_ajax_request = function()
-    {
-        var that = this;
-        jQuery.ajax(
-            {
-                url : "snapmanager",
-                type: "POST",
-                data: that.get_post_data()
-            })
-            .done( function(response)
+        {
+            var that = this;
+            jQuery.ajax(
                 {
-                    that.replace_div( response );
-                    that.check_status();
+                    url: "snapmanager",
+                    type: "POST",
+                    data: that.get_post_data()
                 })
-            .fail( function( xhr, the_status, errorThrown )
-                {
-                    // give some feedback so we know something is happening
-                    //
-                    Feedback.FeedbackInstance.message("error", "Failed to connect to server for AJAX feedback! (" + errorThrown + ")");
+                .done(function(response)
+                    {
+                        that.replace_div(response);
+                        that.check_status();
+                    })
+                .fail(function(xhr, the_status, errorThrown)
+                    {
+                        // give some feedback so we know something is happening
+                        //
+                        Feedback.FeedbackInstance.message("error", "Failed to connect to server for AJAX feedback! (" + errorThrown + ")");
 
-                    console.log( "Failed to connect to server!"  );
-                    console.log( "xhr   : [" + xhr         + "]" );
-                    console.log( "status: [" + status      + "]" );
-                    console.log( "error : [" + errorThrown + "]" );
-                    //
-                    that.check_status();
-                });
-    }
+                        console.log("Failed to connect to server!");
+                        console.log("xhr   : [" + xhr + "]");
+                        console.log("status: [" + status + "]");
+                        console.log("error : [" + errorThrown + "]");
+                        //
+                        that.check_status();
+                    });
+        };
 }
 
 
 function check_for_modified_divs()
 {
     var pending = false;
-    jQuery.each( div_map, function( index, div_object )
-    {
-        if( div_object.is_modified() )
+
+    jQuery.each(div_map, function(index, div_object)
         {
-            pending = true;
-        }
-    });
+            if(div_object.is_modified())
+            {
+                pending = true;
+            }
+        });
+
     return pending;
 }
 
@@ -246,42 +303,42 @@ function check_for_modified_divs()
 //
 function hook_up_form_events()
 {
-    jQuery("button").click( function(event)
-    {
-        if( check_for_modified_divs() )
+    jQuery("button").click(function(event)
         {
-            // Ignore button hit if any operation is pending.
+            if(check_for_modified_divs())
+            {
+                // Ignore button hit if any operation is pending.
+                event.preventDefault();
+                return;
+            }
+
+            // Get the name of the button that was hit, find the form,
+            // and set the name of the button in the form's user
+            // data. This way we can retrieve it when creating the
+            // FieldDiv object in the form submit below.
+            //
+            var button_name = jQuery(this).attr("name");
+            var parent_form = jQuery(this).parent();
+            parent_form.data("button_name", button_name);
+        });
+
+    jQuery(".manager_form").submit(function(event)
+        {
+            // Don't submit the HTML form as normal--we will use AJAX instead.
+            //
             event.preventDefault();
-            return;
-        }
 
-        // Get the name of the button that was hit, find the form,
-        // and set the name of the button in the form's user
-        // data. This way we can retrieve it when creating the
-        // FieldDiv object in the form submit below.
-        //
-        var button_name = jQuery(this).attr("name");
-        var parent_form = jQuery(this).parent();
-        parent_form.data( "button_name", button_name );
-    });
+            // Create the FieldDiv object, remember it in the map,
+            // and emit the ajax.
+            //
+            // We put it into the map so we only ever have one, and
+            // we can find it later.
+            //
+            var div_object = new FieldDiv(this);
+            div_map[div_object.get_field_id()] = div_object;
 
-    jQuery(".manager_form").submit( function( event )
-    {
-        // Don't submit the HTML form as normal--we will use AJAX instead.
-        //
-        event.preventDefault();
-
-        // Create the FieldDiv object, remember it in the map,
-        // and emit the ajax.
-        //
-        // We put it into the map so we only ever have one, and
-        // we can find it later.
-        //
-        var div_object = new FieldDiv( this );
-        div_map[div_object.get_field_id()] = div_object;
-
-        div_object.emit_ajax_request();
-    });
+            div_object.emit_ajax_request();
+        });
 }
 
 
@@ -291,25 +348,25 @@ function hook_up_form_events()
 // is sent to the server.
 //
 jQuery(document).ready(function()
-{
-    Feedback.FeedbackInstance = new Feedback();
+    {
+        Feedback.FeedbackInstance = new Feedback();
 
-    jQuery("#tabs").tabs(
-        {
-            heightStyle: "content",
-        }); 
-
-    jQuery( "#menu" ).menu(
-        {
-            classes:
+        jQuery("#tabs").tabs(
             {
-                "ui-menu": "highlight"
-            }
-        });
+                heightStyle: "content"
+            });
 
-    spin_globe( jQuery("tr[class='modified']").length > 0 );
+        jQuery("#menu").menu(
+            {
+                classes:
+                {
+                    "ui-menu": "highlight"
+                }
+            });
 
-    hook_up_form_events();
-});
+        spin_globe(jQuery("tr[class='modified']").length > 0);
+
+        hook_up_form_events();
+    });
 
 // vim: ts=4 sw=4 et

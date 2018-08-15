@@ -42,7 +42,7 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     versions.qrc
 )
 
-snap_validate_xml( content.xml ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
+snap_validate_xml( content.xml content.dtd )
 
 
 # TODO: Find a way to get the GIT branch and pass it to the compiler...

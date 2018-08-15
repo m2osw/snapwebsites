@@ -59,15 +59,12 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/src
 )
 
-#snap_clear_xml_targets()
+snap_clear_xml_targets()
 
 add_subdirectory( conf  )
 add_subdirectory( src   )
 add_subdirectory( doc   )
 
-##
-## Analyse xml and javascript
-##
-#snap_build_xml_targets()
+snap_build_xml_targets()
 
 # vim: ts=4 sw=4 et

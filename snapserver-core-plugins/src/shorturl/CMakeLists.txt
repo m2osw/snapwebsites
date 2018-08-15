@@ -43,8 +43,8 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     shorturl.qrc
 )
 
-snap_validate_xml( content.xml       ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_xml( settings-form.xml ${snapwebsites_plugins_src_SOURCE_DIR}/form/snap-form.dtd  )
+snap_validate_xml( content.xml       content.dtd    )
+snap_validate_xml( settings-form.xml snap-form.dtd  )
 
 add_library(shorturl SHARED
     shorturl.cpp
@@ -58,16 +58,30 @@ add_library(shorturl SHARED
 target_link_libraries( shorturl Qt5::Core )
 
 install(
-    TARGETS shorturl LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        shorturl
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
+
 install(
-    FILES "shorturl-tables.xml"
-    DESTINATION ${SNAP_TABLE_DESCRIPTION_PATH}
+    FILES
+        shorturl-tables.xml
+
+    DESTINATION
+        ${SNAP_TABLE_DESCRIPTION_PATH}
 )
+
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/shorturl
-    FILES_MATCHING PATTERN "*.h"
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/shorturl
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
 
 # vim: ts=4 sw=4 et

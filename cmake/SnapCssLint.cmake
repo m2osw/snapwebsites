@@ -54,7 +54,7 @@ macro( snap_build_css_targets )
     list( LENGTH CSS_FILE_LIST range )
     math( EXPR mod_test "${range} % ${arg_count}" )
     if( NOT ${mod_test} EQUAL 0 )
-        message( FATAL_ERROR "The list of files must have an even count. Each CSS file must have an accompanying binary path file!" )
+        message( FATAL_ERROR "The list of files must have a multiple of ${arg_count}. Each CSS file must have an accompanying binary path file!" )
     endif()
     #
     # Create a lint file for each pair
@@ -83,14 +83,14 @@ macro( snap_build_css_targets )
     # Make each lint file.
     #
     add_custom_target(
-        build_css_lint ALL
+        ${PROJECT_NAME}_build_css_lint ALL
         DEPENDS ${lint_file_list}
     )
     #
     # Handy target for wiping out all lint files and forcing a recheck!
     #
     add_custom_target(
-        clean_css_lint
+        ${PROJECT_NAME}_clean_css_lint
         COMMAND rm -rf ${lint_file_list}
         DEPENDS ${lint_file_list}
     )

@@ -38,18 +38,26 @@ set( SNAP_TABLE_DESCRIPTION_PATH lib/snapwebsites/tables )
 ################################################################################
 # Keep the plugins in alphabetical order for ease of management
 #
+
+# We need to install content.dtd before using it
+add_subdirectory(content)
+
+# We need to install snap-form.dtd before using it
+add_subdirectory(form)
+
+# We need to install editor-form.dtd before using it
+add_subdirectory(editor)
+
 add_subdirectory(antihammering)
 add_subdirectory(antivirus)
 add_subdirectory(attachment)
 add_subdirectory(avatar)
 add_subdirectory(bookkeeping)
 add_subdirectory(char_chart)
-add_subdirectory(content)
 add_subdirectory(cookie_consent_silktide)
 add_subdirectory(date_widgets)
 add_subdirectory(detectadblocker)
 add_subdirectory(ecommerce)
-add_subdirectory(editor)
 add_subdirectory(epayment)
 add_subdirectory(epayment_creditcard)
 add_subdirectory(epayment_paypal)
@@ -58,7 +66,6 @@ add_subdirectory(favicon)
 add_subdirectory(feed)
 add_subdirectory(filter)
 add_subdirectory(flash)
-add_subdirectory(form)
 add_subdirectory(hashtag)
 add_subdirectory(header)
 add_subdirectory(images)

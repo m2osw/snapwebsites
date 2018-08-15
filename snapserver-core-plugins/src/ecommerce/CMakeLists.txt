@@ -45,10 +45,10 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 
 ## Validate content
 ##
-snap_validate_css ( ecommerce.css     )
-snap_validate_xml ( content.xml ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_js  ( ecommerce.js      )
-snap_validate_js  ( ecommerce-cart.js )
+snap_validate_xml( content.xml       content.dtd )
+snap_validate_css( ecommerce.css                 )
+snap_validate_js ( ecommerce.js                  )
+snap_validate_js ( ecommerce-cart.js             )
 
 add_library(ecommerce SHARED
     ecommerce.cpp

@@ -46,10 +46,10 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     sendmail.qrc
 )
 
-snap_validate_xml( content.xml                      ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_xml( layout/sendmail-content.xml      ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_xml( layout/sendmail-theme-parser.xsl simplified-xslt20.dtd                                      )
-snap_validate_xml( layout/sendmail-body-parser.xsl  simplified-xslt20.dtd                                      )
+snap_validate_xml( content.xml                      content.dtd           )
+snap_validate_xml( layout/sendmail-content.xml      content.dtd           )
+snap_validate_xml( layout/sendmail-theme-parser.xsl simplified-xslt20.dtd )
+snap_validate_xml( layout/sendmail-body-parser.xsl  simplified-xslt20.dtd )
 
 add_library(sendmail SHARED
     sendmail.cpp

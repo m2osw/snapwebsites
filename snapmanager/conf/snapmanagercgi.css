@@ -253,7 +253,7 @@ table tr.errors
 {
     border-left: 1px solid red;
 }
-table tr.down,
+table tr.down
 {
     background-color: #ffdede;
     text-decoration: line-through;

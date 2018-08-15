@@ -32,29 +32,32 @@
 project(snapmanagercgi_conf)
 
 snap_validate_xml( snapmanagercgi-parser.xsl simplified-xslt20.dtd )
-
-snap_validate_xml( bundle-cassandra.xml  bundles.xsd )
-snap_validate_xml( bundle-dns.xml        bundles.xsd )
-snap_validate_xml( bundle-rkhunter.xml   bundles.xsd )
-snap_validate_xml( bundle-ssh.xml        bundles.xsd )
-snap_validate_xml( bundle-swap.xml       bundles.xsd )
-snap_validate_xml( bundle-tools.xml      bundles.xsd )
-snap_validate_xml( bundle-tripwire.xml   bundles.xsd )
-snap_validate_xml( bundle-vpn_client.xml bundles.xsd )
-snap_validate_xml( bundle-vpn_server.xml bundles.xsd )
-snap_validate_js ( snapmanagercgi.js                 )
-snap_validate_css( snapmanagercgi.css                )
+snap_validate_xml( bundle-cassandra.xml      bundles.xsd           )
+snap_validate_xml( bundle-dns.xml            bundles.xsd           )
+snap_validate_xml( bundle-rkhunter.xml       bundles.xsd           )
+snap_validate_xml( bundle-ssh.xml            bundles.xsd           )
+snap_validate_xml( bundle-swap.xml           bundles.xsd           )
+snap_validate_xml( bundle-tools.xml          bundles.xsd           )
+snap_validate_xml( bundle-tripwire.xml       bundles.xsd           )
+snap_validate_xml( bundle-vpn_client.xml     bundles.xsd           )
+snap_validate_xml( bundle-vpn_server.xml     bundles.xsd           )
+snap_validate_js ( snapmanagercgi.js                               )
+snap_validate_css( snapmanagercgi.css                              )
 
 
 #################################################################################
-## Config files
+## XSD files
 ##
-install(
-    FILES
+#
+# WARNING: we use a file(INSTALL ...) instead of an install(FILES ...)
+#          so we can access the file in our SnapXmlLint.cmake without
+#          any additional magic
+file(
+    INSTALL
         bundles.xsd
 
     DESTINATION
-        share/snapwebsites/xsd
+        ${XSD_SOURCE_PATH}
 )
 
 

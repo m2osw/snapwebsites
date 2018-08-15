@@ -40,10 +40,7 @@ include_directories(
 )
 
 
-snap_validate_xml(
-    watchdog-processes.xml
-    ${CMAKE_CURRENT_SOURCE_DIR}/watchdog-processes.xsd
-)
+snap_validate_xml( watchdog-processes.xml watchdog-processes.xsd )
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     processes.qrc
@@ -87,12 +84,12 @@ install(
         share/snapwebsites/snapwatchdog/processes
 )
 
-install(
-    FILES
+file(
+    INSTALL
         watchdog-processes.xsd
 
     DESTINATION
-        share/snapwebsites/xsd
+        ${XSD_SOURCE_PATH}
 )
 
 # vim: ts=4 sw=4 et

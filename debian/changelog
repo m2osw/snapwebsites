@@ -1,3 +1,21 @@
+snapwebsites (1.5.133.0~xenial) xenial; urgency=high
+
+  * SNAP-456: Fixed the order so DTD/XSD files are found without a full path.
+  * Removed all the full path for DTD/XSD validations.
+  * Fixed the SnapJsLint, it could not be used more than once.
+  * Fixed the SnapCssLint, it could not be used more than once.
+  * Fixed the snapmanagercgi.css, removed invalid comma.
+  * Fixed a few allow_duplicates=..., it can't be set to "true".
+  * Fixed the extension of the nsapmanagercgi.properties file.
+  * Added a few snap_clear/build_xml_targets().
+  * Fixed the bundle reference in snaplistd so the correct file is checked.
+  * Now check the CSS/JS files from snapmanager.
+  * Cleaned up the snapmanagercgi.js from linter's output.
+  * SNAP-522: started work on this issue (tweaking of DNS options.)
+  * Various other clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 15 Aug 2018 14:19:40 -0700
+
 snapwebsites (1.5.132.1~xenial) xenial; urgency=high
 
   * SNAP-456: Fixed a few paths.

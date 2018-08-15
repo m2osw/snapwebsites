@@ -31,10 +31,7 @@
 
 project(snapwatchdog)
 
-snap_validate_xml(
-    watchdog-log-definitions.xml
-    watchdog-log-definitions.xsd
-)
+snap_validate_xml( watchdog-log-definitions.xml watchdog-log-definitions.xsd )
 
 set( CMAKE_AUTOMOC TRUE )
 

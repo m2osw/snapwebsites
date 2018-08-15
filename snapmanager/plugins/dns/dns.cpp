@@ -553,3 +553,4 @@ bool dns::apply_setting ( QString const & button_name
 SNAP_PLUGIN_END()
 
 // vim: ts=4 sw=4 et
+

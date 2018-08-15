@@ -47,8 +47,8 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     permissions.qrc
 )
 
-snap_validate_xml ( content.xml                ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_js  ( remove-iframe-for-login.js )
+snap_validate_xml ( content.xml                content.dtd )
+snap_validate_js  ( remove-iframe-for-login.js             )
 
 add_library(permissions SHARED
     permissions.cpp

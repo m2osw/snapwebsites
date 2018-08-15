@@ -41,11 +41,11 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     detectadblocker.qrc
 )
 
-snap_validate_xml( detectadblocker/content.xml                ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd    )
-snap_validate_xml( editor/detectadblocker-settings-page.xml   ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( layout/detectadblocker-settings-parser.xsl simplified-xslt20.dtd                                         )
-snap_validate_js ( detectadblocker/detectadblocker.js )
-snap_validate_js ( detectadblocker/adframe.js         )
+snap_validate_xml( detectadblocker/content.xml                content.dtd           )
+snap_validate_xml( editor/detectadblocker-settings-page.xml   editor-form.dtd       )
+snap_validate_xml( layout/detectadblocker-settings-parser.xsl simplified-xslt20.dtd )
+snap_validate_js ( detectadblocker/detectadblocker.js                               )
+snap_validate_js ( detectadblocker/adframe.js                                       )
 
 
 add_library(detectadblocker SHARED

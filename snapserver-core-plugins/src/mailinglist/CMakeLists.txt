@@ -42,7 +42,7 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     mailinglist.qrc
 )
 
-snap_validate_xml( content.xml ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
+snap_validate_xml( content.xml content.dtd )
 
 add_library(mailinglist SHARED
     mailinglist.cpp

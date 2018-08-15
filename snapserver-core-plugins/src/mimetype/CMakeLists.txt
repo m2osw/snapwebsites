@@ -47,7 +47,7 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     mimetype.qrc
 )
 
-snap_validate_xml( content.xml ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
+snap_validate_xml( content.xml content.dtd )
 
 
 # Those are generated so we probably do not really need to validate

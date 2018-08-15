@@ -104,15 +104,19 @@ install(
         "*.h"
 )
 
-################################################################################
-# Install DTD files.
+###############################################################################
+## Install DTD files.
+##
 #
-install(
-    FILES
+# WARNING: we use a file(INSTALL ...) instead of an install(FILES ...)
+#          so we can access the file in our SnapXmlLint.cmake without
+#          any additional magic
+file(
+    INSTALL
         content.dtd
 
     DESTINATION
-        share/snapwebsites/dtd
+        ${DTD_SOURCE_PATH}
 )
 
 

@@ -55,8 +55,8 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 )
 
 
-snap_validate_xml( content.xml ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_js ( listener.js )
+snap_validate_xml( content.xml content.dtd )
+snap_validate_js ( listener.js             )
 
 
 add_library(listener SHARED

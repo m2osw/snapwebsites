@@ -56,8 +56,11 @@ include_directories(
     ${ZIPIOSCC_INCLUDE_DIRS}
 )
 
+snap_clear_xml_targets()
+
 add_subdirectory( src     )
 add_subdirectory( layouts )
 
+snap_build_xml_targets()
 
 # vim: ts=4 sw=4 et

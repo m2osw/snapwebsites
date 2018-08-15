@@ -45,13 +45,13 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 
 ## Validate content
 ##
-snap_validate_css( layout/style.css                )
-snap_validate_xml( layout/content.xml              ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_xml( layout/html-header.xsl          simplified-xslt20.dtd                                      )
-snap_validate_xml( layout/default-theme-parser.xsl simplified-xslt20.dtd                                      )
-snap_validate_xml( layout/functions.xsl            simplified-xslt20.dtd                                      )
-snap_validate_xml( layout/user-messages.xsl        simplified-xslt20.dtd                                      )
-snap_validate_xml( layout/default-body-parser.xsl  simplified-xslt20.dtd                                      )
+snap_validate_xml( layout/content.xml              content.dtd           )
+snap_validate_xml( layout/html-header.xsl          simplified-xslt20.dtd )
+snap_validate_xml( layout/default-theme-parser.xsl simplified-xslt20.dtd )
+snap_validate_xml( layout/functions.xsl            simplified-xslt20.dtd )
+snap_validate_xml( layout/user-messages.xsl        simplified-xslt20.dtd )
+snap_validate_xml( layout/default-body-parser.xsl  simplified-xslt20.dtd )
+snap_validate_css( layout/style.css                                      )
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUTC_YEAR=\"`date -u +%Y`\" -DUTC_MONTH=\"`date -u +%-m`\" -DUTC_DAY=\"`date -u +%-d`\" -DUTC_HOUR=\"`date -u +%-H`\" -DUTC_MINUTE=\"`date -u +%-M`\" -DUTC_SECOND=\"`date -u +%-S`\"")

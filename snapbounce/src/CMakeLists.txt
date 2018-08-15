@@ -52,10 +52,7 @@ include_directories(
     ${QTSERIALIZATION_INCLUDE_DIRS}
 )
 
-snap_validate_xml(
-    snapbounce-processes.xml
-    ${watchdog_processes_SOURCE_DIR}/watchdog-processes.xsd
-)
+snap_validate_xml( snapbounce-processes.xml watchdog-processes.xsd )
 
 add_executable(${PROJECT_NAME}
     snapbounce.cpp

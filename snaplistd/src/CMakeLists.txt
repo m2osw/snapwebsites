@@ -38,10 +38,7 @@ configure_file(
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-snap_validate_xml(
-    snaplistd-processes.xml
-    ${watchdog_processes_SOURCE_DIR}/watchdog-processes.xsd
-)
+snap_validate_xml( snaplistd-processes.xml watchdog-processes.xsd )
 
 add_executable(${PROJECT_NAME}
     snaplistd.h

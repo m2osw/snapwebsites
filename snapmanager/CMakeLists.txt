@@ -70,6 +70,8 @@ include_directories(
     ${QTSERIALIZATION_INCLUDE_DIRS}
 )
 
+snap_clear_css_targets()
+snap_clear_js_targets()
 snap_clear_xml_targets()
 
 ##
@@ -89,6 +91,8 @@ if( ${BUILD_GUI} )
     add_subdirectory( gui )
 endif()
 
+snap_build_css_targets()
+snap_build_js_targets()
 snap_build_xml_targets()
 
 # vim: ts=4 sw=4 et nocindent

@@ -43,16 +43,15 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 )
 
 
-snap_validate_css( epayment.css )
 
-snap_validate_xml( content.xml                      content/content.dtd )
-
-snap_validate_xml( epayment-settings-page.xml       editor/editor-form.dtd )
-
+snap_validate_xml( content.xml                      content.dtd           )
+snap_validate_xml( epayment-settings-page.xml       editor-form.dtd       )
 snap_validate_xml( epayment-settings-parser.xsl     simplified-xslt20.dtd )
 snap_validate_xml( epayment-product-parser.xsl      simplified-xslt20.dtd )
 
-snap_validate_js( epayment.js )
+snap_validate_css( epayment.css                                           )
+
+snap_validate_js ( epayment.js                                            )
 
 
 add_library(epayment SHARED

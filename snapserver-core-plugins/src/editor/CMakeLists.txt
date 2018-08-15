@@ -48,12 +48,12 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 
 snap_validate_css( editor.css )
 # Form dependency to be removed.
-snap_validate_xml( new-draft.xml          ${snapwebsites_plugins_src_SOURCE_DIR}/form/snap-form.dtd  )
-snap_validate_xml( content.xml            ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_xml( default-page.xml       editor-form.dtd                                            )
-snap_validate_xml( editor-test-page.xml   editor-form.dtd                                            )
-snap_validate_xml( editor-test-parser.xsl simplified-xslt20.dtd                                      )
-snap_validate_xml( editor-form.xsl        simplified-xslt20.dtd                                      )
+snap_validate_xml( new-draft.xml          snap-form.dtd          )
+snap_validate_xml( content.xml            content.dtd            )
+snap_validate_xml( default-page.xml       editor-form.dtd        )
+snap_validate_xml( editor-test-page.xml   editor-form.dtd        )
+snap_validate_xml( editor-test-parser.xsl simplified-xslt20.dtd  )
+snap_validate_xml( editor-form.xsl        simplified-xslt20.dtd  )
 
 # Unfortunate, but at this time this doesn't work too well...
 # (i.e. xmllint [as in libxml2] does not support this complex XSD schema)
@@ -102,15 +102,18 @@ install(
         include/snapwebsites/plugins/editor
 )
 
-################################################################################
-# Install DTD file.
+###############################################################################
+## Install DTD file.
+##
 #
-install(
-    FILES
+# WARNING: we use a file(INSTALL ...) so we can access the file in our
+#          SnapXmlLint.cmake without any additional magic
+file(
+    INSTALL
         editor-form.dtd
 
     DESTINATION
-        share/snapwebsites/dtd
+        ${DTD_SOURCE_PATH}
 )
 
 install(

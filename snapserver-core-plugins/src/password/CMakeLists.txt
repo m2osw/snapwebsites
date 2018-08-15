@@ -45,14 +45,14 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 
 ## Validate content
 ##
-snap_validate_css( password.css                         )
-snap_validate_xml( content.xml                          ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd    )
-snap_validate_xml( editor/password-blacklist-page.xml   ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( editor/password-policy-page.xml      ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( layout/password-blacklist-parser.xsl simplified-xslt20.dtd                                         )
-snap_validate_xml( layout/password-policy-parser.xsl    simplified-xslt20.dtd                                         )
-snap_validate_xml( password_widgets/password-form.xsl   simplified-xslt20.dtd                                         )
-snap_validate_js ( password.js                          )
+snap_validate_css( password.css                                               ) 
+snap_validate_xml( content.xml                          content.dtd           )
+snap_validate_xml( editor/password-blacklist-page.xml   editor-form.dtd       )
+snap_validate_xml( editor/password-policy-page.xml      editor-form.dtd       )
+snap_validate_xml( layout/password-blacklist-parser.xsl simplified-xslt20.dtd )
+snap_validate_xml( layout/password-policy-parser.xsl    simplified-xslt20.dtd )
+snap_validate_xml( password_widgets/password-form.xsl   simplified-xslt20.dtd )
+snap_validate_js ( password.js                                                )
 
 
 add_library(password SHARED

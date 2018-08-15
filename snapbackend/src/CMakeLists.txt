@@ -33,10 +33,7 @@
 
 project(snapbackend)
 
-snap_validate_xml(
-    snapbackend-processes.xml
-    ${watchdog_processes_SOURCE_DIR}/watchdog-processes.xsd
-)
+snap_validate_xml( snapbackend-processes.xml watchdog-processes.xsd )
 
 add_executable(${PROJECT_NAME}
     snapbackend.cpp

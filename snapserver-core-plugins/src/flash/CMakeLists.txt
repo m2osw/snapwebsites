@@ -44,9 +44,9 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 )
 
 
-snap_validate_xml( content.xml               ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd    )
-snap_validate_xml( flash-settings-page.xml   ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( flash-settings-parser.xsl simplified-xslt20.dtd                                         )
+snap_validate_xml( content.xml               content.dtd           )
+snap_validate_xml( flash-settings-page.xml   editor-form.dtd       )
+snap_validate_xml( flash-settings-parser.xsl simplified-xslt20.dtd )
 
 
 add_library(flash SHARED

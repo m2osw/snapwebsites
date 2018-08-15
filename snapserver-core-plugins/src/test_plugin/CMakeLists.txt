@@ -41,9 +41,9 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     test_plugin.qrc
 )
 
-snap_validate_css( test-plugin.css        )
-snap_validate_xml( content.xml            ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
-snap_validate_xml( test-plugin-parser.xsl simplified-xslt20.dtd                                      )
+snap_validate_xml( content.xml            content.dtd           )
+snap_validate_xml( test-plugin-parser.xsl simplified-xslt20.dtd )
+snap_validate_css( test-plugin.css                              )
 
 
 add_library(test_plugin SHARED

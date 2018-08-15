@@ -43,7 +43,7 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     list.qrc
 )
 
-snap_validate_xml( list/content.xml             ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd )
+snap_validate_xml( list/content.xml             content.dtd )
 
 snap_validate_xml( list/default-item-theme.xsl  simplified-xslt20.dtd )
 snap_validate_xml( list/default-item-body.xsl   simplified-xslt20.dtd )

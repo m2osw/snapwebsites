@@ -327,6 +327,7 @@ snaplock::snaplock(int argc, char * argv[])
     {
         std::cerr << "error: unexpected parameter found on snaplock daemon command line." << std::endl;
         usage(advgetopt::getopt::status_t::error);
+        snap::NOTREACHED();
     }
 }
 

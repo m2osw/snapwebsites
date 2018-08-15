@@ -35,7 +35,7 @@ endif()
 
 #
 set( lint_script ${CMAKE_BINARY_DIR}/do_xml_lint.sh CACHE INTERNAL "XML lint script" FORCE )
-file( WRITE  ${lint_script} "#!${BASH}\n"                                                            )
+file( WRITE  ${lint_script} "#!${BASH}\n" )
 file( APPEND ${lint_script} "if test \${3##*.} = 'dtd'; then\n" )
 file( APPEND ${lint_script} "  ${XMLLINT} --dtdvalid $3 --output $2 $1 && exit 0 || (rm $2; exit 1)\n" )
 file( APPEND ${lint_script} "else\n" )
@@ -44,7 +44,7 @@ file( APPEND ${lint_script} "fi\n" )
 
 #
 function( snap_validate_xml XML_FILE DTD_FILE )
-    get_filename_component( DTD_BASEFILE  ${DTD_FILE} NAME     )
+    get_filename_component( DTD_BASEFILE  ${DTD_FILE} NAME )
     if( EXISTS "${DTD_FILE}" )
         set( DTD_PATH "${DTD_FILE}" )
     elseif( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}" )
@@ -93,7 +93,7 @@ macro( snap_build_xml_targets )
     list( LENGTH XML_FILE_LIST range )
     math( EXPR mod_test "${range} % ${arg_count}" )
     if( NOT ${mod_test} EQUAL 0 )
-        message( FATAL_ERROR "The list of files must have an even count. Each XML file must have an accompanying DTD file!" )
+        message( FATAL_ERROR "The list of files must be a multiple of ${arg_count}. Each XML file must have accompanying DTD file and path!" )
     endif()
     #
     # Create a lint file for each pair

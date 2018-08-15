@@ -44,13 +44,13 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 )
 
 
-snap_validate_xml( content.xml                                    ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd    )
-snap_validate_xml( snap_software_description-settings-page.xml    ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( snap_software_description-settings-parser.xsl  simplified-xslt20.dtd                                         )
-snap_validate_xml( snap-software-description-catalog-parser.xsl   snap-software-description-xslt20.dtd                          )
-snap_validate_xml( snap-software-description-file-parser.xsl      snap-software-description-xslt20.dtd                          )
-snap_validate_xml( snap-software-description-publisher-parser.xsl snap-software-description-xslt20.dtd                          )
-snap_validate_xml( snap-software-description-support-parser.xsl   snap-software-description-xslt20.dtd                          )
+snap_validate_xml( content.xml                                    content.dtd                          )
+snap_validate_xml( snap_software_description-settings-page.xml    editor-form.dtd                      )
+snap_validate_xml( snap_software_description-settings-parser.xsl  simplified-xslt20.dtd                )
+snap_validate_xml( snap-software-description-catalog-parser.xsl   snap-software-description-xslt20.dtd )
+snap_validate_xml( snap-software-description-file-parser.xsl      snap-software-description-xslt20.dtd )
+snap_validate_xml( snap-software-description-publisher-parser.xsl snap-software-description-xslt20.dtd )
+snap_validate_xml( snap-software-description-support-parser.xsl   snap-software-description-xslt20.dtd )
 
 add_library(snap_software_description SHARED
     snap_software_description.cpp
@@ -95,7 +95,7 @@ install(
         snap-software-description-xslt20.dtd
 
     DESTINATION
-        share/snapwebsites/dtd
+        ${DTD_SOURCE_PATH}
 )
 
 

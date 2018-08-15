@@ -41,16 +41,16 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     timetracker.qrc
 )
 
-snap_validate_css( timetracker/timetracker.css            )
-snap_validate_xml( timetracker/content.xml                ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd    )
-snap_validate_xml( editor/timetracker-page.xml            ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( editor/timetracker-add-user-page.xml   ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( editor/timetracker-settings-page.xml   ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( layout/calendar-parser.xsl             simplified-xslt20.dtd                                         )
-snap_validate_xml( layout/timetracker-parser.xsl          simplified-xslt20.dtd                                         )
-snap_validate_xml( layout/timetracker-add-user-parser.xsl simplified-xslt20.dtd                                         )
-snap_validate_xml( layout/timetracker-settings-parser.xsl simplified-xslt20.dtd                                         )
-snap_validate_js ( timetracker/timetracker.js )
+snap_validate_xml( timetracker/content.xml                content.dtd           )
+snap_validate_xml( editor/timetracker-page.xml            editor-form.dtd       )
+snap_validate_xml( editor/timetracker-add-user-page.xml   editor-form.dtd       )
+snap_validate_xml( editor/timetracker-settings-page.xml   editor-form.dtd       )
+snap_validate_xml( layout/calendar-parser.xsl             simplified-xslt20.dtd )
+snap_validate_xml( layout/timetracker-parser.xsl          simplified-xslt20.dtd )
+snap_validate_xml( layout/timetracker-add-user-parser.xsl simplified-xslt20.dtd )
+snap_validate_xml( layout/timetracker-settings-parser.xsl simplified-xslt20.dtd )
+snap_validate_css( timetracker/timetracker.css                                  )
+snap_validate_js ( timetracker/timetracker.js                                   )
 
 
 add_library(timetracker SHARED

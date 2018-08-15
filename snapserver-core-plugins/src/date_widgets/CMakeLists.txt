@@ -45,12 +45,12 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 
 ## Validate content
 ##
-snap_validate_css( date_widgets/date-widgets.css )
-snap_validate_xml( content.xml                  ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd    )
-snap_validate_xml( date-widgets-test-page.xml   ${snapwebsites_plugins_src_SOURCE_DIR}/editor/editor-form.dtd )
-snap_validate_xml( date_widgets/date-form.xsl   simplified-xslt20.dtd                                         )
-snap_validate_xml( date-widgets-test-parser.xsl simplified-xslt20.dtd                                         )
-snap_validate_js(  date_widgets/date-widgets.js  )
+snap_validate_xml( content.xml                    content.dtd           )
+snap_validate_xml( date-widgets-test-page.xml     editor-form.dtd       )
+snap_validate_xml( date_widgets/date-form.xsl     simplified-xslt20.dtd )
+snap_validate_xml( date-widgets-test-parser.xsl   simplified-xslt20.dtd )
+snap_validate_css( date_widgets/date-widgets.css                        )
+snap_validate_js ( date_widgets/date-widgets.js                         )
 
 
 add_library(date_widgets SHARED

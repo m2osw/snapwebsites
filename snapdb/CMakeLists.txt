@@ -67,6 +67,7 @@ install(
     PROGRAMS
         scripts/snapclearcache
         scripts/cass-stop
+
     DESTINATION
         bin
 )
