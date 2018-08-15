@@ -66,7 +66,7 @@ public:
     virtual bool open(OpenMode iomode)
     {
         if(!QFile::open(iomode))
-		{
+        {
             return false;
         }
         // we want to ignore the text and unbuffered flags
@@ -74,7 +74,7 @@ public:
         int op(m == QIODevice::ReadOnly ? LOCK_SH : LOCK_EX);
         // note: on close() the flock() is automatically released
         if(flock(handle(), op) != 0)
-		{
+        {
             QFile::close();
             return false;
         }
@@ -83,4 +83,4 @@ public:
     }
 };
 
-// vim: ts=4 sw=4
+// vim: ts=4 sw=4 et

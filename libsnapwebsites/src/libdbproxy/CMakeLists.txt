@@ -44,9 +44,9 @@ include_directories(
 )
 
 configure_file(
-		version.h.in
-		${PROJECT_BINARY_DIR}/version.h
-		)
+    version.h.in
+    ${PROJECT_BINARY_DIR}/version.h
+)
 
 set( HEADER_FILES
     libdbproxy.h
@@ -97,17 +97,27 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
 )
 
 install(
-    TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib
+    TARGETS
+        ${PROJECT_NAME}
+
+    LIBRARY DESTINATION
+        lib
 )
 
 install(
-	FILES ${HEADER_FILES}
-    DESTINATION include/libdbproxy
+    FILES
+        ${HEADER_FILES}
+
+    DESTINATION
+        include/libdbproxy
 )
 
 install(
-	FILES ${PROJECT_BINARY_DIR}/version.h
-    DESTINATION include/libdbproxy
+    FILES
+        ${PROJECT_BINARY_DIR}/version.h
+
+    DESTINATION
+        include/libdbproxy
 )
 
 # vim: ts=4 sw=4 et

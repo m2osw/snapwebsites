@@ -69,29 +69,34 @@ add_library(snap_software_description SHARED
 target_link_libraries( snap_software_description Qt5::Core )
 
 install(
-    TARGETS snap_software_description LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        snap_software_description
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
+
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/snap_software_description
-    FILES_MATCHING PATTERN "*.h"
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/snap_software_description
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
 
 ################################################################################
 # Install DTD file.
 #
 install(
-	FILES
-		snap-software-description-xslt20.dtd
-	DESTINATION
-		share/snapwebsites/dtd
-)
-#
-file(
-    INSTALL
+    FILES
         snap-software-description-xslt20.dtd
+
     DESTINATION
-        ${SNAP_DIST_DIR}/share/snapwebsites/xsd
+        share/snapwebsites/dtd
 )
+
 
 # vim: ts=4 sw=4 et

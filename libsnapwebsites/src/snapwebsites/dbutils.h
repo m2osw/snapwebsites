@@ -72,10 +72,10 @@ public:
     QString             get_row_name( libdbproxy::row::pointer_t p_r ) const;
     QString             get_row_name( const QByteArray& key ) const;
 
-    QByteArray			set_row_name( const QString& name, const QByteArray& orig_key ) const;
+    QByteArray          set_row_name ( const QString& name, const QByteArray& orig_key ) const;
 
     QString             get_column_name ( libdbproxy::cell::pointer_t c ) const;
-    QString				get_column_name ( const QByteArray& key ) const;
+    QString             get_column_name ( const QByteArray& key ) const;
 
     void                set_column_name ( QByteArray& key, const QString& name ) const;
 
@@ -83,7 +83,7 @@ public:
     QString             get_column_value( const QByteArray& key, const QByteArray& value, bool const display_only = false ) const;
 
     void                set_column_value( libdbproxy::cell::pointer_t c, QString const & v ) const;
-    void				set_column_value( const QByteArray& key, QByteArray& value, QString const & v ) const;
+    void                set_column_value( const QByteArray& key, QByteArray& value, QString const & v ) const;
 
     column_type_t       get_column_type( libdbproxy::cell::pointer_t c ) const;
     column_type_t       get_column_type( const QByteArray& key ) const;
@@ -96,8 +96,8 @@ private:
     QString             f_rowName;
     int                 f_displayLen;
 
-    QString 			get_column_value( const QByteArray& key, const libdbproxy::value& value, bool const display_only ) const;
-    void				set_column_value( const QByteArray& key, libdbproxy::value& cvalue, QString const & v ) const;
+    QString             get_column_value( const QByteArray& key, const libdbproxy::value& value, bool const display_only ) const;
+    void                set_column_value( const QByteArray& key, libdbproxy::value& cvalue, QString const & v ) const;
 };
 
 }

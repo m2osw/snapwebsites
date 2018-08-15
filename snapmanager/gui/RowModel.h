@@ -37,9 +37,9 @@ public:
 
     const QByteArray&       rowKey          () const;
     void                    setRowKey       ( const QByteArray& val );
-    bool					isModified      () const;
+    bool                    isModified      () const;
     const modified_map_t&   modifiedMap     () const;
-    void					clearModified   ();
+    void                    clearModified   ();
 
     virtual void            clear           ();
 
@@ -62,11 +62,11 @@ public:
     virtual bool            insertRows      ( int row, int count, const QModelIndex & parent = QModelIndex() );
     virtual bool            removeRows      ( int row, int count, const QModelIndex & parent = QModelIndex() );
 
-    void					doQuery();
+    void                    doQuery();
 
 private:
     std::vector<QByteArray> f_columns = std::vector<QByteArray>();
-    modified_map_t			f_columnsChanged = modified_map_t();
+    modified_map_t          f_columnsChanged = modified_map_t();
     QByteArray              f_rowKey = QByteArray();
 };
 #pragma GCC diagnostic pop

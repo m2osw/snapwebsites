@@ -1435,7 +1435,7 @@ void snap_manager::on_domainDelete_clicked()
 
     // Go through the websites table and drop all entries that are of the form:
     //
-    // 		websitename.domainname.com
+    //      websitename.domainname.com
     //
     // Then, delete the domain name from the domains tables.
     //
@@ -2141,7 +2141,7 @@ void snap_manager::onSitesSaveClicked( bool checked )
         f_sites_parameter_value->setText(QString());
 
         f_params_row_model.clearModified();
-        f_params_row_model.doQuery();			// Force a reload
+        f_params_row_model.doQuery();   // Force a reload
     }
 }
 
@@ -2206,7 +2206,7 @@ void snap_manager::onSitesRevertClicked( bool clicked )
         f_sites_apply->setEnabled(false);
         f_sites_revert->setEnabled(false);
         f_params_row_model.clearModified();
-        f_params_row_model.doQuery();			// Force a reload
+        f_params_row_model.doQuery();   // Force a reload
     }
 }
 

@@ -35,36 +35,36 @@
 
 
 /*
-QChar::Mark_NonSpacing	        1	Unicode class name Mn
-QChar::Mark_SpacingCombining	2	Unicode class name Mc
-QChar::Mark_Enclosing	        3	Unicode class name Me
-QChar::Number_DecimalDigit	    4	Unicode class name Nd
-QChar::Number_Letter	        5	Unicode class name Nl
-QChar::Number_Other	            6	Unicode class name No
-QChar::Separator_Space	        7	Unicode class name Zs
-QChar::Separator_Line	        8	Unicode class name Zl
-QChar::Separator_Paragraph	    9	Unicode class name Zp
-QChar::Other_Control	        10	Unicode class name Cc
-QChar::Other_Format	            11	Unicode class name Cf
-QChar::Other_Surrogate	        12	Unicode class name Cs
-QChar::Other_PrivateUse	        13	Unicode class name Co
-QChar::Other_NotAssigned	    14	Unicode class name Cn
-QChar::Letter_Uppercase	        15	Unicode class name Lu
-QChar::Letter_Lowercase	        16	Unicode class name Ll
-QChar::Letter_Titlecase	        17	Unicode class name Lt
-QChar::Letter_Modifier	        18	Unicode class name Lm
-QChar::Letter_Other	            19	Unicode class name Lo
-QChar::Punctuation_Connector	20	Unicode class name Pc
-QChar::Punctuation_Dash	        21	Unicode class name Pd
-QChar::Punctuation_Open	        22	Unicode class name Ps
-QChar::Punctuation_Close	    23	Unicode class name Pe
-QChar::Punctuation_InitialQuote	24	Unicode class name Pi
-QChar::Punctuation_FinalQuote	25	Unicode class name Pf
-QChar::Punctuation_Other	    26	Unicode class name Po
-QChar::Symbol_Math	            27	Unicode class name Sm
-QChar::Symbol_Currency	        28	Unicode class name Sc
-QChar::Symbol_Modifier	        29	Unicode class name Sk
-QChar::Symbol_Other	            30	Unicode class name So
+QChar::Mark_NonSpacing          1   Unicode class name Mn
+QChar::Mark_SpacingCombining    2   Unicode class name Mc
+QChar::Mark_Enclosing           3   Unicode class name Me
+QChar::Number_DecimalDigit      4   Unicode class name Nd
+QChar::Number_Letter            5   Unicode class name Nl
+QChar::Number_Other             6   Unicode class name No
+QChar::Separator_Space          7   Unicode class name Zs
+QChar::Separator_Line           8   Unicode class name Zl
+QChar::Separator_Paragraph      9   Unicode class name Zp
+QChar::Other_Control            10  Unicode class name Cc
+QChar::Other_Format             11  Unicode class name Cf
+QChar::Other_Surrogate          12  Unicode class name Cs
+QChar::Other_PrivateUse         13  Unicode class name Co
+QChar::Other_NotAssigned        14  Unicode class name Cn
+QChar::Letter_Uppercase         15  Unicode class name Lu
+QChar::Letter_Lowercase         16  Unicode class name Ll
+QChar::Letter_Titlecase         17  Unicode class name Lt
+QChar::Letter_Modifier          18  Unicode class name Lm
+QChar::Letter_Other             19  Unicode class name Lo
+QChar::Punctuation_Connector    20  Unicode class name Pc
+QChar::Punctuation_Dash         21  Unicode class name Pd
+QChar::Punctuation_Open         22  Unicode class name Ps
+QChar::Punctuation_Close        23  Unicode class name Pe
+QChar::Punctuation_InitialQuote 24  Unicode class name Pi
+QChar::Punctuation_FinalQuote   25  Unicode class name Pf
+QChar::Punctuation_Other        26  Unicode class name Po
+QChar::Symbol_Math              27  Unicode class name Sm
+QChar::Symbol_Currency          28  Unicode class name Sc
+QChar::Symbol_Modifier          29  Unicode class name Sk
+QChar::Symbol_Other             30  Unicode class name So
 */
 char const * const  g_category_names[] =
 {

@@ -78,33 +78,42 @@ target_link_libraries(content
 )
 
 install(
-    TARGETS content
-    LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        content
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
+
 install(
-    FILES "content-tables.xml"
-    DESTINATION ${SNAP_TABLE_DESCRIPTION_PATH}
+    FILES
+        "content-tables.xml"
+
+    DESTINATION
+        ${SNAP_TABLE_DESCRIPTION_PATH}
 )
+
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/content
-    FILES_MATCHING PATTERN "*.h"
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/content
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
 
 ################################################################################
 # Install DTD files.
 #
 install(
-	FILES
-		content.dtd
-	DESTINATION
-		share/snapwebsites/dtd
-)
-file(
-    INSTALL
+    FILES
         content.dtd
+
     DESTINATION
-        ${SNAP_DIST_DIR}/share/snapwebsites/dtd
+        share/snapwebsites/dtd
 )
+
 
 # vim: ts=4 sw=4 et

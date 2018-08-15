@@ -57,34 +57,38 @@ add_library(sitemapxml SHARED
 target_link_libraries( sitemapxml Qt5::Core )
 
 install(
-    TARGETS sitemapxml LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        sitemapxml
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/sitemapxml
-    FILES_MATCHING PATTERN "*.h"
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/sitemapxml
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
 
 ################################################################################
 # Install XSD files.
 #
 set( DIST_FILES
-		siteindex.xsd
-		sitemap.xsd
+    siteindex.xsd
+    sitemap.xsd
 )
-#
+
 install(
-	FILES
+    FILES
         ${DIST_FILES}
-	DESTINATION
-		share/snapwebsites/xsd
-)
-#
-file(
-    INSTALL
-        ${DIST_FILES}
+
     DESTINATION
-        ${SNAP_DIST_DIR}/share/snapwebsites/xsd
+        share/snapwebsites/xsd
 )
+
 
 # vim: ts=4 sw=4 et

@@ -164,31 +164,31 @@ void epayment_creditcard_info_t::set_billing_province(QString const & province)
 
 QString epayment_creditcard_info_t::get_billing_province() const
 {
-	return f_billing_province;
+    return f_billing_province;
 }
 
 
 void epayment_creditcard_info_t::set_billing_postal_code(QString const & postal_code)
 {
-	f_billing_postal_code = postal_code;
+    f_billing_postal_code = postal_code;
 }
 
 
 QString epayment_creditcard_info_t::get_billing_postal_code() const
 {
-	return f_billing_postal_code;
+    return f_billing_postal_code;
 }
 
 
 void epayment_creditcard_info_t::set_billing_country(QString const & country)
 {
-	f_billing_country = country;
+    f_billing_country = country;
 }
 
 
 QString epayment_creditcard_info_t::get_billing_country() const
 {
-	return f_billing_country;
+    return f_billing_country;
 }
 
 
@@ -260,43 +260,43 @@ void epayment_creditcard_info_t::set_delivery_province(QString const & province)
 
 QString epayment_creditcard_info_t::get_delivery_province() const
 {
-	return f_delivery_province;
+    return f_delivery_province;
 }
 
 
 void epayment_creditcard_info_t::set_delivery_postal_code(QString const & postal_code)
 {
-	f_delivery_postal_code = postal_code;
+    f_delivery_postal_code = postal_code;
 }
 
 
 QString epayment_creditcard_info_t::get_delivery_postal_code() const
 {
-	return f_delivery_postal_code;
+    return f_delivery_postal_code;
 }
 
 
 void epayment_creditcard_info_t::set_delivery_country(QString const & country)
 {
-	f_delivery_country = country;
+    f_delivery_country = country;
 }
 
 
 QString epayment_creditcard_info_t::get_delivery_country() const
 {
-	return f_delivery_country;
+    return f_delivery_country;
 }
 
 
 void epayment_creditcard_info_t::set_phone(QString const & phone)
 {
-	f_phone = phone;
+    f_phone = phone;
 }
 
 
 QString epayment_creditcard_info_t::get_phone() const
 {
-	return f_phone;
+    return f_phone;
 }
 
 void epayment_creditcard_info_t::set_subscription(bool subscription)

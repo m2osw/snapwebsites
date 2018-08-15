@@ -31,27 +31,38 @@
 
 
 #################################################################################
-## Script files (chmod a+x)
+## Script files
 ##
 install(
     PROGRAMS
         snapbootinit
-        swap-usage
 
     DESTINATION
-       	bin
+        sbin
 )
 
 
 #################################################################################
-## Script files (chmod a+x)
+## Script files
+##
+install(
+    PROGRAMS
+        snapbootinit
+
+    DESTINATION
+        bin
+)
+
+
+#################################################################################
+## Script files
 ##
 install(
     PROGRAMS
         snapapacheinit
 
     DESTINATION
-       	lib/snapwebsites/scripts
+        lib/snapwebsites/scripts
 )
 
 

@@ -51,9 +51,9 @@ namespace snap
  * For example, a file descriptor can use this template class as follow:
  *
  * \code
- * 	typedef std::unique_ptr<int, snap::raii_generic_deleter<int, -1, decltype(&::close), &::close>> raii_fd_t;
+ *   typedef std::unique_ptr<int, snap::raii_generic_deleter<int, -1, decltype(&::close), &::close>> raii_fd_t;
  *
- * 	raii_fd_t fd(open("/tmp/test.tmp", O_RDWR));
+ *   raii_fd_t fd(open("/tmp/test.tmp", O_RDWR));
  * \endcode
  *
  * \note
@@ -109,10 +109,10 @@ public:
      * code:
      *
      * \code
-	 * template<typename _Up>
-	 *     static typename _Up::pointer __test(typename _Up::pointer*);
+     * template<typename _Up>
+     *     static typename _Up::pointer __test(typename _Up::pointer*);
      * [...]
-	 * typedef decltype(__test<_Del>(0)) type;
+     * typedef decltype(__test<_Del>(0)) type;
      * \endcode
      *
      * As we can see it looks for a class named pointer. If it exists,

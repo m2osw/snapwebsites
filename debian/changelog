@@ -1,3 +1,11 @@
+snapwebsites (1.5.132.1~xenial) xenial; urgency=high
+
+  * SNAP-456: Fixed a few paths.
+  * Removed duplicate installations (with install() and file().)
+  * Removed a few tabs in files that are expected to only have spaces.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 14 Aug 2018 23:05:29 -0700
+
 snapwebsites (1.5.132.0~xenial) xenial; urgency=high
 
   * SNAP-456: Moved the services to /usr/sbin.

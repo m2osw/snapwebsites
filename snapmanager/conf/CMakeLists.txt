@@ -49,12 +49,12 @@ snap_validate_css( snapmanagercgi.css                )
 #################################################################################
 ## Config files
 ##
-file(
-    INSTALL
+install(
+    FILES
         bundles.xsd
 
     DESTINATION
-        ${SNAP_DIST_DIR}/share/snapwebsites/xsd
+        share/snapwebsites/xsd
 )
 
 

@@ -536,7 +536,7 @@ bool snap_cgi::verify()
             return false;
         }
 
-		// TODO: move to snapserver because this could be the name of a legal page...
+        // TODO: move to snapserver because this could be the name of a legal page...
         if(strcasestr(request_uri, "phpmyadmin") != nullptr)
         {
             // block myPhpAdmin accessors

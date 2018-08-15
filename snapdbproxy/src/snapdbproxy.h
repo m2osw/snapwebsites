@@ -189,7 +189,7 @@ public:
 private:
     // this is owned by a snapdbproxy function so no need for a smart pointer
     // (and it would create a loop)
-    snapdbproxy *            	f_snapdbproxy = nullptr;
+    snapdbproxy *               f_snapdbproxy = nullptr;
 };
 
 

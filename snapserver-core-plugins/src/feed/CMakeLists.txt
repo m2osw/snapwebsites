@@ -83,21 +83,16 @@ install(
 # Install DTD files.
 #
 set( DTD_FILES
-		atom-xslt20.dtd
-		rss-xslt20.dtd
+    atom-xslt20.dtd
+    rss-xslt20.dtd
 )
 install(
-	FILES
+    FILES
         ${DTD_FILES}
-	DESTINATION
-		share/snapwebsites/dtd
-)
-#
-file(
-    INSTALL
-        ${DTD_FILES}
+
     DESTINATION
-        ${SNAP_DIST_DIR}/share/snapwebsites/dtd
+        share/snapwebsites/dtd
 )
+
 
 # vim: ts=4 sw=4 et

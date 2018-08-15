@@ -256,11 +256,11 @@ std::cerr << "c0 = " << (g_color_matrix[0][0] + g_color_matrix[1][0] + g_color_m
                        +         g_color_matrix[3][2];
 
         //*tr = r*mat[0][0] + g*mat[1][0] +
-		//    b*mat[2][0] + mat[3][0];
+        //    b*mat[2][0] + mat[3][0];
         //*tg = r*mat[0][1] + g*mat[1][1] +
-		//    b*mat[2][1] + mat[3][1];
+        //    b*mat[2][1] + mat[3][1];
         //*tb = r*mat[0][2] + g*mat[1][2] +
-		//    b*mat[2][2] + mat[3][2];
+        //    b*mat[2][2] + mat[3][2];
 
         s[2] = clamp(r);
         s[1] = clamp(g);

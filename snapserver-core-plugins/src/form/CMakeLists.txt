@@ -64,27 +64,39 @@ add_library(form SHARED
 target_link_libraries( form Qt5::Core )
 
 install(
-    TARGETS form LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        form
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
+
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/form
-    FILES_MATCHING PATTERN "*.h"
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/form
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
 
 ################################################################################
 # Install DTD file.
 #
 install(
-	FILES
-		snap-form.dtd
-	DESTINATION
-		share/snapwebsites/dtd
+    FILES
+        snap-form.dtd
+
+    DESTINATION
+        share/snapwebsites/dtd
 )
 
 install(
     FILES
         form.js
+
     DESTINATION
         share/javascript/snapwebsites/form
 )

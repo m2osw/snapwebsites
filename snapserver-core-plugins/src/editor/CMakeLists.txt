@@ -85,34 +85,38 @@ add_library(editor SHARED
 target_link_libraries( editor Qt5::Core )
 
 install(
-    TARGETS editor LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        editor
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
+
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+
 install(
-    FILES ${HEADER_FILES}
-    DESTINATION include/snapwebsites/plugins/editor
+    FILES
+        ${HEADER_FILES}
+
+    DESTINATION
+        include/snapwebsites/plugins/editor
 )
 
 ################################################################################
 # Install DTD file.
 #
 install(
-	FILES
-		editor-form.dtd
-	DESTINATION
-		share/snapwebsites/dtd
-)
-#
-file(
-    INSTALL
+    FILES
         editor-form.dtd
+
     DESTINATION
-        ${SNAP_DIST_DIR}/share/snapwebsites/dtd
+        share/snapwebsites/dtd
 )
 
 install(
     FILES
         editor.js
+
     DESTINATION
         share/javascript/snapwebsites/editor
 )

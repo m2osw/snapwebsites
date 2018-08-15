@@ -338,8 +338,8 @@ public:
     bool                has_post_value( QString const & name ) const;
     QString             get_post_value( QString const & name ) const;
 
-    bool 							has_value( QString const & name ) const;
-    libdbproxy::value	get_value( QString const & name ) const;
+    bool                has_value( QString const & name ) const;
+    libdbproxy::value   get_value( QString const & name ) const;
 
 private:
     typedef QMap<QString, QString>      value_map_t;

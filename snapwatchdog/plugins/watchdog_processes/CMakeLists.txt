@@ -64,27 +64,35 @@ target_link_libraries( ${PROJECT_NAME}
 install(
     TARGETS
         ${PROJECT_NAME}
+
     LIBRARY DESTINATION
         ${PLUGIN_INSTALL_DIR}
 )
+
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+
 install(
     FILES
         ${HEADER_FILES}
+
     DESTINATION
         include/snapwatchdog/plugins/processes
 )
+
 install(
     FILES
         watchdog-processes.xml
+
     DESTINATION
         share/snapwebsites/snapwatchdog/processes
 )
+
 install(
-	FILES
-		watchdog-processes.xsd
-	DESTINATION
-		share/snapwebsites/xsd
+    FILES
+        watchdog-processes.xsd
+
+    DESTINATION
+        share/snapwebsites/xsd
 )
 
 # vim: ts=4 sw=4 et
