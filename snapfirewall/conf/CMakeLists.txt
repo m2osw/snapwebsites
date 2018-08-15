@@ -30,20 +30,9 @@
 #
 
 
+project(snapfirewall_conf)
+
 snap_validate_xml( bundle-firewall.xml bundles.xsd )
-
-
-###############################################################################
-## Config files
-##
-install(
-    FILES 
-        # snap configuration files
-        snapfirewall.conf
-
-    DESTINATION
-        share/snapwebsites/conf
-)
 
 
 ###############################################################################
@@ -51,7 +40,6 @@ install(
 ##
 install(
     FILES 
-        # log4cplus properties
         snapfirewall.properties
 
     DESTINATION

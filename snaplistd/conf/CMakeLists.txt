@@ -29,18 +29,9 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+project(snaplistd_conf)
 
-#################################################################################
-## Config files
-##
-install(
-    FILES
-        # snap configuration files
-        snaplistd.conf
-
-    DESTINATION
-        share/snapwebsites/conf
-)
+snap_validate_xml( bundle-firewall.xml bundles.xsd )
 
 
 #################################################################################
@@ -60,7 +51,6 @@ install(
 ##
 install(
     FILES
-        # log4cplus properties
         snaplistd.properties
 
     DESTINATION

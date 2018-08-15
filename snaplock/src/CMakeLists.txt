@@ -31,7 +31,10 @@
 #
 project( snaplock )
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h )
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/version.h
+)
 
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
@@ -57,7 +60,11 @@ target_link_libraries( ${PROJECT_NAME}
 )
 
 install(
-    TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        sbin
 )
 
 # vim: ts=4 sw=4 et

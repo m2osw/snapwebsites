@@ -101,7 +101,6 @@ install(
 ##
 install(
     FILES 
-        # log4cplus properties
         snapcgi.properties
 
     DESTINATION

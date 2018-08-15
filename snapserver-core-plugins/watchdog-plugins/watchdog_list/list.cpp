@@ -367,11 +367,11 @@ void list::snaplist_database(QDomElement e)
     // this test (because the MySQL database is not running here)
     //
     struct stat st;
-    if(stat("/usr/bin/snaplistd", &st) != 0 && 0)
+    if(stat("/usr/sbin/snaplistd", &st) != 0 && 0)
     {
         // snaplistd is not even installed
         //
-        SNAP_LOG_TRACE("/usr/bin/snaplistd not found");
+        SNAP_LOG_TRACE("/usr/sbin/snaplistd not found");
         return;
     }
     if(stat("/usr/bin/mysql", &st) != 0)

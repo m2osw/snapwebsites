@@ -72,7 +72,13 @@ target_link_libraries( ${PROJECT_NAME}
     dl
 )
 
-install( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )
+install(
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        sbin
+)
 
 
 # vim: ts=4 sw=4 et nocindent

@@ -66,7 +66,8 @@ install(
 ##
 install(
     FILES
-        # log4cplus properties for snapserver and the log4cplus server
+        # log4cplus properties for snapserver, snapbase, and a few others
+        #
         log.properties
 
     DESTINATION

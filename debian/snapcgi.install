@@ -10,6 +10,7 @@ debian/tmp/usr/share/snapwebsites/apache2/user-snap-apache2-template-80.conf    
 debian/tmp/usr/share/snapwebsites/apache2/user-snap-apache2-template-common.conf usr/share/snapwebsites/apache2/
 debian/tmp/usr/share/snapwebsites/html/maintenance/*                             usr/share/snapwebsites/html/maintenance/
 debian/tmp/usr/share/snapwebsites/html/snap/*                                    usr/share/snapwebsites/html/snap/
+debian/tmp/user/share/snapwebsites/logger/snapcgi.properties                     usr/share/snapwebsites/logger/
 snapcgi/conf/index.html                                                          var/www/snap/public_html/
 snapcgi/conf/favicon.ico                                                         var/www/snap/public_html/
 snapcgi/conf/snap-logo.png                                                       var/www/snap/public_html/

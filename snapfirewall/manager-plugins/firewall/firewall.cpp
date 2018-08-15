@@ -217,7 +217,7 @@ void firewall::on_retrieve_status(snap_manager::server_status & server_status)
     {
         // get the snapfirewall status
         //
-        snap_manager::service_status_t status(f_snap->service_status("/usr/bin/snapfirewall", "snapfirewall"));
+        snap_manager::service_status_t status(f_snap->service_status("/usr/sbin/snapfirewall", "snapfirewall"));
 
         // transform to a string
         //

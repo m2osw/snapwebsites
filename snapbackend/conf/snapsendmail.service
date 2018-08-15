@@ -12,7 +12,7 @@ ProtectHome=true
 NoNewPrivileges=false
 # sendmail can run only one single instance at a time within the
 # entire cluster at this point so it needs to use a global lock
-ExecStart=/usr/bin/snapbackend --cron-action sendmail::sendmail --param GLOBAL_LOCK=1
+ExecStart=/usr/sbin/snapbackend --cron-action sendmail::sendmail --param GLOBAL_LOCK=1
 ExecStop=/usr/bin/snapstop --service $MAINPID
 Restart=on-failure
 RestartSec=1h

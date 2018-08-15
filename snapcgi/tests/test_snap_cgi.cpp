@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
     env["REMOTE_PORT"] = "32222";
     env["REQUEST_METHOD"] = "GET";
     //env["REQUEST_URI"] = ...; set from URL defined on command line
-    env["SCRIPT_FILENAME"] = "/bin/snapserver";
+    env["SCRIPT_FILENAME"] = "/usr/sbin/snapserver";
     env["SCRIPT_NAME"] = "Snap Server";
     env["SERVER_ADDR"] = "127.0.0.1";
     env["SERVER_ADMIN"] = "admin@example.com";

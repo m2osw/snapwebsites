@@ -1,5 +1,6 @@
 debian/tmp/usr/bin/snappassword                                                     usr/bin/
 debian/tmp/usr/lib/cgi-bin/snapmanager.cgi                                          var/www/snapmanager/cgi-bin/
+debian/tmp/usr/share/snapwebsites/logger/snapmanagercgi.conf                        usr/share/snapwebsites/logger/
 debian/tmp/usr/share/snapwebsites/apache2/user-snap-apache2-snapmanager-common.conf usr/share/snapwebsites/apache2/
 debian/tmp/usr/share/snapwebsites/apache2/snapmanager-apache2.conf                  usr/share/snapwebsites/apache2/
 debian/tmp/usr/share/snapwebsites/apache2/user-snap-apache2-snapmanager-443.conf    usr/share/snapwebsites/apache2/

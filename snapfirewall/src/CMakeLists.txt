@@ -62,7 +62,7 @@ install(
         ${PROJECT_NAME}
 
     RUNTIME DESTINATION
-        bin
+        sbin
 )
 
 install(

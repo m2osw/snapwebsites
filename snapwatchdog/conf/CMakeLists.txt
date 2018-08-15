@@ -90,7 +90,7 @@ install(
         watch_script_starter
 
     DESTINATION
-        bin
+        sbin
 )
 
 # vim: ts=4 sw=4 et

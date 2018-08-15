@@ -1,11 +1,12 @@
-debian/tmp/usr/bin/snapwatchdogserver                                                        usr/bin/
-debian/tmp/usr/bin/watch_script_starter                                                      usr/bin/
+debian/tmp/usr/sbin/snapwatchdogserver                                                       usr/sbin/
+debian/tmp/usr/sbin/watch_script_starter                                                     usr/sbin/
 debian/tmp/usr/lib/snapwebsites/manager_plugins/libwatchdog.so                               usr/lib/snapwebsites/manager_plugins/
 debian/tmp/usr/lib/snapwebsites/snapwatchdog/test-mta.txt                                    usr/lib/snapwebsites/manager_plugins/
 debian/tmp/usr/share/snapwebsites/xsd/watchdog-log-definitions.xsd                           usr/share/snapwebsites/xsd/
 debian/tmp/usr/share/snapwebsites/xsd/watchdog-processes.xsd                                 usr/share/snapwebsites/xsd/
 debian/tmp/usr/share/snapwebsites/snapwatchdog/log-definitions/watchdog-log-definitions.xml  usr/share/snapwebsites/snapwatchdog/log-definitions/
 debian/tmp/usr/share/snapwebsites/snapwatchdog/processes/watchdog-processes.xml              usr/share/snapwebsites/snapwatchdog/processes/
+debian/tmp/usr/share/snapwebsites/snapwatchdog/logger/snapwatchdog.properties                usr/share/snapwebsites/logger/
 snapwatchdog/conf/watchdogscripts_README.md                                                  usr/share/snapwebsites/snapwatchdog/scripts
 snapwatchdog/conf/snapwatchdog.conf                                                          etc/snapwebsites/
 snapwatchdog/conf/snapwatchdog.properties                                                    etc/snapwebsites/logger/

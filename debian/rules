@@ -46,7 +46,7 @@ override_dh_fixperms:
 	chmod go-rwx debian/snapbase/etc/apache2/ssl-snap
 	chmod go-rwx debian/snapmanagercgi/etc/snapwebsites/passwords
 	chmod u+s    debian/snapmanagercgi/usr/bin/snappassword
-	chmod u+s    debian/snapmanagerdaemon/usr/bin/snapmanagerdaemon
+	chmod u+s    debian/snapmanagerdaemon/usr/sbin/snapmanagerdaemon
 	chmod u+s    debian/snapmta/usr/sbin/sendmail
 	chmod go-rwx debian/snapcommunicator/etc/snapwebsites/ssl
 

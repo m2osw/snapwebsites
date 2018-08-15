@@ -77,35 +77,35 @@ backend_services const g_services[5] =
 {
     {
         /* f_service_name       */ "snapbackend",
-        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_service_executable */ "/usr/sbin/snapbackend",
         /* f_recovery           */ nullptr,
         /* f_wanted_by          */ nullptr,
         /* f_nice               */ 5
     },
     {
         /* f_service_name       */ "snapimages",
-        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_service_executable */ "/usr/sbin/snapbackend",
         /* f_recovery           */ "1h",
         /* f_wanted_by          */ "multi-user.target",
         /* f_nice               */ 10
     },
     {
         /* f_service_name       */ "snaplistjournal",
-        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_service_executable */ "/usr/sbin/snapbackend",
         /* f_recovery           */ "5min",
         /* f_wanted_by          */ nullptr,
         /* f_nice               */ 3
     },
     {
         /* f_service_name       */ "snappagelist",
-        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_service_executable */ "/usr/sbin/snapbackend",
         /* f_recovery           */ "5min",
         /* f_wanted_by          */ "multi-user.target",
         /* f_nice               */ 3
     },
     {
         /* f_service_name       */ "snapsendmail",
-        /* f_service_executable */ "/usr/bin/snapbackend",
+        /* f_service_executable */ "/usr/sbin/snapbackend",
         /* f_recovery           */ "1h",
         /* f_wanted_by          */ "multi-user.target",
         /* f_nice               */ 7

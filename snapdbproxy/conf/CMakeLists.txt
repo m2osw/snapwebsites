@@ -48,7 +48,6 @@ install(
 ##
 install(
     FILES 
-        # log4cplus properties
         snapdbproxy.properties
 
     DESTINATION

@@ -380,13 +380,13 @@ bool versions::versions_tools_impl(filter::filter::token_info_t & token)
     }
 
         // snapdbproxy
-    if(access("/usr/bin/snapdbproxy", X_OK))
+    if(access("/usr/sbin/snapdbproxy", X_OK))
     {
         token.f_replacement += "<li>snapdbproxy ";
         {
             process p("check snapdbproxy version");
             p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("/usr/bin/snapdbproxy");
+            p.set_command("/usr/sbin/snapdbproxy");
             p.add_argument("--version");
             p.run();
             token.f_replacement += p.get_output();
@@ -395,13 +395,13 @@ bool versions::versions_tools_impl(filter::filter::token_info_t & token)
     }
 
         // snapcommunicator
-    if(access("/usr/bin/snapcommunicator", X_OK))
+    if(access("/usr/sbin/snapcommunicator", X_OK))
     {
         token.f_replacement += "<li>snapcommunicator ";
         {
             process p("check snapcommunicator version");
             p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("/usr/bin/snapcommunicator");
+            p.set_command("/usr/sbin/snapcommunicator");
             p.add_argument("--version");
             p.run();
             token.f_replacement += p.get_output();
@@ -410,13 +410,28 @@ bool versions::versions_tools_impl(filter::filter::token_info_t & token)
     }
 
         // snapfirewall
-    if(access("/usr/bin/snapfirewall", X_OK))
+    if(access("/usr/sbin/snapfirewall", X_OK))
     {
         token.f_replacement += "<li>snapfirewall ";
         {
             process p("check snapfirewall version");
             p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("/usr/bin/snapfirewall");
+            p.set_command("/usr/sbin/snapfirewall");
+            p.add_argument("--version");
+            p.run();
+            token.f_replacement += p.get_output();
+        }
+        token.f_replacement += "</li>";
+    }
+
+        // snaplistd
+    if(access("/usr/sbin/snaplistd", X_OK))
+    {
+        token.f_replacement += "<li>snaplistd ";
+        {
+            process p("check snaplistd version");
+            p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
+            p.set_command("/usr/sbin/snaplistd");
             p.add_argument("--version");
             p.run();
             token.f_replacement += p.get_output();
@@ -440,13 +455,13 @@ bool versions::versions_tools_impl(filter::filter::token_info_t & token)
     }
 
         // snaplock
-    if(access("/usr/bin/snaplock", X_OK))
+    if(access("/usr/sbin/snaplock", X_OK))
     {
         token.f_replacement += "<li>snaplock ";
         {
             process p("check snaplock version");
             p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("/usr/bin/snaplock");
+            p.set_command("/usr/sbin/snaplock");
             p.add_argument("--version");
             p.run();
             token.f_replacement += p.get_output();
@@ -457,15 +472,45 @@ bool versions::versions_tools_impl(filter::filter::token_info_t & token)
         // snapwatchdogserver
         //
         // TODO: until the snapwatchdogserver offers a snapserver-plugin
-        //       which does that itself
+        //       which does that itself (?)
         //
-    if(access("/usr/bin/snapwatchdogserver", X_OK))
+    if(access("/usr/sbin/snapwatchdogserver", X_OK))
     {
         token.f_replacement += "<li>snapwatchdog ";
         {
             process p("check snapwatchdogserver version");
             p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("/usr/bin/snapwatchdogserver");
+            p.set_command("/usr/sbin/snapwatchdogserver");
+            p.add_argument("--version");
+            p.run();
+            token.f_replacement += p.get_output();
+        }
+        token.f_replacement += "</li>";
+    }
+
+        // snapmanagerdaemon
+    if(access("/usr/sbin/snapmanagerdaemon", X_OK))
+    {
+        token.f_replacement += "<li>snapmanagerdaemon ";
+        {
+            process p("check snapmanagerdaemon version");
+            p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
+            p.set_command("/usr/sbin/snapmanagerdaemon");
+            p.add_argument("--version");
+            p.run();
+            token.f_replacement += p.get_output();
+        }
+        token.f_replacement += "</li>";
+    }
+
+        // snaplog
+    if(access("/usr/sbin/snaplog", X_OK))
+    {
+        token.f_replacement += "<li>snaplog ";
+        {
+            process p("check snaplog version");
+            p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
+            p.set_command("/usr/sbin/snaplog");
             p.add_argument("--version");
             p.run();
             token.f_replacement += p.get_output();

@@ -30,17 +30,8 @@
 #
 
 
-#################################################################################
-## Config files
-##
-install(
-    FILES 
-        # snap configuration files
-        snaplock.conf
+project(snaplock_conf)
 
-    DESTINATION
-        share/snapwebsites/conf
-)
 
 
 #################################################################################
@@ -48,7 +39,6 @@ install(
 ##
 install(
     FILES 
-        # log4cplus properties
         snaplock.properties
 
     DESTINATION

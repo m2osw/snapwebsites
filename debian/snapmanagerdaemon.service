@@ -10,7 +10,7 @@ Type=simple
 # Since this one runs as root:root we have to specify the directory "by hand"
 WorkingDirectory=/var/lib/snapwebsites
 ProtectHome=off
-ExecStart=/usr/bin/snapmanagerdaemon
+ExecStart=/usr/sbin/snapmanagerdaemon
 ExecStop=/usr/bin/snapstop --timeout 300 --service $MAINPID
 Restart=on-failure
 RestartSec=1min

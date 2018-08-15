@@ -243,7 +243,7 @@ void watchdog::on_retrieve_status(snap_manager::server_status & server_status)
     {
         // get the snapwatchdog status
         //
-        snap_manager::service_status_t status(f_snap->service_status("/usr/bin/snapwatchdogserver", "snapwatchdog"));
+        snap_manager::service_status_t status(f_snap->service_status("/usr/sbin/snapwatchdogserver", "snapwatchdog"));
 
         // transform to a string
         //

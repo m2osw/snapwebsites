@@ -6,7 +6,7 @@ Description=Snap! Websites basic initialization on each reboot
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/snapbootinit
+ExecStart=/usr/sbin/snapbootinit
 User=root
 Group=root
 

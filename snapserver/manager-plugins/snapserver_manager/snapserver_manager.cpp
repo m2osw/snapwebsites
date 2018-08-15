@@ -226,7 +226,7 @@ void snapserver_manager::on_retrieve_status(snap_manager::server_status & server
 
     // get the snapserver status
     //
-    snap_manager::service_status_t status(f_snap->service_status("/usr/bin/snapserver", "snapserver"));
+    snap_manager::service_status_t status(f_snap->service_status("/usr/sbin/snapserver", "snapserver"));
 
     // transform to a string
     //

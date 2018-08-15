@@ -49,36 +49,14 @@ snap_validate_css( snapmanagercgi.css                )
 #################################################################################
 ## Config files
 ##
-install(
-    FILES
-        # snap configuration files
-        snapmanager.conf
-
-        # misc files
-        snapmanagercgi-parser.xsl
-        snapmanagercgi.js
-        snapmanagercgi.css
-
-    DESTINATION
-        share/snapwebsites/conf
-)
-#
 file(
     INSTALL
         bundles.xsd
+
     DESTINATION
         ${SNAP_DIST_DIR}/share/snapwebsites/xsd
 )
-#
-install(
-    FILES
-        jquery/jquery.js
-        jquery/jquery-ui.js
-        jquery/jquery-ui.css
 
-    DESTINATION
-        share/snapwebsites/conf/jquery
-)
 
 
 #################################################################################
@@ -117,13 +95,7 @@ install(
 ##
 install(
     FILES
-        # HTML files
-        index.html
-        favicon.ico
-        globe.gif
-        globe_still.png
         snapmanagercgi-login.html
-        waiting-wheel-75x75.gif
 
     DESTINATION
         share/snapwebsites/html/snapmanager
