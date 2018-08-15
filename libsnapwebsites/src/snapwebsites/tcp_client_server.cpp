@@ -233,6 +233,16 @@ bool g_bio_initialized = false;
  */
 void bio_initialize()
 {
+    // TBD: I don't think we could have a lock here that would be safe?
+    // i.e. a `static std::mutex;` variable c ould not be guaranteed that
+    // it is initialized only by on single thread; at this point, if you
+    // are using multiple threads that use the BIO interface together,
+    // you have to initialize one BIO object before you create the first
+    // thread to ensure it is secure, or you have to have your own
+    // secured call to all BIO object creation (once created, they can
+    // be used concurrently) -- See SNAP-628 too.
+    //
+
     // already initialized?
     if(g_bio_initialized)
     {
