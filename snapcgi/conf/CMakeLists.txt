@@ -33,18 +33,6 @@ snap_validate_xml( bundle-frontend.xml bundles.xsd )
 
 
 #################################################################################
-## Config files
-##
-install(
-    FILES 
-        snapcgi.conf
-
-    DESTINATION
-        share/snapwebsites/conf
-)
-
-
-#################################################################################
 ## Apache Config files
 ##
 install(

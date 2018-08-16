@@ -177,7 +177,7 @@ a server.
 #
 # For NTP, we currently just install it in snapbase and assume that you
 # always install at least snapbase (i.e. snapmanagercgi depends on it)
-# so there is no additional need for. The snapfirewall default tables
+# so there is no additional need for it. The snapfirewall default tables
 # open that UDP port by default.
 #
 # Note that right now the snapserver plugins come with clamav...
@@ -196,6 +196,7 @@ a server.
     <xs:annotation>
       <xs:documentation>
         A valid name composed of letters, digits and underscores.
+        It can't start with a digit.
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
@@ -268,6 +269,8 @@ a server.
 
   <xs:element name="is-installed" type="xs:string"/>
 
+  <xs:element name="requirements" type="xs:string"/>
+
   <xs:element name="preinst" type="xs:string"/>
 
   <xs:element name="postinst" type="xs:string"/>
@@ -305,6 +308,7 @@ a server.
         <xs:element ref="affected-services" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="packages" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="is-installed" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="prereq" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="preinst" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="postinst" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="prerm" minOccurs="0" maxOccurs="1"/>

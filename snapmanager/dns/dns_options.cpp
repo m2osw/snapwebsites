@@ -144,6 +144,10 @@ public:
 
 private:
     int             load_file();
+    int             getc();
+    void            ungetc(int c);
+    int             get_token();
+
     int             add_option();
     int             update_option();
     int             remove_option();
@@ -155,6 +159,11 @@ private:
     command_t       f_command = command_t::COMMAND_UNDEFINED;
     std::string     f_parameter = std::string();
     std::string     f_data = std::string();
+    int             f_pos = 0;
+    int             f_line = 1;
+    std::string     f_unget = std::string();
+    std::string     f_token = std::string();
+    int             f_block_level = 0;
 };
 
 
@@ -291,11 +300,280 @@ int dns_options::run()
  * We will work on the file in memory and once done create a backup
  * and then save the new version.
  *
+ * The content of the file is found in f_data once the function returns
+ * and if it returns 0.
+ *
  * \return 0 if the file could be loaded properly, 1 on errors
  */
 int dns_options::load_file()
 {
+    // reset lexer parameters
+    //
+    f_pos = 0;
+    f_line = 1;
+    f_block_level = 0;
+
+    // ready the file as input
+    //
     std::ifstream in(f_filename, std::ios_base::in | std::ios_base::binary);
+    if(!in.is_open())
+    {
+        // could not open file
+        //
+        std::cerr << "error: can't open file \"" << f_filename << "\".";
+        return 1;
+    }
+
+    // get the file size
+    //
+    in.seekg(0, std::ios::end);
+    std::ifstream::pos_type const size(in.tellg());
+    in.seekg(0, std::ios::beg);
+
+    // ready the buffer
+    //
+    f_data.resize(size);
+
+    // read the data in the buffer
+    //
+    in.read(f_data.data(), size);
+
+    // if something bad happened, return 1, otherwise 0
+    //
+    return in.bad() ? 1 : 0;
+}
+
+
+/** \brief Get one character from the input file.
+ *
+ * This function is an equivalent to a getc() on the specified BIND
+ * configuration file. Everything happens in memory, though.
+ *
+ * This function handles the case where some characters were ungetc().
+ *
+ * \return The next character or EOF if the end of the data was reached.
+ */
+int dns_options::getc()
+{
+    std::string::size_type unget_length(f_unget.length() - 1);
+    if(unget_length > 0)
+    {
+        // restore a character that was ungotten
+        //
+        --unget_length;
+        int const c(f_unget[unget_length]);
+        f_unget.resize(unget_length);
+        return c;
+    }
+
+    if(f_pos >= f_data.size())
+    {
+        // no more data
+        //
+        return EOF;
+    }
+    else
+    {
+        // return next character
+        //
+        int const c(f_data[f_pos]);
+        if(c == '\n')
+        {
+            ++f_line;
+        }
+        ++f_pos;
+        return c;
+    }
+}
+
+
+/** \brief Put a character back into the buffer.
+ *
+ * This function is used whenever we read one too many (or more)
+ * characters. The getc() function first returns the last ungetc()
+ * character.
+ *
+ * \param[in] c  The character to unget.
+ */
+void dns_options::ungetc(int c)
+{
+    // make sure this is a valid character for the f_unget buffer
+    // ignore all others (especially EOF)
+    //
+    if(c >= 1 && c <= 255)
+    {
+        f_unget += c;
+    }
+}
+
+
+/** \brief Get the next token.
+ *
+ * This function gets the next token and saves it to the f_token parameter.
+ *
+ * \return 0 when no errors were encountered, 1 otherwise.
+ */
+int dns_options::get_token()
+{
+    f_token.clear();
+    for(;;)
+    {
+        int c(getc());
+        switch(c)
+        {
+        case EOF:
+            return 0;
+
+        case ' ':
+        case '\t':
+        case '\r':
+        case '\n':
+        case '\f':
+            // ignore "noise"
+            break;
+
+        case '#':   // comment introducer
+            do
+            {
+                c = getc();
+            }
+            while(c != EOF && c != '\n' && c != '\r');
+            break;
+
+        case '/':   // probably a comment
+            c = getc();
+            if(c == '/')
+            {
+                // C++ like comment, similar to the '#...'
+                //
+                do
+                {
+                    c = getc();
+                }
+                while(c != EOF && c != '\n' && c != '\r');
+            }
+            else if(c == '*')
+            {
+                // C like comment, search for "*/"
+                // BIND does not accept a comment within a comment
+                //
+                for(c = getc(); c != EOF; c = getc())
+                {
+                    if(c == '*')
+                    {
+                        c = getc();
+                        if(c == '/')
+                        {
+                            break;
+                        }
+                        if(c == '*')  // support "****/" as end of comment
+                        {
+                            ungetc(c);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // this is a "lone" '/' character, continue token
+                //
+                f_token += c;
+                goto read_token;
+            }
+            break;
+
+        case '"':
+            // no single quote string support in BIND
+            //
+            for(c = getc(); c != EOF && c != '"'; c = getc())
+            {
+                // the bind lexer allows for escaped characters like in
+                // most languages (although no hex or octal support)
+                //
+                if(c == '\\')
+                {
+                    c = getc();
+                    if(c == EOF)
+                    {
+                        // do not add EOF to f_token and this is an error
+                        // anyway (printed just after the loop)
+                        //
+                        break;
+                    }
+                }
+                else if(c == '\n')
+                {
+                    // a newline in a string is not allow without
+                    // being escaped; so the following would be calid:
+                    //
+                    // "start...\
+                    // ...end"
+                    //
+                    std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string includes a newline." << std::endl;
+                    return 1;
+                }
+                f_token += c;
+            }
+            if(c != '"')
+            {
+                std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string was never closed." << std::endl;
+                return 1;
+            }
+            return 0;
+
+        case ';':
+            f_token = ";";
+            return 0;
+
+        case '{':
+            ++f_block_level;
+            goto read_token;
+
+        case '}':
+            if(f_block_level <= 0)
+            {
+                std::cerr << "error:" << f_filename << ":" << f_line << ": '}' mismatch, '{' missing for this one.";
+            }
+            else
+            {
+                --f_block_level;
+            }
+            goto read_token;
+
+        default:
+read_token:
+            f_token += c;
+            for(c = getc();; c = getc())
+            {
+                switch(c)
+                {
+                case EOF:
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                case '\f':
+                    return 0;
+
+                case '{':
+                case '}':
+                case '"':
+                case ';':
+                    // restore that character too, it is a token on its own
+                    //
+                    ungetc(c);
+                    return 0;
+
+                default:
+                    f_token += c;
+                    break;
+
+                }
+            }
+            break;
+
+        }
+    }
 }
 
 

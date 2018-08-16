@@ -294,14 +294,18 @@ void backend::on_retrieve_status(snap_manager::server_status & server_status)
         server_status.set_field(all_status_widget);
     }
 
+    QString const backends(snap_server_conf["backends"]);
+
     {
         snap_manager::status_t const backends_widget(
                     snap_manager::status_t::state_t::STATUS_STATE_INFO,
                     get_plugin_name(),
                     "backends",
-                    snap_server_conf["backends"]);
+                    backends);
         server_status.set_field(backends_widget);
     }
+
+    snap_string_list const enabled_backends(backends.split(','));
 
     for(auto const & service_info : g_services)
     {
@@ -317,12 +321,51 @@ void backend::on_retrieve_status(snap_manager::server_status & server_status)
 
         // create status widget
         //
+        // if the state is DISABLED and the service is NOT part of
+        // enabled_backends, then it is normal (INFO)
+        //
+        // if the state is DISABLED and the service IS part of
+        // enabled_backends, then it is not working right (WARNING)
+        //
+        // if the state is ACTIVE and the service is part of
+        // enabled_backends, then it is normal (INFO)
+        //
+        // anything else is an error
+        //
+        snap_manager::status_t::state_t state(snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT);
+        if(status == snap_manager::service_status_t::SERVICE_STATUS_DISABLED)
+        {
+            if(enabled_backends.contains(service_info.f_service_name))
+            {
+                // it is supposed to be running, this is a warning already
+                //
+                state = snap_manager::status_t::state_t::STATUS_STATE_WARNING;
+            }
+            else
+            {
+                // this is normal
+                //
+                state = snap_manager::status_t::state_t::STATUS_STATE_INFO;
+            }
+        }
+        else if(status == snap_manager::service_status_t::SERVICE_STATUS_ACTIVE
+             && enabled_backends.contains(service_info.f_service_name))
+        {
+            state = snap_manager::status_t::state_t::STATUS_STATE_INFO;
+        }
+
         snap_manager::status_t const status_widget(
-                        status == snap_manager::service_status_t::SERVICE_STATUS_NOT_INSTALLED
-                                ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
-                                : status == snap_manager::service_status_t::SERVICE_STATUS_DISABLED
-                                        ? snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
-                                        : snap_manager::status_t::state_t::STATUS_STATE_INFO,
+                        state,
+                        // the status can be caculated depending on whether
+                        // the service is expected to be running or not;
+                        // keeping the old code for a little while until
+                        // the new code works 100%
+                        //
+                        //status == snap_manager::service_status_t::SERVICE_STATUS_NOT_INSTALLED
+                        //        ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
+                        //        : status == snap_manager::service_status_t::SERVICE_STATUS_DISABLED
+                        //                ? snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
+                        //                : snap_manager::status_t::state_t::STATUS_STATE_INFO,
                         get_plugin_name(),
                         QString("%1::service_status").arg(service_info.f_service_name),
                         status_string);

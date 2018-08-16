@@ -33,19 +33,6 @@ snap_validate_xml( bundle-watchdog.xml bundles.xsd )
 
 
 #################################################################################
-## Config files
-##
-install(
-    FILES
-        # snap watchdog configuration files
-        snapwatchdog.conf
-
-    DESTINATION
-        share/snapwebsites/conf
-)
-
-
-#################################################################################
 ## Logger files
 ##
 install(

@@ -31,19 +31,6 @@
 
 
 ################################################################################
-## Config files
-##
-install(
-    FILES 
-        # snap configuration files
-        snapcommunicator.conf
-
-    DESTINATION
-        share/snapwebsites/conf
-)
-
-
-################################################################################
 ## Logger files
 ##
 install(

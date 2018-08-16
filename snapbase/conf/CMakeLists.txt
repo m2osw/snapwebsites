@@ -31,19 +31,6 @@
 
 
 #################################################################################
-## Config files
-##
-install(
-    FILES
-        # snap configuration files (shared between snapbackend and snapserver)
-        snapserver.conf
-
-    DESTINATION
-        share/snapwebsites/conf
-)
-
-
-#################################################################################
 ## Apache2 files
 ##
 install(

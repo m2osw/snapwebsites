@@ -1361,11 +1361,15 @@ service_status_t manager::service_status(std::string const & service_filename, s
         return service_status_t::SERVICE_STATUS_NOT_INSTALLED;
     }
 
-    // when installed the service may be:
+    // when first installed a service may be:
     //
+    //      static        (most backend services)
     //      disabled
     //      enabled
-    //      active
+    //      active        (nearly all other services)
+    //
+    // later, a service can be any one of those four statuses; note that
+    // we convert "static" in "disabled" since it is pretty much the same
     //
     snap::process p1("query service status");
     p1.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
@@ -1373,10 +1377,25 @@ service_status_t manager::service_status(std::string const & service_filename, s
     p1.add_argument("is-enabled");
     p1.add_argument(QString::fromUtf8(service_name.c_str()));
     int const r1(p1.run());
-    SNAP_LOG_INFO("\"is-enabled\" query output (")(r1)("): ")(p1.get_output(true).trimmed());
+    QString const status(p1.get_output(true).trimmed());
+    SNAP_LOG_INFO("\"is-enabled\" query output (")(r1)("): ")(status);
     if(r1 != 0)
     {
         // it is not enabled, so it cannot be active, thus it is disabled
+        //
+        return service_status_t::SERVICE_STATUS_DISABLED;
+    }
+    if(status == "static")
+    {
+        // this is a particular case and when "static" it is similar to
+        // "disabled" (as in, there is no link that will allow for an
+        // auto-start of that daemon)
+        //
+        // WARNING: the service may be static and active, we do not
+        //          handle that case correctly since we say DISABLED
+        //          in that case... however, we do not have that kind
+        //          of intermediate state (that is, we handle enabled
+        //          and disabled well, but no "active but not enabled")
         //
         return service_status_t::SERVICE_STATUS_DISABLED;
     }
@@ -1448,7 +1467,12 @@ service_status_t manager::string_to_service_status(std::string const & status)
         return service_status_t::SERVICE_STATUS_NOT_INSTALLED;
     }
 
-    if(status == "disabled")
+    // we consider "static" as the same as "disabled"
+    // note that we should not call this function with "static", but just
+    // in case it happens, we catch it in this way
+    //
+    if(status == "disabled"
+    || status == "static")
     {
         return service_status_t::SERVICE_STATUS_DISABLED;
     }

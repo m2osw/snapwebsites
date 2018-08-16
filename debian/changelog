@@ -1,3 +1,15 @@
+snapwebsites (1.5.135.0~xenial) xenial; urgency=high
+
+  * Removing a few more left overs from /usr/share/snapwebsites/conf
+    (since we support /etc/snapwebsites/snapwebsites.d/... it's not useful)
+  * Changed the status shown of each backend service. If not selected as
+    an active backend on that computer, it will be shown normally if disbaled.
+  * Properly handle the case where a daemon status is "static" which we
+    currently interpret as "disabled".
+  * Fixed the snapbackend.postrm script, the purge if block was empty.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 16 Aug 2018 00:36:36 -0700
+
 snapwebsites (1.5.134.0~xenial) xenial; urgency=high
 
   * Furhter tweaked the setup to have a single "common" folder with sub-

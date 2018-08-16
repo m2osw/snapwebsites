@@ -44,17 +44,4 @@ install(
 )
 
 
-#################################################################################
-## Config files
-##
-install(
-    FILES 
-        # snap configuration files
-        snapdb.conf
-
-    DESTINATION
-        share/snapwebsites/conf
-)
-
-
 # vim: ts=4 sw=4 et

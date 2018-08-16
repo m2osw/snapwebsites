@@ -47,19 +47,6 @@ install(
 
 
 #################################################################################
-## Config files
-##
-install(
-    FILES 
-        # snap configuration files
-        snaplog.conf
-
-    DESTINATION
-        share/snapwebsites/conf
-)
-
-
-#################################################################################
 ## Logger files
 ##
 install(
