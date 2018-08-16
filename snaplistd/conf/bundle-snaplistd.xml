@@ -19,6 +19,12 @@
     </p>
   </description>
   <packages>snaplistd</packages>
+  <prereq>
+    if ! dpkg -s mysql >/dev/null 2>&amp;1
+    then
+      echo "mysql"
+    fi
+  </prereq>
   <postinst>
     # Create the snaplist user and snaplist database
     #

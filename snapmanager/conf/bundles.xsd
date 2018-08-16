@@ -269,7 +269,7 @@ a server.
 
   <xs:element name="is-installed" type="xs:string"/>
 
-  <xs:element name="requirements" type="xs:string"/>
+  <xs:element name="prereq" type="xs:string"/>
 
   <xs:element name="preinst" type="xs:string"/>
 
