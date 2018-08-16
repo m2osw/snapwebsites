@@ -95,7 +95,7 @@ install(
         snap-software-description-xslt20.dtd
 
     DESTINATION
-        ${DTD_SOURCE_PATH}
+        share/snapwebsites/dtd
 )
 
 

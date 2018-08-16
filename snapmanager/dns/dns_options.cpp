@@ -138,16 +138,23 @@ public:
         COMMAND_GET
     };
 
-    dns_options(int argc, char * argv[]);
+                    dns_options(int argc, char * argv[]);
 
-
+    int             run();
 
 private:
-    advgetopt       f_opt;
+    int             load_file();
+    int             add_option();
+    int             update_option();
+    int             remove_option();
+    int             get_option();
+
+    advgetopt       f_opt = advgetopt();
     bool            f_debug = false;
     std::string     f_filename = std::string();
     command_t       f_command = command_t::COMMAND_UNDEFINED;
     std::string     f_parameter = std::string();
+    std::string     f_data = std::string();
 };
 
 
@@ -277,17 +284,81 @@ int dns_options::run()
     return r;
 }
 
+
+/** \brief Load a named option file in memory.
+ *
+ * This function loads an option file in memory in its entirety.
+ * We will work on the file in memory and once done create a backup
+ * and then save the new version.
+ *
+ * \return 0 if the file could be loaded properly, 1 on errors
+ */
+int dns_options::load_file()
+{
+    std::ifstream in(f_filename, std::ios_base::in | std::ios_base::binary);
+}
+
+
 /** \brief Search for an option, if not present, add it.
  *
- * This function reads the options file and search for a specified option.
+ * This function reads the options file and search for the specified option.
  * If the option cannot be found, then the function adds it and returns 0.
  *
  * If the option is found, then it does not get modified and the function
- * returns 2 instad.
+ * returns 2 instead.
  *
  * \return 0 on success, 1 on error, 2 if the option already exists.
  */
-int add_option()
+int dns_options::add_option()
+{
+}
+
+
+/** \brief Search for an option, if present, update it.
+ *
+ * This function reads the options file and search for the specified option.
+ * If the option could be found, then the function replaces its value and
+ * returns 0.
+ *
+ * If the option is not found, then it does not get added and the
+ * function returns 2 instead.
+ *
+ * \return 0 on success, 1 on error, 2 if the option does not exist.
+ */
+int dns_options::update_option()
+{
+}
+
+
+/** \brief Search for an option, if present, remove it.
+ *
+ * This function reads the options file and search for the specified option.
+ * If the option is found, it gets deleted and the function returns 0.
+ *
+ * If the option is not found, then nothing happens and the function returns
+ * 2 instead.
+ *
+ * \return 0 on success, 1 on error, 2 if the option does not exist.
+ */
+int dns_options::remove_option()
+{
+}
+
+
+/** \brief Search for an option, if present, print its value in stdout.
+ *
+ * This function reads the options file and search for the specified option.
+ * If the option is found, it reads its value and prints it to stdout.
+ * Remember that the value of an option may be a whole block of data.
+ * That block of data may also be named. When an option is found, the
+ * function returns 0.
+ *
+ * If the option is not found, then nothing happens and the function returns
+ * 2 instead.
+ *
+ * \return 0 on success, 1 on error, 2 if the option does not exist.
+ */
+int dns_options::get_option()
 {
 }
 

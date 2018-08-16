@@ -48,6 +48,7 @@ install(
 install(
     PROGRAMS
         snapbootinit
+        swap-usage
 
     DESTINATION
         bin

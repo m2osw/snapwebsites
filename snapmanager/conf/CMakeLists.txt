@@ -48,16 +48,25 @@ snap_validate_css( snapmanagercgi.css                              )
 #################################################################################
 ## XSD files
 ##
+install(
+    FILES
+        bundles.xsd
+
+    DESTINATION
+        share/snapwebsites/xsd
+)
+
 #
-# WARNING: we use a file(INSTALL ...) instead of an install(FILES ...)
+# WARNING: we use a file(INSTALL ...) on top of an install(FILES ...)
 #          so we can access the file in our SnapXmlLint.cmake without
 #          any additional magic
+#
 file(
     INSTALL
         bundles.xsd
 
     DESTINATION
-        ${XSD_SOURCE_PATH}
+        ${SNAP_COMMON_DIR}/xsd
 )
 
 
@@ -102,17 +111,6 @@ install(
 
     DESTINATION
         share/snapwebsites/html/snapmanager
-)
-
-#################################################################################
-## Save XSD files in their own directory
-##
-install(
-    FILES
-        bundles.xsd
-
-    DESTINATION
-        share/snapwebsites/xsd
 )
 
 

@@ -33,10 +33,11 @@ include( FindPackageHandleStandardArgs )
 # if all listed variables are TRUE
 find_package_handle_standard_args( SnapWebsites DEFAULT_MSG SNAPWEBSITES_INCLUDE_DIR SNAPWEBSITES_LIBRARY DBPROXY_LIBRARY )
 
-# Make sure default DTD/XSD files are pointed to...
+# Make sure to setup a default common directory.
+# This is used by DTD/XSD files at this time.
+# See the snapwebsites/CMakeLists.txt file for more details about this.
 #
-set( DTD_SOURCE_PATH /usr/share/snapwebsites/dtd CACHE PATH "Default DTD source files." )
-set( XSD_SOURCE_PATH /usr/share/snapwebsites/xsd CACHE PATH "Default XSD source files." )
+set( SNAP_COMMON_DIR /usr/share/snapwebsites CACHE PATH "Default common directory, used by scripts to pre-install files common to an entire project and sub-projects." )
 #
 set( CMAKE_MODULE_PATH ${SnapWebsites_DIR} ${CMAKE_MODULE_PATH} )
 include( SnapCssLint   )

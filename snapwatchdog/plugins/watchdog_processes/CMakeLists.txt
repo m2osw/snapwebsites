@@ -84,12 +84,25 @@ install(
         share/snapwebsites/snapwatchdog/processes
 )
 
+install(
+    FILES
+        watchdog-processes.xsd
+
+    DESTINATION
+        share/snapwebsites/xsd
+)
+
+#
+# WARNING: we use a file(INSTALL ...) on top of an install(FILES ...)
+#          so we can access the file in our SnapXmlLint.cmake without
+#          any additional magic
+#
 file(
     INSTALL
         watchdog-processes.xsd
 
     DESTINATION
-        ${XSD_SOURCE_PATH}
+        ${SNAP_COMMON_DIR}/xsd
 )
 
 # vim: ts=4 sw=4 et

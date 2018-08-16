@@ -1,5 +1,16 @@
 snapwebsites (1.5.133.0~xenial) xenial; urgency=high
 
+  * Furhter tweaked the setup to have a single "common" folder with sub-
+    directories (dtd and xsd for now) to save that information.
+  * Updated the CMakeLists.txt accordingly, especially, re-added the install()
+    and made the file(INSTALL ...) use the new ${SNAP_COMMON_DIR} variable.
+  * Re-install the swap-usage script which was inadvertendly removed.
+  * Added a few more things to dns_options.cpp.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 15 Aug 2018 21:13:27 -0700
+
+snapwebsites (1.5.133.0~xenial) xenial; urgency=high
+
   * SNAP-456: Fixed the order so DTD/XSD files are found without a full path.
   * Removed all the full path for DTD/XSD validations.
   * Fixed the SnapJsLint, it could not be used more than once.

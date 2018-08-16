@@ -33,16 +33,25 @@
 #################################################################################
 ## Install DTD file.
 ##
+install(
+    FILES
+        simplified-xslt20.dtd
+
+    DESTINATION
+        share/snapwebsites/dtd
+)
+
 #
 # WARNING: we use a file(INSTALL ...) instead of an install(FILES ...)
 #          so we can access the file in our SnapXmlLint.cmake without
 #          any additional magic
+#
 file(
     INSTALL
         simplified-xslt20.dtd
 
     DESTINATION
-        ${DTD_SOURCE_PATH}
+        ${SNAP_COMMON_DIR}/dtd
 )
 
 

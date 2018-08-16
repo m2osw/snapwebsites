@@ -81,17 +81,53 @@ find_package( SnapDoxygen                     )
 
 SnapGetVersion( SNAPWEBSITES ${CMAKE_CURRENT_SOURCE_DIR} )
 
-################################################################################
-# Override the DTD_SOURCE_PATH that is provided by the libsnapwebsites library
-set( SNAP_DIST_DIR   "${CMAKE_BINARY_DIR}/dist"                CACHE PATH "Local install dir."                )
-set( DTD_SOURCE_PATH "${SNAP_DIST_DIR}/share/snapwebsites/dtd" CACHE PATH "Location of the default DTD files" )
-set( XSD_SOURCE_PATH "${SNAP_DIST_DIR}/share/snapwebsites/xsd" CACHE PATH "Default XSD source files."         )
+###############################################################################
+## Define the ${SNAP_COMMON_DIR} variable used to save common files within
+## this project.
+##
+## At this time, this directory receives DTD and XSD files that are being
+## used with the snap_validate_xml() command within the snap environment.
+##
+## Note: until these files get installed, they would not be directly
+##       accessible by others, there are two solutions to use
+##       in this situation:
+##
+##   1. use a full path to the DTD/XSD file, it can be tedious to know about
+##      it and is not portable (i.e. if you copy that CMakeLists.txt outside
+##      of the snap environment, it will not work as is)
+##
+##      here is an example to validate the content.xml of the attachment
+##      plugin (how it used to look like before I reordered the
+##      add_subdirectory() so the file(INSTALL ...) happens first)
+##
+##      snap_validate_xml(
+##            content.xml
+##            ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd
+##      )
+##
+##   2. use the file(INSTALL ...) to a common destination directory that the
+##      snap_validate_xml() function can automatically use; the following
+##      is that common directory; note that we place it in our binary
+##      directory (this is not a distribution directory)
+##
+## For the snapwebsites environment, we use solution (2) everywhere.
+##
+## IMPORTANT NOTE: The ${SNAP_COMMON_DIR} gets checked before the
+##                 ${CMAKE_INSTALL_PREFIX}/share/snapwebsites because
+##                 otherwise make would not detect changes to your DTD/XSD
+##                 files until after you get that file installed again
+##
+set( SNAP_COMMON_DIR "${CMAKE_BINARY_DIR}/common" CACHE PATH "Directory to copy files used by cmake scripts before an install happens." )
 
 include( SnapCssLint   )
 include( SnapJsLint    )
 include( SnapXmlLint   )
 include( SnapZipLayout )
 
+# WARNING: the order of the following is important
+#          we have to build libsnapwebsites before all the other C++
+#          sub-projects for example
+#
 add_subdirectory( cmake                   )
 add_subdirectory( libsnapwebsites         )
 add_subdirectory( cassview                )

@@ -33,6 +33,8 @@ if( ${XMLLINT} STREQUAL "XMLLINT-NOTFOUND" )
     message( FATAL_ERROR "xmllint is not installed. Run 'sudo apt-get install libxml2-utils' and try again." )
 endif()
 
+###############################################################################
+# Create a bash script that runs the actual xmllint tool against your files.
 #
 set( lint_script ${CMAKE_BINARY_DIR}/do_xml_lint.sh CACHE INTERNAL "XML lint script" FORCE )
 file( WRITE  ${lint_script} "#!${BASH}\n" )
@@ -42,47 +44,196 @@ file( APPEND ${lint_script} "else\n" )
 file( APPEND ${lint_script} "  ${XMLLINT} --schema $3 --output $2 $1 && exit 0 || (rm $2; exit 1)\n" )
 file( APPEND ${lint_script} "fi\n" )
 
+###############################################################################
+# Add a DTD/XSD file that should be validated by the cmake process
+#
+#    snap_validate_xml( <name-of-xml-file-to-validate> <name-of-xsd-or-dtd> )
+#
+# The search happens in this order:
+#
+#    . check whether the DTD/XSD file exists as is (local or fullpath)
+#    . check as is within CMAKE_CURRENT_SOURCE_DIR
+#    . check extension:
+#      - if extension is ""
+#        + check ${CMAKE_CURRENT_SOURCE_DIR}/xsd/<name>.xsd
+#        + check ${CMAKE_CURRENT_SOURCE_DIR}/<name>.xsd
+#        + check ${CMAKE_CURRENT_SOURCE_DIR}/dtd/<name>.dtd
+#        + check ${CMAKE_CURRENT_SOURCE_DIR}/<name>.dtd
+#        + check ${SNAP_COMMON_DIR}/xsd/<name>.xsd
+#        + check ${SNAP_COMMON_DIR}/<name>.xsd
+#        + check ${SNAP_COMMON_DIR}/dtd/<name>.dtd
+#        + check ${SNAP_COMMON_DIR}/<name>.dtd
+#        + check ${CMAKE_INSTALL_PREFIX}/share/snapwebsites/xsd/<name>.xsd
+#        + check ${CMAKE_INSTALL_PREFIX}/share/snapwebsites/dtd/<name>.dtd (fallback)
+#      - if extension is ".xsd"
+#        + check ${CMAKE_CURRENT_SOURCE_DIR}/xsd/<name>
+#        + check ${CMAKE_CURRENT_SOURCE_DIR}/<name>
+#        + check ${SNAP_COMMON_DIR}/xsd/<name>
+#        + check ${SNAP_COMMON_DIR}/<name>
+#        + check ${CMAKE_INSTALL_PREFIX}/share/snapwebsites/xsd/<name> (fallback)
+#      - if extension is ".dtd"
+#        + check ${CMAKE_CURRENT_SOURCE_DIR}/dtd/<name>
+#        + check ${CMAKE_CURRENT_SOURCE_DIR}/<name>
+#        + check ${SNAP_COMMON_DIR}/dtd/<name>
+#        + check ${SNAP_COMMON_DIR}/<name>
+#        + check ${CMAKE_INSTALL_PREFIX}/share/snapwebsites/dtd/<name> (fallback)
+#      - if extension is something else
+#        + error
+#    . make sure the final result is a file that exists
+#
+# ${SNAP_COMMON_DIR} is assigned a default in SnapWebsitesConfig.cmake
+# so if you include that configuration file, you will get a valid default.
+# You may also set your own value to that variable. When not defined, any
+# line checking for DTD/XSD files under ${SNAP_COMMON_DIR}/... are ignored.
+# See the snapwebsites/CMakeLists.txt for an example of how this directory
+# is used (and why it is searched BEFORE the ${CMAKE_INSTALL_PREFIX}/...
+# directories, which is very important!)
 #
 function( snap_validate_xml XML_FILE DTD_FILE )
-    get_filename_component( DTD_BASEFILE  ${DTD_FILE} NAME )
+    # search various paths in the hope of finding the ${DTD_FILE}
+    # the result is saved in ${DTD_PATH}
+    #
+    set( DTD_PATH "" )
+
     if( EXISTS "${DTD_FILE}" )
+        # accept a valid full path as is
+        #
         set( DTD_PATH "${DTD_FILE}" )
-    elseif( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}" )
-        set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}" )
+    elseif( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_FILE}" )
+        # accept a direct or sub-directory path as is
+        #
+        set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_FILE}" )
     else()
-		if( NOT DEFINED DTD_SOURCE_PATH )
-			message( FATAL_ERROR "DTD_SOURCE_PATH must be set!" )
-		endif()
-		if( NOT DEFINED XSD_SOURCE_PATH )
-			message( FATAL_ERROR "XSD_SOURCE_PATH must be set!" )
-		endif()
-        if( EXISTS "${DTD_SOURCE_PATH}/${DTD_BASEFILE}" )
-            set( DTD_PATH "${DTD_SOURCE_PATH}/${DTD_BASEFILE}" )
-        else()
-            if( EXISTS "${XSD_SOURCE_PATH}/${DTD_BASEFILE}" )
-                set( DTD_PATH "${XSD_SOURCE_PATH}/${DTD_BASEFILE}" )
+        # direct (full/sub-directrory) path is not valid,
+        # do a search with just the basename
+        #
+        get_filename_component( DTD_EXTENSION ${DTD_FILE} EXT )
+        get_filename_component( DTD_BASEFILE  ${DTD_FILE} NAME )
+
+        if( "${DTD_EXTENSION}" STREQUAL "" )
+            # in this case, we can test for both, XSD and DTD files
+            # we always want to force an extension, though
+            #
+            # first define a default in this case
+            # (whether it exists will be tested later)
+            #
+            set( DTD_PATH "${CMAKE_INSTALL_PREFIX}/share/snapwebsites/dtd/${DTD_BASEFILE}.dtd" )
+
+            if( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/xsd/${DTD_BASEFILE}.xsd" )
+                set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/xsd/${DTD_BASEFILE}.xsd" )
+            elseif( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dtd/${DTD_BASEFILE}.dtd" )
+                set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dtd/${DTD_BASEFILE}.dtd" )
+            elseif( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}.xsd" )
+                set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}.xsd" )
+            elseif( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}.dtd" )
+                set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}.dtd" )
             else()
-                if( EXISTS "${CMAKE_INSTALL_PREFIX}/share/snapwebsites/xsd/${DTD_BASEFILE}" )
-                    set( DTD_PATH "${CMAKE_INSTALL_PREFIX}/share/snapwebsites/xsd/${DTD_BASEFILE}" )
-                else()
-                    set( DTD_PATH "${CMAKE_INSTALL_PREFIX}/share/snapwebsites/dtd/${DTD_BASEFILE}" )
+                if( DEFINED SNAP_COMMON_DIR )
+                    # when defined, check in the SNAP_COMMON_DIR
+                    #
+                    # this is necessary when we have XSD/DTD files installed
+                    # within the same project, see the file(INSTALL ...)
+                    # constructs for more details.
+                    #
+                    if( EXISTS "${SNAP_COMMON_DIR}/xsd/${DTD_BASEFILE}.xsd" )
+                        set( DTD_PATH "${SNAP_COMMON_DIR}/xsd/${DTD_BASEFILE}.xsd" )
+                    elseif( EXISTS "${SNAP_COMMON_DIR}/dtd/${DTD_BASEFILE}.dtd" )
+                        set( DTD_PATH "${SNAP_COMMON_DIR}/dtd/${DTD_BASEFILE}.dtd" )
+                    elseif( EXISTS "${SNAP_COMMON_DIR}/${DTD_BASEFILE}.xsd" )
+                        set( DTD_PATH "${SNAP_COMMON_DIR}/${DTD_BASEFILE}.xsd" )
+                    elseif( EXISTS "${SNAP_COMMON_DIR}/${DTD_BASEFILE}.dtd" )
+                        set( DTD_PATH "${SNAP_COMMON_DIR}/${DTD_BASEFILE}.dtd" )
+                    endif()
+                endif()
+                if( "${DTD_PATH}" STREQUAL "" OR NOT EXISTS ${DTD_PATH} )
+                    # try the distribution (installation) folders last
+                    #
+                    # if using the XSD or DTD file from another project,
+                    # which was built earlier, the file will be there
+                    #
+                    if( EXISTS "${CMAKE_INSTALL_PREFIX}/share/snapwebsites/xsd/${DTD_BASEFILE}.xsd" )
+                        set( DTD_PATH "${CMAKE_INSTALL_PREFIX}/share/snapwebsites/xsd/${DTD_BASEFILE}.xsd" )
+                    endif()
                 endif()
             endif()
+        elseif( "${DTD_EXTENSION}" STREQUAL ".xsd")
+            # only check for an XSD file
+            #
+            # first define a default in this case
+            # (whether it exists will be tested later)
+            #
+            set( DTD_PATH "${CMAKE_INSTALL_PREFIX}/share/snapwebsites/xsd/${DTD_BASEFILE}" )
+
+            if( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/xsd/${DTD_BASEFILE}" )
+                set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/xsd/${DTD_BASEFILE}" )
+            elseif( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}" )
+                set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}" )
+            elseif( DEFINED SNAP_COMMON_DIR )
+                # when defined, check in the SNAP_COMMON_DIR
+                #
+                # this is necessary when we have XSD files installed
+                # within the same project, see the file(INSTALL ...)
+                # constructs for more details.
+                #
+                if( EXISTS "${SNAP_COMMON_DIR}/xsd/${DTD_BASEFILE}" )
+                    set( DTD_PATH "${SNAP_COMMON_DIR}/xsd/${DTD_BASEFILE}" )
+                elseif( EXISTS "${SNAP_COMMON_DIR}/${DTD_BASEFILE}" )
+                    set( DTD_PATH "${SNAP_COMMON_DIR}/${DTD_BASEFILE}" )
+                endif()
+            endif()
+        elseif( "${DTD_EXTENSION}" STREQUAL ".dtd")
+            # only check for an DTD file
+            #
+            # first define a default in this case
+            # (whether it exists will be tested later)
+            #
+            set( DTD_PATH "${CMAKE_INSTALL_PREFIX}/share/snapwebsites/dtd/${DTD_BASEFILE}" )
+
+            if( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dtd/${DTD_BASEFILE}" )
+                set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dtd/${DTD_BASEFILE}" )
+            elseif( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}" )
+                set( DTD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DTD_BASEFILE}" )
+            elseif( DEFINED SNAP_COMMON_DIR )
+                # when defined, check in the SNAP_COMMON_DIR
+                #
+                # this is necessary when we have XSD/DTD files installed
+                # within the same project, see the file(INSTALL ...)
+                # constructs for more details.
+                #
+                if( EXISTS "${SNAP_COMMON_DIR}/dtd/${DTD_BASEFILE}" )
+                    set( DTD_PATH "${SNAP_COMMON_DIR}/dtd/${DTD_BASEFILE}" )
+                elseif( EXISTS "${SNAP_COMMON_DIR}/${DTD_BASEFILE}" )
+                    set( DTD_PATH "${SNAP_COMMON_DIR}/${DTD_BASEFILE}" )
+                endif()
+            endif()
+        else()
+            # unknown extension
+            #
+            message( FATAL_ERROR "DTD_PATH: '${DTD_FILE}' has extension '${DTD_EXTENSION}' which is not supported. Expected .xsd or .dtd or no extension." )
         endif()
     endif()
+
+    # verify that we indeed found the ${DTD_FILE}
+    #
     if( NOT EXISTS ${DTD_PATH} )
-        message( FATAL_ERROR "DTD_PATH: '${DTD_FILE}' tested as '${DTD_PATH}' was not found on the system! Please install and try again." )
+        message( FATAL_ERROR "DTD_PATH: '${DTD_FILE}' tested as '${DTD_PATH}' was not found on the system! Please install or use file(INSTALL ...) if from the same project and try again." )
     endif()
+
     get_filename_component( FULL_XML_PATH ${XML_FILE} ABSOLUTE )
+
     set_property( GLOBAL APPEND PROPERTY XML_FILE_LIST "${FULL_XML_PATH}" "${DTD_PATH}" "${CMAKE_CURRENT_BINARY_DIR}" )
 endfunction()
 
+###############################################################################
+# Clear the XML_FILE_LIST so a large project can maintained several smaller
+# lists in various subdirectory()
+#
 function( snap_clear_xml_targets )
     set_property( GLOBAL PROPERTY XML_FILE_LIST "" )
 endfunction()
 
 
-################################################################################
+###############################################################################
 # Make sure all lint targets get built properly...
 # Call snap_build_xml_targets() after calling snap_validate_xml() above.
 #

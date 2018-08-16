@@ -105,15 +105,25 @@ install(
 ###############################################################################
 ## Install DTD file.
 ##
+install(
+    FILES
+        editor-form.dtd
+
+    DESTINATION
+        share/snapwebsites/dtd
+)
+
 #
-# WARNING: we use a file(INSTALL ...) so we can access the file in our
-#          SnapXmlLint.cmake without any additional magic
+# WARNING: we use a file(INSTALL ...) on top of an install(FILES ...)
+#          so we can access the file in our SnapXmlLint.cmake without
+#          any additional magic
+#
 file(
     INSTALL
         editor-form.dtd
 
     DESTINATION
-        ${DTD_SOURCE_PATH}
+        ${SNAP_COMMON_DIR}/dtd
 )
 
 install(

@@ -82,16 +82,13 @@ install(
 ################################################################################
 # Install DTD files.
 #
-set( DTD_FILES
-    atom-xslt20.dtd
-    rss-xslt20.dtd
-)
 install(
     FILES
-        ${DTD_FILES}
+        atom-xslt20.dtd
+        rss-xslt20.dtd
 
     DESTINATION
-        ${DTD_SOURCE_PATH}
+        share/snapwebsites/dtd
 )
 
 
