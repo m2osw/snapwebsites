@@ -1,3 +1,10 @@
+snapwebsites (1.5.135.1~xenial) xenial; urgency=high
+
+  * Quick fix to the bundles.xsd file format.
+  * Added a prereq tag in bundle-snaplistd.xml.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 16 Aug 2018 01:56:58 -0700
+
 snapwebsites (1.5.135.0~xenial) xenial; urgency=high
 
   * Removing a few more left overs from /usr/share/snapwebsites/conf
@@ -8,7 +15,7 @@ snapwebsites (1.5.135.0~xenial) xenial; urgency=high
     currently interpret as "disabled".
   * Fixed the snapbackend.postrm script, the purge if block was empty.
 
- -- Alexis Wilke <alexis@m2osw.com>  Wed, 16 Aug 2018 00:36:36 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 16 Aug 2018 00:36:36 -0700
 
 snapwebsites (1.5.134.0~xenial) xenial; urgency=high
 
