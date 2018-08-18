@@ -677,6 +677,13 @@ bundle::vector_t manager::load_bundles()
                 SNAP_LOG_ERROR("missing prereq bundle \"")(p)("\".");
                 return bundle::vector_t();
             }
+            if(*it == b)
+            {
+                // need to install yourself to be able to install yourselves?
+                //
+                SNAP_LOG_ERROR("you cannot be in a prereq of yourself (\"")(p)("\").");
+                return bundle::vector_t();
+            }
             b->add_prereq_bundle(*it);
             (*it)->add_locked_by_bundle(b);
         }
@@ -701,8 +708,46 @@ bundle::vector_t manager::load_bundles()
                 SNAP_LOG_ERROR("missing conflicts bundle \"")(c)("\".");
                 return bundle::vector_t();
             }
+            if(*it == b)
+            {
+                // in conflict with yourselves?
+                //
+                SNAP_LOG_ERROR("you cannot be in conflict with yourself (\"")(c)("\").");
+                return bundle::vector_t();
+            }
             b->add_conflicts_bundle(*it);
             (*it)->add_conflicts_bundle(b);
+        }
+
+        // also transform the suggestions in links, that way we can see whether
+        // some of those suggestions are broken
+        //
+        bundle::string_set_t const & suggestions(b->get_suggestions());
+        for(auto s : suggestions)
+        {
+            auto it(std::find_if(
+                      result.begin()
+                    , result.end()
+                    , [&s](auto const & r)
+                    {
+                        return s == r->get_name();
+                    }));
+            if(it == result.end())
+            {
+                // this is not acceptable, prevent all bundles from being
+                // added so the programmer notices quickly
+                //
+                SNAP_LOG_ERROR("missing suggested bundle \"")(s)("\".");
+                return bundle::vector_t();
+            }
+            if(*it == b)
+            {
+                // suggesting yourself?
+                //
+                SNAP_LOG_ERROR("you cannot suggest \"")(s)("\" to itself.");
+                return bundle::vector_t();
+            }
+            b->add_suggestions_bundle(*it);
         }
     }
 

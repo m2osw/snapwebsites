@@ -24,6 +24,7 @@
     </field>
   </fields>
   <packages>rkhunter</packages>
+  <suggestions>tripwire</suggestions>
   <postinst>
     # rkhunter knows about /etc/rkhunter.d but it does not create it!?
     mkdir -p /etc/rkhunter.d

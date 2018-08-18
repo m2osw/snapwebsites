@@ -1,3 +1,14 @@
+snapwebsites (1.5.137.0~xenial) xenial; urgency=high
+
+  * Tweaked a few bundles with the new features.
+  * Added a <suggestions> tag to offer suggestions to users.
+  * Changed the snapbackend.(pre/post)rm to avoid the killing of the services.
+  * Fixed a few description messages.
+  * Deleted some old code which is now not used.
+  * Also marked the watchdog as a required bundle.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 17 Aug 2018 22:49:57 -0700
+
 snapwebsites (1.5.136.0~xenial) xenial; urgency=high
 
   * Changed the file(INSTALL ...) with configure_file(...) so it gets

@@ -18,9 +18,15 @@
 
     <p>This package depends on the snapserver-core-plugins. Backends that
     you develop can depend on your own plugins as well.</p>
+
+    <p>On your backend computer, the one running the "snapbackend" backend,
+    we suggest you install the "antivirus" bundle. That way you will
+    actually get that functionality to work as expected if you turn
+    on the corresponding plugin in Snap!</p>
   </description>
   <affected-services>snapmanagerdaemon</affected-services>
   <packages>snapbackend</packages>
+  <suggestions>antivirus</suggestions>
 </bundle>
 <!--
   vim: ts=2 sw=2 et

@@ -443,7 +443,7 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
         auto const & packages(b->get_packages());
         if(packages.empty())
         {
-            description += "<li>No package names or versions for this bundle.</li>";
+            description += "<ul><li>No package names or versions for this bundle.</li></ul>";
         }
         else
         {
@@ -527,11 +527,12 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
             break;
 
         case snap_manager::bundle::bundle_status_t::BUNDLE_STATUS_NOT_INSTALLED:
+            description += "<p>This bundle is not currently installed.</p>";
             if(b->get_expected())
             {
                 state = snap_manager::status_t::state_t::STATUS_STATE_WARNING;
+                description += "<p><strong>We strongly suggest that you install this bundle on your system.</strong></p>";
             }
-            description += "<p>This bundle is not currently installed.</p>";
             break;
 
         case snap_manager::bundle::bundle_status_t::BUNDLE_STATUS_PREREQ_MISSING:
@@ -571,6 +572,33 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
 
         }
 
+        {
+            bool found_suggestions(false);
+            auto const & suggestions(b->get_suggestions_bundles());
+            for(auto const & s : suggestions)
+            {
+                auto const & l(s.lock());
+                if(l != nullptr)
+                {
+                    if(!found_suggestions)
+                    {
+                        found_suggestions = true;
+                        description += "<ul>";
+                    }
+                    description += "<li><a href=\"#bundles::"
+                                 + l->get_name()
+                                 + "\">"
+                                 + l->get_name()
+                                 + "</a></li>";
+                }
+            }
+
+            if(found_suggestions)
+            {
+                description += "</ul>";
+            }
+        }
+
         // we do not have to check the hide flag because we do not
         // execute this block when hidden (see at the top of the block)
         //
@@ -581,221 +609,6 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
                     QString::fromUtf8(description.c_str()));
         server_status.set_field(package_status);
     }
-
-
-#if 0
-    std::vector<std::string> bundle_list(f_snap->get_list_of_bundles());
-    for(auto const & b : bundle_list)
-    {
-        bool good_bundle(true);
-        bool hide_bundle(false);
-        bool has_error(false);
-
-        QString const filename(QString::fromUtf8(b.c_str()));
-        std::string const name_from_filename(snap::string_pathinfo_basename(b, ".xml", "bundle-"));
-        QString name(QString::fromUtf8(name_from_filename.c_str()));
-        QString description;
-        std::string package_name_and_version;
-
-        // the Install form may include a few fields (values that are
-        // otherwise difficult to change once the package was installed)
-        //
-        QDomElement fields;
-
-        QDomDocument bundle_xml;
-        QFile input(filename);
-        if(input.open(QIODevice::ReadOnly)
-        && bundle_xml.setContent(&input, false))
-        {
-            QDomElement root(bundle_xml.documentElement());
-
-            // get the name, we show the name as part of the field name
-            //
-            QDomElement bundle_name(root.firstChildElement("name"));
-            if(!bundle_name.isNull())
-            {
-                name = bundle_name.text();
-            }
-            else
-            {
-                good_bundle = false;
-                has_error = true;
-            }
-
-            // get the description, we will add the description in
-            // the status for now (TBD: look into whether the
-            // snapmanager.cgi binary could read that from the XML
-            // file instead?)
-            //
-            QDomElement bundle_description(root.firstChildElement("description"));
-            if(!bundle_description.isNull())
-            {
-                description = snap_dom::xml_children_to_string(bundle_description);
-            }
-            else
-            {
-                good_bundle = false;
-                has_error = true;
-            }
-
-            // list of fields to capture and send along the installation
-            // processes
-            //
-            fields = root.firstChildElement("fields");
-
-            // get the list of expected packages, it may be empty
-            //
-            std::vector<std::string> packages;
-            QDomNodeList bundle_packages(bundle_xml.elementsByTagName("packages"));
-            if(bundle_packages.size() == 1)
-            {
-                QDomElement package_list(bundle_packages.at(0).toElement());
-                std::string const list_of_packages(package_list.text().toUtf8().data());
-                snap::tokenize_string(packages, list_of_packages, ",", true, " ");
-            }
-            for(auto p : packages)
-            {
-                // skip empty entries (should not happen though)
-                //
-                if(p.empty())
-                {
-                    continue;
-                }
-                bool const inverted(p[0] == '!');
-                if(inverted)
-                {
-                    p.erase(p.begin());
-                }
-
-                std::string output;
-                int const r(f_snap->package_status(p, output));
-
-                bool success(false);
-                if(r == 0)
-                {
-                    // search the space after the version
-                    //
-                    std::string::size_type pos(output.find(' '));
-
-                    // check the actual status
-                    //
-                    if(output.compare(pos + 1, 20, "install ok installed") == 0)
-                    {
-                        success = true;
-                        if(inverted)
-                        {
-                            hide_bundle = true;
-                        }
-                        package_name_and_version += "<li class='installed-package'>";
-                        package_name_and_version += p;
-                        package_name_and_version += " (";
-                        package_name_and_version += output.substr(0, pos);
-                        package_name_and_version += ")</li>";
-                    }
-                }
-                if(!success)
-                {
-                    good_bundle = false;
-
-                    package_name_and_version += "<li class='uninstalled-package'>";
-                    package_name_and_version += p;
-                    package_name_and_version += " (";
-                    package_name_and_version += output.empty() ? "unknown" : output;
-                    package_name_and_version += ")</li>";
-                }
-            }
-        }
-
-        QDomNodeList bundle_is_installed(bundle_xml.elementsByTagName("is-installed"));
-        if(bundle_is_installed.size() == 1)
-        {
-            std::string path(f_snap->get_cache_path().toUtf8().data());
-            path += "/bundle-scripts/";
-            path += name.toUtf8().data();
-            path += ".is-installed";
-            snap::file_content script(path, true);
-            QDomElement is_installed(bundle_is_installed.at(0).toElement());
-            script.set_content(std::string("#!/bin/bash\n# auto-generated by snapmanagerdaemon (bundles plugin)\n") + is_installed.text().toUtf8().data());
-            script.write_all();
-            chmod(path.c_str(), 0755);
-            snap::process p("is-installed");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command(QString::fromUtf8(path.c_str()));
-            int const r(p.run());
-            if(r != 0)
-            {
-                int const e(errno);
-                SNAP_LOG_ERROR("is-installed script failed with ")(r)(" (errno: ")(e)(", ")(strerror(e));
-                // errors do not prevent us from going forward with the
-                // other entries
-                package_name_and_version += "<li>This bundle includes a script to test whether it is installed. That script FAILED.</li>";
-                good_bundle = false;
-            }
-            else
-            {
-                QString const output(p.get_output(true));
-                if(output.trimmed() == "install ok installed")
-                {
-                    package_name_and_version += "<li>Bundle \"";
-                    package_name_and_version += name.toUtf8().data();
-                    package_name_and_version += "\" is installed.</li>";
-                }
-                else
-                {
-                    good_bundle = false;
-                }
-            }
-        }
-        else if(package_name_and_version.empty())
-        {
-            package_name_and_version = "<li>No package name and version available for this bundle.</li>";
-        }
-
-        QString const status_info(QString("%1<p>%2</p><ul>%3</ul>")
-                        .arg(snap_dom::xml_to_string(fields))
-                        .arg(description)
-                        .arg(QString::fromUtf8(package_name_and_version.c_str())));
-
-        // one line per entry
-        //
-        if(bundles_status_file.isOpen())
-        {
-            // should hidden bundle just not be included?
-            //
-            QByteArray const name_utf8(name.toUtf8());
-            bundles_status_file.write(name_utf8.data(), name_utf8.size());
-            bundles_status_file.putChar(':');
-            bundles_status_file.putChar(
-                        has_error
-                            ? 'E'
-                            : hide_bundle
-                                ? 'H'
-                                : good_bundle
-                                    ? 'I'
-                                    : 'W');
-            bundles_status_file.putChar(':');
-            QByteArray status_info_utf8(status_info.toUtf8());
-            // TODO: we probably want to also escape \\ here?
-            status_info_utf8.replace("\n", "\\n")
-                            .replace("\r", "\\r");
-            bundles_status_file.write(status_info_utf8.data(), status_info_utf8.size());
-            bundles_status_file.putChar('\n');
-        }
-
-        if(!hide_bundle)
-        {
-            snap_manager::status_t const package_status(
-                        has_error ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
-                                  : good_bundle ? snap_manager::status_t::state_t::STATUS_STATE_INFO
-                                                : snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT,
-                        get_plugin_name(),
-                        "bundle::" + name,
-                        status_info);
-            server_status.set_field(package_status);
-        }
-    }
-#endif
-
 }
 
 

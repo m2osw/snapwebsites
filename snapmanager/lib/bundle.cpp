@@ -190,6 +190,15 @@ bundle_field<bundle>::vector_t    g_bundle_fields =
         nullptr
     },
     {
+        bundle_field<bundle>::type_t::BUNDLE_FIELD_TYPE_LIST,
+        "suggestions",
+        false,
+        nullptr,
+        nullptr,
+        &bundle::f_suggestions,
+        nullptr
+    },
+    {
         bundle_field<bundle>::type_t::BUNDLE_FIELD_TYPE_SCRIPT,
         "is-installed",
         false,
@@ -743,6 +752,12 @@ bundle::string_set_t const & bundle::get_conflicts() const
 }
 
 
+bundle::string_set_t const & bundle::get_suggestions() const
+{
+    return f_suggestions;
+}
+
+
 std::string const & bundle::get_is_installed() const
 {
     return f_is_installed;
@@ -821,6 +836,21 @@ void bundle::add_conflicts_bundle(pointer_t b)
 bundle::weak_vector_t const & bundle::get_conflicts_bundles() const
 {
     return f_conflicts_bundles;
+}
+
+
+void bundle::add_suggestions_bundle(pointer_t b)
+{
+    if(std::find(f_suggestions_bundles.begin(), f_suggestions_bundles.end(), b) == f_suggestions_bundles.end())
+    {
+        f_suggestions_bundles.push_back(b);
+    }
+}
+
+
+bundle::weak_vector_t const & bundle::get_suggestions_bundles() const
+{
+    return f_suggestions_bundles;
 }
 
 

@@ -84,6 +84,16 @@
           in conflict with snapmta.
 
         <bundle>
+        <suggestions>  [optional]
+          A comma separated list of bundles that this bundle thinks is
+          wise to also install along. The system will not automatically
+          install suggestions. It is suggered that you enter information
+          about the suggestions in your description.
+
+          To force the installation of other bundles (before this one
+          gets installed) use the <prereq> instead.
+
+        <bundle>
         <preinst>  [optional]
           This is a shell script that the installer will run before
           installing the <packages>. If there are no packages to install
@@ -367,6 +377,8 @@ a server.
 
   <xs:element name="conflicts" type="name-list"/>
 
+  <xs:element name="suggestions" type="name-list"/>
+
   <xs:element name="preinst" type="xs:string"/>
 
   <xs:element name="postinst" type="xs:string"/>
@@ -415,6 +427,7 @@ a server.
         <xs:element ref="is-installed" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="prereq" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="conflicts" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="suggestions" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="preinst" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="postinst" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="prerm" minOccurs="0" maxOccurs="1"/>

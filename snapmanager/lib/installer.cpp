@@ -39,6 +39,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/file_content.h>
+#include <snapwebsites/glob_dir.h>
 #include <snapwebsites/lockfile.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkdir_p.h>
@@ -377,11 +378,16 @@ void manager::reset_aptcheck()
     QString const cache_filename(QString("%1/apt-check.output").arg(f_cache_path));
     unlink(cache_filename.toUtf8().data());
 
-    // also make sure that the bundles.status get regenerated (i.e. the
-    // dpkg-query calls)
+    // also make sure that the bundle-package-status directory content gets
+    // regenerated (i.e. output of the dpkg-query calls)
     //
-    QString const bundles_status_filename(QString("%1/bundles.status").arg(f_bundles_path));
-    unlink(bundles_status_filename.toUtf8().data());
+    snap::glob_dir status(f_data_path + "/bundle-package-status/*.status");
+    status.enumerate_glob([](std::string const & path)
+                    {
+                        unlink(path.c_str());
+                    });
+    //QString const bundles_status_filename(QString("%1/bundles.status").arg(f_bundles_path));
+    //unlink(bundles_status_filename.toUtf8().data());
 
     // delete the bundles.last-update-time as well so that way on a restart
     // the snapmanagerdaemon will reload the latest bundles automatically

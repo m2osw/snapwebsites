@@ -269,9 +269,10 @@ void manager_daemon::process_message(snap::snap_communicator_message const & mes
     QString const command(message.get_command());
 
 // TODO: make use of a map a la snapinit -- see SNAP-464
-//       (I have it written, it uses a map like scheme, we now need to convert all
-//       the process_message() in using the new scheme which can calls a separate
-//       function for each message you support!)
+//       (I have it written, it uses a map like scheme, we now need to convert
+//       all the process_message() to use the new scheme which can call a
+//       separate function for each message you support and it handles all
+//       the system messages automatically.)
 
     switch(command[0].unicode())
     {

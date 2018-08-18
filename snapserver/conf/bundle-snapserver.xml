@@ -16,9 +16,14 @@
 
     <p>The snapserver is the actual daemon that generates the HTML
     of your Snap! Websites.</p>
+
+    <p>Note: the snapbackend is a pre-requisite because without
+    the snaplistjournal backend, the functionality of Snap! is
+    broken.</p>
   </description>
   <affected-services>snapmanagerdaemon</affected-services>
   <packages>snapserver</packages>
+  <prereq>snapbackend</prereq>
 </bundle>
 <!--
   vim: ts=2 sw=2 et

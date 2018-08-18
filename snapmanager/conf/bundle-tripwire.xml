@@ -40,6 +40,7 @@
     fi
   </preinst>
   <packages>tripwire</packages>
+  <suggestions>rkhunter</suggestions>
   <postinst>
     LOCALKEY=`hostname`-local.key
     # TODO: apply some changes to the default .txt files?

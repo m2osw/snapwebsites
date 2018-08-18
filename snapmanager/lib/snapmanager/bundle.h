@@ -143,6 +143,7 @@ public:
     string_set_t const &    get_packages() const;
     string_set_t const &    get_prereq() const;
     string_set_t const &    get_conflicts() const;
+    string_set_t const &    get_suggestions() const;
     std::string const &     get_is_installed() const;
     std::string const &     get_preinst() const;
     std::string const &     get_postinst() const;
@@ -156,6 +157,8 @@ public:
     weak_vector_t const &   get_locked_by_bundles() const;
     void                    add_conflicts_bundle(pointer_t b);
     weak_vector_t const &   get_conflicts_bundles() const;
+    void                    add_suggestions_bundle(pointer_t b);
+    weak_vector_t const &   get_suggestions_bundles() const;
 
     package::pointer_t      get_package(std::string const & name) const;
     bundle_status_t         get_bundle_status() const;
@@ -176,6 +179,7 @@ public:
     string_set_t            f_packages = string_set_t();                // list of packages that will be installed by this bundle
     string_set_t            f_prereq = string_set_t();                  // list of bundles that must be installed before this one can be installed
     string_set_t            f_conflicts = string_set_t();               // list of bundles that prevent this one from being installed (and vice versa)
+    string_set_t            f_suggestions = string_set_t();             // list of bundles that prevent this one from being installed (and vice versa)
     std::string             f_is_installed = std::string();             // script used to check whether the package is considered installed
     std::string             f_preinst = std::string();                  // script run before proceeding with the installation of the packages
     std::string             f_postinst = std::string();                 // script run after installation of the packages
@@ -186,6 +190,7 @@ public:
     weak_vector_t           f_prereq_bundles = weak_vector_t();         // list of bundles that are prereqs
     weak_vector_t           f_locked_by_bundles = weak_vector_t();      // list of bundles that prevent removal of this bundle
     weak_vector_t           f_conflicts_bundles = weak_vector_t();      // list of bundles that are conflicts
+    weak_vector_t           f_suggestions_bundles = weak_vector_t();    // list of bundles that are suggestions
 
     mutable package::map_t  f_package_status = package::map_t();        // [package-name] = <package-object>
     mutable bundle_status_t f_bundle_status = bundle_status_t::BUNDLE_STATUS_UNKNOWN;   // status of bundle
