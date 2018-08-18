@@ -169,7 +169,7 @@ void apt::bootstrap(snap_child * snap)
  */
 void apt::on_process_watch(QDomDocument doc)
 {
-    SNAP_LOG_TRACE("apt::on_process_watch(): processing");
+    SNAP_LOG_DEBUG("apt::on_process_watch(): processing");
 
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "apt"));

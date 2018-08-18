@@ -179,7 +179,7 @@ void network::on_init()
  */
 void network::on_process_watch(QDomDocument doc)
 {
-    SNAP_LOG_TRACE("network::on_process_watch(): processing");
+    SNAP_LOG_DEBUG("network::on_process_watch(): processing");
 
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "network"));

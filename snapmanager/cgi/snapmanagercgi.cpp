@@ -1795,6 +1795,8 @@ void manager_cgi::generate_self_refresh_plugin_entry( QDomDocument & doc, QDomEl
 void manager_cgi::generate_plugin_entry( snap_manager::status_t status, QDomDocument & doc, QDomElement & table )
 {
     QString const & plugin_name(status.get_plugin_name());
+    QString const & field_name(status.get_field_name());
+
     snap::plugins::plugin * p(snap::plugins::get_plugin(plugin_name));
 
     // output/table/tr
@@ -1836,12 +1838,12 @@ void manager_cgi::generate_plugin_entry( snap_manager::status_t status, QDomDocu
     {
         tr.setAttribute("class", tr_classes.join(" "));
     }
+    tr.setAttribute("id", QString("%1::%2").arg(plugin_name).arg(field_name));
 
     // output/table/tr/td[2]
     QDomElement td(doc.createElement("td"));
     tr.appendChild(td);
 
-    QString const & field_name(status.get_field_name());
     QDomText text(doc.createTextNode(field_name));
     td.appendChild(text);
 

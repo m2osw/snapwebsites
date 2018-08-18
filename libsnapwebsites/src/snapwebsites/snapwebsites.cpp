@@ -2150,7 +2150,7 @@ messenger::messenger(server * s, std::string const & addr, int port, bool const 
  * This function is called whenever the snapcommunicator received and
  * decided to forward a message to us.
  *
- * \param[in] message  The message we just recieved.
+ * \param[in] message  The message we just received.
  */
 void messenger::process_message(snap_communicator_message const & message)
 {

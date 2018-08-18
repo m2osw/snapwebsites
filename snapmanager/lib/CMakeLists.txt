@@ -52,15 +52,17 @@ include_directories(
 )
 
 set( HEADERS
-    snapmanager/form.h                                      # Helper classes to generate forms
-    snapmanager/manager.h                                   # Implements the core of the watchdog server
-    snapmanager/plugin_base.h                               # Base for all plugins to add a few direct callbacks
-    snapmanager/server_status.h                             # Handle status data
-    snapmanager/status.h                                    # Hanele one specific status
+    snapmanager/bundle.h                        # Helper class to load bundle XML files
+    snapmanager/form.h                          # Helper classes to generate forms
+    snapmanager/manager.h                       # Implements the core of the watchdog server
+    snapmanager/plugin_base.h                   # Base for all plugins to add a few direct callbacks
+    snapmanager/server_status.h                 # Handle status data
+    snapmanager/status.h                        # Hanele one specific status
 )
 
 add_library( ${PROJECT_NAME} SHARED
     ${HEADERS}
+    bundle.cpp                                  # Helper class to load bundle XML files
     form.cpp                                    # Helper classes to generate forms
     installer.cpp                               # Code used to install bundles on a server
     manager.cpp                                 # Implements the core of the watchdog server

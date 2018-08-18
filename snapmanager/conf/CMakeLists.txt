@@ -57,16 +57,14 @@ install(
 )
 
 #
-# WARNING: we use a file(INSTALL ...) on top of an install(FILES ...)
+# WARNING: we use a configure_file(...) on top of an install(FILES ...)
 #          so we can access the file in our SnapXmlLint.cmake without
 #          any additional magic
 #
-file(
-    INSTALL
-        bundles.xsd
-
-    DESTINATION
-        ${SNAP_COMMON_DIR}/xsd
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/bundles.xsd
+    ${SNAP_COMMON_DIR}/xsd/bundles.xsd
+    COPYONLY
 )
 
 

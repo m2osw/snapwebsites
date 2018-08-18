@@ -191,13 +191,13 @@ void widget_text::generate(QDomElement parent)
 
 widget_select::widget_select(QString const & label
                         , QString const & name
-                        , QStringList const & initial_value
-                        , QString const & default_value
+                        , QStringList const & options
+                        , QString const & initial_value
                         , QString const & description)
     : widget(name)
     , f_label(label)
-    , f_valueList(initial_value)
-    , f_defaultValue(default_value)
+    , f_options(options)
+    , f_initial_value(initial_value)
     , f_description(description)
 {
 }
@@ -219,11 +219,11 @@ void widget_select::generate(QDomElement parent)
     QDomElement select(doc.createElement("select"));
     select.setAttribute( "name", f_name                 );
     select.setAttribute( "form", parent.attribute("id") );
-    for( QString const& item : f_valueList )
+    for( QString const& item : f_options )
     {
         QDomElement option ( doc.createElement("option")  );
         option.setAttribute( "value", item );
-        if( item == f_defaultValue )
+        if( item == f_initial_value )
         {
             option.setAttribute( "selected", "selected" );
         }

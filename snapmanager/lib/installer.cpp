@@ -79,6 +79,9 @@ void file_descriptor_deleter(int * fd)
 
 
 
+
+
+
 /** \brief Check whether a package is installed.
  *
  * This function runs a query to determine whether a named page
@@ -114,6 +117,7 @@ int manager::package_status(std::string const & package_name, std::string & outp
     int const r(p.run());
 
     // the output is saved so we can send it to the user and log it...
+    //
     if(r == 0)
     {
         output = p.get_output(true).toUtf8().data();

@@ -776,7 +776,7 @@ void processes::bootstrap(snap_child * snap)
  */
 void processes::on_process_watch(QDomDocument doc)
 {
-    SNAP_LOG_TRACE("processes::on_process_watch(): processing");
+    SNAP_LOG_DEBUG("processes::on_process_watch(): processing");
 
     load_processes(f_snap->get_server_parameter(get_name(name_t::SNAP_NAME_WATCHDOG_PROCESSES_PATH)));
 

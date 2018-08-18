@@ -18,7 +18,7 @@
     <p>Once installed you must enter a few parameters to ensure that
     the watchdog emails reach you. You also want to test that it works
     to make sure that the watchdog is indeed going to be useful. The
-    Watchdog tab will include a "Test Now!" button.</p>
+    Watchdog tab will include a "test_mta" field for that purpose.</p>
   </description>
   <affected-services>snapmanagerdaemon</affected-services>
   <packages>snapwatchdog</packages>

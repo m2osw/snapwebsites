@@ -43,6 +43,7 @@
     </field>
   </fields>
   <packages>snapmta</packages>
+  <conflicts>mailserver</conflicts>
   <postinst>
     ################################################################################
     # Setup the msmtprc file from the user supplied parameters

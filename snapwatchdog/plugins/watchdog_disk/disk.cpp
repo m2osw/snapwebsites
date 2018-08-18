@@ -302,7 +302,7 @@ void disk::bootstrap(snap_child * snap)
  */
 void disk::on_process_watch(QDomDocument doc)
 {
-    SNAP_LOG_TRACE("disk::on_process_watch(): processing");
+    SNAP_LOG_DEBUG("disk::on_process_watch(): processing");
 
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "disk"));

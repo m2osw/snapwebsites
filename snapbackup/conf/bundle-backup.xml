@@ -23,7 +23,8 @@
   <fields>
     <field name="host" type="input">
       <label>Cassandra Host Address</label>
-      <description>Enter one of the host IP addresses (or DNS names) of the Cassandra server cluster.</description>
+      <description>Enter one of the host IP addresses (or DNS names) of
+        the Cassandra server cluster.</description>
     </field>
   </fields>
   <packages>snapbackup,libsnapbackup</packages>

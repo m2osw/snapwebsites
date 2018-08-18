@@ -2736,7 +2736,7 @@ snap_child::child_messenger::child_messenger(snap_child * s, std::string const &
  * This function is called whenever the snapcommunicator received and
  * decided to forward a message to us.
  *
- * \param[in] message  The message we just recieved.
+ * \param[in] message  The message we just received.
  */
 void snap_child::child_messenger::process_message(snap_communicator_message const & message)
 {

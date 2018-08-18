@@ -46,9 +46,10 @@ set( PLUGIN_INSTALL_DIR lib/snapwebsites/manager_plugins )
 ################################################################################
 # Keep the plugins in alphabetical order for ease of management
 #
-add_subdirectory(cassandra)
 add_subdirectory(apache2)
 add_subdirectory(apt)
+add_subdirectory(bundles)
+add_subdirectory(cassandra)
 add_subdirectory(dns)
 add_subdirectory(self)
 add_subdirectory(ssh)

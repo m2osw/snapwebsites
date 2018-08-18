@@ -455,7 +455,7 @@ snapwebsites.ePaymentFacilityBase.prototype.serverAccessComplete = function(resu
  * bounced, etc.);
  * \li paid -- the payment was confirmed, now we can ship (if shipping
  * or equivalent there is);
- * \li completed -- the shipping was done, or the payment was recieved
+ * \li completed -- the shipping was done, or the payment was received
  * and there was no shipping.
  *
  * Note: We mention shipping in the table before because in most cases

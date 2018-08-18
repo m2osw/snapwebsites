@@ -179,7 +179,7 @@ void firewall::bootstrap(snap_child * snap)
  */
 void firewall::on_process_watch(QDomDocument doc)
 {
-    SNAP_LOG_TRACE("firewall::on_process_watch(): processing");
+    SNAP_LOG_DEBUG("firewall::on_process_watch(): processing");
 
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "firewall"));

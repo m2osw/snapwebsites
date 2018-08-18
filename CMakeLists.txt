@@ -98,15 +98,15 @@ SnapGetVersion( SNAPWEBSITES ${CMAKE_CURRENT_SOURCE_DIR} )
 ##
 ##      here is an example to validate the content.xml of the attachment
 ##      plugin (how it used to look like before I reordered the
-##      add_subdirectory() so the file(INSTALL ...) happens first)
+##      add_subdirectory() so the configure_file(...) happens first)
 ##
 ##      snap_validate_xml(
 ##            content.xml
 ##            ${snapwebsites_plugins_src_SOURCE_DIR}/content/content.dtd
 ##      )
 ##
-##   2. use the file(INSTALL ...) to a common destination directory that the
-##      snap_validate_xml() function can automatically use; the following
+##   2. use the configure_file(...) to a common destination directory that
+##      the snap_validate_xml() function can automatically use; the following
 ##      is that common directory; note that we place it in our binary
 ##      directory (this is not a distribution directory)
 ##

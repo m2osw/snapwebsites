@@ -104,16 +104,16 @@ public:
 
                         widget_select(QString const & label
                                    , QString const & name
-                                   , QStringList const & initial_value
-                                   , QString const & default_value
+                                   , QStringList const & options
+                                   , QString const & initial_value
                                    , QString const & description);
 
     virtual void        generate(QDomElement parent) override;
 
 private:
     QString                 f_label = QString();
-    snap::snap_string_list  f_valueList = snap::snap_string_list();
-    QString                 f_defaultValue = QString();
+    snap::snap_string_list  f_options = snap::snap_string_list();
+    QString                 f_initial_value = QString();
     QString                 f_description = QString();
 };
 

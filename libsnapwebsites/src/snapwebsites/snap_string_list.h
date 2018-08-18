@@ -51,6 +51,20 @@ public:
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline snap_string_list(std::initializer_list<QString> args) : QStringList(args) { }
 #endif
+    inline snap_string_list(const std::vector<QString> &l)
+    {
+        for(auto & s : l)
+        {
+            append(s);
+        }
+    }
+    inline snap_string_list(const std::vector<std::string> &l)
+    {
+        for(auto & s : l)
+        {
+            append(QString::fromUtf8(s.c_str()));
+        }
+    }
 
     const QString & at(int i) const
     {
@@ -77,6 +91,30 @@ public:
             throw snap_string_list_exception_out_of_range("index is out of range for the at() function");
         }
         return QStringList::operator[](i);
+    }
+
+    operator std::vector<QString> () const
+    {
+        std::vector<QString> result;
+
+        for(auto const & s : *this)
+        {
+            result.push_back(s);
+        }
+
+        return result;
+    }
+
+    operator std::vector<std::string> () const
+    {
+        std::vector<std::string> result;
+
+        for(auto const & s : *this)
+        {
+            result.push_back(s.toUtf8().data());
+        }
+
+        return result;
     }
 
     // we should add all the functions that deal with a bare index...

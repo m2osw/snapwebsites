@@ -94,16 +94,14 @@ install(
 )
 
 #
-# WARNING: we use a file(INSTALL ...) on top of an install(FILES ...)
+# WARNING: we use a configure_file(...) on top of an install(FILES ...)
 #          so we can access the file in our SnapXmlLint.cmake without
 #          any additional magic
 #
-file(
-    INSTALL
-        snap-form.dtd
-
-    DESTINATION
-        ${SNAP_COMMON_DIR}/dtd
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/snap-form.dtd
+    ${SNAP_COMMON_DIR}/dtd/snap-form.dtd
+    COPYONLY
 )
 
 install(

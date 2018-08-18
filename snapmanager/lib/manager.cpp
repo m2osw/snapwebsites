@@ -32,13 +32,18 @@
 //
 #include <libaddr/addr_parser.h>
 
-// C lib
+// Qt lib
 //
-#include <signal.h>
+#include <QFile>
 
 // C++ lib
 //
 #include <sstream>
+
+// C lib
+//
+#include <signal.h>
+
 
 // last entry
 //
@@ -513,9 +518,9 @@ std::vector<std::string> manager::read_filenames(std::string const & pattern) co
         snap::glob_dir files;
         files.set_path( pattern, GLOB_NOESCAPE );
         files.enumerate_glob( [&]( QString the_path )
-        {
-            result.push_back(the_path.toUtf8().data());
-        });
+            {
+                result.push_back(the_path.toUtf8().data());
+            });
     }
     catch( std::exception const & x)
     {
@@ -564,6 +569,11 @@ int manager::get_signal_port() const
 
 snap::snap_string_list const & manager::get_snapmanager_frontend() const
 {
+    // TODO: implement this one by reading the list of frontend names
+    //       from "snapmanager.conf" config file in variable named
+    //       "snapmanager_frontend" -- it is used in snapmanagerdaemon
+    //       but I don't think it works 100% yet
+    //
     static snap::snap_string_list empty;
     return empty;
 }
@@ -586,6 +596,117 @@ std::vector<std::string> manager::get_list_of_bundles() const
     std::string pattern(f_bundles_path.toUtf8().data());
     pattern += "/bundle-*.xml";
     return read_filenames(pattern);
+}
+
+
+bundle::vector_t manager::load_bundles()
+{
+    bundle::vector_t result;
+
+    // get the list of bundle filenames
+    //
+    std::vector<std::string> bundle_list(get_list_of_bundles());
+
+    // load  each bundle XML file and parse it
+    //
+    for(auto const & filename : bundle_list)
+    {
+        QDomDocument bundle_xml;
+        QFile input(QString::fromUtf8(filename.c_str()));
+        if(input.open(QIODevice::ReadOnly)
+        && bundle_xml.setContent(&input, false))
+        {
+            bundle::pointer_t b(std::make_shared<bundle>(shared_from_this()));
+            if(b->init(bundle_xml))
+            {
+                // bundle could be loaded successfully
+                //
+                auto it(std::find_if(
+                          result.begin()
+                        , result.end()
+                        , [&b](auto const & eb)
+                        {
+                            return eb->get_name() == b->get_name();
+                        }));
+                if(it != result.end())
+                {
+                    SNAP_LOG_ERROR("bundle named \"")
+                                  (b->get_name())
+                                  ("\" found twice, the second time was in \"")
+                                  (filename)
+                                  ("\".");
+                    return bundle::vector_t();
+                }
+                else
+                {
+                    result.push_back(b);
+                }
+            }
+        }
+        else
+        {
+            // got an error loading the XML file, possibly because a
+            // tag is not closed correctly, etc.
+            //
+            SNAP_LOG_ERROR("could not load bundle file \"")
+                          (filename)
+                          ("\". Check the file with xmllint and try again.");
+            return bundle::vector_t();
+        }
+    }
+
+    for(auto b : result)
+    {
+        // transform prereq names to pointers
+        //
+        bundle::string_set_t const & prereq(b->get_prereq());
+        for(auto p : prereq)
+        {
+            auto it(std::find_if(
+                      result.begin()
+                    , result.end()
+                    , [&p](auto const & r)
+                    {
+                        return p == r->get_name();
+                    }));
+            if(it == result.end())
+            {
+                // this is not acceptable, prevent all bundles from being
+                // added so the programmer notices quickly
+                //
+                SNAP_LOG_ERROR("missing prereq bundle \"")(p)("\".");
+                return bundle::vector_t();
+            }
+            b->add_prereq_bundle(*it);
+            (*it)->add_locked_by_bundle(b);
+        }
+
+        // transform conflicts names to pointers
+        //
+        bundle::string_set_t const & conflicts(b->get_conflicts());
+        for(auto c : conflicts)
+        {
+            auto it(std::find_if(
+                      result.begin()
+                    , result.end()
+                    , [&c](auto const & r)
+                    {
+                        return c == r->get_name();
+                    }));
+            if(it == result.end())
+            {
+                // this is not acceptable, prevent all bundles from being
+                // added so the programmer notices quickly
+                //
+                SNAP_LOG_ERROR("missing conflicts bundle \"")(c)("\".");
+                return bundle::vector_t();
+            }
+            b->add_conflicts_bundle(*it);
+            (*it)->add_conflicts_bundle(b);
+        }
+    }
+
+    return result;
 }
 
 

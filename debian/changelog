@@ -1,7 +1,31 @@
+snapwebsites (1.5.136.0~xenial) xenial; urgency=high
+
+  * Changed the file(INSTALL ...) with configure_file(...) so it gets
+    automatically updated any time the source file changes.
+  * Added a <conflicts> tag for bundles.
+  * Added constructors/casts to go from and to snap_string_list
+    (a.k.a. QStringList) and std::vector<> of std::string or QString objects.
+  * Changed the "hide" flag using an attribute on the <bundle> tag instead
+    of a '!' in front of a package name (which did not make sense.)
+  * Added an <expected> tag to mark bundles we hope you will always install.
+  * Added <a> tag and "id", "class", "href" attributes to the html type.
+  * Added an id to the <tr> of each field so we can link to them.
+  * Changed the <prereq> in a list of bundle names, no script.
+  * Changed the <label> content to "html" instead of plain text.
+  * Added a new class named "bundle" which manages the XML bundle files,
+    corresponding package status, and links (conflicts/prereqs).
+  * In the form, renamed the list of options and initial value fields
+    and function params.
+  * Added a separate bundles plugin, that way bundles are now in a separate
+    tab (separate from the "self" entries). Much cleaner!
+  * Changed log level of snapwatchdog plugin to DEBUG for the entry message.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 16 Aug 2018 01:56:58 -0700
+
 snapwebsites (1.5.135.1~xenial) xenial; urgency=high
 
   * Quick fix to the bundles.xsd file format.
-  * Added a prereq tag in bundle-snaplistd.xml.
+  * Added a <prereq> tag in bundle-snaplistd.xml.
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 16 Aug 2018 01:56:58 -0700
 

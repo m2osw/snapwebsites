@@ -191,7 +191,7 @@ void log::bootstrap(snap_child * snap)
  */
 void log::on_process_watch(QDomDocument doc)
 {
-    SNAP_LOG_TRACE("log::on_process_watch(): processing");
+    SNAP_LOG_DEBUG("log::on_process_watch(): processing");
 
     QString const log_path(f_snap->get_server_parameter(watchdog::get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_LOG_DEFINITIONS_PATH)));
     watchdog_log_t::vector_t log_defs(watchdog_log_t::load(log_path));

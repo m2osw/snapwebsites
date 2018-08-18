@@ -8,17 +8,19 @@
   <name>snaplog</name>
   <description>
     <p>
-      This bundle installs the 'snaplog' package. It expects the mysql
-      bundle to be installed already. Since `snapmanager` does not have a
-      prereq-managment system, you have to make sure the MySQL bundle is already
-      installed on this system.
+      This bundle installs the 'snaplog' package. It expects the
+      <a href="#bundles::mysql">mysql</a>
+      bundle to already be installed. snapmanager prevents you from installing
+      this bundle until the pre-requisite is installed.
     </p>
     <p>
-      <b>NOTE:</b> The MySQL Host Address is fixed to 127.0.0.1. Therefore, you must
-      install the snaplistd bundle on the same machine.
+      <b>NOTE:</b> At this time, the MySQL Host Address is fixed to
+      127.0.0.1. Therefore, you must install the 'snaplog' bundle
+      on the same machine as MySQL.
     </p>
   </description>
   <packages>snaplog</packages>
+  <prereq>mysql</prereq>
   <postinst>
     # Create the snaplog user and snaplog database
     #

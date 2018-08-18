@@ -4,7 +4,7 @@
   to verify your changes (change the == with two dashes):
     xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-firewall.xml
 -->
-<bundle>
+<bundle hide="hide">
   <name>firewall</name>
   <description>
     <p>The snapfirewall daemon allows enforcing strong firewall
@@ -23,34 +23,46 @@
     following questions, you do not have to enter any IP
     addresses that your VPN generates.</p>
   </description>
+  <expected/>
   <fields>
     <field name="public_ip" type="input">
       <label>This Computer Public IP</label>
-      <description>Enter the IP address of this computer, the one facing the Internet.</description>
+      <description>Enter the IP address of this computer, the one facing
+        the Internet.</description>
     </field>
     <field name="public_interface" type="input">
       <label>The Interface This Computer uses for Public IP</label>
-      <description>Enter the name of the interface (such as 'eth0') that this computer uses for his Public IP address.</description>
+      <description>Enter the name of the interface (such as 'eth0') that
+        this computer uses for his Public IP address.</description>
     </field>
     <field name="private_ip" type="input">
       <label>This Computer Private IP</label>
-      <description>Enter the private IP address of this computer, the one used to communicate with your other private computers.</description>
+      <description>Enter the private IP address of this computer, the one
+        used to communicate with your other private computers.</description>
     </field>
     <field name="private_interface" type="input">
       <label>The Interface This Computer uses for Private IP</label>
-      <description>Enter the name of the interface (such as 'eth1') that this computer uses for his Private IP address.</description>
+      <description>Enter the name of the interface (such as 'eth1') that
+        this computer uses for his Private IP address.</description>
     </field>
     <field name="admin_ips" type="input">
       <label>List of Administrator IPs</label>
-      <description>Enter the <strong>space separated</strong> list of IPs that your administrators use to access this computer.</description>
+      <description>Enter the <strong>space separated</strong> list of IPs
+        that your administrators use to access this computer.</description>
     </field>
     <field name="private_network_ips" type="input">
       <label>Private Network IPs</label>
-      <description>Enter the <strong>space separated</strong> list of IPs of all the computers that may access this computer so we can open the corresponding ports in the firewall.</description>
+      <description>Enter the <strong>space separated</strong> list of IPs
+        of all the computers that may access this computer so we can open
+        the corresponding ports in the firewall.</description>
     </field>
     <field name="secure_ip" type="input">
       <label>Secure IP</label>
-      <description>Enter the secure IP of this computer if you have one. This is most often the <code>tun0</code> IP address created by OpenVPN. An address such as 10.8.0.34. This field can remain empty if you are not using OpenVPN or if you want to install the firewall before OpenVPN.</description>
+      <description>Enter the secure IP of this computer if you have one.
+        This is most often the <code>tun0</code> IP address created by
+        OpenVPN. An address such as 10.8.0.34. This field can remain
+        empty if you are not using OpenVPN or if you want to install
+        the firewall before OpenVPN.</description>
     </field>
   </fields>
   <affected-services>snapmanagerdaemon</affected-services>

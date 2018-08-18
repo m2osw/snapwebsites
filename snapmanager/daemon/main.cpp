@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
         snap::plugins::g_next_register_name = "server";
         snap::plugins::g_next_register_filename = "snapmanagercgi.cpp";
 
-        snap_manager::manager_daemon::pointer_t daemon(new snap_manager::manager_daemon);
+        snap_manager::manager_daemon::pointer_t daemon(std::make_shared<snap_manager::manager_daemon>());
 
         snap::plugins::g_next_register_name.clear();
         snap::plugins::g_next_register_filename.clear();

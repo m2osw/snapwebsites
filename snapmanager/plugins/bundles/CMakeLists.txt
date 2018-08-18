@@ -1,15 +1,16 @@
 #
 # File:
-#      snapbase/dtd/CMakeLists.txt
+#      snapmanager/plugins/bundles/CMakeLists.txt
 #
 # Description:
-#      Install configuration files and samples.
+#      Manage the bundles to install and uninstall software via the
+#      snapmanager.cgi interface using the snapmanagerdaemon environment.
 #
 # Documentation:
 #      See the CMake documentation.
 #
 # License:
-#      Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
+#      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
 #      https://snapwebsites.org/
 #      contact@m2osw.com
@@ -29,28 +30,49 @@
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+project(plugin_bundles)
 
-#################################################################################
-## Install DTD file.
-##
+find_package( Qt5Core REQUIRED )
+find_package( Qt5Xml  REQUIRED )
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
+    bundles.qrc
+)
+
+
+
+add_library(bundles SHARED
+    bundles.cpp
+    ${SNAP_MANAGER_MOC_CXX}
+    ${SNAP_MANAGER_RESOURCES_RCC}
+)
+
+target_link_libraries(bundles
+    snapmanager
+    ${QT_LIBRARIES}
+    ${SNAPWEBSITES_LIBRARIES}
+)
+
+install(
+    TARGETS
+        bundles
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
+)
+
+file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+
 install(
     FILES
-        simplified-xslt20.dtd
+        ${HEADER_FILES}
 
     DESTINATION
-        share/snapwebsites/dtd
+        include/snapmanager/plugins/bundles
 )
-
-#
-# WARNING: we use a configure_file(...) instead of an install(FILES ...)
-#          so we can access the file in our SnapXmlLint.cmake without
-#          any additional magic
-#
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/simplified-xslt20.dtd
-    ${SNAP_COMMON_DIR}/dtd/simplified-xslt20.dtd
-    COPYONLY
-)
-
 
 # vim: ts=4 sw=4 et

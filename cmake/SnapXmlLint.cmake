@@ -132,7 +132,7 @@ function( snap_validate_xml XML_FILE DTD_FILE )
                     # when defined, check in the SNAP_COMMON_DIR
                     #
                     # this is necessary when we have XSD/DTD files installed
-                    # within the same project, see the file(INSTALL ...)
+                    # within the same project, see the configure_file(...)
                     # constructs for more details.
                     #
                     if( EXISTS "${SNAP_COMMON_DIR}/xsd/${DTD_BASEFILE}.xsd" )
@@ -172,7 +172,7 @@ function( snap_validate_xml XML_FILE DTD_FILE )
                 # when defined, check in the SNAP_COMMON_DIR
                 #
                 # this is necessary when we have XSD files installed
-                # within the same project, see the file(INSTALL ...)
+                # within the same project, see the configure_file(...)
                 # constructs for more details.
                 #
                 if( EXISTS "${SNAP_COMMON_DIR}/xsd/${DTD_BASEFILE}" )
@@ -197,7 +197,7 @@ function( snap_validate_xml XML_FILE DTD_FILE )
                 # when defined, check in the SNAP_COMMON_DIR
                 #
                 # this is necessary when we have XSD/DTD files installed
-                # within the same project, see the file(INSTALL ...)
+                # within the same project, see the configure_file(...)
                 # constructs for more details.
                 #
                 if( EXISTS "${SNAP_COMMON_DIR}/dtd/${DTD_BASEFILE}" )
@@ -216,7 +216,7 @@ function( snap_validate_xml XML_FILE DTD_FILE )
     # verify that we indeed found the ${DTD_FILE}
     #
     if( NOT EXISTS ${DTD_PATH} )
-        message( FATAL_ERROR "DTD_PATH: '${DTD_FILE}' tested as '${DTD_PATH}' was not found on the system! Please install or use file(INSTALL ...) if from the same project and try again." )
+        message( FATAL_ERROR "DTD_PATH: '${DTD_FILE}' tested as '${DTD_PATH}' was not found on the system! Please install or use configure_file(...) if from the same project and try again." )
     endif()
 
     get_filename_component( FULL_XML_PATH ${XML_FILE} ABSOLUTE )

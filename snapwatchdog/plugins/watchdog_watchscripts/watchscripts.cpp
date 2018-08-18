@@ -270,7 +270,7 @@ void watchscripts::bootstrap(snap_child * snap)
  */
 void watchscripts::on_process_watch(QDomDocument doc)
 {
-    SNAP_LOG_TRACE("watchscripts::on_process_watch(): processing");
+    SNAP_LOG_DEBUG("watchscripts::on_process_watch(): processing");
 
     QString const scripts_path([&]()
         {

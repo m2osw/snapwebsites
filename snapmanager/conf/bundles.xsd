@@ -11,8 +11,11 @@
       have to create one file per bundle. We do not currently offer a
       way to merge more than one bundle within one file.
 
-      A <bundle> includes a <name> and a <description> (both those tags are
-      mandatory.)
+      A <bundle> includes a <name> and a <description> (these two tags are
+      mandatory.) Optionally, it can have the hide attribute which is set
+      to hide (i.e. <bundle hide="hide">...</bundle>) meaning that once this
+      bundle was installed, it gets hidden. We do that with the snapfirewall
+      bundle so people can't just get rid of the firewall.
 
       Optionally, it includes the <packages>, <preinst>, <postinst>, <prerm>,
       <postrm>, <fields> tags.
@@ -37,9 +40,48 @@
           the RELOADCONFIG after installing or uninstalling this bundle.
 
         <bundle>
+        <expected>  [optional]
+          This tag can be used to mark this bundle as "expected", meaning
+          that we expect the administrators to install this bundle when
+          setting up a computer, whatever the computer.
+
+          See the bundle-snapfirewall.xml for an example.
+
+        <bundle>
         <packages>  [optional]
           A comma separated list of package names. These are the packages
           installed and managed by this bundle.
+
+        <bundle>
+        <prereq>   [optional]
+          A comma separate list of bundle names defining bundle
+          dependencies.
+
+          A set of pre-requisites to install before this bundle can be
+          installed. In the current implementation, a bundle can't be
+          installed until all of its prereq were installed. Similarly,
+          you can't uninstall a bundle if another has a prereq against
+          it (i.e. if A needs B, you can't uninstall B as long as A
+          is installed.)
+
+          Once we have SNAP-644 implemented, we will add prereq to our
+          batch in reverse order so installing A which requires B will
+          first install B. If B requires C, then C gets installed first,
+          then B, then A.
+
+        <bundle>
+        <conflicts>  [optional]
+          A comma separated list of bundles in conflict with this one.
+          Some bundles just don't work together. For example our snapmta
+          and postfix bundles both install a /usr/sbin/sendmail tool
+          which are not compatible. They are in conflict for at least
+          that one reason. Also they both offer the same functionality
+          so you should really only install one or the other.
+
+          The code is smart enough to find conflicts both ways. So if you
+          mark that bundle postfix is in conflict with snapmta only in
+          the snapmta bundle, the system will know that postfix is also
+          in conflict with snapmta.
 
         <bundle>
         <preinst>  [optional]
@@ -106,7 +148,7 @@
         <field name="..." type="...">  [optional]
           Declare one field to be shown to the administrator so he can
           enter some data that the installation scripts will use to
-          finish up the installation properly.
+          run a valid installation.
 
           The name should be all lower case, following this regular
           expression: '[a-z_][a-z0-9_]*'.
@@ -114,14 +156,13 @@
           The type is one of the supported widget types:
 
             . input  --  a simple text input box (one line)
-            . description  --  this one is allowed but should probably not
-                               be used, if you want to add a description,
-                               use the main <description> tag instead.
+            . select  --  define a dropdown with various values to select
+                          from (see the <options> tag)
 
         <bundle>
         <fields>
         <field>
-        <label>  [optional]
+        <label>  [required]
           The label to use with this field. It is made optional in the
           XSD file because some widgets do not make use of the label
           and for those not having it is fine. Widgets that expect a
@@ -130,9 +171,27 @@
         <bundle>
         <fields>
         <field>
-        <description>  [optional]
+        <description>  [required]
           The description for this specific field. You probably always
           should add a description even though it is optional.
+
+        <bundle>
+        <fields>
+        <field>
+        <initial-value>  [optional]
+          The initial value of this field. In most cases, this is left
+          blank.
+
+        <bundle>
+        <fields>
+        <field>
+        <options>  [optional]
+          The list of options if you set to type of this field type to
+          "select". Note: so far we did not have a use case so it may
+          not work right (i.e. it is still untested.)
+
+          Note that in itself this tag is optional, but if the field type
+          is "select" then this field is considered mandatory.
 
 The following was first defined in snapserver.conf, but we now make use
 of the snapmanagerdaemon status information to determine the type of
@@ -204,6 +263,18 @@ a server.
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="name-list">
+    <xs:annotation>
+      <xs:documentation>
+        A list of valid names composed of letters, digits and underscores.
+        It can't start with a digit. Each name is separated by a comma.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z_][a-zA-Z0-9_]*(,[a-zA-Z_][a-zA-Z0-9_]*)*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="field_type">
     <xs:annotation>
       <xs:documentation>
@@ -216,17 +287,35 @@ a server.
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="hide">
+    <xs:annotation>
+      <xs:documentation>
+        Whether a bundle should be hidden once installed. This
+        prevents the uninstallation (And also info about what
+        was installed...) By default, when not specified, the
+        bundle stays visible.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="hide"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="html" mixed="true">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="a"/>
+      <xs:element ref="b"/>
+      <xs:element ref="code"/>
+      <xs:element ref="div"/>
       <xs:element ref="em"/>
       <xs:element ref="i"/>
-      <xs:element ref="strong"/>
-      <xs:element ref="b"/>
-      <xs:element ref="u"/>
       <xs:element ref="p"/>
-      <xs:element ref="div"/>
-      <xs:element ref="code"/>
+      <xs:element ref="strong"/>
+      <xs:element ref="u"/>
     </xs:choice>
+    <xs:attribute name="class" type="xs:string"/>
+    <xs:attribute name="id" type="xs:string"/>
+    <xs:attribute name="href" type="xs:string"/>
   </xs:complexType>
 
   <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -242,14 +331,15 @@ a server.
     </xs:documentation>
   </xs:annotation>
 
+  <xs:element name="a" type="html"/>
+  <xs:element name="b" type="html"/>
+  <xs:element name="code" type="html"/>
+  <xs:element name="div" type="html"/>
   <xs:element name="em" type="html"/>
   <xs:element name="i" type="html"/>
-  <xs:element name="strong" type="html"/>
-  <xs:element name="b" type="html"/>
-  <xs:element name="u" type="html"/>
   <xs:element name="p" type="html"/>
-  <xs:element name="div" type="html"/>
-  <xs:element name="code" type="html"/>
+  <xs:element name="strong" type="html"/>
+  <xs:element name="u" type="html"/>
 
   <xs:annotation>
     <xs:documentation>
@@ -259,17 +349,23 @@ a server.
 
   <xs:element name="name" type="name"/>
 
+  <xs:element name="initial-value" type="html"/>
+
   <xs:element name="description" type="html"/>
 
   <xs:element name="affected-services" type="xs:string"/>
 
   <xs:element name="packages" type="xs:string"/>
 
-  <xs:element name="label" type="xs:string"/>
+  <xs:element name="label" type="html"/>
+
+  <xs:element name="options" type="xs:string"/>
 
   <xs:element name="is-installed" type="xs:string"/>
 
-  <xs:element name="prereq" type="xs:string"/>
+  <xs:element name="prereq" type="name-list"/>
+
+  <xs:element name="conflicts" type="name-list"/>
 
   <xs:element name="preinst" type="xs:string"/>
 
@@ -282,8 +378,12 @@ a server.
   <xs:element name="field">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element ref="label"/>
-        <xs:element ref="description"/>
+        <!-- required fields -->
+        <xs:element ref="label" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="description" minOccurs="1" maxOccurs="1"/>
+        <!-- optional fields -->
+        <xs:element ref="initial-value" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="options" minOccurs="0" maxOccurs="1"/>
       </xs:choice>
       <xs:attribute name="name" type="name" use="required"/>
       <xs:attribute name="type" type="field_type"/>
@@ -298,6 +398,11 @@ a server.
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="expected">
+    <!-- an empty element -->
+    <xs:complexType/>
+  </xs:element>
+
   <xs:element name="bundle">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -309,12 +414,15 @@ a server.
         <xs:element ref="packages" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="is-installed" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="prereq" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="conflicts" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="preinst" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="postinst" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="prerm" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="postrm" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="fields" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="expected" minOccurs="0" maxOccurs="1"/>
       </xs:choice>
+      <xs:attribute name="hide" type="hide"/>
     </xs:complexType>
   </xs:element>
 

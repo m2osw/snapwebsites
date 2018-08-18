@@ -442,7 +442,7 @@ bool apt::display_value ( QDomElement parent
  * \param[in] new_value  The new value to save in that field.
  * \param[in] old_or_installation_value  The old value, just in case
  *            (usually ignored,) or the installation values (only
- *            for the self plugin that manages bundles.)
+ *            for the bundles plugin that manages bundles.)
  *
  * \return true if field_name was handled (even if it failed).
  */

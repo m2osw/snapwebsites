@@ -188,7 +188,7 @@ void list::bootstrap(snap_child * snap)
  */
 void list::on_process_watch(QDomDocument doc)
 {
-    SNAP_LOG_TRACE("list::on_process_watch(): processing");
+    SNAP_LOG_DEBUG("list::on_process_watch(): processing");
 
     QDomElement parent(snap_dom::create_element(doc, "watchdog"));
     QDomElement e(snap_dom::create_element(parent, "list"));

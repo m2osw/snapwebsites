@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 
         // First try with a SIGINT which is a soft interruption; it will
         // not hurt whatever the process is currently doing and as soon as
-        // possible it will be asked to stop as if it recieved the STOP
+        // possible it will be asked to stop as if it received the STOP
         // command in a message
         //
         {
