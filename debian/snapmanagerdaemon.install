@@ -4,6 +4,7 @@ snapmanager/scripts/snapchangeloglevel                                  usr/bin/
 snapmanager/scripts/snaprestartcassandra                                usr/bin/
 debian/tmp/usr/lib/snapwebsites/manager_plugins/libapache2.so           usr/lib/snapwebsites/manager_plugins/
 debian/tmp/usr/lib/snapwebsites/manager_plugins/libapt.so               usr/lib/snapwebsites/manager_plugins/
+debian/tmp/usr/lib/snapwebsites/manager_plugins/libbundles.so           usr/lib/snapwebsites/manager_plugins/
 debian/tmp/usr/lib/snapwebsites/manager_plugins/libcassandra.so         usr/lib/snapwebsites/manager_plugins/
 debian/tmp/usr/lib/snapwebsites/manager_plugins/libdns.so               usr/lib/snapwebsites/manager_plugins/
 debian/tmp/usr/lib/snapwebsites/manager_plugins/libself.so              usr/lib/snapwebsites/manager_plugins/

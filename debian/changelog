@@ -1,3 +1,9 @@
+snapwebsites (1.5.138.1~xenial) xenial; urgency=high
+
+  * Added the new plugin to the .install
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 18 Aug 2018 02:14:24 -0700
+
 snapwebsites (1.5.138.0~xenial) xenial; urgency=high
 
   * Fixed the installation of the watch scripts as PROGRAMS instead of FILES.
