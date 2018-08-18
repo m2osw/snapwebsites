@@ -99,7 +99,7 @@ install(
 ## Scripts to check on various firewall health through our snapwatchdog server
 ##
 install(
-    FILES
+    PROGRAMS
         watch_firewall_fail2ban_client
 
     DESTINATION

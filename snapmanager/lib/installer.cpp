@@ -381,7 +381,7 @@ void manager::reset_aptcheck()
     // also make sure that the bundle-package-status directory content gets
     // regenerated (i.e. output of the dpkg-query calls)
     //
-    snap::glob_dir status(f_data_path + "/bundle-package-status/*.status");
+    snap::glob_dir status(f_data_path + "/bundle-package-status/*.status", GLOB_NOSORT | GLOB_NOESCAPE, true);
     status.enumerate_glob([](std::string const & path)
                     {
                         unlink(path.c_str());

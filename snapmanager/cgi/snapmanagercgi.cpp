@@ -838,102 +838,102 @@ int manager_cgi::is_logged_in(std::string & request_method)
     int64_t const session_duration(3 * 24 * 60 * 60);
 
     auto login_form = [&](std::string const error_msg = "", bool logout = false)
-    {
-        snap::file_content login_page("/usr/share/snapwebsites/html/snapmanager/snapmanagercgi-login.html");
-        if(!login_page.read_all())
         {
-            return error(
-                      "500 Internal Server Error"
-                    , "An internal error occurred."
-                    , "Could not load the login page from /usr/share/snapwebsites/html/snapmanager/snapmanagercgi-login.html");
-        }
-        std::string cookie;
-        if(logout)
-        {
-            // delete the cookie on the client side when logging out
-            //
-            cookie += "Set-Cookie: snapmanager=void; Expires=Thu, 01-Jan-1970 00:00:01 GMT; Path=/; Secure; HttpOnly\n";
-        }
-        std::string login_html(login_page.get_content());
-        boost::replace_all(login_html, "@error@", error_msg);
-        std::cout   //<< "Status: 200 OK"                         << std::endl
-                    << "Expires: Sat, 1 Jan 2000 00:00:00 GMT"   << std::endl
-                    << "Connection: close"                       << std::endl
-                    << "Content-Type: text/html; charset=utf-8"  << std::endl
-                    << "Content-Length: " << login_html.length() << std::endl
-                    << cookie
-                    << "X-Powered-By: snapmanager.cgi"           << std::endl
-                    << std::endl
-                    << login_html;
+            snap::file_content login_page("/usr/share/snapwebsites/html/snapmanager/snapmanagercgi-login.html");
+            if(!login_page.read_all())
+            {
+                return error(
+                          "500 Internal Server Error"
+                        , "An internal error occurred."
+                        , "Could not load the login page from /usr/share/snapwebsites/html/snapmanager/snapmanagercgi-login.html");
+            }
+            std::string cookie;
+            if(logout)
+            {
+                // delete the cookie on the client side when logging out
+                //
+                cookie += "Set-Cookie: snapmanager=void; Expires=Thu, 01-Jan-1970 00:00:01 GMT; Path=/; Secure; HttpOnly\n";
+            }
+            std::string login_html(login_page.get_content());
+            boost::replace_all(login_html, "@error@", error_msg);
+            std::cout   //<< "Status: 200 OK"                         << std::endl
+                        << "Expires: Sat, 1 Jan 2000 00:00:00 GMT"   << std::endl
+                        << "Connection: close"                       << std::endl
+                        << "Content-Type: text/html; charset=utf-8"  << std::endl
+                        << "Content-Length: " << login_html.length() << std::endl
+                        << cookie
+                        << "X-Powered-By: snapmanager.cgi"           << std::endl
+                        << std::endl
+                        << login_html;
 
-        // it worked--return 2
-        return 2;
-    };
+            // it worked--return 2
+            return 2;
+        };
 
     auto read_user_info = [&](std::string const & user_name, std::map<std::string, std::string> & user_info)
-    {
-        user_info.clear();
-
-        snap::file_content user_ref(g_session_path + ("/" + user_name) + ".user");
-        if(user_ref.read_all())
         {
-            std::string const content(user_ref.get_content());
+            user_info.clear();
 
-            std::vector<std::string> lines;
-            snap::NOTUSED(snap::tokenize_string(lines, content, "\n", true, " "));
-
-            for(auto line : lines)
+            snap::file_content user_ref(g_session_path + ("/" + user_name) + ".user");
+            if(user_ref.read_all())
             {
-                std::vector<std::string> name_value;
-                snap::NOTUSED(snap::tokenize_string(name_value, line, ":", false, " "));
-                if(name_value.size() != 2)
+                std::string const content(user_ref.get_content());
+
+                std::vector<std::string> lines;
+                snap::NOTUSED(snap::tokenize_string(lines, content, "\n", true, " "));
+
+                for(auto line : lines)
                 {
-                    return error(
-                              "500 Internal Server Error"
-                            , "User session reference is invalid."
-                            , "A line was not exactly composed of a field name and value.");
+                    std::vector<std::string> name_value;
+                    snap::NOTUSED(snap::tokenize_string(name_value, line, ":", false, " "));
+                    if(name_value.size() != 2)
+                    {
+                        return error(
+                                  "500 Internal Server Error"
+                                , "User session reference is invalid."
+                                , "A line was not exactly composed of a field name and value.");
+                    }
+                    user_info[name_value[0]] = name_value[1];
                 }
-                user_info[name_value[0]] = name_value[1];
             }
-        }
-        return 0;
-    };
+            return 0;
+        };
 
     auto write_user_info = [&](std::string const & user_name, std::map<std::string, std::string> & user_info)
-    {
-        std::ofstream user_file;
-        user_file.open(g_session_path + ("/" + user_name) + ".user");
-        if(!user_file.is_open())
         {
-            return error(
-                      "500 Internal Server Error"
-                    , "Could not save user session information."
-                    , "The system could not open the user session information file.");
-        }
-        for(auto f : user_info)
-        {
-            user_file << f.first << ": " << f.second << "\n";
-        }
-        return 0;
-    };
+            std::ofstream user_file;
+            user_file.open(g_session_path + ("/" + user_name) + ".user");
+            if(!user_file.is_open())
+            {
+                return error(
+                          "500 Internal Server Error"
+                        , "Could not save user session information."
+                        , "The system could not open the user session information file.");
+            }
+            for(auto f : user_info)
+            {
+                user_file << f.first << ": " << f.second << "\n";
+            }
+            return 0;
+        };
 
     auto setup_cookie = [&](std::string const & session_id)
-    {
-        // we are logged in and session_id needs to be saved in the cookie
-        //
-        // TODO: add the domain, which should come from the .conf
-        //
-        // Note: session_id is a set of hexadecimal digits so it is safe to
-        //       save it as is in the cookie
-        //
-        // Note: we add 5 min. to the duration so the age on the client side
-        //       can be a bit off and we should not inadvertendly lose the
-        //       connection
-        //
-        f_cookie = "Set-Cookie: snapmanager=" + session_id
-                 + "; Max-Age=" + std::to_string(session_duration + 300)
-                 + "; Path=/; Secure; HttpOnly\n";
-    };
+        {
+            // we are logged in and session_id needs to be saved in the cookie
+            //
+            // TODO: add the domain, which should come from the .conf
+            //
+            // Note: session_id is a set of hexadecimal digits so it is safe to
+            //       save it as is in the cookie
+            //
+            // Note: we add 5 min. to the duration so the age on the client side
+            //       can be a bit off and we should not inadvertendly lose the
+            //       connection
+            //
+            f_cookie = "Set-Cookie: snapmanager=" + session_id
+                     + "; Max-Age=" + std::to_string(session_duration + 300)
+                     + "; Path=/; Secure; HttpOnly\n";
+        };
 
     // try to log the user in on a POST
     // verify whether the user is logged in on a GET

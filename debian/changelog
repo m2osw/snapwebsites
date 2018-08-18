@@ -1,3 +1,11 @@
+snapwebsites (1.5.138.0~xenial) xenial; urgency=high
+
+  * Fixed the installation of the watch scripts as PROGRAMS instead of FILES.
+  * Added a couple of snap_validate_xml() that were missing.
+  * Fixed the glob_dir() so errors of missing directory/files doesn't throw.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 18 Aug 2018 00:39:49 -0700
+
 snapwebsites (1.5.137.0~xenial) xenial; urgency=high
 
   * Tweaked a few bundles with the new features.

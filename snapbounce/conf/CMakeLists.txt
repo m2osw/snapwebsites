@@ -30,6 +30,7 @@
 #
 
 snap_validate_xml( bundle-mailserver.xml bundles.xsd )
+snap_validate_xml( bundle-snapmta.xml    bundles.xsd )
 
 
 #################################################################################

@@ -49,7 +49,7 @@ install(
 ## Scripts to check on the old CRON script, user should remove it
 ##
 install(
-    FILES
+    PROGRAMS
         watch_snapbackup_old_cron_script
 
     DESTINATION
