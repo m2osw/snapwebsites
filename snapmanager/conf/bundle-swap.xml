@@ -9,7 +9,8 @@
   <description>
     <p>Add a swap file of the size you specify. By default, SSD-only
     installations often do not offer any swap. It is yet a good idea
-    to have some on your snapserver and snapbackend machines.</p>
+    to have some on your <a href="#bundles::snapserver">snapserver</a>
+    and <a href="#bundles::snapbackend">snapbackend</a> machines.</p>
   </description>
   <fields>
     <field name="cluster_name" type="input">

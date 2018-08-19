@@ -1317,10 +1317,11 @@ bool manager::replace_configuration_value(
                 return false;
             }
 
-            // if we reach here with a section then the section did not yet
-            // exist, so create it
+            // if we reach here with a section then it could be that the
+            // section does not yet exist, so create it
             //
-            if(!section.isEmpty())
+            if(!section.isEmpty()
+            && !in_section)
             {
                 if(::write(fd, utf8_section_line.data(), utf8_section_line.size()) != utf8_section_line.size())
                 {

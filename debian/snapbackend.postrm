@@ -22,14 +22,14 @@ then
     #
     sed --in-place=.bak -e /backends=.*/d /etc/snapwebsites/snapwebsites.d/snapserver.conf
 
-    # we must manually disable all of these because they are static
+    # we must disable all the services and timers because they are static
     #
     # if we do not disable now, on a re-install, these will be restarted
     # automatically which generally will not match our snapserver.conf
     #
     # also without a disable we would leave broken softlinks in systemd
     #
-    # by this time, the service was purged so `systemd disable ...`
+    # by this time, the service was purged and `systemd disable ...`
     # does not work, so we do the `rm -f ...` ourselves
     #
     for b in snapbackend.timer \
@@ -38,9 +38,18 @@ then
          snappagelist.service \
          snapsendmail.service
     do
+        # Disable regular services
+        #
         rm -f /etc/systemd/system/multi-user.target.wants/$b
+
+        # Disable timers
+        #
+        rm -f /etc/systemd/system/timers.target.wants/$b
+
+        # Get rid of overrides
+        #
+        rm -rf /etc/systemd/system/$b.d
     done
-    rm -rf /etc/systemd/system/snapbackend.timer.d
 fi
 
 

@@ -13,8 +13,8 @@
     run and the files won't be available for download...</p>
 
     <p>This bundle should be installed on the computer that is to run
-    the CRON snapbackend. Other computers with the snapbackend bundle
-    do not require it.</p>
+    the CRON <a href="#bundles::snapbackend">snapbackend</a>. Other
+    computers with the snapbackend bundle do not require it.</p>
   </description>
   <packages>clamav</packages>
 </bundle>

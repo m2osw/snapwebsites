@@ -125,6 +125,20 @@ int main(int argc, char *argv[])
         }
 
         std::string const & service(opt.get_string("service"));
+        if(service.empty())
+        {
+            // this happens when $MAINPID is not defined in the .service
+            // as in:
+            //
+            //    ExecStop=/usr/bin/snapstop --timeout 300 --service "$MAINPID"
+            //
+            // we just ignore this case silently; it means that the backend
+            // is for sure not running anyway
+            //
+            //std::cerr << "snapstop: error: --service parameter can't be empty." << std::endl;
+            exit(0);
+        }
+
         pid_t service_pid(-1);
         for(char const * s(service.c_str()); *s != '\0'; ++s)
         {

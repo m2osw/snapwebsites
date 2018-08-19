@@ -9,7 +9,8 @@
   <description>
     <p>The snapserver daemons are expected to run on many backend
     computers. Often, for small organizations, snapserver is
-    installed along the frontend. Note that if you use OpenVPN,
+    installed along the <a href="#bundles::frontend">frontend</a>.
+    Note that if you use OpenVPN,
     you most certainly want to keep the frontend and server
     on the frontend computers to avoid an additional
     encryption/decryption along the way.</p>
@@ -17,9 +18,9 @@
     <p>The snapserver is the actual daemon that generates the HTML
     of your Snap! Websites.</p>
 
-    <p>Note: the snapbackend is a pre-requisite because without
-    the snaplistjournal backend, the functionality of Snap! is
-    broken.</p>
+    <p>Note: the <a href="#bundles::snapbackend">snapbackend</a> is a
+    pre-requisite because without the <code>snaplistjournal</code> backend,
+    the functionality of Snap! is broken.</p>
   </description>
   <affected-services>snapmanagerdaemon</affected-services>
   <packages>snapserver</packages>

@@ -255,7 +255,7 @@ function FieldDiv(the_form)
             var that = this;
             jQuery.ajax(
                 {
-                    url: "snapmanager",
+                    url: "/snapmanager",
                     type: "POST",
                     data: that.get_post_data()
                 })

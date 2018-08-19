@@ -680,7 +680,7 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                           "Snap! Watchdog Last Results"
                         , s.get_field_name()
                         , QString("<p>The snapwatchdogserver found %1 error%2.</p>"
-                                  "<p><a href=\"/snapmanager/?host=%3&amp;function=watchdog&amp;position=latest\">View the last results</a></p>")
+                                  "<p><a href=\"/snapmanager?host=%3&amp;function=watchdog&amp;position=latest\">View the last results</a></p>")
                                     .arg(errcnt == 0 ? "no" : error_count.c_str())
                                     .arg(errcnt == 1 ? "" : "s")
                                     .arg(host)

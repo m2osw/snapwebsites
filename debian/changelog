@@ -1,7 +1,20 @@
+snapwebsites (1.5.143.0~xenial) xenial; urgency=high
+
+  * Removed the creation of the sessions directory under /var/lib/snapwebsites.
+  * Properly delete the sessions data under /var/cache/www-snapwebsites.
+  * Fixed the AJAX URI with a slash (i.e. "/snapmanager" instead of just
+    "snapmanager".) So if the path includes a slash it still works.
+  * Fixed the snapstop --service with quotes so it receives an empty parameter
+    when $MAINPID is not defined and does not generate an error in that case.
+  * Fixed a bug in installer.cpp, a section may already exist when we do not
+    find the specified variable by the end of the file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Aug 2018 13:25:08 -0700
+
 snapwebsites (1.5.142.0~xenial) xenial; urgency=high
 
   * Fixed the `systemctl disable ...` on postrm of the snapbackend with a
-    rm -f ...` which will remove the link, including one to remove the timer.
+    `rm -f ...` which will remove the link, including one to remove the timer.
   * SNAP-532: Add line to reset the timer as required by systemd.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Aug 2018 03:12:15 -0700

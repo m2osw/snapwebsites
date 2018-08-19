@@ -12,7 +12,7 @@ WorkingDirectory=~
 ProtectHome=true
 NoNewPrivileges=true
 ExecStart=/usr/sbin/snapbackend
-ExecStop=/usr/bin/snapstop --timeout 300 --service $MAINPID
+ExecStop=/usr/bin/snapstop --timeout 300 --service "$MAINPID"
 User=snapwebsites
 Group=snapwebsites
 # No auto-restart, we use the timer to start once in a while

@@ -11,7 +11,7 @@ WorkingDirectory=~
 ProtectHome=true
 NoNewPrivileges=true
 ExecStart=/usr/sbin/snapbackend --cron-action list::pagelist
-ExecStop=/usr/bin/snapstop --service $MAINPID
+ExecStop=/usr/bin/snapstop --service "$MAINPID"
 Restart=on-failure
 RestartSec=5min
 User=snapwebsites
@@ -30,7 +30,7 @@ LimitNPROC=1000
 #  We do not want to have this backend running on installation, so we cannot
 #  have a WantedBy=... definition for it.
 #
-#  This causes two side effects:
+#  This causes few side effects:
 #
 #    1. We don't have to disable the service after installation,
 #       it is disabled by default.
@@ -43,7 +43,7 @@ LimitNPROC=1000
 #    3. To start and stop, you do the same
 #
 #    4. To disable you do the same, just remember that deletes a link that
-#       systemd does not know about so you have explicitly recreate it as
+#       systemd does not know about so you have to explicitly recreate it as
 #       in point (2).
 #
 #WantedBy=multi-user.target

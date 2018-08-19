@@ -70,18 +70,6 @@ then
     chmod 775 /var/lib/snapwebsites/cluster-status
     chown snapwebsites:www-data /var/lib/snapwebsites/cluster-status
 
-    # create the directory to be used to save sessions
-    #
-    mkdir -p /var/lib/snapwebsites/sessions
-    chmod 700 /var/lib/snapwebsites/sessions
-    chown www-data:www-data /var/lib/snapwebsites/sessions
-
-    # create the sub-directory for snapmanager.cgi
-    #
-    mkdir -p /var/lib/snapwebsites/sessions/snapmanager
-    chmod 700 /var/lib/snapwebsites/sessions/snapmanager
-    chown www-data:www-data /var/lib/snapwebsites/sessions/snapmanager
-
     # create the snapmanager sub-directory to put out ServerName/Webmaster
     # parameter that the user is likely to change
     #
