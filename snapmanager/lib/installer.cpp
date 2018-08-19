@@ -381,11 +381,18 @@ void manager::reset_aptcheck()
     // also make sure that the bundle-package-status directory content gets
     // regenerated (i.e. output of the dpkg-query calls)
     //
-    snap::glob_dir status(f_data_path + "/bundle-package-status/*.status", GLOB_NOSORT | GLOB_NOESCAPE, true);
-    status.enumerate_glob([](std::string const & path)
+    snap::glob_dir package_status(f_data_path + "/bundle-package-status/*.status", GLOB_NOSORT | GLOB_NOESCAPE, true);
+    package_status.enumerate_glob([](std::string const & path)
                     {
                         unlink(path.c_str());
                     });
+
+    snap::glob_dir bundle_status(f_data_path + "/bundle-status/*.status", GLOB_NOSORT | GLOB_NOESCAPE, true);
+    bundle_status.enumerate_glob([](std::string const & path)
+                    {
+                        unlink(path.c_str());
+                    });
+
     //QString const bundles_status_filename(QString("%1/bundles.status").arg(f_bundles_path));
     //unlink(bundles_status_filename.toUtf8().data());
 
@@ -721,7 +728,7 @@ bool manager::installer(QString const & bundle_name
         std::for_each(packages.begin(), packages.end(),
                 [=, &success](auto const & p)
                 {
-                    if(!p.empty() && p[0] != '!')
+                    if(!p.empty())
                     {
                         // we want to call all the install even if a
                         // previous one (or the update) failed

@@ -607,30 +607,46 @@ bool bundles::display_value(QDomElement parent, snap_manager::status_t const & s
                 ));
     f.add_widget(description_field);
 
-    snap_manager::bundle::field::vector_t const & fields((*it)->get_fields());
-    for(auto const & fld : fields)
+    // also add the fields, but only if necessary (i.e. if the bundle is
+    // not yet installed and we have an INSTALL button, otherwise it's
+    // really not useful)
+    //
+    switch(status)
     {
-        if(fld.get_type() == "select")
+    case snap_manager::bundle::bundle_status_t::BUNDLE_STATUS_NOT_INSTALLED:
+    //case snap_manager::bundle::bundle_status_t::BUNDLE_STATUS_PREREQ_MISSING: -- first implement the batch then allow this one
+        for(auto const & fld : (*it)->get_fields())
         {
-            snap_manager::widget_select::pointer_t install_field(std::make_shared<snap_manager::widget_select>(
-                              QString::fromUtf8(fld.get_label().c_str())
-                            , QString("bundle_install_field::%1").arg(QString::fromUtf8(fld.get_name().c_str()))
-                            , snap_string_list(fld.get_options())
-                            , QString::fromUtf8(fld.get_initial_value().c_str())
-                            , QString::fromUtf8(fld.get_description().c_str())
-                        ));
-            f.add_widget(install_field);
+            if(fld->get_type() == "select")
+            {
+                snap_manager::widget_select::pointer_t install_field(std::make_shared<snap_manager::widget_select>(
+                                  QString::fromUtf8(fld->get_label().c_str())
+                                , QString("bundle_install_field::%1").arg(QString::fromUtf8(fld->get_name().c_str()))
+                                , snap_string_list(fld->get_options())
+                                , QString::fromUtf8(fld->get_initial_value().c_str())
+                                , QString::fromUtf8(fld->get_description().c_str())
+                            ));
+                f.add_widget(install_field);
+            }
+            else
+            {
+                snap_manager::widget_input::pointer_t install_field(std::make_shared<snap_manager::widget_input>(
+                                  QString::fromUtf8(fld->get_label().c_str())
+                                , QString("bundle_install_field::%1").arg(QString::fromUtf8(fld->get_name().c_str()))
+                                , QString::fromUtf8(fld->get_initial_value().c_str())
+                                , QString::fromUtf8(fld->get_description().c_str())
+                            ));
+                f.add_widget(install_field);
+            }
         }
-        else
-        {
-            snap_manager::widget_input::pointer_t install_field(std::make_shared<snap_manager::widget_input>(
-                              QString::fromUtf8(fld.get_label().c_str())
-                            , QString("bundle_install_field::%1").arg(QString::fromUtf8(fld.get_name().c_str()))
-                            , QString::fromUtf8(fld.get_initial_value().c_str())
-                            , QString::fromUtf8(fld.get_description().c_str())
-                        ));
-            f.add_widget(install_field);
-        }
+        break;
+
+    default:
+        // in all other cases you don't need fields because you cannot
+        // install this bundle (probably because it is already installed
+        // or because it is in conflict with another bundle)
+        break;
+
     }
 
     f.generate(parent, uri);

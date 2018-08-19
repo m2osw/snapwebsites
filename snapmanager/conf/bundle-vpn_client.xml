@@ -21,8 +21,8 @@
     to one or more servers, the new client can also communicate
     with other clients (client-to-client).</p>
   </description>
-  <!-- hide if easy-rsa is installed because that means the server is installed -->
-  <packages>openvpn, !easy-rsa</packages>
+  <packages>openvpn</packages>
+  <conflicts>vpn_server</conflicts>
   <!--
     For a client, the setup is simpler: we just need to have a few
     keys and a client.conf properly setup.

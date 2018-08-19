@@ -416,8 +416,8 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
                 QDomElement m(n.firstChildElement());
                 while(!m.isNull())
                 {
-                    bundle::field f;
-                    if(!f.init(m))
+                    bundle::field::pointer_t f(std::make_shared<bundle::field>());
+                    if(!f->init(m))
                     {
                         return false;
                     }
@@ -429,12 +429,12 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
                             , (b->*it->f_data_fields).cend()
                             , [&f](auto const & ef)
                             {
-                                return f.get_name() == ef.get_name();
+                                return f->get_name() == ef->get_name();
                             }));
                     if(ff != (b->*it->f_data_fields).cend())
                     {
                         SNAP_LOG_ERROR("found two fields with the same name (\"")
-                                      (ff->get_name())
+                                      ((*ff)->get_name())
                                       ("\" is a tag).");
                         return false;
                     }
@@ -574,6 +574,13 @@ bundle::package::package(manager::pointer_t m, std::string const & name)
     : f_snap(m)
     , f_name(name)
 {
+    // TBD: should we check each character to make sure we have a valid name?
+    //      (i.e. something like `[-a-z0-9_.~]*`)
+    //
+    if(f_name.empty())
+    {
+        throw snapmanager_exception_undefined("package was not given a valid name.");
+    }
 }
 
 
@@ -689,7 +696,7 @@ void bundle::package::check_status()
     // defaults in case of failure
     //
     f_version = "-";
-    f_status = output.empty() ? "unknown" : output;
+    f_status = output.empty() ? "unknown" : boost::algorithm::trim_copy(output);
 
     if(r == 0)
     {
@@ -697,11 +704,13 @@ void bundle::package::check_status()
         //
         std::string::size_type const pos(output.find(' '));
 
-        if(pos != std::string::npos
+        // if there is a version, then pos will be 1 or more
+        //
+        if(pos > 0
         && output.compare(pos + 1, 20, "install ok installed") == 0)
         {
             f_version = output.substr(0, pos);
-            f_status = output.substr(pos + 1);
+            f_status = boost::algorithm::trim_copy(output.substr(pos + 1));
         }
     }
 

@@ -86,7 +86,8 @@ public:
     class field
     {
     public:
-        typedef std::vector<field>  vector_t;
+        typedef std::shared_ptr<field>  pointer_t;
+        typedef std::vector<pointer_t>  vector_t;
 
         bool                    init(QDomElement e);
 

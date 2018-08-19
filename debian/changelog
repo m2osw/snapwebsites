@@ -1,3 +1,18 @@
+snapwebsites (1.5.140.0~xenial) xenial; urgency=high
+
+  * Changed the bundle field to pointers instead of copying the whole thing.
+  * Removed the one '!' in front of a package name (easy-rsa) and used the
+    <conflicts> tag for the VPN client/server bundles.
+  * Hide the fields if the bundles is not ready for installation (i.e. no
+    need to offer the user a way to enter data when it won't be used.)
+  * Changed the missing prereq or conflicts in warnings instead of errors
+    because with 3rd party bundles it could happen that something is missing
+    and we should not prevent other installations/removals because of such.
+  * Delete the bundle status files in reset_aptcheck() to make sure that we
+    get the new status after an update or installation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 18 Aug 2018 23:02:54 -0700
+
 snapwebsites (1.5.139.1~xenial) xenial; urgency=high
 
   * Fixed the bundle implementation so the status of a bundle is saved in

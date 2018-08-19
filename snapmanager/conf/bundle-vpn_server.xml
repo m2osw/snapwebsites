@@ -48,6 +48,7 @@
     </field>
   </fields>
   <packages>openvpn, easy-rsa</packages>
+  <conflicts>vpn_client</conflicts>
   <!--
     The setup requires the user data entry for the IP addresses, but we
     can at least copy and create some files as required.

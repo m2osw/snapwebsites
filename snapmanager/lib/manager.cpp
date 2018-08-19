@@ -684,21 +684,27 @@ bundle::vector_t manager::load_bundles()
                     }));
             if(it == result.end())
             {
-                // this is not acceptable, prevent all bundles from being
-                // added so the programmer notices quickly
+                // this can happen if you do not have all the necessary
+                // 3rd party bundles...
                 //
-                SNAP_LOG_ERROR("missing prereq bundle \"")(p)("\".");
-                return bundle::vector_t();
+                SNAP_LOG_WARNING("bundle \"")(b->get_name())("\" references a missing 'prereq' bundle named \"")(p)("\".");
             }
-            if(*it == b)
+            else if(*it == b)
             {
                 // need to install yourself to be able to install yourselves?
+                //
+                // TODO: actually check the whole chain, if A depends on B
+                //       which depends on C and C depends on A, we've got
+                //       a really bad error
                 //
                 SNAP_LOG_ERROR("you cannot be in a prereq of yourself (\"")(p)("\").");
                 return bundle::vector_t();
             }
-            b->add_prereq_bundle(*it);
-            (*it)->add_locked_by_bundle(b);
+            else
+            {
+                b->add_prereq_bundle(*it);
+                (*it)->add_locked_by_bundle(b);
+            }
         }
 
         // transform conflicts names to pointers
@@ -715,21 +721,23 @@ bundle::vector_t manager::load_bundles()
                     }));
             if(it == result.end())
             {
-                // this is not acceptable, prevent all bundles from being
-                // added so the programmer notices quickly
+                // this can happen if you do not have all the necessary
+                // 3rd party bundles...
                 //
-                SNAP_LOG_ERROR("missing conflicts bundle \"")(c)("\".");
-                return bundle::vector_t();
+                SNAP_LOG_WARNING("bundle \"")(b->get_name())("\" references a missing 'conflicts' bundle named \"")(c)("\".");
             }
-            if(*it == b)
+            else if(*it == b)
             {
                 // in conflict with yourselves?
                 //
                 SNAP_LOG_ERROR("you cannot be in conflict with yourself (\"")(c)("\").");
                 return bundle::vector_t();
             }
-            b->add_conflicts_bundle(*it);
-            (*it)->add_conflicts_bundle(b);
+            else
+            {
+                b->add_conflicts_bundle(*it);
+                (*it)->add_conflicts_bundle(b);
+            }
         }
 
         // also transform the suggestions in links, that way we can see whether
