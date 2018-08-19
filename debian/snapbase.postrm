@@ -10,6 +10,7 @@ then
     rm -rf /var/lib/snapwebsites
     rm -rf /var/log/snapwebsites
     rm -rf /var/cache/snapwebsites
+    rm -rf /var/cache/www-snapwebsites
 
     # delete the user configuration file
     #

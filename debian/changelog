@@ -1,3 +1,25 @@
+snapwebsites (1.5.139.1~xenial) xenial; urgency=high
+
+  * Fixed the bundle implementation so the status of a bundle is saved in
+    a cache file and can be reloaded by snapmanager.cgi as required.
+  * Found the way to define the bundle fields and not have to make all our
+    fields public.
+  * Fixed the check_status() function so when running snapmanager.cgi we don't
+    use any of the very slow functionality.
+  * Do not run the is-installed sript if we already know a package is not yet
+    installed (no need and slow.)
+  * Added anti-hacker code to prevent login into snapmanager.cgi after 5
+    attempts (the number of attempts can be changed in the .conf file.)
+  * Create a /var/cache/www-snapwebsites directory for www-data access of
+    cache data and moved our sessions there. Adjust our code accordingly.
+  * Added `std::string` and `char const *` to `chownnm()`.
+  * Added support for `chmod()` and `chown()` to `mkdir_p()`
+  * Updated several fail2ban regex to increase our chances to catch errors
+    from postfix.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 18 Aug 2018 19:25:12 -0700
+
 snapwebsites (1.5.138.1~xenial) xenial; urgency=high
 
   * Added the new plugin to the .install
