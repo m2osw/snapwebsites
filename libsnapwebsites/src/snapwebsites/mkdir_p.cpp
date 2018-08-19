@@ -156,29 +156,29 @@ int mkdir_p(QString const & path
                             int const e(errno);
                             std::stringstream m;
                             m << "0" << std::oct << mode;
-                            SNAP_LOG_WARNING("could not change directory \"")
-                                            (p)
-                                            ("\" permissions to \"")
-                                            (m.str())
-                                            ("\". (errno: ")
-                                            (e)
-                                            (" -- ")
-                                            (strerror(e));
+                            SNAP_LOG_DEBUG("could not change directory \"")
+                                          (p)
+                                          ("\" permissions to \"")
+                                          (m.str())
+                                          ("\". (errno: ")
+                                          (e)
+                                          (" -- ")
+                                          (strerror(e));
                         }
                     }
-                    if(chownnm(p, owner, group) == 0)
+                    if(chownnm(p, owner, group) != 0)
                     {
                         int const e(errno);
-                        SNAP_LOG_WARNING("could not change directory \"")
-                                        (p)
-                                        ("\" ownership to \"")
-                                        (owner)
-                                        (":")
-                                        (group)
-                                        ("\". (errno: ")
-                                        (e)
-                                        (" -- ")
-                                        (strerror(e));
+                        SNAP_LOG_DEBUG("could not change directory \"")
+                                      (p)
+                                      ("\" ownership to \"")
+                                      (owner)
+                                      (":")
+                                      (group)
+                                      ("\". (errno: ")
+                                      (e)
+                                      (" -- ")
+                                      (strerror(e));
                     }
                 }
                 continue;
@@ -217,16 +217,16 @@ int mkdir_p(QString const & path
         if(chownnm(p, owner, group) != 0)
         {
             int const e(errno);
-            SNAP_LOG_WARNING("could not change directory \"")
-                            (p)
-                            ("\" ownership to \"")
-                            (owner)
-                            (":")
-                            (group)
-                            ("\". (errno: ")
-                            (e)
-                            (" -- ")
-                            (strerror(e));
+            SNAP_LOG_DEBUG("could not change directory \"")
+                          (p)
+                          ("\" ownership to \"")
+                          (owner)
+                          (":")
+                          (group)
+                          ("\". (errno: ")
+                          (e)
+                          (" -- ")
+                          (strerror(e));
         }
     }
 

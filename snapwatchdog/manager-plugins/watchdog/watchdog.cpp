@@ -317,15 +317,20 @@ void watchdog::on_retrieve_status(snap_manager::server_status & server_status)
         {
             QString email;
 
-            try
+            // avoid the try/catch in case the file does not exist yet
+            //
+            if(stat(g_test_mta_results, &st) == 0)
             {
-                snap_config test_mta(g_test_mta_results);
-                email = test_mta["email"];
-            }
-            catch(snap_configurations_exception const & e)
-            {
-                SNAP_LOG_DEBUG("test_mta could not be read.");
-                // ignore the error otherwise
+                try
+                {
+                    snap_config test_mta(g_test_mta_results);
+                    email = test_mta["email"];
+                }
+                catch(snap_configurations_exception const & e)
+                {
+                    SNAP_LOG_DEBUG("test_mta could not be read.");
+                    // ignore the error otherwise
+                }
             }
 
             snap_manager::status_t const plugins(
@@ -602,23 +607,29 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
                 , snap_manager::form::FORM_BUTTON_SAVE
                 );
 
-        snap_config const test_mta(g_test_mta_results);
         QString status;
-        try
+
+        // avoid the try/catch in case the file does not exist yet
+        //
+        struct stat st;
+        if(stat(g_test_mta_results, &st) == 0)
         {
-            status = QString::fromUtf8(test_mta["status"].c_str());
-        }
-        catch(snap_configurations_exception const & e)
-        {
-            SNAP_LOG_DEBUG("test_mta could not be read.");
-            // ignore the error otherwise
+            try
+            {
+                snap_config const test_mta(g_test_mta_results);
+                status = QString::fromUtf8(test_mta["status"].c_str());
+            }
+            catch(snap_configurations_exception const & e)
+            {
+                SNAP_LOG_DEBUG("test_mta could not be read.");
+                // ignore the error otherwise
+            }
         }
         if(status.isEmpty())
         {
             status = "<p>The MTA was not yet tested through the Watchdog.</p>";
         }
 
-        struct stat st;
         bool const has_root_emails(stat("/var/mail/root", &st) == 0);
 
         snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(

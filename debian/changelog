@@ -1,3 +1,11 @@
+snapwebsites (1.5.141.0~xenial) xenial; urgency=high
+
+  * Fixed the chownnm() return test, it had to be != 0.
+  * Changed the mkdir_p() warnings in debug.
+  * To avoid many try/catch I added a test of g_test_mta_results.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Aug 2018 01:31:14 -0700
+
 snapwebsites (1.5.140.0~xenial) xenial; urgency=high
 
   * Changed the bundle field to pointers instead of copying the whole thing.
