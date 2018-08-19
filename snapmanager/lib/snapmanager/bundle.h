@@ -16,12 +16,6 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// snapwebsites lib
-//
-//#include <snapwebsites/log.h>
-//#include <snapwebsites/not_reached.h>
-//#include <snapwebsites/not_used.h>
-
 // Qt lib
 //
 #include <QDomDocument>
@@ -40,6 +34,9 @@ namespace snap_manager
 
 class manager;
 
+template<typename T>
+struct bundle_field;
+
 class bundle
 {
 public:
@@ -56,11 +53,15 @@ public:
         return lhs.lock() == rhs;
     }
 
+    static constexpr time_t             BUNDLE_CACHE_FILE_LIFETIME  = 86400;    // 1 day in seconds
     static constexpr time_t             PACKAGE_CACHE_FILE_LIFETIME = 86400;    // 1 day in seconds
 
     // keep the status as a letter so we can easily save it to a text file
     // (we use a text file to cache the status to avoid running dpkg-query
     // too often, it's rather slow otherwise!)
+    //
+    // WARNING: these letters get saved in a status file, DO NOT MODIFY
+    //          or all the caches will be invalid
     //
     enum class bundle_status_t
     {
@@ -96,9 +97,10 @@ public:
         string_set_t const &    get_options() const;
         std::string const &     get_description() const;
 
-    // TODO: how do we make those fields private and still use them in our tables? (declare the struct here maybe?)
-    //       PLEASE DO NOT ACCESS ANY OF THOSE FIELDS DIRECTLY
-    //private:
+    private:
+        static std::vector<bundle_field<bundle::field>>
+                                g_bundle_field_fields;
+
         std::string             f_name = std::string();
         std::string             f_type = std::string("input");
         std::string             f_label = std::string();
@@ -165,9 +167,12 @@ public:
 
     string_vector_t         get_errors() const;
 
-// TODO: how do we make those fields private and still use them in our tables? (declare the struct here maybe?)
-//       PLEASE DO NOT ACCESS ANY OF THOSE FIELDS DIRECTLY
-//private:
+private:
+    void                    determine_bundle_status() const;
+
+    static std::vector<bundle_field<bundle>>
+                            g_bundle_fields;
+
     std::shared_ptr<manager>
                             f_snap;                                     // pointer back to manager
 

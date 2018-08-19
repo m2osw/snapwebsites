@@ -253,6 +253,9 @@ private:
 snap_cgi::snap_cgi( int argc, char * argv[] )
     : f_opt(argc, argv, g_snapcgi_options, g_configuration_files, "SNAPCGI_OPTIONS")
 {
+    // the --version and --help won't happen since we kill the command line
+    // arguments (which can be passed from the Query String, apache!?)
+    //
     if(f_opt.is_defined("version"))
     {
         std::cout << SNAPCGI_VERSION_STRING << std::endl;

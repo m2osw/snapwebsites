@@ -130,6 +130,7 @@ public:
     virtual void                    bootstrap(snap::snap_child * snap) override;
     virtual std::string             server_type() const;
 
+    bool                            is_daemon() const;
     void                            load_plugins();
     std::vector<std::string>        get_list_of_servers();
     QString const &                 get_server_name() const;
@@ -145,6 +146,7 @@ public:
     bundle::vector_t                load_bundles();
     QString const &                 get_data_path() const;
     QString const &                 get_cache_path() const;
+    QString const &                 get_www_cache_path() const;
     QString const &                 get_reboot_required_path() const;
     virtual bool                    stop_now_prima() const;
     virtual void                    forward_message(snap::snap_communicator_message const & message);
@@ -192,6 +194,7 @@ protected:
     QString                         f_public_ip = QString();
     QString                         f_plugins_path = QString("/usr/lib/snapwebsites/manager_plugins");
     QString                         f_cache_path = QString("/var/cache/snapwebsites");
+    QString                         f_www_cache_path = QString("/var/cache/www-snapwebsites");
     QString                         f_apt_check = QString("/usr/lib/update-notifier/apt-check");
     QString                         f_reboot_required = QString("/run/reboot-required");
     QString                         f_lock_path = QString("/run/lock/snapwebsites");

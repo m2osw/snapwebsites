@@ -21,7 +21,17 @@
 namespace snap
 {
 
-int chownnm(QString const & path, QString const & user_name, QString const & group_name);
+int chownnm(std::string const & path
+          , std::string const & user_name
+          , std::string const & group_name = std::string());
+
+int chownnm(QString const & path
+          , QString const & user_name
+          , QString const & group_name = QString());
+
+int chownnm(char const * path
+          , char const * user_name
+          , char const * group_name = nullptr);
 
 } // snap namespace
 // vim: ts=4 sw=4 et

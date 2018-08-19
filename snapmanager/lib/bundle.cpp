@@ -26,20 +26,13 @@
 // snapwebsites lib
 //
 #include <snapwebsites/file_content.h>
-//#include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkdir_p.h>
-//#include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/process.h>
-//#include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_string_list.h>
 #include <snapwebsites/tokenize_string.h>
-
-// addr lib
-//
-//#include <libaddr/addr_parser.h>
 
 // boost lib
 //
@@ -84,8 +77,6 @@
 namespace snap_manager
 {
 
-namespace
-{
 
 
 
@@ -105,17 +96,17 @@ struct bundle_field
         BUNDLE_FIELD_TYPE_FIELDS
     };
 
-    type_t                          f_type        = type_t::BUNDLE_FIELD_TYPE_PLAIN;
-    char const *                    f_name        = nullptr;
-    bool                            f_required    = false;
-    std::string T::*                f_data_string = nullptr;
-    bool T::*                       f_data_flag   = nullptr;
-    bundle::string_set_t T::*       f_data_list   = nullptr;
-    bundle::field::vector_t T::*    f_data_fields = nullptr;
+    type_t                          f_type          = type_t::BUNDLE_FIELD_TYPE_PLAIN;
+    char const *                    f_name          = nullptr;
+    bool                            f_required      = false;
+    std::string T::*                f_data_string   = nullptr;
+    bool T::*                       f_data_flag     = nullptr;
+    bundle::string_set_t T::*       f_data_list     = nullptr;
+    bundle::field::vector_t T::*    f_data_fields   = nullptr;
 };
 
 
-bundle_field<bundle>::vector_t    g_bundle_fields =
+bundle_field<bundle>::vector_t    bundle::g_bundle_fields =
 {
     {
         bundle_field<bundle>::type_t::BUNDLE_FIELD_TYPE_ATTRIBUTE,
@@ -256,7 +247,7 @@ bundle_field<bundle>::vector_t    g_bundle_fields =
 
 
 
-bundle_field<bundle::field>::vector_t    g_bundle_field_fields =
+bundle_field<bundle::field>::vector_t    bundle::field::g_bundle_field_fields =
 {
     {
         bundle_field<bundle::field>::type_t::BUNDLE_FIELD_TYPE_ATTRIBUTE,
@@ -317,6 +308,8 @@ bundle_field<bundle::field>::vector_t    g_bundle_field_fields =
 
 
 
+namespace
+{
 
 template<typename T>
 bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & fields)
@@ -475,6 +468,43 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
 
 
 
+bool is_valid_status(char const * s)
+{
+    // pointer must not be null
+    //
+    if(s == nullptr)
+    {
+        return false;
+    }
+
+    // status is exactly one letter
+    //
+    if(s[0] == '\0'
+    || s[1] != '\0')
+    {
+        return false;
+    }
+
+    switch(static_cast<bundle::bundle_status_t>(s[0]))
+    {
+    case bundle::bundle_status_t::BUNDLE_STATUS_UNKNOWN:
+    case bundle::bundle_status_t::BUNDLE_STATUS_ERROR:
+    case bundle::bundle_status_t::BUNDLE_STATUS_HIDE:
+    case bundle::bundle_status_t::BUNDLE_STATUS_INSTALLED:
+    case bundle::bundle_status_t::BUNDLE_STATUS_LOCKED:
+    case bundle::bundle_status_t::BUNDLE_STATUS_NOT_INSTALLED:
+    case bundle::bundle_status_t::BUNDLE_STATUS_PREREQ_MISSING:
+    case bundle::bundle_status_t::BUNDLE_STATUS_IN_CONFLICT:
+        return true;
+
+    default:
+        return false;
+
+    }
+}
+
+
+
 }
 // no name namespace
 
@@ -605,7 +635,8 @@ void bundle::package::check_status()
         if(in.good())
         {
             time_t const timestamp(std::atol(buf));
-            if(timestamp + PACKAGE_CACHE_FILE_LIFETIME >= now)
+            if(timestamp + PACKAGE_CACHE_FILE_LIFETIME >= now
+            || !f_snap->is_daemon()) // ignore timestamp in snapmanager.cgi
             {
                 // still fresh
                 //
@@ -637,6 +668,19 @@ void bundle::package::check_status()
         unlink(cache_file.c_str());
     }
 
+    if(!f_snap->is_daemon())
+    {
+        // in snapmanager.cgi we can't do anything more at this point
+        // use defaults in the version/status info
+        //
+        // (i.e. pkg-query is too slow for snapmanager.cgi, especially
+        // against 20+ packages)
+        //
+        f_version = "-";
+        f_status = "unknown";
+        return;
+    }
+
     // the status is not yet available, run the pkg-query command
     //
     std::string output;
@@ -665,7 +709,7 @@ void bundle::package::check_status()
     //
     // first make sure the parent directories exist
     //
-    snap::mkdir_p(cache_file, true);
+    snap::mkdir_p(cache_file, true, 0755, "snapwebsites", "snapwebsites");
     std::ofstream out;
     out.open(cache_file, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
     if(out.is_open())
@@ -984,6 +1028,87 @@ bundle::bundle_status_t bundle::get_bundle_status() const
         return f_bundle_status;
     }
 
+    // check the cache first
+    //
+    std::string cache_file(f_snap->get_data_path().toUtf8().data());
+    cache_file += "/bundle-status/" + f_name + ".status";
+
+    time_t const now(time(nullptr));
+
+    std::ifstream in;
+    in.open(cache_file, std::ios_base::in | std::ios_base::binary);
+    if(in.is_open())
+    {
+        // these files include 2 lines:
+        //
+        //  . Unix timestamp for freshness
+        //  . status as our BUNDLE_STATUS_... letter
+        //
+        char buf[256];
+        in.getline(buf, sizeof(buf));
+        if(in.good())
+        {
+            time_t const timestamp(std::atol(buf));
+            if(timestamp + BUNDLE_CACHE_FILE_LIFETIME >= now
+            || !f_snap->is_daemon()) // ignore timestamp in snapmanager.cgi
+            {
+                // still fresh
+                //
+                in.getline(buf, sizeof(buf));
+                if(in.good()
+                && is_valid_status(buf)) // avoid tainted data
+                {
+                    // got status
+                    //
+                    f_bundle_status = static_cast<bundle::bundle_status_t>(buf[0]);
+
+                    // cache worked
+                    //
+                    return f_bundle_status;
+                }
+            }
+        }
+
+        in.close();
+
+        // the file is not considered good or is out of date, so delete it
+        //
+        unlink(cache_file.c_str());
+    }
+
+    // cache did not work, if we are in snapmanager.cgi we can't do anything
+    // more here, so we have to return BUNDLE_STATUS_UNKNOWN
+    //
+    if(!f_snap->is_daemon())
+    {
+        return f_bundle_status;
+    }
+
+    // the following determines the status, the function returns as soon
+    // as the new status is known, so it's easier to call it and then
+    // act on the final status
+    //
+    determine_bundle_status();
+
+    // whatever result we got, create a corresponding cache file
+    //
+    // first make sure the parent directories exist
+    //
+    snap::mkdir_p(cache_file, true, 0755, "snapwebsites", "snapwebsites");
+    std::ofstream out;
+    out.open(cache_file, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+    if(out.is_open())
+    {
+        out << now << std::endl;
+        out << static_cast<char>(f_bundle_status) << std::endl;
+    }
+
+    return f_bundle_status;
+}
+
+
+void bundle::determine_bundle_status() const
+{
     // check each package
     //
     // by default we are considered installed unless one package
@@ -996,6 +1121,11 @@ bundle::bundle_status_t bundle::get_bundle_status() const
         if(!p->is_installed())
         {
             installed = false;
+
+            // we can stop short since `installed` won't become
+            // true again once set to false
+            //
+            break;
         }
     }
 
@@ -1004,7 +1134,11 @@ bundle::bundle_status_t bundle::get_bundle_status() const
     // or not on top of packages (especially useful if you do not include
     // packages in this bundle)
     //
-    if(!f_is_installed.empty())
+    // note if we already know that some packages are not installed
+    // there is no need to check anything more
+    //
+    if(installed
+    && !f_is_installed.empty())
     {
         // get a filename using this bundle's name
         //
@@ -1054,7 +1188,7 @@ bundle::bundle_status_t bundle::get_bundle_status() const
                               " That script FAILED.");
 
             f_bundle_status = bundle_status_t::BUNDLE_STATUS_ERROR;
-            return f_bundle_status;
+            return;
         }
 
         // the script worked, check the output which tells us whether
@@ -1075,7 +1209,7 @@ bundle::bundle_status_t bundle::get_bundle_status() const
         if(!f_hide.empty())
         {
             f_bundle_status = bundle_status_t::BUNDLE_STATUS_HIDE;
-            return f_bundle_status;
+            return;
         }
 
         // so it is considered installed, set this state early
@@ -1097,7 +1231,7 @@ bundle::bundle_status_t bundle::get_bundle_status() const
                 case bundle_status_t::BUNDLE_STATUS_INSTALLED:
                 case bundle_status_t::BUNDLE_STATUS_LOCKED:
                     f_bundle_status = bundle_status_t::BUNDLE_STATUS_LOCKED;
-                    return f_bundle_status;
+                    return;
 
                 default:
                     break;
@@ -1106,7 +1240,7 @@ bundle::bundle_status_t bundle::get_bundle_status() const
             }
         }
 
-        return f_bundle_status;
+        return;
     }
 
     // this is the default status in this case, the function further
@@ -1132,7 +1266,7 @@ bundle::bundle_status_t bundle::get_bundle_status() const
             case bundle_status_t::BUNDLE_STATUS_INSTALLED:
             case bundle_status_t::BUNDLE_STATUS_LOCKED:
                 f_bundle_status = bundle_status_t::BUNDLE_STATUS_IN_CONFLICT;
-                return f_bundle_status;
+                return;
 
             default:
                 break;
@@ -1154,7 +1288,7 @@ bundle::bundle_status_t bundle::get_bundle_status() const
             case bundle_status_t::BUNDLE_STATUS_NOT_INSTALLED:
             case bundle_status_t::BUNDLE_STATUS_PREREQ_MISSING:
                 f_bundle_status = bundle_status_t::BUNDLE_STATUS_PREREQ_MISSING;
-                return f_bundle_status;
+                return;
 
             case bundle_status_t::BUNDLE_STATUS_IN_CONFLICT:
                 // this is a special case, if we depend on a bundle which
@@ -1166,7 +1300,7 @@ bundle::bundle_status_t bundle::get_bundle_status() const
                 // "in-conflict", then A can also be marked as "in-conflict"
                 //
                 f_bundle_status = bundle_status_t::BUNDLE_STATUS_IN_CONFLICT;
-                return f_bundle_status;
+                return;
 
             default:
                 break;
@@ -1174,9 +1308,8 @@ bundle::bundle_status_t bundle::get_bundle_status() const
             }
         }
     }
-
-    return f_bundle_status;
 }
+
 
 
 

@@ -23,9 +23,23 @@
 namespace snap
 {
 
-int mkdir_p(QString const & path, bool include_filename = false);
-int mkdir_p(std::string const & path, bool include_filename = false);
-int mkdir_p(char const * path, bool include_filename = false);
+int mkdir_p(QString const & path
+          , bool include_filename = false
+          , int mode = 0
+          , QString const & owner = QString()
+          , QString const & group = QString());
+
+int mkdir_p(std::string const & path
+          , bool include_filename = false
+          , int mode = 0
+          , std::string const & owner = std::string()
+          , std::string const & group = std::string());
+
+int mkdir_p(char const * path
+          , bool include_filename = false
+          , int mode = 0
+          , char const * owner = nullptr
+          , char const * group = nullptr);
 
 } // snap namespace
 // vim: ts=4 sw=4 et

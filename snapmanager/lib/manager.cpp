@@ -372,6 +372,13 @@ void manager::init(int argc, char * argv[])
         f_cache_path = f_config["cache_path"];
     }
 
+    // get the user defined path to a folder used to cache data
+    //
+    if(f_config.has_parameter("www_cache_path"))
+    {
+        f_www_cache_path = f_config["www_cache_path"];
+    }
+
     // get the path and filename to the apt-check tool
     //
     if(f_config.has_parameter("apt_check"))
@@ -476,6 +483,12 @@ void manager::bootstrap(snap_child * snap)
 {
     // virtual function stub
     NOTUSED(snap);
+}
+
+
+bool manager::is_daemon() const
+{
+    return f_daemon;
 }
 
 
@@ -764,6 +777,12 @@ QString const & manager::get_data_path() const
 QString const & manager::get_cache_path() const
 {
     return f_cache_path;
+}
+
+
+QString const & manager::get_www_cache_path() const
+{
+    return f_www_cache_path;
 }
 
 

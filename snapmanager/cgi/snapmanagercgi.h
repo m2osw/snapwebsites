@@ -77,7 +77,8 @@ public:
     virtual std::string         server_type() const override;
 
     int                         error(char const * code, char const * msg, char const * details);
-    void                        forbidden(std::string details);
+    void                        forbidden(std::string details, bool allow_redirect = true);
+    std::string                 get_session_path(bool create = false);
     bool                        verify();
     int                         process();
     snap::snap_uri const &      get_uri() const;
@@ -112,6 +113,10 @@ private:
     void                        get_status_map( QString const & doc, status_map_t& map );
     void                        get_host_status(QDomDocument doc, QDomElement output, QString const & host);
     void                        get_cluster_status(QDomDocument doc, QDomElement output);
+    std::string                 get_hit_filename();
+    int                         is_ip_blocked();
+    void                        increase_hit_count();
+    void                        delete_hit_file();
     int                         is_logged_in(std::string & request_method);
 
     snap::snap_uri              f_uri = snap::snap_uri();
@@ -119,6 +124,8 @@ private:
     std::string                 f_cookie = std::string();
     std::string                 f_user_name = std::string();
     int                         f_communicator_port = -1;
+    int                         f_max_login_attempts = 5;
+    int                         f_login_attempts = -1;
     post_variables_t            f_post_variables = post_variables_t();
 };
 

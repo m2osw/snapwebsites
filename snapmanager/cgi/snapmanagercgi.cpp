@@ -87,7 +87,6 @@ namespace
 {
 
 
-char const * g_session_path = "/var/lib/snapwebsites/sessions/snapmanager";
 
 
 
@@ -169,7 +168,7 @@ int manager_cgi::error(char const * code, char const * msg, char const * details
 }
 
 
-void manager_cgi::forbidden(std::string details)
+void manager_cgi::forbidden(std::string details, bool allow_redirect)
 {
     if(details.empty())
     {
@@ -179,14 +178,19 @@ void manager_cgi::forbidden(std::string details)
     // the administrator has the option to redirect a user instead of
     // outputing a 403...
     //
-    if(f_config.has_parameter("redirect_unwanted"))
+    if(allow_redirect
+    && f_config.has_parameter("redirect_unwanted"))
     {
         std::string const uri(f_config["redirect_unwanted"]);
         if(!uri.empty())
         {
             // administrator wants to redirect unwanted users
             //
-            SNAP_LOG_FATAL("Redirect user to \"")(uri)("\" on error(\"403 Forbidden\", \"You are not allowed on this server.\", \"")(details)("\")");
+            SNAP_LOG_FATAL("Redirect user to \"")
+                          (uri)
+                          ("\" on error(\"403 Forbidden\", \"You are not allowed on this server.\", \"")
+                          (details)
+                          ("\")");
 
             std::cout   << "Status: 301"                            << std::endl
                         << "Location: " << uri                      << std::endl
@@ -202,6 +206,45 @@ void manager_cgi::forbidden(std::string details)
 
     error("403 Forbidden", "You are not allowed on this server.", details.c_str());
 }
+
+
+
+std::string manager_cgi::get_session_path(bool create)
+{
+    std::string path(get_www_cache_path().toUtf8().data());
+
+    path += "/sessions/snapmanager";
+
+    // user requested for the path to be created if necessary?
+    //
+    if(create)
+    {
+        if(snap::mkdir_p(path, false, 0700, "www-data", "www-data") != 0)
+        {
+            // could not create the directory, this is an error
+            //
+            std::stringstream ss;
+
+            ss << "Could not ensure the availability of the session directory \""
+               << path
+               << "\".";
+
+            error(
+                  "500 Internal Server Error"
+                , "An internal error occurred."
+                , ss.str().c_str());
+
+            // this function has to return a valid path or fail miserably
+            // (i.e. an exit() in a random place in C++ may not work as
+            // expected)
+            //
+            exit(1);
+        }
+    }
+
+    return path;
+}
+
 
 
 /** \brief Verify that the request is acceptable.
@@ -408,7 +451,9 @@ bool manager_cgi::verify()
         }
         if(!found)
         {
-            forbidden(("Your remote address is " + remote_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL)));
+            forbidden("Your remote IP address, "
+                     + remote_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL)
+                     + ", is unknown to this snapmanager.cgi instance.");
             return false;
         }
     }
@@ -831,6 +876,164 @@ int manager_cgi::read_post_variables()
 }
 
 
+std::string manager_cgi::get_hit_filename()
+{
+    // name of the cache file used to count failed login attempts
+    //
+    // note: it will get deleted after 1 to 2 months if not
+    //       accessed for that long--see snapbase.cron.monthly
+    //       we also delete that file on a successful login
+    //
+
+    // the filename uses the remote IP address
+    //
+    char const * remote_addr(getenv("REMOTE_ADDR"));
+    if(remote_addr == nullptr)
+    {
+        error(
+            "400 Bad Request",
+            nullptr,
+            "The REMOTE_ADDR parameter is not available.");
+        return std::string();
+    }
+
+    return QString("%1/snapmanagercgi/%2.hit")
+                            .arg(get_www_cache_path())
+                            .arg(remote_addr)
+                                    .toUtf8().data();
+}
+
+
+int manager_cgi::is_ip_blocked()
+{
+    std::string const hit_filename(get_hit_filename());
+    if(hit_filename.empty())
+    {
+        return 1;
+    }
+
+    // we cache the result, if -1 we are being called for the first time
+    //
+    if(f_login_attempts == -1)
+    {
+        f_login_attempts = 0;
+
+        // read the value if file exists
+        {
+            std::ifstream hit_file;
+            hit_file.open(hit_filename, std::ios_base::in | std::ios_base::binary);
+            if(hit_file.is_open())
+            {
+                char buf[256];
+                hit_file.getline(buf, sizeof(buf));
+                if(hit_file.good())
+                {
+                    f_login_attempts = std::atoi(buf);
+                }
+            }
+        }
+
+        // get the maximum number of login attempts that the administrator
+        // wants to allow for this instance
+        //
+        if(f_config.has_parameter("max_login_attempts"))
+        {
+            f_max_login_attempts = std::stoi(f_config["max_login_attempts"]);
+            if(f_max_login_attempts < 2)
+            {
+                // this is tainted data, make sure it is at least 2
+                //
+                f_max_login_attempts = 2;
+            }
+            else if(f_max_login_attempts > 100)
+            {
+                // 100 is way too much already, we really need to block the
+                // hackers sooner, but what can you do?!
+                //
+                f_max_login_attempts = 100;
+            }
+        }
+    }
+
+    // verify each time how many times the user failed entering his
+    // credentials (it's important since it could be increased between
+    // calls to this function)
+    //
+    int const result(f_login_attempts >= f_max_login_attempts ? 1 : 0);
+    if(result != 0)
+    {
+        // TODO: block IP address in firewall?
+        //       (it can be really annoying for the admin. but useful
+        //       to really avoid additional hacker's mischiefs)
+
+        // another failed attempt, do a `touch -ca $hit_filename`
+        //
+        struct timespec times[2];
+        times[0].tv_sec = 0;
+        times[0].tv_nsec = UTIME_NOW;
+        times[1].tv_sec = 0;
+        times[1].tv_nsec = UTIME_OMIT;
+        utimensat(AT_FDCWD, hit_filename.c_str(), times, 0);
+
+        std::stringstream ss;
+        ss << "Your address ("
+           << getenv("REMOTE_ADDR") // we know it won't return NULL because we called get_hit_filename() which verifies that
+           << ") is currently blocked by its hit file ("
+           << hit_filename
+           << "). To restore access to your account, delete that file.";
+
+        forbidden(ss.str(), false);
+    }
+
+    return result;
+}
+
+
+void manager_cgi::increase_hit_count()
+{
+    // one more user error, increase hit counter
+    // and save it back to file
+    //
+    ++f_login_attempts;
+
+    std::string const hit_filename(get_hit_filename());
+    if(hit_filename.empty())
+    {
+        return;
+    }
+
+    // make sure the folder exists since we are dealing
+    // with the cache (which gets its files/folders deleted
+    // once in a while)
+    //
+    // here ownership is as expected
+    //
+    snap::mkdir_p(hit_filename, true);
+
+    // TODO: we should probably create a new file, unlink the old one,
+    //       then rename, to avoid the problem of an open/write error
+    //       and losing the hit count (although the unlink+rename
+    //       combo could fail bad too)
+    //
+    std::ofstream out;
+    out.open(hit_filename, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+    if(out.is_open())
+    {
+        out << f_login_attempts << std::endl;
+    }
+}
+
+
+void manager_cgi::delete_hit_file()
+{
+    std::string const hit_filename(get_hit_filename());
+    if(!hit_filename.empty())
+    {
+        unlink(hit_filename.c_str());
+    }
+}
+
+
 int manager_cgi::is_logged_in(std::string & request_method)
 {
     // session duration (TODO: make a parameter from the .conf)
@@ -839,6 +1042,16 @@ int manager_cgi::is_logged_in(std::string & request_method)
 
     auto login_form = [&](std::string const error_msg = "", bool logout = false)
         {
+            // if the user attempted to log in too many times his IP gets blocked
+            // for until they delete the hit file or 1 to 2 months when the
+            // hit file gets deleted by the auto-cache removal script
+            //
+            int const hit_result(is_ip_blocked());
+            if(hit_result != 0)
+            {
+                return hit_result;
+            }
+
             snap::file_content login_page("/usr/share/snapwebsites/html/snapmanager/snapmanagercgi-login.html");
             if(!login_page.read_all())
             {
@@ -874,7 +1087,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
         {
             user_info.clear();
 
-            snap::file_content user_ref(g_session_path + ("/" + user_name) + ".user");
+            snap::file_content user_ref(get_session_path() + "/" + user_name + ".user");
             if(user_ref.read_all())
             {
                 std::string const content(user_ref.get_content());
@@ -902,7 +1115,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
     auto write_user_info = [&](std::string const & user_name, std::map<std::string, std::string> & user_info)
         {
             std::ofstream user_file;
-            user_file.open(g_session_path + ("/" + user_name) + ".user");
+            user_file.open(get_session_path(true) + "/" + user_name + ".user");
             if(!user_file.is_open())
             {
                 return error(
@@ -950,14 +1163,22 @@ int manager_cgi::is_logged_in(std::string & request_method)
         auto const & user_name_it(f_post_variables.find("user_name"));
         auto const & user_password_it(f_post_variables.find("user_password"));
 
-        if(user_login_it != f_post_variables.end()
-        && user_name_it != f_post_variables.end()
+        if(user_login_it    != f_post_variables.end()
+        && user_name_it     != f_post_variables.end()
         && user_password_it != f_post_variables.end())
         {
             SNAP_LOG_TRACE("Received data from logging form, processing...");
 
             f_user_name = user_name_it->second;
             std::string const user_password(user_password_it->second);
+
+            // check whether the user is already blocked
+            //
+            int const hit_result(is_ip_blocked());
+            if(hit_result != 0)
+            {
+                return hit_result;
+            }
 
             // check that the user exists and that the password is correct
             // for that user
@@ -991,7 +1212,9 @@ int manager_cgi::is_logged_in(std::string & request_method)
                     SNAP_LOG_INFO(snap::logging::log_security_t::LOG_SECURITY_SECURE)
                                  ("Credential check failed. User \"")
                                  (f_user_name)
-                                 ("\" will not get logged in.");
+                                 ("\" will not be logged in.");
+
+                    increase_hit_count();
 
                     // invalid credentials
                     //
@@ -999,39 +1222,19 @@ int manager_cgi::is_logged_in(std::string & request_method)
                     //
                     return login_form("Invalid credentials. Please try again.");
                 }
+
+                // we don't increase the hit counter in this case since
+                // the user may have used the correct password
+                //
                 return error(
                           "500 Internal Server Error"
                         , "An internal error occurred."
                         , "Somehow the snappassword command failed.");
             }
 
-            // without this directory in place, the following while would
-            // fail "forever" (although we now have a counter to make sure
-            // we get things straight)
+            // the user knows his password, forget the hit counter for that IP
             //
-            struct stat s;
-            if(stat(g_session_path, &s) != 0)
-            {
-                if(snap::mkdir_p(g_session_path) != 0)
-                {
-                    return error(
-                              "500 Internal Server Error"
-                            , "An internal error occurred."
-                            , "Could not ensure the availability of the session path folder (g_session_path).");
-                }
-                // change the ownership and permissions to be more secure
-                //
-                snap::chownnm(g_session_path, "www-data", "www-data");
-                chmod(g_session_path, 0700);
-
-                // of course we could statically define the parent but
-                // this way if it changes we still have code that works
-                //
-                char const * parent_end(strrchr(g_session_path, '/'));
-                std::string const parent(g_session_path, parent_end - g_session_path);
-                snap::chownnm(parent.c_str(), "www-data", "www-data");
-                chmod(parent.c_str(), 0700);
-            }
+            delete_hit_file();
 
             // user credentials were accepted, generate a session and a cookie
             //
@@ -1064,7 +1267,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
                             , "Somehow RAND_bytes() failed.");
                 }
                 session_id = snap::bin_to_hex(std::string(reinterpret_cast<char *>(buf), sizeof(buf)));
-                session_path = g_session_path + ("/" + session_id) + ".session";
+                session_path = get_session_path(true) + "/" + session_id + ".session";
 
                 session_fd = open(session_path.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, 0700);
             }
@@ -1083,7 +1286,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
             if(user_info.find("Session") != user_info.end())
             {
                 std::string const old_session_id(user_info["Session"]);
-                unlink((g_session_path + ("/" + old_session_id) + ".session").c_str());
+                unlink((get_session_path(false) + "/" + old_session_id + ".session").c_str());
             }
 
             // clear in case we make changes with various version it is safer
@@ -1191,7 +1394,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
                 //
                 snap::NOTUSED(snap::hex_to_bin(attempt_session_id));
 
-                std::string const session_filename(g_session_path + ("/" + attempt_session_id) + ".session");
+                std::string const session_filename(get_session_path(false) + "/" + attempt_session_id + ".session");
                 snap::file_content session_data(session_filename);
                 if(!session_data.read_all())
                 {

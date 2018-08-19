@@ -71,6 +71,16 @@ then
     chown snapwebsites:snapwebsites ${CACHEDIR}
     chmod 770 ${CACHEDIR}
 
+    # a cache directory for Apache requires www-data ownership
+    # we create a separate directory because there can be private
+    # data in the /var/cache/snapwebsites directory which Apache
+    # should never have access to
+    #
+    WWWCACHEDIR=/var/cache/www-snapwebsites
+    mkdir -p ${WWWCACHEDIR}
+    chown www-data:www-data ${WWWCACHEDIR}
+    chmod 770 ${WWWCACHEDIR}
+
     # we need a place to write data not directly stored in the cassandra db
     #
     mkdir -p /var/lib/snapwebsites

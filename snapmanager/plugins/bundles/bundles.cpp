@@ -270,122 +270,6 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
         // (TBD: should we keep the lock active while running the next loop?)
     }
 
-#if 0
-    // check whether we have a bundles status file, if so we may just use
-    // the data in that file instead of checking each package again and
-    // again (which would be really slow, disk intensive, etc.)
-    //
-    QString const bundles_status_filename(QString("%1/bundles.status").arg(f_snap->get_bundles_path()));
-    QFile bundles_status_file(bundles_status_filename);
-    if(bundles_status_file.exists())
-    {
-        if(bundles_status_file.open(QIODevice::ReadOnly))
-        {
-            // read the very first line as a Unix timestamp
-            //
-            char buf[1024 * 10]; // 10Kb!
-            qint64 r(bundles_status_file.readLine(buf, sizeof(buf)));
-            if(r > 0)
-            {
-                if(buf[r - 1] == '\n')
-                {
-                    buf[r - 1] = '\0';
-                }
-                time_t const last_updated(std::stol(buf));
-                if(last_updated + 86400 >= time(nullptr))
-                {
-                    // last updaed recently enough, use that data instead of
-                    // gathering it again and again every minute
-                    //
-                    // user can click Refresh if they need an updated version
-                    // sooner rather than later
-                    //
-                    for(;;)
-                    {
-                        // one line per status
-                        //
-                        r = bundles_status_file.readLine(buf, sizeof(buf));
-                        if(r <= 0)
-                        {
-                            break;
-                        }
-                        if(buf[r - 1] == '\n')
-                        {
-                            buf[r - 1] = '\0';
-                        }
-                        QString line(QString::fromUtf8(buf));
-
-                        // find the end of the package name
-                        //
-                        int const first_colon(line.indexOf(':'));
-                        if(first_colon == -1)
-                        {
-                            SNAP_LOG_WARNING("bundle status line \"")(buf)("\" is not valid (':' missing after name).");
-                            continue;
-                        }
-                        QString const name(line.mid(0, first_colon));
-
-                        // find the end end of the status letter
-                        // (second_colon should always be first_colon + 2)
-                        //
-                        int const second_colon(line.indexOf(':', first_colon + 1));
-                        if(second_colon == -1)
-                        {
-                            SNAP_LOG_WARNING("bundle status line \"")(buf)("\" is not valid (':' missing after status letter).");
-                            continue;
-                        }
-                        QString const status_letter(line.mid(first_colon + 1, second_colon - first_colon - 1));
-
-                        // hide that bundle? if so do not add t he field
-                        //
-                        if(status_letter != "H")
-                        {
-                            // the message is after that
-                            //
-                            QString const status_info(line.mid(second_colon + 1));
-
-                            snap_manager::status_t const package_status(
-                                        status_letter == "E" ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
-                                                             : status_letter == "I" ? snap_manager::status_t::state_t::STATUS_STATE_INFO
-                                                                                    : snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT,
-                                        get_plugin_name(),
-                                        "bundle::" + name,
-                                        status_info);
-                            server_status.set_field(package_status);
-                        }
-                    }
-
-                    // we can return now, if something changed in the
-                    // system, we missed it... but if we stay in control
-                    // then the bundles status file gets deleted when
-                    // we run a modifying apt-get command
-                    //
-                    return;
-                }
-            }
-
-            bundles_status_file.close();
-        }
-        else
-        {
-            SNAP_LOG_WARNING("bundle status file \"")(bundles_status_filename)("\" exists but it could not be opened for reading.");
-        }
-        // bundle status file exists but it is invalid or out of date
-    }
-
-    if(bundles_status_file.open(QIODevice::WriteOnly))
-    {
-        time_t const created_on(time(nullptr));
-        std::string const first_line(std::to_string(created_on));
-        bundles_status_file.write(first_line.c_str(), first_line.length());
-        bundles_status_file.putChar('\n');
-    }
-    else
-    {
-        SNAP_LOG_WARNING("bundle status file \"")(bundles_status_filename)("\" could not be opened for writing.");
-    }
-#endif
-
     // get the bundles
     //
     snap_manager::bundle::vector_t bundle_list(f_snap->load_bundles());
@@ -401,9 +285,16 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
         {
             continue;
         }
-        //description += "<p>Status = ";
-        //description += std::to_string(static_cast<int>(status));
-        //description += "</p>";
+
+#ifdef _DEBUG
+        // show the exact status in debug mode
+        //
+        description += "<p>DEBUG: Status = ";
+        description += static_cast<char>(status);
+        description += " (";
+        description += std::to_string(static_cast<int>(status));
+        description += ")</p>";
+#endif
 
         // if in conflict, show that at the top
         //
@@ -411,6 +302,11 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
         {
             description += "<p class=\"in-conflict\">This bundle is in conflict with one or more other bundles:</p>";
 
+            // TODO: when in conflict, you may be in conflict because of
+            //       a prereq; i.e. your list of f_conflicts_bundles may
+            //       be empty; at this point we don't have that case, but
+            //       that's something we'd have to fix one day
+            //
             description += "<ul>";
             bool found_conflicts(false);
             auto const & conflicts(b->get_conflicts_bundles());
@@ -583,7 +479,7 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
                     if(!found_suggestions)
                     {
                         found_suggestions = true;
-                        description += "<ul>";
+                        description += "<p>The following are bundles we suggest you install along this bundle:</p><ul>";
                     }
                     description += "<li><a href=\"#bundles::"
                                  + l->get_name()
