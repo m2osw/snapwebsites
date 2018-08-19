@@ -13,7 +13,7 @@
     <p>The post installation script saves the parameters entered here so
     msmtp works as if you installed a sendmail tool (i.e. a basic MTA) on
     your computer. This allows for CRON emails to be forwarded to your
-    postfix installation.</p>
+    postfix server.</p>
   </description>
   <fields>
     <field name="host" type="input">

@@ -1,3 +1,11 @@
+snapwebsites (1.5.142.0~xenial) xenial; urgency=high
+
+  * Fixed the `systemctl disable ...` on postrm of the snapbackend with a
+    rm -f ...` which will remove the link, including one to remove the timer.
+  * SNAP-532: Add line to reset the timer as required by systemd.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Aug 2018 03:12:15 -0700
+
 snapwebsites (1.5.141.0~xenial) xenial; urgency=high
 
   * Fixed the chownnm() return test, it had to be != 0.

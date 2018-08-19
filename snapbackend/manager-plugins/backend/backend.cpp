@@ -391,8 +391,8 @@ void backend::on_retrieve_status(snap_manager::server_status & server_status)
             }
             else
             {
-                // for the delay between runs of the snapbackend as a CRON service
-                // the delay is in the .timer file instead
+                // for the delay between runs of the snapbackend as a CRON
+                // service the delay is in the .timer file instead
                 //
                 snap_config timer_config(std::string("/lib/systemd/system/") + service_info.f_service_name + ".timer"
                                        , std::string("/etc/systemd/system/") + service_info.f_service_name + ".timer.d/override.conf");
@@ -885,7 +885,7 @@ bool backend::apply_setting( QString const     & button_name
     {
         QString const filename(QString("/etc/systemd/system/%1.timer.d/override.conf").arg(service_name));
         QString const value(use_default_value ? "5min" : new_value);
-        if(f_snap->replace_configuration_value(filename, "Timer::OnUnitActiveSec", value, snap_manager::REPLACE_CONFIGURATION_VALUE_SECTION))
+        if(f_snap->replace_configuration_value(filename, "Timer::OnUnitActiveSec", value, snap_manager::REPLACE_CONFIGURATION_VALUE_SECTION | snap_manager::REPLACE_CONFIGURATION_VALUE_RESET_TIMER))
         {
             // make sure the cache gets updated
             //

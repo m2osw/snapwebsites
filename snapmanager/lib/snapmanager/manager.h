@@ -106,6 +106,7 @@ replace_configuration_value_t const    REPLACE_CONFIGURATION_VALUE_HASH_COMMENT 
 replace_configuration_value_t const    REPLACE_CONFIGURATION_VALUE_SECTION         =  0x0080;
 replace_configuration_value_t const    REPLACE_CONFIGURATION_VALUE_FILE_MUST_EXIST =  0x0100;
 replace_configuration_value_t const    REPLACE_CONFIGURATION_VALUE_TRIM_RESULT     =  0x0200;
+replace_configuration_value_t const    REPLACE_CONFIGURATION_VALUE_RESET_TIMER     =  0x0400;
 
 
 #pragma GCC diagnostic push

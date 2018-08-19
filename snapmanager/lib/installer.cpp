@@ -1027,6 +1027,8 @@ bool manager::replace_configuration_value(
         return false;
     }
 
+    QByteArray const field_name_utf8((name + equal).toUtf8());
+
     // make sure to create the file if it does not exist
     // we expect the filename parameter to be something like
     //     /etc/snapwebsites/snapwebsites.d/<filename>
@@ -1060,6 +1062,19 @@ bool manager::replace_configuration_value(
         if(!section.isEmpty())
         {
             if(::write(fd, utf8_section_line.data(), utf8_section_line.size()) != utf8_section_line.size())
+            {
+                int const e(errno);
+                SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                return false;
+            }
+        }
+        // the timer has to be reset so we have to write an empty version
+        // version first
+        //
+        if((flags & REPLACE_CONFIGURATION_VALUE_RESET_TIMER) != 0)
+        {
+            if(::write(fd, field_name_utf8.data(), field_name_utf8.size()) != field_name_utf8.size()
+            || ::write(fd, "\n", 1) != 1)
             {
                 int const e(errno);
                 SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
@@ -1133,8 +1148,9 @@ bool manager::replace_configuration_value(
         bool in_section(section.isEmpty());
         bool found_section(false);
 
-        QByteArray const field_name_utf8((name + equal).toUtf8());
         bool found_field(false);
+
+        int count_timer(0);
 
         char const * s(buf.get());
         char const * end(s + size);
@@ -1181,6 +1197,20 @@ bool manager::replace_configuration_value(
                                 return false;
                             }
 
+                            if((flags & REPLACE_CONFIGURATION_VALUE_RESET_TIMER) != 0
+                            && count_timer == 0)
+                            {
+                                // if count_timer != 0 then we already found an empty entry
+                                // so we do not add a second one here
+                                //
+                                if(::write(fd, field_name_utf8.data(), field_name_utf8.size()) != field_name_utf8.size()
+                                || ::write(fd, "\n", 1) != 1)
+                                {
+                                    int const e(errno);
+                                    SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                                    return false;
+                                }
+                            }
                             if(::write(fd, utf8_line.data(), utf8_line.size()) != utf8_line.size())
                             {
                                 int const e(errno);
@@ -1217,25 +1247,46 @@ bool manager::replace_configuration_value(
                 && len >= static_cast<size_t>(field_name_utf8.size())
                 && strncmp(trimmed_start, field_name_utf8.data(), field_name_utf8.size()) == 0)
                 {
-                    // we found the field the user is asking to update
+                    // do not replace the first empty line if it exists
                     //
-                    found_field = true;
-                    if(trimmed_start > start
-                    && (flags & REPLACE_CONFIGURATION_VALUE_TRIM_RESULT) == 0)
+                    if((flags & REPLACE_CONFIGURATION_VALUE_RESET_TIMER) != 0
+                    && len == static_cast<size_t>(field_name_utf8.size())
+                    && count_timer == 0)
                     {
-                        ssize_t const trimmed_len(trimmed_start - start);
-                        if(::write(fd, start, trimmed_len) != trimmed_len)
+                        count_timer = 1;
+
+                        // keep that line (same code as else block below...)
+                        //
+                        len = s - start + 1;
+                        if(::write(fd, start, len) != static_cast<ssize_t>(len))
+                        {
+                            int const e(errno);
+                            SNAP_LOG_ERROR("writing back of line to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // we found the field the user is asking to update
+                        //
+                        found_field = true;
+                        if(trimmed_start > start
+                        && (flags & REPLACE_CONFIGURATION_VALUE_TRIM_RESULT) == 0)
+                        {
+                            ssize_t const trimmed_len(trimmed_start - start);
+                            if(::write(fd, start, trimmed_len) != trimmed_len)
+                            {
+                                int const e(errno);
+                                SNAP_LOG_ERROR("writing of new line to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                                return false;
+                            }
+                        }
+                        if(::write(fd, utf8_line.data(), utf8_line.size()) != utf8_line.size())
                         {
                             int const e(errno);
                             SNAP_LOG_ERROR("writing of new line to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
                             return false;
                         }
-                    }
-                    if(::write(fd, utf8_line.data(), utf8_line.size()) != utf8_line.size())
-                    {
-                        int const e(errno);
-                        SNAP_LOG_ERROR("writing of new line to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
-                        return false;
                     }
                 }
                 else
@@ -1272,6 +1323,19 @@ bool manager::replace_configuration_value(
             if(!section.isEmpty())
             {
                 if(::write(fd, utf8_section_line.data(), utf8_section_line.size()) != utf8_section_line.size())
+                {
+                    int const e(errno);
+                    SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                    return false;
+                }
+            }
+            // the timer has to be reset so we have to write an empty version
+            // version first
+            //
+            if((flags & REPLACE_CONFIGURATION_VALUE_RESET_TIMER) != 0)
+            {
+                if(::write(fd, field_name_utf8.data(), field_name_utf8.size()) != field_name_utf8.size()
+                || ::write(fd, "\n", 1) != 1)
                 {
                     int const e(errno);
                     SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
