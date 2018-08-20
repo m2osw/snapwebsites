@@ -46,9 +46,6 @@
 
 namespace
 {
-//    QString const CREATE_MASTER_ZONE = QString("create_master_zone");
-//    QString const CREATE_SLAVE_ZONE  = QString("create_slave_zone");
-//    QString const SHOW_SLAVE_ZONES   = QString("show_slave_zones");
 
 const std::vector<std::string> g_configuration_files; // Empty
 
@@ -76,6 +73,15 @@ const advgetopt::getopt::option g_options[] =
         "debug",
         nullptr,
         "run %p in debug mode",
+        advgetopt::getopt::argument_mode_t::no_argument
+    },
+    {
+        'e',
+        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "execute",
+        nullptr,
+        "define a command to execute, see manual for details about syntax;"
+        " <keyword> ( '[' <keyword> | '\"' <string> '\"' ']' )* ( ( '?' | '+' )? '=' ( 'null' | (<keyword> | '\"' <string> '\"' )+ ) )?",
         advgetopt::getopt::argument_mode_t::no_argument
     },
     {
@@ -127,15 +133,52 @@ const advgetopt::getopt::option g_options[] =
 class dns_options
 {
 public:
-    enum class command_t
+    enum class token_t
     {
-        COMMAND_UNDEFINED,
+        TOKEN_UNKNOWN,              // unknown token
 
-        COMMAND_ADD,
-        COMMAND_UPDATE,
-        COMMAND_ADD_OR_UPDATE,
-        COMMAND_REMOVE,
-        COMMAND_GET
+        TOKEN_EOT,                  // end of tokens
+        TOKEN_KEYWORD,              // option names & values
+        TOKEN_STRING,               // "..."
+        TOKEN_OPEN_BLOCK,           // "{"
+        TOKEN_CLOSE_BLOCK,          // "}"
+        TOKEN_END_OF_DEFINITION,    // ";"
+
+        // extensions
+        //
+        TOKEN_OPEN_INDEX,           // "["
+        TOKEN_CLOSE_INDEX,          // "]"
+        TOKEN_FIELD,                // "."
+        TOKEN_ASSIGN,               // "="
+        TOKEN_UPDATE,               // "+="
+        TOKEN_CREATE,               // "?="
+
+        // special cases
+        //
+        TOKEN_REMOVE,               // "=" "null"
+        TOKEN_GET,                  // no "=" / value
+
+        TOKEN_ERROR                 // an error occurred
+    };
+
+    class keyword
+    {
+    public:
+        typedef std::vector<keyword>    vector_t;
+
+                        keyword(token_t k, std::string const & token);
+
+        void            add_index(keyword const & k);
+        void            add_field(keyword const & k);
+        void            add_value(keyword const & k);
+
+    private:
+        token_t         f_keyword = token_t::TOKEN_UNKNOWN;
+        std::string     f_token = std::string();
+
+        vector_t        f_index = vector_t();
+        vector_t        f_fields = vector_t();
+        vector_t        f_value = vector_t();
     };
 
                     dns_options(int argc, char * argv[]);
@@ -146,25 +189,52 @@ private:
     int             load_file();
     int             getc();
     void            ungetc(int c);
-    int             get_token();
+    token_t         get_token(bool extensions = false);
 
-    int             add_option();
-    int             update_option();
-    int             remove_option();
-    int             get_option();
+    int             parse_command_line();
+    int             edit_option();
 
     advgetopt       f_opt = advgetopt();
     bool            f_debug = false;
     std::string     f_filename = std::string();
-    command_t       f_command = command_t::COMMAND_UNDEFINED;
-    std::string     f_parameter = std::string();
+    std::string     f_execute = std::string();
     std::string     f_data = std::string();
     int             f_pos = 0;
     int             f_line = 1;
     std::string     f_unget = std::string();
     std::string     f_token = std::string();
     int             f_block_level = 0;
+    keyword         f_keyword = keyword(token_t::TOKEN_UNKNOWN, std::string());
 };
+
+
+
+
+
+keyword::keyword(token_t k, std::string const & token)
+    : f_keyword(k)
+    , f_token(token)
+{
+}
+
+void keyword::add_index(keyword const & k)
+{
+    f_index.push_back(k);
+}
+
+
+void keyword::add_field(keyword const & k)
+{
+    f_fields.push_back(k);
+}
+
+
+void keyword::add_value(keyword const & k)
+{
+    f_value.push_back(k);
+}
+
+
 
 
 /** \brief Initialize the DNS options object.
@@ -226,66 +296,29 @@ int dns_options::run()
         return 1;
     }
 
-    // determine the command
+    // --execute "<code>"
     //
-    std::map<std::string, command_t> commands
-        {
-            { "add",           command_t::COMMAND_ADD           },
-            { "update",        command_t::COMMAND_UPDATE        },
-            { "add-or-update", command_t::COMMAND_ADD_OR_UPDATE },
-            { "remove",        command_t::COMMAND_REMOVE        },
-            { "get",           command_t::COMMAND_GET           }
-        };
-
-    for(auto const & c : commands)
+    if(!f_opt.is_defined("execute"))
     {
-        if(f_opt.is_defined(c.first))
-        {
-            if(f_command != command_t::COMMAND_UNDEFINED)
-            {
-                std::cerr << f_opt.get_program_name() << ":error: only one command can be specified on the command line." << std::endl;
-                return 1;
-            }
+        std::cerr << f_opt.get_program_name() << ":error: mandatory --execute option missing." << std::endl;
+        return 1;
+    }
 
-            f_command = c.second;
-            f_parameter = f_opt.get_string(c.first);
-        }
+    // get and parse the command line command
+    //
+    f_execute = f_opt.get_string(c.first);
+    int r(parse_command_line());
+    if(r != 0)
+    {
+        return r;
     }
 
     // then execute the command
     //
-    int r(0);
-    switch(f_command)
+    r = edit_option();
+    if(r != 0)
     {
-    case command_t::COMMAND_ADD:
-        r = add_option();
-        break;
-
-    case command_t::COMMAND_UPDATE:
-        r = update_option();
-        break;
-
-    case command_t::COMMAND_ADD_OR_UPDATE:
-        r = add_option();
-        if(r == 2)
-        {
-            r = update_option();
-        }
-        break;
-
-    case command_t::COMMAND_REMOVE:
-        r = remove_option();
-        break;
-
-    case command_t::COMMAND_GET:
-        r = get_option();
-        break;
-
-    default:
-        std::cerr << f_opt.get_program_name() << ":error: no command was specified onthe command line." << std::endl;
-        r = 1;
-        break;
-
+        return r;
     }
 
     // done
@@ -315,32 +348,22 @@ int dns_options::load_file()
 
     // ready the file as input
     //
-    std::ifstream in(f_filename, std::ios_base::in | std::ios_base::binary);
-    if(!in.is_open())
+    file_content file(f_filename);
+    if(!file.read_all())
     {
-        // could not open file
+        // could not open file for reading
         //
-        std::cerr << "error: can't open file \"" << f_filename << "\".";
+        std::cerr << "error: can't open file \"" << f_filename << "\" for reading.";
         return 1;
     }
 
-    // get the file size
-    //
-    in.seekg(0, std::ios::end);
-    std::ifstream::pos_type const size(in.tellg());
-    in.seekg(0, std::ios::beg);
-
     // ready the buffer
     //
-    f_data.resize(size);
-
-    // read the data in the buffer
-    //
-    in.read(f_data.data(), size);
+    f_data = file.get_content();
 
     // if something bad happened, return 1, otherwise 0
     //
-    return in.bad() ? 1 : 0;
+    return 0;
 }
 
 
@@ -377,6 +400,18 @@ int dns_options::getc()
         // return next character
         //
         int const c(f_data[f_pos]);
+        if(c == '\r')
+        {
+            ++f_pos;        // skip the '\r'
+            ++f_line;
+
+            if(f_pos < f_data.size()
+            && f_data[f_pos] == '\n')
+            {
+                ++f_pos;    // skip the '\n' "silently"
+            }
+            return '\n'; // always return '\n' so the rest of the code can ignore '\r' altogether
+        }
         if(c == '\n')
         {
             ++f_line;
@@ -411,9 +446,11 @@ void dns_options::ungetc(int c)
  *
  * This function gets the next token and saves it to the f_token parameter.
  *
+ * \param[in] extensions  Whether the function supports our extensions.
+ *
  * \return 0 when no errors were encountered, 1 otherwise.
  */
-int dns_options::get_token()
+dns_options::token_t dns_options::get_token(bool extensions)
 {
     f_token.clear();
     for(;;)
@@ -422,11 +459,10 @@ int dns_options::get_token()
         switch(c)
         {
         case EOF:
-            return 0;
+            return token_t::TOKEN_EOT;
 
         case ' ':
         case '\t':
-        case '\r':
         case '\n':
         case '\f':
             // ignore "noise"
@@ -437,7 +473,8 @@ int dns_options::get_token()
             {
                 c = getc();
             }
-            while(c != EOF && c != '\n' && c != '\r');
+            while(c != EOF && c != '\n');
+            // ignore "noise"
             break;
 
         case '/':   // probably a comment
@@ -450,7 +487,8 @@ int dns_options::get_token()
                 {
                     c = getc();
                 }
-                while(c != EOF && c != '\n' && c != '\r');
+                while(c != EOF && c != '\n');
+                // ignore "noise"
             }
             else if(c == '*')
             {
@@ -472,18 +510,18 @@ int dns_options::get_token()
                         }
                     }
                 }
+                // ignore "noise"
             }
             else
             {
                 // this is a "lone" '/' character, continue token
                 //
-                f_token += c;
                 goto read_token;
             }
             break;
 
         case '"':
-            // no single quote string support in BIND
+            // WARNING: no single quote string support in BIND
             //
             for(c = getc(); c != EOF && c != '"'; c = getc())
             {
@@ -509,34 +547,90 @@ int dns_options::get_token()
                     // "start...\
                     // ...end"
                     //
-                    std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string includes a newline." << std::endl;
-                    return 1;
+                    std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string includes a non-escaped newline." << std::endl;
+                    return token_t::TOKEN_ERROR;
                 }
                 f_token += c;
             }
             if(c != '"')
             {
                 std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string was never closed." << std::endl;
-                return 1;
+                return token_t::TOKEN_ERROR;
             }
-            return 0;
+            return token_t::TOKEN_STRING;
 
         case ';':
-            f_token = ";";
+            f_token_type = token_t::TOKEN_END_OF_DEFINITION;
             return 0;
 
         case '{':
             ++f_block_level;
-            goto read_token;
+            f_token_type = token_t::TOKEN_OPEN_BLOCK;
+            return 0;
 
         case '}':
             if(f_block_level <= 0)
             {
                 std::cerr << "error:" << f_filename << ":" << f_line << ": '}' mismatch, '{' missing for this one.";
+                return token_t::TOKEN_ERROR;
             }
             else
             {
                 --f_block_level;
+            }
+            return token_t::TOKEN_CLOSE_BLOCK;
+
+        case '[':
+            if(extensions)
+            {
+                return f_token_type = token_t::TOKEN_OPEN_INDEX;
+            }
+            goto read_token;
+
+        case ']':
+            if(extensions)
+            {
+                return f_token_type = token_t::TOKEN_CLOSE_INDEX;
+            }
+            goto read_token;
+
+        case '.':
+            if(extensions)
+            {
+                return f_token_type = token_t::TOKEN_FIELD;
+            }
+            goto read_token;
+
+        case '=':
+            if(extensions)
+            {
+                return f_token_type = token_t::TOKEN_ASSIGN;
+            }
+            goto read_token;
+
+        case '+':
+            if(extensions)
+            {
+                c = getc();
+                if(c == '=')
+                {
+                    return f_token_type = token_t::TOKEN_UPDATE;
+                }
+                ungetc(c);
+                c = '+';
+            }
+            goto read_token;
+
+        case '?':
+            if(extensions)
+            {
+                c = getc();
+                if(c == '=')
+                {
+                    return f_token_type = token_t::TOKEN_CREATE;
+                }
+                ungetc(c);
+                c = '+';
             }
             goto read_token;
 
@@ -550,19 +644,50 @@ read_token:
                 case EOF:
                 case ' ':
                 case '\t':
-                case '\r':
                 case '\n':
                 case '\f':
-                    return 0;
+                    // no need to unget this one
+                    //
+                    return token_t::TOKEN_KEYWORD;
 
                 case '{':
                 case '}':
                 case '"':
                 case ';':
+                case '#':
                     // restore that character too, it is a token on its own
                     //
                     ungetc(c);
-                    return 0;
+                    return token_t::TOKEN_KEYWORD;
+
+                case '/':
+                    // is that the start of a comment?
+                    // if so we found the end of this token
+                    //
+                    c = getc();
+                    if(c == '/' || c == '*')
+                    {
+                        ungetc(c);
+                        ungetc('/');
+                        return token_t::TOKEN_KEYWORD;
+                    }
+                    ungetc(c);
+                    f_token += '/'; // it's not a comment, make it part of the keyword
+                    break;
+
+                case '[':
+                case ']':
+                case '=':
+                case '?':
+                case '+':
+                case '.':
+                    if(extensions)
+                    {
+                        ungetc(c);
+                        return token_t::TOKEN_KEYWORD;
+                    }
+                    f_token += c;
+                    break;
 
                 default:
                     f_token += c;
@@ -570,6 +695,7 @@ read_token:
 
                 }
             }
+            snap::NOTREACHED();
             break;
 
         }
@@ -577,68 +703,248 @@ read_token:
 }
 
 
+int dns_options::parse_command_line()
+{
+    int r(0);
+
+    f_pos = 0;
+    f_line = 1;
+    f_block_level = 0;
+
+    f_data = f_execute;
+
+    token_t t(get_token());
+    if(t != token_t::TOKEN_KEYWORD)
+    {
+        if(t != token_t::TOKEN_ERROR)
+        {
+            std::cerr << "error:<execute>:" << f_line << ": we expected a keyword.";
+        }
+        return 1;
+    }
+
+    {
+        keyword k(t);
+        f_keyword.swap(k);
+    }
+
+    auto get_index = [&](keyword & p)
+        {
+            for(;;)
+            {
+                t = get_token();
+                if(t == token_t::TOKEN_CLOSE_INDEX)
+                {
+                    break;
+                }
+
+                switch(t)
+                {
+                case token_t::TOKEN_ERROR:
+                    return 1;
+
+                case token_t::TOKEN_KEYWORD:
+                case token_t::TOKEN_STRING:
+                    {
+                        keyword i(t, f_token);
+                        p.add_index(i);
+                    }
+                    break;
+
+                default:
+                    std::cerr << "error:<execute>:" << f_line << ": we expected a keyword or a quoted string as an index.";
+                    return 1;
+
+                }
+            }
+            // we need to read another token, we were on the ']'
+            //
+            t = get_token();
+
+            return 0;
+        };
+
+    t = get_token()
+    if(t == token_t::TOKEN_OPEN_INDEX)
+    {
+        r = get_index(k);
+        if(r != 0)
+        {
+            return r;
+        }
+    }
+
+    while(t == token_t::TOKEN_FIELD)
+    {
+        t = get_token();
+
+        if(t == token_t::TOKEN_ERROR)
+        {
+            return 1;
+        }
+
+        if(t != token_t::TOKEN_CLOSE_KEYWORD
+        && t != token_t::TOKEN_CLOSE_STRING)
+        {
+            std::cerr << "error:<execute>:" << f_line << ": we expected a keyword or a quoted string as the field name.";
+            return 1;
+        }
+
+        keyword f;
+        k.add_field(f);
+
+        t = get_token();
+        if(t == token_t::TOKEN_OPEN_INDEX)
+        {
+            r = get_index(f);
+            if(r != 0)
+            {
+                return r;
+            }
+        }
+    }
+
+    switch(t)
+    {
+    case token_t::TOKEN_EOT:
+        // it worked, we have a GET
+        //
+        return 0;
+
+    case token_t::TOKEN_END_OF_DEFINITION:
+        t = get_token();
+        if(t != token_t::TOKEN_EOT)
+        {
+            std::cerr << "error:<execute>:" << f_line << ": nothing was expected after the ';'.";
+            return 1;
+        }
+        return 0;
+
+    case token_t::TOKEN_ASSIGN:
+    case token_t::TOKEN_UPDATE:
+    case token_t::TOKEN_CREATE:
+        k.set_command(t);
+        break;
+
+    default:
+        std::cerr << "error:<execute>:" << f_line << ": an assignment operator (=, ?=, +=) was expected.";
+        return 1;
+
+    }
+
+    // we have an assignment, read the value
+    //
+    t = get_token();
+
+    if(t == token_t::TOKEN_KEYWORD
+    && f_token == "null")
+    {
+        if(k.get_command() != token_t::TOKEN_ASSIGN)
+        {
+            std::cerr << "error:<execute>:" << f_line << ": an assignment to null only works with the '=' operator.";
+            return 1;
+        }
+        k.set_command(token_t::TOKEN_REMOVE);
+
+        t = get_token();
+        if(t != token_t::TOKEN_END_OF_DEFINITION)
+        {
+            t = get_token();
+        }
+        if(t != token_t::TOKEN_EOT)
+        {
+            std::cerr << "error:<execute>:" << f_line << ": an assignment to null cannot include anything else.";
+            return 1;
+        }
+
+        // it worked, we have a REMOVE
+        //
+        return 0;
+    }
+
+    for(;; t = get_token())
+    {
+        switch(t)
+        {
+        case token_t::EOT:
+            return 0;
+
+        case token_t::TOKEN_END_OF_DEFINITION:
+            t = get_token();
+            if(t != token_t::TOKEN_EOT)
+            {
+                std::cerr << "error:<execute>:" << f_line << ": nothing was expected after the ';'.";
+                return 1;
+            }
+            return 0;
+
+        case token_t::TOKEN_KEYWORD:
+        case token_t::TOKEN_STRING:
+            {
+                keyword const v(t, f_token);
+                k.add_value(v);
+            }
+            break;
+
+        default:
+            std::cerr << "error:<execute>:" << f_line << ": the value can only be composed of keywords and quoted strings.";
+            return 1;
+
+        }
+    }
+
+ * <keyword> ( '[' <keyword> | '"' <string> '"' ']' )*
+ *           ('.' <keyword> | '"' <string> '"'
+ *              ( '[' <keyword> | '"' <string> '"' ']' )* )*
+ *           ( ( '?' | '+' )? '=' ( 'null'
+ *                  | (<keyword> | '"' <string> '"' )+ ) )?
+
+    }
+}
+
+
 /** \brief Search for an option, if not present, add it.
  *
- * This function reads the options file and search for the specified option.
- * If the option cannot be found, then the function adds it and returns 0.
+ * This function parses the options file transforming it into tokens.
  *
- * If the option is found, then it does not get modified and the function
- * returns 2 instead.
+ * The function checks those tokens against the option being edited.
+ * First, the function searches for the blocks (blocks start with `{`
+ * where the option is expected to be defined
+ * (i.e. `\<name> { block-with-option }`).
+ *
+ * Note that at each new option we save the current parser position.
+ * This is used to remove the option entirely in case the command
+ * was `--remove`.
+ *
+ * Similarly, once an option name was parsed, we save the beginning
+ * and end positions of the value of that option. This gives us the
+ * ability to edit that value.
+ *
+ * Finally, if the option is not found in the block expected to hold
+ * it, the save the position before the closing curvly brace (}) so
+ * we can insert  the option there if the command asks us to do so.
+ *
+ * If the block is not even found, then the function can still add
+ * the option by creating the whole block along the way.
  *
  * \return 0 on success, 1 on error, 2 if the option already exists.
  */
-int dns_options::add_option()
+int dns_options::edit_option()
 {
+    load_file();
+
+    for(;;)
+    {
+        int const r(get_token());
+        if(r != 0)
+        {
+            return r;
+        }
+    }
+
 }
 
 
-/** \brief Search for an option, if present, update it.
- *
- * This function reads the options file and search for the specified option.
- * If the option could be found, then the function replaces its value and
- * returns 0.
- *
- * If the option is not found, then it does not get added and the
- * function returns 2 instead.
- *
- * \return 0 on success, 1 on error, 2 if the option does not exist.
- */
-int dns_options::update_option()
-{
-}
-
-
-/** \brief Search for an option, if present, remove it.
- *
- * This function reads the options file and search for the specified option.
- * If the option is found, it gets deleted and the function returns 0.
- *
- * If the option is not found, then nothing happens and the function returns
- * 2 instead.
- *
- * \return 0 on success, 1 on error, 2 if the option does not exist.
- */
-int dns_options::remove_option()
-{
-}
-
-
-/** \brief Search for an option, if present, print its value in stdout.
- *
- * This function reads the options file and search for the specified option.
- * If the option is found, it reads its value and prints it to stdout.
- * Remember that the value of an option may be a whole block of data.
- * That block of data may also be named. When an option is found, the
- * function returns 0.
- *
- * If the option is not found, then nothing happens and the function returns
- * 2 instead.
- *
- * \return 0 on success, 1 on error, 2 if the option does not exist.
- */
-int dns_options::get_option()
-{
-}
 
 
 }
@@ -651,62 +957,132 @@ int dns_options::get_option()
 
 /** \brief Implement the main() command.
  *
- * This tool accepts a set of command lines that are used to edit the
- * BIND configuration files. The following are the main commands one
- * can use to do such editing:
+ * This tool accepts command lines that are used to edit
+ * BIND configuration files. It accepts and execution expression
+ * and a filename to be edited.
+ *
+ * The expression is more or less defined as "variable-name" = "value".
+ * The exact syntax is defined as:
  *
  * \code
- * --add <parameter>=<value>
- * --update <parameter>=<value>
- * --add-or-update <parameter>=<value>
- * --remove <parameter>
- * --get <parameter>[=<default-value>]
+ * <keyword> ( '[' <keyword> | '"' <string> '"' ']' )*
+ *           ('.' <keyword> | '"' <string> '"'
+ *              ( '[' <keyword> | '"' <string> '"' ']' )* )*
+ *           ( ( '?' | '+' )? '=' ( 'null'
+ *                  | (<keyword> | '"' <string> '"' )+ ) )?
  * \endcode
  *
- * The \<parameter> name accepts the dotted notation. For example, to
- * edit the version parameter in the options block, one writes:
+ * This means:
+ *
+ * \li a keyword such as "options" (without the quotes)
+ * \li optionally followed by one or more indexes defined as keywords or
+ *     quoted strings
+ * \li if no assignment follows, then the command is a GET
+ * \li one of the supported assignment operators: '=' (SET), '?=' (SET if
+ *     not yet defined), or '+=' (REPLACE, set if already defined)
+ * \li the new value, if the "null" keyword is used (without the quotes)
+ *     then the command is a REMOVE instead of an assignment; otherwise
+ *     the keywords and quoted strings concatenated represent the new value.
+ *
+ * So for example to force the value of the `version` parameter in the
+ * `options` block to the new value `"none"`, one writes:
  *
  * \code
- * --add 'options.version="none"'
+ *    cd /var/bind
+ *    sudo dns_options --execute 'options.version = "none"' named.conf.options
  * \endcode
  *
- * Note that the quotations around "none" are important which is why
- * you need the single quote around the whole parameter. This --add
- * command says to search a parameter named "options". Once found, seach
- * for an option named "version" within a block following the options
- * parameter. If no version is found, add one at the end of the block.
+ * If instead you wanted to set the version only if not already set, use
+ * the `?=` operator instead:
  *
- * The \<value> is the new value for the parameter. As mentioned above
- * it may be necessary to use proper quotations on the command line
- * to get the correct results (i.e. if the value is a string such
- * as "named", then in your shell you must make sure to put that
- * between single quotes.)
+ * \code
+ *    cd /var/bind
+ *    sudo dns_options --execute 'options.version ?= "none"' named.conf.options
+ * \endcode
  *
- * The --add option adds the specified option. If the option does not
- * exist, then add it at the end and exit with 0. If the option already
- * exists, it does not get updated and the command exits with 2.
+ * And to update the version in case it is defined (leave it to its default
+ * otherwise) then use the `+=` operator instead:
  *
- * The --update option searches for the option and updates it. If the
- * option does exist, it gets updated and the command exits with 0. If the
- * option does not exist, nothing happens and the command exists with 2.
+ * \code
+ *    cd /var/bind
+ *    sudo dns_options --execute 'options.version += "none"' named.conf.options
+ * \endcode
  *
- * The --add-or-update option searches for the option. It updates it
- * if it already exists. It adds it if it cannot be found yet. In
- * most cases this is the option you want to use to make sure an option
- * has a specific value. The command exits with 0 unless and error occurs.
+ * The index can be used to make changes to the logs channel parameters as in;
  *
- * The --remove option searches for the specified option and deletes
- * it from the file. If it is not there, nothing happens.
+ * \code
+ *    cd /var/bind
+ *    sudo dns_options --execute 'logging.channel["logs"].print-category = yes' named.conf.options
+ * \endcode
  *
- * The --get option searches for the option and prints out its value.
- * If the option is not found, then nothing is printed and this tool
- * exits with 2. If your specify a value, that value is printed if
- * there is not such option (i.e. a default.)
+ * To remove a parameter, such as the print-time of the logging channel:
+ *
+ * \code
+ *    cd /var/bind
+ *    sudo dns_options --execute 'logging.channel["logs"].print-time = null' named.conf.options
+ * \endcode
+ *
+ * Finally, you may get the value, which gets printed in stdout, by not
+ * assigning a value as in:
+ *
+ * \code
+ *    cd /var/bind
+ *    sudo dns_options --execute 'logging.channel["logs"].severity' named.conf.options
+ * \endcode
+ *
+ * This last command may print:
+ *
+ * \code
+ *    info
+ * \endcode
+ *
+ * in your console.
+ *
+ * The system is capable of accepting any keyword or quoted string (although
+ * the type is still checked) when using the asterisk as is:
+ *
+ * \code
+ *    cd /var/bind
+ *    sudo dns_options --execute 'logging.channel["*"].severity' named.conf.options
+ * \endcode
+ *
+ * This means a named.conf file with:
+ *
+ * \code
+ *    logging { channel "any-name" { severity 123 } }
+ * \endcode
+ *
+ * will match and that last command returns 123 in your console. There is
+ * another example where the asterisk is used in place of a keyword:
+ *
+ * \code
+ *    cd /var/bind
+ *    sudo dns_options --execute 'logging.*["logs"].severity' named.conf.options
+ * \endcode
+ *
+ * Note that in BIND certain commands only accept quoted strings such as
+ * `"none"`. This is why you need the single quotes around the whole
+ * parameter of the --execute command. BIND does not accept strings using
+ * single quotes. So there is no need to inverse the option. If you want
+ * to use a dynamic parameter you can close and reopen as in:
+ *
+ * \code
+ *    cd /var/bind
+ *    sudo dns_options --execute 'options.query-source = address '$ADDR' port 53' named.conf.options
+ * \endcode
+ *
+ * This assumes that the content of `$ADDR` is valid (i.e. it does not
+ * include spaces, for example.)
+ *
+ * The value on the right of the assignment is going to be copied to
+ * the configuration file pretty much verbatim (extra spaces and
+ * comments are removed) so you want to make sure it is written as
+ * expected by BIND.
  *
  * \warning
- * At this time the command line is not capable of executing more than
- * one command (i.e. it does not work like a script.) Use the command
- * multiple times to add/update/remove multiple fields.
+ * At this time the tool is not capable of executing more than one
+ * command at a time (i.e. it does not work like a script.) Use the
+ * command multiple times to add/update/remove multiple fields.
  *
  * \param[in] argc  The number of argv options.
  * \param[in] argv  The command line options.
