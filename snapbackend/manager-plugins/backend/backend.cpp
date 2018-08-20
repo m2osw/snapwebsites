@@ -705,7 +705,12 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
                           QString("Nice value for %1").arg(service_name)
                         , s.get_field_name()
                         , s.get_value()
-                        , "The nice value is the same as the nice command line Unix utility. It changes the priority of the process. The larger the value, the weak the priority of that process (it will yield to processes with a smaller nice value.)"
+                        , "The nice value is the same as the nice command line"
+                         " Unix utility, here we accept a value from 0 to 19."
+                         " It changes the priority of the process."
+                         " The larger the value, the weaker the priority of that"
+                         " process (it will yield to processes with a smaller"
+                         " nice value.)"
                         ));
         f.add_widget(field);
         f.generate(parent, uri);
@@ -903,6 +908,22 @@ bool backend::apply_setting( QString const     & button_name
 
     if(field == "nice")
     {
+        // verify that the value is sensible as a nice value
+        //
+        bool ok(false);
+        int const nice(new_value.toInt(&ok, 10));
+        if(!ok
+        || nice < 0
+        || nice > 19)
+        {
+            // TODO: report error to admin. in snapmanager.cgi
+            //
+            SNAP_LOG_ERROR("The nicevalue is limited to a number between 0 and 19. \"")
+                          (new_value)
+                          ("\" is not acceptable. Please try again.");
+            return true;
+        }
+
         QString const filename(QString("/etc/systemd/system/%1.service.d/override.conf").arg(service_name));
         QString value(use_default_value
                     ? QString("%1").arg(service_info.f_nice)

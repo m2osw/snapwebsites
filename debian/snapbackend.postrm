@@ -32,9 +32,14 @@ then
     # by this time, the service was purged and `systemd disable ...`
     # does not work, so we do the `rm -f ...` ourselves
     #
+    # This includes the snaplistjournal.service file because the overrides
+    # may still exist at this time; the link under multi-user.target.wants,
+    # however, should be gone since this is not a static service
+    #
     for b in snapbackend.timer \
          snapbackend.service \
          snapimages.service \
+         snaplistjournal.service \
          snappagelist.service \
          snapsendmail.service
     do

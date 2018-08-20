@@ -21,6 +21,10 @@ then
     #
     rm -f /etc/snapwebsites/snapwebsites.d/${PACKAGENAME}.conf
 
+    # delete override.d of snapcommunicator
+    #
+    rm -rf /etc/systemd/system/snapcommunicator.service.d
+
     # delete the snapcommunicator SSL files
     #
     SNAPSSL=/etc/snapwebsites/ssl

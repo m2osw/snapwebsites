@@ -1,3 +1,10 @@
+snapwebsites (1.5.144.0~xenial) xenial; urgency=high
+
+  * Check the nice value, if not between 0 and 19, generate an error.
+  * Remove the snapcommunicator override.conf file on a purge.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 19 Aug 2018 17:05:16 -0700
+
 snapwebsites (1.5.143.0~xenial) xenial; urgency=high
 
   * Removed the creation of the sessions directory under /var/lib/snapwebsites.
