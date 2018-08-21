@@ -111,7 +111,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
         <div class="watchdog-data">
 
           <!-- handle the errors first so it's more prominent -->
-          <xsl:variable name="error_count" select="count(watchdog/error)"/>
+          <xsl:variable name="error_count" select="count(watchdog/error/message)"/>
           <xsl:if test="$error_count > 0">
             <div id="error-section" style="border: 1px solid #880000; background-color: #fff0f0; padding: 10px;">
               <h2 style="color: red;">Found <xsl:value-of select="$error_count"/> Error<xsl:if test="$error_count != 1">s</xsl:if></h2>

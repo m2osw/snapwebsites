@@ -210,7 +210,7 @@ void apt::on_process_watch(QDomDocument doc)
             return;
         }
 
-        snap::snap_string_list counts(content.split(";"));
+        snap::snap_string_list const counts(content.split(";"));
         if(counts.size() == 3)
         {
             time_t const now(time(nullptr));

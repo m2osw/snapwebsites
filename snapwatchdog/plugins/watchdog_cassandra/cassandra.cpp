@@ -184,6 +184,12 @@ void cassandra::on_process_watch(QDomDocument doc)
             QDomElement proc(doc.createElement("process"));
             e.appendChild(proc);
 
+            // TODO: check whether the Cassandra service is active,
+            //       if not then it is not an error that the service
+            //       is down (although, I'm not too sure why one would
+            //       turn cassandra down except to reboot or update this
+            //       node?)
+
             proc.setAttribute("name", "cassandra"); // the name of the command is really "java" at the moment
             proc.setAttribute("error", "missing");
 

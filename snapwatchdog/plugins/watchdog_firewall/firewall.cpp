@@ -81,7 +81,6 @@ char const * get_name(name_t name)
  * This function is used to initialize the firewall plugin object.
  */
 firewall::firewall()
-    //: f_snap(nullptr) -- auto-init
 {
 }
 
@@ -192,17 +191,22 @@ void firewall::on_process_watch(QDomDocument doc)
     for(;;)
     {
         process_list::proc_info::pointer_t info(list.next());
-        if(!info)
+        if(info == nullptr)
         {
             // no snapfirewall process!?
             //
             QDomElement proc(doc.createElement("process"));
             e.appendChild(proc);
 
+            // TODO: check whether the snapfirewall service is active,
+            //       if not then it is not an error that the service
+            //       is down (although, I'm not too sure why one would
+            //       turn snapfirewall down)
+
             proc.setAttribute("name", "snapfirewall");
             proc.setAttribute("error", "missing");
 
-            f_snap->append_error(doc, "firewall", "can't find \"snapfirewall\" in the list of processes.", 95);
+            f_snap->append_error(doc, "firewall", "cannot find \"snapfirewall\" in the list of processes.", 95);
             return;
         }
         std::string name(info->get_process_name());

@@ -115,6 +115,7 @@ public:
     void                msg_nocassandra(snap::snap_communicator_message & message);
     void                msg_cassandraready(snap::snap_communicator_message & message);
     void                msg_rusage(snap::snap_communicator_message & message);
+    void                msg_reload_config(snap::snap_communicator_message & message);
 
 private:
     void                define_server_name();
@@ -127,6 +128,7 @@ private:
     int64_t                                         f_statistics_ttl = 0;
     std::vector<std::shared_ptr<watchdog_child>>    f_processes = std::vector< std::shared_ptr<watchdog_child>>();
     bool                                            f_stopping = false;
+    bool                                            f_force_restart = false;
     int64_t                                         f_snapcommunicator_connected = 0;
     int64_t                                         f_snapcommunicator_disconnected = 0;
 };

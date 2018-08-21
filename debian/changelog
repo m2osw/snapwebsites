@@ -1,3 +1,23 @@
+snapwebsites (1.5.145.0~xenial) xenial; urgency=high
+
+  * Fixed bug in snapwatchdogserver, the RELOADCONFIG was not yet implemented.
+  * Fixed the default path to the watchdog_starter script, the 's' was missing.
+  * Fixed the test of plugin names, check before adding the introducer.
+  * Fixed the watchdog process plugin test for running services and backends,
+    the fact is that we know whether a backend is expected to be running or
+    not and can generate an error if running when it is disabled.
+  * Fixed the match() function, whether a service is expected has nothing to
+    do with matching the current process (ouch!)
+  * Added a sleep() to slow down the login form when an invalid password is
+    entered with the hope to slow down brute force login.
+  * Fixed the counting of watchdog error messages.
+  * Added a loop to go through the rows and columns of the links table to drop
+    entries that point to destroyed pages.
+  * Added a snapconfig command line tool to read and write configuration files.
+  * Added a weekly CRON script to run the links::cleanuplinks process.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 20 Aug 2018 12:33:26 -0700
+
 snapwebsites (1.5.144.0~xenial) xenial; urgency=high
 
   * Check the nice value, if not between 0 and 19, generate an error.

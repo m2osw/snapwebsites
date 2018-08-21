@@ -1216,6 +1216,10 @@ int manager_cgi::is_logged_in(std::string & request_method)
 
                     increase_hit_count();
 
+                    // wait a little to slow the client a bit
+                    //
+                    sleep(10 * f_login_attempts);
+
                     // invalid credentials
                     //
                     // TODO: somehow we should show an error of some sort...

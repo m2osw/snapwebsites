@@ -223,7 +223,8 @@ Package: snapbackend
 Section: admin
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy
+    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy,
+    snapmanagerdaemon
 Recommends: snapfirewall
 Suggests: snapbackend-doc, snapserver
 Description: Fast Websites: powerful CMS for Apache written in C++.

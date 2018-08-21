@@ -7695,17 +7695,20 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
     }
 
     // load the plugins for this website
+    //
     bool need_cleanup(true);
     QString site_plugins(server->get_parameter(get_name(name_t::SNAP_NAME_CORE_PARAM_PLUGINS))); // forced by .conf?
     if(site_plugins.isEmpty())
     {
         // maybe user defined his list of plugins in his website
+        //
         libdbproxy::value plugins(get_site_parameter(get_name(name_t::SNAP_NAME_CORE_PLUGINS)));
         site_plugins = plugins.stringValue();
         if(site_plugins.isEmpty())
         {
             // if the list of plugins is empty in the site parameters
             // then get the default from the server configuration
+            //
             site_plugins = server->get_parameter(get_name(name_t::SNAP_NAME_CORE_PARAM_DEFAULT_PLUGINS));
         }
         else
@@ -7719,6 +7722,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
     snap_string_list list_of_plugins(site_plugins.split(',', QString::SkipEmptyParts));
 
     // clean up the list
+    //
     if(need_cleanup)
     {
         if(introducer.isEmpty())
@@ -7729,6 +7733,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
                 if(list_of_plugins.at(i).isEmpty())
                 {
                     // remove parts that the trimmed() rendered empty
+                    //
                     list_of_plugins.removeAt(i);
                     --i;
                 }
@@ -7738,18 +7743,24 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
         {
             for(int i(0); i < list_of_plugins.length(); ++i)
             {
-                list_of_plugins[i] = introducer + "_" + list_of_plugins[i].trimmed();
+                list_of_plugins[i] = list_of_plugins[i].trimmed();
                 if(list_of_plugins.at(i).isEmpty())
                 {
                     // remove parts that the trimmed() rendered empty
+                    //
                     list_of_plugins.removeAt(i);
                     --i;
+                }
+                else
+                {
+                    list_of_plugins[i] = introducer + "_" + list_of_plugins[i];
                 }
             }
         }
     }
 
     // ensure a certain minimum number of plugins
+    //
     if(add_defaults)
     {
         for(size_t i(0); i < sizeof(g_minimum_plugins) / sizeof(g_minimum_plugins[0]); ++i)
@@ -7762,6 +7773,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
     }
 
     // load the plugins
+    //
     QString const plugins_path( server->get_parameter("plugins_path") );
     if( plugins_path.isEmpty() )
     {
@@ -7788,6 +7800,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
     // but they are not really usable yet because we did not initialize them
 
     // now boot the plugin system (send signals)
+    //
     server->init();
 
     return list_of_plugins;

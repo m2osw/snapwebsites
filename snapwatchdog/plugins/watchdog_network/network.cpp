@@ -227,6 +227,9 @@ bool network::find_snapcommunicator(QDomElement e)
             QDomElement proc(e.ownerDocument().createElement("process"));
             e.appendChild(proc);
 
+            // TODO: check whether the service is disabled, but really for
+            //       snapcommunicator that will be an EXTRA ERROR...
+
             proc.setAttribute("name", "snapcommunicator");
             proc.setAttribute("error", "missing");
 

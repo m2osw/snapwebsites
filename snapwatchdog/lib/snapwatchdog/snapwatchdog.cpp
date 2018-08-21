@@ -514,12 +514,16 @@ void sigchld_connection::process_signal()
 snap::dispatcher<watchdog_server>::dispatcher_match::vector_t const g_snapwatchdog_service_messages =
 {
     {
+        "CASSANDRAREADY"
+      , &watchdog_server::msg_cassandraready
+    },
+    {
         "NOCASSANDRA"
       , &watchdog_server::msg_nocassandra
     },
     {
-        "CASSANDRAREADY"
-      , &watchdog_server::msg_cassandraready
+        "RELOADCONFIG"
+      , &watchdog_server::msg_reload_config
     },
     {
         "RUSAGE"
@@ -725,6 +729,14 @@ void watchdog_server::watchdog()
     // now start the run() loop
     //
     g_communicator->run();
+
+    // got a RELOADCONFIG message?
+    // (until our daemons are capable of reloading configuration files)
+    //
+    if(f_force_restart)
+    {
+        exit(1);
+    }
 }
 
 
@@ -1202,6 +1214,15 @@ void watchdog_server::ready(snap::snap_communicator_message & message)
     isdbready_message.set_command("CASSANDRASTATUS");
     isdbready_message.set_service("snapdbproxy");
     g_messenger->send_message(isdbready_message);
+}
+
+
+void watchdog_server::msg_reload_config(snap::snap_communicator_message & message)
+{
+    snap::NOTUSED(message);
+
+    f_force_restart = true;
+    stop(false);
 }
 
 

@@ -72,6 +72,7 @@ include_directories(
         ${Qt5Xml_INCLUDE_DIRS}
         ${Qt5XmlPatterns_INCLUDE_DIRS}
 )
+
 set( QT_LIBRARIES
     Qt5::Core
     Qt5::Network

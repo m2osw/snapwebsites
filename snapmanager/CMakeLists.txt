@@ -77,14 +77,15 @@ snap_clear_xml_targets()
 ##
 ## Add sub-projects
 ##
-add_subdirectory( conf     )          # Configuration files and samples
-add_subdirectory( lib      )          # Common code to CGI, daemon, plugins
-add_subdirectory( cgi      )          # The snapmanager.cgi application
-add_subdirectory( daemon   )          # The snapmanagerdaemon to apply commands on any computer
-add_subdirectory( plugins  )          # "Core" plugins used to gather and update the status
-add_subdirectory( upgrader )          # Tool to run "apt-get upgrade" without getting smashed
-add_subdirectory( password )          # Tool to manager password files
-add_subdirectory( doc      )          # Documentation generation
+add_subdirectory( conf       )          # Configuration files and samples
+add_subdirectory( lib        )          # Common code to CGI, daemon, plugins
+add_subdirectory( cgi        )          # The snapmanager.cgi application
+add_subdirectory( daemon     )          # The snapmanagerdaemon to apply commands on any computer
+add_subdirectory( plugins    )          # "Core" plugins used to gather and update the status
+add_subdirectory( upgrader   )          # Tool to run "apt-get upgrade" without getting smashed
+add_subdirectory( password   )          # Tool to manager password files
+add_subdirectory( snapconfig )          # Tool to manager password files
+add_subdirectory( doc        )          # Documentation generation
 
 option( BUILD_GUI "Build the snapmanager gui (requires Qt5 Widgets and Webkit)." ON )
 if( ${BUILD_GUI} )

@@ -13,7 +13,7 @@ closest project we have to handling emails.
 The MTA should be installed on all systems except those that have a full
 postfix installation. It is suggested that you install it when installing
 snapwatchdog otherwise the watchdog won't be as useful as it should be
-(i.e. you won't get any signals for anything if the emails can't make it
+(i.e. you won't get any signal for anything if the emails can't make it
 to your system.)
 
  -- R. Douglas Barbieri <doug@dooglio.net>  Wed, 20 Nov 2013 08:49:55 -0800

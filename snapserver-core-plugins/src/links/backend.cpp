@@ -51,6 +51,14 @@ SNAP_PLUGIN_EXTENSION_START(links)
  * deleted.) This may become a problem that we automatically run once in
  * a while so the database does not decay over time.
  *
+ * \code
+ * snapbackend [--config snapserver.conf] [website-url] \
+ *      --action links::cleanuplinks
+ * \endcode
+ *
+ * It is recommended that you specify the \<website-url> to clean up one
+ * specific website.
+ *
  * \li createlink -- create a link between two pages
  *
  * \code
@@ -307,7 +315,6 @@ void links::cleanup_links()
     libdbproxy::table::pointer_t links_table(get_links_table());
 
     libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
-    branch_table->clearCache();
 
     QString const site_key(f_snap->get_site_key_with_slash());
 
@@ -322,102 +329,227 @@ void links::cleanup_links()
     //      a website sorted "as expected", we may be able revise
     //      the following algorithm to avoid reading all the branches
     //      of all the websites...
-    //
-    auto row_predicate(std::make_shared<libdbproxy::row_predicate>());
-    row_predicate->setCount(100);
-    for(;;)
     {
-        uint32_t const count(branch_table->readRows(row_predicate));
-        if(count == 0)
+        branch_table->clearCache();
+
+        auto row_predicate(std::make_shared<libdbproxy::row_predicate>());
+        row_predicate->setCount(100);
+        for(;;)
         {
-            // no more branches to process
-            //
-            break;
-        }
-        libdbproxy::rows const rows(branch_table->getRows());
-        for(libdbproxy::rows::const_iterator o(rows.begin());
-                o != rows.end(); ++o)
-        {
-            QString const key(QString::fromUtf8(o.key().data()));
-            if(!key.startsWith(site_key))
+            uint32_t const count(branch_table->readRows(row_predicate));
+            if(count == 0)
             {
-                // not this website, try another key
+                // no more branches to process
                 //
-                continue;
+                break;
             }
-
-            // within each row, check all the columns
-            //
-            libdbproxy::row::pointer_t row(*o);
-            row->clearCache();
-
-            auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
-            column_predicate->setCount(100);
-            column_predicate->setIndex(); // behave like an index
-            column_predicate->setStartCellKey(links_namespace_start); // limit the loading to links at least
-            column_predicate->setEndCellKey(links_namespace_end);
-
-            // loop until all cells are handled
-            //
-            for(;;)
+            libdbproxy::rows const rows(branch_table->getRows());
+            for(libdbproxy::rows::const_iterator o(rows.begin());
+                    o != rows.end(); ++o)
             {
-                row->readCells(column_predicate);
-                libdbproxy::cells const cells(row->getCells());
-                if(cells.isEmpty())
+                QString const key(QString::fromUtf8(o.key().data()));
+                if(!key.startsWith(site_key))
                 {
-                    // no more rows here
+                    // not this website, try another key
                     //
-                    break;
+                    continue;
                 }
 
-                // handle one batch
+                // within each row, check all the columns
                 //
-                for(libdbproxy::cells::const_iterator c(cells.begin());
-                        c != cells.end();
-                        ++c)
+                libdbproxy::row::pointer_t row(*o);
+                row->clearCache();
+
+                auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
+                column_predicate->setCount(100);
+                column_predicate->setIndex(); // behave like an index
+                column_predicate->setStartCellKey(links_namespace_start); // limit the loading to links at least
+                column_predicate->setEndCellKey(links_namespace_end);
+
+                // loop until all cells are handled
+                //
+                for(;;)
                 {
-                    libdbproxy::cell::pointer_t cell(*c);
-
-                    QString const cell_name(cell->columnName());
-                    int const pos(cell_name.indexOf('-'));
-                    int const branch_pos(cell_name.indexOf('#', pos + 1));
-                    if(pos != -1
-                    && branch_pos != -1)
+                    row->readCells(column_predicate);
+                    libdbproxy::cells const cells(row->getCells());
+                    if(cells.isEmpty())
                     {
-                        // okay, this looks like a multi-link
-                        // now check for the corresponding entry in the
-                        // links table
+                        // no more columns here
                         //
-                        QString const link_name(cell_name.mid(links_namespace_start.length(), pos - links_namespace_start.length()));
-                        // here 'key' already includes the '#<id>'
-                        QString const link_key(QString("%1/%2").arg(key).arg(link_name));
+                        break;
+                    }
 
-                        bool exists(false);
-                        if(links_table->exists(link_key))
+                    // handle one batch
+                    //
+                    for(libdbproxy::cells::const_iterator c(cells.begin());
+                            c != cells.end();
+                            ++c)
+                    {
+                        libdbproxy::cell::pointer_t cell(*c);
+
+                        QString const cell_name(cell->columnName());
+                        int const pos(cell_name.indexOf('-'));
+                        int const branch_pos(cell_name.indexOf('#', pos + 1));
+                        if(pos != -1
+                        && branch_pos != -1)
                         {
-                            // the row exists, is there an entry for this link?
+                            // okay, this looks like a multi-link
+                            // now check for the corresponding entry in the
+                            // links table
                             //
-                            libdbproxy::row::pointer_t link_row(links_table->getRow(link_key));
+                            QString const link_name(cell_name.mid(links_namespace_start.length(), pos - links_namespace_start.length()));
 
-                            // the column name in that row is the value of 'k'
-                            // in the current cell value
+                            // here 'key' already includes the '#<id>'
                             //
-                            link_info info;
-                            info.from_data(cell->getValue().stringValue());
-                            // build the key with branch here (we do not have a source so we need to do it this way)
-                            QString const key_with_branch(QString("%1%2").arg(info.key()).arg(cell_name.mid(branch_pos)));
-                            if(link_row->exists(key_with_branch))
+                            QString const link_key(QString("%1/%2").arg(key).arg(link_name));
+
+                            bool exists(false);
+                            if(links_table->exists(link_key))
                             {
-                                QString const expected_name(link_row->getCell(key_with_branch)->getValue().stringValue());
-                                exists = cell_name == expected_name;
+                                // the row exists, is there an entry for this link?
+                                //
+                                libdbproxy::row::pointer_t link_row(links_table->getRow(link_key));
+
+                                // the column name in that row is the value of 'k'
+                                // in the current cell value
+                                //
+                                link_info info;
+                                info.from_data(cell->getValue().stringValue());
+
+                                // build the key with branch here (we do not have a source so we need to do it this way)
+                                //
+                                QString const key_with_branch(QString("%1%2").arg(info.key()).arg(cell_name.mid(branch_pos)));
+                                if(link_row->exists(key_with_branch))
+                                {
+                                    QString const expected_name(link_row->getCell(key_with_branch)->getValue().stringValue());
+                                    exists = cell_name == expected_name;
+                                }
+                            }
+
+                            if(!exists)
+                            {
+                                // this is a spurious cell, get rid of it
+                                //
+                                SNAP_LOG_ERROR("found dangling link \"")(cell_name)("\" in row \"")(key)("\".");
+                                row->dropCell(cell_name);
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
 
-                        if(!exists)
+    QString site_key_end(site_key);
+    site_key_end[site_key_end.length() - 1] = site_key_end[site_key_end.length() - 1].unicode() + 1;
+
+    // so we processed all the rows in the branch table and dropped all
+    // the bad entries we could find that way
+    //
+    // now do a search through the links table and drop any row or column
+    // that point to a page that does not exist
+    {
+        links_table->clearCache();
+
+        auto row_predicate(std::make_shared<libdbproxy::row_predicate>());
+        row_predicate->setCount(100);
+        for(;;)
+        {
+            uint32_t const count(links_table->readRows(row_predicate));
+            if(count == 0)
+            {
+                // no more branches to process
+                //
+                break;
+            }
+            libdbproxy::rows const rows(links_table->getRows());
+            for(libdbproxy::rows::const_iterator o(rows.begin());
+                    o != rows.end(); ++o)
+            {
+                // o.key() is defined as:
+                //
+                //    http://csnap.m2osw.com/types/permissions/finball/location/data/halk-31433#1/permissions::link_back::view
+                //
+                // which is: `site_key + '/' + path + '#' + branch + '/' + link name`
+                //
+                // to test existance, we need the branch so we want to remove
+                // the last part after the last '/' (`link_name` cannot include
+                // a slash)
+                //
+                QString const branch_key_and_link_name(QString::fromUtf8(o.key().data()));
+                int const pos(branch_key_and_link_name.lastIndexOf('/'));
+                QString const key(branch_key_and_link_name.left(pos));
+                if(!key.startsWith(site_key))
+                {
+                    // not this website, try another key
+                    //
+                    continue;
+                }
+
+                // that branch shall exist
+                //
+                if(!branch_table->exists(key))
+                {
+                    // this is a spurius row, get rid of it
+                    //
+                    SNAP_LOG_ERROR("found dangling link in links table with row key \"")(key)("\".");
+                    links_table->dropRow(branch_key_and_link_name);
+
+                    continue;
+                }
+
+                // if that branch exists, check each column within that row
+                // because some of them may reference pages that were
+                // destroyed
+                //
+                libdbproxy::row::pointer_t row(*o);
+                row->clearCache();
+
+                auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
+                column_predicate->setCount(100);
+                column_predicate->setIndex(); // behave like an index
+                column_predicate->setStartCellKey(site_key); // limit the loading to links at least
+                column_predicate->setEndCellKey(site_key_end);
+
+                // loop until all cells are handled
+                //
+                for(;;)
+                {
+                    row->readCells(column_predicate);
+                    libdbproxy::cells const cells(row->getCells());
+                    if(cells.isEmpty())
+                    {
+                        // no more columns here
+                        //
+                        break;
+                    }
+
+                    // handle one batch
+                    //
+                    for(libdbproxy::cells::const_iterator c(cells.begin());
+                            c != cells.end();
+                            ++c)
+                    {
+                        // Columns here look like this:
+                        //
+                        // http://csnap.m2osw.com/finball/location/halk-31433/data#1                      = links::permissions::link_back::view-halk-31624#1 [string]
+                        // http://csnap.m2osw.com/finball/location/halk-31433/data/create#1               = links::permissions::link_back::view-halk-31632#1 [string]
+                        // http://csnap.m2osw.com/types/permissions/groups/finball/view/data/halk-31433#1 = links::permissions::link_back::view-halk-31615#1 [string]
+                        //
+                        // We want to check the key and make sure it exists
+                        // in the branch table (again), if so, keep that
+                        // column, otherwise drop it
+                        //
+                        libdbproxy::cell::pointer_t cell(*c);
+
+                        QString const column_name(cell->columnName());
+                        if(!branch_table->exists(column_name))
                         {
-                            // this is a spurius cell, get rid of it
-                            SNAP_LOG_ERROR("found dangling link \"")(cell_name)("\" in row \"")(key)("\".");
-                            row->dropCell(cell_name);
+                            // the corresponding page does not seem to exist
+                            // so remove it
+                            //
+                            SNAP_LOG_ERROR("found dangling link \"")(column_name)("\" in row \"")(key)("\".");
+                            row->dropCell(column_name);
                         }
                     }
                 }

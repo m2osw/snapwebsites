@@ -19,13 +19,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 -->
 <watchdog-processes>
   <!-- snap environment -->
-  <process name="snapdbproxy" mandatory="mandatory"/>
-  <process name="snapmanagerdaemon"/>
+    <process name="snapdbproxy" mandatory="mandatory"/>
+    <process name="snapmanagerdaemon"/>
+
+    <!-- the snapwatchdog service is include so we get its stats
+         it is not useful to know whether it is running, however...
+         the <service> tag is more of an example than anything else
+         because the snapwatchdog is expected to always be running -->
+    <process name="snapwatchdogserver">
+      <service>snapwatchdog</service>
+    </process>
 
   <!-- system -->
-  <process name="apache2" mandatory="mandatory"/>
-  <process name="ntpd"/>
-  <process name="cron"/>
+    <!-- these are services too, but we do not control them from our
+         interface so there is no need to describe them as such, they
+         should always be running anyway -->
+    <process name="apache2" mandatory="mandatory"/>
+    <process name="ntpd"/>
+    <process name="cron"/>
 
   <!-- the following is an example for how to check a complex process
        although this one is handled by the cassandra plugin which is
@@ -47,7 +58,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     . snapcommunicator
           plugin: network
 
-    . snapfirewal
+    . snapfirewall
           plugin: firewall
 
   -->

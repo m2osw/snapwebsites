@@ -92,7 +92,7 @@ char const * get_name(name_t name)
         return "watch_script_starter";
 
     case name_t::SNAP_NAME_WATCHDOG_WATCHSCRIPTS_WATCH_SCRIPT_STARTER_DEFAULT:
-        return "/usr/bin/watch_script_starter";
+        return "/usr/sbin/watch_script_starter";
 
     default:
         // invalid index
