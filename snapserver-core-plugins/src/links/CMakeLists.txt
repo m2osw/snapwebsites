@@ -64,7 +64,7 @@ install(
     PROGRAMS
         snapcleanuplinks
 
-    RUNTIME DESTINATION
+    DESTINATION
         bin
 )
 

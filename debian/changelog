@@ -1,3 +1,9 @@
+snapwebsites (1.5.146.1~xenial) xenial; urgency=high
+
+  * Fixed the install() of snapcleanuplinks, removed "RUNTIME".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 21 Aug 2018 11:20:21 -0700
+
 snapwebsites (1.5.146.0~xenial) xenial; urgency=high
 
   * We don't actually want to run `snapbackend --action links::cleanuplinks`
