@@ -10,7 +10,7 @@
 #
 if test -s /usr/bin/snapconfig && /usr/bin/snapconfig snapserver backends | grep -q snappagelist
 then
-    snapbackend --action list::cleanuplinks
+    snapbackend --action links::cleanuplinks
 fi
 
 # vim: ts=4 sw=4 et
