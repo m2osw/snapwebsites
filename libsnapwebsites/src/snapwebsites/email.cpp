@@ -1854,6 +1854,16 @@ bool email::send() const
     SNAP_LOG_TRACE("sendmail command: [")(cmd)("]");
 
     snap_pipe spipe(cmd, snap_pipe::mode_t::PIPE_MODE_IN);
+
+    // unfortunately, pipes get stuck once in a while and we want to
+    // avoid being stuck forever; so setting up an alarm for 5 min.
+    // which is plently even for the largest email ever; after the
+    // pclose() we will cancel the alarm; if you want to know that
+    // you received the SIGALRM, you may need to write a signal
+    // handler (it is done automatically in the snapserver)
+    //
+    alarm(5 * 60);
+
     std::ostream f(&spipe);
 
     // convert email data to text and send that to the sendmail command line
@@ -1865,6 +1875,7 @@ bool email::send() const
     {
         // if the body is by itself, then its encoding needs to be transported
         // to the main set of headers
+        //
         if(body_attachment.get_header(get_name(name_t::SNAP_NAME_CORE_EMAIL_CONTENT_TRANSFER_ENCODING))
                                 == get_name(name_t::SNAP_NAME_CORE_EMAIL_CONTENT_ENCODING_QUOTED_PRINTABLE))
         {
@@ -2030,7 +2041,7 @@ bool email::send() const
             //
             f << std::endl;
 
-            // here the data is already be encoded
+            // here the data is already encoded
             //
             f << a.get_data().data() << std::endl;
         }
@@ -2045,10 +2056,25 @@ bool email::send() const
     f << std::endl
       << "." << std::endl;
 
+    // make sure the ostream gets flushed or some data could be left in
+    // a cache and never written to the pipe
+    //
+    f.flush();
+
     // close pipe as soon as we are done writing to it
     // and return true if it all worked as expected
     //
-    return spipe.close_pipe() == 0;
+    bool result(spipe.close_pipe() == 0);
+
+    // here, we're done sending the email and pclose() returned so
+    // we can get rid of the alarm
+    //
+    // often it is the pclose() that fails, so we want to reset the
+    // alarm after that call
+    //
+    alarm(0);
+
+    return result;
 }
 
 

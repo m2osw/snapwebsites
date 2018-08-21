@@ -979,6 +979,7 @@ void server::config(int argc, char * argv[])
     signal( SIGTERM, sighandler );
     signal( SIGINT,  sighandler );
     signal( SIGQUIT, sighandler );
+    signal( SIGALRM, sighandler );
     signal( SIGABRT, sighandler );  // although we can't really return from this one, having the stack trace is useful
 
     // we want to ignore SIGPIPE, but having a log is really useful so
@@ -2910,24 +2911,27 @@ void server::sighandler( int sig )
         case SIGTERM : signame = "SIGTERM"; output_stack_trace = false; break;
         case SIGINT  : signame = "SIGINT";  output_stack_trace = false; break;
         case SIGQUIT : signame = "SIGQUIT"; output_stack_trace = false; break;
+        case SIGALRM : signame = "SIGALRM"; break;
         case SIGABRT : signame = "SIGABRT"; break;
         default      : signame = "UNKNOWN"; break;
     }
+
+    SNAP_LOG_FATAL("POSIX signal caught: ")(signame);
 
     if( output_stack_trace )
     {
         snap_exception_base::output_stack_trace();
     }
-    //
-    SNAP_LOG_FATAL("POSIX signal caught: ")(signame);
 
     // is server available?
+    //
     if(g_instance)
     {
         g_instance->exit(1);
     }
 
     // server not available, exit directly
+    //
     ::exit(1);
 }
 

@@ -34,8 +34,9 @@ snap_pipe::snap_pipe(QString const & command, mode_t mode)
 {
     if(f_file == nullptr)
     {
-        throw snap_pipe_exception_cannot_open(QString("popen(\"%1\", \"%2\" failed to start command")
-                                                .arg(f_command).arg(mode == mode_t::PIPE_MODE_IN ? "w" : "r"));
+        throw snap_pipe_exception_cannot_open(QString("popen(\"%1\", \"%2\") failed to start command")
+                                                .arg(f_command)
+                                                .arg(mode == mode_t::PIPE_MODE_IN ? "w" : "r"));
     }
 }
 
@@ -43,6 +44,7 @@ snap_pipe::snap_pipe(QString const & command, mode_t mode)
 snap_pipe::~snap_pipe()
 {
     // make sure f_file gets closed
+    //
     close_pipe();
 }
 
@@ -88,6 +90,11 @@ std::ostream::int_type snap_pipe::overflow(int_type c)
     }
 #endif
 
+    if(f_file == nullptr)
+    {
+        throw snap_pipe_exception_no_file("file was closed");
+    }
+
     if(c != EOF)
     {
         if(fputc(static_cast<int>(c), f_file) == EOF)
@@ -107,6 +114,11 @@ std::ostream::int_type snap_pipe::underflow()
         throw snap_pipe_exception_cannot_read("pipe opened in write mode, cannot read from it");
     }
 #endif
+
+    if(f_file == nullptr)
+    {
+        throw snap_pipe_exception_no_file("file was closed");
+    }
 
     int c(fgetc(f_file));
     if(c < 0 || c > 255)

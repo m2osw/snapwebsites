@@ -1,0 +1,20 @@
+#!/bin/sh -e
+#
+
+# Run a check against the list data. This ensure integrity when you start
+# seeing errors in your logs saying that a branch could not be read.
+#
+# At some point we may want to improve our links implementation to avoid
+# these problems, especially, we should use a BATCH on creation and have
+# a way to make sure a destroy_page() works every time.
+#
+if test -z "$1"
+then
+    echo "Usage: snapcleanuplinks <URI>"
+    echo "where <URI> is the website which links are to be cleaned up."
+    exit 1
+fi
+
+snapbackend $1 --action links::cleanuplinks
+
+# vim: ts=4 sw=4 et

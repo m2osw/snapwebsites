@@ -1,4 +1,5 @@
 debian/tmp/usr/bin/magic_to_js                                             usr/bin/
+debian/tmp/usr/bin/snapcleanuplinks                                        usr/bin/
 debian/tmp/usr/bin/snap_uuencode_basic_auth                                usr/bin/
 debian/tmp/usr/lib/snapwebsites/plugins/libantihammering.so                usr/lib/snapwebsites/plugins/
 debian/tmp/usr/lib/snapwebsites/plugins/libantivirus.so                    usr/lib/snapwebsites/plugins/

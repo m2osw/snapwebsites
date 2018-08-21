@@ -177,7 +177,14 @@ int main(int argc, char *argv[])
         //
         if(kill(service_pid, 0) != 0)
         {
-            std::cerr << "snapstop: error: --service " << service_pid << " is not running. Do nothing." << std::endl;
+            if(errno == EPERM)
+            {
+                std::cerr << "snapstop: error: not permitted to send signal to --service " << service_pid << ". Do nothing." << std::endl;
+            }
+            else
+            {
+                std::cerr << "snapstop: error: --service " << service_pid << " is not running. Do nothing." << std::endl;
+            }
             exit(1);
         }
 

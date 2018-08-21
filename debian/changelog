@@ -1,3 +1,20 @@
+snapwebsites (1.5.146.0~xenial) xenial; urgency=high
+
+  * We don't actually want to run `snapbackend --action links::cleanuplinks`
+    once a week; it is slow and it requires a URI to only run against one
+    specific website, I converted the cron script in a command line for now.
+  * Noticed `sendmail -f ...` being stuck on finball3 (which explains the
+    lack of emails received from that system); (1) I put an alarm() so that
+    way it doesn't get stuck forever; (2) I now make sure to flush the
+    ostream before attempting to close the pipe.
+  * Added a couple of tests in the snap_pipe implementation as it could
+    otherwise attempt to use f_file with it's a null pointer.
+  * Fixed the snapstop error in case kill(pid, 0) fails, it could be because
+    the process is not accessible (i.e. kill() is not permitted.)
+  * Worked on the dns_options implementation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 21 Aug 2018 10:32:20 -0700
+
 snapwebsites (1.5.145.0~xenial) xenial; urgency=high
 
   * Fixed bug in snapwatchdogserver, the RELOADCONFIG was not yet implemented.

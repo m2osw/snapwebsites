@@ -58,6 +58,14 @@ public:
     explicit snap_pipe_exception_cannot_read(const QString &     whatmsg) : snap_pipe_exception(whatmsg) {}
 };
 
+class snap_pipe_exception_no_file : public snap_pipe_exception
+{
+public:
+    explicit snap_pipe_exception_no_file(const char *        whatmsg) : snap_pipe_exception(whatmsg) {}
+    explicit snap_pipe_exception_no_file(const std::string & whatmsg) : snap_pipe_exception(whatmsg) {}
+    explicit snap_pipe_exception_no_file(const QString &     whatmsg) : snap_pipe_exception(whatmsg) {}
+};
+
 
 
 

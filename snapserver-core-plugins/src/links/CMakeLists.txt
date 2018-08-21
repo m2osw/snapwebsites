@@ -53,16 +53,38 @@ add_library(links SHARED
 target_link_libraries( links Qt5::Core )
 
 install(
-    TARGETS links LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        links
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
+
 install(
-    FILES "links-tables.xml"
-    DESTINATION ${SNAP_TABLE_DESCRIPTION_PATH}
+    PROGRAMS
+        snapcleanuplinks
+
+    RUNTIME DESTINATION
+        bin
 )
+
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/links
-    FILES_MATCHING PATTERN "*.h"
+    FILES
+        "links-tables.xml"
+
+    DESTINATION
+        ${SNAP_TABLE_DESCRIPTION_PATH}
+)
+
+install(
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/links
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
 
 # vim: ts=4 sw=4 et

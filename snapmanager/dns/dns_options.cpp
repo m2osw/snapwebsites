@@ -133,7 +133,7 @@ const advgetopt::getopt::option g_options[] =
 class dns_options
 {
 public:
-    enum class token_t
+    enum class token_type_t
     {
         TOKEN_UNKNOWN,              // unknown token
 
@@ -161,20 +161,49 @@ public:
         TOKEN_ERROR                 // an error occurred
     };
 
+    class token
+    {
+    public:
+        void            set_type(token_type_t type);
+        void            set_word(std::string const & word);
+        void            set_start(int start);
+        void            set_end(int end);
+        void            set_line(int line);
+        void            set_block_level(int level);
+
+        token &         operator += (char c);
+
+        bool            is_null() const;
+
+        token_t         get_type() const;
+        std::string     get_word() const;
+        int             get_start() const;
+        int             get_end() const;
+        int             get_line() const;
+        int             get_block_level() const;
+
+    private:
+        token_type_t    f_type = token_t::TOKEN_UNKNOWN;
+        std::string     f_word = std::string();        // actual token (may be empty)
+        int             f_start = -1;
+        int             f_end = -1;
+        int             f_line = -1;
+        int             f_block_level = -1;
+    };
+
     class keyword
     {
     public:
         typedef std::vector<keyword>    vector_t;
 
-                        keyword(token_t k, std::string const & token);
+                        keyword(token const & token);
 
         void            add_index(keyword const & k);
         void            add_field(keyword const & k);
         void            add_value(keyword const & k);
 
     private:
-        token_t         f_keyword = token_t::TOKEN_UNKNOWN;
-        std::string     f_token = std::string();
+        token           f_token = token();
 
         vector_t        f_index = vector_t();
         vector_t        f_fields = vector_t();
@@ -189,7 +218,7 @@ private:
     int             load_file();
     int             getc();
     void            ungetc(int c);
-    token_t         get_token(bool extensions = false);
+    token           get_token(bool extensions = false);
 
     int             parse_command_line();
     int             edit_option();
@@ -202,7 +231,7 @@ private:
     int             f_pos = 0;
     int             f_line = 1;
     std::string     f_unget = std::string();
-    std::string     f_token = std::string();
+    token           f_token = token();
     int             f_block_level = 0;
     keyword         f_keyword = keyword(token_t::TOKEN_UNKNOWN, std::string());
 };
@@ -210,26 +239,100 @@ private:
 
 
 
+void dns_options::token::set_type(token_t type)
+{
+    f_type = type;
+}
 
-keyword::keyword(token_t k, std::string const & token)
-    : f_keyword(k)
-    , f_token(token)
+
+void dns_options::token::set_word(std::string const & word)
+{
+    f_word = word
+}
+
+
+void dns_options::token::set_start(int start)
+{
+    f_start = start;
+}
+
+
+void dns_options::token::set_end(int end)
+{
+    f_end = end;
+}
+
+
+void dns_options::token::set_line(int line)
+{
+    f_line = line;
+}
+
+
+token & dns_options::token::operator += (char c)
+{
+    f_word += c;
+}
+
+
+bool dns_options::token::is_null() const
+{
+    return f_type == token_type_t::TOKEN_KEYWORD;
+        && f_word == "null";
+}
+
+
+dns_options::token_t dns_options::token::get_type() const
+{
+    return f_type;
+}
+
+
+std::string dns_options::token::get_word() const
+{
+    return f_word;
+}
+
+
+int dns_options::token::get_start() const
+{
+    return f_start;
+}
+
+
+int dns_options::token::get_end() const
+{
+    return f_end;
+}
+
+
+int dns_options::token::get_line() const
+{
+    return f_line;
+}
+
+
+
+
+
+dns_options::keyword::keyword(token_t token)
+    : f_token(token)
 {
 }
 
-void keyword::add_index(keyword const & k)
+void dns_options::keyword::add_index(keyword const & k)
 {
     f_index.push_back(k);
 }
 
 
-void keyword::add_field(keyword const & k)
+void dns_options::keyword::add_field(keyword const & k)
 {
     f_fields.push_back(k);
 }
 
 
-void keyword::add_value(keyword const & k)
+void dns_options::keyword::add_value(keyword const & k)
 {
     f_value.push_back(k);
 }
@@ -450,16 +553,20 @@ void dns_options::ungetc(int c)
  *
  * \return 0 when no errors were encountered, 1 otherwise.
  */
-dns_options::token_t dns_options::get_token(bool extensions)
+dns_options::token dns_options::get_token(bool extensions)
 {
-    f_token.clear();
     for(;;)
     {
+        token result;
+        result.start(f_pos - f_unget.length());
+        std::string word;
+
         int c(getc());
         switch(c)
         {
         case EOF:
-            return token_t::TOKEN_EOT;
+            result.set_type(token_t::TOKEN_EOT);
+            return result;
 
         case ' ':
         case '\t':
@@ -495,8 +602,13 @@ dns_options::token_t dns_options::get_token(bool extensions)
                 // C like comment, search for "*/"
                 // BIND does not accept a comment within a comment
                 //
-                for(c = getc(); c != EOF; c = getc())
+                for(c = getc();; c = getc())
                 {
+                    if(c == EOF)
+                    {
+                        std::cerr << "error:" << f_filename << ":" << f_line << ": end of C-like comment not found before EOF." << std::endl;
+                        return token_t::TOKEN_ERROR;
+                    }
                     if(c == '*')
                     {
                         c = getc();
@@ -550,23 +662,25 @@ dns_options::token_t dns_options::get_token(bool extensions)
                     std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string includes a non-escaped newline." << std::endl;
                     return token_t::TOKEN_ERROR;
                 }
-                f_token += c;
+                result += c;
             }
             if(c != '"')
             {
                 std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string was never closed." << std::endl;
                 return token_t::TOKEN_ERROR;
             }
-            return token_t::TOKEN_STRING;
+            result.set_type(token_type_t::TOKEN_STRING);
+            return result;
 
         case ';':
-            f_token_type = token_t::TOKEN_END_OF_DEFINITION;
-            return 0;
+            result.set_type(token_type_t::TOKEN_END_OF_DEFINITION);
+            return result;
 
         case '{':
+            result.set_type(token_type_t::TOKEN_OPEN_BLOCK);
             ++f_block_level;
-            f_token_type = token_t::TOKEN_OPEN_BLOCK;
-            return 0;
+            result.set_block_level(f_block_level);
+            return result;
 
         case '}':
             if(f_block_level <= 0)
@@ -574,37 +688,40 @@ dns_options::token_t dns_options::get_token(bool extensions)
                 std::cerr << "error:" << f_filename << ":" << f_line << ": '}' mismatch, '{' missing for this one.";
                 return token_t::TOKEN_ERROR;
             }
-            else
-            {
-                --f_block_level;
-            }
-            return token_t::TOKEN_CLOSE_BLOCK;
+            --f_block_level;
+            result.set_type(token_type_t::TOKEN_CLOSE_BLOCK);
+            result.set_block_level(f_block_level);
+            return result;
 
         case '[':
             if(extensions)
             {
-                return f_token_type = token_t::TOKEN_OPEN_INDEX;
+                result.set_type(token_type_t::TOKEN_OPEN_INDEX);
+                return result;
             }
             goto read_token;
 
         case ']':
             if(extensions)
             {
-                return f_token_type = token_t::TOKEN_CLOSE_INDEX;
+                result.set_type(token_type_t::TOKEN_CLOSE_INDEX);
+                return result;
             }
             goto read_token;
 
         case '.':
             if(extensions)
             {
-                return f_token_type = token_t::TOKEN_FIELD;
+                result.set_type(token_type_t::TOKEN_FIELD);
+                return result;
             }
             goto read_token;
 
         case '=':
             if(extensions)
             {
-                return f_token_type = token_t::TOKEN_ASSIGN;
+                result.set_type(token_type_t::TOKEN_ASSIGN);
+                return result;
             }
             goto read_token;
 
@@ -614,7 +731,8 @@ dns_options::token_t dns_options::get_token(bool extensions)
                 c = getc();
                 if(c == '=')
                 {
-                    return f_token_type = token_t::TOKEN_UPDATE;
+                    result.set_type(token_type_t::TOKEN_UPDATE);
+                    return result;
                 }
                 ungetc(c);
                 c = '+';
@@ -627,7 +745,8 @@ dns_options::token_t dns_options::get_token(bool extensions)
                 c = getc();
                 if(c == '=')
                 {
-                    return f_token_type = token_t::TOKEN_CREATE;
+                    result.set_type(token_type_t::TOKEN_CREATE);
+                    return result;
                 }
                 ungetc(c);
                 c = '+';
@@ -636,7 +755,7 @@ dns_options::token_t dns_options::get_token(bool extensions)
 
         default:
 read_token:
-            f_token += c;
+            result += c;
             for(c = getc();; c = getc())
             {
                 switch(c)
@@ -648,7 +767,8 @@ read_token:
                 case '\f':
                     // no need to unget this one
                     //
-                    return token_t::TOKEN_KEYWORD;
+                    result.set_type(token_type_t::TOKEN_KEYWORD);
+                    return result;
 
                 case '{':
                 case '}':
@@ -658,7 +778,8 @@ read_token:
                     // restore that character too, it is a token on its own
                     //
                     ungetc(c);
-                    return token_t::TOKEN_KEYWORD;
+                    result.set_type(token_type_t::TOKEN_KEYWORD);
+                    return result;
 
                 case '/':
                     // is that the start of a comment?
@@ -669,7 +790,8 @@ read_token:
                     {
                         ungetc(c);
                         ungetc('/');
-                        return token_t::TOKEN_KEYWORD;
+                        result.set_type(token_type_t::TOKEN_KEYWORD);
+                        return result;
                     }
                     ungetc(c);
                     f_token += '/'; // it's not a comment, make it part of the keyword
@@ -684,7 +806,8 @@ read_token:
                     if(extensions)
                     {
                         ungetc(c);
-                        return token_t::TOKEN_KEYWORD;
+                        result.set_type(token_type_t::TOKEN_KEYWORD);
+                        return result;
                     }
                     f_token += c;
                     break;
@@ -713,12 +836,12 @@ int dns_options::parse_command_line()
 
     f_data = f_execute;
 
-    token_t t(get_token());
-    if(t != token_t::TOKEN_KEYWORD)
+    token t(get_token());
+    if(t.get_type() != token_type_t::TOKEN_KEYWORD)
     {
-        if(t != token_t::TOKEN_ERROR)
+        if(t.get_type() != token_type_t::TOKEN_ERROR)
         {
-            std::cerr << "error:<execute>:" << f_line << ": we expected a keyword.";
+            std::cerr << "error:<execute>:" << f_line << ": we expected a keyword first.";
         }
         return 1;
     }
@@ -733,18 +856,18 @@ int dns_options::parse_command_line()
             for(;;)
             {
                 t = get_token();
-                if(t == token_t::TOKEN_CLOSE_INDEX)
+                if(t.get_type() == token_type_t::TOKEN_CLOSE_INDEX)
                 {
                     break;
                 }
 
-                switch(t)
+                switch(t.get_type())
                 {
-                case token_t::TOKEN_ERROR:
+                case token_type_t::TOKEN_ERROR:
                     return 1;
 
-                case token_t::TOKEN_KEYWORD:
-                case token_t::TOKEN_STRING:
+                case token_type_t::TOKEN_KEYWORD:
+                case token_type_t::TOKEN_STRING:
                     {
                         keyword i(t, f_token);
                         p.add_index(i);
@@ -893,11 +1016,11 @@ int dns_options::parse_command_line()
         }
     }
 
- * <keyword> ( '[' <keyword> | '"' <string> '"' ']' )*
- *           ('.' <keyword> | '"' <string> '"'
- *              ( '[' <keyword> | '"' <string> '"' ']' )* )*
- *           ( ( '?' | '+' )? '=' ( 'null'
- *                  | (<keyword> | '"' <string> '"' )+ ) )?
+// * <keyword> ( '[' <keyword> | '"' <string> '"' ']' )*
+// *           ('.' <keyword> | '"' <string> '"'
+// *              ( '[' <keyword> | '"' <string> '"' ']' )* )*
+// *           ( ( '?' | '+' )? '=' ( 'null'
+// *                  | (<keyword> | '"' <string> '"' )+ ) )?
 
     }
 }
