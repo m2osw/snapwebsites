@@ -1,3 +1,10 @@
+snapwebsites (1.5.147.1~xenial) xenial; urgency=high
+
+  * Properly define where the watchdog script to check snapbackup/end is to
+    be installed (i.e. in snapbackend, not snapbackup.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 22 Aug 2018 01:19:48 -0700
+
 snapwebsites (1.5.147.0~xenial) xenial; urgency=high
 
   * Moved the watch_snapbackup_old_cron_script to snapbackend since that's
