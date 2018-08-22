@@ -339,7 +339,12 @@ void watchscripts::process_script(QString script_filename)
     //
     process p("watchscript");
     p.set_mode(process::mode_t::PROCESS_MODE_INOUTERR);
-    p.set_command(f_watch_script_starter);  // scripts should not have the 'x' set so we have to use /bin/sh to start them
+
+    // Note: scripts that do not have the execution permission set are
+    //       started with /bin/sh
+    //
+    p.set_command(f_watch_script_starter);
+
     p.add_argument(script_filename);
     p.set_output_callback(this);
     int const exit_code(p.run());

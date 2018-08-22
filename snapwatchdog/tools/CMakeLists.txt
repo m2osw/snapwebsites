@@ -54,6 +54,7 @@ target_link_libraries(${PROJECT_NAME}
 install(
     TARGETS
         ${PROJECT_NAME}
+
     RUNTIME DESTINATION
         bin
 )

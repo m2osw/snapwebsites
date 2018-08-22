@@ -1,3 +1,10 @@
+snapwebsites (1.5.146.2~xenial) xenial; urgency=high
+
+  * find_process was not getting added to the snapwatchdog package.
+  * Fixed the name of the firewall daemon to display in output.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 21 Aug 2018 17:49:50 -0700
+
 snapwebsites (1.5.146.1~xenial) xenial; urgency=high
 
   * Fixed the install() of snapcleanuplinks, removed "RUNTIME".

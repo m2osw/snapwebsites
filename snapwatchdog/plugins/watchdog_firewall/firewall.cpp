@@ -222,7 +222,7 @@ void firewall::on_process_watch(QDomDocument doc)
             QDomElement proc(doc.createElement("process"));
             e.appendChild(proc);
 
-            proc.setAttribute("name", "firewall");
+            proc.setAttribute("name", "snapfirewall");
 
             //proc.setAttribute("cmdline", cmdline); -- TBD do we want to build the command line to save in the XML?
             proc.setAttribute("pcpu",       QString("%1").arg(info->get_pcpu()));
