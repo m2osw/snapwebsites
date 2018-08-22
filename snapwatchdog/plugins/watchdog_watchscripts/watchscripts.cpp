@@ -474,7 +474,7 @@ bool watchscripts::output_available(process * p, QByteArray const & output)
 {
     NOTUSED(p);
 
-    // ignore if empty (it should not happen but our code depends on it.)
+    // ignore if empty (it should not happen but our code depends on that premise.)
     //
     if(output.isEmpty())
     {

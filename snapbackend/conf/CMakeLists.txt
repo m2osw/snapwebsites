@@ -45,4 +45,25 @@ install(
 )
 
 
+###############################################################################
+## A snapwatchdog script to check out a blooper
+##
+## This script checks on the CRON script wrongly named snapbackend
+## and installed by snapbackend. The CRON script that was actually for
+## the snapbackup package to run a daily backup of the Cassandra database.
+##
+## This is here because it was installed by snapbackend and unless you purge
+## snapbackend and reinstall it, it will stick around. Since snapmanager.cgi
+## automatically does a purge when it removes a bundle, it either isn't there
+## already or this script will detect it and let you know there is a problem.)
+##
+install(
+    PROGRAMS
+        watch_snapbackup_old_cron_script
+
+    DESTINATION
+        share/snapwebsites/snapwatchdog/scripts
+)
+
+
 # vim: ts=4 sw=4 et

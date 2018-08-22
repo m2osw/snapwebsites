@@ -59,13 +59,16 @@ target_link_libraries(${PROJECT_NAME}
 install(
     TARGETS
         ${PROJECT_NAME}
+
     LIBRARY DESTINATION
         ${PLUGIN_INSTALL_DIR}
 )
+
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(
     FILES
         ${HEADER_FILES}
+
     DESTINATION
         include/snapwatchdog/plugins/watchscripts
 )

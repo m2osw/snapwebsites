@@ -24,7 +24,7 @@ At this time we expect scripts installed in that directory to be named
 by following this convention:
 
 * Start the name with `watch_`
-* Follow the name start with the name of your project, for example, the
+* Follow with the name of your project, for example, the
 firewall plugin uses `firewall_`
 * Continue with the name of the object the script verifies for the
 `snapwatchdog` daemon. For example, the firewall plugin test checks

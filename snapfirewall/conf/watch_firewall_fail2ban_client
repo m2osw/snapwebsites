@@ -35,7 +35,7 @@
 
 set -e
 
-FAIL2BAN_CLIENT_RUNNING=${WATCHDOG_WATCHSCRIPTS_OUTPUT}/firewall-fail2ban-client-running.txt
+FAIL2BAN_CLIENT_RUNNING="${WATCHDOG_WATCHSCRIPTS_OUTPUT}/firewall-fail2ban-client-running.txt"
 
 # is the offensive process running?
 #

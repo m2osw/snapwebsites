@@ -1,3 +1,11 @@
+snapwebsites (1.5.147.0~xenial) xenial; urgency=high
+
+  * Moved the watch_snapbackup_old_cron_script to snapbackend since that's
+    where the rogue snapbackend (which was supposed to be snapbackup) was
+    installed from, that's where it has to be found from.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 21 Aug 2018 20:47:21 -0700
+
 snapwebsites (1.5.146.2~xenial) xenial; urgency=high
 
   * find_process was not getting added to the snapwatchdog package.
