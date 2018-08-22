@@ -218,7 +218,13 @@ void widget_select::generate(QDomElement parent)
 
     QDomElement select(doc.createElement("select"));
     select.setAttribute( "name", f_name                 );
-    select.setAttribute( "form", parent.attribute("id") );
+
+    // Somehow, this attribute make the jQuery.form.serialize() fail now;
+    // it was working just fine before so I have no clue why it would all
+    // of a sudden generate a problem
+    //
+    //select.setAttribute( "form", parent.attribute("id") );
+
     for( QString const& item : f_options )
     {
         QDomElement option ( doc.createElement("option")  );

@@ -1729,11 +1729,39 @@ int manager_cgi::process_post()
         auto const & new_value_it(f_post_variables.find(field_name_it->second));
         if(new_value_it == f_post_variables.end())
         {
+            std::stringstream ss;
+            ss << "Known variables from plugin \""
+               << plugin_name
+               << "\": ";
+            bool add_comma(false);
+            for(auto const & v : f_post_variables)
+            {
+                if(add_comma)
+                {
+                    ss << ", ";
+                }
+                else
+                {
+                    add_comma = true;
+                }
+                if(v.second.empty())
+                {
+                    ss << v.first << "=(empty)";
+                }
+                else
+                {
+                    ss << v.first << "=[" << v.second << "]";
+                }
+                if(v.second == field_name_it->second)
+                {
+                    ss << " (*)";
+                }
+            }
             return error("400 Bad Request"
                        , ("Variable \""
                          + field_name_it->second
                          + "\" was not found in this POST.").c_str()
-                       , nullptr);
+                       , ss.str().c_str());
         }
         new_value = QString::fromUtf8(new_value_it->second.c_str());
     }

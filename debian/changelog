@@ -1,3 +1,13 @@
+snapwebsites (1.5.148.0~xenial) xenial; urgency=high
+
+  * Fixed the snapbounce command options initialization, we cannot use -P.
+  * Added list of available fields to debug save_everywhere check.
+  * Removed the "form=..." attribute from the <select> tag because somehow
+    it just stopped working when serializing the form.
+  * Added a trace message to see snapwatchdogscript stats on exit.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 22 Aug 2018 11:31:05 -0700
+
 snapwebsites (1.5.147.1~xenial) xenial; urgency=high
 
   * Properly define where the watchdog script to check snapbackup/end is to

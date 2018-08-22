@@ -116,10 +116,8 @@ EOF
     ################################################################################
     # we then need to add a snapbounce entry to the master.cf file
     #
-    postconf -M snapbounce/unix="snapbounce unix -       n       n       -       -       pipe"
-    postconf -P "snapbounce/unix/flags=FRq"
-    postconf -P "snapbounce/unix/user=snapwebsites"
-    postconf -P "snapbounce/unix/argv=/usr/bin/snapbounce --sender \${sender} --recipient \${recipient}"
+    postconf -M snapbounce/unix="snapbounce unix -       n       n       -       -       pipe\
+      flags=FRq user=snapwebsites argv=/usr/bin/snapbounce --sender \${sender} --recipient \${recipient}"
 
     ################################################################################
     # make sure submission/inet is turned on as well

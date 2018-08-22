@@ -1,7 +1,7 @@
 /*
  * Name: snapmanagercgi.js
  * Layout: default
- * Version: 0.3
+ * Version: 0.5
  * Browsers: all
  * Copyright: Copyright 2017-2018 (c) Made to Order Software Inc.
  * License: GPLv2
@@ -270,7 +270,7 @@ function FieldDiv(the_form)
                         //
                         Feedback.FeedbackInstance.message("error", "Failed to connect to server for AJAX feedback! (" + errorThrown + ")");
 
-                        console.log("Failed to connect to server!");
+                        console.log("Failed to connect to server or server refused request!");
                         console.log("xhr   : [" + xhr + "]");
                         console.log("status: [" + status + "]");
                         console.log("error : [" + errorThrown + "]");

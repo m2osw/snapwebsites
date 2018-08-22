@@ -381,6 +381,16 @@ void watchscripts::process_script(QString script_filename)
         f_error += "\n";
     }
 
+    SNAP_LOG_TRACE("script \"")
+                  (script_filename)
+                  ("\" exited with ")
+                  (exit_code)
+                  (", and ")
+                  (f_output.length())
+                  (" bytes of output and ")
+                  (f_error.length())
+                  (" bytes of error.");
+
     if(exit_code == 0
     && !f_error.isEmpty())
     {
