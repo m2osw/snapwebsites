@@ -1864,6 +1864,7 @@ bool email::send() const
     //
     alarm(5 * 60);
 
+SNAP_LOG_TRACE("--- setup ostream for spipe");
     std::ostream f(&spipe);
 
     // convert email data to text and send that to the sendmail command line
@@ -1929,6 +1930,7 @@ bool email::send() const
         headers[get_name(name_t::SNAP_NAME_CORE_CONTENT_LANGUAGE)] = "en-us";
     }
 
+SNAP_LOG_TRACE("--- output headers");
     for(auto const & it : headers)
     {
         // TODO: the it.second needs to be URI encoded to be valid
@@ -1936,9 +1938,11 @@ bool email::send() const
         //       encoding, we should err (we probably want to
         //       capture those in the add_header() though)
         //
+SNAP_LOG_TRACE("--- ")(it.first)(" & ")(it.second);
         f << it.first << ": " << it.second << std::endl;
     }
 
+SNAP_LOG_TRACE("--- header extras");
     // XXX: allow administrators to change the `branding` flag
     //
     if(f_branding)
@@ -1951,6 +1955,7 @@ bool email::send() const
     //
     f << std::endl;
 
+SNAP_LOG_TRACE("--- send email content");
     if(body_only)
     {
         // in this case we only have one entry, probably HTML, and thus we
@@ -2051,6 +2056,7 @@ bool email::send() const
         f << "--" << boundary << "--" << std::endl;
     }
 
+SNAP_LOG_TRACE("--- end email message");
     // end the message
     //
     f << std::endl
@@ -2059,12 +2065,15 @@ bool email::send() const
     // make sure the ostream gets flushed or some data could be left in
     // a cache and never written to the pipe
     //
+SNAP_LOG_TRACE("--- flush");
     f.flush();
 
     // close pipe as soon as we are done writing to it
     // and return true if it all worked as expected
     //
+SNAP_LOG_TRACE("--- close pipe");
     bool result(spipe.close_pipe() == 0);
+SNAP_LOG_TRACE("--- closed pipe? ")(result ? "Success" : "Failed");
 
     // here, we're done sending the email and pclose() returned so
     // we can get rid of the alarm
@@ -2072,8 +2081,10 @@ bool email::send() const
     // often it is the pclose() that fails, so we want to reset the
     // alarm after that call
     //
+SNAP_LOG_TRACE("--- remove alarm");
     alarm(0);
 
+SNAP_LOG_TRACE("--- return sendemail");
     return result;
 }
 
