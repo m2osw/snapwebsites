@@ -1,3 +1,11 @@
+snapwebsites (1.5.151.0~xenial) xenial; urgency=high
+
+  * Changed the "is-enabled" test with "show -p UnitFileState" to avoid getting
+    an error every minute.
+  * Fixed the watchdog_watchscripts_output=... definition in snapwatchdog.conf.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 23 Aug 2018 12:53:28 -0700
+
 snapwebsites (1.5.150.0~xenial) xenial; urgency=high
 
   * SNAP-439: Thinking about it, the sendmail should not use the

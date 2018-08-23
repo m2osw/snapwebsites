@@ -78,24 +78,54 @@ char const * g_configuration_apache2_maintenance = "/etc/apache2/snap-conf/snap-
  */
 bool is_service_enabled(QString const & service_name)
 {
+    // here I use the `show` command instead of the `is-enabled` to avoid
+    // errors whenever the service is not even installed, which can happen
+    // (i.e. clamav-freshclam is generally only installed on one system in
+    // the entire cluster)
+    //
     snap::process p("query service status");
     p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
     p.set_command("systemctl");
-    p.add_argument("is-enabled");
+    p.add_argument("show");
+    p.add_argument("-p");
+    p.add_argument("UnitFileState");
+    //p.add_argument("--value"); -- available since systemd 230, so not on Ubuntu 16.04
     p.add_argument(service_name);
     int const r(p.run());
     QString const output(p.get_output(true).trimmed());
-    SNAP_LOG_INFO("\"is-enabled\" query output (")(r)("): ")(output);
+    SNAP_LOG_INFO("\"show -p UnitFileState\" query output (")(r)("): ")(output);
 
-    // there is a special case with static services: the is-enabled returns
-    // true (r == 0) even when they are not enabled
+
+    // we cannot use 'r' since it is 0 if the command works whether or not
+    // the corresponding unit even exist on the system
     //
-    if(output == "static")
-    {
-        return false;
-    }
+    // so instead we just have to test the output and it must be exactly
+    // equal to the following
+    //
+    // (other possible values are static, disabled, and an empty value for
+    // non-existant units.)
+    //
+    return output == "UnitFileState=enabled";
 
-    return r == 0;
+
+//    snap::process p("query service status");
+//    p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
+//    p.set_command("systemctl");
+//    p.add_argument("is-enabled");
+//    p.add_argument(service_name);
+//    int const r(p.run());
+//    QString const output(p.get_output(true).trimmed());
+//    SNAP_LOG_INFO("\"is-enabled\" query output (")(r)("): ")(output);
+//
+//    // there is a special case with static services: the is-enabled returns
+//    // true (r == 0) even when they are not enabled
+//    //
+//    if(output == "static")
+//    {
+//        return false;
+//    }
+//
+//    return r == 0;
 }
 
 
