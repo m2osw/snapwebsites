@@ -1,3 +1,12 @@
+snapwebsites (1.5.150.0~xenial) xenial; urgency=high
+
+  * SNAP-439: Thinking about it, the sendmail should not use the
+    "SupplementaryGroups=postdrop" because that means itself and all the
+    tools that it starts would have write privileges to that directory
+    and I think that's much worse than "NoNewPrivileges=false".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 22 Aug 2018 23:56:02 -0700
+
 snapwebsites (1.5.149.0~xenial) xenial; urgency=high
 
   * SNAP-439: Found that the problem with snapwatchdog sending emails was in

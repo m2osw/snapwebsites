@@ -9,9 +9,11 @@ After=snapcommunicator.service snapfirewall.service snaplock.service snapdbproxy
 Type=simple
 WorkingDirectory=~
 ProtectHome=true
-# WARNING: we need the supplementary group for postfix sendmail to work
-#          along with the no new privileges; see below
-NoNewPrivileges=true
+# WARNING: we do not want to offer privileges, but we also don't want to be
+#          part of the postdrop group which Postfix sendmail/postdrop require
+#          so instead we just allow privileges; it should be pretty safe anyway
+#          since we do not run other programs (that I'm aware of)
+NoNewPrivileges=false
 # sendmail can run only one single instance at a time within the
 # entire cluster at this point so it needs to use a global lock
 ExecStart=/usr/sbin/snapbackend --cron-action sendmail::sendmail --param GLOBAL_LOCK=1
@@ -21,7 +23,6 @@ RestartSec=1h
 # TBD: we did not change the user/group in our service file, but there should be no reason not to
 User=snapwebsites
 Group=snapwebsites
-SupplementaryGroups=postdrop
 Nice=7
 LimitNPROC=1000
 # For developers and administrators to get console output
