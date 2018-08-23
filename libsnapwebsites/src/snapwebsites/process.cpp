@@ -230,6 +230,13 @@ QString const & process::get_name() const
  *
  * This is extermely useful to run filter commands (i.e. html2text).
  *
+ * \li PROCESS_MODE_INOUTERR
+ *
+ * Run the process in a way so we can write input to it, and read
+ * both output: stdout and stderr. This is similar to the
+ * PROCESS_MODE_INOUT except that you can distinguish the error
+ * feed from the non-error feed.
+ *
  * \li PROCESS_MODE_INOUT_INTERACTIVE
  *
  * Run the process interactively, meaning that its output is going to be

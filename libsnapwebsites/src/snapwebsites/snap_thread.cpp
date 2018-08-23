@@ -1065,6 +1065,9 @@ void snap_thread::stop()
             f_mutex.wait();
         }
 
+        // we are done stopping now
+        f_stopping = false;
+
         // We cannot join since our threads are detached (change?)
         //void *ignore;
         //pthread_join(f_thread_id.ptr(), &ignore);

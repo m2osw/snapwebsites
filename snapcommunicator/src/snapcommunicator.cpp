@@ -28,7 +28,6 @@
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/loadavg.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/snap_communicator.h>
 #include <snapwebsites/snapwebsites.h>
