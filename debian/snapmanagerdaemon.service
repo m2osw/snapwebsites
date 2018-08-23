@@ -10,6 +10,9 @@ Type=simple
 # Since this one runs as root:root we have to specify the directory "by hand"
 WorkingDirectory=/var/lib/snapwebsites
 ProtectHome=off
+# The snapamanagerdaemon actually runs many things as root and may want to
+# change permissions along the way, we just want to keep that totally open
+NoNewPrivileges=false
 ExecStart=/usr/sbin/snapmanagerdaemon
 ExecStop=/usr/bin/snapstop --timeout 300 --service "$MAINPID"
 Restart=on-failure

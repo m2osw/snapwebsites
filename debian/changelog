@@ -1,3 +1,23 @@
+snapwebsites (1.5.149.0~xenial) xenial; urgency=high
+
+  * SNAP-439: Found that the problem with snapwatchdog sending emails was in
+    link with the fact that we prevent the setgid() when starting snapwatchdog.
+    I added the postdrop as a supplemental group.
+  * Changed the "NoNewPrivileges" to false for the snapwatchdog service because
+    our sendmail (from snapmta) requires root privileges.
+  * Made snapimages, snaplistjournal use "NoNewPrivileges=true"
+  * Changed snapsendmail to use "NoNewPrivileges=true" and have
+    "SupplementaryGroups=postdrop", it worked for snapwatchdog
+  * Made "NoNewPrivileges=false" explicity in snapinitfirewall,
+    snapcommunicator, snapmanagerdaemon
+  * Removed two SNAP_LOG_TRACE() from snaplog otherwise the logfile grows
+    to incredible sizes (just on finball, a test system, it could reach
+    64Mb!) The data goes to MySQL already, so no need for yet another dup.
+  * Removed the alarm() because it would not be a good idea to leave sendmail
+    processes running (i.e. us dying doesn't kill our children which pile up.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 22 Aug 2018 22:40:04 -0700
+
 snapwebsites (1.5.148.0~xenial) xenial; urgency=high
 
   * Fixed the snapbounce command options initialization, we cannot use -P.

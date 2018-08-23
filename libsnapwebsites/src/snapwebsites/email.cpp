@@ -1850,21 +1850,8 @@ bool email::send() const
     QString const cmd(QString("sendmail -f \"%1\" \"%2\"")
                             .arg(QString::fromUtf8(s.f_email_only.c_str()))
                             .arg(QString::fromUtf8(m.f_email_only.c_str())));
-
     SNAP_LOG_TRACE("sendmail command: [")(cmd)("]");
-
     snap_pipe spipe(cmd, snap_pipe::mode_t::PIPE_MODE_IN);
-
-    // unfortunately, pipes get stuck once in a while and we want to
-    // avoid being stuck forever; so setting up an alarm for 5 min.
-    // which is plently even for the largest email ever; after the
-    // pclose() we will cancel the alarm; if you want to know that
-    // you received the SIGALRM, you may need to write a signal
-    // handler (it is done automatically in the snapserver)
-    //
-    alarm(5 * 60);
-
-SNAP_LOG_TRACE("--- setup ostream for spipe");
     std::ostream f(&spipe);
 
     // convert email data to text and send that to the sendmail command line
@@ -1930,7 +1917,6 @@ SNAP_LOG_TRACE("--- setup ostream for spipe");
         headers[get_name(name_t::SNAP_NAME_CORE_CONTENT_LANGUAGE)] = "en-us";
     }
 
-SNAP_LOG_TRACE("--- output headers");
     for(auto const & it : headers)
     {
         // TODO: the it.second needs to be URI encoded to be valid
@@ -1938,11 +1924,9 @@ SNAP_LOG_TRACE("--- output headers");
         //       encoding, we should err (we probably want to
         //       capture those in the add_header() though)
         //
-SNAP_LOG_TRACE("--- ")(it.first)(" & ")(it.second);
         f << it.first << ": " << it.second << std::endl;
     }
 
-SNAP_LOG_TRACE("--- header extras");
     // XXX: allow administrators to change the `branding` flag
     //
     if(f_branding)
@@ -1955,7 +1939,6 @@ SNAP_LOG_TRACE("--- header extras");
     //
     f << std::endl;
 
-SNAP_LOG_TRACE("--- send email content");
     if(body_only)
     {
         // in this case we only have one entry, probably HTML, and thus we
@@ -2056,36 +2039,21 @@ SNAP_LOG_TRACE("--- send email content");
         f << "--" << boundary << "--" << std::endl;
     }
 
-SNAP_LOG_TRACE("--- end email message");
     // end the message
     //
     f << std::endl
       << "." << std::endl;
 
     // make sure the ostream gets flushed or some data could be left in
-    // a cache and never written to the pipe
+    // a cache and never written to the pipe (unlikely since we do not
+    // use the cache, but future C++ versions could have a problem.)
     //
-SNAP_LOG_TRACE("--- flush");
     f.flush();
 
     // close pipe as soon as we are done writing to it
     // and return true if it all worked as expected
     //
-SNAP_LOG_TRACE("--- close pipe");
-    bool result(spipe.close_pipe() == 0);
-SNAP_LOG_TRACE("--- closed pipe? ")(result ? "Success" : "Failed");
-
-    // here, we're done sending the email and pclose() returned so
-    // we can get rid of the alarm
-    //
-    // often it is the pclose() that fails, so we want to reset the
-    // alarm after that call
-    //
-SNAP_LOG_TRACE("--- remove alarm");
-    alarm(0);
-
-SNAP_LOG_TRACE("--- return sendemail");
-    return result;
+    return spipe.close_pipe() == 0;
 }
 
 

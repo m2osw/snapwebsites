@@ -9,6 +9,7 @@ After=snapcommunicator.service snapfirewall.service snaplock.service snapdbproxy
 Type=simple
 WorkingDirectory=~
 ProtectHome=true
+NoNewPrivileges=true
 ExecStart=/usr/sbin/snapbackend --cron-action images::images
 ExecStop=/usr/bin/snapstop --service "$MAINPID"
 Restart=on-failure

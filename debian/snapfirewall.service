@@ -10,6 +10,8 @@ Before=fail2ban.service
 Type=simple
 WorkingDirectory=~
 ProtectHome=true
+# snapfirewall needs to run iplock which setuid to root so we can't set
+# this parameter to true
 NoNewPrivileges=false
 ExecStart=/usr/sbin/snapfirewall
 ExecStop=/usr/bin/snapstop --service "$MAINPID"

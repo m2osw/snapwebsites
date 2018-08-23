@@ -9,7 +9,11 @@ After=snapbase.service snapcommunicator.service snapfirewall.service snapdbproxy
 Type=simple
 WorkingDirectory=~
 ProtectHome=true
-NoNewPrivileges=true
+# WARNING: we start sendmail from postfix and our snapmta, in the first case
+#          it requires postdrop as a group and in the second case it becomes
+#          root when it wants to save an email in /var/mail/root--so the
+#          result is that we need to allow changes in privileges
+NoNewPrivileges=false
 ExecStart=/usr/sbin/snapwatchdogserver
 ExecStop=/usr/bin/snapstop --timeout 180 --service "$MAINPID"
 Restart=on-failure

@@ -505,16 +505,22 @@ void snaplog::add_message_to_db( snap::snap_communicator_message const & message
         return;
     }
 
-    // TODO: add a record to the MySQL database
+    // add a record to the MySQL database
+    //
+    auto const all_parms = message.get_all_parameters();
+
+#ifdef _DEBUG
+    // this is way too much for a live server and should not be that useful
     //
     SNAP_LOG_TRACE("SNAPLOG command received: server=[")(message.get_server())("], service=[")(message.get_service())("]");
-    auto const all_parms = message.get_all_parameters();
 #if 0
     for( auto key : all_parms.keys() )
     {
         SNAP_LOG_TRACE("parm {")(key)("} = [")(all_parms[key])("]");
     }
 #endif
+#endif
+
     QString const q_str("INSERT INTO snaplog.log "
             "(server, service, level, msgid, ipaddr, file, line, func, message ) "
             "VALUES "
@@ -550,7 +556,14 @@ void snaplog::add_message_to_db( snap::snap_communicator_message const & message
  */
 void snaplog::process_message(snap::snap_communicator_message const & message)
 {
+#ifdef _DEBUG
+    // this may be very useful to debug snaplog, but on a live system
+    // it is a x2 of all the logs (once in their respective file and
+    // once in the snaplog.log file) when the idea is to stick the
+    // log in MySQL, so go check it there!
+    //
     SNAP_LOG_TRACE("received messenger message [")(message.to_message())("] for ")(f_server_name);
+#endif
 
     QString const command(message.get_command());
 

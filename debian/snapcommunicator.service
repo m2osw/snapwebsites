@@ -9,6 +9,9 @@ After=network.target snapbase.service
 Type=simple
 WorkingDirectory=/var/lib/snapwebsites
 ProtectHome=true
+# TODO: Test with true because snapcommunicator does not start anything, does it?
+#       That was the job of snapinit which we don't use anymore.
+NoNewPrivileges=false
 ExecStart=/usr/sbin/snapcommunicator
 ExecStop=/usr/bin/snapstop --service "$MAINPID"
 Restart=on-failure
