@@ -15,21 +15,39 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "antivirus.h"
 
+// another plugin
+//
 #include "../output/output.h"
 
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/process.h>
 
+// snapwatchdog lib
+//
+#include <snapwatchdog/flags.h>
+
+// Qt lib
+//
 #include <QFile>
 #include <QDateTime>
 
+// C lib
+//
 #include <sys/stat.h>
 
+
+// last entry
+//
 #include <snapwebsites/poison.h>
+
 
 
 SNAP_PLUGIN_START(antivirus, 1, 0)
@@ -267,11 +285,25 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
     }
     if(!has_clamscan())
     {
-        // TODO: signal the settings screen so the administrator can be in the known
+        // register the antivirus problem
         //
         SNAP_LOG_WARNING("the antivirus is enabled, but clamav is not installed.");
+
+        // also tell the administrator about the problem
+        //
+        QString const site_key(f_snap->get_site_key_with_slash());
+        std::string site(site_key.toUtf8().data());
+        SNAPWATHCDOG_FLAG_UP("snapserver-plugin"
+                           , "antivirus"
+                           , "clamav-missing"
+                           , "the antivirus plugin is turned on for " + site + ","
+                             " but the clamav system it not available");
         return;
     }
+
+        SNAPWATHCDOG_FLAG_DOWN("snapserver-plugin"
+                             , "antivirus"
+                             , "clamav-missing");
 
     // retrieve the version only once, we do not need it reloaded for each
     // file! although it will happen any time a new file is checked...

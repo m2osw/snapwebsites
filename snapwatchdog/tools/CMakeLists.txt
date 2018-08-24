@@ -61,5 +61,36 @@ install(
 
 
 
+#######################################
+## raise flag
+#######################################
+
+project(raise-flag)
+
+add_executable(${PROJECT_NAME}
+    raise_flag.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+    snapwebsites
+    snapwatchdog
+    libdbproxy
+    ${ADVGETOPT_LIBRARIES}
+    ${CASSWRAPPER_LIBRARIES}
+    ${LOG4CPLUS_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${LIBTLD_LIBRARIES}
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        bin
+)
+
+
+
 
 # vim: ts=4 sw=4 et

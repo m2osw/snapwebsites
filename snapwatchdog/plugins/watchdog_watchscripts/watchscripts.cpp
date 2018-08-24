@@ -294,19 +294,11 @@ void watchscripts::on_process_watch(QDomDocument doc)
     {
         f_output_file.reset();
     }
-    else if(f_output_file != nullptr)
-    {
-        f_output_file->write("--- new run (O) ---\n", 20);
-    }
     f_error_file.reset(new QFile(f_scripts_error_log));
     if(f_error_file != nullptr
     && !f_error_file->open(QIODevice::Append))
     {
         f_error_file.reset();
-    }
-    else if(f_output_file != nullptr)
-    {
-        f_error_file->write("--- new run (E) ---\n", 20);
     }
 
     glob_dir const script_filenames(scripts_path + "/*", GLOB_NOSORT | GLOB_NOESCAPE, true);

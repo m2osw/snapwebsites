@@ -29,6 +29,10 @@
 //
 #include <QFile>
 
+// boost lib
+//
+#include <boost/algorithm/string.hpp>
+
 // C++ lib
 //
 #include <memory>
@@ -115,6 +119,7 @@ public:
 
     //void                clear();
     void                read_config_file();
+    bool                write_config_file(bool override_file);
 
     std::string         get_parameter(std::string const & parameter_name) const;
     bool                has_parameter(std::string const & parameter_name) const;
@@ -125,6 +130,7 @@ public:
 
 private:
     bool                actual_read_config_file(std::string const & filename, bool quiet);
+    bool                actual_write_config_file(std::string const & filename);
 
     std::string const                       f_configuration_filename;
     std::string const                       f_override_filename;
@@ -229,8 +235,6 @@ bool snap_config_file::exists()
  * \note
  * Sets the f_exists flag.
  *
- * \param[in] filename  The name of the file to read the parameters from.
- *
  * \sa actual_read_config_file()
  * \sa exists()
  */
@@ -307,8 +311,7 @@ void snap_config_file::read_config_file()
 bool snap_config_file::actual_read_config_file(std::string const & filename, bool quiet)
 {
     // read the configuration file now
-    QFile c;
-    c.setFileName(QString::fromUtf8(filename.c_str()));
+    QFile c(QString::fromUtf8(filename.c_str()));
     //
     if( !c.exists() && quiet )
     {
@@ -330,7 +333,6 @@ bool snap_config_file::actual_read_config_file(std::string const & filename, boo
 
     // read the configuration file variables as parameters
     //
-    // TODO: use C++ and std::getline(in, ...) so we do not have to limit the length of a line
     std::string prefix;
     char buf[1024];
     for(int line(1); c.readLine(buf, sizeof(buf)) > 0; ++line)
@@ -442,10 +444,149 @@ bool snap_config_file::actual_read_config_file(std::string const & filename, boo
                 e[-1] = '\0';
             }
 
+            // restore the escaped newlines if any
+            // right now this is the only thing we escape, the rest can
+            // stay as it is and still works
+            //
+            std::string value(v);
+            boost::algorithm::replace_all(value, "\\n", "\n");
+
             // keep the last read value in that section
             //
-            f_parameters[prefix + n] = v;
+            f_parameters[prefix + n] = value;
         }
+    }
+
+    return true;
+}
+
+
+/** \brief Write the data back to the configuration file.
+ *
+ * This function writes the existing data back to the configuration file.
+ *
+ * This function is somewhat dangerous in the sense that it destroys all
+ * the comments, empty lines, etc. That information is not while reading
+ * the input file, so when saving the file back, it saves raw data.
+ *
+ * It is expected that you use this function only for configuration files
+ * used for things other than administrative configuration files.
+ *
+ * \warning
+ * The \p override_file flag is ignored if the override_filename is
+ * not defined in this configuration file. In other words, if you create
+ * a configuration file without an override, this function cannot then
+ * save the newdata in an override file.
+ *
+ * \warning
+ * If the configuration filename does not include any period or slash,
+ * it is considered to be a well known configuration filename and in that
+ * case the \p override_file is ignored since the name is built using
+ * the main configuration filename (by adding /snapwebsites.d/ to the
+ * path of the configuration files.)
+ *
+ * \note
+ * See also the manager::replace_configuration_value() function in
+ * snapmanager/lib/installer.cpp (we may at some point want to move
+ * that code to the main snap library or even a contrib library to
+ * allow for easy editing of configuration files.)
+ *
+ * \param[in] override_file  Whether the override filename is used to save
+ *            this configuration back to drive.
+ *
+ * \return true if the configuration was saved successfully.
+ */
+bool snap_config_file::write_config_file(bool override_file)
+{
+    // the g_configuration_has_started should already be true since
+    // a read should always happen before a write, but just in case
+    // set that variable to true now
+    //
+    g_configuration_has_started = true;
+
+    // if the filename includes any "." or "/", it is not one of our
+    // files so we instead load the file as is (i.e. filename is
+    // expected to be a full name, so we ignore our path)
+    //
+    std::string::size_type const pos(f_configuration_filename.find_first_of("./"));
+    if(pos != std::string::npos)
+    {
+        if(override_file && !f_override_filename.empty())
+        {
+            return actual_write_config_file(f_override_filename);
+        }
+        else
+        {
+            return actual_write_config_file(f_configuration_filename);
+        }
+    }
+    else
+    {
+        if(override_file)
+        {
+            return actual_write_config_file(g_configurations_path + "/snapwebsites.d/" + f_configuration_filename + ".conf");
+        }
+        else
+        {
+            return actual_write_config_file(g_configurations_path + "/" + f_configuration_filename + ".conf");
+        }
+    }
+}
+
+
+/** \brief Write the configuration to file.
+ *
+ * This is the function that actually writes the configuration data to file.
+ * We use a sub-function so that way we can handle multiple cases in a clear
+ * manner in the main write_config_file() function.
+ *
+ * \param[in] filename  The name of the file to read from.
+ *
+ * \return true if written, false on failure to write file.
+ *
+ * \sa write_config_file()
+ */
+bool snap_config_file::actual_write_config_file(std::string const & filename)
+{
+    // write to the configuration file now
+    //
+    QFile c(QString::fromUtf8(filename.c_str()));
+    if(!c.open(QIODevice::WriteOnly))
+    {
+        // could not write here, it may be an EPERM
+        //
+        int const e(errno);
+        SNAP_LOG_WARNING("could not open \"")(filename)("\" for writing. (errno: ")(e)("--")(strerror(e))(")");
+        return false;
+    }
+
+    // read the configuration file variables as parameters
+    //
+    c.write("# This file was auto-generated by snap_config.cpp.\n"
+            "# Making additional modifications here are not likely\n"
+            "# be overwritten, assuming the tool handling this\n"
+            "# configuration file is not actively working on it.\n");
+
+    // then write on line per parameter
+    //
+    for(auto p : f_parameters)
+    {
+        // make sure that the field name and content do not include newline
+        // characters, instead we replace them with the same syntax as in
+        // C/C++ so '\\' and 'n',
+        //
+        std::string::size_type const pos(p.first.find_first_of("./"));
+        if(pos == std::string::npos)
+        {
+            QByteArray data(p.first.c_str());
+            data += '=';
+            QByteArray value(p.second.c_str());
+            value.replace("\n", "\\n");
+            data += value;
+            data += '\n';  // our actual new line, do not reaplce this one
+            c.write(data);
+        }
+        //else -- ignore parameters with invalid names
     }
 
     return true;
@@ -836,7 +977,7 @@ bool snap_configurations::configuration_file_exists( std::string const & configu
  *            checked first and if a field exists in it, that value is used.
  * \param[in] parameter_name  The parameter to check the presence of.
  */
-bool snap_configurations::snap_configurations::has_parameter(std::string const & configuration_filename, std::string const & override_filename, std::string const & parameter_name) const
+bool snap_configurations::has_parameter(std::string const & configuration_filename, std::string const & override_filename, std::string const & parameter_name) const
 {
     snap_thread::snap_lock lock(*g_mutex);
     auto const config(get_configuration(configuration_filename, override_filename));
@@ -860,6 +1001,39 @@ void snap_configurations::set_parameter(std::string const & configuration_filena
     snap_thread::snap_lock lock(*g_mutex);
     auto const config(get_configuration(configuration_filename, override_filename));
     config->set_parameter(parameter_name, value);
+}
+
+
+/** \brief Save fields back to the configuration file.
+ *
+ * This function can be used to save the configuration file back to file.
+ * In most cases you want to use the override filename (so on the snap_config
+ * you would use "true" as the first parameter.)
+ *
+ * Note that the in memory configuration parameters do NOT include any
+ * comments. The saved file gets a comment at the top saying it was
+ * auto-generated. This feature should only be used for configuration files
+ * that administrators do not expected to update themselves or are being
+ * updated in the override sub-folder.
+ *
+ * \note
+ * The configuration_filename and override_filename parameters are used to
+ * find the configuration file in our cache (or add it there if not already
+ * present.) Since the corresponding filenames are already defined in the
+ * snap_config_file object, it is not used to save the file per se, only
+ * to find the snap_config_file that corresponds to the input parameters.
+ *
+ * \param[in] configuration_filename  The name of the configuration file to change.
+ * \param[in] override_filename  The name of the override, that file is
+ *            checked first and if a field exists in it, that value is used.
+ * \param[in] override_file  Whether the save uses the \p configuration_filename
+ *            or the \p override_filename to save this 
+ */
+bool snap_configurations::save(std::string const & configuration_filename, std::string const & override_filename, bool override_file)
+{
+    snap_thread::snap_lock lock(*g_mutex);
+    auto const config(get_configuration(configuration_filename, override_filename, true));
+    return config->write_config_file(override_file);
 }
 
 

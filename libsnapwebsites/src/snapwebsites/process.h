@@ -135,7 +135,11 @@ public:
     void                        set_forced_environment(bool forced = true);
 
     void                        set_command(QString const & name);
+    void                        set_command(std::string const & name);
+    void                        set_command(char const * name);
     void                        add_argument(QString const & arg);
+    void                        add_argument(std::string const & arg);
+    void                        add_argument(char const * arg);
     void                        add_environ(QString const & name, QString const & value);
 
     int                         run();

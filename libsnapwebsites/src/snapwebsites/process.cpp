@@ -291,6 +291,30 @@ void process::set_command(QString const & command)
 }
 
 
+/** \brief Define the command to run.
+ *
+ * This is an overload to set the command to run.
+ *
+ * \param[in] command  The command to start the new process.
+ */
+void process::set_command(std::string const & command)
+{
+    f_command = QString::fromUtf8(command.c_str());
+}
+
+
+/** \brief Define the command to run.
+ *
+ * This is an overload to set the command to run.
+ *
+ * \param[in] command  The command to start the new process.
+ */
+void process::set_command(char const * command)
+{
+    f_command = QString::fromUtf8(command);
+}
+
+
 /** \brief Add an argument to the command line.
  *
  * This function adds one individual arguement to the command line.
@@ -301,6 +325,30 @@ void process::set_command(QString const & command)
 void process::add_argument(QString const & arg)
 {
     f_arguments.push_back(arg);
+}
+
+
+/** \brief Add an argument to the command line.
+ *
+ * This is an overload to accept std::string's of UTF-8 characters.
+ *
+ * \param[in] arg  The argument to be added.
+ */
+void process::add_argument(std::string const & arg)
+{
+    add_argument(QString::fromUtf8(arg.c_str()));
+}
+
+
+/** \brief Add an argument to the command line.
+ *
+ * This is an overload to accept plain strings of UTF-8 characters.
+ *
+ * \param[in] arg  The argument to be added.
+ */
+void process::add_argument(char const * arg)
+{
+    add_argument(QString::fromUtf8(arg));
 }
 
 

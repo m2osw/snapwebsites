@@ -65,6 +65,7 @@ qt5_add_resources(SNAPWATCHDOG_RESOURCES_RCC
 
 add_library( ${PROJECT_NAME} SHARED
     snapwatchdog.cpp                            # Implements the core of the watchdog server
+    flags.cpp
     log_definitions.cpp
     ${SNAPWATCHDOG_MOC_CXX}
     ${SNAPWATCHDOG_RESOURCES_RCC}
@@ -85,26 +86,34 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
 install(
     TARGETS
         ${PROJECT_NAME}
+
     LIBRARY DESTINATION
         lib
 )
+
 install(
     FILES
         "snapwatchdog-tables.xml"
+
     DESTINATION
         ${SNAP_TABLE_DESCRIPTION_PATH}
 )
+
 install(
     DIRECTORY
         ${CMAKE_CURRENT_SOURCE_DIR}/
+
     DESTINATION
         include/snapwatchdog
+
     FILES_MATCHING PATTERN
         "*.h"
 )
+
 install(
     FILES
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
+
     DESTINATION
         include/snapwatchdog
 )
@@ -112,14 +121,17 @@ install(
 install(
     FILES
         watchdog-log-definitions.xml
+
     DESTINATION
         share/snapwebsites/snapwatchdog/log-definitions
 )
+
 install(
-        FILES
-                watchdog-log-definitions.xsd
-        DESTINATION
-                share/snapwebsites/xsd
+    FILES
+        watchdog-log-definitions.xsd
+
+    DESTINATION
+        share/snapwebsites/xsd
 )
 
 

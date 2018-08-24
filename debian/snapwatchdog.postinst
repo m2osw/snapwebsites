@@ -12,14 +12,14 @@ then
     # Create files representing each service offered by this package
     #
     SERVICES_DIR=/usr/share/snapwebsites/services
-    touch $SERVICES_DIR/${PACKAGENAME}.service
+    touch ${SERVICES_DIR}/${PACKAGENAME}.service
 
-    # make the snapwatchdog lib folders
+    # create the snapwatchdog directories
     #
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
     mkdir -p ${SNAPWATCHDOG_LIB_DIR}
     chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}
-    for subdir in data rusage script-files
+    for subdir in data flags rusage script-files
     do
         mkdir -p ${SNAPWATCHDOG_LIB_DIR}/${subdir}
         chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}/${subdir}
@@ -32,9 +32,12 @@ then
 
     # make the snapwatchdog cache folders
     #
-    SNAPWATCHDOG_CACHE_DIR=/var/lib/snapwebsites/${PACKAGENAME}
-    mkdir -p ${SNAPWATCHDOG_CACHE_DIR}
-    chown snapwebsites:snapwebsites ${SNAPWATCHDOG_CACHE_DIR}
+    # This is not useful because it gets deleted if not used for a while.
+    # Instead we have to make sure that directory exists before we use it.
+    #
+    #SNAPWATCHDOG_CACHE_DIR=/var/cache/snapwebsites/${PACKAGENAME}
+    #mkdir -p ${SNAPWATCHDOG_CACHE_DIR}
+    #chown snapwebsites:snapwebsites ${SNAPWATCHDOG_CACHE_DIR}
 
     # Create the logfile because the snapwebsites user may have
     # difficulties with it otherwise during logrotate.
@@ -60,6 +63,11 @@ then
     touch ${SCRIPTSLOGFILE}
     chown snapwebsites:snapwebsites ${SCRIPTSLOGFILE}
     chmod 640 ${SCRIPTSLOGFILE}
+
+    SCRIPTSLOGERRORS=${SNAPSCRIPTSLOGDIR}/snapwatchdog-scripts-errors.log
+    touch ${SCRIPTSLOGERRORS}
+    chown snapwebsites:snapwebsites ${SCRIPTSLOGERRORS}
+    chmod 640 ${SCRIPTSLOGERRORS}
 
     # Signal snapdbproxy since we just added new tables
     #

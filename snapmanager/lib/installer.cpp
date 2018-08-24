@@ -826,11 +826,53 @@ void manager::reboot(bool reboot)
     //       one computer cannot decide by itself whether to it can
     //       go down or now...
     //
+    //       Note: as mentioned in the TODO below, the use of a batch
+    //       that goes on after a reboot would be wonderful and could
+    //       actually be used to "script batch" an entire reboot
+    //       process [it would be a bit more complicated if we want
+    //       to make it fail safe, but we could have a version 1 which
+    //       uses a single computer to manage the whole process...]
+    //       the concept is to include all the steps in the batch and
+    //       then execute them one by one, waiting for the results
+    //       to confirm that we can move on to the next item in the
+    //       batch... just thinking about it, it sounds great already!
 
     // TODO: we could test whether the installer is busy upgrading or
     //       installing something at least (see lockfile() in those
     //       functions.)
+    //
+    //       Note: once we have a batch system, we can add the boot
+    //       at the end of the batch! But then we need a way to
+    //       block adding any further items to the batch unless we
+    //       want to support the idea/concept that the batch will
+    //       continue after the reboot (which would be wonderful
+    //       and should not be any more complicated!)
 
+    // on nodes with Cassandra drain Cassandra first
+    //
+    if(access("/usr/sbin/cassandra", R_OK | X_OK) == 0)
+    {
+        // get the host IP as defined in "snapdbproxy.conf"
+        //
+        snap::snap_config dbproxy("snapdbproxy");
+
+        std::string host("127.0.0.1");
+        if(dbproxy.has_parameter("cassandra_host_list"))
+        {
+            host = dbproxy["cassandra_host_list"];
+        }
+
+        // run the "cass-stop" command
+        //
+        snap::process drain("cassandra drain");
+        drain.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
+        drain.set_command("/usr/bin/cass-stop");
+        drain.add_argument(host);
+        snap::NOTUSED(drain.run());
+    }
+
+    // now do the shutdown
+    //
     snap::process p("shutdown");
     p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
     p.set_command("shutdown");

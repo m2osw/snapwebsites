@@ -2,6 +2,7 @@ debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_apt.so            u
 debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_cassandra.so      usr/lib/snapwebsites/watchdog_plugins/
 debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_cpu.so            usr/lib/snapwebsites/watchdog_plugins/
 debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_disk.so           usr/lib/snapwebsites/watchdog_plugins/
+debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_flags.so          usr/lib/snapwebsites/watchdog_plugins/
 debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_firewall.so       usr/lib/snapwebsites/watchdog_plugins/
 debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_log.so            usr/lib/snapwebsites/watchdog_plugins/
 debian/tmp/usr/lib/snapwebsites/watchdog_plugins/libwatchdog_memory.so         usr/lib/snapwebsites/watchdog_plugins/

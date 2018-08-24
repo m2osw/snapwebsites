@@ -304,7 +304,9 @@ void cgi::on_retrieve_status(snap_manager::server_status & server_status)
 
             // TODO: display retry_after in minutes, hours, days...
             snap_manager::status_t const maintenance(
-                          snap_manager::status_t::state_t::STATUS_STATE_INFO
+                          retry_after == 0
+                                ? snap_manager::status_t::state_t::STATUS_STATE_INFO
+                                : snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
                         , get_plugin_name()
                         , "maintenance"
                         , retry_after == 0 ? "in-service" : QString("%1").arg(retry_after));

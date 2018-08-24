@@ -261,15 +261,15 @@ int main(int argc, char * argv[])
     }
     catch( snap::snap_exception const & except )
     {
-        SNAP_LOG_FATAL("snapbackend: snap_exception caught: ")(except.what());
+        SNAP_LOG_FATAL("find_process: snap_exception caught: ")(except.what());
     }
     catch( std::exception const & std_except )
     {
-        SNAP_LOG_FATAL("snapbackend: std::exception caught: ")(std_except.what());
+        SNAP_LOG_FATAL("find_process: std::exception caught: ")(std_except.what());
     }
     catch( ... )
     {
-        SNAP_LOG_FATAL("snapbackend: unknown exception caught!");
+        SNAP_LOG_FATAL("find_process: unknown exception caught!");
     }
 
     // exit via the server so the server can clean itself up properly

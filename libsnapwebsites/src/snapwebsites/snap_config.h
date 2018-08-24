@@ -76,6 +76,8 @@ public:
     bool                    has_parameter(std::string const & configuration_filename, std::string const & override_filename, std::string const & parameter_name) const;
     void                    set_parameter(std::string const & configuration_filename, std::string const & override_filename, std::string const & parameter_name, std::string const & value);
 
+    bool                    save(std::string const & configuration_filename, std::string const & override_filename, bool override_file);
+
 private:
                             snap_configurations();
                             snap_configurations(snap_configurations const &) = delete;
@@ -429,6 +431,11 @@ public:
     snap_config_parameter_ref operator [] (QString const & parameter_name)
                             {
                                 return snap_config_parameter_ref(f_configuration_filename, f_override_filename, parameter_name.toUtf8().data());
+                            }
+
+    bool                    save(bool override_file = true)
+                            {
+                                return f_config->save(f_configuration_filename, f_override_filename, override_file);
                             }
 
 private:

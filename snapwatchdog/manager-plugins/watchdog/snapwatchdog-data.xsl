@@ -47,6 +47,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           {
             margin-top: 0;
           }
+          a
+          {
+            text-decoration: none;
+          }
           table
           {
             border: none;
@@ -126,7 +130,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                 <tbody>
                   <xsl:for-each select="watchdog/error/message">
                     <tr>
-                      <td><xsl:value-of select="@plugin_name"/></td>
+                      <td><a href="#{@plugin_name}"><xsl:value-of select="@plugin_name"/></a></td>
                       <td class="align-right"><xsl:value-of select="@priority"/></td>
                       <td><xsl:copy-of select="node()"/></td>
                     </tr>
@@ -140,7 +144,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="apt_count" select="count(watchdog/apt)"/>
           <xsl:if test="$apt_count > 0">
             <div id="apt-section">
-              <h2>Package Updates Current Status</h2>
+              <h2 id="apt">Package Updates Current Status</h2>
               <table class="name-value">
                 <tr>
                   <th>Time of Last Check:</th>
@@ -186,7 +190,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="cpu_count" select="count(watchdog/cpu)"/>
           <xsl:if test="$cpu_count > 0">
             <div id="cpu-section">
-              <h2>CPU</h2>
+              <h2 id="cpu">CPU</h2>
 <p>(TODO convert to readable sizes)</p>
               <table class="name-value">
                 <tr>
@@ -261,7 +265,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="memory_count" select="count(watchdog/memory)"/>
           <xsl:if test="$memory_count > 0">
             <div id="memory-section">
-              <h2>Memory</h2>
+              <h2 id="memory">Memory</h2>
 <p>(TODO convert to readable sizes)</p>
               <table class="name-value">
                 <tr>
@@ -304,7 +308,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="disk_count" select="count(watchdog/disk)"/>
           <xsl:if test="$disk_count > 0">
             <div id="disk-section">
-              <h2>Disk Partitions</h2>
+              <h2 id="disk">Disk Partitions</h2>
 <p>(TODO convert to readable sizes)</p>
               <table class="table-with-borders">
                 <thead>
@@ -341,7 +345,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="logs_count" select="count(watchdog/logs)"/>
           <xsl:if test="$logs_count > 0">
             <div id="logs-section">
-              <h2>Logs</h2>
+              <h2 id="log">Logs</h2>
 <p>(TODO convert the mode and make size human readable--with byte size in a title=... and uid/gid should be in text too)</p>
               <table class="table-with-borders">
                 <thead>
@@ -379,7 +383,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="journals_count" select="count(watchdog/list/journal)"/>
           <xsl:if test="$journals_count > 0">
             <div id="lists-section">
-              <h2>Lists</h2>
+              <h2 id="list">Lists</h2>
 <p>(TODO convert the mode and make size human readable--with byte size in a title=... and uid/gid should be in text too)</p>
               <table class="table-with-borders">
                 <thead>
@@ -411,11 +415,60 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             </div>
           </xsl:if>
 
+          <!-- flags were raised -->
+          <xsl:variable name="flags_count" select="count(watchdog/flags/flag)"/>
+          <xsl:if test="$flags_count > 0">
+            <div id="flags-section">
+              <h2 id="flags">Flags</h2>
+              <p>
+                <strong>WARNING:</strong> all flags are errors that the administrator
+                needs to look into and correct until they all disappear. Remember
+                that for some flags you may have to restart a service before it gets
+                updated (see the <em>Modified</em> column.) In the worst case
+                scenario, you may have to reboot to see that your changes had the
+                expected effect.
+              </p>
+              <table class="table-with-borders">
+                <thead>
+                  <th>Unit</th>
+                  <th>Section</th>
+                  <th>Name</th>
+                  <th>Source File</th>
+                  <th>Function</th>
+                  <th>Line</th>
+                  <th>Message</th>
+                  <th>Priority</th>
+                  <th>Date</th>
+                  <th>Modified</th>
+                  <th>Tags</th>
+                </thead>
+                <tbody>
+                  <xsl:for-each select="watchdog/flags/flag">
+                    <tr>
+                      <td><xsl:value-of select="@unit"/></td>
+                      <td><xsl:value-of select="@section"/></td>
+                      <td><xsl:value-of select="@name"/></td>
+                      <td><xsl:value-of select="source/@source-file"/></td>
+                      <td><xsl:value-of select="source/@function"/></td>
+                      <td class="align-right"><xsl:value-of select="source/@line"/></td>
+                      <td><xsl:value-of select="message/node()"/></td>
+                      <td class="align-right"><xsl:value-of select="@priority"/></td>
+                      <td><xsl:value-of select="xs:dateTime('1970-01-01T00:00:00') + date div 1 * xs:dayTimeDuration('PT1S')"/></td>
+                      <td><xsl:value-of select="xs:dateTime('1970-01-01T00:00:00') + modified div 1 * xs:dayTimeDuration('PT1S')"/></td>
+                      <td><xsl:copy-of select="string-join(tags/tag, ', ')"/></td>
+                    </tr>
+                  </xsl:for-each>
+                </tbody>
+              </table>
+              <p><xsl:value-of select="$flags_count"/> flags raised.</p>
+            </div>
+          </xsl:if>
+
           <!-- cassandra has a process when running -->
           <xsl:variable name="cassandra_count" select="count(watchdog/cassandra)"/>
           <xsl:if test="$cassandra_count > 0">
             <div id="cassandra-section">
-              <h2>Cassandra</h2>
+              <h2 id="cassandra">Cassandra</h2>
 <p>(TODO this should be part of a file in snapdbproxy)</p>
               <table class="table-with-borders">
                 <xsl:call-template name="process_table_header"/>
@@ -430,7 +483,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="firewall_count" select="count(watchdog/firewall)"/>
           <xsl:if test="$firewall_count > 0">
             <div id="firewall-section">
-              <h2>Firewall</h2>
+              <h2 id="firewall">Firewall</h2>
 <p>(TODO this should be part of a file in snapfirewall)</p>
               <table class="table-with-borders">
                 <xsl:call-template name="process_table_header"/>
@@ -445,7 +498,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="network_count" select="count(watchdog/network)"/>
           <xsl:if test="$network_count > 0">
             <div id="network-section">
-              <h2>Network</h2>
+              <h2 id="network">Network</h2>
 <p>(TODO this should be part of a file in snapcommunicator)</p>
               <table class="table-with-borders">
                 <xsl:call-template name="process_table_header"/>
@@ -460,7 +513,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="processes_count" select="count(watchdog/processes)"/>
           <xsl:if test="$processes_count > 0">
             <div id="processes-section">
-              <h2>Processes</h2>
+              <h2 id="processes">Processes</h2>
               <table class="table-with-borders">
                 <xsl:call-template name="process_table_header"/>
                 <tbody>
@@ -474,7 +527,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
           <xsl:variable name="watchscripts_count" select="count(watchdog/watchscripts/script)"/>
           <xsl:if test="$watchscripts_count > 0">
             <div id="watchscripts-section">
-              <h2>Watchscripts</h2>
+              <h2 id="watchscripts">Watchscripts</h2>
               <table class="table-with-borders">
                 <thead>
                   <tr>

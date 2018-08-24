@@ -9,25 +9,14 @@ PACKAGENAME=snapwatchdog
 # Remove files representing each service offered by this package
 #
 SERVICES_DIR=/usr/share/snapwebsites/services
-rm -f $SERVICES_DIR/${PACKAGENAME}.service
+rm -f ${SERVICES_DIR}/${PACKAGENAME}.service
 
 if [ "$1" = "purge" ]
 then
-    # delete the data directories
-    #
-
-    # remove all the directories that are empty
+    # delete all of the collected data on a purge
     #
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
-    for dir in ${SNAPWATCHDOG_LIB_DIR}/data \
-               ${SNAPWATCHDOG_LIB_DIR}/script-files \
-               ${SNAPWATCHDOG_LIB_DIR}
-    do
-        if test -d "${dir}"
-        then
-            rmdir --ignore-fail-on-non-empty "${dir}"
-        fi
-    done
+    rm -rf ${SNAPWATCHDOG_LIB_DIR}
 
     # delete all logs
     #
