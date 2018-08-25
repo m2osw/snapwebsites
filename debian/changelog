@@ -1,3 +1,10 @@
+snapwebsites (1.5.153.1~xenial) xenial; urgency=high
+
+  * Added the snapwatchdog_lib directory to antivirus so it can include the
+    flags.h header file as expected.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 24 Aug 2018 17:12:44 -0700
+
 snapwebsites (1.5.153.0~xenial) xenial; urgency=high
 
   * Added support for raising snapwatchdog Flags.

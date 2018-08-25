@@ -35,6 +35,7 @@ find_package( Qt5Core REQUIRED )
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${snapwatchdog_lib_SOURCE_DIR}
 )
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
