@@ -46,18 +46,20 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Automatically run the moc compiler on qt files
 set( CMAKE_AUTOMOC TRUE )
 
-include_directories( SYSTEM
-    ${Qt5Core_INCLUDE_DIRS}
-    ${Qt5Network_INCLUDE_DIRS}
-    ${Qt5Script_INCLUDE_DIRS}
-    ${Qt5Sql_INCLUDE_DIRS}
-    ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5Xml_INCLUDE_DIRS}
-    ${Qt5XmlPatterns_INCLUDE_DIRS}
+include_directories(
+    SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Network_INCLUDE_DIRS}
+        ${Qt5Script_INCLUDE_DIRS}
+        ${Qt5Sql_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
+        ${Qt5Xml_INCLUDE_DIRS}
+        ${Qt5XmlPatterns_INCLUDE_DIRS}
 )
 include_directories(
-    ${libsnapwebsites_project_SOURCE_DIR}/src
-    ${libsnapwebsites_project_BINARY_DIR}/src
+    ${snapwebsites_src_SOURCE_DIR}
+    ${snapwebsites_src_BINARY_DIR}
+    ${snapwatchdog_lib_SOURCE_DIR}
 )
 set( QT_LIBRARIES
     Qt5::Core
@@ -123,4 +125,4 @@ snap_build_css_targets()
 snap_build_js_targets()
 snap_build_xml_targets()
 
-# vim: ts=4 sw=4 nocindent
+# vim: ts=4 sw=4 et nocindent

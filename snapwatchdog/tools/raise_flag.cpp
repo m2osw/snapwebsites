@@ -116,6 +116,14 @@ namespace
             advgetopt::getopt::argument_mode_t::no_argument
         },
         {
+            'm',
+            0,
+            "manual",
+            nullptr,
+            "mark the flag as a manual flag, it has to manually be turned off by the administrator",
+            advgetopt::getopt::argument_mode_t::no_argument
+        },
+        {
             'p',
             0,
             "priority",
@@ -200,6 +208,7 @@ void list_in_plain_text()
     widths["line"]        = strlen("line");
     widths["message"]     = strlen("message");
     widths["priority"]    = strlen("priority");
+    widths["manual"]      = strlen("manual");
     widths["date"]        = std::max(strlen("date"), 31UL);
     widths["modified"]    = std::max(strlen("modified"), 31UL);
     widths["tags"]        = strlen("tags");
@@ -218,6 +227,7 @@ void list_in_plain_text()
         widths["line"]        = std::max(widths["line"],        std::to_string(f->get_line())    .length());
         widths["message"]     = std::max(widths["message"],     f->get_message()                 .length());
         widths["priority"]    = std::max(widths["priority"],    std::to_string(f->get_priority()).length());
+        widths["manual"]      = std::max(widths["manual"],      f->get_manual_down() ? 3UL : 2UL); // "yes" : "no"
         //widths["date"]        = std::max(widths["date"],        ...);
         //widths["modified"]    = std::max(widths["modified"],    ...);
 
@@ -237,6 +247,7 @@ void list_in_plain_text()
               << std::setw(widths["line"]        + 2) << "line"
               << std::setw(widths["message"]     + 2) << "message"
               << std::setw(widths["priority"]    + 2) << "priority"
+              << std::setw(widths["manual"]      + 2) << "manual"
               << std::setw(widths["date"]        + 2) << "date"
               << std::setw(widths["modified"]    + 2) << "modified"
               << std::setw(widths["tags"]           ) << "tags"
@@ -251,6 +262,7 @@ void list_in_plain_text()
               << std::setw(widths["line"]        + 2) << "----"
               << std::setw(widths["message"]     + 2) << "-------"
               << std::setw(widths["priority"]    + 2) << "--------"
+              << std::setw(widths["manual"]      + 2) << "------"
               << std::setw(widths["date"]        + 2) << "----"
               << std::setw(widths["modified"]    + 2) << "--------"
               << std::setw(widths["tags"]           ) << "----"
@@ -266,6 +278,7 @@ void list_in_plain_text()
                   << std::right << std::setw(widths["line"]           ) << f->get_line() << "  "
                   << std::left  << std::setw(widths["message"]     + 2) << f->get_message()
                   << std::right << std::setw(widths["priority"]       ) << f->get_priority() << "  "
+                  << std::left  << std::setw(widths["manual"]      + 2) << (f->get_manual_down() ? "yes" : "no")
                   << std::left  << std::setw(widths["date"]        + 2) << snap::snap_child::date_to_string(f->get_date()     * 1000000, snap::snap_child::date_format_t::DATE_FORMAT_HTTP)
                   << std::left  << std::setw(widths["modified"]    + 2) << snap::snap_child::date_to_string(f->get_modified() * 1000000, snap::snap_child::date_format_t::DATE_FORMAT_HTTP)
                   << std::left  << std::setw(widths["tags"]           ) << boost::algorithm::join(f->get_tags(), ", ")
@@ -308,14 +321,15 @@ void list_in_xml()
         flag_element = doc.createElement("flag");
         root.appendChild(flag_element);
 
-        add_element("unit", f->get_unit());
-        add_element("section", f->get_section());
-        add_element("name", f->get_name());
+        add_element("unit",        f->get_unit());
+        add_element("section",     f->get_section());
+        add_element("name",        f->get_name());
         add_element("source-file", f->get_source_file());
-        add_element("function", f->get_function());
-        add_element("line", std::to_string(f->get_line()));
-        add_element("message", f->get_message());
-        add_element("priority", std::to_string(f->get_priority()));
+        add_element("function",    f->get_function());
+        add_element("line",        std::to_string(f->get_line()));
+        add_element("message",     f->get_message());
+        add_element("priority",    std::to_string(f->get_priority()));
+        add_element("manual",      f->get_manual_down() ? "yes" : "no");
 
         snap::watchdog_flag::tag_list_t const & tags(f->get_tags());
         if(!tags.empty())
@@ -384,6 +398,11 @@ int main(int argc, char * argv[])
 
         if(down)
         {
+            if(opt.is_defined("manual"))
+            {
+                std::cerr << "raise-flag:error: you can't define --manual with --down." << std::endl;
+                return 1;
+            }
             if(opt.is_defined("priority"))
             {
                 std::cerr << "raise-flag:error: you can't define --priority with --down." << std::endl;
@@ -427,6 +446,11 @@ int main(int argc, char * argv[])
         if(up)
         {
             flag = SNAPWATHCDOG_FLAG_UP(unit, section, flag_name, message);
+
+            if(opt.is_defined("manual"))
+            {
+                flag->set_manual_down(true);
+            }
 
             if(opt.is_defined("priority"))
             {

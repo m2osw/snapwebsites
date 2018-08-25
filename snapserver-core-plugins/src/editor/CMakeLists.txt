@@ -82,7 +82,10 @@ add_library(editor SHARED
     radio-unselected.png
 )
 
-target_link_libraries( editor Qt5::Core )
+target_link_libraries(editor
+    Qt5::Core
+    snapwatchdog
+)
 
 install(
     TARGETS

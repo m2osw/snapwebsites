@@ -152,6 +152,11 @@ watchdog_flag::watchdog_flag(std::string const & filename)
         f_priority = std::stol(flag.get_parameter("priority"));
     }
 
+    if(flag.has_parameter("manual_down"))
+    {
+        f_manual_down = flag.get_parameter("manual_down") == "yes";
+    }
+
     if(flag.has_parameter("date"))
     {
         f_date = std::stol(flag.get_parameter("date"));
@@ -188,6 +193,8 @@ watchdog_flag::watchdog_flag(std::string const & filename)
  * it as required.
  *
  * \param[in] state  The new state.
+ *
+ * \return A reference to this.
  */
 watchdog_flag & watchdog_flag::set_state(state_t state)
 {
@@ -203,6 +210,8 @@ watchdog_flag & watchdog_flag::set_state(state_t state)
  * this function.
  *
  * \param[in] source_file  The source file name.
+ *
+ * \return A reference to this.
  */
 watchdog_flag & watchdog_flag::set_source_file(std::string const & source_file)
 {
@@ -219,6 +228,8 @@ watchdog_flag & watchdog_flag::set_source_file(std::string const & source_file)
  * long term, to find flags and maintain them as required.
  *
  * \param[in] function  The name of the concerned function.
+ *
+ * \return A reference to this.
  */
 watchdog_flag & watchdog_flag::set_function(std::string const & function)
 {
@@ -237,6 +248,8 @@ watchdog_flag & watchdog_flag::set_function(std::string const & function)
  * is a way to know that no line number was defined.
  *
  * \param[in] line  The new line number at which this flag is being raised.
+ *
+ * \return A reference to this.
  */
 watchdog_flag & watchdog_flag::set_line(int line)
 {
@@ -256,6 +269,8 @@ watchdog_flag & watchdog_flag::set_line(int line)
  * is not good enough to support the full mail server."
  *
  * \param[in] message  The message explaining why the flag is raised.
+ *
+ * \return A reference to this.
  */
 watchdog_flag & watchdog_flag::set_message(std::string const & message)
 {
@@ -274,10 +289,61 @@ watchdog_flag & watchdog_flag::set_message(std::string const & message)
  * expects Postfix to be installed on the same computer. snapmta
  * is not good enough to support the full mail server."
  *
+ * \param[in] message  The message explaining why the flag is raised.
+ *
+ * \return A reference to this.
+ */
+watchdog_flag & watchdog_flag::set_message(QString const & message)
+{
+    f_message = message.toUtf8().data();
+
+    return *this;
+}
+
+
+/** \brief Set the error message.
+ *
+ * A flag is always accompagned by an error message of some sort.
+ * For example, the sendmail backend checks whether postfix is
+ * installed on that computer. If not, it raises a flag with an
+ * error message saying something like this: "The sendmail backend
+ * expects Postfix to be installed on the same computer. snapmta
+ * is not good enough to support the full mail server."
+ *
+ * \param[in] message  The message explaining why the flag is raised.
+ *
+ * \return A reference to this.
+ */
+watchdog_flag & watchdog_flag::set_message(char const * message)
+{
+    if(message == nullptr)
+    {
+        f_message.clear();
+    }
+    else
+    {
+        f_message = message;
+    }
+
+    return *this;
+}
+
+
+/** \brief Set the error message.
+ *
+ * A flag is always accompagned by an error message of some sort.
+ * For example, the sendmail backend checks whether postfix is
+ * installed on that computer. If not, it raises a flag with an
+ * error message saying something like this: "The sendmail backend
+ * expects Postfix to be installed on the same computer. snapmta
+ * is not good enough to support the full mail server."
+ *
  * The default priority is 5. It can be reduced or increased. It
  * is expected to be between 0 and 100.
  *
  * \param[in] priority  The error priority.
+ *
+ * \return A reference to this.
  */
 watchdog_flag & watchdog_flag::set_priority(int priority)
 {
@@ -293,6 +359,26 @@ watchdog_flag & watchdog_flag::set_priority(int priority)
     {
         f_priority = priority;
     }
+
+    return *this;
+}
+
+
+/** \brief Mark whether a manual down is required for this flag.
+ *
+ * Some flags may be turned ON but never turned OFF. These are called
+ * _manual flags_, because you have to turn them off manually.
+ *
+ * At some point, the Watchdog interface will allow you to click a
+ * link to manually take a flag down.
+ *
+ * \param[in] manual  Whether the flag is considered manual or not.
+ *
+ * \return A reference to this.
+ */
+watchdog_flag & watchdog_flag::set_manual_down(bool manual)
+{
+    f_manual_down = manual;
 
     return *this;
 }
@@ -316,6 +402,8 @@ watchdog_flag & watchdog_flag::set_priority(int priority)
  * to separate each word in a filename.
  *
  * \param[in] tag  The name of a tag to add to this flag.
+ *
+ * \return A reference to this.
  */
 watchdog_flag & watchdog_flag::add_tag(std::string const & tag)
 {
@@ -506,6 +594,32 @@ int watchdog_flag::get_priority() const
 }
 
 
+/** \brief Check whether the flag is considered manual or automatic.
+ *
+ * A _manual down_ flag is a flag that the administrator has to turn
+ * off manually once the problem was taken cared off.
+ *
+ * By default, a watchdog flag is considered automatic, which means
+ * that the process that raises the flag up for some circumstances
+ * will also know how to bring that flag down once the circumstances
+ * disappear.
+ *
+ * This function returns true if the process will never bring its
+ * flag down automatically. This is particularly true if the process
+ * use the SNAPWATHCDOG_FLAG_UP() macro but never uses the corresponding
+ * SNAPWATHCDOG_FLAG_DOWN()--corresponding as in with the same first
+ * three strings (unit, section, name.)
+ *
+ * \return true if the watchdog has to be taken manually.
+ *
+ * \sa set_manual_down()
+ */
+bool watchdog_flag::get_manual_down() const
+{
+    return f_manual_down;
+}
+
+
 /** \brief Retrieve the date when the flag was first raised.
  *
  * The function returns the date when the flag was first raised. A flag
@@ -625,6 +739,7 @@ bool watchdog_flag::save()
         flag["line"]        = std::to_string(f_line);
         flag["message"]     = f_message;
         flag["priority"]    = std::to_string(f_priority);
+        flag["manual_down"] = f_manual_down ? "yes" : "no";
         if(!has_date)
         {
             flag["date"]    = now;

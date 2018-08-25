@@ -82,7 +82,10 @@ public:
     watchdog_flag &             set_function(std::string const & function);
     watchdog_flag &             set_line(int line);
     watchdog_flag &             set_message(std::string const & message);
+    watchdog_flag &             set_message(QString const & message);
+    watchdog_flag &             set_message(char const * message);
     watchdog_flag &             set_priority(int priority);
+    watchdog_flag &             set_manual_down(bool manual);
     watchdog_flag &             add_tag(std::string const & tag);
 
     state_t                     get_state() const;
@@ -95,6 +98,7 @@ public:
     int                         get_line() const;
     std::string const &         get_message() const;
     int                         get_priority() const;
+    bool                        get_manual_down() const;
     time_t                      get_date() const;
     time_t                      get_modified() const;
     tag_list_t const &          get_tags() const;
@@ -107,19 +111,20 @@ private:
     static void                 valid_name(std::string & name);
     static void                 load_flag(std::string const & filename, watchdog_flag::vector_t * result);
 
-    state_t                     f_state               = state_t::STATE_UP;
-    std::string                 f_unit                = std::string();
-    std::string                 f_section             = std::string();
-    std::string                 f_name                = std::string();
-    mutable std::string         f_filename            = std::string();
-    std::string                 f_source_file         = std::string();
-    std::string                 f_function            = std::string();
-    int                         f_line                = 0;
-    std::string                 f_message             = std::string();
-    int                         f_priority            = 5;
-    time_t                      f_date                = -1;
-    time_t                      f_modified            = -1;
-    tag_list_t                  f_tags                = tag_list_t();
+    state_t                     f_state             = state_t::STATE_UP;
+    std::string                 f_unit              = std::string();
+    std::string                 f_section           = std::string();
+    std::string                 f_name              = std::string();
+    mutable std::string         f_filename          = std::string();
+    std::string                 f_source_file       = std::string();
+    std::string                 f_function          = std::string();
+    int                         f_line              = 0;
+    std::string                 f_message           = std::string();
+    int                         f_priority          = 5;
+    bool                        f_manual_down       = false;
+    time_t                      f_date              = -1;
+    time_t                      f_modified          = -1;
+    tag_list_t                  f_tags              = tag_list_t();
 };
 
 

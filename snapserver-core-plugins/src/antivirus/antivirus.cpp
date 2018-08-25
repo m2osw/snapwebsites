@@ -293,17 +293,20 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
         //
         QString const site_key(f_snap->get_site_key_with_slash());
         std::string site(site_key.toUtf8().data());
-        SNAPWATHCDOG_FLAG_UP("snapserver-plugin"
-                           , "antivirus"
-                           , "clamav-missing"
-                           , "the antivirus plugin is turned on for " + site + ","
-                             " but the clamav system it not available");
+        snap::watchdog_flag::pointer_t flag(SNAPWATHCDOG_FLAG_UP(
+                      "snapserver-plugin"
+                    , "antivirus"
+                    , "clamav-missing"
+                    , "the antivirus plugin is turned on for " + site + ","
+                      " but the clamav system it not available"));
+        flag->set_priority(50);
+        flag->save();
         return;
     }
 
-        SNAPWATHCDOG_FLAG_DOWN("snapserver-plugin"
-                             , "antivirus"
-                             , "clamav-missing");
+    SNAPWATHCDOG_FLAG_DOWN("snapserver-plugin"
+                         , "antivirus"
+                         , "clamav-missing");
 
     // retrieve the version only once, we do not need it reloaded for each
     // file! although it will happen any time a new file is checked...

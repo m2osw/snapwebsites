@@ -15,8 +15,12 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "editor.h"
 
+// other plugins
+//
 #include "../output/output.h"
 #include "../attachment/attachment.h"
 #include "../locale/snap_locale.h"
@@ -24,6 +28,8 @@
 #include "../mimetype/mimetype.h"
 #include "../permissions/permissions.h"
 
+// snapwebsites lib
+//
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkgmtime.h>
@@ -37,16 +43,30 @@
 #include <snapwebsites/snap_lock.h>
 #include <snapwebsites/xslt.h>
 
+// snapwatchdog lib
+//
+#include <snapwatchdog/flags.h>
+
+// libtld lib
+//
 #include <libtld/tld.h>
 
-#include <iostream>
-#include <cmath>
-
+// Qt lib
+//
 #include <QTextDocument>
 #include <QFile>
 #include <QFileInfo>
 
+// C++ lib
+//
+#include <iostream>
+#include <cmath>
+
+
+// last entry
+//
 #include <snapwebsites/poison.h>
+
 
 
 SNAP_PLUGIN_START(editor, 1, 0)
@@ -814,9 +834,20 @@ void editor::process_new_draft()
             //      administrators could bump up to be "safe"?
             if(extra >= 100) // 100 excluded since we start with zero (.0 is not included in the very first name)
             {
-                // TODO: this error needs to be reported to the administrator(s)
-                //       (especially if it happens often because that means
-                //       robots are working on the website!)
+                // this error is reported to the administrator(s)
+                // (because if it happens often it could mean
+                // robots are working on the website!)
+                //
+                snap::watchdog_flag::pointer_t flag(SNAPWATHCDOG_FLAG_UP(
+                              "snapserver-plugin"
+                            , "editor"
+                            , "new-draft"
+                            , "the editor was not able to create a new draft on " + site_key +
+                              " after 100 attempts; this may mean you have an attack (or just a really large site)"));
+                flag->set_manual_down(true);
+                flag->set_priority(62);
+                flag->save();
+
                 f_snap->die(snap_child::http_code_t::HTTP_CODE_CONFLICT,
                     "Conflict Error", "We could not create a new draft entry for you. Too many other drafts existed already. Please try again later.",
                     "Somehow the server was not able to generated another draft entry.");

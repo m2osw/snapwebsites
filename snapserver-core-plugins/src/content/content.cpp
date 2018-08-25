@@ -37,10 +37,14 @@
  * plugin to kick in and fix the corresponding list.)
  */
 
+// self
+//
 #include "content.h"
 
 //#include "../messages/messages.h" -- we now have 2 levels (messages and output) so we could include messages.h there
 
+// snapwebsites lib
+//
 #include <snapwebsites/compression.h>
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/log.h>
@@ -52,14 +56,28 @@
 #include <snapwebsites/snap_lock.h>
 #include <snapwebsites/snap_version.h>
 
-#include <iostream>
+// snapwatchdog lib
+//
+#include <snapwatchdog/flags.h>
 
-#include <openssl/md5.h>
-
+// Qt lib
+//
 #include <QFile>
 #include <QTextStream>
 
+// C++ lib
+//
+#include <iostream>
+
+// OpenSSL lib
+//
+#include <openssl/md5.h>
+
+
+// last entry
+//
 #include <snapwebsites/poison.h>
+
 
 
 SNAP_PLUGIN_START(content, 1, 0)
@@ -4209,9 +4227,22 @@ void content::add_javascript(QDomDocument doc, QString const & name)
             {
                 // file does not exist?!
                 //
-                // TODO: we probably want to report that problem to the
-                //       administrator with some form of messaging.
+                // TODO: we should be able to clear that error once the
+                //       JavaScript is available again but that would
+                //       require some database as we would need to know
+                //       which JavaScript we flagged; so for now we mark
+                //       them as manual flags
                 //
+                snap::watchdog_flag::pointer_t flag(SNAPWATHCDOG_FLAG_UP(
+                              "snapserver-plugin"
+                            , "content"
+                            , "javascript-file"
+                            , "the content plugin could not find JavaScript file \"" + name +
+                              "\" in the files table"));
+                flag->set_manual_down(true);
+                flag->set_priority(75);
+                flag->save();
+
                 SNAP_LOG_ERROR("JavaScript for \"")(name)("\" could not be found with its MD5 \"")(dbutils::key_to_string(key))("\".");
                 continue;
             }
