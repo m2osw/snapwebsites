@@ -90,6 +90,10 @@
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_lock.h>
 
+// snapwatchdog lib
+//
+#include <snapwatchdog/flags.h>
+
 // Qt lib
 //
 #include <QFile>
@@ -2268,7 +2272,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
 {
     validation_required = false;
     user_info_t user_info(get_user_info_by_email(email));
-//SNAP_LOG_TRACE("email=")(email);
+//SNAP_LOG_TRACE("login user email=")(email);
 
     if(user_info.exists())
     {
@@ -2328,7 +2332,11 @@ QString users::login_user(QString const & email, QString const & password, bool 
         {
             QString const site_key(f_snap->get_site_key_with_slash());
 
-//std::cerr << "***\n*** Current user status on log in is [" << status_info.key() << "] / [" << (site_key + get_name(name_t::SNAP_NAME_USERS_PASSWORD_PATH)) << "]\n***\n";
+//SNAP_LOG_TRACE("Current user status on log in is [")
+//              (status_info.key())
+//              ("] / [")
+//              (site_key + get_name(name_t::SNAP_NAME_USERS_PASSWORD_PATH))
+//              ("]");
             // the status link exists...
             // this means the user is either a new user (not yet verified)
             // or he is blocked
@@ -2531,6 +2539,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
                             }
                         }
                     }
+//SNAP_LOG_TRACE("redirect user to: ")(logged_info.get_uri());
                     f_snap->page_redirect(logged_info.get_uri(), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
                     NOTREACHED();
                 }
@@ -2598,10 +2607,29 @@ void users::make_cookie_secure(http_cookie & cookie)
     signed char const secure(secure_site.safeSignedCharValue());
     if(secure != 0)
     {
-        // the website is always using HTTPS so we can mark the cookie
-        // as secure as a result
+        // the website is expected to always be using HTTPS so we can
+        // mark the cookie as secure as a result
         //
-        cookie.set_secure();
+        if(f_snap->get_uri().protocol() == "https")
+        {
+            cookie.set_secure();
+        }
+        else
+        {
+            // setting the secure flag will not work, raise a flag
+            //
+            QString const site_key(f_snap->get_site_key_with_slash());
+            std::string site(site_key.toUtf8().data());
+            snap::watchdog_flag::pointer_t flag(SNAPWATHCDOG_FLAG_UP(
+                          "snapserver-plugin"
+                        , "users"
+                        , "secure-cookie"
+                        , "website \"" + site + "\" "
+                          " is marked as being secure, but it was successfully access with the HTTP protocol; NOT MARKING COOKIE AS SECURE UNTIL THIS GETS FIXED"));
+            flag->set_priority(98);
+            flag->set_manual_down(true); // use manual as it is a bit costly to mark a flag DOWN on each run!
+            flag->save();
+        }
     }
 }
 

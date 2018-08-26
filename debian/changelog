@@ -3,6 +3,12 @@ snapwebsites (1.5.155.0~xenial) xenial; urgency=high
   * Added the manual flag information to the Watchdog output in snapmanager.
   * Added an Action column with a link to take a flag down (although not yet
     implemented, it's there as a reminder.)
+  * Fixed the matrix copy & move operators and swap function.
+  * Added a matrix is_diagonal() function.
+  * Made the list error about chownnm() failure more verbose.
+  * Changed the secure cookie code to generate a flag instead of failing in
+    a "weird way" (because the cookie doesn't get changed in the browser
+    if sent secure over an HTTP connection)
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 25 Aug 2018 18:23:48 -0700
 

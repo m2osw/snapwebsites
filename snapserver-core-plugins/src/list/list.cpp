@@ -687,12 +687,14 @@ void listdata_connection::process_data(QString const & acknowledgement_id)
             }
             // just in case, do a chown()/chgrp()
             //
-            if(chownnm(QString::fromUtf8(f_filename.c_str()), "snapwebsites", "snapwebsites") != 0)
+            if(chownnm(f_filename, "snapwebsites", "snapwebsites") != 0)
             {
                 // as a programmer, if you're not running as snapwebsites, this
                 // warning is normal (I most often run as myself)
                 //
-                SNAP_LOG_WARNING("could not properly change the ownership of a list journal file to snapwebsites:snapwebsites");
+                SNAP_LOG_WARNING("could not properly change the ownership of list journal file \"")
+                                (f_filename)
+                                ("\" to snapwebsites:snapwebsites");
             }
 
             if(flock(f_fd, LOCK_EX) != 0)
@@ -2236,12 +2238,19 @@ void list::on_modified_content(content::path_info_t & ipath)
         SNAP_LOG_ERROR("could not open file \"")(journal_filename)("\" for writing");
         return;
     }
-    if(chownnm(QString::fromUtf8(journal_filename.c_str()), "snapwebsites", "snapwebsites") != 0)
+    if(chownnm(journal_filename, "snapwebsites", "snapwebsites") != 0)
     {
         // as a programmer, if you're not running as snapwebsites, this
         // warning is normal (I most often run as myself)
         //
-        SNAP_LOG_WARNING("could not properly change the ownership of a list journal file to snapwebsites:snapwebsites");
+        int const e(errno);
+        SNAP_LOG_WARNING("could not properly change the ownership of list journal file \"")
+                        (journal_filename)
+                        ("\" to snapwebsites:snapwebsites (errno: ")
+                        (e)
+                        (" -- ")
+                        (strerror(e))
+                        (")");
     }
 
     // create a block so fd gets closed ASAP (since we have a lock on it,

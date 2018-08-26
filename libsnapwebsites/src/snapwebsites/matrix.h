@@ -223,30 +223,53 @@ public:
     }
 
     template<typename V, typename SZ>
-    matrix<T, SIZE> & operator = (matrix<V, SZ> const & rhs)
+    matrix<T, SIZE> & operator = (matrix<V, SZ> const & rhs) //= default;
     {
-        if(this != &rhs)
-        {
-            f_rows = rhs.f_rows;
-            f_columns = rhs.f_columns;
-            f_vector = rhs.f_vector;
-        }
+        f_rows = rhs.f_rows;
+        f_columns = rhs.f_columns;
+        f_vector = rhs.f_vector;
+        f_luma_red = rhs.f_luma_red;
+        f_luma_green = rhs.f_luma_green;
+        f_luma_blue = rhs.f_luma_blue;
+#ifdef _DEBUG
+        f_last_hue_matrix = rhs.f_last_hue_matrix;
+#endif
     }
 
     template<typename V, typename SZ>
-    matrix<T, SIZE> & operator = (matrix<V, SZ> const && rhs)
+    matrix<T, SIZE> & operator = (matrix<V, SZ> const && rhs) //= default;
     {
-        if(this != &rhs)
-        {
-            f_rows = rhs.f_rows;
-            f_columns = rhs.f_columns;
-            f_vector = rhs.f_vector;
-        }
+        f_rows = std::move(rhs.f_rows);
+        f_columns = std::move(rhs.f_columns);
+        f_vector = std::move(rhs.f_vector);
+        f_luma_red = std::move(rhs.f_luma_red);
+        f_luma_green = std::move(rhs.f_luma_green);
+        f_luma_blue = std::move(rhs.f_luma_blue);
+#ifdef _DEBUG
+        f_last_hue_matrix = std::move(rhs.f_last_hue_matrix);
+#endif
     }
 
     bool empty() const
     {
-        return f_rows == 0 ||f_columns == 0;
+        return f_rows == 0 || f_columns == 0;
+    }
+
+    bool is_diagonal() const
+    {
+        for(size_type j(0); j < f_rows; ++j)
+        {
+            size_type const joffset(j * f_columns);
+            for(size_type i(0); i < f_columns; ++i)
+            {
+                if(i != j
+                && f_vector[i + joffset] != static_cast<value_type>(0)) // TODO: use a compare function with epsilon instead
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     size_type rows() const
@@ -264,6 +287,15 @@ public:
         std::swap(f_rows, rhs.f_rows);
         std::swap(f_columns, rhs.f_columns);
         f_vector.swap(rhs.f_vector);
+
+        // color related parameters
+        //
+        std::swap(f_luma_red, rhs.f_luma_red);
+        std::swap(f_luma_green, rhs.f_luma_green);
+        std::swap(f_luma_blue, rhs.f_luma_blue);
+#ifdef _DEBUG
+        f_last_hue_matrix.swap(rhs.f_last_hue_matrix);
+#endif
     }
 
     void initialize()
@@ -431,12 +463,12 @@ std::cerr << "this " << f_rows << "x" << f_columns
      * it can be inverted. If so, it computes the inverse and becomes
      * that inverse.
      *
-     * The function returns false if the inverse can't be calculated
+     * The function returns false if the inverse cannot be calculated
      * and the matrix remains unchanged.
      *
      * $$A^{-1} = {1 \over det(A)} adj(A)$$
      *
-     * \return true if the inverse was successful.
+     * \return true if the inverse computation was successful.
      */
     bool inverse()
     {
