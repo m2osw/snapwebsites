@@ -438,9 +438,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                   <th>Line</th>
                   <th>Message</th>
                   <th>Priority</th>
+                  <th>Manual</th>
                   <th>Date</th>
                   <th>Modified</th>
                   <th>Tags</th>
+                  <th>Action</th>
                 </thead>
                 <tbody>
                   <xsl:for-each select="watchdog/flags/flag">
@@ -453,9 +455,33 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                       <td class="align-right"><xsl:value-of select="source/@line"/></td>
                       <td><xsl:value-of select="message/node()"/></td>
                       <td class="align-right"><xsl:value-of select="@priority"/></td>
+                      <td class="align-center">
+                        <xsl:if test="manual-down = 'yes'">
+                          <xsl:attribute name="title">
+                            Use command line `raise-flag --down
+                            <xsl:value-of select="@unit"/>
+                            <xsl:value-of select="@section"/>
+                            <xsl:value-of select="@name"/>`
+                            to take this flag down so it doesn't appear here
+                            anymore (unless the problem was not resolved)
+                          </xsl:attribute>
+                        </xsl:if>
+                        <xsl:value-of select="manual-down/node()"/>
+                      </td>
                       <td><xsl:value-of select="xs:dateTime('1970-01-01T00:00:00') + date div 1 * xs:dayTimeDuration('PT1S')"/></td>
                       <td><xsl:value-of select="xs:dateTime('1970-01-01T00:00:00') + modified div 1 * xs:dayTimeDuration('PT1S')"/></td>
                       <td><xsl:copy-of select="string-join(tags/tag, ', ')"/></td>
+                      <td>
+                        <!-- TBD: should we display the link only if manual-down="yes"? -->
+                        <a>
+                          <xsl:attribute name="href">/snapmanager?host=...TBD...&amp;watchdog_flag=<xsl:value-of
+                            select="@unit"/>/<xsl:value-of
+                            select="@section"/>/<xsl:value-of
+                            select="@name"/>&amp;action=down</xsl:attribute>
+                          Take Down
+                        </a>
+                        (Please implement, tweak link as required by existing interface [or possibly replace with a form?]...)
+                      </td>
                     </tr>
                   </xsl:for-each>
                 </tbody>

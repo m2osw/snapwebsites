@@ -208,6 +208,14 @@ void flags::on_process_watch(QDomDocument doc)
         }
         names += name;
 
+        // manual
+        //
+        QDomElement manual_down_element(doc.createElement("manual-down"));
+        flag.appendChild(manual_down_element);
+
+        QDomText manual_down(doc.createTextNode(QString("%1").arg(f->get_manual_down() ? "yes" : "no")));
+        manual_down_element.appendChild(manual_down);
+
         // date
         //
         QDomElement date_element(doc.createElement("date"));
