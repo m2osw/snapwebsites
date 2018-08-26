@@ -426,7 +426,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                 that for some flags you may have to restart a service before it gets
                 updated (see the <em>Modified</em> column.) In the worst case
                 scenario, you may have to reboot to see that your changes had the
-                expected effect.
+                expected effect. Flags that are marked as manual ("yes" in the
+                manual column) will never be taken down automatically. For those
+                click on the <strong>Take Down</strong> link or run the raise-flag
+                command as shown (hover your mouse over the Manual column to see
+                the command in the tooltip.)
               </p>
               <table class="table-with-borders">
                 <thead>
