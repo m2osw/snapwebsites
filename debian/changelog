@@ -1,3 +1,9 @@
+snapwebsites (1.5.156.0~xenial) xenial; urgency=high
+
+  * Added a data-href for the DTD of XSLT 2.0.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 29 Aug 2018 01:47:39 -0700
+
 snapwebsites (1.5.155.0~xenial) xenial; urgency=high
 
   * Added the manual flag information to the Watchdog output in snapmanager.

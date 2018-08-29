@@ -137,6 +137,7 @@ these do not work at all with xmlpatterns
 <!ATTLIST a class CDATA #IMPLIED
             field_type CDATA #IMPLIED
             href CDATA #IMPLIED
+            data-href CDATA #IMPLIED
             product-guid CDATA #IMPLIED
             rel CDATA #IMPLIED
             style CDATA #IMPLIED
