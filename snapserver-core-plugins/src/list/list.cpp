@@ -2111,6 +2111,7 @@ void list::on_modified_link(links::link_info const & link, bool const created)
     // no need to record the fact that we added a link in a list
     // (that is, at this point a list script cannot depend on the
     // links of another list...)
+    //
     if(!f_list_link)
     {
         content::path_info_t ipath;
@@ -2177,6 +2178,7 @@ void list::on_modified_content(content::path_info_t & ipath)
 
     // if the same page is modified multiple times then we overwrite the
     // same entry multiple times
+    //
     content::content * content_plugin(content::content::instance());
 
     QByteArray key;
@@ -2187,6 +2189,7 @@ void list::on_modified_content(content::path_info_t & ipath)
 
     // content cannot access list information so we have to change the
     // priority for it...
+    //
     if(content_plugin->is_updating())
     {
         // +1h is quite arbitrary, but we assume that a website may have
@@ -3996,6 +3999,9 @@ int list::generate_list_for_page(content::path_info_t & page_ipath
         list_row->clearCache();
 
         char const * ordered_pages(get_name(name_t::SNAP_NAME_LIST_ORDERED_PAGES));
+
+        // TODO: now that we have CQL we should use a COUNT() instead, even if
+        //       "slow" it won't transfer all the data like the following does!
 
         // count the new total number of ordered pages
         int32_t count(0);
