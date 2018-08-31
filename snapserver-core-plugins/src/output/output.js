@@ -1,6 +1,6 @@
 /** @preserve
  * Name: output
- * Version: 0.1.7.14
+ * Version: 0.1.7.15
  * Browsers: all
  * Copyright: Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
  * Depends: jquery-extensions (1.0.2)
@@ -872,15 +872,38 @@ snapwebsites.Output.prototype.handleMessages_ = function()
 
 /** \brief Hide the message box if it is open.
  *
- * This function makes sure that the message box is closed.
+ * This function makes sure that the message box gets closed after about
+ * 300ms.
  *
- * In most cases it is called whenever the system sent a
+ * In most cases, it is called whenever the system sent a
  * successful AJAX to the server and no messages were
  * displayed from it.
+ *
+ * \warning
+ * If you want to clear the existing messages, make sure to use the
+ * clearMessages() function instead. That will instantaneously hide
+ * the message box. Reopening the message box later has the side
+ * effect of actually clearing the messages.
  */
 snapwebsites.Output.prototype.hideMessages = function()
 {
     jQuery("div.user-messages").fadeOut(300);
+};
+
+
+/** \brief Hide the message box immediately.
+ *
+ * This function hides the message box now. (i.e. sets the display CSS
+ * parameter to none.)
+ *
+ * In most cases, you want to call this function in your AJAX onError()
+ * function so when the onComplete() function gets called and adds
+ * the new error messages the existing messages will be cleared first.
+ * (This is why this function just has to hide the box.)
+ */
+snapwebsites.Output.prototype.clearMessages = function()
+{
+    jQuery("div.user-messages").hide();
 };
 
 

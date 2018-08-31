@@ -62,7 +62,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                 key ? string(cell("revision", key, "content::title")) : "no title")]]>
     </param>
     <param name="list::original_test_script" overwrite="yes">
-      <![CDATA[parent(path) == "admin"]]>
+      <![CDATA[parent(path) == "admin/drafts"]]>
     </param>
     <param name="list::selector">children</param>
   </content>
@@ -90,7 +90,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                 key ? string(cell("revision", key, "content::title")) : "no title")]]>
     </param>
     <param name="list::original_test_script" overwrite="yes">
-      <![CDATA[parent(path) == "admin"]]>
+      <![CDATA[parent(path) == "admin/trashcan"]]>
     </param>
     <param name="list::selector">children</param>
   </content>

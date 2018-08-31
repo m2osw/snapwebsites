@@ -25,6 +25,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   <content path="/admin" owner="output">
     <link name="shorturl::no_shorturl" to="shorturl::no_shorturl" mode="1:*">/types/taxonomy/system/shorturl/no_shorturl</link>
   </content>
+  <content path="/images" owner="output">
+    <link name="shorturl::no_shorturl" to="shorturl::no_shorturl" mode="1:*">/types/taxonomy/system/shorturl/no_shorturl</link>
+  </content>
+  <content path="/layouts" owner="output">
+    <link name="shorturl::no_shorturl" to="shorturl::no_shorturl" mode="1:*">/types/taxonomy/system/shorturl/no_shorturl</link>
+  </content>
+  <content path="/js" owner="output">
+    <link name="shorturl::no_shorturl" to="shorturl::no_shorturl" mode="1:*">/types/taxonomy/system/shorturl/no_shorturl</link>
+  </content>
+  <content path="/css" owner="output">
+    <link name="shorturl::no_shorturl" to="shorturl::no_shorturl" mode="1:*">/types/taxonomy/system/shorturl/no_shorturl</link>
+  </content>
   <content path="/admin/settings/shorturl" owner="output">
     <param name="content::title" revision="revision">Short URL</param>
     <param name="content::body" revision="revision">
@@ -37,9 +49,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     <param name="content::body" revision="revision">
       <![CDATA[
         <p>
-          This path is used by the Short URL plugin. When detected by the
-          plugin, it takes the number and redirects the user to the full
-          path page.
+          This path is used by the
+          <a href="https://snapwebsites.org/help/plugin/shorturl">Short URL plugin</a>.
+          When detected by the plugin, it takes the number and redirects the
+          user to the full path page.
         </p>
         <div class="user-list">[list::theme("path", count=10)]</div>
       ]]>
@@ -85,7 +98,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   <content path="/types/taxonomy/system/shorturl/no_shorturl">
     <param name="content::title" revision="revision">Short URL: Prevent Short URL</param>
     <param name="content::body" revision="revision">
-      <![CDATA[<p>When a page is tagged with this tag, then no Short URL is generated for it. This is the default on the home page.</p>]]>
+      <![CDATA[<p>When a page is tagged with this tag, then no Short URL is
+        generated for it. This is the default on the home page, the /admin
+        pages, and a few other paths that are known not to be used for
+        displaying public content.</p>]]>
     </param>
   </content>
 </snap-tree>

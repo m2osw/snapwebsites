@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   <content path="/admin/images" owner="output">
     <param name="content::title" revision="revision">Images Administration</param>
     <param name="content::body" revision="revision">
-      <![CDATA[<p>Administrate different parameters in link with images uploaded to this website.</p>]]>
+      <![CDATA[<p>Administrate different parameters in link with images
+        uploaded to this website.</p>]]>
     </param>
     <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/private</link>
     <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website</link>
@@ -30,7 +31,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   <content path="/admin/images/scripts" owner="output">
     <param name="content::title" revision="revision">Scripts used by Images</param>
     <param name="content::body" revision="revision">
-      <![CDATA[<p>The pages under this administration page define scripts applied to images. These may be automatically added as required by different plugins. An administrator can also add his own scripts.</p>]]>
+      <![CDATA[<p>The pages under this administration page define scripts
+        applied to images. These may be automatically added as required by
+        different plugins. An administrator can also add his own scripts.</p>]]>
     </param>
     <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/page/private</link>
     <!-- TBD: add a list of those pages? -->

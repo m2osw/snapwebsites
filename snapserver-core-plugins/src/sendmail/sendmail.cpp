@@ -1375,9 +1375,12 @@ void sendmail::process_emails()
         libdbproxy::cells const cells(row->getCells());
         if(cells.isEmpty())
         {
+            // no more new emails
+            //
             break;
         }
         // handle one batch
+        //
         for(libdbproxy::cells::const_iterator c(cells.begin());
                 c != cells.end();
                 ++c)
@@ -1385,6 +1388,7 @@ void sendmail::process_emails()
             // get the email from the database
             // we expect empty values once in a while because a dropCell() is
             // not exactly instantaneous in Cassandra
+            //
             libdbproxy::cell::pointer_t cell(*c);
             libdbproxy::value const value(cell->getValue());
             bool done(false);
@@ -1398,6 +1402,7 @@ void sendmail::process_emails()
                     // we can have problems (because we check whether the
                     // user is on the orange list before sending emails
                     // to him)
+                    //
                     attach_email(e);
                     done = true;
                 }
@@ -1405,18 +1410,22 @@ void sendmail::process_emails()
             else
             {
                 // it is invalid anyway
+                //
                 done = true;
             }
             if(done)
             {
                 // we are done with that email, get rid of it
+                //
                 row->dropCell(cell->columnKey());
             }
 
             // quickly end this process if the user requested a stop
+            //
             if(f_backend->stop_received())
             {
                 // clean STOP
+                //
                 return;
             }
         }
@@ -1470,6 +1479,7 @@ void sendmail::attach_email(email const & e)
             if(lists->exists(list_key))
             {
                 // if the email is a list, we do not directly send to it
+                //
                 is_list = true;
                 libdbproxy::value list_value(lists->getCell(list_key)->getValue());
                 tld_email_list user_list;
@@ -1501,11 +1511,11 @@ void sendmail::attach_email(email const & e)
         if(!emails.empty())
         {
             // if the list is not empty, handle it!
-            //for(std::vector<tld_email_list::tld_email_t>::const_iterator
-            //        it(emails.begin()); it != emails.end(); ++it)
+            //
             for(auto const & it : emails)
             {
                 // if groups are specified then the email address can be empty
+                //
                 if(!it.f_email_only.empty())
                 {
                     email copy(e);
@@ -1535,6 +1545,9 @@ void sendmail::attach_user_email(email const & e)
     //      (it may be easier to implement events to send emails
     //      from anyway and use that from the user plugin and avoid
     //      the sendmail reference in the user plugin)
+    //
+    //      this may have changed a bit since we now have a usersui
+    //      plugin as well (TBD)
 
     // TBD: would we need to have a lock to test whether the user
     //      exists? since we are not about to add it ourselves, I
@@ -1545,6 +1558,7 @@ void sendmail::attach_user_email(email const & e)
     if(list.parse(to.toUtf8().data(), 0) != TLD_RESULT_SUCCESS)
     {
         // this should never happen here
+        //
         throw sendmail_exception_invalid_argument("To: field is not a valid email");
     }
     tld_email_list::tld_email_t m;
@@ -1553,6 +1567,7 @@ void sendmail::attach_user_email(email const & e)
         throw sendmail_exception_invalid_argument("To: field does not include at least one email");
     }
     // Note: here the list of emails is always 1 item
+    //
     users::users * users_plugin(users::users::instance());
     users::users::user_info_t user_info( users_plugin->get_user_info_by_email(m.f_email_only.c_str()) );
 
@@ -1576,6 +1591,7 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
         // sort of account because otherwise we could not easily track
         // people's wishes (i.e. whether they do not want to receive our
         // emails); this system allows us to block all emails
+        //
         QString reason;
         users::users::status_t status(users_plugin->register_user(m.f_email_only.c_str(), "!", reason));
         switch(status)
@@ -1588,7 +1604,7 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
 
         // these are considered valid, but they should not occur since if
         // the account already had such a status we should not be in
-        // this if() block...
+        // this if() block in the first place...
         //
         case users::users::status_t::STATUS_VALID:
         case users::users::status_t::STATUS_AUTO:
@@ -1608,7 +1624,7 @@ SNAP_LOG_TRACE  ("sendmail::attach_user_email(): email=")(m.f_email_only)
     }
 
     // TODO: if the user is a placeholder (i.e. user changed his email
-    //       address) then we need to get the new email...
+    //       address) then we need to get the new email address...
 
     // save the email for that user
     // (i.e. emails can be read from within the website)

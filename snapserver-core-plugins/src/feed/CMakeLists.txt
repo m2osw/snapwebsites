@@ -71,12 +71,22 @@ add_library(feed SHARED
 target_link_libraries( feed Qt5::Core )
 
 install(
-    TARGETS feed LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        feed
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
+
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/feed
-    FILES_MATCHING PATTERN "*.h"
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/feed
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
 
 ################################################################################

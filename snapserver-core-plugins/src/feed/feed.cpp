@@ -337,6 +337,7 @@ void feed::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
     if(!settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_RSS_XML))->getValue().safeSignedCharValue(0, 0))
     {
         // if this one is off, then make sure the file is deleted if it exists
+        //
         content::path_info_t rss_xml_ipath;
         rss_xml_ipath.set_path("rss.xml");
         content_plugin->trash_page(rss_xml_ipath);
@@ -345,6 +346,7 @@ void feed::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
     if(!settings_row->getCell(get_name(name_t::SNAP_NAME_FEED_SETTINGS_ALLOW_MAIN_ATOM_XML))->getValue().safeSignedCharValue(0, 0))
     {
         // if this one is off, then make sure the file is deleted if it exists
+        //
         content::path_info_t atom_xml_ipath;
         atom_xml_ipath.set_path("atom.xml");
         content_plugin->trash_page(atom_xml_ipath);
@@ -722,6 +724,7 @@ void feed::generate_feeds()
             QString const doc_str(result.toString(-1));
 
             // formats loaded yet?
+            //
             if(feed_formats.isEmpty())
             {
                 links::link_info feed_info(content::get_name(content::name_t::SNAP_NAME_CONTENT_CHILDREN), false, admin_feed_ipath.get_key(), admin_feed_ipath.get_branch());
@@ -756,6 +759,7 @@ void feed::generate_feeds()
 
             // now generate the actual output (RSS, Atom, etc.)
             // from the data we just gathered
+            //
             bool success(true);
             int const max_formats(feed_formats.size());
             for(int i(0); i < max_formats; ++i)
@@ -774,6 +778,7 @@ void feed::generate_feeds()
                     for(int j(0); j < max_ns; ++j)
                     {
                         // we found the widget, display its label instead
+                        //
                         QDomElement e(ns_tags[j].toElement());
                         QString const ns(e.attribute("ns"));
                         snap_string_list const ns_name_value(ns.split("="));

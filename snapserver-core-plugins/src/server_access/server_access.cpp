@@ -157,7 +157,7 @@ int64_t server_access::do_update(int64_t last_updated)
 {
     SNAP_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 1, 7, 20, 0, 32, content_update);
+    SNAP_PLUGIN_UPDATE(2018, 8, 30, 20, 51, 0, content_update);
 
     SNAP_PLUGIN_UPDATE_EXIT();
 }
@@ -278,6 +278,7 @@ void server_access::create_ajax_result(content::path_info_t & ipath, bool succes
     f_ajax_initialized = true;
 
     // create the root
+    //
     QDomElement snap_tag(f_ajax.createElement("snap"));
     f_ajax.appendChild(snap_tag);
 
@@ -285,6 +286,7 @@ void server_access::create_ajax_result(content::path_info_t & ipath, bool succes
     //       (even if the 'success' variable is true)
 
     // add the result
+    //
     QDomElement result(f_ajax.createElement("result"));
     snap_tag.appendChild(result);
     QDomText text(f_ajax.createTextNode(success ? "success" : "failure"));
@@ -294,6 +296,7 @@ void server_access::create_ajax_result(content::path_info_t & ipath, bool succes
 
     // if a redirect had been added before the create function was called
     // make sure it is saved in the XML
+    //
     ajax_redirect(f_ajax_redirect, f_ajax_target);
 
     while(f_ajax_data.size() > 0)

@@ -45,7 +45,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   </content>
 
   <content path="/admin/settings/feed" owner="output">
-    <param name="content::title" revision="revision">Website Feeds Settings</param>
+    <param name="content::title" revision="revision">Website Feed Settings</param>
     <param name="content::body" revision="revision">
       <![CDATA[<p>Sitewide Feed Settings.</p>]]>
     </param>

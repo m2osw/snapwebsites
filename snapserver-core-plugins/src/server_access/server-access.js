@@ -1,6 +1,6 @@
 /** @preserve
  * Name: server-access
- * Version: 0.0.1.45
+ * Version: 0.1.0.0
  * Browsers: all
  * Depends: output (>= 0.1.5), popup (>= 0.1.0.30)
  * Copyright: Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
@@ -232,7 +232,7 @@ snapwebsites.ServerAccessCallbacks.prototype.serverAccessSuccess = function(resu
 snapwebsites.ServerAccessCallbacks.prototype.serverAccessError = function(result) // virtual
 {
     // attempt to prevent hidding messages in case of errors
-    // (the user may still set this value to true in his
+    // (the developer may still set this value to true in his
     // serverAccessComplete() implementation or after calling
     // this very function.)
     //
@@ -971,6 +971,7 @@ snapwebsites.ServerAccess.prototype.onError_ = function(result)
         && result.jqxhr.readyState == 4)
         {
             // use same error message as on Firefox: 504 Gateway Timeout
+            //
             result.jqxhr.status = 504;
             if(!result.ajax_error_message)
             {

@@ -528,18 +528,24 @@ bool shorturl::allow_shorturl_impl(content::path_info_t & ipath, QString const &
     || cpath == "s"                     // also marked as "no_shorturl" in content.xml
     || cpath == "admin"                 // also marked as "no_shorturl" in content.xml
     || cpath.startsWith("admin/")
+    || cpath.startsWith("images/")
+    || cpath.startsWith("layouts/")
+    || cpath.startsWith("js/")
+    || cpath.startsWith("css/")
     || cpath.endsWith(".css")
     || cpath.endsWith(".js"))
     {
         // do not need on home page, do not allow any short URL on
         // administration pages (no need really since those are not
         // public pages)
+        //
         allow = false;
         return false;
     }
 
     // force the default to 'true' in case another plugin calls this
     // signal improperly
+    //
     allow = true;
 
     return true;
