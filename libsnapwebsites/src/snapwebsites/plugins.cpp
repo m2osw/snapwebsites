@@ -497,6 +497,31 @@ void register_plugin(QString const & name, plugin * p)
         //
         throw plugin_exception("it is not possible to register a plugin more than once (" + name + ").");
     }
+
+    // verify the server version the plugin was compiled with and this
+    // server version
+    //
+    // TODO: should we not check the patch version? (i.e. assume that if only
+    //       the patch changes then the interface has not changed.)
+    //
+    if(p->get_server_major_version() != SNAPWEBSITES_VERSION_MAJOR
+    || p->get_server_minor_version() != SNAPWEBSITES_VERSION_MINOR
+    || p->get_server_patch_version() != SNAPWEBSITES_VERSION_PATCH)
+    {
+        // a mixed up plugin is like to cause problems so prevent the loading
+        // of a plugin which does not correspond one to one to its server
+        // version
+        //
+        throw plugin_exception(QString("incompatible server versions between this server (%1.%2.%3) and this plugin (%4.%5.%6)")
+                    .arg(SNAPWEBSITES_VERSION_MAJOR)
+                    .arg(SNAPWEBSITES_VERSION_MINOR)
+                    .arg(SNAPWEBSITES_VERSION_PATCH)
+                    .arg(p->get_server_major_version())
+                    .arg(p->get_server_minor_version())
+                    .arg(p->get_server_patch_version())
+                    );
+    }
+
     g_plugins.insert(name, p);
 }
 
@@ -551,6 +576,52 @@ void plugin::set_version(int version_major, int version_minor)
 }
 
 
+/** \brief Define the server version the plugin was compiled against.
+ *
+ * This function saves the server version of the plugin in the plugin object.
+ * This way the registration function can verify that the plugin was compiled
+ * with a compatible server.
+ *
+ * In general you never call that function. It is automatically
+ * called by the SNAP_PLUGIN_START() macro. Note that the
+ * function cannot be called more than once and the version
+ * cannot be zero or negative.
+ *
+ * \param[in] version_major  The major version of the server.
+ * \param[in] version_minor  The minor version of the server.
+ * \param[in] version_patch  The patch version of the server.
+ */
+void plugin::set_server_version(int version_major, int version_minor, int version_patch)
+{
+    if(f_server_version_major != 0
+    || f_server_version_minor != 0
+    || f_server_version_patch != 0)
+    {
+        // server version was already defined; it cannot be set again
+        //
+        throw plugin_exception(QString("server version of plugin \"%1\" already defined.").arg(f_name));
+    }
+
+    if(version_major < 0
+    || version_minor < 0
+    || version_patch < 0
+    || (version_major == 0 && version_minor == 0 && version_patch == 0))
+    {
+        // server version cannot be negative or null
+        //
+        throw plugin_exception(QString("server version of plugin \"%1\" cannot be zero or negative (%2.%3.%4).")
+                    .arg(f_name)
+                    .arg(version_major)
+                    .arg(version_minor)
+                    .arg(version_patch));
+    }
+
+    f_server_version_major = version_major;
+    f_server_version_minor = version_minor;
+    f_server_version_patch = version_patch;
+}
+
+
 /** \brief Retrieve the major version of this plugin.
  *
  * This function returns the major version of this plugin. This is the
@@ -574,6 +645,48 @@ int plugin::get_major_version() const
 int plugin::get_minor_version() const
 {
     return f_version_minor;
+}
+
+
+/** \brief Retrieve the major version of the server of this plugin.
+ *
+ * This function returns the major version of the server this plugin was
+ * compiled against. This is the version from the libsnapwebsites version.h
+ * file.
+ *
+ * \return The minor version of the server of this plugin.
+ */
+int plugin::get_server_major_version() const
+{
+    return f_server_version_major;
+}
+
+
+/** \brief Retrieve the minor version of the server of this plugin.
+ *
+ * This function returns the minor version of the server this plugin was
+ * compiled against. This is the version from the libsnapwebsites version.h
+ * file.
+ *
+ * \return The minor version of the server of this plugin.
+ */
+int plugin::get_server_minor_version() const
+{
+    return f_server_version_minor;
+}
+
+
+/** \brief Retrieve the patch version of the server of this plugin.
+ *
+ * This function returns the patch version of the server this plugin was
+ * compiled against. This is the version from the libsnapwebsites version.h
+ * file.
+ *
+ * \return The patch version of the server of this plugin.
+ */
+int plugin::get_server_patch_version() const
+{
+    return f_server_version_patch;
 }
 
 

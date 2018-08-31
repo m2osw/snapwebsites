@@ -70,8 +70,12 @@ public:
     plugin &                            operator = (plugin const & rhs) = delete;
 
     void                                set_version(int version_major, int version_minor);
+    void                                set_server_version(int version_major, int version_minor, int version_patch);
     int                                 get_major_version() const;
     int                                 get_minor_version() const;
+    int                                 get_server_major_version() const;
+    int                                 get_server_minor_version() const;
+    int                                 get_server_patch_version() const;
     QString                             get_plugin_name() const;
     int64_t                             last_modification() const;
     virtual QString                     icon() const;
@@ -90,6 +94,9 @@ private:
     mutable int64_t                     f_last_modification = 0;
     int32_t                             f_version_major = 0;
     int32_t                             f_version_minor = 0;
+    int32_t                             f_server_version_major = 0;
+    int32_t                             f_server_version_minor = 0;
+    int32_t                             f_server_version_patch = 0;
 };
 
 typedef std::shared_ptr<plugin>                 plugin_ptr_t;
@@ -217,6 +224,7 @@ bool                    verify_plugin_name(QString const & name);
     public: plugin_##name##_factory() : f_plugin(new name()) { \
         qInitResources_##name(); \
         f_plugin->set_version(major, minor); \
+        f_plugin->set_server_version(SNAPWEBSITES_VERSION_MAJOR, SNAPWEBSITES_VERSION_MINOR, SNAPWEBSITES_VERSION_PATCH); \
         ::snap::plugins::register_plugin(#name, f_plugin); } \
     virtual ~plugin_##name##_factory() { delete f_plugin; } \
     plugin_##name##_factory(plugin_##name##_factory const &) = delete; \

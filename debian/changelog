@@ -5,6 +5,8 @@ snapwebsites (1.5.157.0~xenial) xenial; urgency=high
   * SNAP-282: Removed the shorturl/settings-form.xml file, it was not used.
   * Marked the images, layouts, js, css as no_shorturl folders.
   * Offer a clearMessages() in output,js.
+  * Adding the snapbase.docs to see whether we get the INSTALL.txt added.
+  * SNAP-54: Test the server version between snapwebsites and plugins.
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 30 Aug 2018 21:04:26 -0700
 
