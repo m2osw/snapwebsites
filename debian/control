@@ -436,7 +436,7 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
 Package: snapdbproxy
 Section: admin
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator
+Depends: ${shlibs:Depends}, ${misc:Depends}, snaplock
 Suggests: cassandra (>= 3.5.0), snapdbproxy-doc
 Description: Fast Websites: powerful CMS for Apache written in C++.
  Snap! C++ runs your CMS using binary code written in C and C++.

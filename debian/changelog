@@ -1,3 +1,10 @@
+snapwebsites (1.5.158.0~xenial) xenial; urgency=high
+
+  * Adding the list of our non-secure issues to the snapbase package.
+  * SNAP-54: Removed the test of the patch.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 01 Sep 2018 04:24:53 -0700
+
 snapwebsites (1.5.157.0~xenial) xenial; urgency=high
 
   * Fixed a couple of lists in the editor (admin/drafts and admin/trashcan).

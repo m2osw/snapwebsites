@@ -506,13 +506,14 @@ void register_plugin(QString const & name, plugin * p)
     //
     if(p->get_server_major_version() != SNAPWEBSITES_VERSION_MAJOR
     || p->get_server_minor_version() != SNAPWEBSITES_VERSION_MINOR
-    || p->get_server_patch_version() != SNAPWEBSITES_VERSION_PATCH)
+    //|| p->get_server_patch_version() != SNAPWEBSITES_VERSION_PATCH -- for now, ignore the patch to avoid some potential problems
+    )
     {
         // a mixed up plugin is like to cause problems so prevent the loading
         // of a plugin which does not correspond one to one to its server
         // version
         //
-        throw plugin_exception(QString("incompatible server versions between this server (%1.%2.%3) and this plugin (%4.%5.%6)")
+        throw plugin_exception(QString("incompatible server versions between this server (%1.%2.%3) and this plugin (%4.%5.%6) -- Note: we ignore the patch version")
                     .arg(SNAPWEBSITES_VERSION_MAJOR)
                     .arg(SNAPWEBSITES_VERSION_MINOR)
                     .arg(SNAPWEBSITES_VERSION_PATCH)
