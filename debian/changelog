@@ -1,3 +1,18 @@
+snapwebsites (1.6.1.0~xenial) xenial; urgency=high
+
+  * Made progress on the DNS options implementation, it compiles and runs
+    the basic parser.
+  * SNAP-54: because of SNAP-416 removed the plugin version test from debug
+    versions for now.
+  * In snapcommunicator, replace the is_enabled() with !is_connected() when
+    we receive a GOSSIP and may need to restart a remote connection. Also
+    fix the timeout delay back to 1 min.
+  * Use the get_remote_address() instead of get_client_addr(). We ALWAYS need
+    to use the remote (peer) address and not our own address.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 03 Sep 2018 13:55:57 -0700
+
 snapwebsites (1.6.0.0~xenial) xenial; urgency=high
 
   * SNAP-657: Added an exception to avoid the 400 Bad Request on reboot.

@@ -5866,6 +5866,7 @@ bool snap_communicator::snap_tcp_server_client_connection::define_address()
         if(f_length < sizeof(f_address))
         {
             // reset the rest of the structure, just in case
+            //
             memset(reinterpret_cast<char *>(&f_address) + f_length, 0, sizeof(f_address) - f_length);
         }
     }
@@ -6190,10 +6191,11 @@ snap_communicator::snap_tcp_server_client_message_connection::snap_tcp_server_cl
         memset(reinterpret_cast<char *>(&address) + length, 0, sizeof(address) - length);
     }
 
-    size_t const max_length(std::max(INET_ADDRSTRLEN, INET6_ADDRSTRLEN) + 1);
+    constexpr size_t max_length(std::max(INET_ADDRSTRLEN, INET6_ADDRSTRLEN) + 1);
 
 // in release mode this should not be dynamic (although the syntax is so
 // the warning would happen), but in debug it is likely an alloca()
+//
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvla"
     char buf[max_length];
@@ -6926,7 +6928,7 @@ public:
      */
     size_t get_client_address(struct sockaddr_storage & address) const
     {
-        if(f_messenger)
+        if(f_messenger != nullptr)
         {
             return f_messenger->get_client_address(address);
         }
@@ -6943,7 +6945,7 @@ public:
      */
     std::string get_client_addr() const
     {
-        if(f_messenger)
+        if(f_messenger != nullptr)
         {
             return f_messenger->get_client_addr();
         }

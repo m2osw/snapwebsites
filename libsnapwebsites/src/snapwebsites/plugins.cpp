@@ -504,6 +504,11 @@ void register_plugin(QString const & name, plugin * p)
     // TODO: should we not check the patch version? (i.e. assume that if only
     //       the patch changes then the interface has not changed.)
     //
+    // TODO: the #ifndef _DEBUG comes from the fact that SNAP-54 is not
+    //       compatible with debug, see SNAP-416 for additional details
+    //       about the versioning problem in the development environment
+    //
+#ifndef _DEBUG
     if(p->get_server_major_version() != SNAPWEBSITES_VERSION_MAJOR
     || p->get_server_minor_version() != SNAPWEBSITES_VERSION_MINOR
     //|| p->get_server_patch_version() != SNAPWEBSITES_VERSION_PATCH -- for now, ignore the patch to avoid some potential problems
@@ -522,6 +527,7 @@ void register_plugin(QString const & name, plugin * p)
                     .arg(p->get_server_patch_version())
                     );
     }
+#endif
 
     g_plugins.insert(name, p);
 }

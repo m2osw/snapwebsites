@@ -17,19 +17,21 @@
 
 // dns
 //
-#include "dns.h"
+//#include "dns.h"
 
-// our lib
+// advgetopt lib
 //
-//#include "snapmanager/form.h"
+#include "advgetopt/advgetopt.h"
 
 // snapwebsites lib
 //
 //#include <snapwebsites/chownnm.h>
+#include <snapwebsites/file_content.h>
 //#include <snapwebsites/log.h>
 //#include <snapwebsites/mkdir_p.h>
-//#include <snapwebsites/not_reached.h>
+#include <snapwebsites/not_reached.h>
 //#include <snapwebsites/not_used.h>
+#include <snapwebsites/version.h>
 
 // Qt5
 //
@@ -37,7 +39,10 @@
 
 // C++ lib
 //
-//#include <fstream>
+#include <iostream>
+#include <vector>
+
+
 
 // last entry
 //
@@ -47,9 +52,9 @@
 namespace
 {
 
-const std::vector<std::string> g_configuration_files; // Empty
+std::vector<std::string> const g_configuration_files; // Empty
 
-const advgetopt::getopt::option g_options[] =
+advgetopt::getopt::option const g_options[] =
 {
     {
         '\0',
@@ -81,11 +86,14 @@ const advgetopt::getopt::option g_options[] =
         "execute",
         nullptr,
         "define a command to execute, see manual for details about syntax;"
-        " <keyword> ( '[' <keyword> | '\"' <string> '\"' ']' )* ( ( '?' | '+' )? '=' ( 'null' | (<keyword> | '\"' <string> '\"' )+ ) )?",
-        advgetopt::getopt::argument_mode_t::no_argument
+        " <keyword> ( '[' <keyword> | '\"' <string> '\"' ']' )*"                // a keyword with indexes
+            " ( '.' field ( '[' <keyword> | '\"' <string> '\"' ']' )* )*"       // any number of fields with indexes
+            " ( ( '?' | '+' )? '='"                                             // assignment operator (if not GET)
+                " ( 'null' | (<keyword> | '\"' <string> '\"' )+ ) )?",          // value to assign or null (for REMOVE)
+        advgetopt::getopt::argument_mode_t::required_argument
     },
     {
-        '\0',
+        'h',
         advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "help",
         nullptr,
@@ -106,7 +114,7 @@ const advgetopt::getopt::option g_options[] =
         nullptr,
         nullptr,
         "<named configuration file>",
-        advgetopt::getopt::argument_mode_t::one_argument
+        advgetopt::getopt::argument_mode_t::default_argument
     },
     {
         '\0',
@@ -156,7 +164,7 @@ public:
         // special cases
         //
         TOKEN_REMOVE,               // "=" "null"
-        TOKEN_GET,                  // no "=" / value
+        TOKEN_GET,                  // no "=", no value
 
         TOKEN_ERROR                 // an error occurred
     };
@@ -164,6 +172,8 @@ public:
     class token
     {
     public:
+        typedef std::vector<token>      vector_t;
+
         void            set_type(token_type_t type);
         void            set_word(std::string const & word);
         void            set_start(int start);
@@ -175,7 +185,7 @@ public:
 
         bool            is_null() const;
 
-        token_t         get_type() const;
+        token_type_t    get_type() const;
         std::string     get_word() const;
         int             get_start() const;
         int             get_end() const;
@@ -183,7 +193,7 @@ public:
         int             get_block_level() const;
 
     private:
-        token_type_t    f_type = token_t::TOKEN_UNKNOWN;
+        token_type_t    f_type = token_type_t::TOKEN_UNKNOWN;
         std::string     f_word = std::string();        // actual token (may be empty)
         int             f_start = -1;
         int             f_end = -1;
@@ -196,50 +206,56 @@ public:
     public:
         typedef std::vector<keyword>    vector_t;
 
-                        keyword(token const & token);
+                        keyword(token const & t);
+
+        void            set_command(token_type_t command);
+        token_type_t    get_command() const;
 
         void            add_index(keyword const & k);
         void            add_field(keyword const & k);
         void            add_value(keyword const & k);
 
     private:
-        token           f_token = token();
+        token           f_token = token();          // keyword
 
-        vector_t        f_index = vector_t();
-        vector_t        f_fields = vector_t();
-        vector_t        f_value = vector_t();
+        vector_t        f_index = vector_t();       // keyword[index1][index2][...]
+        vector_t        f_fields = vector_t();      // keyword[index1][index2][...].field1[index1][...].field2[index1][...]...
+
+        token_type_t    f_command = token_type_t::TOKEN_GET;        // = += ?=, by default GET
+
+        vector_t        f_value = vector_t();       // keyword | string (if "= null" command becomes REMOVE)
     };
 
-                    dns_options(int argc, char * argv[]);
+                        dns_options(int argc, char * argv[]);
 
-    int             run();
+    int                 run();
 
 private:
-    int             load_file();
-    int             getc();
-    void            ungetc(int c);
-    token           get_token(bool extensions = false);
+    int                 load_file();
+    int                 getc();
+    void                ungetc(int c);
+    token               get_token(bool extensions = false);
 
-    int             parse_command_line();
-    int             edit_option();
+    int                 parse_command_line();
+    int                 edit_option();
 
-    advgetopt       f_opt = advgetopt();
-    bool            f_debug = false;
-    std::string     f_filename = std::string();
-    std::string     f_execute = std::string();
-    std::string     f_data = std::string();
-    int             f_pos = 0;
-    int             f_line = 1;
-    std::string     f_unget = std::string();
-    token           f_token = token();
-    int             f_block_level = 0;
-    keyword         f_keyword = keyword(token_t::TOKEN_UNKNOWN, std::string());
+    advgetopt::getopt   f_opt; // initialized in constructor
+    bool                f_debug = false;
+    std::string         f_filename = std::string();
+    std::string         f_execute = std::string();
+    std::string         f_data = std::string();
+    size_t              f_pos = 0;
+    int                 f_line = 1;
+    std::string         f_unget = std::string();
+    token               f_token = token();
+    int                 f_block_level = 0;
+    keyword             f_keyword = keyword(token());
 };
 
 
 
 
-void dns_options::token::set_type(token_t type)
+void dns_options::token::set_type(token_type_t type)
 {
     f_type = type;
 }
@@ -247,7 +263,7 @@ void dns_options::token::set_type(token_t type)
 
 void dns_options::token::set_word(std::string const & word)
 {
-    f_word = word
+    f_word = word;
 }
 
 
@@ -269,20 +285,27 @@ void dns_options::token::set_line(int line)
 }
 
 
-token & dns_options::token::operator += (char c)
+void dns_options::token:: set_block_level(int level)
+{
+    f_block_level = level;
+}
+
+
+dns_options::token & dns_options::token::operator += (char c)
 {
     f_word += c;
+    return *this;
 }
 
 
 bool dns_options::token::is_null() const
 {
-    return f_type == token_type_t::TOKEN_KEYWORD;
+    return f_type == token_type_t::TOKEN_KEYWORD
         && f_word == "null";
 }
 
 
-dns_options::token_t dns_options::token::get_type() const
+dns_options::token_type_t dns_options::token::get_type() const
 {
     return f_type;
 }
@@ -312,13 +335,32 @@ int dns_options::token::get_line() const
 }
 
 
+int dns_options::token::get_block_level() const
+{
+    return f_block_level;
+}
 
 
 
-dns_options::keyword::keyword(token_t token)
-    : f_token(token)
+
+
+dns_options::keyword::keyword(token const & t)
+    : f_token(t)
 {
 }
+
+
+void dns_options::keyword::set_command(token_type_t command)
+{
+    f_command = command;
+}
+
+
+dns_options::token_type_t dns_options::keyword::get_command() const
+{
+    return f_command;
+}
+
 
 void dns_options::keyword::add_index(keyword const & k)
 {
@@ -350,7 +392,7 @@ void dns_options::keyword::add_value(keyword const & k)
  * \param[in] argv  The array of arguments found on the command line.
  */
 dns_options::dns_options(int argc, char * argv[])
-    : f_opt(argc, argv, g_options, g_configuration_files)
+    : f_opt(argc, argv, g_options, g_configuration_files, nullptr)
 {
 }
 
@@ -373,14 +415,14 @@ int dns_options::run()
     //
     if(f_opt.is_defined("help"))
     {
-        f_opt.usage(advgetopt::getopt::status_t::no_error);
+        f_opt.usage(advgetopt::getopt::status_t::no_error, "Usage: dns_options [--<opts>]");
         snap::NOTREACHED();
         return 1;
     }
 
     // check the --debug
     //
-    f_debug = f_opt.is_defined();
+    f_debug = f_opt.is_defined("debug");
 
     // make sure there is a filename
     //
@@ -407,9 +449,9 @@ int dns_options::run()
         return 1;
     }
 
-    // get and parse the command line command
+    // get and parse the command line
     //
-    f_execute = f_opt.get_string(c.first);
+    f_execute = f_opt.get_string("execute");
     int r(parse_command_line());
     if(r != 0)
     {
@@ -451,7 +493,7 @@ int dns_options::load_file()
 
     // ready the file as input
     //
-    file_content file(f_filename);
+    snap::file_content file(f_filename);
     if(!file.read_all())
     {
         // could not open file for reading
@@ -481,7 +523,7 @@ int dns_options::load_file()
  */
 int dns_options::getc()
 {
-    std::string::size_type unget_length(f_unget.length() - 1);
+    std::string::size_type unget_length(f_unget.length());
     if(unget_length > 0)
     {
         // restore a character that was ungotten
@@ -520,6 +562,7 @@ int dns_options::getc()
             ++f_line;
         }
         ++f_pos;
+
         return c;
     }
 }
@@ -558,14 +601,16 @@ dns_options::token dns_options::get_token(bool extensions)
     for(;;)
     {
         token result;
-        result.start(f_pos - f_unget.length());
-        std::string word;
+        result.set_start(f_pos - f_unget.length());
+        result.set_line(f_line);
+        result.set_block_level(f_block_level);
 
         int c(getc());
         switch(c)
         {
         case EOF:
-            result.set_type(token_t::TOKEN_EOT);
+            result.set_type(token_type_t::TOKEN_EOT);
+            result.set_end(f_pos - f_unget.length());
             return result;
 
         case ' ':
@@ -607,7 +652,9 @@ dns_options::token dns_options::get_token(bool extensions)
                     if(c == EOF)
                     {
                         std::cerr << "error:" << f_filename << ":" << f_line << ": end of C-like comment not found before EOF." << std::endl;
-                        return token_t::TOKEN_ERROR;
+                        result.set_type(token_type_t::TOKEN_ERROR);
+                        result.set_end(f_pos - f_unget.length());
+                        return result;
                     }
                     if(c == '*')
                     {
@@ -628,6 +675,8 @@ dns_options::token dns_options::get_token(bool extensions)
             {
                 // this is a "lone" '/' character, continue token
                 //
+                ungetc(c);
+                c = '/';
                 goto read_token;
             }
             break;
@@ -656,29 +705,36 @@ dns_options::token dns_options::get_token(bool extensions)
                     // a newline in a string is not allow without
                     // being escaped; so the following would be calid:
                     //
-                    // "start...\
+                    // "start...\x5C
                     // ...end"
                     //
                     std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string includes a non-escaped newline." << std::endl;
-                    return token_t::TOKEN_ERROR;
+                    result.set_type(token_type_t::TOKEN_ERROR);
+                    result.set_end(f_pos - f_unget.length());
+                    return result;
                 }
                 result += c;
             }
             if(c != '"')
             {
                 std::cerr << "error:" << f_filename << ":" << f_line << ": quoted string was never closed." << std::endl;
-                return token_t::TOKEN_ERROR;
+                result.set_type(token_type_t::TOKEN_ERROR);
+                result.set_end(f_pos - f_unget.length());
+                return result;
             }
             result.set_type(token_type_t::TOKEN_STRING);
+            result.set_end(f_pos - f_unget.length());
             return result;
 
         case ';':
             result.set_type(token_type_t::TOKEN_END_OF_DEFINITION);
+            result.set_end(f_pos - f_unget.length());
             return result;
 
         case '{':
             result.set_type(token_type_t::TOKEN_OPEN_BLOCK);
             ++f_block_level;
+            result.set_end(f_pos - f_unget.length());
             result.set_block_level(f_block_level);
             return result;
 
@@ -686,10 +742,13 @@ dns_options::token dns_options::get_token(bool extensions)
             if(f_block_level <= 0)
             {
                 std::cerr << "error:" << f_filename << ":" << f_line << ": '}' mismatch, '{' missing for this one.";
-                return token_t::TOKEN_ERROR;
+                result.set_type(token_type_t::TOKEN_ERROR);
+                result.set_end(f_pos - f_unget.length());
+                return result;
             }
             --f_block_level;
             result.set_type(token_type_t::TOKEN_CLOSE_BLOCK);
+            result.set_end(f_pos - f_unget.length());
             result.set_block_level(f_block_level);
             return result;
 
@@ -697,6 +756,7 @@ dns_options::token dns_options::get_token(bool extensions)
             if(extensions)
             {
                 result.set_type(token_type_t::TOKEN_OPEN_INDEX);
+                result.set_end(f_pos - f_unget.length());
                 return result;
             }
             goto read_token;
@@ -705,6 +765,7 @@ dns_options::token dns_options::get_token(bool extensions)
             if(extensions)
             {
                 result.set_type(token_type_t::TOKEN_CLOSE_INDEX);
+                result.set_end(f_pos - f_unget.length());
                 return result;
             }
             goto read_token;
@@ -713,6 +774,7 @@ dns_options::token dns_options::get_token(bool extensions)
             if(extensions)
             {
                 result.set_type(token_type_t::TOKEN_FIELD);
+                result.set_end(f_pos - f_unget.length());
                 return result;
             }
             goto read_token;
@@ -721,6 +783,7 @@ dns_options::token dns_options::get_token(bool extensions)
             if(extensions)
             {
                 result.set_type(token_type_t::TOKEN_ASSIGN);
+                result.set_end(f_pos - f_unget.length());
                 return result;
             }
             goto read_token;
@@ -732,6 +795,7 @@ dns_options::token dns_options::get_token(bool extensions)
                 if(c == '=')
                 {
                     result.set_type(token_type_t::TOKEN_UPDATE);
+                    result.set_end(f_pos - f_unget.length());
                     return result;
                 }
                 ungetc(c);
@@ -746,6 +810,7 @@ dns_options::token dns_options::get_token(bool extensions)
                 if(c == '=')
                 {
                     result.set_type(token_type_t::TOKEN_CREATE);
+                    result.set_end(f_pos - f_unget.length());
                     return result;
                 }
                 ungetc(c);
@@ -768,6 +833,7 @@ read_token:
                     // no need to unget this one
                     //
                     result.set_type(token_type_t::TOKEN_KEYWORD);
+                    result.set_end(f_pos - f_unget.length());
                     return result;
 
                 case '{':
@@ -779,6 +845,7 @@ read_token:
                     //
                     ungetc(c);
                     result.set_type(token_type_t::TOKEN_KEYWORD);
+                    result.set_end(f_pos - f_unget.length());
                     return result;
 
                 case '/':
@@ -791,10 +858,11 @@ read_token:
                         ungetc(c);
                         ungetc('/');
                         result.set_type(token_type_t::TOKEN_KEYWORD);
+                        result.set_end(f_pos - f_unget.length());
                         return result;
                     }
                     ungetc(c);
-                    f_token += '/'; // it's not a comment, make it part of the keyword
+                    result += '/'; // it's not a comment, make it part of the keyword
                     break;
 
                 case '[':
@@ -807,13 +875,14 @@ read_token:
                     {
                         ungetc(c);
                         result.set_type(token_type_t::TOKEN_KEYWORD);
+                        result.set_end(f_pos - f_unget.length());
                         return result;
                     }
-                    f_token += c;
+                    result += c;
                     break;
 
                 default:
-                    f_token += c;
+                    result += c;
                     break;
 
                 }
@@ -826,6 +895,13 @@ read_token:
 }
 
 
+/** \brief Parse the command line.
+ *
+ * See the main() function documentation for the definition of the
+ * command line.
+ *
+ * \return 0 on success, 1 on error.
+ */
 int dns_options::parse_command_line()
 {
     int r(0);
@@ -836,31 +912,30 @@ int dns_options::parse_command_line()
 
     f_data = f_execute;
 
-    token t(get_token());
+    // the command line must start with a keyword
+    //
+    //     keyword
+    //
+    token t(get_token(true));
     if(t.get_type() != token_type_t::TOKEN_KEYWORD)
     {
         if(t.get_type() != token_type_t::TOKEN_ERROR)
         {
-            std::cerr << "error:<execute>:" << f_line << ": we expected a keyword first.";
+            std::cerr << "error:<execute>:" << f_line << ": we first expected a keyword on your command line.";
         }
         return 1;
     }
 
     {
         keyword k(t);
-        f_keyword.swap(k);
+        std::swap(f_keyword, k);
     }
 
     auto get_index = [&](keyword & p)
         {
             for(;;)
             {
-                t = get_token();
-                if(t.get_type() == token_type_t::TOKEN_CLOSE_INDEX)
-                {
-                    break;
-                }
-
+                t = get_token(true);
                 switch(t.get_type())
                 {
                 case token_type_t::TOKEN_ERROR:
@@ -869,7 +944,7 @@ int dns_options::parse_command_line()
                 case token_type_t::TOKEN_KEYWORD:
                 case token_type_t::TOKEN_STRING:
                     {
-                        keyword i(t, f_token);
+                        keyword i(t);
                         p.add_index(i);
                     }
                     break;
@@ -879,45 +954,69 @@ int dns_options::parse_command_line()
                     return 1;
 
                 }
-            }
-            // we need to read another token, we were on the ']'
-            //
-            t = get_token();
 
-            return 0;
+                // after that (keyword | "string") we expect the ']'
+                //
+                t = get_token(true);
+                if(t.get_type() != token_type_t::TOKEN_CLOSE_INDEX)
+                {
+                    std::cerr << "error:<execute>:" << f_line << ": we expected a ']' to close an index.";
+                    return 1;
+                }
+                // skip the ']'
+                //
+                t = get_token(true);
+
+                // if we do not have another '[' then we are done with indexes
+                //
+                if(t.get_type() != token_type_t::TOKEN_OPEN_INDEX)
+                {
+                    return 0;
+                }
+            }
         };
 
-    t = get_token()
-    if(t == token_t::TOKEN_OPEN_INDEX)
+    t = get_token(true);
+    if(t.get_type() == token_type_t::TOKEN_OPEN_INDEX)
     {
-        r = get_index(k);
+        // the keyword can be followed by any number of indexes
+        //
+        //      keyword [ index1 ] [ index2 ] ...
+        //
+        r = get_index(f_keyword);
         if(r != 0)
         {
             return r;
         }
     }
 
-    while(t == token_t::TOKEN_FIELD)
+    while(t.get_type() == token_type_t::TOKEN_FIELD)
     {
-        t = get_token();
+        // the keyword and indexes can be followed by a field
+        // and the field can be followed by indexes, any number
+        // of fields with indexes can be defined
+        //
+        //      keyword [ index1 ] [ index2 ] . field [ index1 ] [ index2 ] ...
+        //
+        t = get_token(true);
 
-        if(t == token_t::TOKEN_ERROR)
+        if(t.get_type() == token_type_t::TOKEN_ERROR)
         {
             return 1;
         }
 
-        if(t != token_t::TOKEN_CLOSE_KEYWORD
-        && t != token_t::TOKEN_CLOSE_STRING)
+        if(t.get_type() != token_type_t::TOKEN_KEYWORD
+        && t.get_type() != token_type_t::TOKEN_STRING)
         {
             std::cerr << "error:<execute>:" << f_line << ": we expected a keyword or a quoted string as the field name.";
             return 1;
         }
 
-        keyword f;
-        k.add_field(f);
+        keyword f(t);
+        f_keyword.add_field(f);
 
-        t = get_token();
-        if(t == token_t::TOKEN_OPEN_INDEX)
+        t = get_token(true);
+        if(t.get_type() == token_type_t::TOKEN_OPEN_INDEX)
         {
             r = get_index(f);
             if(r != 0)
@@ -927,54 +1026,64 @@ int dns_options::parse_command_line()
         }
     }
 
-    switch(t)
+    // if that's it (i.e. EOT), we have a GET
+    //
+    switch(t.get_type())
     {
-    case token_t::TOKEN_EOT:
+    case token_type_t::TOKEN_EOT:
         // it worked, we have a GET
         //
         return 0;
 
-    case token_t::TOKEN_END_OF_DEFINITION:
-        t = get_token();
-        if(t != token_t::TOKEN_EOT)
+    case token_type_t::TOKEN_END_OF_DEFINITION:
+        t = get_token(true);
+        if(t.get_type() != token_type_t::TOKEN_EOT)
         {
             std::cerr << "error:<execute>:" << f_line << ": nothing was expected after the ';'.";
             return 1;
         }
+
+        // it worked, we have a GET (totally ignore the ';')
+        //
         return 0;
 
-    case token_t::TOKEN_ASSIGN:
-    case token_t::TOKEN_UPDATE:
-    case token_t::TOKEN_CREATE:
-        k.set_command(t);
+    case token_type_t::TOKEN_ASSIGN:
+    case token_type_t::TOKEN_UPDATE:
+    case token_type_t::TOKEN_CREATE:
+        // here we have a SET, CREATE, UPDATE or a REMOVE depeneding on
+        // the assignment token and the value; the assignment operator
+        // is called the command which by default is set to GET
+        //
+        //      keyword [ index1 ] . field [ index1 ] ( = | += | ?= ) ...
+        //
+        f_keyword.set_command(t.get_type());
         break;
 
     default:
-        std::cerr << "error:<execute>:" << f_line << ": an assignment operator (=, ?=, +=) was expected.";
+        std::cerr << "error:<execute>:" << f_line << ": end of line or an assignment operator (=, ?=, +=) was expected.";
         return 1;
 
     }
 
     // we have an assignment, read the value
     //
-    t = get_token();
+    t = get_token(true);
 
-    if(t == token_t::TOKEN_KEYWORD
-    && f_token == "null")
+    if(t.is_null())
     {
-        if(k.get_command() != token_t::TOKEN_ASSIGN)
+        if(f_keyword.get_command() != token_type_t::TOKEN_ASSIGN)
         {
             std::cerr << "error:<execute>:" << f_line << ": an assignment to null only works with the '=' operator.";
             return 1;
         }
-        k.set_command(token_t::TOKEN_REMOVE);
+        f_keyword.set_command(token_type_t::TOKEN_REMOVE);
 
-        t = get_token();
-        if(t != token_t::TOKEN_END_OF_DEFINITION)
+        t = get_token(true);
+        if(t.get_type() == token_type_t::TOKEN_END_OF_DEFINITION)
         {
-            t = get_token();
+            t = get_token(true);
         }
-        if(t != token_t::TOKEN_EOT)
+        if(t.get_type() != token_type_t::TOKEN_EOT)
         {
             std::cerr << "error:<execute>:" << f_line << ": an assignment to null cannot include anything else.";
             return 1;
@@ -985,27 +1094,29 @@ int dns_options::parse_command_line()
         return 0;
     }
 
-    for(;; t = get_token())
+    // read the value
+    //
+    for(;; t = get_token(true))
     {
-        switch(t)
+        switch(t.get_type())
         {
-        case token_t::EOT:
+        case token_type_t::TOKEN_EOT:
             return 0;
 
-        case token_t::TOKEN_END_OF_DEFINITION:
-            t = get_token();
-            if(t != token_t::TOKEN_EOT)
+        case token_type_t::TOKEN_END_OF_DEFINITION:
+            t = get_token(true);
+            if(t.get_type() != token_type_t::TOKEN_EOT)
             {
                 std::cerr << "error:<execute>:" << f_line << ": nothing was expected after the ';'.";
                 return 1;
             }
             return 0;
 
-        case token_t::TOKEN_KEYWORD:
-        case token_t::TOKEN_STRING:
+        case token_type_t::TOKEN_KEYWORD:
+        case token_type_t::TOKEN_STRING:
             {
-                keyword const v(t, f_token);
-                k.add_value(v);
+                keyword const v(t);
+                f_keyword.add_value(v);
             }
             break;
 
@@ -1014,14 +1125,6 @@ int dns_options::parse_command_line()
             return 1;
 
         }
-    }
-
-// * <keyword> ( '[' <keyword> | '"' <string> '"' ']' )*
-// *           ('.' <keyword> | '"' <string> '"'
-// *              ( '[' <keyword> | '"' <string> '"' ']' )* )*
-// *           ( ( '?' | '+' )? '=' ( 'null'
-// *                  | (<keyword> | '"' <string> '"' )+ ) )?
-
     }
 }
 
@@ -1056,21 +1159,38 @@ int dns_options::edit_option()
 {
     load_file();
 
+    dns_options::token::vector_t in;
     for(;;)
     {
-        int const r(get_token());
-        if(r != 0)
+        token t(get_token());
+        if(t.get_type() == token_type_t::TOKEN_EOT)
         {
-            return r;
+            // done?
+            //
+            std::cerr << "--- TODO: found EOT of input...\n";
+            break;
         }
+        if(t.get_type() == token_type_t::TOKEN_ERROR)
+        {
+            // got an error while reading input file
+            //
+            std::cerr << "--- TODO: found TOKEN_ERROR reading input file...\n";
+            return 1;
+        }
+
+        in.push_back(t);
     }
 
+std::cerr << "try matching against command line...\n";
+
+    return 0;
 }
 
 
 
 
 }
+// no name namespace
 
 
 

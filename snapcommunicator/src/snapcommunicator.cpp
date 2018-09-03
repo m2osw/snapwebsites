@@ -1127,6 +1127,7 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
     SNAP_LOG_DEBUG("adding remote communicator at ")(addr_port);
 
     // no default address for neighbors
+    //
     addr::addr remote_addr(addr::string_to_addr(addr_port.toUtf8().data(), "", 4040, "tcp"));
 
     if(remote_addr == f_my_address)
@@ -1155,11 +1156,22 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
             if(f_smaller_ips.contains(addr)
             && f_smaller_ips[addr])
             {
-                if(f_smaller_ips[addr]->is_enabled())
+                // if not currently connected, we want to try reconnecting
+                //
+                // (if there is a mistake, we could still be disabled here
+                // when we should have been enabled, although it should not
+                // be the case, do not take any chances)
+                //
+                if(!f_smaller_ips[addr]->is_connected())
                 {
                     // reset that timer to run ASAP in case the timer is enabled
                     //
+                    // just in case, we reset the timeout as well, we want to
+                    // do it since we are back in business now
+                    //
+                    f_smaller_ips[addr]->set_timeout_delay(remote_snap_communicator::REMOTE_CONNECTION_TOO_BUSY_TIMEOUT);
                     f_smaller_ips[addr]->set_timeout_date(snap::snap_communicator::get_current_date());
+                    f_smaller_ips[addr]->set_enable(true);
                 }
             }
             else
@@ -1167,7 +1179,12 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
                 SNAP_LOG_ERROR("smaller remote address is defined in f_all_ips but not in f_smaller_ips?");
             }
         }
-        // else -- we may already be GOSSIP-ing about this one (see below)
+        else
+        {
+            // we may already be GOSSIP-ing about this one (see below)
+            //
+            SNAP_LOG_DEBUG("new remote connection ")(addr_port)(" has a larger address than us. This is a GOSSIP channel.");
+        }
         return;
     }
 
@@ -1207,7 +1224,7 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
             // this should never happens here since each new creates a
             // new pointer
             //
-            SNAP_LOG_ERROR("new remote connection could not be added to the snap_communicator list of connections");
+            SNAP_LOG_ERROR("new remote connection to ")(addr_port)(" could not be added to the snap_communicator list of connections");
 
             auto it(f_smaller_ips.find(addr));
             if(it != f_smaller_ips.end())
@@ -1217,7 +1234,7 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
         }
         else
         {
-            SNAP_LOG_DEBUG("new remote connection added for ")(addr);
+            SNAP_LOG_DEBUG("new remote connection added for ")(addr_port);
         }
     }
     else //if(remote_addr != f_my_address) -- already tested at the beginning of the function
@@ -1237,7 +1254,7 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
             // this should never happens here since each new creates a
             // new pointer
             //
-            SNAP_LOG_ERROR("new gossip connection could not be added to the snap_communicator list of connections");
+            SNAP_LOG_ERROR("new gossip connection to ")(addr_port)(" could not be added to the snap_communicator list of connections");
 
             auto it(f_gossip_ips.find(addr));
             if(it != f_gossip_ips.end())
@@ -1247,7 +1264,7 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
         }
         else
         {
-            SNAP_LOG_DEBUG("new gossip connection added for ")(addr);
+            SNAP_LOG_DEBUG("new gossip connection added for ")(addr_port);
         }
     }
 }
@@ -1389,8 +1406,8 @@ tcp_client_server::bio_client::mode_t remote_communicator_connections::connectio
  * whenever the connection goes down.
  */
 class service_connection
-        : public snap::snap_communicator::snap_tcp_server_client_message_connection
-        , public base_connection
+    : public snap::snap_communicator::snap_tcp_server_client_message_connection
+    , public base_connection
 {
 public:
     typedef std::shared_ptr<service_connection>    pointer_t;
@@ -1431,7 +1448,6 @@ public:
         : snap_tcp_server_client_message_connection(client)
         , base_connection(cs)
         , f_server_name(server_name)
-        //, f_address(get_client_addr_port(), "tcp")   // TODO: see if we could instead have a get address which returns a sockaddr_in[6] or even have the snap_addr::addr in our tcp_client_server classes
         , f_address(addr::string_to_addr(get_remote_address().toUtf8().data(), "", -1, "tcp"))  // this is the address:port of the peer (the computer on the other side) -- TODO make a get_remote_addr() which returns an addr::addr directly
     {
     }
@@ -1661,7 +1677,7 @@ interrupt_impl::interrupt_impl(snap_communicator_server::pointer_t cs)
 }
 
 
-/** \brief Call the stop function of the snaplock object.
+/** \brief Call the stop function of the snapcommunicator object.
  *
  * When this function is called, the signal was received and thus we are
  * asked to quit as soon as possible.
@@ -1745,9 +1761,10 @@ public:
         //
         // XXX: add support for IPv6 (automatic with snap::addr?)
         //
-        std::string const addr(connection->get_client_addr());
+        QString const addr(connection->get_remote_address());
         if(f_local)
         {
+            // TODO: use the addr class instead and then we can check the type for localhost
             if(addr != "127.0.0.1")
             {
                 // TODO: find out why we do not get 127.0.0.1 when using such to connect...
@@ -1764,9 +1781,10 @@ public:
         }
         else
         {
+            // TODO: use the addr class instead and then we can check the type for localhost
             if(addr == "127.0.0.1")
             {
-                SNAP_LOG_ERROR("received what should be a remote connection from 127.0.0.1");
+                SNAP_LOG_ERROR("received what should be a remote connection from \"")(addr)("\".");
                 return;
             }
 
@@ -1780,7 +1798,7 @@ public:
             // we will change the name once we receive the CONNECT message
             // and as we send the ACCEPT message
             //
-            connection->set_name(QString("remote connection from: %1").arg(QString::fromUtf8(addr.c_str()))); // remote host connected to us
+            connection->set_name(QString("remote connection from: %1").arg(addr)); // remote host connected to us
             connection->mark_as_remote();
         }
 
@@ -2747,7 +2765,7 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
                         refuse = f_shutdown;
                         if(refuse)
                         {
-                            // okay, this guy wants to connect we us but we
+                            // okay, this guy wants to connect to us but we
                             // are shutting down, so refuse and put the shutdown
                             // flag to true
                             //
@@ -2949,8 +2967,8 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
                             // to avoid attempting to reconnect like crazy
                             //
                             remote_communicator->disconnect();
-                            QString const addr(QString::fromUtf8(remote_communicator->get_client_addr().c_str()));
-                            f_remote_snapcommunicators->shutting_down(addr);
+                            addr::addr const remote_addr(remote_communicator->get_address());
+                            f_remote_snapcommunicators->shutting_down(remote_addr.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str());
                         }
 
                         // we just got some new services information,
@@ -3261,14 +3279,14 @@ SNAP_LOG_ERROR("GOSSIP is not yet fully implemented.");
                 // as too busy and try connecting again much
                 // later...
                 //
-                QString addr;
+                addr::addr peer_addr;
                 if(remote_communicator)
                 {
-                    addr = QString::fromUtf8(remote_communicator->get_client_addr().c_str());
+                    peer_addr = remote_communicator->get_address();
                 }
                 //else if(service_conn) -- this should not happen
                 //{
-                //    addr = QString::fromUtf8(service_conn->get_client_addr().c_str());
+                //    peer_addr = service_conn->get_remote/peer_addr();
                 //}
                 else
                 {
@@ -3276,6 +3294,7 @@ SNAP_LOG_ERROR("GOSSIP is not yet fully implemented.");
                     //
                     throw snap::snap_exception("REFUSE sent on a \"weird\" connection.");
                 }
+                QString const addr(peer_addr.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str());
                 if(message.has_parameter("shutdown"))
                 {
                     f_remote_snapcommunicators->shutting_down(addr);
