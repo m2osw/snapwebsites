@@ -7,22 +7,22 @@
 # it somewhere else and run these commands against that copy. This way
 # you can avoid having to re-run this script every single time.
 #
-sudo chown root ../../BUILD/snapwebsites/snapmanager/daemon/snapmanagerdaemon
-sudo chmod 4775 ../../BUILD/snapwebsites/snapmanager/daemon/snapmanagerdaemon
+sudo chown root /home/snapwebsites/BUILD/snapwebsites/snapmanager/daemon/snapmanagerdaemon
+sudo chmod 4775 /home/snapwebsites/BUILD/snapwebsites/snapmanager/daemon/snapmanagerdaemon
 
 # The snapmanager.cgi also makes use of snappassword which must be in your
 # Apache2 instance path (or create a soft link from /usr/bin to your
 # developer instance)
 #
-sudo chown root ../../BUILD/snapwebsites/snapmanager/password/snappassword
-sudo chmod 4775 ../../BUILD/snapwebsites/snapmanager/password/snappassword
+sudo chown root /home/snapwebsites/BUILD/snapwebsites/snapmanager/password/snappassword
+sudo chmod 4775 /home/snapwebsites/BUILD/snapwebsites/snapmanager/password/snappassword
 
 # We also need a few files in specific locations, this works for me, you
 # may have to tweak a few things depending on your installation
 #
-cp snapmanager/conf/snapmanagercgi.js /usr/clients/www/csnap.m2osw.com/public_html/.
-cp snapmanager/conf/snapmanagercgi.css /usr/clients/www/csnap.m2osw.com/public_html/.
-cp snapmanager/conf/snapmanagercgi-parser.xsl /etc/snapwebsites/.
-cp ../../BUILD/snapwebsites/snapmanager/cgi/snapmanager.cgi /usr/clients/www/csnap.m2osw.com/cgi-bin/snapmanager.cgi
+cp /home/snapwebsites/snapcpp/snapwebsites/snapmanager/conf/snapmanagercgi.js /usr/clients/www/csnap.m2osw.com/public_html/.
+cp /home/snapwebsites/snapcpp/snapwebsites/snapmanager/conf/snapmanagercgi.css /usr/clients/www/csnap.m2osw.com/public_html/.
+cp /home/snapwebsites/snapcpp/snapwebsites/snapmanager/conf/snapmanagercgi-parser.xsl /etc/snapwebsites/.
+cp /home/snapwebsites/BUILD/snapwebsites/snapmanager/cgi/snapmanager.cgi /usr/clients/www/csnap.m2osw.com/cgi-bin/snapmanager.cgi
 
 # vim: ts=4 sw=4 et

@@ -52,6 +52,13 @@ done
 
 mkdir -p ${HERE}/tmp
 
+# A couple of things I need to setup each time I restart everything
+# It has to be done first
+#
+echo "---------------- setup processes"
+/home/snapwebsites/snapcpp/snapwebsites/snapcgi/scripts/setup-snapcgi
+sudo /home/snapwebsites/snapcpp/snapwebsites/snapmanager/scripts/setup-daemon
+
 # Daemons can now be started in any order and to prove it we randomize
 # the starting of them...
 #

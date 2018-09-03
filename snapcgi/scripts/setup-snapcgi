@@ -3,6 +3,6 @@
 # Whenever I work on snap.cgi, I need to copy it so Apache can find it on
 # my developer's machine. This is the script I use to do it quickly.
 
-cp ../../BUILD/snapwebsites/snapcgi/src/snap.cgi /usr/clients/www/csnap.m2osw.com/cgi-bin/snap.cgi
+cp /home/snapwebsites/BUILD/snapwebsites/snapcgi/src/snap.cgi /usr/clients/www/csnap.m2osw.com/cgi-bin/snap.cgi
 
 # vim: ts=4 sw=4 et

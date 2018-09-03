@@ -539,8 +539,51 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
             </div>
           </xsl:if>
 
+          <!-- packages has a process when running -->
+          <xsl:variable name="package_count" select="count(watchdog/packages/package)"/>
+          <xsl:if test="$package_count > 0">
+            <div id="packages-section">
+              <h2 id="packages">Packages</h2>
+              <p>
+                Packages listed here are either required, unwanted, or may be
+                in conflict with other packages. This table shows one of these
+                errors for each one of the packages listed. If no error is
+                shown then the package is conforming to the expectation of
+                snapwatchdog and there is nothing to worry about. If a
+                package is shown as missing, search for it in the bundles
+                and install the corresponding bundle. If the package is
+                shown as unwanted, you've got to have been installing that
+                one by hand and it will require you to purge it manually.
+                A package marked as in conflict with another (or several
+                others)  should be reviewed closely to know whether it
+                causes problems on your systme or not. If not, you may
+                want to leave it alone. Otherwise, think about removing
+                all the packages generating a conflict.
+              </p>
+              <table class="table-with-borders">
+                <thead>
+                  <th>Name</th>
+                  <th>Installation</th>
+                  <th>Conflicts</th>
+                  <th>Errors</th>
+                </thead>
+                <tbody>
+                  <xsl:for-each select="watchdog/packages/package">
+                    <tr>
+                      <td><xsl:value-of select="@name"/></td>
+                      <td><xsl:value-of select="@installation"/></td>
+                      <td><xsl:value-of select="@conflicts"/></td>
+                      <td><xsl:value-of select="@error"/></td>
+                    </tr>
+                  </xsl:for-each>
+                </tbody>
+              </table>
+              <xsl:value-of select="$package_count"/> package<xsl:if test="$package_count != 1">s</xsl:if>
+            </div>
+          </xsl:if>
+
           <!-- processes has a process when running -->
-          <xsl:variable name="processes_count" select="count(watchdog/processes)"/>
+          <xsl:variable name="processes_count" select="count(watchdog/processes/process)"/>
           <xsl:if test="$processes_count > 0">
             <div id="processes-section">
               <h2 id="processes">Processes</h2>
@@ -550,6 +593,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                   <xsl:apply-templates select="watchdog/processes/process"/>
                 </tbody>
               </table>
+              <xsl:value-of select="$processes_count"/> process<xsl:if test="$processes_count != 1">es</xsl:if>
             </div>
           </xsl:if>
 

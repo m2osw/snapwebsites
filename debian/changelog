@@ -1,3 +1,28 @@
+snapwebsites (1.6.0.0~xenial) xenial; urgency=high
+
+  * SNAP-657: Added an exception to avoid the 400 Bad Request on reboot.
+  * SNAP-273: snapcommunicator would not properly re-enable the permanent
+    connections used to connect with remove snapcommunicators when (1) it
+    would receive a DISCONNECT message or (2) when it would receive a
+    GOSSIP message (which was expected to restart the connection immediately)
+  * Clear the possible '\r' at the end of messages in snap communicator.
+  * SNAP-109: added a "packages" watchdog to check required, unwanted, and
+    conflicting packages.
+  * Added packages with the headers of the snapwatchdog library and plugins.
+  * Added many .docs so docs get added to most of our packages.
+  * Applied a fix to the snapbase script clearing the cache of old files
+    so we do not get errors when the cache directory is empty.
+  * Send a STOP message to snapmanagerdaemon in ./stop so it works.
+  * Added my couple of commands to setup my developer environment in ./start.
+  * Edited those scripts to use full paths.
+  * Changed log level input in a select.
+  * Enhanced the help of the check of snapcommunicator connections.
+  * Added a function to get a path to the snapwatchdog path.
+  * Added "flags" and "packages" as default watchdog plugins.
+  * Fixed the default processes folder, it's /usr/share, not /var/lib.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 01 Sep 2018 19:47:44 -0700
+
 snapwebsites (1.5.158.0~xenial) xenial; urgency=high
 
   * Adding the list of our non-secure issues to the snapbase package.

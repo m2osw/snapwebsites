@@ -4,6 +4,16 @@
 # the stopping of them...
 #
 
+# handle the snapmanagerdaemon with a STOP signal
+# the snapstop sends a signal (SIGTERM) which is forbidden when you are
+# a developer because the process runs as root
+#
+if test -f tmp/snapmanagerdaemon.pid
+then
+	BUILD/snapwebsites/snapcommunicator/src/snapsignal "snapmanagerdaemon/STOP"
+	rm -f tmp/snapmanagerdaemon.pid
+fi
+
 ALL_PIDS=`ls tmp/*.pid | shuf`
 
 for pid_file in $ALL_PIDS
@@ -16,7 +26,7 @@ do
 	#
 	echo "snapstop --service $PID # from $pid_file"
 	BUILD/snapwebsites/snapcommunicator/src/snapstop --service $PID
-	rm $pid_file
+	rm -f $pid_file
 done
 
 

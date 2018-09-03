@@ -541,9 +541,18 @@ bool self::display_value(QDomElement parent, snap_manager::status_t const & s, s
                 , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
                 );
 
-        snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
+        QStringList log_level_list;
+        log_level_list << "TRACE";
+        log_level_list << "DEBUG";
+        log_level_list << "INFO";
+        log_level_list << "WARNING";
+        log_level_list << "ERROR";
+        log_level_list << "FATAL";
+
+        snap_manager::widget_select::pointer_t field(std::make_shared<snap_manager::widget_select>(
                           "Enter Log Level"
                         , s.get_field_name()
+                        , log_level_list
                         , s.get_value()
                         , "<p>The log level can be any one of the following:</p>"
                           "<ul>"

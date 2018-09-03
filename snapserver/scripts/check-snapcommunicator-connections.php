@@ -26,13 +26,17 @@ if(!file_exists($cluster_definition_file))
     exit(1);
 }
 
+require($cluster_definition_file);
+
 if(count($argv) != 2)
 {
-    echo "error: script expects one argument, the name of the cluster to be checked.\n";
+    echo "error: script expects one argument, the name of the cluster to be checked, one of:\n";
+    foreach($clusters as $key => $definitions)
+    {
+        echo "  ", $key, "\n";
+    }
     exit(1);
 }
-
-require($cluster_definition_file);
 
 $cluster_name = $argv[1];
 

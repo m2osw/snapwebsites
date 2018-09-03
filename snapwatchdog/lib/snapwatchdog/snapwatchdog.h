@@ -155,11 +155,13 @@ public:
     void                append_error(QDomDocument doc, QString const & plugin_name, char const * message, int priority = 50);
 
     watchdog_server::pointer_t  get_server();
+    QString             get_cache_path(QString const & filename);
 
 private:
     pid_t               f_child_pid = -1;
     bool const          f_tick = true;
     bool                f_has_cassandra = false;
+    QString             f_cache_path = QString();
 };
 
 

@@ -613,12 +613,12 @@ bool watchdog_process_t::match(QString const & command, QString const & cmdline)
 }
 
 
-/** \brief Load an XML file.
+/** \brief Load a process XML file.
  *
  * This function loads one XML file and transform it in a
- * watchdog_process_t structure.
+ * watchdog_process_t object.
  *
- * param[in] processes_filename  The name of an XML file representing processes.
+ * \param[in] processes_filename  The name of an XML file representing processes.
  */
 void load_xml(QString processes_filename)
 {
@@ -735,7 +735,7 @@ void load_processes(QString processes_path)
     //
     if(processes_path.isEmpty())
     {
-        processes_path = "/var/lib/snapwebsites/snapwatchdog/processes";
+        processes_path = "/usr/share/snapwebsites/snapwatchdog/processes";
     }
 
     glob_dir const script_filenames(processes_path + "/*.xml", GLOB_ERR | GLOB_NOSORT | GLOB_NOESCAPE);

@@ -56,6 +56,7 @@ add_subdirectory(watchdog_flags)
 add_subdirectory(watchdog_log)
 add_subdirectory(watchdog_memory)
 add_subdirectory(watchdog_network)
+add_subdirectory(watchdog_packages)
 add_subdirectory(watchdog_processes)
 add_subdirectory(watchdog_watchscripts)
 

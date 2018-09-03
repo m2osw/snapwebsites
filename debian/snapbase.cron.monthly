@@ -3,13 +3,13 @@
 
 # Delete old files
 #
-find /var/cache/snapwebsites/* -type f -atime +31 -delete
-find /var/cache/www-snapwebsites/* -type f -atime +31 -delete
+find /var/cache/snapwebsites -mindepth 1 -type f -atime +31 -delete
+find /var/cache/www-snapwebsites -mindepth 1 -type f -atime +31 -delete
 
 # Delete empty directories
 # We use the xargs to avoid errors from find
 #
-find /var/cache/snapwebsites/* -type d -print0 | xargs -r0 -- rmdir --ignore-fail-on-non-empty
-find /var/cache/www-snapwebsites/* -type d -print0 | xargs -r0 -- rmdir --ignore-fail-on-non-empty
+find /var/cache/snapwebsites -mindepth 1 -type d -print0 | xargs -r0 -- rmdir --ignore-fail-on-non-empty
+find /var/cache/www-snapwebsites -mindepth 1 -type d -print0 | xargs -r0 -- rmdir --ignore-fail-on-non-empty
 
 # vim: ts=4 sw=4 et

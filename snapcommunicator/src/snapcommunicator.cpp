@@ -508,8 +508,9 @@ public:
      */
     void connection_ended()
     {
-        // save the current only if the connection really started
-        // before and also only once (do not update the time later)
+        // save the current date only if the connection really started
+        // before and also only once (do not update the end time again
+        // until a connection_started() call happens)
         //
         if(f_started_on != -1
         && f_ended_on == -1)
@@ -1183,7 +1184,7 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
         //
         remote_snap_communicator_pointer_t remote_communicator(std::make_shared<remote_snap_communicator>(f_communicator_server, addr, port));
         f_smaller_ips[addr] = remote_communicator;
-        remote_communicator->set_name(QString("remote communicator connection: %1").arg(addr)); // we connect to remote host
+        remote_communicator->set_name(QString("remote communicator connection: %1").arg(addr)); // we want to connect to remote host
 
         // make sure not to try to connect to all remote communicators
         // all at once
@@ -1195,7 +1196,9 @@ void remote_communicator_connections::add_remote_communicator(QString const & ad
         }
         remote_communicator->set_timeout_date(f_last_start_date);
 
-        // TBD: 1 second between attempts, should that be smaller?
+        // TBD: 1 second between attempts for each remote communicator,
+        //      should that be smaller? (i.e. not the same connection but
+        //      between all the remote connection attempts.)
         //
         f_last_start_date += 1000000LL;
 
@@ -1297,6 +1300,7 @@ void remote_communicator_connections::too_busy(QString const & addr)
     {
         // wait for 1 day and try again (is 1 day too long?)
         f_smaller_ips[addr]->set_timeout_delay(remote_snap_communicator::REMOTE_CONNECTION_TOO_BUSY_TIMEOUT);
+        f_smaller_ips[addr]->set_enable(true);
         SNAP_LOG_INFO("remote communicator ")(addr)(" was marked as too busy. Pause for 1 day before trying to connect again.");
     }
 }
@@ -1317,6 +1321,8 @@ void remote_communicator_connections::shutting_down(QString const & addr)
         // wait for 5 minutes and try again
         //
         f_smaller_ips[addr]->set_timeout_delay(remote_snap_communicator::REMOTE_CONNECTION_RECONNECT_TIMEOUT);
+        f_smaller_ips[addr]->set_enable(true);
+        SNAP_LOG_DEBUG("remote communicator ")(addr)(" was said it was shutting down. Pause for 5 minutes before trying to connect again.");
     }
 }
 
@@ -2456,7 +2462,7 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
                     reply.set_command("QUITTING");
 
                     verify_command(base, reply);
-                    if(remote_communicator)
+                    if(remote_communicator != nullptr)
                     {
                         remote_communicator->send_message(reply);
                     }
@@ -2538,7 +2544,7 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
                     snap::snap_communicator_message help;
                     help.set_command("HELP");
                     //verify_command(base, help); -- precisely
-                    if(remote_communicator)
+                    if(remote_communicator != nullptr)
                     {
                         remote_communicator->send_message(help);
                     }
@@ -2612,7 +2618,7 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
                                 ok = false;
                             }
                             // on a remote we get ACCEPT instead of READY
-                            if(remote_communicator
+                            if(remote_communicator != nullptr
                             || base->is_remote())
                             {
                                 if(!base->understand_command("ACCEPT"))
@@ -2863,7 +2869,7 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
                     snap::snap_communicator_message help;
                     help.set_command("HELP");
                     //verify_command(base, help); -- precisely
-                    if(remote_communicator)
+                    if(remote_communicator != nullptr)
                     {
                         remote_communicator->send_message(reply);
                         if(!refuse)
@@ -2921,11 +2927,11 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
                         //
                         base->set_connection_type(base_connection::connection_type_t::CONNECTION_TYPE_DOWN);
 
-                        if(!remote_communicator)
+                        if(remote_communicator == nullptr)
                         {
                             // disconnecting means it is gone so we can remove
                             // it from the communicator since the other end
-                            // will be reconnected (we are not responsible
+                            // will reconnect (we are never responsible
                             // for that in this case)
                             //
                             // Note: this one happens when the computer that

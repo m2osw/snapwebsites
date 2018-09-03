@@ -92,8 +92,6 @@ namespace
 {
 
 
-char const * g_watchdog_last_result_filename = "/var/cache/snapwebsites/snapwatchdog/last_results.txt";
-
 
 /** \brief The snap communicator singleton.
  *
@@ -1342,6 +1340,48 @@ bool watchdog_child::is_tick() const
 }
 
 
+/** \brief Get the path to a file in the snapwatchdog cache.
+ *
+ * This function returns a full path to the snapwatchdog cache plus
+ * the specified filename.
+ *
+ * \note
+ * The function ensures that the snapwatchdog sub-directory exists.
+ * i.e. the /var/cache/snapwebsites directory exists, however,
+ * the /var/cache/snapwebsites/snapwatchdog directory may not exist
+ * yet.
+ *
+ * \param[in] filename  The name of the file to access in the cache.
+ *
+ * \return The full path including your filename.
+ */
+QString watchdog_child::get_cache_path(QString const & filename)
+{
+    if(f_cache_path.isEmpty())
+    {
+        // get the path specified by the administrator
+        //
+        f_cache_path = get_server_parameter(snap::watchdog::get_name(snap::watchdog::name_t::SNAP_NAME_WATCHDOG_CACHE_PATH));
+        if(f_cache_path.isEmpty())
+        {
+            // no administrator path, use the default
+            //
+            f_cache_path = "/var/cache/snapwebsites/snapwatchdog";
+        }
+
+        // the path to "/var/cache/snapwebsites" will always
+        // exists, however "/var/cache/snapwebsites/snapwatchdog"
+        // may get deleted once in a while, we have to create it
+        //
+        mkdir_p(f_cache_path);
+    }
+
+    // append the name of the file to check out in the path
+    //
+    return QString("%1/%2").arg(f_cache_path).arg(filename);
+}
+
+
 /** \brief Run watchdog plugins.
  *
  * This function runs all the watchdog plugins and saves the results
@@ -1547,17 +1587,7 @@ bool watchdog_child::run_watchdog_plugins()
                         // while (and if ignored for a while it could as
                         // well be deleted)
                         //
-                        QString cache_path(get_server_parameter(snap::watchdog::get_name(snap::watchdog::name_t::SNAP_NAME_WATCHDOG_CACHE_PATH)));
-                        if(cache_path.isEmpty())
-                        {
-                            cache_path = "/var/cache/snapwebsites/snapwatchdog";
-                        }
-                        // the path to "/var/cache/snapwebsites" will always
-                        // exists, however "/var/cache/snapwebsites/snapwatchdog"
-                        // may get deleted once in a while, we have to create it
-                        //
-                        mkdir_p(cache_path);
-                        QString const last_email_filename(cache_path + "/last_email_time.txt");
+                        QString const last_email_filename(get_cache_path("last_email_time.txt"));
 
                         bool send_email(true);
                         bool file_opened(false);
@@ -1694,9 +1724,9 @@ bool watchdog_child::run_watchdog_plugins()
             // (through the snapwatchdog plugin extension to the
             // snapmanager.)
             //
-            mkdir_p(g_watchdog_last_result_filename, true);
+            QString const last_result_filename(get_cache_path("last_results.txt"));
             std::ofstream info;
-            info.open(g_watchdog_last_result_filename, std::ios_base::binary | std::ios_base::trunc | std::ios_base::out);
+            info.open(last_result_filename.toUtf8().data(), std::ios_base::binary | std::ios_base::trunc | std::ios_base::out);
             if(info.is_open())
             {
                 info << "# This is an auto-generated file. Do not edit." << std::endl;

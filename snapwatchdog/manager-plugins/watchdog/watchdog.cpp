@@ -63,9 +63,11 @@ namespace
 char const * g_default_watchdog_plugins = "apt"
                                          ",cpu"
                                          ",disk"
+                                         ",flags"
                                          ",log"
                                          ",memory"
                                          ",network"
+                                         ",packages"
                                          ",processes"
                                          ",watchscripts"
                                          ;

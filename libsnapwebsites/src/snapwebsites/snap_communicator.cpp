@@ -238,7 +238,11 @@ bool snap_communicator_message::from_message(QString const & message)
     QString command;
     parameters_t parameters;
 
-    QChar const * m(message.constData());
+    // someone using telnet to test sending messages will include a '\r'
+    // so run a trim on the message in case it is there
+    //
+    QString const msg(message.trimmed());
+    QChar const * m(msg.constData());
 
     // sent-from indicated?
     if(!m->isNull() && m->unicode() == '<')
