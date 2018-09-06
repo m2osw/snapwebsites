@@ -1,3 +1,13 @@
+snapwebsites (1.6.2.0~xenial) xenial; urgency=high
+
+  * Added the ability to prevent saving the snapwatchdog data to the Cassandra
+    database to avoid possible slowness (maybe not so bad in terms of writes,
+    but large number of TTL/tombstones handling can be slow from my experience)
+  * Added the version, hostname, and count to the flags.
+  * The flag now returns an error if the unlink() fails (permissions usually).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 05 Sep 2018 09:46:54 -0700
+
 snapwebsites (1.6.1.0~xenial) xenial; urgency=high
 
   * Made progress on the DNS options implementation, it compiles and runs

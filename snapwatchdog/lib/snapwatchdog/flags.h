@@ -102,6 +102,9 @@ public:
     time_t                      get_date() const;
     time_t                      get_modified() const;
     tag_list_t const &          get_tags() const;
+    std::string const &         get_hostname() const;
+    int                         get_count() const;
+    std::string const &         get_version() const;
 
     bool                        save();
 
@@ -125,6 +128,9 @@ private:
     time_t                      f_date              = -1;
     time_t                      f_modified          = -1;
     tag_list_t                  f_tags              = tag_list_t();
+    std::string                 f_hostname          = std::string();
+    int                         f_count             = 0;
+    std::string                 f_version           = std::string();
 };
 
 

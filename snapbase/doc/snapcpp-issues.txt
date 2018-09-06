@@ -27,7 +27,7 @@
       101 | Open        | Using snapbackend as a standard user fails because the log file is not writable
       103 | Open        | Losing query string on redirects (often if a login is required...)
       109 | In Progress | Server Watchdog task
-      110 | In Progress | snapmanager.cgi (was: First installation really not easy)
+      110 | In Progress | snapmanager daemon & cgi (was: First installation really not easy)
       115 | Open        | Add a test to verify the page when creating a link
       116 | Open        | Multi-page support within a single scrolling environment...
       117 | Open        | While editing an image, the toolbar is hidden...
@@ -179,7 +179,7 @@
       423 | Open        | Write unittest for QCassandraSchema, to make sure resources are truly freed.
       429 | Open        | snapcommunicator: Start only after tun0 if required (was: Make the listener tolerant)
       437 | Open        | snapmanager: only one? but how do we "share" plugins?
-      445 | Open        | snapmanagercgi: add support to decommission a Cassandra node...
+      445 | Open        | snapmanager: add support to decommission a Cassandra node...
       446 | Open        | Use HAProxy to load balance snapservers?
       448 | Open        | Create a standalone process that listens for services starting to listen on ports...
       452 | Open        | Receiving SSL in a PLAIN socket can be detected (when someone makes a setup mistake)
@@ -234,7 +234,6 @@
       569 | Open        | Editor: cannot select a dropdown item when over a radio button area?!
       572 | Open        | Add "Documentation=..." to our daemon declarations
       573 | Open        | Users: auto-determine default timezone at registration time
-      574 | Open        | Move all snapwebsites projects' debian folders into one root-level debian folder.
       576 | Open        | snap_child handles HTTP headers "the wrong way"
       581 | Open        | snapwatchdog: Detect various things in our log files and whether some log files are more than 10Mb
       582 | Open        | Users: multi-window errors are most often sent to ONE window...
@@ -288,5 +287,8 @@
       652 | Open        | Implement Notes -- a set of private pages that can't be published
       653 | Open        | snapwatchdog: Inter-computer checks, verify that the watchdog is running on all machines
       655 | Open        | shorturl: Implement a REST API
-(288 rows)
+      656 | Open        | snapmanager: Retrieve list of packages to be upgraded
+      657 | Open        | snapmanager: Current Reboot process fails to "wake up" because field "disappear"
+      658 | In Progress | snaprfs: create a tool that allows us to efficiently copy files between computers
+(290 rows)
 

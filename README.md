@@ -208,7 +208,30 @@ tools such as fail2ban and it blocks many things automatically once
 installed (email spammers, IoT hackers, Apache hackers, etc.)
 
 
-## snapwatchdog
+## [snaprfs](https://snapwebsites.org/project/snap-replication-file-system)
+
+Various parts of Snap! need to have files shared between many of
+the computers available in your cluster. To satisfy that need,
+we created the Snap Replication File System (RFS). This means it runs
+on all computers and replicate files between computers without
+you having to do more than ask for a certain file to get duplicated
+automatically. This works in all directions and can be made conditional
+(i.e. some computers may not need a copy of that file.)
+
+This is used to replace code that was specialized in various parts
+of the system. For example, the snapmanagerdaemon would copy some of
+the files it generates on other computers to allow the visualization
+of the status of any computer.
+
+We also use it to share all the tables that snapdbproxy uses to setup
+the Snap websites environment.
+
+Ultimately, it would be great to make it available via mount so we
+could see a directory and files that may reside on any computer with
+standard Unix commands such as ls, cat, grep, etc.
+
+
+## [snapwatchdog](https://snapwebsites.org/implementation/feature-requirements/watchdog-snap-cluster-core)
 
 The `snapwatchdog` service runs in the background of all your servers
 and gathers statistic data every minute.

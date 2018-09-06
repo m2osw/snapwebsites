@@ -203,6 +203,7 @@ void list_in_plain_text()
     widths["unit"]        = strlen("unit");
     widths["section"]     = strlen("section");
     widths["name"]        = strlen("name");
+    widths["count"]       = strlen("count");
     widths["source-file"] = strlen("source_file");
     widths["function"]    = strlen("function");
     widths["line"]        = strlen("line");
@@ -211,6 +212,8 @@ void list_in_plain_text()
     widths["manual"]      = strlen("manual");
     widths["date"]        = std::max(strlen("date"), 31UL);
     widths["modified"]    = std::max(strlen("modified"), 31UL);
+    widths["hostname"]    = strlen("hostname");
+    widths["version"]     = strlen("version");
     widths["tags"]        = strlen("tags");
 
     // run a first time through the list so we can gather the width of each field
@@ -222,12 +225,17 @@ void list_in_plain_text()
         widths["unit"]        = std::max(widths["unit"],        f->get_unit()                    .length());
         widths["section"]     = std::max(widths["section"],     f->get_section()                 .length());
         widths["name"]        = std::max(widths["name"],        f->get_name()                    .length());
+        widths["count"]       = std::max(widths["count"],       std::to_string(f->get_count())   .length());
         widths["source-file"] = std::max(widths["source-file"], f->get_source_file()             .length());
         widths["function"]    = std::max(widths["function"],    f->get_function()                .length());
         widths["line"]        = std::max(widths["line"],        std::to_string(f->get_line())    .length());
         widths["message"]     = std::max(widths["message"],     f->get_message()                 .length());
         widths["priority"]    = std::max(widths["priority"],    std::to_string(f->get_priority()).length());
         widths["manual"]      = std::max(widths["manual"],      f->get_manual_down() ? 3UL : 2UL); // "yes" : "no"
+        widths["hostname"]    = std::max(widths["hostname"],    f->get_hostname()                .length());
+        widths["version"]     = std::max(widths["version"],     f->get_version()                 .length());
+
+        // no need for the dates, they always fit in 31 chars.
         //widths["date"]        = std::max(widths["date"],        ...);
         //widths["modified"]    = std::max(widths["modified"],    ...);
 
@@ -242,6 +250,7 @@ void list_in_plain_text()
               << std::setw(widths["unit"]        + 2) << "unit"
               << std::setw(widths["section"]     + 2) << "section"
               << std::setw(widths["name"]        + 2) << "name"
+              << std::setw(widths["count"]       + 2) << "count"
               << std::setw(widths["source-file"] + 2) << "source_file"
               << std::setw(widths["function"]    + 2) << "function"
               << std::setw(widths["line"]        + 2) << "line"
@@ -250,6 +259,8 @@ void list_in_plain_text()
               << std::setw(widths["manual"]      + 2) << "manual"
               << std::setw(widths["date"]        + 2) << "date"
               << std::setw(widths["modified"]    + 2) << "modified"
+              << std::setw(widths["hostname"]    + 2) << "hostname"
+              << std::setw(widths["version"]     + 2) << "version"
               << std::setw(widths["tags"]           ) << "tags"
               << std::endl;
 
@@ -257,6 +268,7 @@ void list_in_plain_text()
               << std::setw(widths["unit"]        + 2) << "----"
               << std::setw(widths["section"]     + 2) << "-------"
               << std::setw(widths["name"]        + 2) << "----"
+              << std::setw(widths["count"]       + 2) << "-----"
               << std::setw(widths["source-file"] + 2) << "-----------"
               << std::setw(widths["function"]    + 2) << "--------"
               << std::setw(widths["line"]        + 2) << "----"
@@ -265,6 +277,8 @@ void list_in_plain_text()
               << std::setw(widths["manual"]      + 2) << "------"
               << std::setw(widths["date"]        + 2) << "----"
               << std::setw(widths["modified"]    + 2) << "--------"
+              << std::setw(widths["hostname"]    + 2) << "--------"
+              << std::setw(widths["version"]     + 2) << "-------"
               << std::setw(widths["tags"]           ) << "----"
               << std::endl;
 
@@ -273,6 +287,7 @@ void list_in_plain_text()
         std::cout << std::left  << std::setw(widths["unit"]        + 2) << f->get_unit()
                   << std::left  << std::setw(widths["section"]     + 2) << f->get_section()
                   << std::left  << std::setw(widths["name"]        + 2) << f->get_name()
+                  << std::right << std::setw(widths["count"]          ) << f->get_count() << "  "
                   << std::left  << std::setw(widths["source-file"] + 2) << f->get_source_file()
                   << std::left  << std::setw(widths["function"]    + 2) << f->get_function()
                   << std::right << std::setw(widths["line"]           ) << f->get_line() << "  "
@@ -281,6 +296,8 @@ void list_in_plain_text()
                   << std::left  << std::setw(widths["manual"]      + 2) << (f->get_manual_down() ? "yes" : "no")
                   << std::left  << std::setw(widths["date"]        + 2) << snap::snap_child::date_to_string(f->get_date()     * 1000000, snap::snap_child::date_format_t::DATE_FORMAT_HTTP)
                   << std::left  << std::setw(widths["modified"]    + 2) << snap::snap_child::date_to_string(f->get_modified() * 1000000, snap::snap_child::date_format_t::DATE_FORMAT_HTTP)
+                  << std::left  << std::setw(widths["hostname"]    + 2) << f->get_hostname()
+                  << std::left  << std::setw(widths["version"]     + 2) << f->get_version()
                   << std::left  << std::setw(widths["tags"]           ) << boost::algorithm::join(f->get_tags(), ", ")
                   << std::endl;
     }
@@ -494,7 +511,14 @@ int main(int argc, char * argv[])
 
         if(!flag->save())
         {
-            std::cerr << "raise-flag:error: an error occurred while saving flag to disk." << std::endl;
+            if(up)
+            {
+                std::cerr << "raise-flag:error: an error occurred while saving flag to disk." << std::endl;
+            }
+            else
+            {
+                std::cerr << "raise-flag:error: an error occurred while deleting flag from disk." << std::endl;
+            }
         }
     }
     catch( snap::snap_exception const & except )

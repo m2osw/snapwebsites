@@ -27,6 +27,7 @@
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/snap_config.h>
+#include <snapwebsites/snapwebsites.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/tokenize_string.h>
 
@@ -180,6 +181,21 @@ watchdog_flag::watchdog_flag(std::string const & filename)
                       , true
                       , " \n\r\t");
         f_tags.insert(tag_list.begin(), tag_list.end());
+    }
+
+    if(flag.has_parameter("hostname"))
+    {
+        f_hostname = flag.get_parameter("hostname");
+    }
+
+    if(flag.has_parameter("count"))
+    {
+        f_count = std::stol(flag.get_parameter("count"));
+    }
+
+    if(flag.has_parameter("version"))
+    {
+        f_version = flag.get_parameter("version");
     }
 }
 
@@ -673,6 +689,53 @@ watchdog_flag::tag_list_t const & watchdog_flag::get_tags() const
 }
 
 
+/** \brief The name of the computer on which this flag was generated.
+ *
+ * In order to be able to distinguish on which computer the flag was
+ * raised, the save() function includes the hostname of the computer
+ * in the flag file.
+ *
+ * \return The hostname of the computer that saved this flag file.
+ */
+std::string const & watchdog_flag::get_hostname() const
+{
+    return f_hostname;
+}
+
+
+/** \brief Retrieve the number of times this flag was raised.
+ *
+ * Each time a flag gets raised this counter is increased by 1. It starts
+ * at 0 so the very first time it gets saved, the counter will be 1.
+ *
+ * This is an indicator of how many times the flag situation was found to
+ * be true. In most cases this should be a really small number.
+ *
+ * \return The number of times the flag file was saved.
+ */
+int watchdog_flag::get_count() const
+{
+    return f_count;
+}
+
+
+/** \brief Get the version used to create this flag file.
+ *
+ * When the flag file gets saved, the current version of snapwebsites gets
+ * saved in the file as the "version" field. This function returns that
+ * value.
+ *
+ * Note that if the file gets updated, then the version of the newest write
+ * is used in the file.
+ *
+ * \return The version used to save the flag file.
+ */
+std::string const & watchdog_flag::get_version() const
+{
+    return f_version;
+}
+
+
 /** \brief Save the data to file.
  *
  * This function is used to save the flag to file.
@@ -712,16 +775,18 @@ bool watchdog_flag::save()
         //
         bool const exists(flag.configuration_file_exists());
         bool has_date(false);
+        bool has_count(false);
         if(exists)
         {
             has_date = flag.has_parameter("date");
+            has_count = flag.has_parameter("count");
         }
 
         // do a first save in case the file did not yet exist
         //
         // TODO: find a way to avoid the throw when no .conf exists yet
         //       it should be as easy as adding  a flag in the snap_config
-        //       which tells the system to not throw and return empty to
+        //       which tells the system not to throw and return empty to
         //       all queries; it's just not done yet
         //
         flag.save(false);
@@ -746,6 +811,19 @@ bool watchdog_flag::save()
         }
         flag["modified"]    = now;
         flag["tags"]        = boost::algorithm::join(f_tags, ",");
+        flag["hostname"]    = snap::server::get_server_name();
+        flag["version"]     = SNAPWEBSITES_VERSION_STRING;
+
+        if(has_count)
+        {
+            // increment existing counter by 1
+            //
+            flag["count"] = std::to_string(std::stol(flag["count"]) + 1);
+        }
+        else
+        {
+            flag["count"] = "1";
+        }
 
         // now save that data to file
         //
@@ -755,7 +833,7 @@ bool watchdog_flag::save()
     {
         // state is down, delete the file if it still exists
         //
-        NOTUSED(unlink(get_filename().c_str()));
+        result = unlink(get_filename().c_str()) != 0;
     }
 
     return result;

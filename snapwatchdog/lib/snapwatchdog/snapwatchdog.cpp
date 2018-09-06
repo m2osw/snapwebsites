@@ -958,31 +958,46 @@ void watchdog_server::init_parameters()
         if(f_statistics_period < 3600)
         {
             // minimum is 1 hour
+            //
             f_statistics_period = 3600;
         }
         // round up to the hour, but keep it in seconds
+        //
         f_statistics_period = (f_statistics_period + 3599) / 3600 * 3600;
     }
 
-    // Time To Live (TTL, used to make sure we do not over crowd the database)
+    // Time To Live (TTL, used to make sure we do not overcrowd the database)
     {
         QString const statistics_ttl(get_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_STATISTICS_TTL)));
-        bool ok(false);
-        f_statistics_ttl = static_cast<int64_t>(statistics_ttl.toLongLong(&ok));
-        if(!ok)
+        if(statistics_ttl == "off")
         {
-            SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic ttl \"")(statistics_ttl)("\" is not a valid number.");
-            exit(1);
+            f_statistics_ttl = 0;
         }
-        if(f_statistics_ttl < 0)
+        else if(statistics_ttl == "use-period")
         {
-            SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic ttl (")(statistics_ttl)(") cannot be a negative number.");
-            exit(1);
+            f_statistics_ttl = f_statistics_period;
         }
-        if(f_statistics_ttl < 3600)
+        else
         {
-            // minimum is 1 hour
-            f_statistics_ttl = 3600;
+            bool ok(false);
+            f_statistics_ttl = static_cast<int64_t>(statistics_ttl.toLongLong(&ok));
+            if(!ok)
+            {
+                SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic ttl \"")(statistics_ttl)("\" is not a valid number.");
+                exit(1);
+            }
+            if(f_statistics_ttl < 0)
+            {
+                SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic ttl (")(statistics_ttl)(") cannot be a negative number.");
+                exit(1);
+            }
+            if(f_statistics_ttl != 0
+            && f_statistics_ttl < 3600)
+            {
+                // minimum is 1 hour
+                //
+                f_statistics_ttl = 3600;
+            }
         }
     }
 }
@@ -1739,14 +1754,16 @@ bool watchdog_child::run_watchdog_plugins()
             //
             // retrieve server statistics table
             //
-            if(f_has_cassandra)
+            int64_t const ttl(server->get_statistics_ttl());
+            if(f_has_cassandra
+            && ttl > 0)
             {
                 QString const table_name(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS));
                 libdbproxy::table::pointer_t table(f_context->getTable(table_name));
 
                 libdbproxy::value value;
                 value.setStringValue(result);
-                value.setTtl(server->get_statistics_ttl());
+                value.setTtl(ttl);
                 QByteArray cell_key;
                 libdbproxy::setInt64Value(cell_key, date);
                 table->getRow(QString::fromUtf8(server->get_server_name().c_str()) + "/system-statistics")->getCell(cell_key)->setValue(value);
@@ -1879,14 +1896,16 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
             }
         }
 
-        if(f_has_cassandra)
+        int64_t const ttl(server->get_statistics_ttl());
+        if(f_has_cassandra
+        && ttl > 0)
         {
             QString const table_name(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_SERVERSTATS));
             libdbproxy::table::pointer_t table(f_context->getTable(table_name));
 
             libdbproxy::value value;
             value.setStringValue(result);
-            value.setTtl(server->get_statistics_ttl());
+            value.setTtl(ttl);
             QString const cell_key(QString("%1::%2").arg(process_name).arg(start_date));
             table->getRow(QString::fromUtf8(server->get_server_name().c_str()) + "/rusage")->getCell(cell_key)->setValue(value);
         }
