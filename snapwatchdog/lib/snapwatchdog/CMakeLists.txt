@@ -65,7 +65,6 @@ qt5_add_resources(SNAPWATCHDOG_RESOURCES_RCC
 
 add_library( ${PROJECT_NAME} SHARED
     snapwatchdog.cpp                            # Implements the core of the watchdog server
-    flags.cpp
     log_definitions.cpp
     ${SNAPWATCHDOG_MOC_CXX}
     ${SNAPWATCHDOG_RESOURCES_RCC}

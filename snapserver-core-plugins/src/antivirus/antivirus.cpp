@@ -25,14 +25,11 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/process.h>
-
-// snapwatchdog lib
-//
-#include <snapwatchdog/flags.h>
 
 // Qt lib
 //
@@ -293,20 +290,21 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
         //
         QString const site_key(f_snap->get_site_key_with_slash());
         std::string site(site_key.toUtf8().data());
-        snap::watchdog_flag::pointer_t flag(SNAPWATHCDOG_FLAG_UP(
+        SNAPWATHCDOG_FLAG_UP(
                       "snapserver-plugin"
                     , "antivirus"
                     , "clamav-missing"
                     , "the antivirus plugin is turned on for " + site + ","
-                      " but the clamav system it not available"));
-        flag->set_priority(50);
-        flag->save();
+                      " but the clamav system it not available"
+                )->set_priority(50).save();
         return;
     }
 
-    SNAPWATHCDOG_FLAG_DOWN("snapserver-plugin"
-                         , "antivirus"
-                         , "clamav-missing");
+    {
+        SNAPWATHCDOG_FLAG_DOWN("snapserver-plugin"
+                             , "antivirus"
+                             , "clamav-missing")->save();
+    }
 
     // retrieve the version only once, we do not need it reloaded for each
     // file! although it will happen any time a new file is checked...

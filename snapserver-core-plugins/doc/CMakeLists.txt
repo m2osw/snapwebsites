@@ -34,7 +34,7 @@
 ## Documentation
 ##
 AddDoxygenTarget(
-    snapserver_core_plugins
+    snapserver-core-plugins
     ${SNAPWEBSITES_VERSION_MAJOR}
     ${SNAPWEBSITES_VERSION_MINOR}
     ${SNAPWEBSITES_VERSION_PATCH}
@@ -43,8 +43,9 @@ AddDoxygenTarget(
 install(
     FILES
         footer.html
+
     DESTINATION
-        share/doc/snapserver-core-plugins
+        share/doc/snapserver-core-plugins/html
 )
 
 # vim: ts=4 sw=4 et nocindent

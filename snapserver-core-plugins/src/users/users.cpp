@@ -83,16 +83,13 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_lock.h>
-
-// snapwatchdog lib
-//
-#include <snapwatchdog/flags.h>
 
 // Qt lib
 //

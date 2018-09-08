@@ -58,7 +58,6 @@ add_library(antivirus SHARED
 
 target_link_libraries(antivirus
     Qt5::Core
-    snapwatchdog
 )
 
 install(

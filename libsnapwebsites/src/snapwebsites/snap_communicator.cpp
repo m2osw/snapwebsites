@@ -189,7 +189,7 @@ dispatcher_base::~dispatcher_base()
  * REGISTER function.
  *
  * \code
- *      // why replying to the exact message sender, one can use the
+ *      // to reply to the exact message sender, one can use the
  *      // following two lines of code:
  *      //
  *      reply.set_server(message.get_sent_from_server());
@@ -3011,7 +3011,7 @@ void snap_communicator::snap_signal::unblock_signal_on_destruction()
  *
  * \code
  *      class thread_done_impl
- *              : snap::snap_communicator::snap_thread_done_signal::snap_thread_done_signal
+ *          : snap::snap_communicator::snap_thread_done_signal::snap_thread_done_signal
  *      {
  *          ...
  *          void process_read()
@@ -3531,6 +3531,18 @@ snap_communicator::snap_pipe_connection::snap_pipe_connection()
 }
 
 
+/** \brief Make sure to close the pipes.
+ *
+ * The destructor ensures that the pipes get closed.
+ *
+ * They may already have been closed if a broken pipe was detected.
+ */
+snap_communicator::snap_pipe_connection::~snap_pipe_connection()
+{
+    close();
+}
+
+
 /** \brief Read data from this pipe connection.
  *
  * This function reads up to count bytes from this pipe connection.
@@ -3586,18 +3598,6 @@ ssize_t snap_communicator::snap_pipe_connection::write(void const * buf, size_t 
         return ::write(s, buf, count);
     }
     return 0;
-}
-
-
-/** \brief Make sure to close the pipes.
- *
- * The destructor ensures that the pipes get closed.
- *
- * They may already have been closed if a broken pipe was detected.
- */
-snap_communicator::snap_pipe_connection::~snap_pipe_connection()
-{
-    close();
 }
 
 
@@ -3782,6 +3782,7 @@ void snap_communicator::snap_pipe_buffer_connection::process_read()
             else if(r == 0 || errno == 0 || errno == EAGAIN || errno == EWOULDBLOCK)
             {
                 // no more data available at this time
+                //
                 break;
             }
             else //if(r < 0)
@@ -6446,8 +6447,6 @@ public:
             , f_address(address)
             , f_port(port)
             , f_mode(mode)
-            //, f_client(nullptr) -- auto-init
-            //, f_last_error("") -- auto-init
         {
         }
 
@@ -6824,7 +6823,13 @@ public:
 
             // TODO: fix address in error message using a snap::addr so
             //       as to handle IPv6 seemlessly.
-            SNAP_LOG_ERROR("connection to ")(f_thread_runner.get_address())(":")(f_thread_runner.get_port())(" failed with: ")(f_thread_runner.get_last_error());
+            //
+            SNAP_LOG_ERROR("connection to ")
+                          (f_thread_runner.get_address())
+                          (":")
+                          (f_thread_runner.get_port())
+                          (" failed with: ")
+                          (f_thread_runner.get_last_error());
 
             // signal that an error occurred
             //
@@ -8072,7 +8077,7 @@ bool snap_communicator::run()
                 //SNAP_LOG_TRACE("snap_communicator::run(): connection '")(c->get_name())("' has been disabled, so ignored.");
                 continue;
             }
-//SNAP_LOG_TRACE("snap_communicator::run(): handling connection '")(c->get_name())("' has it is enabled...");
+//SNAP_LOG_TRACE("snap_communicator::run(): handling connection ")(idx)("/")(max_connections)(". '")(c->get_name())("' since it is enabled...");
 
             // check whether a timeout is defined in this connection
             //
@@ -8126,7 +8131,7 @@ bool snap_communicator::run()
             //
             c->f_fds_position = fds.size();
 
-//std::cerr << "[" << getpid() << "]: *** still waiting on \"" << c->get_name() << "\".\n";
+//SNAP_LOG_ERROR("*** still waiting on \"")(c->get_name())("\".");
             struct pollfd fd;
             fd.fd = c->get_socket();
             fd.events = e;

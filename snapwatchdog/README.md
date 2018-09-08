@@ -17,19 +17,28 @@ Statistics
 The watchdog processes will gather statistics about the following
 elements, once a minute:
 
+* APT
 * Cassandra
 * CPU
 * Disk
 * Firewall
+* Flags
+* Log
 * Memory
 * Network
-* Various Processes
+* Packages
+* Processes
+* Watchdog Scripts
+
+Other packages may offer additional watchdog plugins.
 
 In general, the statistics about processes is to check to know whether
-they are running or not running.
+they are running or not running as expected in the current situation.
 
 The Cassandra plugin is specialized in testing various things about
 Cassandra to make sure that it runs smoothly.
+
+The Log plugin verifies the ownerhship and size of each file.
 
 The CPU, Disk, Firewall, Memory, Network plugins just gather statistics
 (how much of each is being used.) The statistics are saved in the data
@@ -38,9 +47,13 @@ can find this data under:
 
     /var/lib/snapwebsites/snapwatchdog/data/...
 
+Whenever it looks like something is out of certain bounds (using too much
+memory, not connected, etc.) then an error is raised and if the priority
+of the error is high enough, an email is sent to the administrator.
 
-Internal and External Scripts
-=============================
+
+Internal and External Plugins & Scripts
+=======================================
 
 Every time the snapwatchdog daemon wakes up, it runs a set of scripts,
 which by default are saved under:
@@ -48,17 +61,17 @@ which by default are saved under:
     /usr/share/snapwebsites/snapwatchdog/scripts/...
 
 The scripts are expected to test whether things are running as expected.
-This includes tested whether certain daemon are running or not. For example,
+This includes testing whether certain daemons are running or not. For example,
 if snapcommunicator is not running, it will be reported.
 
 The scripts are also used to detect bad things that are at times happening
 on a server. For example, `fail2ban` version 0.9.3-1 has a process named
 `fail2ban-client` which at times does not exit. Somehow it runs in a tight
-loop using 100% of the CPU. We have a script in the snapfirewall that
-detects whether the `fail2ban-client` runs for 3 minutes in a row. If that
-happens, then it generates an error and sends an email.
+loop using 100% of the CPU. We have a script in the `snapfirewall` project
+that detects whether the `fail2ban-client` runs for 3 minutes in a row. If
+that happens, then it generates an error and sends an email.
 
-The scripts will create files under the following directory:
+The scripts create files under the following directory:
 
     /var/lib/snapwebsites/snapwatchdog/script-files/...
 
@@ -71,8 +84,8 @@ We save the scripts stdout and stderr streams to a "log" file under:
 
 Note that the content of those logs is also what we send to the
 administrator's mailbox. Hopefully, it won't be too many emails...
-We use a separate directory to be able to run logrotate against
-or even just delete all those files easily.
+We use a separate directory to be able to safely run a `find` command
+to delete old files.
 
 
 ## Script: `watch_firewall_fail2ban_client` (`fail2ban-client`)

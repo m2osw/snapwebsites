@@ -62,6 +62,7 @@ private:
 };
 
 
+
 class snaplock_messenger
     : public snap::snap_communicator::snap_tcp_client_permanent_message_connection
 {
@@ -250,6 +251,9 @@ private:
     void                        activate_first_lock(QString const & object_name);
     void                        ticket_list(snap::snap_communicator_message const & message);
     void                        cleanup();
+    void                        is_cluster_ready();
+    void                        cluster_up(snap::snap_communicator_message const & message);
+    void                        cluster_down(snap::snap_communicator_message const & message);
     void                        send_lockready();
 
     advgetopt::getopt                   f_opt;
@@ -268,6 +272,7 @@ private:
     bool                                f_stop_received = false;
     bool                                f_debug = false;
     bool                                f_debug_lock_messages = false;
+    bool                                f_cluster_up = false;
     std::map<QString, bool>             f_computers = std::map<QString, bool>();
     snaplock_ticket::object_map_t       f_entering_tickets = snaplock_ticket::object_map_t();
     snaplock_ticket::object_map_t       f_tickets = snaplock_ticket::object_map_t();

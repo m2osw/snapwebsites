@@ -47,6 +47,7 @@
 //
 #include <snapwebsites/compression.h>
 #include <snapwebsites/dbutils.h>
+#include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
@@ -55,10 +56,6 @@
 #include <snapwebsites/snap_image.h>
 #include <snapwebsites/snap_lock.h>
 #include <snapwebsites/snap_version.h>
-
-// snapwatchdog lib
-//
-#include <snapwatchdog/flags.h>
 
 // Qt lib
 //

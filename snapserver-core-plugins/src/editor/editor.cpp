@@ -31,6 +31,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/dbutils.h>
+#include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkgmtime.h>
 #include <snapwebsites/not_reached.h>
@@ -42,10 +43,6 @@
 #include <snapwebsites/snap_image.h>
 #include <snapwebsites/snap_lock.h>
 #include <snapwebsites/xslt.h>
-
-// snapwatchdog lib
-//
-#include <snapwatchdog/flags.h>
 
 // libtld lib
 //

@@ -779,13 +779,6 @@ snap_thread * snap_thread::snap_runner::get_thread() const
 snap_thread::snap_thread(QString const & name, snap_runner * runner)
     : f_name(name)
     , f_runner(runner)
-    //, f_mutex() -- auto-init
-    //, f_running(false) -- auto-init
-    //, f_started(false) -- auto-init
-    //, f_stopping(false) -- auto-init
-    //, f_thread_id(-1) -- auto-init
-    //, f_thread_attr(...) -- see below
-    //, f_exception() -- auto-init
 {
     if(f_runner == nullptr)
     {
@@ -802,7 +795,7 @@ snap_thread::snap_thread(QString const & name, snap_runner * runner)
         SNAP_LOG_ERROR("the thread attributes could not be initialized, error #")(err);
         throw snap_thread_exception_invalid_error("pthread_attr_init() failed");
     }
-    err = pthread_attr_setdetachstate(&f_thread_attr, PTHREAD_CREATE_DETACHED);
+    err = pthread_attr_setdetachstate(&f_thread_attr, PTHREAD_CREATE_JOINABLE);
     if(err != 0)
     {
         SNAP_LOG_ERROR("the thread detach state could not be initialized, error #")(err);
@@ -821,7 +814,7 @@ snap_thread::snap_thread(QString const & name, snap_runner * runner)
  *
  * Then it destroyes the thread attributes and returns.
  *
- * The destructor also detaches the thread from the runner so the runner
+ * The destructor also removes the thread from the runner so the runner
  * can create another thread controller and run again.
  */
 snap_thread::~snap_thread()
@@ -961,9 +954,28 @@ void snap_thread::internal_run()
     catch(std::exception const &)
     {
         // keep a copy of the exception
+        //
         f_exception = std::current_exception();
+
+        // also make sure we mark the thread as not running anymore
+        // if the lock or signal throw, then we go in lala land from here
+        {
+            snap_lock lock(f_mutex);
+            f_running = false;
+            f_mutex.signal();
+        }
     }
-    // ... any other exception terminates the whole process ...
+    catch(...)
+    {
+        // ... any other exception terminates the whole process ...
+        //
+        SNAP_LOG_FATAL("thread got an unknown exception (a.k.a. non-std::exception), exiting process");
+
+        // rethrow, our goal is not to ignore the exception, only to
+        // have a log about it
+        //
+        throw;
+    }
 }
 
 
@@ -1027,11 +1039,6 @@ bool snap_thread::start()
  * \warning
  * This function throws the thread exceptions that weren't caught in your
  * run() function. This happens after the thread has completed.
- *
- * \todo
- * We may want to look into using pthread_join() instead of just
- * waiting for f_running to go to false. At this time we use detached
- * threads though and that prevents joining.
  */
 void snap_thread::stop()
 {
@@ -1043,47 +1050,41 @@ void snap_thread::stop()
             // we return immediately in this case because
             // no exception can happen if the thread never
             // started...
+            //
             return;
         }
 
         // request the child to stop
+        //
         f_stopping = true;
-
-        // wait for the child to be stopped
-        // the loop is used in case the signal happens "inadvertendly"
-        // (the documentation clearly says that spurious signals may happen
-        // although I have not really experienced it, we check until f_running
-        // is really false)
-        for(;;)
-        {
-            if(!f_running)
-            {
-                // exit for() loop
-                break;
-            }
-
-            f_mutex.wait();
-        }
-
-        // we are done stopping now
-        f_stopping = false;
-
-        // We cannot join since our threads are detached (change?)
-        //void *ignore;
-        //pthread_join(f_thread_id.ptr(), &ignore);
     }
 
+    // wait for the child to be stopped
+    //
+    // we cannot pass any results through the pthread interface so we
+    // pass a nullptr for the result; instead, the user is expected to
+    // add fields to his class and fill in whatever results he wants
+    // there; it is going to work much better that way
+    //
+    pthread_join(f_thread_id, nullptr);
+
+    // at this point the thread has fully exited
+
+    // we are done now
+    //
+    // these flags are likely already the correct value except for
+    // f_stopping which the stop() function manages here
+    //
+    f_running = false;
+    f_started = false;
+    f_stopping = false;
+
     // if the child died because of a standard exception, rethrow it now
+    //
     if(f_exception != std::exception_ptr())
     {
         std::rethrow_exception(f_exception);
     }
-
-    // note: the thread itself may still be running at this point, even
-    // though we just found f_running to be false; this can happen if the
-    // system decides to switch from the child thread to the main 
-    // process thread as soon as the lock is released. Yet the only thing
-    // left in the thread is exiting.
 }
 
 
@@ -1119,7 +1120,6 @@ bool snap_thread::kill(int sig)
 
     return false;
 }
-
 
 } // namespace snap
 // vim: ts=4 sw=4 et

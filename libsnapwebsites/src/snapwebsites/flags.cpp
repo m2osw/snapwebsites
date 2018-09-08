@@ -833,7 +833,13 @@ bool watchdog_flag::save()
     {
         // state is down, delete the file if it still exists
         //
-        result = unlink(get_filename().c_str()) != 0;
+        result = unlink(get_filename().c_str()) == 0;
+        if(!result && errno == ENOENT)
+        {
+            // deleting a flag that does not exist "works" every time
+            //
+            result = true;
+        }
     }
 
     return result;

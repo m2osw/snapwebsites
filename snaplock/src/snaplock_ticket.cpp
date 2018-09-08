@@ -52,7 +52,7 @@
 /** \class snaplock_ticket
  * \brief Handle the ticket messages.
  *
- * \section Introduction
+ * \section introduction Introduction
  *
  * This class manages the Leslie Lamport's Bakery Algorithm (1974) lock
  * mechanism (a critical section that we can get between any number
@@ -78,7 +78,7 @@
  * This class sends various messages to manage the locks.
  *
  *
- * \section The Bakery Algorithm Explained
+ * \section bakery_algorithm The Bakery Algorithm Explained
  *
  * The bakery algorithm is based on the basic idea that a large number
  * of customers go to one bakery to buy bread. In order to make sure
@@ -227,7 +227,7 @@
  *   https://snapwebsites.org/project/libqtcassandra
  *
  *
- * \section Our implementation in snaplock
+ * \section implementation Our implementation in snaplock
  *
  * Locks are given a name by our users. This is used to lock just
  * one small thing for any amount of time as required by your
@@ -358,7 +358,8 @@
  * key and allocating an entering object.
  *
  * Once the entering object was acknowledged by QUORUM snaplock
- * instances, we can then create the ticket.
+ * instances (i.e. one other computer when we allow exactly 3 leaders,)
+ * we can then create the ticket.
  *
  * \note
  * We create a key from the server name, client PID, and object
@@ -410,12 +411,11 @@ snaplock_ticket::snaplock_ticket(
 }
 
 
-/** \brief Enter the mode that let us retrieve out ticket number.
+/** \brief Enter the mode that lets us retrieve out ticket number.
  *
  * In order to make sure we can get the current largest ticket number
  * in a unique enough way, we have to enter the lock loop. This is
- * done by sending a LOCKENTERING message to all the snaplock
- * processes currently running.
+ * done by sending a LOCKENTERING message to all the snaplock leaders.
  */
 void snaplock_ticket::entering()
 {

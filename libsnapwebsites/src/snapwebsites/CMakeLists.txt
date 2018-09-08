@@ -62,6 +62,7 @@ set( HEADERS
     compression.h
     dbutils.h
     file_content.h
+    flags.h
     floats.h
     fuzzy_string_compare.h
     glob_dir.h
@@ -137,6 +138,7 @@ add_library( ${PROJECT_NAME} SHARED
     compression.cpp                             # compress/decompress data
     dbutils.cpp                                 # utilities to help convert coded table and row names and column data. (see snap_tables.cpp too!)
     file_content.cpp                            # load / save whole files in one go
+    flags.cpp                                   # raise/drop flags
     floats.cpp                                  # Floats helper functions
     fuzzy_string_compare.cpp                    # Compare strings in a fuzzy manner
     glob_dir.cpp                                # Enumerate the contents of a directory using a wildcard

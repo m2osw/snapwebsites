@@ -5,5 +5,5 @@ Abstract: This is the reference manual for the C++ snapwebsites library.
 Section: libdevel
 
 Format: HTML
-Index: /usr/share/doc/snapwebsites/html/index.html
-Files: /usr/share/doc/snapwebsites/html/*
+Index: /usr/share/doc/libsnapwebsites/html/index.html
+Files: /usr/share/doc/libsnapwebsites/html/*

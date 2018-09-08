@@ -1,3 +1,33 @@
+snapwebsites (1.6.3.0~xenial) xenial; urgency=high
+
+  * SNAP-392: change our thread to Joinable instead of Detach.
+  * SNAP-519: found out that the snapmanagerdaemon was not initializing the
+    QCoreApplication so it could crash in the thread (albeit really rare.)
+  * SNAP-661: move flags.cpp/h to libsnapwebsites so raising flags can happen
+    from nearly anywhere.
+  * SNAP-661: moved the raise_flag.cpp tool to libsnapwebsites/tools.
+  * Moved 3 tools from snapserver to libsnapwebsites where they were supposed
+    to be (there are there more to debug the library than real useful tools.)
+  * SNAP-660: snapcommunicator tries to connect to any IP even invalid once,
+    now we flag those that fail to connect for too long or too many times.
+  * SNAP-350: added support for CLUSTERSTATUS, CLUSTERUP, CLUSTERDOWN,
+    CLUSTERCOMPLETE and CLUSTERINCOMPLETE.
+  * SNAP-536: fixed the path to the snapserver-core-plugins documentation.
+  * Fixed the source/destination of a few *-doc.install definitions.
+  * Moved the additional libsnapwebsites docs to the libsnapwebsites directory
+    instead of snapwebsites.
+  * In threads, log a fatal error in case a thread throws an unknown exception.
+  * Raise a flag in snap_child if the fork() happens with more than one thread.
+  * Updated the debian/*docs for project that have their own README.txt/md.
+  * Added the necessary to temporarily change the logged log_level_t.
+  * Reduce logs from snapwatchdog by raising log level to WARNING while running
+    the plugins to reduce the logs by probably 10Mb or so...
+  * Removed the unused `context` from a snap_backend connection.
+  * Fixed the two glob_dir() to avoid empty directory errors in snapmanager.cgi
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 08 Sep 2018 08:43:27 -0700
+
 snapwebsites (1.6.2.0~xenial) xenial; urgency=high
 
   * Added the ability to prevent saving the snapwatchdog data to the Cassandra

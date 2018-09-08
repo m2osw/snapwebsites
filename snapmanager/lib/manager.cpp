@@ -529,7 +529,7 @@ std::vector<std::string> manager::read_filenames(std::string const & pattern) co
     try
     {
         snap::glob_dir files;
-        files.set_path( pattern, GLOB_NOESCAPE );
+        files.set_path( pattern, GLOB_NOESCAPE, true );
         files.enumerate_glob( [&]( QString the_path )
             {
                 result.push_back(the_path.toUtf8().data());

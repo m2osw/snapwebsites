@@ -547,7 +547,7 @@ void manager_daemon::stop(bool quitting)
         {
             f_messenger->mark_done();
 
-            // unregister if we are still connected to the messenger
+            // unregister if we are still connected to snapcommunicator
             // and Snap! Communicator is not already quitting
             //
             snap::snap_communicator_message cmd;
@@ -627,7 +627,7 @@ void manager_daemon::forward_message(snap::snap_communicator_message const & mes
 {
     // make sure the messenger is still alive
     //
-    if(f_messenger)
+    if(f_messenger != nullptr)
     {
         f_messenger->send_message(message);
     }

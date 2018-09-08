@@ -575,8 +575,22 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
     case 'A':
         if(command == "ADDTICKET")
         {
-            // return our maximum ticket to the requester
+            // add a ticket, send a TICKETADDED in a reply on success
+            //
             add_ticket(message);
+            return;
+        }
+        break;
+
+    case 'C':
+        if(command == "CLUSTERUP")
+        {
+            cluster_up(message);
+            return;
+        }
+        if(command == "CLUSTERDOWN")
+        {
+            cluster_down(message);
             return;
         }
         break;
@@ -589,7 +603,8 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
         }
         if(command == "DROPTICKET")
         {
-            // return our maximum ticket to the requester
+            // drop named ticket
+            //
             drop_ticket(message);
             return;
         }
@@ -599,6 +614,7 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
         if(command == "GETMAXTICKET")
         {
             // return our maximum ticket to the requester
+            //
             get_max_ticket(message);
             return;
         }
@@ -621,7 +637,7 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
             // (many are considered to be internal commands... users
             // should look at the LOCK and UNLOCK messages only)
             //
-            reply.add_parameter("list", "ADDTICKET,DISCONNECTED,DROPTICKET,GETMAXTICKET,HANGUP,HELP,LISTTICKETS,LOCK,LOCKENTERED,LOCKENTERING,LOCKEXITING,LOCKREADY,LOG,MAXTICKET,QUITTING,READY,STATUS,STOP,TICKETADDED,UNKNOWN,UNLOCK");
+            reply.add_parameter("list", "ADDTICKET,CLUSTERDOWN,CLUSTERUP,DISCONNECTED,DROPTICKET,GETMAXTICKET,HANGUP,HELP,LISTTICKETS,LOCK,LOCKENTERED,LOCKENTERING,LOCKEXITING,LOCKREADY,LOG,MAXTICKET,QUITTING,READY,STATUS,STOP,TICKETADDED,UNKNOWN,UNLOCK");
 
             f_messenger->send_message(reply);
 
@@ -674,8 +690,8 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
 
                         if(command == "LOCKEXITING")
                         {
-                            // we entered the ticket loop, now we can release the
-                            // entering objects
+                            // we entered the ticket loop, now we can release
+                            // the entering objects
                             //
                             lockexiting(message);
                             return;
@@ -755,6 +771,7 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
         if(command == "MAXTICKET")
         {
             // return our maximum ticket to the requester
+            //
             max_ticket(message);
             return;
         }
@@ -776,6 +793,10 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
     case 'R':
         if(command == "READY")
         {
+            // locks cannot work right until the cluster is considered up
+            // and running
+            //
+            is_cluster_ready();
             return;
         }
         break;
@@ -820,7 +841,7 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
         {
             // we sent a command that Snap! Communicator did not understand
             //
-            SNAP_LOG_ERROR("we sent unknown command \"")(message.get_parameter("command"))("\" and probably did not get the expected result.");
+            SNAP_LOG_ERROR("we sent unknown command \"")(message.get_parameter("command"))("\" and probably did not get the expected result (1).");
             return;
         }
         break;
@@ -841,11 +862,56 @@ void snaplock::process_message(snap::snap_communicator_message const & message)
 }
 
 
+/** \brief Send the CASSANDRASTATUS to snapdbproxy.
+ *
+ * This function builds a message and sends it to snapdbproxy. It is
+ * used whenever we need to know whether the database is accessible.
+ *
+ * Note that the function itself does not return true or false. If
+ * you need to know whether we are currently connected to the
+ * snapdbproxy daemon, check the f_cassandra pointer; if not nullptr
+ * then we are connected and you can send a CQL order.
+ */
+void snaplock::is_cluster_ready()
+{
+    snap::snap_communicator_message isclusterready_message;
+    isclusterready_message.set_command("CLUSTERSTATUS");
+    isclusterready_message.set_service("snapcommunicator");
+    f_messenger->send_message(isclusterready_message);
+}
+
+
+void snaplock::cluster_up(snap::snap_communicator_message const & message)
+{
+    snap::NOTUSED(message);
+
+    SNAP_LOG_INFO("cluster is ready, we can accept locks now.");
+
+    f_cluster_up = true;
+}
+
+
+void snaplock::cluster_down(snap::snap_communicator_message const & message)
+{
+    snap::NOTUSED(message);
+
+    // there is nothing to do here, when the cluster comes back up the
+    // snapcommunicator will automatically send us a signal about it
+
+    SNAP_LOG_INFO("cluster is down, we have to refuse any further locks requests for a while.");
+
+    f_cluster_up = false;
+
+    // we do not call the lockgone() because the HANGUP will be sent
+    // if required so we do not have to do that twice
+}
+
+
 void snaplock::send_lockready()
 {
     // tell other snaplock instances that are already listening that
     // we are ready; this way we can calculate the number of computers
-    // available in our ring and use that to calculate the QUORUM
+    // available in our network and use that to calculate the QUORUM
     //
     snap::snap_communicator_message lockready_message;
     lockready_message.set_command("LOCKREADY");
@@ -1380,6 +1446,7 @@ void snaplock::interpret_status(snap::snap_communicator_message const & message)
 void snaplock::lockgone(snap::snap_communicator_message const & message)
 {
     // was it a snaplock service at least?
+    //
     QString const server_name(message.get_parameter("server_name"));
     if(server_name == f_server_name)
     {
@@ -1582,6 +1649,7 @@ void snaplock::drop_ticket(snap::snap_communicator_message const & message)
     else
     {
         // we received the entering_key in the message, use as is
+        //
         entering_key = key;
     }
 
@@ -1691,8 +1759,8 @@ void snaplock::max_ticket(snap::snap_communicator_message const & message)
  * After this message arrives any one of the snaplock process can
  * handle the unlock if the UNLOCK message gets sent to another process
  * instead of the one which first created the ticket. This is the point
- * of the implementation since we want to be tolerant (as in if one of
- * the computers go down, the locking mechanism still works.)
+ * of the implementation since we want to be fault tolerant (as in if one
+ * of the computers goes down, the locking mechanism still works.)
  */
 void snaplock::add_ticket(snap::snap_communicator_message const & message)
 {
@@ -1709,7 +1777,7 @@ void snaplock::add_ticket(snap::snap_communicator_message const & message)
             auto const key_ticket(obj_ticket->second.find(key));
             if(key_ticket != obj_ticket->second.end())
             {
-                // this ticket exists on this system, so ignore
+                // this ticket exists on this system
                 //
                 throw std::logic_error("snaplock::add_ticket() ticket already exists");
             }
@@ -1903,7 +1971,7 @@ void snaplock::tool_message(snap::snap_communicator_message const & message)
         {
             // we sent a command that Snap! Communicator did not understand
             //
-            SNAP_LOG_ERROR("we sent unknown command \"")(message.get_parameter("command"))("\" and probably did not get the expected result.");
+            SNAP_LOG_ERROR("we sent unknown command \"")(message.get_parameter("command"))("\" and probably did not get the expected result (2).");
             return;
         }
         break;

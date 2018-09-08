@@ -1,3 +1,7 @@
+debian/tmp/usr/bin/cxpath                                                   usr/bin/
+debian/tmp/usr/bin/snapexpr                                                 usr/bin/
+debian/tmp/usr/bin/snapimg                                                  usr/bin/
+debian/tmp/usr/bin/raise-flag                                               usr/bin/
 debian/tmp/usr/lib/libsnapwebsites.so.*                                     usr/lib/
 debian/tmp/usr/lib/libdbproxy.so.*                                          usr/lib/
 debian/tmp/usr/lib/snapwebsites/tables/core-tables.xml                      usr/lib/snapwebsites/tables/

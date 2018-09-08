@@ -68,8 +68,9 @@ install(
         Session-Random-Number.png
         snapwebsites-cluster-setup.odg
         snapwebsites-cluster-setup.png
+
     DESTINATION
-        share/doc/snapwebsites/libsnapwebsites
+        share/doc/libsnapwebsites
 )
 
 # vim: ts=4 sw=4 et nocindent

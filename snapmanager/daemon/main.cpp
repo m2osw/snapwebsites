@@ -28,6 +28,17 @@
 
 #include "snapmanagerdaemon.h"
 
+// Qt lib
+//
+#include <QtCore>
+
+
+
+// last entry
+//
+#include <snapwebsites/poison.h>
+
+
 
 namespace snap
 {
@@ -49,6 +60,18 @@ int main(int argc, char * argv[])
 {
     try
     {
+        // Qt wants an application, we do not care too much ourselves,
+        // we create it on the stack so it gets destroyed automatically
+        //
+        // this process has setuid to root:root and Qt views that as
+        // a huge security risk so we have to allow it to avoid their
+        //
+        //    FATAL: The application binary appears to be running setuid, this is a security hole.
+        //    Aborted (core dumped)
+        //
+        QCoreApplication::setSetuidAllowed(true);
+        QCoreApplication app(argc, argv);
+
         // we need these globals to "properly" initializes the first
         // "plugin" (the core system or server)
         //

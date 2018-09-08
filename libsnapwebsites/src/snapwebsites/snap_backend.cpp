@@ -712,7 +712,7 @@ class child_connection
 public:
     typedef std::shared_ptr<child_connection>   pointer_t;
 
-                                child_connection(snap_backend * sb, libdbproxy::context::pointer_t & context);
+                                child_connection(snap_backend * sb);
                                 child_connection(child_connection const & rhs) = delete;
     virtual                     ~child_connection() override {}
 
@@ -726,7 +726,6 @@ public:
 
 private:
     snap_backend *                   f_snap_backend = nullptr;
-    libdbproxy::context::pointer_t   f_context = libdbproxy::context::pointer_t();
     snap_lock::pointer_t             f_lock = snap_lock::pointer_t();
 };
 
@@ -751,9 +750,8 @@ child_connection::pointer_t g_child_connection;
  * \param[in] sb  The snap backend pointer.
  * \param[in] uri  The URI the child process is going to work on.
  */
-child_connection::child_connection(snap_backend * sb, libdbproxy::context::pointer_t & context)
+child_connection::child_connection(snap_backend * sb)
     : f_snap_backend(sb)
-    , f_context(context)
 {
     set_name("child connection");
 }
@@ -1341,7 +1339,7 @@ void snap_backend::process_tick()
 
     // if no child is currently running, wake up the messenger ASAP
     //
-    if(!g_child_connection)
+    if(g_child_connection == nullptr)
     {
 #ifdef DEBUG
         SNAP_LOG_TRACE("Immediately tick the wakeup_timer from the last tick timeout.");
@@ -1851,7 +1849,12 @@ void snap_backend::stop(bool quitting)
     }
     else
     {
-        //g_communicator->remove_connection(g_messenger); -- this one will get an expected HUP shortly or when the child dies
+        // we don't remove the messenger here because we either already
+        // have done so above or sent the UNREGISTER message; in the
+        // second case, it will auto-hangup shortly
+        //
+        //g_communicator->remove_connection(g_messenger);
+
         g_communicator->remove_connection(g_cassandra_timer);
         g_communicator->remove_connection(g_reconnect_timer);
         g_communicator->remove_connection(g_tick_timer);
@@ -2314,7 +2317,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
     // (especially, we can send the child a STOP if we ourselves receive
     // a STOP.)
     //
-    g_child_connection.reset(new child_connection(this, f_context));
+    g_child_connection.reset(new child_connection(this));
 
     // We also lock that website while this backend process is running.
     // The lock depends on the URI and the action taken.
@@ -2378,7 +2381,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
             SNAP_LOG_FATAL("snap_backend::process_backend_uri() could not create a child process (errno: ")(e)(" -- ")(strerror(e))(").");
 
             // we do not try again, we just abandon the whole process
-            // (i.e. we're in the parent so the backend is quitting 100%)
+            // (i.e. we are in the parent so the backend is quitting 100%)
             //
             exit(1);
             NOTREACHED();
@@ -2390,7 +2393,15 @@ bool snap_backend::process_backend_uri(QString const & uri)
     //
     try
     {
-        SNAP_LOG_INFO("==================================== backend process website \"")(uri)("\" with ")(f_cron_action ? "cron " : "")("action \"")(f_action)("\" started.");
+        SNAP_LOG_INFO("==================================== backend process website \"")
+                     (uri)
+                     ("\" with ")
+                     (f_cron_action ? "cron " : "")
+                     ("action \"")
+                     (f_action)
+                     ("\" started. (ppid: ")
+                     (getppid())
+                     (")");
 
         // make sure that Snap! Communicator is clean in the child,
         // it really cannot be listening on any of these because
@@ -2445,6 +2456,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
         }
 
         // process the f_uri parameter
+        //
         canonicalize_domain();
         canonicalize_website();
         site_redirect();

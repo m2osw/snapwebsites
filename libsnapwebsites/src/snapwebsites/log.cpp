@@ -259,7 +259,7 @@ protected:
     virtual void append(const log4cplus::spi::InternalLoggingEvent& event) override
     {
         auto messenger( g_log_messenger.lock() );
-        if( messenger ) // silently fail if the shared object has been deleted...
+        if( messenger != nullptr ) // silently fail if the shared object has been deleted...
         {
             char const * level_str("unknown");
             switch( event.getLogLevel() )
@@ -395,7 +395,7 @@ std::string get_progname()
  */
 void set_log_messenger( messenger_t messenger )
 {
-    if( !messenger.lock() )
+    if( messenger.lock() == nullptr )
     {
         throw snap_exception( "Snap communicator messenger must be allocated!" );
     }
@@ -760,6 +760,65 @@ bool is_configured()
 }
 
 
+/** \brief Retrieve the current log level.
+ *
+ * This function returns the current log level. In most cases this is
+ * used with the RAII class which saves the log level for a period
+ * of time while you change the level before doing some work and want
+ * to reset the level to what it was once done with that work.
+ *
+ * Note that we do not have a one to one mapping between our log levels
+ * and the log4cplus log level. Instead we return the next level when
+ * it is not a match (it is possible to not be an exact match if the
+ * administrator used a number to define the log level in the properties
+ * file of the service using the Snap! logger.)
+ *
+ * \return The current level.
+ */
+log_level_t get_log_output_level()
+{
+    log4cplus::LogLevel level(g_logger.getLogLevel());
+
+    if(level == log4cplus::NOT_SET_LOG_LEVEL)
+    {
+        return log_level_t::LOG_LEVEL_DEFAULT;
+    }
+
+    if(level <= log4cplus::TRACE_LOG_LEVEL)
+    {
+        return log_level_t::LOG_LEVEL_TRACE;
+    }
+
+    if(level <= log4cplus::DEBUG_LOG_LEVEL)
+    {
+        return log_level_t::LOG_LEVEL_DEBUG;
+    }
+
+    if(level <= log4cplus::INFO_LOG_LEVEL)
+    {
+        return log_level_t::LOG_LEVEL_INFO;
+    }
+
+    if(level <= log4cplus::WARN_LOG_LEVEL)
+    {
+        return log_level_t::LOG_LEVEL_WARNING;
+    }
+
+    if(level <= log4cplus::ERROR_LOG_LEVEL)
+    {
+        return log_level_t::LOG_LEVEL_ERROR;
+    }
+
+    if(level <= log4cplus::FATAL_LOG_LEVEL)
+    {
+        return log_level_t::LOG_LEVEL_FATAL;
+    }
+
+    // anything higher is considered to be OFF
+    return log_level_t::LOG_LEVEL_OFF;
+}
+
+
 /* \brief Set the current logging threshold.
  *
  * Tells log4cplus to limit the logging output to the specified threshold.
@@ -775,7 +834,7 @@ void set_log_output_level( log_level_t level )
         return;
     }
 
-    log4cplus::LogLevel new_level = log4cplus::OFF_LOG_LEVEL;
+    log4cplus::LogLevel new_level(log4cplus::OFF_LOG_LEVEL);
 
     switch(level)
     {
@@ -796,6 +855,7 @@ void set_log_output_level( log_level_t level )
         break;
 
     case log_level_t::LOG_LEVEL_INFO:
+    //case log_level_t::LOG_LEVEL_DEFAULT:
         new_level = log4cplus::INFO_LOG_LEVEL;
         break;
 

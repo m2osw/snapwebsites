@@ -1369,7 +1369,9 @@ int manager_cgi::is_logged_in(std::string & request_method)
             std::string const cookie_name(snap::snap_uri::urldecode(QString::fromUtf8(name_value[0].c_str()), true).toUtf8().data());
             if(cookie_name != "snapmanager")
             {
+#ifdef _DEBUG
                 SNAP_LOG_TRACE("Found cookie \"")(cookie_name)("\", ignore.");
+#endif
                 continue;
             }
 
@@ -2333,7 +2335,7 @@ void manager_cgi::get_cluster_status(QDomDocument doc, QDomElement output)
     QString err_msg;
     try
     {
-        the_glob.set_path( QString("%1/*.db").arg(f_cluster_status_path).toUtf8().data(), GLOB_NOESCAPE );
+        the_glob.set_path( QString("%1/*.db").arg(f_cluster_status_path).toUtf8().data(), GLOB_NOESCAPE, true );
     }
     catch( std::exception const & x )
     {
@@ -2343,9 +2345,10 @@ void manager_cgi::get_cluster_status(QDomDocument doc, QDomElement output)
     }
     catch( ... )
     {
-        err_msg = "An error occurred while reading status data. "
+        err_msg = "An unknown exception occurred while reading status data. "
                   "Please check your snapmanagercgi.log file for more information.";
         SNAP_LOG_ERROR("Caught unknown exception!");
+        has_error = true;
     }
     //
     if( has_error )

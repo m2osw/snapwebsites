@@ -1487,7 +1487,17 @@ bool watchdog_child::run_watchdog_plugins()
 
         // run each plugin watchdog function
         //
-        server->process_watch(doc);
+        {
+            // if we are in debug mode, let all messages go through,
+            // otherwise raise the level to WARNING to limit the messages
+            // because with a large number of plugins it generates a large
+            // number of log every single minute!
+            //
+            snap::logging::raii_log_level save_log_level(server->is_debug()
+                                            ? snap::logging::get_log_output_level()
+                                            : snap::logging::log_level_t::LOG_LEVEL_WARNING);
+            server->process_watch(doc);
+        }
 
         // verify and save the results accordingly
         //

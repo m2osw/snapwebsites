@@ -23,6 +23,7 @@
 // snapwebsites lib
 //
 #include "snapwebsites/compression.h"
+#include "snapwebsites/flags.h"
 #include "snapwebsites/http_strings.h"
 #include "snapwebsites/log.h"
 #include "snapwebsites/mail_exchanger.h"
@@ -2855,6 +2856,7 @@ pid_t snap_child::fork_child()
     // (it is a huge potential for a crash or lock up, hence the test)
     // See: https://snapwebsites.org/journal/2015/06/using-threads-server-uses-fork-they-dont-mix-well
     // We send the log after we re-established it (See below)
+    //
     size_t const count(server->thread_count());
 
     pid_t const parent_pid(getpid());
@@ -2866,6 +2868,22 @@ pid_t snap_child::fork_child()
         if(count != 1)
         {
             SNAP_LOG_WARNING("snap_child::fork_child(): The number of threads before the fork() to create a snap_child is ")(count)(" when it should be 1.");
+
+            // TODO: look into having a flag concept in a contrib lib.
+            //
+            // this is a rather important bug, only developers have a chance
+            // to fix it, though... (hence the rather low priority)
+            //
+            SNAPWATHCDOG_FLAG_UP(
+                          "snap_child"
+                        , "create-child"
+                        , "thread"
+                        , "snap_child::fork_child() called with more than one thread running; a developer has to look into why this would happen.")
+                    ->set_priority(35)
+                    .set_manual_down(true)
+                    .add_tag("thread")
+                    .add_tag("fork")
+                    .save();
         }
     }
     else
@@ -2902,7 +2920,7 @@ pid_t snap_child::fork_child()
             // always reconfigure the logger in the child
             logging::reconfigure();
 
-            SNAP_LOG_TRACE("snap_child::fork_child() just hooked up logging!");
+            SNAP_LOG_TRACE("snap_child::fork_child() just hooked up logging! -- child of ")(getppid());
 
             // it could be that the prctrl() was made after the true parent died...
             // so we have to test the PID of our parent

@@ -46,7 +46,9 @@ enum class log_level_t
     LOG_LEVEL_WARNING,
     LOG_LEVEL_INFO,
     LOG_LEVEL_DEBUG,
-    LOG_LEVEL_TRACE
+    LOG_LEVEL_TRACE,
+
+    LOG_LEVEL_DEFAULT = LOG_LEVEL_INFO
 };
 
 enum class log_security_t
@@ -100,20 +102,39 @@ private:
     QString                             f_message = QString();
 };
 
-void set_progname               ( std::string const & progname );
-std::string get_progname        ();
-void set_log_messenger          ( messenger_t messenger );
-void configure_console          ();
-void configure_logfile          ( QString const & logfile  );
-void configure_syslog           ();
-void configure_messenger        ( messenger_t messenger );
-void configure_conffile         ( QString const & filename );
-void unconfigure                ();
-void reconfigure                ();
-bool is_configured              ();
-void set_log_output_level       ( log_level_t level );
-void reduce_log_output_level    ( log_level_t level );
-bool is_enabled_for             ( log_level_t const log_level );
+void set_progname                ( std::string const & progname );
+std::string get_progname         ();
+void set_log_messenger           ( messenger_t messenger );
+void configure_console           ();
+void configure_logfile           ( QString const & logfile  );
+void configure_syslog            ();
+void configure_messenger         ( messenger_t messenger );
+void configure_conffile          ( QString const & filename );
+void unconfigure                 ();
+void reconfigure                 ();
+bool is_configured               ();
+log_level_t get_log_output_level ();
+void set_log_output_level        ( log_level_t level );
+void reduce_log_output_level     ( log_level_t level );
+bool is_enabled_for              ( log_level_t const level );
+
+class raii_log_level
+{
+public:
+    raii_log_level(log_level_t new_level)
+        : f_save_log_level(get_log_output_level())
+    {
+        set_log_output_level(new_level);
+    }
+
+    ~raii_log_level()
+    {
+        set_log_output_level(f_save_log_level);
+    }
+
+private:
+    log_level_t     f_save_log_level = log_level_t::LOG_LEVEL_DEFAULT;
+};
 
 logger & operator << ( logger & l, QString const &                                msg );
 logger & operator << ( logger & l, std::basic_string<char> const &                msg );

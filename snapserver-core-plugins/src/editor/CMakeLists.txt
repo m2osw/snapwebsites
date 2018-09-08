@@ -84,7 +84,6 @@ add_library(editor SHARED
 
 target_link_libraries(editor
     Qt5::Core
-    snapwatchdog
 )
 
 install(

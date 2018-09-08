@@ -74,89 +74,6 @@ install(
 )
 
 
-#################################################################################
-## XPath compiler
-##
-project(cxpath)
-
-add_executable(${PROJECT_NAME}
-    cxpath.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-    snapwebsites
-    libdbproxy
-    ${ADVGETOPT_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
-    ${AS2JS_LIBRARIES}
-    ${LIBTLD_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${QTSERIALIZATION_LIBRARIES}
-)
-
-install(
-    TARGETS
-        ${PROJECT_NAME}
-
-    RUNTIME DESTINATION
-        bin
-)
-
-
-#################################################################################
-## Snap Image Information Tool
-##
-project(snapimg)
-
-add_executable(${PROJECT_NAME}
-    snapimg.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-    snapwebsites
-    libdbproxy
-    ${ADVGETOPT_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
-    ${AS2JS_LIBRARIES}
-    ${LIBTLD_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${QTSERIALIZATION_LIBRARIES}
-)
-
-install(
-    TARGETS
-        ${PROJECT_NAME}
-
-    RUNTIME DESTINATION
-        bin
-)
-
-
-#################################################################################
-## Snap Expression Computation and Compilation
-##
-project(snapexpr)
-
-add_executable(${PROJECT_NAME}
-    snapexpr.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-    snapwebsites
-    libdbproxy
-    ${ADVGETOPT_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
-    ${AS2JS_LIBRARIES}
-    ${CASSVALUE_LIBRARIES}
-    ${LIBTLD_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${QTSERIALIZATION_LIBRARIES}
-)
-
-install(
-    TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin
-)
-
 install(
     FILES
         snapserver-processes.xml
@@ -164,5 +81,7 @@ install(
     DESTINATION
         share/snapwebsites/snapwatchdog/processes
 )
+
+
 
 # vim: ts=4 sw=4 et

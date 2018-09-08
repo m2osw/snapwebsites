@@ -75,7 +75,6 @@ add_library(content SHARED
 target_link_libraries(content
     Qt5::Core
     ${CSSPP_LIBRARIES}
-    snapwatchdog
 )
 
 install(

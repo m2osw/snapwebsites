@@ -1,1 +1,2 @@
+debian/tmp/usr/share/doc/libsnapwebsites/*.* usr/share/doc/libsnapwebsites/
 debian/tmp/usr/share/doc/libsnapwebsites/html/* usr/share/doc/libsnapwebsites/html/

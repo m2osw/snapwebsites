@@ -21,14 +21,11 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/meminfo.h>
 #include <snapwebsites/not_used.h>
-
-// snapwatchdog lib
-// 
-#include <snapwatchdog/flags.h>
 
 
 

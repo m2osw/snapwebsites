@@ -899,7 +899,7 @@ QString watchdog::get_list_of_available_plugins()
             // lists and they would not be properly sorted in the end, instead
             // we sort our available_plugins list of strings before we return
             //
-            glob_dir const plugin_filenames(p + "/*watchdog_*.so", GLOB_ERR | GLOB_NOESCAPE | GLOB_NOSORT);
+            glob_dir const plugin_filenames(p + "/*watchdog_*.so", GLOB_ERR | GLOB_NOESCAPE | GLOB_NOSORT, true);
             plugin_filenames.enumerate_glob(std::bind(&watchdog::get_plugin_names, this, std::placeholders::_1, &available_plugins));
         }
         catch(glob_dir_exception const &)
@@ -909,7 +909,7 @@ QString watchdog::get_list_of_available_plugins()
             //
             try
             {
-                glob_dir const plugin_filenames(p + "/watchdog_*/*watchdog_*.so", GLOB_ERR | GLOB_NOESCAPE | GLOB_NOSORT);
+                glob_dir const plugin_filenames(p + "/watchdog_*/*watchdog_*.so", GLOB_ERR | GLOB_NOESCAPE | GLOB_NOSORT, true);
                 plugin_filenames.enumerate_glob(std::bind(&watchdog::get_plugin_names, this, std::placeholders::_1, &available_plugins));
             }
             catch(glob_dir_exception const &)
@@ -1054,7 +1054,7 @@ void watchdog::on_generate_content(QDomDocument doc, QDomElement output, QDomEle
                         }
                     };
 
-                glob_dir d(full_data_path + "/[0-9]*.xml");
+                glob_dir d(full_data_path + "/[0-9]*.xml", GLOB_NOSORT, true);
                 d.enumerate_glob(newest_data);
 
                 // get the result of the glob()
