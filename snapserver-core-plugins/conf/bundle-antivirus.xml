@@ -17,6 +17,15 @@
     computers with the snapbackend bundle do not require it.</p>
   </description>
   <packages>clamav</packages>
+  <!-- reduce the database access dramatically because we don't generally
+       handle that many files that we would need a super fresh database
+       all the time -->
+  <postinst>
+    sed -i.bak \
+        -e 's/Checks\s\+[0-9]\+/Checks 1/' \
+        -e 's/MaxAttempts\s\+[0-9]\+/MaxAttempts 1/' \
+              /etc/clamav/freshclam.conf
+  </postinst>
 </bundle>
 <!--
   vim: ts=2 sw=2 et
