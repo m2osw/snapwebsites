@@ -570,9 +570,18 @@ void list::snaplist_database(QDomElement e)
                 SNAP_LOG_TRACE("Attempting to connect to MySQL database to run a table CHECKSUM");
 
 #if 1
+                // we run the following command; we could setup a .mylogin.cnf
+                // but we may want to run other commands against other
+                // database which would require different users
+                //
+                // mysql -u snaplist -psnaplist -sre 'CHECKSUM TABLE snaplist.journal' snaplist
+                //
                 process mysql("run CHECKSUM TABLE command line");
                 mysql.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
                 mysql.set_command("mysql");
+                mysql.add_argument("-u");
+                mysql.add_argument("snaplist");
+                mysql.add_argument("-psnaplist");
                 mysql.add_argument("-sre");
                 mysql.add_argument("'CHECKSUM TABLE snaplist.journal'");
                 mysql.add_argument("snaplist");
