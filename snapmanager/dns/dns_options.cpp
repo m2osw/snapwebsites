@@ -238,6 +238,8 @@ private:
 
     int                 parse_command_line();
     int                 edit_option();
+    int                 recursive_option(keyword & p);
+    int                 match();
 
     advgetopt::getopt   f_opt; // initialized in constructor
     bool                f_debug = false;
@@ -250,6 +252,7 @@ private:
     token               f_token = token();
     int                 f_block_level = 0;
     keyword             f_keyword = keyword(token());
+    keyword             f_options = keyword(token());
 };
 
 
@@ -1159,7 +1162,7 @@ int dns_options::edit_option()
 {
     load_file();
 
-    dns_options::token::vector_t in;
+    int r(0);
     for(;;)
     {
         token t(get_token());
@@ -1178,11 +1181,175 @@ int dns_options::edit_option()
             return 1;
         }
 
-        in.push_back(t);
+        // got a keyword
+        //
+        keyword k(t);
+
+        // read until we find an end of definition (a.k.a. ';')
+        //
+        bool more(true);
+        do
+        {
+            t = get_token();
+            switch(t.get_type())
+            {
+            case token_type_t::TOKEN_EOT:
+                std::cerr << "--- TODO: found EOT, expected a ';' before the end of the file.\n";
+                return 1;
+
+            case token_type_t::TOKEN_ERROR:
+                std::cerr << "--- TODO: found TOKEN_ERROR reading input file...\n";
+                return 1;
+
+            case token_type_t::TOKEN_END_OF_DEFINITION:
+                more = false;
+                break;
+
+            case token_type_t::TOKEN_OPEN_BLOCK:
+                r = recursive_option(k);
+                if(r != 0)
+                {
+                    return r;
+                }
+                break;
+
+            case token_type_t::TOKEN_CLOSE_BLOCK:
+                std::cerr << "--- TODO: found '}' without a '{' first." << std::endl;
+                return 1;
+
+            case token_type_t::TOKEN_KEYWORD:
+            case token_type_t::TOKEN_STRING:
+                k.add_field(t);
+                break;
+
+            default:
+                std::cerr << "dns_options:error: unexpected token " << static_cast<int>(t.get_type()) << "." << std::endl;
+                return 1;
+
+            }
+        }
+        while(more);
+
+        f_options.add_value(k);
     }
 
 std::cerr << "try matching against command line...\n";
 
+    match();
+
+    return 0;
+}
+
+
+/** \brief Read the content of a block recursively
+ *
+ * This function reads the contents of one block ('{ ... }').
+ *
+ * Each line is added as a value of the \p in keyword which you pass as
+ * a parameter.
+ *
+ * \note
+ * When an error happens at any level of recursivity, it will unwind the
+ * whole stack at once and return 1.
+ *
+ * \param[in] in  The keyword that will hold the block value.
+ *
+ * \return 0 when the block was read successfully, 1 otherwise
+ */
+int dns_options::recursive_option(keyword & in)
+{
+    int r(0);
+    for(;;)
+    {
+        token t(get_token());
+        if(t.get_type() == token_type_t::TOKEN_EOT)
+        {
+            // done?
+            //
+            std::cerr << "dns_options:error: found end of input before '}'." << std::endl;
+            return 1;
+        }
+        if(t.get_type() == token_type_t::TOKEN_ERROR)
+        {
+            // got an error while reading input file
+            //
+            std::cerr << "dns_options:error: found TOKEN_ERROR reading input file." << std::endl;
+            return 1;
+        }
+        if(t.get_type() == token_type_t::TOKEN_CLOSE_BLOCK)
+        {
+            // proper end of block, return now
+            //
+            return 0;
+        }
+
+        // got a keyword
+        //
+        keyword k(t);
+
+        // read until we find an end of definition (a.k.a. ';')
+        //
+        bool more(true);
+        do
+        {
+            t = get_token();
+            switch(t.get_type())
+            {
+            case token_type_t::TOKEN_EOT:
+                std::cerr << "dns_options:error: found EOT, expected a ';' before the end of the file." << std::endl;
+                return 1;
+
+            case token_type_t::TOKEN_ERROR:
+                std::cerr << "dns_options:error: found TOKEN_ERROR reading input file." << std::endl;
+                return 1;
+
+            case token_type_t::TOKEN_END_OF_DEFINITION:
+                more = false;
+                break;
+
+            case token_type_t::TOKEN_OPEN_BLOCK:
+                r = recursive_option(k);
+                if(r != 0)
+                {
+                    return r;
+                }
+                break;
+
+            case token_type_t::TOKEN_CLOSE_BLOCK:
+                // end of block, return
+                //
+                std::cerr << "dns_options:warning: found '}' without a ';' to end the last line." << std::endl;
+                in.add_value(k);
+                return 0;
+
+            case token_type_t::TOKEN_KEYWORD:
+            case token_type_t::TOKEN_STRING:
+                k.add_field(t);
+                break;
+
+            default:
+                std::cerr << "dns_options:error: unexpected token " << static_cast<int>(t.get_type()) << "." << std::endl;
+                return 1;
+
+            }
+        }
+        while(more);
+
+        in.add_value(k);
+    }
+
+    snap::NOTREACHED();
+    return 1;
+}
+
+
+
+int dns_options::match()
+{
+    // the match is in f_keyword
+    //
+    // what to match (the files of options) is in f_options
+    //
     return 0;
 }
 

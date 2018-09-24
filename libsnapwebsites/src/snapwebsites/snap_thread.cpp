@@ -714,7 +714,7 @@ bool snap_thread::snap_runner::is_ready() const
 bool snap_thread::snap_runner::continue_running() const
 {
     snap_lock lock(f_mutex);
-    if(!f_thread)
+    if(f_thread == nullptr)
     {
         return true;
     }

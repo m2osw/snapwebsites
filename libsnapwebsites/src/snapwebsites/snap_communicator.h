@@ -294,6 +294,7 @@ public:
         virtual bool                send_message(snap_communicator_message const & message, bool cache = false) = 0;
 
         virtual void                msg_help(snap_communicator_message & message);
+        virtual void                msg_alive(snap_communicator_message & message);
         virtual void                msg_log(snap_communicator_message & message);
         virtual void                msg_quitting(snap_communicator_message & message);
         virtual void                msg_ready(snap_communicator_message & message);
@@ -332,8 +333,9 @@ public:
         typedef std::shared_ptr<snap_signal>    pointer_t;
 
                                     snap_signal(int posix_signal);
-                                    ~snap_signal();
+        virtual                     ~snap_signal() override;
 
+        void                        close();
         void                        unblock_signal_on_destruction();
 
         // snap_connection implementation
@@ -360,7 +362,7 @@ public:
         typedef std::shared_ptr<snap_thread_done_signal>    pointer_t;
 
                                     snap_thread_done_signal();
-                                    ~snap_thread_done_signal();
+        virtual                     ~snap_thread_done_signal() override;
 
         // snap_connection implementation
         virtual bool                is_reader() const override;
@@ -381,7 +383,7 @@ public:
         typedef std::shared_ptr<snap_inter_thread_message_connection>    pointer_t;
 
                                     snap_inter_thread_message_connection();
-                                    ~snap_inter_thread_message_connection();
+        virtual                     ~snap_inter_thread_message_connection() override;
 
         void                        close();
 
@@ -420,7 +422,7 @@ public:
         typedef std::shared_ptr<snap_pipe_connection>    pointer_t;
 
                                     snap_pipe_connection();
-                                    ~snap_pipe_connection();
+        virtual                     ~snap_pipe_connection() override;
 
         void                        close();
 
@@ -680,7 +682,7 @@ public:
         typedef std::shared_ptr<snap_tcp_server_client_connection>    pointer_t;
 
                                     snap_tcp_server_client_connection(tcp_client_server::bio_client::pointer_t client);
-        virtual                     ~snap_tcp_server_client_connection();
+        virtual                     ~snap_tcp_server_client_connection() override;
 
         void                        close();
         size_t                      get_client_address(struct sockaddr_storage & address) const;
@@ -811,7 +813,7 @@ public:
         static int64_t const        DEFAULT_PAUSE_BEFORE_RECONNECTING = 60LL * 1000000LL;  // 1 minute
 
                                     snap_tcp_client_permanent_message_connection(std::string const & address, int port, tcp_client_server::bio_client::mode_t mode = tcp_client_server::bio_client::mode_t::MODE_PLAIN, int64_t const pause = DEFAULT_PAUSE_BEFORE_RECONNECTING, bool const use_thread = true);
-                                    ~snap_tcp_client_permanent_message_connection();
+        virtual                     ~snap_tcp_client_permanent_message_connection() override;
 
         bool                        is_connected() const;
         void                        disconnect();
@@ -881,6 +883,7 @@ public:
                                     snap_tcp_blocking_client_message_connection(std::string const & addr, int port, mode_t mode = mode_t::MODE_PLAIN);
 
         void                        run();
+        void                        peek();
 
         // connection_with_send_message
         virtual bool                send_message(snap_communicator_message const & message, bool cache = false) override;
@@ -889,6 +892,7 @@ public:
         virtual void                process_error() override;
 
     private:
+        std::string                 f_line = std::string();
     };
 
     static pointer_t                    instance();

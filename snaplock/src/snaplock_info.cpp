@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snaplock/src/snaplock_interrupt.cpp
+ *      snaplock/src/snaplock_info.cpp
  *
  * Description:
  *      A daemon to synchronize processes between any number of computers
@@ -49,45 +49,62 @@
 namespace snaplock
 {
 
-/** \class snaplock_interrupt
- * \brief Handle the SIGINT Unix signal.
+/** \class snaplock_info
+ * \brief Handle the SIGUSR1 Unix signal.
  *
  * This class is an implementation of the signalfd() specifically
- * listening for the SIGINT signal.
+ * listening for the SIGUSR1 signal.
+ *
+ * The signal is used to ask snaplock to print out information about
+ * its state.
  */
 
 
 
-/** \brief The interrupt initialization.
+
+/** \brief The snaplock info initialization.
  *
- * The interrupt uses the signalfd() function to obtain a way to listen on
- * incoming Unix signals.
+ * The snaplock information object uses the signalfd() function to
+ * obtain a way to listen on incoming Unix signals.
  *
- * Specifically, it listens on the SIGINT signal, which is the equivalent
- * to the Ctrl-C.
+ * Specifically, it listens on the SIGUSR1 signal. This is used to
+ * request snaplock to print out its current state. This is mainly
+ * for debug purposes.
  *
- * \param[in] sl  The snaplock server we are listening for.
+ * \param[in] sl  The snaplock we are listening for.
  */
-snaplock_interrupt::snaplock_interrupt(snaplock * sl)
-    : snap_signal(SIGINT)
+snaplock_info::snaplock_info(snaplock * sl)
+    : snap_signal(SIGUSR1)
     , f_snaplock(sl)
 {
     unblock_signal_on_destruction();
-    set_name("snaplock interrupt");
+    set_name("snap lock info");
 }
 
 
-/** \brief Call the stop function of the snaplock object.
+/** \brief Call the info function of the snaplock object.
  *
- * When this function is called, the signal was received and thus we are
- * asked to quit as soon as possible.
+ * When this function is called, the internal state of the snaplock
+ * object gets printed out. It is expected to be used to debug the
+ * snaplock daemon.
+ *
+ * This signal can be sent any number of times.
+ *
+ * Note that state is printed using the log mechanism. If your logs
+ * are not being printed in your console, then make sure to look at
+ * the snaplock.log file (or whatever you renamed it if you did so
+ * in the snaplock.properties.)
  */
-void snaplock_interrupt::process_signal()
+void snaplock_info::process_signal()
 {
     // we simulate the STOP, so pass 'false' (i.e. not quitting)
     //
-    f_snaplock->stop(false);
+    f_snaplock->info();
 }
+
+
+
+
 
 
 }

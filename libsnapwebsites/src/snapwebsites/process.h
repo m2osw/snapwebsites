@@ -163,6 +163,7 @@ public:
     static void                 set_process_name(QString const & name);
     static void                 set_process_name(std::string const & name);
     static void                 set_process_name(char const * name);
+    static pid_t                get_pid_max();
 
 private:
     // prevent copies

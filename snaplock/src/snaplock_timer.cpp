@@ -1,14 +1,16 @@
 /*
  * Text:
- *      snaplock/src/snaplock_interrupt.cpp
+ *      snaplock/src/snaplock_timer.cpp
  *
  * Description:
  *      A daemon to synchronize processes between any number of computers
  *      by blocking all of them but one.
  *
- *      The interrupt implementation listens for the Ctrl-C or SIGINT Unix
- *      signal. When the signal is received, it calls the stop function
- *      of the snaplock object to simulate us receiving a STOP message.
+ *      The timer implementation is used to know when a lock times out. The
+ *      cleanup() function determines when the next timeout happens and saves
+ *      that in this timer. When a timeout happens, the process calls cleanup()
+ *      which removes all the old locks and makes sure the next ones get
+ *      handled as expected.
  *
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
@@ -49,44 +51,44 @@
 namespace snaplock
 {
 
-/** \class snaplock_interrupt
- * \brief Handle the SIGINT Unix signal.
+/** \class snaplock_timer
+ * \brief Handle the locks timeout.
  *
- * This class is an implementation of the signalfd() specifically
- * listening for the SIGINT signal.
+ * This class is used to time out locks. Whenever we receive a new LOCK
+ * message or enter a lock the timer is reset with the next lock that is
+ * going to time out. When that happens, the cleanup() function gets
+ * called. Any lock which timed out is removed and the user on the other
+ * end is told about the problem with an UNLOCKED or LOCKFAILED message
+ * as the case may be.
  */
 
 
 
-/** \brief The interrupt initialization.
+/** \brief The timer initialization.
  *
- * The interrupt uses the signalfd() function to obtain a way to listen on
- * incoming Unix signals.
+ * The timer is always enabled, however by default there is nothing to
+ * timeout. In other words, the timer is keep off.
  *
- * Specifically, it listens on the SIGINT signal, which is the equivalent
- * to the Ctrl-C.
- *
- * \param[in] sl  The snaplock server we are listening for.
+ * \param[in] sl  The snaplock server we are hadnling time outs for.
  */
-snaplock_interrupt::snaplock_interrupt(snaplock * sl)
-    : snap_signal(SIGINT)
+snaplock_timer::snaplock_timer(snaplock * sl)
+    : snap_timer(-1)
     , f_snaplock(sl)
 {
-    unblock_signal_on_destruction();
-    set_name("snaplock interrupt");
+    set_name("snaplock timer");
 }
 
 
-/** \brief Call the stop function of the snaplock object.
+/** \brief Call the cleanup() function of the snaplock object.
  *
- * When this function is called, the signal was received and thus we are
- * asked to quit as soon as possible.
+ * A timeout happened, call the snaplock cleanup() function which takes
+ * care of cleaning up the list of lock requests and existing locks.
  */
-void snaplock_interrupt::process_signal()
+void snaplock_timer::process_timeout()
 {
     // we simulate the STOP, so pass 'false' (i.e. not quitting)
     //
-    f_snaplock->stop(false);
+    f_snaplock->cleanup();
 }
 
 

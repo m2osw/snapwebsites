@@ -11,7 +11,27 @@ snapwebsites (1.6.3.0~xenial) xenial; urgency=high
   * SNAP-660: snapcommunicator tries to connect to any IP even invalid once,
     now we flag those that fail to connect for too long or too many times.
   * SNAP-350: added support for CLUSTERSTATUS, CLUSTERUP, CLUSTERDOWN,
-    CLUSTERCOMPLETE and CLUSTERINCOMPLETE.
+    CLUSTERCOMPLETE and CLUSTERINCOMPLETE to snapcommunicator.
+  * SNAP-350: replace LOCKREADY message with LOCKSTARTED so we can use the
+    LOCKREADY to answer a LOCKSTATUS request (like CASSANDRAREADY, etc.)
+  * SNAP-350: added a LOCKSTATUS, LOCKREADY, NOLOCK set of messages. This
+    was a bonus because of the CLUSTERUP and CLUSTERDOWN messages from the
+    snapmanager. We don't internally use those, but they will be used by
+    other deamons (snapserver/snapbackend).
+  * SNAP-533: change the LOCKSTARTUP (was LOCKREADY) to start the election
+    process by counting the number of computers connected and use the CLUSTERUP
+    total number of computers to know we attained a QUORUM of computers.
+  * SNAP-350: added the LOCKLEADERS to complete an election by informing the
+    others that the election was done and inform them of the leaders. New
+    connections get a LOCKSTARTUP with the leader information.
+  * SNAP-659: detect when a snaplock connection dies and act on it by
+    conducting new elections and sharing the status of the locks with the
+    new leader (LOCK and LOCKTICKETS messages are used.)
+  * SNAP-533: prevent locks from starting until QUORUM is reached.
+  * SNAP-471: the new implementation clearly uses 3 leaders and sends messages
+    with a key which is unique so overlap cannot happen.
+  * SNAP-343: locks now time out as expected, snaplock sends an UNLOCKED at
+    the time of the timeout (and wait for acknowledgement with an UNLOCK.)
   * SNAP-536: fixed the path to the snapserver-core-plugins documentation.
   * Fixed the source/destination of a few *-doc.install definitions.
   * Moved the additional libsnapwebsites docs to the libsnapwebsites directory
@@ -24,6 +44,35 @@ snapwebsites (1.6.3.0~xenial) xenial; urgency=high
     the plugins to reduce the logs by probably 10Mb or so...
   * Removed the unused `context` from a snap_backend connection.
   * Fixed the two glob_dir() to avoid empty directory errors in snapmanager.cgi
+  * Reduced the number of database access of freshclam on installation.
+  * Moved the snaplock code inside the snaplock namespace.
+  * Swapped the order in which the "HELP" and "READY" messages are sent by
+    the snapcommunicator as we want to get the "COMMANDS" back before any
+    other messages (communication could otherwise fail.)
+  * Updated any handling of the "HELP" or "READY" to take the new order in
+    account (i.e. if things were started in "HELP" moved them to "READY".)
+  * Added a function to determine the maximum pid_t that getpid() will return.
+  * Added a way to read messages in a blocking snap communicator connection
+    in between messages (needs more testing, though.) This can be useful for
+    locks that last a long time.
+  * Added an ALIVE -> ABSOLUTELY set of message as a watchdog that works with
+    any daemon that implements the dispatcher.
+  * Changed the dispatcher match() functions so they can return CALLBACK
+    which means we can add a callback within our dispatcher tables.
+  * Enhanced message of header of configuration files, including date too.
+  * Implemented the dispatcher in snap_lock.cpp.
+  * Added an unlock duration as UNLOCKED needs acknowledgement when due to a
+    timeout.
+  * Fixed the snapcommunicator count_live_connections().
+  * In some cases a server name was needed in snapcommunicator and not added,
+    now it will be so messages go straight to the correct server.
+  * Fixed many lock failure error handling. We send more LOCKFAILED and
+    snaplock daemons understand and can forward a LOCKFAILED to the service
+    asking for a lock.
+  * Removed the max_pending_connections in snaplock since it wasn't used.
+  * Added a SIGPIPE handler to (1) ignore the signal and (2) log the event.
+  * Added USR1 and USR2 in snaplock to get some info without stopping snaplock.
+  * Fixed the log properties by adding a lock for all.log.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 08 Sep 2018 08:43:27 -0700

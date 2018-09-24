@@ -144,6 +144,9 @@ void messenger::process_timeout()
  * is received. It also handles communication between us and the
  * snapcommunicator.
  *
+ * \todo
+ * Convert to using dispatcher.
+ *
  * \param[in] message  The message we just received.
  */
 void messenger::process_message(snap::snap_communicator_message const & message)

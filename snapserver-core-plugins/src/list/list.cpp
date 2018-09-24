@@ -488,13 +488,6 @@ void listdata_connection::process_message(snap_communicator_message const & mess
             commands_message.add_parameter("list", "GOTLISTDATA,HELP,LISTDATAFAILED,QUITTING,READY,STOP,UNKNOWN");
             send_message(commands_message);
 
-            // process one message and send it to "pagelist"
-            //
-            // processing one message is pretty lengthy so it has its
-            // own function
-            //
-            process_data(QString());
-
             return;
         }
         break;
@@ -526,7 +519,15 @@ void listdata_connection::process_message(snap_communicator_message const & mess
     case 'R':
         if(command == "READY")
         {
-            // the REGISTER worked, wait for the HELP message
+            // the REGISTER worked, we're ready!
+            //
+            // process one message and send it to "pagelist"
+            //
+            // processing one message is pretty lengthy so it has its
+            // own function
+            //
+            process_data(QString());
+
             return;
         }
         break;

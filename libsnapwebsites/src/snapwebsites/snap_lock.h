@@ -46,12 +46,16 @@ class snap_lock
 {
 public:
     typedef std::shared_ptr<snap_lock>      pointer_t;
-    typedef int                             timeout_t;
+    typedef int32_t                         timeout_t;
 
-    static int const    SNAP_LOCK_DEFAULT_TIMEOUT = 5; // in seconds
-    static int const    SNAP_LOCK_MINIMUM_TIMEOUT = 3; // in seconds
+    static constexpr timeout_t    SNAP_LOCK_DEFAULT_TIMEOUT = 5;        // in seconds
+    static constexpr timeout_t    SNAP_LOCK_MINIMUM_TIMEOUT = 3;        // in seconds
+    static constexpr timeout_t    SNAP_UNLOCK_MINIMUM_TIMEOUT = 60;     // in seconds
+    static constexpr timeout_t    SNAP_UNLOCK_USES_LOCK_TIMEOUT = -1;   // use lock_duration as the unlock_duration
+    static constexpr timeout_t    SNAP_MAXIMUM_OBTENTION_TIMEOUT = 60 * 60;  // limit obtension timeout to this value
+    static constexpr timeout_t    SNAP_MAXIMUM_TIMEOUT = 7 * 24 * 60 * 60;   // no matter what limit all timeouts to this value (7 days)
 
-                        snap_lock(QString const & object_name, timeout_t lock_duration = -1, timeout_t lock_obtention_timeout = -1);
+                        snap_lock(QString const & object_name, timeout_t lock_duration = -1, timeout_t lock_obtention_timeout = -1, timeout_t unlock_duration = SNAP_UNLOCK_USES_LOCK_TIMEOUT);
 
     static void         initialize_lock_duration_timeout(timeout_t timeout);
     static timeout_t    current_lock_duration_timeout();
@@ -59,12 +63,15 @@ public:
     static void         initialize_lock_obtention_timeout(timeout_t timeout);
     static timeout_t    current_lock_obtention_timeout();
 
+    static void         initialize_unlock_duration_timeout(timeout_t timeout);
+    static timeout_t    current_unlock_duration_timeout();
+
     static void         initialize_snapcommunicator(
                               std::string const & addr
                             , int port
                             , tcp_client_server::bio_client::mode_t mode = tcp_client_server::bio_client::mode_t::MODE_PLAIN);
 
-    bool                lock(QString const & object_name, timeout_t lock_duration = -1, timeout_t lock_obtention_timeout = -1);
+    bool                lock(QString const & object_name, timeout_t lock_duration = -1, timeout_t lock_obtention_timeout = -1, timeout_t unlock_duration = SNAP_UNLOCK_USES_LOCK_TIMEOUT);
     void                unlock();
 
     time_t              get_timeout_date() const;

@@ -260,6 +260,9 @@ void manager_daemon::sighandler( int sig )
  * This function gets called whenever the Snap! Communicator sends
  * us a message. This includes the basic READY, HELP, and STOP commands.
  *
+ * \todo
+ * Convert to a dispatcher.
+ *
  * \param[in] message  The message we just received.
  */
 void manager_daemon::process_message(snap::snap_communicator_message const & message)
@@ -325,26 +328,6 @@ void manager_daemon::process_message(snap::snap_communicator_message const & mes
             reply.add_parameter("list", understood_commands.join(","));
 
             f_messenger->send_message(reply);
-
-            // if we are a front end computer, we want to be kept informed
-            // of the status of all the other computers in the cluster...
-            // so ask all the other snapmanagerdaemon to broadcast their
-            // status again
-            //
-            if(f_status_runner.is_snapmanager_frontend(f_server_name))
-            {
-                snap::snap_communicator_message resend;
-                resend.set_service("*");
-                resend.set_command("MANAGERRESEND");
-                f_messenger->send_message(resend);
-            }
-
-            // we do this in the HELP instead of the READY to make sure
-            // that the snap communicator receives replies only after
-            // it receives our COMMANDS; otherwise it could break saying
-            // that it does not know the command of a reply...
-            //
-            communication_ready();
             return;
         }
         break;
@@ -421,6 +404,26 @@ void manager_daemon::process_message(snap::snap_communicator_message const & mes
         {
             // we now are connected to the snapcommunicator
             //
+
+            // if we are a front end computer, we want to be kept informed
+            // of the status of all the other computers in the cluster...
+            // so ask all the other snapmanagerdaemon to broadcast their
+            // status again
+            //
+            if(f_status_runner.is_snapmanager_frontend(f_server_name))
+            {
+                snap::snap_communicator_message resend;
+                resend.set_service("*");
+                resend.set_command("MANAGERRESEND");
+                f_messenger->send_message(resend);
+            }
+
+            // we do this in the HELP instead of the READY to make sure
+            // that the snap communicator receives replies only after
+            // it receives our COMMANDS; otherwise it could break saying
+            // that it does not know the command of a reply...
+            //
+            communication_ready();
 
             // request a copy of our public IP address
             {

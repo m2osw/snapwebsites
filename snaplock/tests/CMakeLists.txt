@@ -53,8 +53,39 @@ if(CATCH_FOUND)
         dl
     )
     add_test(
-        NAME ${PROJECT_NAME}
-        COMMAND ${PROJECT_NAME} --cassandra ${CASSANDRA_HOST_IP}
+        NAME
+            ${PROJECT_NAME}
+
+        COMMAND
+            ${PROJECT_NAME} --cassandra ${CASSANDRA_HOST_IP}
+    )
+
+
+    ##
+    ## Test the snap_lock on a single computer with a snapcommunicator
+    ## simulator so we can get things test thoroughly.
+    ##
+    project(test_multi_snaplock)
+    add_executable(${PROJECT_NAME}
+        test_multi_snaplocks.cpp
+    )
+    target_link_libraries(${PROJECT_NAME}
+        snapwebsites
+        libdbproxy
+        #${CASSVALUE_LIBRARIES}
+        #${CASSWRAPPER_LIBRARIES}
+        ${LIBEXCEPT_LIBRARIES}
+        ${LIBTLD_LIBRARIES}
+        ${LOG4CPLUS_LIBRARIES}
+        ${QT_LIBRARIES}
+        dl
+    )
+    add_test(
+        NAME
+            ${PROJECT_NAME}
+
+        COMMAND
+            ${PROJECT_NAME} --count 10
     )
 endif(CATCH_FOUND)
 

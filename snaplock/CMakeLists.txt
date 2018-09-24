@@ -35,6 +35,7 @@ project( snaplock_project )
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wnoexcept -DUNISTR_FROM_STRING_EXPLICIT=explicit" )
 
 include_directories( SYSTEM
     ${Qt5Core_INCLUDE_DIRS}

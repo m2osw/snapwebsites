@@ -42,9 +42,12 @@ add_executable(${PROJECT_NAME}
     snaplock.h
     snaplock.cpp
     main.cpp
+    snaplock_debug_info.cpp
+    snaplock_info.cpp
     snaplock_interrupt.cpp
     snaplock_messenger.cpp
     snaplock_ticket.cpp
+    snaplock_timer.cpp
     snaplock_tool.cpp
 )
 

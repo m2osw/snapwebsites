@@ -342,7 +342,9 @@ private:
     int64_t                                 f_last_start_date = 0;
     remote_snap_communicator_list_t         f_smaller_ips = remote_snap_communicator_list_t();      // we connect to smaller IPs
     gossip_snap_communicator_list_t         f_gossip_ips = gossip_snap_communicator_list_t();
-    service_connection_list_t               f_larger_ips = service_connection_list_t();       // larger IPs connect to us
+
+    // larger IPs connect so they end up in the list with the local connections
+    //service_connection_list_t               f_larger_ips = service_connection_list_t();       // larger IPs connect to us
 };
 
 
@@ -381,6 +383,7 @@ public:
     void                        broadcast_message(snap::snap_communicator_message const & message, base_connection_vector_t const & accepting_remote_connections = base_connection_vector_t());
     void                        process_load_balancing();
     tcp_client_server::bio_client::mode_t   connection_mode() const;
+    void                        cluster_status(snap::snap_communicator::snap_connection::pointer_t reply_connection);
     void                        shutdown(bool quitting);
 
 private:
@@ -397,7 +400,6 @@ private:
     void                        listen_loadavg(snap::snap_communicator_message const & message);
     void                        save_loadavg(snap::snap_communicator_message const & message);
     void                        register_for_loadavg(QString const & ip);
-    void                        cluster_status(snap::snap_communicator::snap_connection::pointer_t reply_connection);
 
     snap::server::pointer_t                             f_server = snap::server::pointer_t();
 
@@ -899,6 +901,8 @@ private:
     int                             f_failures = -1;
     int64_t                         f_failure_start_time = 0;
     bool                            f_flagged = false;
+    bool                            f_connected = false;
+    QString                         f_server_name = QString();
 };
 
 
@@ -1435,28 +1439,57 @@ size_t remote_communicator_connections::count_live_connections() const
     // we have to go through the list since some connections may be
     // down, the is_connected() function tells us the current status
     //
-    for(auto ip : f_smaller_ips)
-    {
-        if(ip->is_connected())
-        {
-            ++count;
-        }
-    }
+    //for(auto ip : f_smaller_ips)
+    //{
+    //    if(ip->is_connected())
+    //    {
+    //        ++count;
+    //    }
+    //}
 
     // the larger IPs list includes connections to us from some other
     // service; here we verify that it is indeed a remote connection
     // (which it should be since it's in the remote connection list)
     //
-    for(auto ip : f_larger_ips)
+    //for(auto ip : f_larger_ips)
+    //{
+    //    // only live remote connections should be in this list, but verify
+    //    // none the less (dead connections get removed from this list)
+    //    //
+    //    base_connection::pointer_t base(std::dynamic_pointer_cast<base_connection>(ip));
+    //    base_connection::connection_type_t const type(base->get_connection_type());
+    //    if(type == base_connection::connection_type_t::CONNECTION_TYPE_REMOTE)
+    //    {
+    //        ++count;
+    //    }
+    //}
+
+    // unfortunately, the f_larger_ips is not actually used and the local
+    // connections are left in the complete list of connections in the
+    // snap::snap_communicator::instance() all mixed up
+    //
+    snap::snap_communicator::snap_connection::vector_t const & all_connections(snap::snap_communicator::instance()->get_connections());
+    for(auto const & conn : all_connections)
     {
-        // only live remote connections should be in this list, but verify
-        // none the less (dead connections get removed from this list)
-        //
-        base_connection::pointer_t base(std::dynamic_pointer_cast<base_connection>(ip));
-        base_connection::connection_type_t const type(base->get_connection_type());
-        if(type == base_connection::connection_type_t::CONNECTION_TYPE_REMOTE)
+        remote_snap_communicator_pointer_t sc(std::dynamic_pointer_cast<remote_snap_communicator>(conn));
+        if(sc != nullptr)
         {
+            // this is a remote connection by definition
+            //
             ++count;
+        }
+        else
+        {
+            // this is either a local or a remote connection
+            //
+            // these are connections we receive from from our listeners
+            //
+            base_connection_pointer_t bc(std::dynamic_pointer_cast<base_connection>(conn));
+            if(bc != nullptr
+            && bc->is_remote())
+            {
+                ++count;
+            }
         }
     }
 
@@ -1606,8 +1639,8 @@ public:
     /** \brief Remove ourselves when we receive a timeout.
      *
      * Whenever we receive a shutdown, we have to remove everything but
-     * we still want to send some message and to do so we need to use
-     * the timeout which happens after we finalize all read and write
+     * we still want to send some messages and to do so we need to use
+     * the timeout, which happens after we finalize all read and write
      * callbacks.
      */
     virtual void process_timeout() override
@@ -1640,11 +1673,16 @@ public:
         if(is_remote()
         && !get_server_name().isEmpty())
         {
+            // TODO: this is nice, but we would probably need such in the
+            //       process_invalid(), process_error(), process_timeout()?
+            //
             snap::snap_communicator_message hangup;
             hangup.set_command("HANGUP");
             hangup.set_service(".");
             hangup.add_parameter("server_name", get_server_name());
             f_communicator_server->broadcast_message(hangup);
+
+            f_communicator_server->cluster_status(shared_from_this());
         }
 
         send_status();
@@ -1713,7 +1751,7 @@ private:
  * on the SIGINT.
  */
 class interrupt_impl
-        : public snap::snap_communicator::snap_signal
+    : public snap::snap_communicator::snap_signal
 {
 public:
     typedef std::shared_ptr<interrupt_impl>     pointer_t;
@@ -1769,7 +1807,7 @@ void interrupt_impl::process_signal()
  * handle new connections from various clients.
  */
 class listener
-        : public snap::snap_communicator::snap_tcp_server_connection
+    : public snap::snap_communicator::snap_tcp_server_connection
 {
 public:
     /** \brief The listener initialization.
@@ -1809,7 +1847,7 @@ public:
     }
 
     // snap::snap_communicator::snap_server_connection implementation
-    virtual void process_accept()
+    virtual void process_accept() override
     {
         // a new client just connected, create a new service_connection
         // object and add it to the snap_communicator object.
@@ -1901,7 +1939,7 @@ private:
  * handle new connections from various clients.
  */
 class ping_impl
-        : public snap::snap_communicator::snap_udp_server_message_connection
+    : public snap::snap_communicator::snap_udp_server_message_connection
 {
 public:
     /** \brief The messenger initialization.
@@ -1942,7 +1980,7 @@ private:
  * information between various front and backend computers in the cluster.
  */
 class timer_impl
-        : public snap::snap_communicator::snap_timer
+    : public snap::snap_communicator::snap_timer
 {
 public:
     /** \brief The timer initialization.
@@ -2492,8 +2530,8 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
             // this happens in a cluster where some computers are not
             // aware of certain nodes; for example, if A sends a
             // message to B and C, both B and C know of a node D
-            // which is unknown to A, then both B and C will end
-            // up forward that same message to D, so D will discard
+            // which is unknown to A, then both B and C end up
+            // forwarding that same message to D, so D will discard
             // the second instance it receives.
             //
             return;
@@ -3446,27 +3484,6 @@ SNAP_LOG_ERROR("GOSSIP is not yet fully implemented.");
                     //
                     base->connection_started();
 
-                    // tell the connect we are ready
-                    // (the connection uses that as a trigger to start work)
-                    //
-                    snap::snap_communicator_message reply;
-                    reply.set_command("READY");
-                    //verify_command(base, reply); -- we cannot do that here since we did not yet get the COMMANDS reply
-                    if(remote_communicator)
-                    {
-                        remote_communicator->send_message(reply);
-                    }
-                    else if(service_conn)
-                    {
-                        service_conn->send_message(reply);
-                    }
-                    else
-                    {
-                        // we have to have a remote or service connection here
-                        //
-                        throw snap::snap_exception("REGISTER sent on a \"weird\" connection (1).");
-                    }
-
                     // request the COMMANDS of this connection
                     //
                     snap::snap_communicator_message help;
@@ -3485,6 +3502,27 @@ SNAP_LOG_ERROR("GOSSIP is not yet fully implemented.");
                         // we have to have a remote or service connection here
                         //
                         throw snap::snap_exception("REGISTER sent on a \"weird\" connection (2).");
+                    }
+
+                    // tell the connection we are ready
+                    // (many connections use that as a trigger to start work)
+                    //
+                    snap::snap_communicator_message reply;
+                    reply.set_command("READY");
+                    //verify_command(base, reply); -- we cannot do that here since we did not yet get the COMMANDS reply
+                    if(remote_communicator)
+                    {
+                        remote_communicator->send_message(reply);
+                    }
+                    else if(service_conn)
+                    {
+                        service_conn->send_message(reply);
+                    }
+                    else
+                    {
+                        // we have to have a remote or service connection here
+                        //
+                        throw snap::snap_exception("REGISTER sent on a \"weird\" connection (1).");
                     }
 
                     // status changed for this connection
@@ -4076,10 +4114,9 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
             if(it->second < now)
             {
                 // this one timed out, we do not need to keep it in this
-                // list, so erase (notice the it++ opposed to the else
-                // that uses ++it)
+                // list, so erase
                 //
-                f_received_broadcast_messages.erase(it++);
+                it = f_received_broadcast_messages.erase(it);
             }
             else
             {
@@ -4387,8 +4424,16 @@ void snap_communicator_server::send_status(
     reply.add_parameter("service", connection->get_name());
 
     base_connection::pointer_t base_connection(std::dynamic_pointer_cast<base_connection>(connection));
-    if(base_connection)
+    if(base_connection != nullptr)
     {
+        // include the server name
+        //
+        QString const server_name(base_connection->get_server_name());
+        if(!server_name.isEmpty())
+        {
+            reply.add_parameter("server_name", server_name);
+        }
+
         // check whether the connection is now up or down
         //
         base_connection::connection_type_t const type(base_connection->get_connection_type());
@@ -4434,7 +4479,7 @@ void snap_communicator_server::send_status(
         for(auto const & conn : all_connections)
         {
             service_connection::pointer_t sc(std::dynamic_pointer_cast<service_connection>(conn));
-            if(!sc)
+            if(sc == nullptr)
             {
                 // not a service_connection, ignore (i.e. servers)
                 //
@@ -4482,18 +4527,8 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
     size_t const quorum(total_count / 2 + 1);
 
     QString const new_status(count >= quorum ? "CLUSTERUP" : "CLUSTERDOWN");
-
-    SNAP_LOG_INFO("cluster status is \"")
-                 (new_status)
-                 ("\" (count: ")
-                 (count)
-                 (", total count: ")
-                 (total_count)
-                 (", quorum: ")
-                 (quorum)
-                 (")");
-
-    if(new_status != f_cluster_status)
+    if(new_status != f_cluster_status
+    || reply_connection != nullptr)
     {
         f_cluster_status = new_status;
 
@@ -4503,6 +4538,7 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
         snap::snap_communicator_message cluster_status_msg;
         cluster_status_msg.set_command(f_cluster_status);
         cluster_status_msg.set_service(".");
+        cluster_status_msg.add_parameter("neighbors_count", total_count);
         if(reply_connection != nullptr)
         {
             // reply to a direct CLUSTERSTATUS
@@ -4520,7 +4556,8 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
     }
 
     QString const new_complete(count == total_count ? "CLUSTERCOMPLETE" : "CLUSTERINCOMPLETE");
-    if(new_complete != f_cluster_complete)
+    if(new_complete != f_cluster_complete
+    || reply_connection != nullptr)
     {
         f_cluster_complete = new_complete;
 
@@ -4530,6 +4567,7 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
         snap::snap_communicator_message cluster_complete_msg;
         cluster_complete_msg.set_command(f_cluster_complete);
         cluster_complete_msg.set_service(".");
+        cluster_complete_msg.add_parameter("neighbors_count", QString("%1").arg(total_count));
         if(reply_connection != nullptr)
         {
             // reply to a direct CLUSTERSTATUS
@@ -4545,6 +4583,18 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
             broadcast_message(cluster_complete_msg);
         }
     }
+
+    SNAP_LOG_INFO("cluster status is \"")
+                 (new_status)
+                 ("\" and \"")
+                 (new_complete)
+                 ("\" (count: ")
+                 (count)
+                 (", total count: ")
+                 (total_count)
+                 (", quorum: ")
+                 (quorum)
+                 (")");
 }
 
 
@@ -5262,6 +5312,11 @@ remote_snap_communicator::~remote_snap_communicator()
 
 void remote_snap_communicator::process_message(snap::snap_communicator_message const & message)
 {
+    if(f_server_name.isEmpty())
+    {
+        f_server_name = message.get_sent_from_server();
+    }
+
     f_communicator_server->process_message(shared_from_this(), message, false);
 }
 
@@ -5271,6 +5326,20 @@ void remote_snap_communicator::process_connection_failed(std::string const & err
     snap_tcp_client_permanent_message_connection::process_connection_failed(error_message);
 
     SNAP_LOG_ERROR("the connection to a remote communicator failed: \"")(error_message)("\".");
+
+    // were we connected? if so this is a hang up
+    //
+    if(f_connected
+    && !f_server_name.isEmpty())
+    {
+        f_connected = false;
+
+        snap::snap_communicator_message hangup;
+        hangup.set_command("HANGUP");
+        hangup.set_service(".");
+        hangup.add_parameter("server_name", f_server_name);
+        f_communicator_server->broadcast_message(hangup);
+    }
 
     // we count the number of failures, after a certain number we raise a
     // flag so that way the administrator is warned about the potential
@@ -5350,6 +5419,8 @@ void remote_snap_communicator::process_connection_failed(std::string const & err
 
 void remote_snap_communicator::process_connected()
 {
+    f_connected = true;
+
     // take the remote connection failure flag down
     //
     // Note: by default we set f_failures to -1 so when we reach here we

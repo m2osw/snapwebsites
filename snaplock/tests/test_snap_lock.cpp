@@ -30,8 +30,9 @@
  *      some updates.
  *
  *      IMPORTANT: the test assumes that a context named "snap_websites"
- *      exists (you can create it with snapcreatecontext at this time.)
- *      It will save the value in the domains table under a row
+ *      and a table named "domains" exist (you can create them with
+ *      snapcreatecontext and snapcreatetables at this time.)
+ *      It will save the value in the "domains" table under a row
  *      name '*test_snap_lock*' and a cell named 'counter'.
  *
  *      Before you can actually run this test, you need to have

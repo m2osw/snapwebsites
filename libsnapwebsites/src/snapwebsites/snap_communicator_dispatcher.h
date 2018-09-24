@@ -141,6 +141,33 @@ public:
          */
         typedef void (T::*execute_func_t)(snap_communicator_message & msg);
 
+        /** \brief The match function return types.
+         *
+         * Whenever a match function is called, it may return one of:
+         *
+         * \li MATCH_FALSE
+         *
+         * The function did not match anything. Ignore the corresponding
+         * function.
+         *
+         * \li MATCH_TRUE
+         *
+         * This is a match, execute the function. We are done with this list
+         * of matches.
+         *
+         * \li MATCH_CALLBACK
+         *
+         * The function is a callback, it gets called and the process
+         * continues. Since the message parameter is read/write, it is
+         * a way to tweak the message before other functions get it.
+         */
+        enum class match_t
+        {
+            MATCH_FALSE,
+            MATCH_TRUE,
+            MATCH_CALLBACK
+        };
+
         /** \brief The match function.
          *
          * This type defines the match function. We give it the message
@@ -148,7 +175,7 @@ public:
          * function could test other parameters from the message such
          * as the origination of the message.
          */
-        typedef bool (*match_func_t)(QString const & expr, snap_communicator_message & msg);
+        typedef match_t (*match_func_t)(QString const & expr, snap_communicator_message & msg);
 
         /** \brief The default matching function.
          *
@@ -170,11 +197,13 @@ public:
          * \param[in] expr  The expression to compare the command against.
          * \param[in] msg  The message to match against this expression.
          *
-         * \return true if it is a match, false otherwise.
+         * \return MATCH_TRUE if it is a match, MATCH_FALSE otherwise.
          */
-        static bool one_to_one_match(QString const & expr, snap_communicator_message & msg)
+        static match_t one_to_one_match(QString const & expr, snap_communicator_message & msg)
         {
-            return expr == msg.get_command();
+            return expr == msg.get_command()
+                            ? match_t::MATCH_TRUE
+                            : match_t::MATCH_FALSE;
         }
 
         /** \brief Always returns true.
@@ -186,13 +215,31 @@ public:
          * \param[in] expr  The expression to compare the command against.
          * \param[in] msg  The message to match against this expression.
          *
-         * \return Always returns true.
+         * \return Always returns MATCH_TRUE.
          */
-        static bool always_match(QString const & expr, snap_communicator_message & msg)
+        static match_t always_match(QString const & expr, snap_communicator_message & msg)
         {
             NOTUSED(expr);
             NOTUSED(msg);
-            return true;
+            return match_t::MATCH_TRUE;
+        }
+
+        /** \brief Always returns true.
+         *
+         * This function always returns true. This is practical to close
+         * your list of messages and return a specific message. In most
+         * cases this is used to reply with the UNKNOWN message.
+         *
+         * \param[in] expr  The expression to compare the command against.
+         * \param[in] msg  The message to match against this expression.
+         *
+         * \return Always returns MATCH_CALLBACK.
+         */
+        static match_t callback_match(QString const & expr, snap_communicator_message & msg)
+        {
+            NOTUSED(expr);
+            NOTUSED(msg);
+            return match_t::MATCH_CALLBACK;
         }
 
         /** \brief The expression to compare against.
@@ -278,10 +325,15 @@ public:
          */
         bool execute(T * connection, snap::snap_communicator_message & msg) const
         {
-            if(f_match(f_expr, msg))
+            match_t m(f_match(f_expr, msg));
+            if(m == match_t::MATCH_TRUE
+            || m == match_t::MATCH_CALLBACK)
             {
                 (connection->*f_execute)(msg);
-                return true;
+                if(m == match_t::MATCH_TRUE)
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -428,6 +480,13 @@ public:
         }
         {
             typename snap::dispatcher<T>::dispatcher_match m;
+            m.f_expr = "ALIVE";
+            m.f_execute = &T::msg_alive;
+            //m.f_match = <default>;
+            f_matches.push_back(m);
+        }
+        {
+            typename snap::dispatcher<T>::dispatcher_match m;
             m.f_expr = "LOG";
             m.f_execute = &T::msg_log;
             //m.f_match = <default>;
@@ -503,7 +562,7 @@ public:
     {
         if(f_trace)
         {
-            SNAP_LOG_TRACE("snap_communicator::dispatcher::dispatch(): handling message \"")
+            SNAP_LOG_TRACE("dispatch message \"")
                           (msg.to_message())
                           ("\".");
         }

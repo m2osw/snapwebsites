@@ -23,6 +23,10 @@
 //
 #include "snapwebsites/log.h"
 
+// C++ lib
+//
+#include <fstream>
+
 // C lib
 //
 #include <proc/readproc.h>
@@ -1193,6 +1197,104 @@ void process::set_process_name(char const * name)
         prctl(PR_SET_NAME, name);
     }
 }
+
+
+/** \brief Get the maximum process identifier.
+ *
+ * This function retrieves the maximum that getpid() may return.
+ *
+ * The value is cached by the function (in a static variable.) Note that
+ * is somewhat wrong since that number can be changed dynamically,
+ * although I've seen too many people ever doing so. If your process
+ * depends on it, then stop your process, make the change, and
+ * restart your process.
+ *
+ * Note that this function returns the maximum that getpid() can return
+ * and not the maximum + 1. In other words, the value returned by this
+ * function is inclusive (i.e. in most cases you will get 32767 which a
+ * process can have as its PID.)
+ *
+ * So far, the documentation I've found about the value in the kernel
+ * file is not clear about whether that value is inclusive or the
+ * last possible PID + 1. I wrote a small test to get the answer and
+ * each time the maximum PID I could get was 32767 when the content of
+ * "/proc/sys/kernel/pid_max" returns 32768. This is how most C software
+ * functions so I am pretty sure our function here is correct.
+ *
+ * \note
+ * The following code often breaks with a fork() failed error. Once
+ * you reach the rollover point, though, it cleanly stops on its own.
+ * It will print the PID just before the rollover and just after.
+ * For example, I get:
+ *
+ * \code
+ *   pid = 32765
+ *   pid = 32766
+ *   pid = 32767
+ *   pid = 301
+ * \endcode
+ *
+ * Of course, if you start this process with the smallest possible
+ * PID (such as 301) it will not stop on its own unless the fork()
+ * fails which is very likely anyway.
+ *
+ * \code
+ * int main ()
+ * {
+ *     pid_t pid;
+ * 
+ *     pid_t start = getpid();
+ *     for(int i(0);; ++i)
+ *     {
+ *         pid = fork();
+ *         if(pid == 0)
+ *         {
+ *             exit(0);
+ *         }
+ *         if(pid == -1)
+ *         {
+ *             std::cerr << "fork() failed...\n";
+ *             exit(1);
+ *         }
+ *         std::cerr << "pid = " << pid << "\n";
+ *         if(pid < start)
+ *         {
+ *             break;
+ *         }
+ *         pthread_yield();
+ *     }
+ * 
+ *     return 0;
+ * }
+ * \endcode
+ *
+ * \note
+ * We use this function in snaplock which is affected in case the
+ * parameter get dynamically changed by writing to
+ * "/proc/sys/kernel/pid_max".
+ *
+ * \return The maximum getpid() can return or -1 if it can't be determined.
+ */
+pid_t process::get_pid_max()
+{
+    static pid_t pid_max = 0;
+
+    if(pid_max == 0)
+    {
+        std::ifstream in;
+        in.open("/proc/sys/kernel/pid_max", std::ios::in | std::ios::binary);
+        if(in.is_open())
+        {
+            char buf[32];
+            in.getline(buf, sizeof(buf) - 1);
+            buf[sizeof(buf) - 1] = '\0';
+            pid_max = std::stol(buf);
+        }
+    }
+
+    return pid_max - 1;
+}
+
 
 
 

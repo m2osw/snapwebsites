@@ -480,8 +480,8 @@ void snaplog::mysql_ready()
 {
     SNAP_LOG_INFO("MySQL database is ready to receive requests.");
 
-    // TODO: We need something to do. Set a flag? We don't need to send anything
-    //       across snapcommunicator like snapdbproxy does.
+    // TODO: We need something to do. Set a flag? We don't need to send
+    //       anything across snapcommunicator like snapdbproxy does.
 }
 
 
@@ -552,6 +552,9 @@ void snaplog::add_message_to_db( snap::snap_communicator_message const & message
  * us a message. This includes the READY and HELP commands, although
  * the most important one is certainly the STOP command.
  *
+ * \todo
+ * Convert to using dispatcher.
+ *
  * \param[in] message  The message we just received.
  */
 void snaplog::process_message(snap::snap_communicator_message const & message)
@@ -608,10 +611,10 @@ void snaplog::process_message(snap::snap_communicator_message const & message)
 
     if(command == "READY")
     {
-        f_ready = true;
-
         // Snap! Communicator received our REGISTER command
         //
+        f_ready = true;
+
         if( QSqlDatabase::database().isOpen() )
         {
             mysql_ready();

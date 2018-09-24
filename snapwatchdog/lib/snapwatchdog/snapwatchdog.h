@@ -106,9 +106,12 @@ public:
 
     SNAP_SIGNAL_WITH_MODE(process_watch, (QDomDocument doc), (doc), NEITHER);
 
+    // connection_with_send_message overloads
+    //
     virtual bool        send_message(snap_communicator_message const & message, bool cache = false) override;
 
-    // internal functions (these are NOT derived)
+    // internal functions (these are NOT virtual)
+    // 
     void                process_tick();
     void                process_sigchld();
 

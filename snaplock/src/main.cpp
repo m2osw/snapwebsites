@@ -63,18 +63,18 @@ int main(int argc, char * argv[])
     {
         // create an instance of the snap_firewall object
         //
-        snaplock lock( argc, argv );
+        snaplock::snaplock::pointer_t lock(std::make_shared<snaplock::snaplock>(argc, argv));
 
         // Now run!
         //
-        lock.run();
+        lock->run();
 
         // exit normally (i.e. we received a STOP message on our
         // connection with the Snap! Communicator service.)
         //
         return 0;
     }
-    catch( snap::snap_exception const & e )
+    catch(snap::snap_exception const & e)
     {
         SNAP_LOG_FATAL("snaplock: snap_exception caught! ")(e.what());
         if(g_isatty)
@@ -82,7 +82,7 @@ int main(int argc, char * argv[])
             std::cerr << "snaplock: snap_exception caught! " << e.what() << std::endl;
         }
     }
-    catch( std::invalid_argument const & e )
+    catch(std::invalid_argument const & e)
     {
         SNAP_LOG_FATAL("snaplock: invalid argument: ")(e.what());
         if(g_isatty)
@@ -90,7 +90,7 @@ int main(int argc, char * argv[])
             std::cerr << "snaplock: invalid argument: " << e.what() << std::endl;
         }
     }
-    catch( std::overflow_error const & e )
+    catch(std::overflow_error const & e)
     {
         SNAP_LOG_FATAL("snaplock: std::overflow_error caught! ")(e.what());
         if(g_isatty)
@@ -98,7 +98,7 @@ int main(int argc, char * argv[])
             std::cerr << "snaplock: std::overflow_error caught! " << e.what() << std::endl;
         }
     }
-    catch( std::exception const & e )
+    catch(std::exception const & e)
     {
         SNAP_LOG_FATAL("snaplock: std::exception caught! ")(e.what());
         if(g_isatty)
@@ -106,7 +106,7 @@ int main(int argc, char * argv[])
             std::cerr << "snaplock: std::exception caught! " << e.what() << std::endl;
         }
     }
-    catch( ... )
+    catch(...)
     {
         SNAP_LOG_FATAL("snaplock: unknown exception caught!");
         if(g_isatty)

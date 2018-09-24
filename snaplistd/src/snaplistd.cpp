@@ -478,15 +478,6 @@ void snaplistd::process_message(snap::snap_communicator_message const & message)
             commands.set_command("COMMANDS");
             commands.add_parameter("list", "HELP,LISTDATA,LOG,QUITTING,READY,STOP,UNKNOWN");
             f_messenger->send_message(commands);
-
-            // At this time a PING requires a URI which we do not have as
-            // such (i.e. we want to wake up all the `listjournal`...
-            //snap::snap_communicator_message ping;
-            //ping.set_command("PING");
-            //ping.set_service("listjournal");
-            //ping.add_parameter("uri", ""); -- not valid...
-            //f_messenger->send_message(ping);
-
             return;
         }
         break;
@@ -517,6 +508,14 @@ void snaplistd::process_message(snap::snap_communicator_message const & message)
     case 'R':
         if(command == "READY")
         {
+            // At this time a PING requires a URI which we do not have as
+            // such (i.e. we want to wake up all the `listjournal`...
+            //snap::snap_communicator_message ping;
+            //ping.set_command("PING");
+            //ping.set_service("listjournal");
+            //ping.add_parameter("uri", ""); -- not valid...
+            //f_messenger->send_message(ping);
+
             return;
         }
         break;

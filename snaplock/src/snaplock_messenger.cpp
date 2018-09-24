@@ -48,6 +48,8 @@
 
 
 
+namespace snaplock
+{
 /** \class snaplock_messenger
  * \brief Handle messages from the Snap Communicator server.
  *
@@ -81,21 +83,6 @@ snaplock_messenger::snaplock_messenger(snaplock * sl, std::string const & addr, 
 }
 
 
-/** \brief Pass messages to Snap Lock.
- *
- * This callback is called whenever a message is received from
- * Snap! Communicator. The message is immediately forwarded to the
- * snaplock object which is expected to process it and reply
- * if required.
- *
- * \param[in] message  The message we just received.
- */
-void snaplock_messenger::process_message(snap::snap_communicator_message const & message)
-{
-    f_snaplock->process_message(message);
-}
-
-
 /** \brief The messenger could not connect to snapcommunicator.
  *
  * This function is called whenever the messengers fails to
@@ -110,6 +97,7 @@ void snaplock_messenger::process_connection_failed(std::string const & error_mes
     SNAP_LOG_ERROR("connection to snapcommunicator failed (")(error_message)(")");
 
     // also call the default function, just in case
+    //
     snap_tcp_client_permanent_message_connection::process_connection_failed(error_message);
 }
 
@@ -134,4 +122,6 @@ void snaplock_messenger::process_connected()
 }
 
 
+}
+// snaplock namespace
 // vim: ts=4 sw=4 et

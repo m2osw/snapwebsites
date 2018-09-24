@@ -2229,7 +2229,7 @@ void snap_communicator::snap_connection::process_error()
 
     if(get_socket() == -1)
     {
-        SNAP_LOG_DEBUG("socket ")(get_socket())(" of connection \"")(f_name)("\" was marked as erroneous by the kernel.");
+        SNAP_LOG_DEBUG("socket ")(get_socket())(" of connection \"")(f_name)("\" was marked as erroneous by the kernel or was closed (-1).");
     }
     else
     {
@@ -2393,6 +2393,49 @@ void snap_communicator::connection_with_send_message::msg_help(snap_communicator
     if(!send_message(reply, false))
     {
         SNAP_LOG_WARNING("could not reply with COMMANDS message to \"")(message.get_command())("\"");
+    }
+}
+
+
+/** \brief Reply to the watchdog message ALIVE.
+ *
+ * To check whether a service is alive, send the ALIVE message. This
+ * function builds a ABSOLUTELY reply and attaches the "serial" parameter
+ * as is if present. It will also include the original "timestamp" parameter
+ * when present.
+ *
+ * The function also adds one field named "reply_timestamp" with the Unix
+ * time when the reply is being sent.
+ *
+ * \note
+ * The "serial" parameter is expected to be used to make sure that no messages
+ * are lost, or if loss is expected, to see whether loss is heavy or not.
+ *
+ * \note
+ * The "serial" and "timestamp" parameters do not get checked. If present
+ * in the original message, they get copied verbatim to the destination.
+ * This allows you to include anything you want in those parameters although
+ * we suggest you use the "timestamp" only for a value representing time.
+ *
+ * \param[in] message  The STOP message.
+ */
+void snap_communicator::connection_with_send_message::msg_alive(snap_communicator_message & message)
+{
+    snap::snap_communicator_message absolutely;
+    absolutely.reply_to(message);
+    absolutely.set_command("ABSOLUTELY");
+    if(message.has_parameter("serial"))
+    {
+        absolutely.add_parameter("serial", message.get_parameter("serial"));
+    }
+    if(message.has_parameter("timestamp"))
+    {
+        absolutely.add_parameter("timestamp", message.get_parameter("timestamp"));
+    }
+    absolutely.add_parameter("reply_timestamp", time(nullptr));
+    if(!send_message(absolutely, false))
+    {
+        SNAP_LOG_WARNING("could not reply with ABSOLULTELY message to \"")(message.get_command())("\"");
     }
 }
 
@@ -2788,9 +2831,6 @@ bool snap_communicator::snap_timer::valid_socket() const
  */
 snap_communicator::snap_signal::snap_signal(int posix_signal)
     : f_signal(posix_signal)
-    //, f_socket(-1) -- auto-init
-    //, f_signal_info() -- auto-init
-    //, f_unblock(false) -- auto-init
 {
     int const r(sigismember(&g_signal_handlers, f_signal));
     if(r != 0)
@@ -2847,24 +2887,7 @@ snap_communicator::snap_signal::snap_signal(int posix_signal)
  */
 snap_communicator::snap_signal::~snap_signal()
 {
-    close(f_socket);
-    sigdelset(&g_signal_handlers, f_signal);     // ignore error, we already know f_signal is valid
-
-    if(f_unblock)
-    {
-        // also unlock the signal
-        //
-        sigset_t set;
-        sigemptyset(&set);
-        sigaddset(&set, f_signal); // ignore error, we already know f_signal is valid
-        if(sigprocmask(SIG_UNBLOCK, &set, nullptr) != 0)
-        {
-            // we cannot throw in a destructor...
-            //throw snap_communicator_runtime_error("sigprocmask() failed to block signal.");
-            std::cerr << "sigprocmask() failed to block signal." << std::endl;
-            std::terminate();
-        }
-    }
+    close();
 }
 
 
@@ -2935,7 +2958,7 @@ void snap_communicator::snap_signal::process()
     // loop any number of times as required
     // (or can we receive a maximum of 1 such signal at a time?)
     //
-    for(;;)
+    while(f_socket != -1)
     {
         int const r(read(f_socket, &f_signal_info, sizeof(f_signal_info)));
         if(r == sizeof(f_signal_info))
@@ -2961,6 +2984,55 @@ void snap_communicator::snap_signal::process()
                 SNAP_LOG_ERROR("reading from the signalfd() file descriptor did not return the expected size. (got ")(r)(", expected ")(sizeof(f_signal_info))(")");
             }
             break;
+        }
+    }
+}
+
+
+/** \brief Close the signal file descriptor.
+ *
+ * This function closes the file descriptor and, if you called the
+ * unblock_signal_on_destruction() function, it also restores the
+ * signal (unblocks it.)
+ *
+ * After this call, the connection is pretty much useless (although
+ * you could still use it as a timer.) You cannot reopen the signal
+ * file descriptor once closed. Instead, you have to create a new
+ * connection.
+ */
+void snap_communicator::snap_signal::close()
+{
+    if(f_socket != -1)
+    {
+        ::close(f_socket);
+        f_socket = -1;
+
+        sigdelset(&g_signal_handlers, f_signal);     // ignore error, we already know f_signal is valid
+
+        if(f_unblock)
+        {
+            // also unblock the signal
+            //
+            sigset_t set;
+            sigemptyset(&set);
+            sigaddset(&set, f_signal); // ignore error, we already know f_signal is valid
+            if(sigprocmask(SIG_UNBLOCK, &set, nullptr) != 0)
+            {
+                // we cannot throw in a destructor and in most cases this
+                // happens in the destructor...
+                //throw snap_communicator_runtime_error("sigprocmask() failed to block signal.");
+
+                int const e(errno);
+                SNAP_LOG_FATAL("an error occurred while unblocking signal ")
+                              (f_signal)
+                              (" with sigprocmask(). (errno: ")
+                              (e)
+                              (" -- ")
+                              (strerror(e));
+                std::cerr << "sigprocmask() failed to unblock signal." << std::endl;
+
+                std::terminate();
+            }
         }
     }
 }
@@ -4008,7 +4080,7 @@ void snap_communicator::snap_file_changed::watch_t::add_watch(int inotify)
     if(f_watch == -1)
     {
         int const e(errno);
-        SNAP_LOG_WARNING("inotify_rm_watch() returned an error (errno: ")(e)(" -- ")(strerror(e))(").");
+        SNAP_LOG_WARNING("inotify_add_watch() returned an error (errno: ")(e)(" -- ")(strerror(e))(").");
 
         // it did not work
         //
@@ -4034,7 +4106,7 @@ void snap_communicator::snap_file_changed::watch_t::merge_watch(int inotify, eve
     if(f_watch == -1)
     {
         int const e(errno);
-        SNAP_LOG_WARNING("inotify_rm_watch() returned an error (errno: ")(e)(" -- ")(strerror(e))(").");
+        SNAP_LOG_WARNING("inotify_raddwatch() returned an error (errno: ")(e)(" -- ")(strerror(e))(").");
 
         // it did not work
         //
@@ -6168,7 +6240,7 @@ snap_communicator::snap_tcp_server_client_message_connection::snap_tcp_server_cl
     int const socket(client->get_socket());
     if(socket < 0)
     {
-        SNAP_LOG_ERROR("snap_communicator::snap_tcp_server_client_message_connection::snap_tcp_server_client_message_connection() called with a closed client connection.");
+        SNAP_LOG_ERROR("called with a closed client connection.");
         throw std::runtime_error("snap_communicator::snap_tcp_server_client_message_connection::snap_tcp_server_client_message_connection() called with a closed client connection.");
     }
 
@@ -6256,7 +6328,7 @@ void snap_communicator::snap_tcp_server_client_message_connection::process_line(
         // TODO: what to do here? This could because the version changed
         //       and the messages are not compatible anymore.
         //
-        SNAP_LOG_ERROR("snap_communicator::snap_tcp_server_client_message_connection::process_line() was asked to process an invalid message (")(line)(")");
+        SNAP_LOG_ERROR("process_line() was asked to process an invalid message (")(line)(")");
     }
 }
 
@@ -7621,7 +7693,12 @@ void snap_communicator::snap_udp_server_message_connection::process_read()
  *              }
  *              else if(command == "READY")
  *              {
- *                  // the REGISTER worked, wait for the HELP message
+ *                  // the REGISTER worked
+ *                  // send the LOCK now
+ *                  snap_communicator_message lock_message;
+ *                  lock_message.set_command("LOCK");
+ *                  ...
+ *                  blocking_connection.send_message(lock_message);
  *              }
  *              else if(command == "HELP")
  *              {
@@ -7631,13 +7708,6 @@ void snap_communicator::snap_udp_server_message_connection::process_read()
  *                  commands_message.set_command("COMMANDS");
  *                  ...
  *                  blocking_connection.send_message(commands_message);
- *
- *                  // no reply expected from the COMMANDS message,
- *                  // so send the LOCK now
- *                  snap_communicator_message lock_message;
- *                  lock_message.set_command("LOCK");
- *                  ...
- *                  blocking_connection.send_message(lock_message);
  *              }
  *          }
  *      };
@@ -7662,8 +7732,8 @@ snap_communicator::snap_tcp_blocking_client_message_connection::snap_tcp_blockin
  * on each one of them, in a blocking manner.
  *
  * If you called mark_done() before, the done flag is reset back to false.
- * You will have to call done() again if you receive a message that
- * is expected to process and that message marks the end of the process.
+ * You will have to call mark_done() again if you again receive a message
+ * that is expected to end the loop.
  *
  * \note
  * Internally, the function actually calls process_line() which transforms
@@ -7675,11 +7745,11 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::run()
 
     do
     {
-        std::string line;
         for(;;)
         {
             // TBD: can the socket become -1 within the read() loop?
-            //      (i.e. should not that be just ourside of the for(;;)?)
+            //      (i.e. should not that be just outside of the for(;;)?)
+            //
             struct pollfd fd;
             fd.events = POLLIN | POLLPRI | POLLRDHUP;
             fd.fd = get_socket();
@@ -7713,8 +7783,8 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::run()
                 {
                     return;
                 }
-                SNAP_LOG_FATAL("snap_communicator::snap_tcp_blocking_client_message_connection::run(): connection timed out before we could get the lock.");
-                throw snap_communicator_runtime_error("connection timed out");
+                SNAP_LOG_FATAL("blocking connection timed out.");
+                throw snap_communicator_runtime_error("snap_communicator::snap_tcp_blocking_client_message_connection::run(): blocking connection timed out");
             }
             errno = 0;
             fd.revents = 0; // probably useless... (kernel should clear those)
@@ -7729,11 +7799,11 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::run()
                     //       use the snap_signal with the Unix signals that may
                     //       happen while calling poll().
                     //
-                    throw snap_communicator_runtime_error("EINTR occurred while in poll() -- interrupts are not supported yet though");
+                    throw snap_communicator_runtime_error("snap_communicator::snap_tcp_blocking_client_message_connection::run(): EINTR occurred while in poll() -- interrupts are not supported yet though");
                 }
                 if(errno == EFAULT)
                 {
-                    throw snap_communicator_parameter_error("buffer was moved out of our address space?");
+                    throw snap_communicator_parameter_error("snap_communicator::snap_tcp_blocking_client_message_connection::run(): buffer was moved out of our address space?");
                 }
                 if(errno == EINVAL)
                 {
@@ -7744,16 +7814,16 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::run()
                     //
                     struct rlimit rl;
                     getrlimit(RLIMIT_NOFILE, &rl);
-                    throw snap_communicator_parameter_error(QString("too many file fds for poll, limit is currently %1, your kernel top limit is %2")
+                    throw snap_communicator_parameter_error(QString("snap_communicator::snap_tcp_blocking_client_message_connection::run(): too many file fds for poll, limit is currently %1, your kernel top limit is %2")
                                 .arg(rl.rlim_cur)
                                 .arg(rl.rlim_max).toStdString());
                 }
                 if(errno == ENOMEM)
                 {
-                    throw snap_communicator_runtime_error("poll() failed because of memory");
+                    throw snap_communicator_runtime_error("snap_communicator::snap_tcp_blocking_client_message_connection::run(): poll() failed because of memory");
                 }
                 int const e(errno);
-                throw snap_communicator_runtime_error(QString("poll() failed with error %1").arg(e).toStdString());
+                throw snap_communicator_runtime_error(QString("snap_communicator::snap_tcp_blocking_client_message_connection::run(): poll() failed with error %1").arg(e));
             }
 
             if((fd.revents & (POLLIN | POLLPRI)) != 0)
@@ -7767,7 +7837,7 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::run()
                 {
                     // invalid read
                     process_error();
-                    throw snap_communicator_runtime_error(QString("read() failed reading data from socket (return value = %1)").arg(size).toStdString());
+                    throw snap_communicator_runtime_error(QString("snap_communicator::snap_tcp_blocking_client_message_connection::run(): read() failed reading data from socket (return value = %1)").arg(size));
                 }
                 if(buf[0] == '\n')
                 {
@@ -7776,25 +7846,143 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::run()
                     break;
                 }
                 buf[1] = '\0';
-                line += buf;
+                f_line += buf;
             }
             if((fd.revents & POLLERR) != 0)
             {
                 process_error();
-                throw snap_communicator_runtime_error(QString("poll() failed with an error").toStdString());
+                return;
             }
             if((fd.revents & (POLLHUP | POLLRDHUP)) != 0)
             {
                 process_hup();
-                throw snap_communicator_runtime_error(QString("poll() failed with hang up").toStdString());
+                return;
             }
             if((fd.revents & POLLNVAL) != 0)
             {
                 process_invalid();
-                throw snap_communicator_runtime_error(QString("poll() says the socket is invalid").toStdString());
+                return;
             }
         }
-        process_line(QString::fromUtf8(line.c_str()));
+        process_line(QString::fromUtf8(f_line.c_str()));
+        f_line.clear();
+    }
+    while(!is_done());
+}
+
+
+/** \brief Quick peek on the connection.
+ *
+ * This function checks for incoming messages and calls process_message()
+ * on each one of them. If no messages are found on the pipe, then the
+ * function returns immediately.
+ *
+ * \note
+ * Internally, the function actually calls process_line() which transforms
+ * the line in a message and in turn calls process_message().
+ */
+void snap_communicator::snap_tcp_blocking_client_message_connection::peek()
+{
+    do
+    {
+        for(;;)
+        {
+            struct pollfd fd;
+            fd.events = POLLIN | POLLPRI | POLLRDHUP;
+            fd.fd = get_socket();
+            if(fd.fd < 0
+            || !is_enabled())
+            {
+                // invalid socket
+                process_error();
+                return;
+            }
+
+            errno = 0;
+            fd.revents = 0; // probably useless... (kernel should clear those)
+            int const r(::poll(&fd, 1, 0));
+            if(r < 0)
+            {
+                // r < 0 means an error occurred
+                //
+                if(errno == EINTR)
+                {
+                    // Note: if the user wants to prevent this error, he should
+                    //       use the snap_signal with the Unix signals that may
+                    //       happen while calling poll().
+                    //
+                    throw snap_communicator_runtime_error("snap_communicator::snap_tcp_blocking_client_message_connection::run(): EINTR occurred while in poll() -- interrupts are not supported yet though");
+                }
+                if(errno == EFAULT)
+                {
+                    throw snap_communicator_parameter_error("snap_communicator::snap_tcp_blocking_client_message_connection::run(): buffer was moved out of our address space?");
+                }
+                if(errno == EINVAL)
+                {
+                    // if this is really because nfds is too large then it may be
+                    // a "soft" error that can be fixed; that being said, my
+                    // current version is 16K files which frankly when we reach
+                    // that level we have a problem...
+                    //
+                    struct rlimit rl;
+                    getrlimit(RLIMIT_NOFILE, &rl);
+                    throw snap_communicator_parameter_error(QString("snap_communicator::snap_tcp_blocking_client_message_connection::run(): too many file fds for poll, limit is currently %1, your kernel top limit is %2")
+                                .arg(rl.rlim_cur)
+                                .arg(rl.rlim_max).toStdString());
+                }
+                if(errno == ENOMEM)
+                {
+                    throw snap_communicator_runtime_error("snap_communicator::snap_tcp_blocking_client_message_connection::run(): poll() failed because of memory");
+                }
+                int const e(errno);
+                throw snap_communicator_runtime_error(QString("snap_communicator::snap_tcp_blocking_client_message_connection::run(): poll() failed with error %1").arg(e));
+            }
+
+            if(r == 0)
+            {
+                return;
+            }
+
+            if((fd.revents & (POLLIN | POLLPRI)) != 0)
+            {
+                // read one character at a time otherwise we would be
+                // blocked forever
+                //
+                char buf[2];
+                int const size(::read(fd.fd, buf, 1));
+                if(size != 1)
+                {
+                    // invalid read
+                    process_error();
+                    throw snap_communicator_runtime_error(QString("snap_communicator::snap_tcp_blocking_client_message_connection::run(): read() failed reading data from socket (return value = %1)").arg(size));
+                }
+                if(buf[0] == '\n')
+                {
+                    // end of a line, we got a whole message in our buffer
+                    // notice that we do not add the '\n' to line
+                    break;
+                }
+                buf[1] = '\0';
+                f_line += buf;
+            }
+            if((fd.revents & POLLERR) != 0)
+            {
+                process_error();
+                return;
+            }
+            if((fd.revents & (POLLHUP | POLLRDHUP)) != 0)
+            {
+                process_hup();
+                return;
+            }
+            if((fd.revents & POLLNVAL) != 0)
+            {
+                process_invalid();
+                return;
+            }
+        }
+        process_line(QString::fromUtf8(f_line.c_str()));
+        f_line.clear();
     }
     while(!is_done());
 }
@@ -7983,7 +8171,7 @@ bool snap_communicator::remove_connection(snap_connection::pointer_t connection)
         return false;
     }
 
-    SNAP_LOG_TRACE("snap_communicator::remove_connection(): removing 1 connection, \"")(connection->get_name())("\", of ")(f_connections.size())(" connections (including this one.)");
+    SNAP_LOG_TRACE("removing 1 connection, \"")(connection->get_name())("\", of ")(f_connections.size())(" connections (including this one.)");
     f_connections.erase(it);
 
     connection->connection_removed();
@@ -8189,7 +8377,7 @@ bool snap_communicator::run()
             //
             if(static_cast<size_t>(r) > connections.size())
             {
-                throw snap_communicator_runtime_error("poll() returned a number of events to handle larger than the input allows");
+                throw snap_communicator_runtime_error("snap_communicator::run(): poll() returned a number of events to handle larger than the input allows");
             }
             //SNAP_LOG_TRACE("tid=")(gettid())(", snap_communicator::run(): ------------------- new set of ")(r)(" events to handle");
 
@@ -8321,11 +8509,11 @@ bool snap_communicator::run()
                 //       use the snap_signal with the Unix signals that may
                 //       happen while calling poll().
                 //
-                throw snap_communicator_runtime_error("EINTR occurred while in poll() -- interrupts are not supported yet though");
+                throw snap_communicator_runtime_error("snap_communicator::run(): EINTR occurred while in poll() -- interrupts are not supported yet though");
             }
             if(errno == EFAULT)
             {
-                throw snap_communicator_parameter_error("buffer was moved out of our address space?");
+                throw snap_communicator_parameter_error("snap_communicator::run(): buffer was moved out of our address space?");
             }
             if(errno == EINVAL)
             {
@@ -8336,16 +8524,16 @@ bool snap_communicator::run()
                 //
                 struct rlimit rl;
                 getrlimit(RLIMIT_NOFILE, &rl);
-                throw snap_communicator_parameter_error(QString("too many file fds for poll, limit is currently %1, your kernel top limit is %2")
+                throw snap_communicator_parameter_error(QString("snap_communicator::run(): too many file fds for poll, limit is currently %1, your kernel top limit is %2")
                             .arg(rl.rlim_cur)
-                            .arg(rl.rlim_max).toStdString());
+                            .arg(rl.rlim_max));
             }
             if(errno == ENOMEM)
             {
-                throw snap_communicator_runtime_error("poll() failed because of memory");
+                throw snap_communicator_runtime_error("snap_communicator::run(): poll() failed because of memory");
             }
             int const e(errno);
-            throw snap_communicator_runtime_error(QString("poll() failed with error %1").arg(e).toStdString());
+            throw snap_communicator_runtime_error(QString("snap_communicator::run(): poll() failed with error %1").arg(e));
         }
     }
 }

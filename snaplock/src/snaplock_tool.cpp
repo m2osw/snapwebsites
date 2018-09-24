@@ -46,6 +46,14 @@
 #include <snapwebsites/log.h>
 
 
+// last entry
+//
+#include <snapwebsites/poison.h>
+
+
+
+namespace snaplock
+{
 
 /** \class snaplock_tool
  * \brief Handle snaplock command line commands.
@@ -135,4 +143,6 @@ void snaplock_tool::process_connected()
 }
 
 
+}
+// snaplock namespace
 // vim: ts=4 sw=4 et

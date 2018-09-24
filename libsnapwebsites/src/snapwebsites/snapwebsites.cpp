@@ -1941,7 +1941,7 @@ void server::capture_zombies(pid_t child_pid)
 
 /** \brief Capture children death.
  *
- * This class used used to create a connection on started that allows
+ * This class used used to create a connection on startup that allows
  * us to know when a child dies. Whenever that happens, we get a call
  * to the process_signal() callback.
  */
@@ -2201,6 +2201,9 @@ void messenger::process_connected()
  * If another command is received, the function replies with the UNKNOWN
  * command to make sure the sender is aware that the command was ignored.
  *
+ * \todo
+ * Convert to using a dispatcher.
+ *
  * \param[in] message  The message to process.
  */
 void server::process_message(snap_communicator_message const & message)
@@ -2262,6 +2265,9 @@ void server::process_message(snap_communicator_message const & message)
         // about the current status of the snaplock service
         //
         {
+            // TODO: we need to switch that to receiving the LOCKREADY
+            //       and NOLOCK messages instead (i.e. see LOCKSTATUS)
+            //
             snap::snap_communicator_message islockready_message;
             islockready_message.set_command("SERVICESTATUS");
             islockready_message.add_parameter("service", "snaplock");
