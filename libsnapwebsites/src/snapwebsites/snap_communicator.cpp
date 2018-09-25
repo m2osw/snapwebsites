@@ -2621,8 +2621,6 @@ void snap_communicator::connection_with_send_message::help(snap_string_list & co
     NOTUSED(commands);
 
     // do nothing by default -- user is expected to overload this function
-    //
-    SNAP_LOG_WARNING("default help() function was called.");
 }
 
 

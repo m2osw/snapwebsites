@@ -1,3 +1,11 @@
+snapwebsites (1.6.4.0~xenial) xenial; urgency=high
+
+  * Removed a warning that would always happen and is not necessary.
+  * Moved the lock_connection class in a 'details' namespace.
+  * Created a lock_connection::run() function so we can call share_from_this().
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Sep 2018 19:12:38 -0700
+
 snapwebsites (1.6.3.0~xenial) xenial; urgency=high
 
   * SNAP-392: change our thread to Joinable instead of Detach.

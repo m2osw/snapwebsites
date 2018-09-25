@@ -164,22 +164,13 @@ pid_t gettid()
 }
 
 }
-// no name namespace
 
 
 
-// once in a while these definitions may be required (especially in debug mode)
-//
-// TODO: remove once we use C++17
-//
-constexpr snap_lock::timeout_t    snap_lock::SNAP_LOCK_DEFAULT_TIMEOUT;
-constexpr snap_lock::timeout_t    snap_lock::SNAP_LOCK_MINIMUM_TIMEOUT;
-constexpr snap_lock::timeout_t    snap_lock::SNAP_UNLOCK_MINIMUM_TIMEOUT;
-constexpr snap_lock::timeout_t    snap_lock::SNAP_UNLOCK_USES_LOCK_TIMEOUT;
-constexpr snap_lock::timeout_t    snap_lock::SNAP_MAXIMUM_OBTENTION_TIMEOUT;
-constexpr snap_lock::timeout_t    snap_lock::SNAP_MAXIMUM_TIMEOUT;
 
 
+namespace details
+{
 
 /** \brief The actual implementation of snap_lock.
  *
@@ -208,6 +199,7 @@ public:
                             lock_connection(QString const & object_name, snap_lock::timeout_t lock_duration, snap_lock::timeout_t lock_obtention_timeout, snap_lock::timeout_t unlock_duration);
     virtual                 ~lock_connection() override;
 
+    void                    run();
     void                    unlock();
 
     bool                    is_locked() const;
@@ -331,7 +323,6 @@ lock_connection::lock_connection(QString const & object_name, snap_lock::timeout
     , f_obtention_timeout_date((lock_obtention_timeout == -1 ? g_lock_obtention_timeout : lock_obtention_timeout) + time(nullptr))
     , f_unlock_duration(unlock_duration)
 {
-    set_dispatcher(std::dynamic_pointer_cast<lock_connection>(shared_from_this()));
     add_snap_communicator_commands();
 
     // tell the lower level when the lock obtention times out;
@@ -340,19 +331,6 @@ lock_connection::lock_connection(QString const & object_name, snap_lock::timeout
     // (which is computed from the time at which we get the lock)
     //
     set_timeout_date(f_obtention_timeout_date * 1000000L);
-
-    // need to register with snap communicator
-    //
-    snap::snap_communicator_message register_message;
-    register_message.set_command("REGISTER");
-    register_message.add_parameter("service", f_service_name);
-    register_message.add_parameter("version", snap::snap_communicator::VERSION);
-    send_message(register_message);
-
-    // now wait for the READY and HELP replies, send LOCK, and
-    // either timeout or get the LOCKED message
-    //
-    run();
 }
 
 
@@ -369,6 +347,34 @@ lock_connection::~lock_connection()
     catch(snap_communicator_invalid_message const &)
     {
     }
+}
+
+
+/** \brief Listen for messages.
+ *
+ * This function overloads the blocking connection run() function so we
+ * can properly initialize the lock_connection object (some things just
+ * cannot be done in the construtor.)
+ *
+ * The function makes sure we have the dispatcher setup and sends the
+ * REGISTER message so we get registered with snapcommunicator.
+ */
+void lock_connection::run()
+{
+    set_dispatcher(std::dynamic_pointer_cast<lock_connection>(shared_from_this()));
+
+    // need to register with snap communicator
+    //
+    snap::snap_communicator_message register_message;
+    register_message.set_command("REGISTER");
+    register_message.add_parameter("service", f_service_name);
+    register_message.add_parameter("version", snap::snap_communicator::VERSION);
+    send_message(register_message);
+
+    // now wait for the READY and HELP replies, send LOCK, and
+    // either timeout or get the LOCKED message
+    //
+    snap_tcp_blocking_client_message_connection::run();
 }
 
 
@@ -836,6 +842,38 @@ void lock_connection::msg_unlocked(snap::snap_communicator_message & message)
 }
 
 
+
+
+
+
+
+}
+// no name namespace
+
+
+
+// once in a while these definitions may be required (especially in debug mode)
+//
+// TODO: remove once we use C++17
+//
+constexpr snap_lock::timeout_t    snap_lock::SNAP_LOCK_DEFAULT_TIMEOUT;
+constexpr snap_lock::timeout_t    snap_lock::SNAP_LOCK_MINIMUM_TIMEOUT;
+constexpr snap_lock::timeout_t    snap_lock::SNAP_UNLOCK_MINIMUM_TIMEOUT;
+constexpr snap_lock::timeout_t    snap_lock::SNAP_UNLOCK_USES_LOCK_TIMEOUT;
+constexpr snap_lock::timeout_t    snap_lock::SNAP_MAXIMUM_OBTENTION_TIMEOUT;
+constexpr snap_lock::timeout_t    snap_lock::SNAP_MAXIMUM_TIMEOUT;
+
+
+
+
+
+
+
+
+
+
+
+
 /** \brief Create an inter-process lock.
  *
  * This constructor blocks until you obtained an inter-process lock
@@ -1085,7 +1123,8 @@ bool snap_lock::lock(QString const & object_name, timeout_t lock_duration, timeo
     //
     unlock();
 
-    f_lock_connection = std::make_shared<lock_connection>(object_name, lock_duration, lock_obtention_timeout, unlock_duration);
+    f_lock_connection = std::make_shared<details::lock_connection>(object_name, lock_duration, lock_obtention_timeout, unlock_duration);
+    f_lock_connection->run();
 
     return f_lock_connection->is_locked();
 }

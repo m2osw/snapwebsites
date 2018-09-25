@@ -39,7 +39,10 @@ public:
 
 
 // the lock internal implementation
+namespace details
+{
 class lock_connection;
+}
 
 
 class snap_lock
@@ -77,7 +80,7 @@ public:
     time_t              get_timeout_date() const;
 
 private:
-    std::shared_ptr<lock_connection>    f_lock_connection = std::shared_ptr<lock_connection>();
+    std::shared_ptr<details::lock_connection>    f_lock_connection = std::shared_ptr<details::lock_connection>();
 };
 
 
