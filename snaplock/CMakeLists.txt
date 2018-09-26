@@ -58,10 +58,11 @@ endif()
 
 #snap_clear_xml_targets()
 
-add_subdirectory( conf  )
-add_subdirectory( src   )
-add_subdirectory( doc   )
-add_subdirectory( tests )
+add_subdirectory( conf            )
+add_subdirectory( src             )
+add_subdirectory( manager-plugins )
+add_subdirectory( doc             )
+add_subdirectory( tests           )
 
 ##
 ## Analyse xml and javascript

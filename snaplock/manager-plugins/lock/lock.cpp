@@ -25,24 +25,9 @@
 
 // snapwebsites lib
 //
-//#include <snapwebsites/file_content.h>
-//#include <snapwebsites/join_strings.h>
-//#include <snapwebsites/log.h>
-//#include <snapwebsites/not_reached.h>
-//#include <snapwebsites/not_used.h>
-//#include <snapwebsites/process.h>
-//#include <snapwebsites/qdomhelpers.h>
-//#include <snapwebsites/qdomxpath.h>
-//#include <snapwebsites/string_pathinfo.h>
-//#include <snapwebsites/tokenize_string.h>
-
-// Qt lib
-//
-//#include <QFile>
-
-// C lib
-//
-//#include <sys/file.h>
+#include <snapwebsites/log.h>
+#include <snapwebsites/not_reached.h>
+#include <snapwebsites/not_used.h>
 
 // last entry
 //
@@ -56,16 +41,18 @@ namespace
 {
 
 
-char const *    g_conf_filename   = "/etc/snapwebsites/lock.conf";
+char const *    g_configuration_filename   = "snaplock";
+
+char const *    g_configuration_d_filename   = "/etc/snapwebsites/snapwebsites.d/snaplock.conf";
 
 
 } // no name namespace
 
 
 
-/** \brief Get a fixed firewall plugin name.
+/** \brief Get a fixed lock plugin name.
  *
- * The firewall plugin makes use of different fixed names. This function
+ * The lock plugin makes use of different fixed names. This function
  * ensures that you always get the right spelling for a given name.
  *
  * \param[in] name  The name to retrieve.
@@ -119,7 +106,7 @@ lock::~lock()
  */
 lock * lock::instance()
 {
-    return g_plugin_firewall_factory.instance();
+    return g_plugin_lock_factory.instance();
 }
 
 
@@ -201,27 +188,16 @@ void lock::on_retrieve_status(snap_manager::server_status & server_status)
         return;
     }
 
+    snap_config snap_lock_conf(g_configuration_filename);
+
     {
-        // get the snaplock status
-        //
-        snap_manager::service_status_t status(f_snap->service_status("/usr/sbin/snaplock", "snaplock"));
-
-        // transform to a string
-        //
-        QString const status_string(QString::fromUtf8(snap_manager::manager::service_status_to_string(status)));
-
-        // create status widget
-        //
-        snap_manager::status_t const status_widget(
-                        status == snap_manager::service_status_t::SERVICE_STATUS_NOT_INSTALLED
-                                ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
-                                : status == snap_manager::service_status_t::SERVICE_STATUS_DISABLED
-                                        ? snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
-                                        : snap_manager::status_t::state_t::STATUS_STATE_INFO,
-                        get_plugin_name(),
-                        "service_status",
-                        status_string);
-        server_status.set_field(status_widget);
+        QString const priority(snap_lock_conf["candidate_priority"]);
+        snap_manager::status_t const priority_widget(
+                      snap_manager::status_t::state_t::STATUS_STATE_INFO
+                    , get_plugin_name()
+                    , "candidate_priority"
+                    , priority);
+        server_status.set_field(priority_widget);
     }
 }
 
@@ -254,19 +230,42 @@ bool lock::display_value(QDomElement parent, snap_manager::status_t const & s, s
         snap_manager::form f(
                   get_plugin_name()
                 , s.get_field_name()
-                , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE
+                ,   snap_manager::form::FORM_BUTTON_RESET
+                  | snap_manager::form::FORM_BUTTON_SAVE
                 );
 
-        snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
-                          "This Computer Public IP"
+        // we do not include 0 since that's reserved for already elected
+        // leaders when a re-election happens
+        //
+        snap::snap_string_list priorities;
+        priorities << "1";
+        priorities << "2";
+        priorities << "3";
+        priorities << "4";
+        priorities << "5";
+        priorities << "6";
+        priorities << "7";
+        priorities << "8";
+        priorities << "9";
+        priorities << "10";
+        priorities << "11";
+        priorities << "12";
+        priorities << "13";
+        priorities << "14";
+        priorities << "off";
+
+        snap_manager::widget_select::pointer_t field(std::make_shared<snap_manager::widget_select>(
+                          "Candidate Priority"
                         , s.get_field_name()
+                        , priorities
                         , s.get_value()
-                        , "Enter the IP address of this computer, the one facing the Internet (often was eth0)."
+                        , "<p>Select a priority for this candidate in the snaplock leaders election.</p>"
+                         "<p>A lower priority means a greater chance to be elected as a leader.</p>"
+                         "<p><strong>OFF</strong> means that the computer does not participate as a candidate.</p>"
+                         "<p>Note that you must have at least three computers that are NOT turned OFF in your cluster.</p>"
                         ));
         f.add_widget(field);
-
         f.generate(parent, uri);
-
         return true;
     }
 
@@ -301,33 +300,17 @@ bool lock::apply_setting(QString const & button_name, QString const & field_name
         //       this case; otherwise continue running as it was)
         //
         affected_services.insert("snaplock");
-        NOTUSED(f_snap->replace_configuration_value(g_conf_filename, field_name, new_value));
+
+        snap_config snap_lock_conf(g_configuration_filename);
+        snap_lock_conf[field_name] = new_value;
+
+        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+
         return true;
     }
 
     return false;
 }
-
-
-void firewall::on_handle_affected_services(std::set<QString> & affected_services)
-{
-    auto const & it_reload(std::find(affected_services.begin(), affected_services.end(), QString("firewall-reload")));
-    if(it_reload != affected_services.end())
-    {
-        // remove since we are handling that one here
-        //
-        affected_services.erase(it_reload);
-
-        // run the firewall script to apply the changes
-        //
-        snap::process p("reload firewall");
-        p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
-        p.set_command(g_firewall_script);
-        NOTUSED(p.run());           // errors are automatically logged by snap::process
-    }
-}
-
-
 
 
 

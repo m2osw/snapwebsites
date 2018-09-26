@@ -1,4 +1,4 @@
-// Snap Websites Server -- manage the snapfirewall settings
+// Snap Websites Server -- manage the snaplock settings
 // Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,49 +25,49 @@
 
 namespace snap
 {
-namespace firewall
+namespace lock
 {
 
 
 enum class name_t
 {
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_NAME
+    SNAP_NAME_SNAPMANAGERCGI_LOCK_NAME
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
 
 
-class firewall_exception : public snap_exception
+class lock_exception : public snap_exception
 {
 public:
-    firewall_exception(char const *        what_msg) : snap_exception("firewall", what_msg) {}
-    firewall_exception(std::string const & what_msg) : snap_exception("firewall", what_msg) {}
-    firewall_exception(QString const &     what_msg) : snap_exception("firewall", what_msg) {}
+    lock_exception(char const *        what_msg) : snap_exception("lock", what_msg) {}
+    lock_exception(std::string const & what_msg) : snap_exception("lock", what_msg) {}
+    lock_exception(QString const &     what_msg) : snap_exception("lock", what_msg) {}
 };
 
-class firewall_exception_invalid_argument : public firewall_exception
+class lock_exception_invalid_argument : public lock_exception
 {
 public:
-    firewall_exception_invalid_argument(char const *        what_msg) : firewall_exception(what_msg) {}
-    firewall_exception_invalid_argument(std::string const & what_msg) : firewall_exception(what_msg) {}
-    firewall_exception_invalid_argument(QString const &     what_msg) : firewall_exception(what_msg) {}
+    lock_exception_invalid_argument(char const *        what_msg) : lock_exception(what_msg) {}
+    lock_exception_invalid_argument(std::string const & what_msg) : lock_exception(what_msg) {}
+    lock_exception_invalid_argument(QString const &     what_msg) : lock_exception(what_msg) {}
 };
 
 
 
 
 
-class firewall
+class lock
     : public snap_manager::plugin_base
 {
 public:
-                            firewall();
-                            firewall(firewall const & rhs) = delete;
-    virtual                 ~firewall() override;
+                            lock();
+                            lock(lock const & rhs) = delete;
+    virtual                 ~lock() override;
 
-    firewall &              operator = (firewall const & rhs) = delete;
+    lock &                  operator = (lock const & rhs) = delete;
 
-    static firewall *       instance();
+    static lock *           instance();
 
     // plugins::plugin implementation
     virtual QString         description() const override;
@@ -81,16 +81,11 @@ public:
 
     // server signal
     void                    on_retrieve_status(snap_manager::server_status & server_status);
-    void                    on_handle_affected_services(std::set<QString> & affected_services);
 
 private:
-    void                    retrieve_bundles_status(snap_manager::server_status & server_status);
-    bool                    install_bundle(bool const install, QString const & bundle_name, std::set<QString> & services);
-    void                    retrieve_settings_field(snap_manager::server_status & server_status, std::string const & variable_name);
-
     snap_manager::manager * f_snap = nullptr;
 };
 
-} // namespace firewall
+} // namespace lock
 } // namespace snap
 // vim: ts=4 sw=4 et

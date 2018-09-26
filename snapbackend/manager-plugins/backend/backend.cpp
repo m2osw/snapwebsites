@@ -436,12 +436,12 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
                   | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
                 );
 
-        QStringList service_list;
+        snap::snap_string_list service_list;
         service_list << "disabled";
         service_list << "enabled";
 
         snap_manager::widget_select::pointer_t field(std::make_shared<snap_manager::widget_select>(
-                    "Enable or disable ALL backend services"
+                      "Enable or disable ALL backend services"
                     , s.get_field_name()
                     , service_list
                     , s.get_value()
@@ -759,7 +759,7 @@ bool backend::apply_setting( QString const     & button_name
 
         snap_config snap_server_conf(g_configuration_filename);
         snap_server_conf["backend_status"] = new_value;
-        f_snap->replace_configuration_value(g_configuration_d_filename, "backend_status", new_value);
+        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, "backend_status", new_value));
 
         update_all_services();
         return true;
