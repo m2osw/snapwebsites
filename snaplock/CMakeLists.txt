@@ -48,6 +48,8 @@ set( QT_LIBRARIES
 include_directories(
     ${libsnapwebsites_project_SOURCE_DIR}/src
     ${libsnapwebsites_project_BINARY_DIR}/src
+    ${snapmanagercgi_project_BINARY_DIR}/lib
+    ${snapmanagercgi_project_SOURCE_DIR}/lib
     ${QTSERIALIZATION_INCLUDE_DIRS}
 )
 

@@ -1,3 +1,10 @@
+snapwebsites (1.6.6.1~xenial) xenial; urgency=high
+
+  * Fixed the list of include path so the snaplock manager plugin compiles.
+  * Actually install the lock manager plugin in the snaplock package.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 26 Sep 2018 13:13:34 -0700
+
 snapwebsites (1.6.6.0~xenial) xenial; urgency=high
 
   * Implemented the snapmanager.cgi lock tab.
