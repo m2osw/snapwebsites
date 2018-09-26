@@ -191,7 +191,13 @@ void lock::on_retrieve_status(snap_manager::server_status & server_status)
     snap_config snap_lock_conf(g_configuration_filename);
 
     {
-        QString const priority(snap_lock_conf["candidate_priority"]);
+        QString priority(snap_lock_conf["candidate_priority"]);
+        if(priority.isEmpty())
+        {
+            // default is 14
+            //
+            priority = "14";
+        }
         snap_manager::status_t const priority_widget(
                       snap_manager::status_t::state_t::STATUS_STATE_INFO
                     , get_plugin_name()

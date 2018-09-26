@@ -386,7 +386,9 @@ bool snaplock::computer_t::set_id(QString const & id)
     //
     bool ok(false);
     f_priority = parts[0].toLong(&ok, 10); 
-    if(!ok || f_priority < PRIORITY_MIN || f_priority > PRIORITY_MAX)
+    if(!ok
+    || f_priority < PRIORITY_USER_MIN
+    || f_priority > PRIORITY_MAX)
     {
         SNAP_LOG_ERROR("priority is limited to a number between 0 and 15 inclusive.");
         return false;
@@ -675,10 +677,21 @@ snaplock::snaplock(int argc, char * argv[])
     }
 #endif
 
-    int64_t priority = 15;
+    int64_t priority = computer_t::PRIORITY_DEFAULT;
     if(f_opt.is_defined("candidate-priority"))
     {
-        priority = f_opt.get_long("candidate-priority", 0, 1, 15);
+        std::string const candidate_priority(f_opt.get_string("candidate-priority"));
+        if(candidate_priority == "off")
+        {
+            priority = computer_t::PRIORITY_OFF;
+        }
+        else
+        {
+            priority = f_opt.get_long("candidate-priority"
+                                    , 0
+                                    , computer_t::PRIORITY_USER_MIN
+                                    , computer_t::PRIORITY_MAX);
+        }
     }
     else if(f_config.has_parameter("candidate_priority"))
     {
@@ -689,7 +702,7 @@ snaplock::snaplock(int argc, char * argv[])
             // at all (useful for nodes that get dynamically added
             // and removed--i.e. avoid re-election each time that happens.)
             //
-            priority = 15;
+            priority = computer_t::PRIORITY_OFF;
         }
         else
         {
@@ -700,7 +713,8 @@ snaplock::snaplock(int argc, char * argv[])
                 SNAP_LOG_FATAL("invalid candidate_priority, a valid decimal number was expected instead of \"")(candidate_priority)("\".");
                 exit(1);
             }
-            if(priority < 1 || priority > 15)
+            if(priority < computer_t::PRIORITY_USER_MIN
+            || priority > computer_t::PRIORITY_MAX)
             {
                 SNAP_LOG_FATAL("candidate_priority must be between 1 and 15, \"")(candidate_priority)("\" is not valid.");
                 exit(1);

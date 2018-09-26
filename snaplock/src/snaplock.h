@@ -334,6 +334,8 @@ public:
         static priority_t const PRIORITY_UNDEFINED = -1;
         static priority_t const PRIORITY_MIN = 0;
         static priority_t const PRIORITY_LEADER = 0;
+        static priority_t const PRIORITY_USER_MIN = 1;
+        static priority_t const PRIORITY_DEFAULT = 14;
         static priority_t const PRIORITY_OFF = 15;
         static priority_t const PRIORITY_MAX = 15;
 
