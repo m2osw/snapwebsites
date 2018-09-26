@@ -1,3 +1,10 @@
+snapwebsites (1.6.6.0~xenial) xenial; urgency=high
+
+  * Implemented the snapmanager.cgi lock tab.
+  * Replaced a QStringList with snap::snap_string_list.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 26 Sep 2018 10:46:27 -0700
+
 snapwebsites (1.6.5.0~xenial) xenial; urgency=high
 
   * Fixed snapcommunicator so self is always included in the count.
