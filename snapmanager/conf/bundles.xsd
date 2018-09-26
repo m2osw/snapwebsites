@@ -226,17 +226,25 @@ a server.
 # +===============+============================ Virtual ======+=======+
 # | base / "self" | snapmanager.cgi and dependencies          | All   |
 # +===============+============================ Created ======+=======+
-# | anti-virus    | clamav along snapbackend                  | Back  |
+# | antivirus     | clamav along snapbackend                  | Back  |
 # | backup        | snapbackup                                | Any   |
 # | cassandra     | cassandra database                        | Back  |
+# | dns           | DNS server                                | Back  |
 # | firewall      | snapfirewall + iplock (need overhaul)     | All   |
 # | frontend      | apache with snap.cgi                      | Front |
 # | logserver     | loggingserver from log4cplus              | Back  |
-# | mailserver    | postfix with snapbounce                   | Front |
+# | mailserver    | postfix with snapbounce                   | Back  |
 # | rkhunter      | check that no rootkit gets installed      | All   |
 # | snapbackend   | one or more snapbackend                   | Back  |
 # | snapdb        | snapdb command line tool                  | Back  |
+# | snaplistd     | transfer lists between computers          | Back  |
+# | snaplog       | log aggregator                            | Back  |
+# | snapmta       | snapmta to forward emails                 | All   |
+# | snapmysql     | used by lists and snaplog                 | Back  |
 # | snapserver    | snapserver                                | Back  |
+# | ssh           | install SSH and allow for key upload      | All   |
+# | swap          | add swap memory                           | All   |
+# | tools         | various admin. tools we like to have      | All   |
 # | tripwire      | check that no files gets changed          | All   |
 # | vpn_client    | tinc / openvpn                            | All   |
 # | vpn_server    | tinc / openvpn                            | All   |

@@ -2327,6 +2327,39 @@ void snap_communicator_server::init()
     // note that the first time add_neighbors is called it reads the
     // list of cached neighbor IP:port info and connects those too
     //
+    // note how we first add ourselves, this is important to get the
+    // correct size() when defining the CLUSTERUP/DOWN neighbors_count
+    // parameter although we do not want to add 127.0.0.1 as an IP
+    //
+    if(listen_addr.get_network_type() != addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK)
+    {
+        add_neighbors(listen_str);
+    }
+    else
+    {
+        // this is a problem so flag it otherwise we are likely to miss it!
+        //
+        std::stringstream ss;
+
+        ss << "the snapcommunicator \"listen="
+           << listen_str
+           << "\" parameter is the loopback IP address."
+             " This will prevent any tool that wants to make use of the"
+             " CLUSTERUP, CLUSTERDOWN, CLUSTERCOMPLETE, and CLUSTERINCOMPLETE"
+             " (and query CLUSTERSTATUS) messages.";
+
+        SNAP_LOG_ERROR(ss.str());
+
+        snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
+                      "snapcommunicator"
+                    , "cluster"
+                    , "no-cluster"
+                    , ss.str()));
+        flag->set_priority(82);
+        flag->add_tag("initialization");
+        flag->add_tag("network");
+        flag->save();
+    }
     f_explicit_neighbors = canonicalize_neighbors(f_server->get_parameter("neighbors"));
     add_neighbors(f_explicit_neighbors);
 }
@@ -4913,6 +4946,13 @@ void snap_communicator_server::read_neighbors()
     {
         // get the path to the dynamic snapwebsites data files
         //
+        // TODO: rename the variable so it does not say "cache", putting
+        //       this file under /var/cache/snapwebsites is not a good
+        //       idea since it can get deleted and the system connections
+        //       are likely to break as a result... we already moved the
+        //       data to /var/lib/snapwebsites instead, but did not change
+        //       the variable names
+        //
         f_neighbors_cache_filename = f_server->get_parameter("data_path");
         if(f_neighbors_cache_filename.isEmpty())
         {
@@ -5404,15 +5444,17 @@ void remote_snap_communicator::process_connection_failed(std::string const & err
               " fails connecting. If not, please remove that IP address"
               " from the list of neighbors AND THE FIREWALL if it is there too.";
 
-        SNAPWATHCDOG_FLAG_UP(
+        snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
                       "snapcommunicator"
                     , "remote-connection"
                     , "connection-failed"
-                    , ss.str())
-                ->set_priority(95)
-                .add_tag("security")
-                .add_tag("network")
-                .save();
+                    , ss.str()
+                ));
+        flag->set_priority(95);
+        flag->add_tag("security");
+        flag->add_tag("data-leak");
+        flag->add_tag("network");
+        flag->save();
     }
 }
 
@@ -5435,9 +5477,12 @@ void remote_snap_communicator::process_connected()
         f_failures = 0;
         f_flagged = false;
 
-        SNAPWATHCDOG_FLAG_DOWN("snapcommunicator"
-                             , "remote-connection"
-                             , "connection-failed")->save();
+        snap::snap_flag::pointer_t flag(SNAP_FLAG_DOWN(
+                           "snapcommunicator"
+                         , "remote-connection"
+                         , "connection-failed")
+                     );
+        flag->save();
     }
 
     snap_tcp_client_permanent_message_connection::process_connected();

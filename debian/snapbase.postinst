@@ -86,6 +86,11 @@ then
     mkdir -p /var/lib/snapwebsites
     chown snapwebsites:snapwebsites /var/lib/snapwebsites
 
+    # the library handles flags too
+    #
+    mkdir -p /var/lib/snapwebsites/flags
+    chown snapwebsites:snapwebsites /var/lib/snapwebsites/flags
+
     # Now run various common apache initializations
     # (logrotate, enable/disable configuration/modules/sites)
     # The external script will restart apache2 as well

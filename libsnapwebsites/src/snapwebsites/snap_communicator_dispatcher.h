@@ -362,6 +362,18 @@ public:
         {
             return f_match == &snap::dispatcher<T>::dispatcher_match::always_match;
         }
+
+        /** \brief Check whether f_match is always_match().
+         *
+         * This function checks whether the f_match function was defined
+         * to always_match() and if so returns true.
+         *
+         * \return true if f_match is the always_match() function.
+         */
+        bool match_is_callback_match() const
+        {
+            return f_match == &snap::dispatcher<T>::dispatcher_match::callback_match;
+        }
     };
 
 private:
@@ -622,7 +634,8 @@ public:
         {
             if(m.f_expr == nullptr)
             {
-                if(!m.match_is_always_match())
+                if(!m.match_is_always_match()
+                && !m.match_is_callback_match())
                 {
                     // this is a "special case" where the user has
                     // a magical function which does not require an

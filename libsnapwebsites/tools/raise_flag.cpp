@@ -1,4 +1,4 @@
-// Snap Websites Server -- command line tool to raise a watchdog flag
+// Snap Websites Server -- command line tool to raise a snap flag
 // Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -192,7 +192,7 @@ namespace
 
 void list_in_plain_text()
 {
-    snap::watchdog_flag::vector_t flags(snap::watchdog_flag::load_flags());
+    snap::snap_flag::vector_t flags(snap::snap_flag::load_flags());
 
     std::map<std::string, std::string::size_type> widths;
 
@@ -237,7 +237,7 @@ void list_in_plain_text()
         //widths["date"]        = std::max(widths["date"],        ...);
         //widths["modified"]    = std::max(widths["modified"],    ...);
 
-        snap::watchdog_flag::tag_list_t const & tags(f->get_tags());
+        snap::snap_flag::tag_list_t const & tags(f->get_tags());
         std::string const tags_string(boost::algorithm::join(tags, ", "));
         widths["tags"] = std::max(widths["tags"], tags_string.length());
     }
@@ -308,17 +308,14 @@ void list_in_plain_text()
 
 void list_in_xml()
 {
-    snap::watchdog_flag::vector_t flags(snap::watchdog_flag::load_flags());
+    snap::snap_flag::vector_t flags(snap::snap_flag::load_flags());
 
-    QDomDocument doc("watchdog-flags");
+    QDomDocument doc("snap-flags");
 
     // create the root element
     //
-    QDomElement root(doc.createElement("watchdog-flags"));
+    QDomElement root(doc.createElement("snap-flags"));
     doc.appendChild(root);
-
-    //std::cout << "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-    //             "<watchdog-flags>";
 
     QDomElement flag_element;
 
@@ -346,7 +343,7 @@ void list_in_xml()
         add_element("priority",    std::to_string(f->get_priority()));
         add_element("manual",      f->get_manual_down() ? "yes" : "no");
 
-        snap::watchdog_flag::tag_list_t const & tags(f->get_tags());
+        snap::snap_flag::tag_list_t const & tags(f->get_tags());
         if(!tags.empty())
         {
             QDomElement tags_element(doc.createElement("tags"));
@@ -363,6 +360,7 @@ void list_in_xml()
         }
     }
 
+    //std::cout << "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
     std::cout << doc.toString(-1) << std::endl;
 }
 
@@ -457,10 +455,10 @@ int main(int argc, char * argv[])
             message = opt.get_string("--", 3);
         }
 
-        snap::watchdog_flag::pointer_t flag;
+        snap::snap_flag::pointer_t flag;
         if(up)
         {
-            flag = SNAPWATHCDOG_FLAG_UP(unit, section, flag_name, message);
+            flag = SNAP_FLAG_UP(unit, section, flag_name, message);
 
             if(opt.is_defined("manual"))
             {
@@ -485,7 +483,7 @@ int main(int argc, char * argv[])
         }
         else
         {
-            flag = SNAPWATHCDOG_FLAG_DOWN(unit, section, flag_name);
+            flag = SNAP_FLAG_DOWN(unit, section, flag_name);
             if(!message.empty())
             {
                 flag->set_message(message);

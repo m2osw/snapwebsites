@@ -1,4 +1,4 @@
-// Snap Websites Server -- snap watchdog library
+// Snap Websites Server -- snapwebsites library -- flags handling
 // Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -64,8 +64,8 @@ namespace
  *
  * This function creates a new flag in memory.
  *
- * New flags are generally created using one of the SNAPWATCHDOG_FLAG_UP()
- * or the SNAPWATHCDOG_FLAG_DOWN() macros, which will automatically
+ * New flags are generally created using one of the SNAP_FLAG_UP()
+ * or the SNAP_FLAG_DOWN() macros, which will automatically
  * initialize the flag, especially the source filename, the function name,
  * and the line number where the flag is being created, and the status
  * which the macro describes.
@@ -87,7 +87,7 @@ namespace
  * \param[in] name  The actual name of the flag. This is expected to
  *            somewhat describe what the flag is being for.
  */
-watchdog_flag::watchdog_flag(std::string const & unit, std::string const & section, std::string const & name)
+snap_flag::snap_flag(std::string const & unit, std::string const & section, std::string const & name)
     : f_unit(unit)
     , f_section(section)
     , f_name(name)
@@ -103,13 +103,13 @@ watchdog_flag::watchdog_flag(std::string const & unit, std::string const & secti
  * When this constructor is used, the flag gets loaded from file.
  * Flags use a snap_config file to handle their permanent data.
  *
- * The fields offered in the watchdog_flag object are translated
+ * The fields offered in the snap_flag object are translated
  * in a configuration field. This function reads the data with
- * a snap_file object and converts it to watchdog_flag data.
+ * a snap_file object and converts it to snap_flag data.
  *
  * \param[in] filename  The nane of the file to load.
  */
-watchdog_flag::watchdog_flag(std::string const & filename)
+snap_flag::snap_flag(std::string const & filename)
     : f_filename(filename)
 {
     if(f_filename.empty())
@@ -212,7 +212,7 @@ watchdog_flag::watchdog_flag(std::string const & filename)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_state(state_t state)
+snap_flag & snap_flag::set_state(state_t state)
 {
     f_state = state;
 
@@ -229,7 +229,7 @@ watchdog_flag & watchdog_flag::set_state(state_t state)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_source_file(std::string const & source_file)
+snap_flag & snap_flag::set_source_file(std::string const & source_file)
 {
     f_source_file = source_file;
 
@@ -247,7 +247,7 @@ watchdog_flag & watchdog_flag::set_source_file(std::string const & source_file)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_function(std::string const & function)
+snap_flag & snap_flag::set_function(std::string const & function)
 {
     f_function = function;
 
@@ -258,7 +258,7 @@ watchdog_flag & watchdog_flag::set_function(std::string const & function)
 /** \brief Set the line number at which the event happened.
  *
  * This parameter is used to save the line at which the function
- * used one of the snapwatchdog flag macros.
+ * used one of the snap_flag macros.
  *
  * By default the value is set to zero. If never called, then this
  * is a way to know that no line number was defined.
@@ -267,7 +267,7 @@ watchdog_flag & watchdog_flag::set_function(std::string const & function)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_line(int line)
+snap_flag & snap_flag::set_line(int line)
 {
     f_line = line;
 
@@ -288,7 +288,7 @@ watchdog_flag & watchdog_flag::set_line(int line)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_message(std::string const & message)
+snap_flag & snap_flag::set_message(std::string const & message)
 {
     f_message = message;
 
@@ -309,7 +309,7 @@ watchdog_flag & watchdog_flag::set_message(std::string const & message)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_message(QString const & message)
+snap_flag & snap_flag::set_message(QString const & message)
 {
     f_message = message.toUtf8().data();
 
@@ -330,7 +330,7 @@ watchdog_flag & watchdog_flag::set_message(QString const & message)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_message(char const * message)
+snap_flag & snap_flag::set_message(char const * message)
 {
     if(message == nullptr)
     {
@@ -361,7 +361,7 @@ watchdog_flag & watchdog_flag::set_message(char const * message)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_priority(int priority)
+snap_flag & snap_flag::set_priority(int priority)
 {
     if(priority < 0)
     {
@@ -385,14 +385,15 @@ watchdog_flag & watchdog_flag::set_priority(int priority)
  * Some flags may be turned ON but never turned OFF. These are called
  * _manual flags_, because you have to turn them off manually.
  *
- * At some point, the Watchdog interface will allow you to click a
- * link to manually take a flag down.
+ * \todo
+ * At some point, the Watchdog interface in the snapmanager.cgi will
+ * allow you to click a link to manually take a flag down.
  *
  * \param[in] manual  Whether the flag is considered manual or not.
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::set_manual_down(bool manual)
+snap_flag & snap_flag::set_manual_down(bool manual)
 {
     f_manual_down = manual;
 
@@ -421,7 +422,7 @@ watchdog_flag & watchdog_flag::set_manual_down(bool manual)
  *
  * \return A reference to this.
  */
-watchdog_flag & watchdog_flag::add_tag(std::string const & tag)
+snap_flag & snap_flag::add_tag(std::string const & tag)
 {
     f_tags.insert(tag);
 
@@ -438,7 +439,7 @@ watchdog_flag & watchdog_flag::add_tag(std::string const & tag)
  *
  * \return The current state of the flag.
  */
-watchdog_flag::state_t watchdog_flag::get_state() const
+snap_flag::state_t snap_flag::get_state() const
 {
     return f_state;
 }
@@ -456,7 +457,7 @@ watchdog_flag::state_t watchdog_flag::get_state() const
  * \sa get_section()
  * \sa get_name()
  */
-std::string const & watchdog_flag::get_unit() const
+std::string const & snap_flag::get_unit() const
 {
     return f_unit;
 }
@@ -473,7 +474,7 @@ std::string const & watchdog_flag::get_unit() const
  * \sa get_unit()
  * \sa get_name()
  */
-std::string const & watchdog_flag::get_section() const
+std::string const & snap_flag::get_section() const
 {
     return f_section;
 }
@@ -500,7 +501,7 @@ std::string const & watchdog_flag::get_section() const
  *
  * \sa get_message()
  */
-std::string const & watchdog_flag::get_name() const
+std::string const & snap_flag::get_name() const
 {
     return f_name;
 }
@@ -514,7 +515,7 @@ std::string const & watchdog_flag::get_name() const
  *
  * \return The source file name.
  */
-std::string const & watchdog_flag::get_source_file() const
+std::string const & snap_flag::get_source_file() const
 {
     return f_source_file;
 }
@@ -526,7 +527,7 @@ std::string const & watchdog_flag::get_source_file() const
  *
  * If you loaded the flag files, then this is defined from the constructor.
  *
- * If you created a watchdog_flag object from scratch, then the filename
+ * If you created a snap_flag object from scratch, then the filename
  * is built from the unit, section, and flag names as follow:
  *
  * \code
@@ -534,15 +535,15 @@ std::string const & watchdog_flag::get_source_file() const
  * \endcode
  *
  */
-std::string const & watchdog_flag::get_filename() const
+std::string const & snap_flag::get_filename() const
 {
     if(f_filename.empty())
     {
-        snap_config watchdog_config("snapwatchdog");
-        std::string path("/var/lib/snapwebsites/snapwatchdog/flags");
-        if(watchdog_config.has_parameter("flag_path"))
+        snap_config server_config("snapserver");
+        std::string path("/var/lib/snapwebsites/flags");
+        if(server_config.has_parameter("flag_path"))
         {
-            path = watchdog_config["flag_path"];
+            path = server_config["flag_path"];
         }
         f_filename = path + "/" + f_unit + "_" + f_section + "_" + f_name + ".flag";
     }
@@ -557,7 +558,7 @@ std::string const & watchdog_flag::get_filename() const
  *
  * \return The name of the function we are that was tike
  */
-std::string const & watchdog_flag::get_function() const
+std::string const & snap_flag::get_function() const
 {
     return f_function;
 }
@@ -568,9 +569,9 @@ std::string const & watchdog_flag::get_function() const
  * This is for debug purposes so one can easily find exactly what code
  * generated which flag.
  *
- * \return The line number where th watchdog_flag object is created.
+ * \return The line number where th snap_flag object is created.
  */
-int watchdog_flag::get_line() const
+int snap_flag::get_line() const
 {
     return f_line;
 }
@@ -585,7 +586,7 @@ int watchdog_flag::get_line() const
  *
  * \return The message of this flag.
  */
-std::string const & watchdog_flag::get_message() const
+std::string const & snap_flag::get_message() const
 {
     return f_message;
 }
@@ -604,7 +605,7 @@ std::string const & watchdog_flag::get_message() const
  *
  * \return This flag priority.
  */
-int watchdog_flag::get_priority() const
+int snap_flag::get_priority() const
 {
     return f_priority;
 }
@@ -615,22 +616,22 @@ int watchdog_flag::get_priority() const
  * A _manual down_ flag is a flag that the administrator has to turn
  * off manually once the problem was taken cared off.
  *
- * By default, a watchdog flag is considered automatic, which means
+ * By default, a snap_flag is considered automatic, which means
  * that the process that raises the flag up for some circumstances
  * will also know how to bring that flag down once the circumstances
  * disappear.
  *
  * This function returns true if the process will never bring its
  * flag down automatically. This is particularly true if the process
- * use the SNAPWATHCDOG_FLAG_UP() macro but never uses the corresponding
- * SNAPWATHCDOG_FLAG_DOWN()--corresponding as in with the same first
+ * use the SNAP_FLAG_UP() macro but never uses the corresponding
+ * SNAP_FLAG_DOWN()--corresponding as in with the same first
  * three strings (unit, section, name.)
  *
- * \return true if the watchdog has to be taken manually.
+ * \return true if the flag has to be taken down (deleted) manually.
  *
  * \sa set_manual_down()
  */
-bool watchdog_flag::get_manual_down() const
+bool snap_flag::get_manual_down() const
 {
     return f_manual_down;
 }
@@ -648,7 +649,7 @@ bool watchdog_flag::get_manual_down() const
  *
  * \return This date when this flag was last raised.
  */
-time_t watchdog_flag::get_date() const
+time_t snap_flag::get_date() const
 {
     return f_date;
 }
@@ -670,7 +671,7 @@ time_t watchdog_flag::get_date() const
  *
  * \return This date when this flag's problem was last checked.
  */
-time_t watchdog_flag::get_modified() const
+time_t snap_flag::get_modified() const
 {
     return f_modified;
 }
@@ -683,7 +684,7 @@ time_t watchdog_flag::get_modified() const
  *
  * \return The set of tags attached to this flag.
  */
-watchdog_flag::tag_list_t const & watchdog_flag::get_tags() const
+snap_flag::tag_list_t const & snap_flag::get_tags() const
 {
     return f_tags;
 }
@@ -697,7 +698,7 @@ watchdog_flag::tag_list_t const & watchdog_flag::get_tags() const
  *
  * \return The hostname of the computer that saved this flag file.
  */
-std::string const & watchdog_flag::get_hostname() const
+std::string const & snap_flag::get_hostname() const
 {
     return f_hostname;
 }
@@ -713,7 +714,7 @@ std::string const & watchdog_flag::get_hostname() const
  *
  * \return The number of times the flag file was saved.
  */
-int watchdog_flag::get_count() const
+int snap_flag::get_count() const
 {
     return f_count;
 }
@@ -730,7 +731,7 @@ int watchdog_flag::get_count() const
  *
  * \return The version used to save the flag file.
  */
-std::string const & watchdog_flag::get_version() const
+std::string const & snap_flag::get_version() const
 {
     return f_version;
 }
@@ -754,14 +755,14 @@ std::string const & watchdog_flag::get_version() const
  *
  * \important
  * Your implementation of the flags must make sure to use the
- * SNAPWATCHDOG_FLAG_UP() when an error is detected and use
- * the SNAPWATCHDOG_FLAG_DOWN() when the error is not detected
+ * SNAP_FLAG_UP() when an error is detected and use
+ * the SNAP_FLAG_DOWN() when the error is not detected
  * anymore. This is important since the file needs to disappear
  * once the problem was resolved.
  *
  * \return true if the save succeeded.
  */
-bool watchdog_flag::save()
+bool snap_flag::save()
 {
     bool result(true);
 
@@ -859,21 +860,21 @@ bool watchdog_flag::save()
  *
  * \return The vector of flag files read from disk.
  */
-watchdog_flag::vector_t watchdog_flag::load_flags()
+snap_flag::vector_t snap_flag::load_flags()
 {
     // get the path to read with glob_dir
     //
-    snap_config watchdog_config("snapwatchdog");
-    std::string path("/var/lib/snapwebsites/snapwatchdog/flags");
-    if(watchdog_config.has_parameter("flag_path"))
+    snap_config server_config("snapserver");
+    std::string path("/var/lib/snapwebsites/flags");
+    if(server_config.has_parameter("flag_path"))
     {
-        path = watchdog_config["flag_path"];
+        path = server_config["flag_path"];
     }
 
     // read the list of files
     //
     glob_dir const flag_filenames(path + "/*.flag", GLOB_NOSORT | GLOB_NOESCAPE, true);
-    watchdog_flag::vector_t result;
+    snap_flag::vector_t result;
     try
     {
         flag_filenames.enumerate_glob(std::bind(&load_flag, std::placeholders::_1, &result));
@@ -886,11 +887,11 @@ watchdog_flag::vector_t watchdog_flag::load_flags()
         // additional entries in the directory (the ignore happens because
         // of the throw in the load_flag() function.)
         //
-        auto flag(SNAPWATHCDOG_FLAG_UP("snapwatchdog"
-                                     , "flag"
-                                     , "too-many-flags"
-                                     , "too many flag were raised, showing only the first 100,"
-                                       " others can be viewed on this system at \"" + path + "\""));
+        auto flag(SNAP_FLAG_UP("snap_flag"
+                             , "flag"
+                             , "too-many-flags"
+                             , "too many flag were raised, showing only the first 100,"
+                               " others can be viewed on this system at \"" + path + "\""));
         flag->set_priority(97);
         flag->add_tag("flag");
         flag->add_tag("too-many");
@@ -904,22 +905,22 @@ watchdog_flag::vector_t watchdog_flag::load_flags()
 /** \brief Callback function that receives each flag filename.
  *
  * When we use the load_flags() function, it calls this callback for
- * each filename that it found in the flag_path directory that ended
+ * each filename found in the flag_path directory and ending
  * with the ".flag" extension.
  *
  * \param[in] filename  The name of the flag file found in the flag_path
  *                      directory.
- * \param[in,out] result  The vector where the new watchdog_flag object is
+ * \param[in,out] result  The vector where the new snap_flag object is
  *                        pushed.
  */
-void watchdog_flag::load_flag(std::string const & filename, watchdog_flag::vector_t * result)
+void snap_flag::load_flag(std::string const & filename, snap_flag::vector_t * result)
 {
     if(result->size() >= 100)
     {
         throw flags_exception_too_many_flags("too many flags");
     }
 
-    result->push_back(std::make_shared<watchdog_flag>(filename));
+    result->push_back(std::make_shared<snap_flag>(filename));
 }
 
 
@@ -940,7 +941,7 @@ void watchdog_flag::load_flag(std::string const & filename, watchdog_flag::vecto
  *
  * \param[in] name  The name to be checked.
  */
-void watchdog_flag::valid_name(std::string & name)
+void snap_flag::valid_name(std::string & name)
 {
     if(name.empty())
     {

@@ -2361,22 +2361,45 @@ void snap_communicator::connection_with_send_message::msg_help(snap_communicator
     bool need_user_help(true);
     snap_string_list commands;
 
+    dispatcher_base * d;
     snap_dispatcher_support * dispatcher_support(dynamic_cast<snap_dispatcher_support *>(this));
     if(dispatcher_support != nullptr)
     {
-        dispatcher_base::pointer_t d(dispatcher_support->get_dispatcher());
-        if(d != nullptr)
-        {
-            need_user_help = d->get_commands(commands);
-        }
+        // we extract the bare pointer because in the other case
+        // we only get a bare pointer... (which we can't safely
+        // put in a shared pointer, although we could attempt to
+        // use shared_from_this() but we could have a class without
+        // it?)
+        //
+        d = dispatcher_support->get_dispatcher().get();
+    }
+    else
+    {
+        d = dynamic_cast<dispatcher_base *>(this);
+    }
+    if(d != nullptr)
+    {
+        need_user_help = d->get_commands(commands);
     }
 
-    // the user has unknown commands in his list of commands so we have
-    // to let him enter them "manually"
+    // the user has "unknown" commands (as far as the dispatcher is concerned)
+    // in his list of commands so we have to let him enter them "manually"
+    //
+    // this happens whenever there is an entry which is a regular expression
+    // or something similar which we just cannot grab
     //
     if(need_user_help)
     {
         help(commands);
+    }
+
+    // the list of commands just cannot be empty
+    //
+    if(commands.empty())
+    {
+        throw snap_communicator_implementation_error(
+                "snap_communicator::connection_with_send_message::msg_help()"
+                " is not able to determine the commands this messenger supports");
     }
 
     // Now prepare the COMMAND message and send it

@@ -1,4 +1,4 @@
-// Snap Websites Server -- snap watchdog daemon
+// Snap Websites Server -- snapwebsites flag functionality
 // Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -60,10 +60,10 @@ public:
 
 
 
-class watchdog_flag
+class snap_flag
 {
 public:
-    typedef std::shared_ptr<watchdog_flag>      pointer_t;
+    typedef std::shared_ptr<snap_flag>          pointer_t;
     typedef std::vector<pointer_t>              vector_t;
 
     typedef std::set<std::string>               tag_list_t;
@@ -74,19 +74,19 @@ public:
         STATE_DOWN      // flag file gets deleted
     };
 
-                                watchdog_flag(std::string const & unit, std::string const & section, std::string const & name);
-                                watchdog_flag(std::string const & filename);
+                                snap_flag(std::string const & unit, std::string const & section, std::string const & name);
+                                snap_flag(std::string const & filename);
 
-    watchdog_flag &             set_state(state_t state);
-    watchdog_flag &             set_source_file(std::string const & source_file);
-    watchdog_flag &             set_function(std::string const & function);
-    watchdog_flag &             set_line(int line);
-    watchdog_flag &             set_message(std::string const & message);
-    watchdog_flag &             set_message(QString const & message);
-    watchdog_flag &             set_message(char const * message);
-    watchdog_flag &             set_priority(int priority);
-    watchdog_flag &             set_manual_down(bool manual);
-    watchdog_flag &             add_tag(std::string const & tag);
+    snap_flag &                 set_state(state_t state);
+    snap_flag &                 set_source_file(std::string const & source_file);
+    snap_flag &                 set_function(std::string const & function);
+    snap_flag &                 set_line(int line);
+    snap_flag &                 set_message(std::string const & message);
+    snap_flag &                 set_message(QString const & message);
+    snap_flag &                 set_message(char const * message);
+    snap_flag &                 set_priority(int priority);
+    snap_flag &                 set_manual_down(bool manual);
+    snap_flag &                 add_tag(std::string const & tag);
 
     state_t                     get_state() const;
     std::string const &         get_unit() const;
@@ -112,7 +112,7 @@ public:
 
 private:
     static void                 valid_name(std::string & name);
-    static void                 load_flag(std::string const & filename, watchdog_flag::vector_t * result);
+    static void                 load_flag(std::string const & filename, vector_t * result);
 
     state_t                     f_state             = state_t::STATE_UP;
     std::string                 f_unit              = std::string();
@@ -135,18 +135,18 @@ private:
 
 
 
-#define SNAPWATHCDOG_FLAG_UP(unit, section, name, message)   \
-            std::make_shared<snap::watchdog_flag>( \
-                snap::watchdog_flag(unit, section, name) \
+#define SNAP_FLAG_UP(unit, section, name, message)   \
+            std::make_shared<snap::snap_flag>( \
+                snap::snap_flag(unit, section, name) \
                     .set_message(message) \
                     .set_source_file(__FILE__) \
                     .set_function(__func__) \
                     .set_line(__LINE__))
 
-#define SNAPWATHCDOG_FLAG_DOWN(unit, section, name) \
-            std::make_shared<snap::watchdog_flag>( \
-                snap::watchdog_flag(unit, section, name) \
-                    .set_state(snap::watchdog_flag::state_t::STATE_DOWN) \
+#define SNAP_FLAG_DOWN(unit, section, name) \
+            std::make_shared<snap::snap_flag>( \
+                snap::snap_flag(unit, section, name) \
+                    .set_state(snap::snap_flag::state_t::STATE_DOWN) \
                     .set_source_file(__FILE__) \
                     .set_function(__func__) \
                     .set_line(__LINE__))

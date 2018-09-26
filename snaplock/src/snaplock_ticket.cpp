@@ -453,14 +453,17 @@ snaplock_ticket::snaplock_ticket(
  */
 bool snaplock_ticket::send_message_to_leaders(snap::snap_communicator_message & message)
 {
+    // finish the message initialization
+    //
+    message.set_service("snaplock");
+    message.add_parameter("object_name", f_object_name);
+
     snaplock::computer_t::pointer_t leader(f_snaplock->get_leader_a());
     if(leader != nullptr)
     {
         // there are at least two leaders
         //
-        message.set_service("snaplock");
         message.set_server(leader->get_name());
-        message.add_parameter("object_name", f_object_name);
         f_messenger->send_message(message);
 
         // check for a third leader

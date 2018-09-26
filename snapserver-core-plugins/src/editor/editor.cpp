@@ -835,7 +835,7 @@ void editor::process_new_draft()
                 // (because if it happens often it could mean
                 // robots are working on the website!)
                 //
-                snap::watchdog_flag::pointer_t flag(SNAPWATHCDOG_FLAG_UP(
+                snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
                               "snapserver-plugin"
                             , "editor"
                             , "new-draft"

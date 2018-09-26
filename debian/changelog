@@ -1,3 +1,24 @@
+snapwebsites (1.6.5.0~xenial) xenial; urgency=high
+
+  * Fixed snapcommunicator so self is always included in the count.
+  * Move the flags out of the watchdog sub-directory since it may not be there.
+  * Fixed the flags.cpp, removing the "watchdog" part since now it is in the
+    library. Updated the rest of the code accordingly.
+  * Moved the flag_path to the snapserver.conf file.
+  * On a purge, attempt deleting the snapwebsites.d sub-directory.
+  * Fixed the msg_help() as 'this' may represent a dispatcher_base directly.
+  * Throw an error if the dispatcher can't find any command.
+  * Raise a flag if you add a neighbor which is a loopback address.
+  * Fixed the snaplock elections so they still work when we have less than
+    three computers.
+  * Fixed the usage of --debug-lock-messages in snaplock.
+  * Mark ourselves as connected otherwise the election doesn't pick up.
+  * Generate an error if the cluster is 3 or less computers and one or more
+    is turned off.
+  * Added a lock manager plugin to setup the candidate priority.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 25 Sep 2018 16:03:31 -0700
+
 snapwebsites (1.6.4.0~xenial) xenial; urgency=high
 
   * Removed a warning that would always happen and is not necessary.

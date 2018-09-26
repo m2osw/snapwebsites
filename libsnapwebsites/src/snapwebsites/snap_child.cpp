@@ -2874,7 +2874,7 @@ pid_t snap_child::fork_child()
             // this is a rather important bug, only developers have a chance
             // to fix it, though... (hence the rather low priority)
             //
-            SNAPWATHCDOG_FLAG_UP(
+            SNAP_FLAG_UP(
                           "snap_child"
                         , "create-child"
                         , "thread"

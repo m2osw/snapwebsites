@@ -2617,7 +2617,7 @@ void users::make_cookie_secure(http_cookie & cookie)
             //
             QString const site_key(f_snap->get_site_key_with_slash());
             std::string site(site_key.toUtf8().data());
-            snap::watchdog_flag::pointer_t flag(SNAPWATHCDOG_FLAG_UP(
+            snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
                           "snapserver-plugin"
                         , "users"
                         , "secure-cookie"

@@ -573,7 +573,7 @@ QString const & snaplock::computer_t::get_ip_address() const
  */
 snaplock::snaplock(int argc, char * argv[])
     : dispatcher(this, g_snaplock_service_messages)
-    , f_opt( argc, argv, g_snaplock_options, g_configuration_files, nullptr )
+    , f_opt(argc, argv, g_snaplock_options, g_configuration_files, nullptr)
     , f_config("snaplock")
 {
     // --help
@@ -603,16 +603,16 @@ snaplock::snaplock(int argc, char * argv[])
     // --debug
     f_debug = f_opt.is_defined("debug");
 
-    // set message trace mode if debug is defined
-    //
-    if(f_debug)
-    {
-        set_trace();
-    }
-
     // --debug-lock-messages
     f_debug_lock_messages = f_opt.is_defined("debug-lock-messages")     // command line
                          || f_config.has_parameter("debug_lock_messages");   // .conf file
+
+    // set message trace mode if debug-lock-messages is defined
+    //
+    if(f_debug_lock_messages)
+    {
+        set_trace();
+    }
 
     // get the server name using the library function
     //
@@ -720,9 +720,12 @@ snaplock::snaplock(int argc, char * argv[])
 
     // add ourselves to the list of computers
     //
+    // mark ourselves as connected, obviously
+    //
     // as a side effect: it generates our identifier
     //
     f_computers[f_server_name] = std::make_shared<computer_t>(f_server_name, priority);
+    f_computers[f_server_name]->set_connected(true);
     f_my_id = f_computers[f_server_name]->get_id();
     f_my_ip_address = f_computers[f_server_name]->get_ip_address();
 }
@@ -1407,6 +1410,7 @@ void snaplock::election_status()
     // to select the leaders sort them by identifier and take the first
     // three (i.e. lower priority, random, IP, pid.)
     //
+    int off(0);
     computer_t::map_t sort_by_id;
     for(auto c : f_computers)
     {
@@ -1429,9 +1433,39 @@ void snaplock::election_status()
 
             sort_by_id[id] = c.second;
         }
+        else
+        {
+            ++off;
+        }
     }
 
-    if(sort_by_id.size() < 3)
+    if(f_computers.size() - off < 3)
+    {
+        if(f_computers.size() <= 3)
+        {
+            SNAP_LOG_FATAL(
+                    "you cannot have any computer turned OFF when you"
+                    " have three or less computers total in your cluster."
+                    " The elections cannot be completed in these"
+                    " circumstances.");
+        }
+        else
+        {
+            SNAP_LOG_FATAL("you have a total of ")
+                    (f_computers.size())
+                    (" computers in your cluster. You turned off ")
+                    (off)
+                    (" of them, which means less than three are left"
+                     " as candidates for leadership which is not enough."
+                     " You can have a maximum of ")
+                    (f_computers.size() - 3)
+                    (" that are turned off on this cluster.");
+        }
+        return;
+    }
+
+    if(sort_by_id.size() < 3
+    && sort_by_id.size() != f_computers.size())
     {
         return;
     }

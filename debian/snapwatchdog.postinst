@@ -19,7 +19,7 @@ then
     SNAPWATCHDOG_LIB_DIR=/var/lib/snapwebsites/${PACKAGENAME}
     mkdir -p ${SNAPWATCHDOG_LIB_DIR}
     chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}
-    for subdir in data flags rusage script-files
+    for subdir in data rusage script-files
     do
         mkdir -p ${SNAPWATCHDOG_LIB_DIR}/${subdir}
         chown snapwebsites:snapwebsites ${SNAPWATCHDOG_LIB_DIR}/${subdir}

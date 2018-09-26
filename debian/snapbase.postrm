@@ -45,8 +45,12 @@ then
         fi
     fi
 
-    # delete the settings directory, but leave it if non-empty
+    # delete the settings directories, but leave them if non-empty
     #
+    if test -d /etc/snapwebsites/snapwebsites.d
+    then
+        rmdir --ignore-fail-on-non-empty /etc/snapwebsites/snapwebsites.d
+    fi
     if test -d /etc/snapwebsites
     then
         rmdir --ignore-fail-on-non-empty /etc/snapwebsites

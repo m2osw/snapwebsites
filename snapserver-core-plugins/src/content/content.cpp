@@ -4230,7 +4230,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
                 //       which JavaScript we flagged; so for now we mark
                 //       them as manual flags
                 //
-                snap::watchdog_flag::pointer_t flag(SNAPWATHCDOG_FLAG_UP(
+                snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
                               "snapserver-plugin"
                             , "content"
                             , "javascript-file"

@@ -1,15 +1,15 @@
 ################################################################################
 # File:
-#      snapserver-core-plugins/watchdog-plugins/CMakeLists.txt
+#      snaplock/manager-plugins/CMakeLists.txt
 #
 # Description:
-#      Set of extensions used by the Snap! Watchdog daemon.
+#      Set of extensions used by the Snap! Manager CGI and daemon.
 #
 # Documentation:
 #      See the CMake documentation.
 #
 # License:
-#      Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
+#      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
 #
 #      https://snapwebsites.org/
 #      contact@m2osw.com
@@ -30,7 +30,7 @@
 #
 ################################################################################
 
-project( snapserver_watchdog_plugins )
+project( manager_plugins )
 
 # Automatically run the moc compiler on qt files
 set( CMAKE_AUTOMOC TRUE )
@@ -38,21 +38,20 @@ set( CMAKE_AUTOMOC TRUE )
 ################################################################################
 # We need a common place to install the plugins
 #
-set( PLUGIN_INSTALL_DIR lib/snapwebsites/watchdog_plugins )
+set( PLUGIN_INSTALL_DIR lib/snapwebsites/manager_plugins )
 
 
 ################################################################################
 # Allow for #include of other header files available to plugins
 #
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${snapwatchdog_SOURCE_DIR}
-)
+#include_directories(
+#    #${snapmanager_SOURCE_DIR}
+#)
 
 ################################################################################
 # Keep the plugins in alphabetical order for ease of management
 #
-add_subdirectory(watchdog_list)
+add_subdirectory(lock)
 
 
 # vim: ts=4 sw=4 nocindent et

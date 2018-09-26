@@ -172,7 +172,7 @@ void flags::on_process_watch(QDomDocument doc)
     // check whether we have any flags that are currently raised
     // if not, we just return ASAP
     //
-    watchdog_flag::vector_t list(watchdog_flag::load_flags());
+    snap_flag::vector_t list(snap_flag::load_flags());
 
     if(list.empty())
     {
@@ -251,7 +251,7 @@ void flags::on_process_watch(QDomDocument doc)
         QDomElement tags(doc.createElement("tags"));
         flag.appendChild(tags);
 
-        watchdog_flag::tag_list_t const & tag_list(f->get_tags());
+        snap_flag::tag_list_t const & tag_list(f->get_tags());
 
         for(auto t : tag_list)
         {

@@ -80,7 +80,6 @@ char const * get_name(name_t name)
  * This function is used to initialize the list plugin object.
  */
 list::list()
-    //: f_snap(nullptr) -- auto-init
 {
 }
 
