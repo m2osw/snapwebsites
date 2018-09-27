@@ -429,6 +429,18 @@ snaplock::computer_t::priority_t snaplock::computer_t::get_priority() const
 }
 
 
+void snaplock::computer_t::set_start_time(time_t start_time)
+{
+    f_start_time = start_time;
+}
+
+
+time_t snaplock::computer_t::get_start_time() const
+{
+    return f_start_time;
+}
+
+
 QString const & snaplock::computer_t::get_name() const
 {
     return f_name;
@@ -778,6 +790,8 @@ void snaplock::usage(advgetopt::getopt::status_t status)
  */
 void snaplock::run()
 {
+    f_start_time = time(nullptr);
+
     // Stop on these signals, log them, then terminate.
     //
     signal( SIGSEGV, snaplock::sighandler );
@@ -1063,6 +1077,33 @@ bool snaplock::is_ready() const
     //
     if(f_leaders.size() == 1
     && f_neighbors_count != 1)
+    {
+        return false;
+    }
+
+    // the election_status() function verifies that the quorum is
+    // attained, but it can change if the cluster grows or shrinks
+    // so we have to check here again as the lock system becomes
+    // "unready" when the quorum is lost; see that other function
+    // for additional info
+
+    // this one probably looks complicated...
+    //
+    // if our quorum is 1 or 2 then we need a number of computers
+    // equal to the total number of computers (i.e. a CLUSTERCOMPLETE
+    // status which we compute here)
+    //
+    if(f_neighbors_quorum < 3
+    && f_computers.size() < f_neighbors_count)
+    {
+        return false;
+    }
+
+    // the neighbors count & quorum can change over time so
+    // we have to verify that the number of computers is
+    // still acceptable here
+    //
+    if(f_computers.size() < f_neighbors_quorum)
     {
         return false;
     }
@@ -1484,11 +1525,11 @@ void snaplock::election_status()
         return;
     }
 
-std::cerr << f_communicator_port << " is conducting an election:\n";
-for(auto s : sort_by_id)
-{
-std::cerr << "  " << s.second->get_name() << "    " << s.first << "\n";
-}
+//std::cerr << f_communicator_port << " is conducting an election:\n";
+//for(auto s : sort_by_id)
+//{
+//std::cerr << "  " << s.second->get_name() << "    " << s.first << "\n";
+//}
 
     // the first three are the new leaders
     //
@@ -1581,6 +1622,7 @@ void snaplock::send_lockstarted(snap::snap_communicator_message const * message)
     //
     lockstarted_message.add_parameter("server_name", f_server_name);
     lockstarted_message.add_parameter("lockid", f_my_id);
+    lockstarted_message.add_parameter("starttime", f_start_time);
 
     // include the leaders if present
     //
@@ -1673,6 +1715,12 @@ void snaplock::msg_lock_started(snap::snap_communicator_message & message)
         return;
     }
 
+    time_t start_time(0);
+    if(message.has_parameter("starttime"))
+    {
+        start_time = message.get_integer_parameter("starttime");
+    }
+
     computer_t::map_t::iterator it(f_computers.find(server_name));
     bool new_computer(it == f_computers.end());
     if(new_computer)
@@ -1692,14 +1740,31 @@ void snaplock::msg_lock_started(snap::snap_communicator_message & message)
 
         f_computers[computer->get_name()] = computer;
     }
-    else if(!it->second->get_connected())
+    else
     {
-        // we heard of this computer (because it is/was a leader) but
-        // we had not yet received a LOCKSTARTED message from it; so here
-        // we consider it a new computer and will reply to the LOCKSTARTED
-        //
-        new_computer = true;
-        it->second->set_connected(true);
+        if(!it->second->get_connected())
+        {
+            // we heard of this computer (because it is/was a leader) but
+            // we had not yet received a LOCKSTARTED message from it; so here
+            // we consider it a new computer and will reply to the LOCKSTARTED
+            //
+            new_computer = true;
+            it->second->set_connected(true);
+        }
+
+        if(start_time != 0
+        && it->second->get_start_time() != start_time)
+        {
+            // when the start time changes that means snaplock
+            // restarted which can happen without snapcommunicator
+            // restarting so here we would not know about the feat
+            // without this parameter and in this case it is very
+            // much the same as a new computer so send it a
+            // LOCKSTARTED message back!
+            //
+            new_computer = true;
+            it->second->set_start_time(start_time);
+        }
     }
 
     // keep the newest election results
@@ -1945,8 +2010,8 @@ void snaplock::msg_status(snap::snap_communicator_message & message)
         if(status == "up")
         {
             // we already broadcast a LOCKSTARTED from CLUSTERUP
+            // and that's enough
             //
-            //send_lockstarted(nullptr);
         }
         else
         {
@@ -2383,7 +2448,9 @@ void snaplock::msg_lock(snap::snap_communicator_message & message)
 
     if(!is_ready())
     {
-        SNAP_LOG_TRACE("caching LOCK message as the snaplock system is not yet considered ready.");
+        SNAP_LOG_TRACE("caching LOCK message for \"")
+                      (object_name)
+                      ("\" as the snaplock system is not yet considered ready.");
 
         message_cache const mc
             {
@@ -4094,7 +4161,7 @@ void snaplock::tool_message(snap::snap_communicator_message const & message)
             {
                 snap::snap_communicator_message list_message;
                 list_message.set_command("LISTTICKETS");
-                list_message.set_service(f_service_name);
+                list_message.set_service("snaplock");
                 list_message.set_server(f_server_name);
                 list_message.add_parameter("cache", "no");
                 list_message.add_parameter("transmission_report", "failure");

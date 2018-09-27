@@ -426,6 +426,7 @@ private:
     sorted_list_of_strings_t                            f_registered_neighbors_for_loadavg = sorted_list_of_strings_t();
     remote_communicator_connections::pointer_t          f_remote_snapcommunicators = remote_communicator_connections::pointer_t();
     size_t                                              f_max_connections = SNAP_COMMUNICATOR_MAX_CONNECTIONS;
+    size_t                                              f_total_count_sent = 0; // f_all_neighbors.size() sent along CLUSTERUP/DOWN/COMPLETE/INCOMPLETE
     bool                                                f_shutdown = false;
     bool                                                f_debug_lock = false;
     bool                                                f_force_restart = false;
@@ -4561,9 +4562,13 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
 
     QString const new_status(count >= quorum ? "CLUSTERUP" : "CLUSTERDOWN");
     if(new_status != f_cluster_status
+    || f_total_count_sent != total_count
     || reply_connection != nullptr)
     {
-        f_cluster_status = new_status;
+        if(reply_connection == nullptr)
+        {
+            f_cluster_status = new_status;
+        }
 
         // send the results to either the requesting connection or broadcast
         // the status to everyone
@@ -4590,9 +4595,13 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
 
     QString const new_complete(count == total_count ? "CLUSTERCOMPLETE" : "CLUSTERINCOMPLETE");
     if(new_complete != f_cluster_complete
+    || f_total_count_sent != total_count
     || reply_connection != nullptr)
     {
-        f_cluster_complete = new_complete;
+        if(reply_connection == nullptr)
+        {
+            f_cluster_complete = new_complete;
+        }
 
         // send the results to either the requesting connection or broadcast
         // the complete to everyone
@@ -4615,6 +4624,11 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
         {
             broadcast_message(cluster_complete_msg);
         }
+    }
+
+    if(reply_connection == nullptr)
+    {
+        f_total_count_sent = total_count;
     }
 
     SNAP_LOG_INFO("cluster status is \"")

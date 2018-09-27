@@ -1,3 +1,18 @@
+snapwebsites (1.6.7.0~xenial) xenial; urgency=high
+
+  * Fixed the CLUSTERUP/DOWN/[IN]COMPLETE neighbors_count so it gets resent
+    when the count changes, which allows adding/removing neighbors dynamically.
+  * Fixed updating the f_cluster_status as it can't be done when
+    reply_connection is not a null pointer.
+  * Added a start time to each snaplock so a LOCKSTARTED tells us whether this
+    is a new snaplock or not (i.e. if we know that snaplock but its start time
+    changed then it was restarted so it's considered new.)
+  * Made the snaplock is_ready() function return false is the quorum changes
+    and the results is that the election would not have occurred.
+  * Force service name for LISTTICKETS to be "snaplock".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 26 Sep 2018 20:34:45 -0700
+
 snapwebsites (1.6.6.1~xenial) xenial; urgency=high
 
   * Fixed the list of include path so the snaplock manager plugin compiles.

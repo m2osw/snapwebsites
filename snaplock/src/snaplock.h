@@ -347,6 +347,8 @@ public:
         bool                    get_connected() const;
         bool                    set_id(QString const & id);
         priority_t              get_priority() const;
+        void                    set_start_time(time_t start_time);
+        time_t                  get_start_time() const;
 
         QString const &         get_name() const;
         QString const &         get_id() const;
@@ -363,6 +365,8 @@ public:
         QString                 f_ip_address = QString();
         pid_t                   f_pid = 0;
         QString                 f_name = QString();
+
+        time_t                  f_start_time = -1;
     };
 
     static int64_t const        DEFAULT_TIMEOUT = 5; // in seconds
@@ -462,6 +466,7 @@ private:
 
     advgetopt::getopt                   f_opt;
     snap::snap_config                   f_config;
+    time_t                              f_start_time = -1;
     QString                             f_log_conf = QString("/etc/snapwebsites/logger/snaplock.properties");
     QString                             f_server_name = QString();
     QString                             f_service_name = QString("snaplock");
