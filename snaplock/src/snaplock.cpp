@@ -1060,6 +1060,7 @@ bool snaplock::is_ready() const
     //
     if(f_leaders.empty())
     {
+        SNAP_LOG_TRACE("not considered ready: no leaders.");
         return false;
     }
 
@@ -1079,6 +1080,7 @@ bool snaplock::is_ready() const
     if(f_leaders.size() == 1
     && f_neighbors_count != 1)
     {
+        SNAP_LOG_TRACE("not considered ready: no enough leaders for this cluster.");
         return false;
     }
 
@@ -1097,6 +1099,7 @@ bool snaplock::is_ready() const
     if(f_neighbors_quorum < 3
     && f_computers.size() < f_neighbors_count)
     {
+        SNAP_LOG_TRACE("not considered ready: quorum changed, re-election expected soon.");
         return false;
     }
 
@@ -1106,6 +1109,7 @@ bool snaplock::is_ready() const
     //
     if(f_computers.size() < f_neighbors_quorum)
     {
+        SNAP_LOG_TRACE("not considered ready: quorum lost, re-election expected soon.");
         return false;
     }
 
@@ -1115,6 +1119,7 @@ bool snaplock::is_ready() const
     {
         if(!l->get_connected())
         {
+            SNAP_LOG_TRACE("not considered ready: no direct connection with one of the leaders.");
             return false;
         }
     }
@@ -2709,58 +2714,34 @@ void snaplock::msg_lock_entering(snap::snap_communicator_message & message)
     // the server_name and client_pid never include a slash so using
     // such as separators is safe
     //
-    if(timeout > time(nullptr)  // still in the future?
-    && is_ready())              // still have leaders?
+    if(timeout > time(nullptr))  // lock still in the future?
     {
-        // the entering is just a flag (i.e. entering[i] = true)
-        // in our case the existance of a ticket is enough to know
-        // that we entered
-        //
-        bool allocate(true);
-        auto const obj_ticket(f_entering_tickets.find(object_name));
-        if(obj_ticket != f_entering_tickets.end())
+        if(is_ready())              // still have leaders?
         {
-            auto const key_ticket(obj_ticket->second.find(key));
-            allocate = key_ticket == obj_ticket->second.end();
-        }
-        if(allocate)
-        {
-            // ticket does not exist, so create it now
-            // (note: ticket should only exist on originator)
+            // the entering is just a flag (i.e. entering[i] = true)
+            // in our case the existance of a ticket is enough to know
+            // that we entered
             //
-            int32_t const duration(message.get_integer_parameter("duration"));
-            if(duration < snap::snap_lock::SNAP_LOCK_MINIMUM_TIMEOUT)
+            bool allocate(true);
+            auto const obj_ticket(f_entering_tickets.find(object_name));
+            if(obj_ticket != f_entering_tickets.end())
             {
-                // invalid duration, minimum is 3
-                //
-                SNAP_LOG_ERROR(duration)
-                              (" is an invalid duration, the minimum accepted is ")
-                              (snap::snap_lock::SNAP_LOCK_MINIMUM_TIMEOUT)
-                              (".");
-
-                snap::snap_communicator_message lock_failed_message;
-                lock_failed_message.set_command("LOCKFAILED");
-                lock_failed_message.reply_to(message);
-                lock_failed_message.add_parameter("object_name", object_name);
-                lock_failed_message.add_parameter("key", key);
-                lock_failed_message.add_parameter("error", "invalid");
-                send_message(lock_failed_message);
-
-                return;
+                auto const key_ticket(obj_ticket->second.find(key));
+                allocate = key_ticket == obj_ticket->second.end();
             }
-
-            int32_t unlock_duration(snap::snap_lock::SNAP_UNLOCK_USES_LOCK_TIMEOUT);
-            if(message.has_parameter("unlock_duration"))
+            if(allocate)
             {
-                unlock_duration = message.get_integer_parameter("unlock_duration");
-                if(unlock_duration != snap::snap_lock::SNAP_UNLOCK_USES_LOCK_TIMEOUT
-                && unlock_duration < snap::snap_lock::SNAP_UNLOCK_MINIMUM_TIMEOUT)
+                // ticket does not exist, so create it now
+                // (note: ticket should only exist on originator)
+                //
+                int32_t const duration(message.get_integer_parameter("duration"));
+                if(duration < snap::snap_lock::SNAP_LOCK_MINIMUM_TIMEOUT)
                 {
-                    // invalid duration, minimum is 60
+                    // invalid duration, minimum is 3
                     //
                     SNAP_LOG_ERROR(duration)
-                                  (" is an invalid unlock duration, the minimum accepted is ")
-                                  (snap::snap_lock::SNAP_UNLOCK_MINIMUM_TIMEOUT)
+                                  (" is an invalid duration, the minimum accepted is ")
+                                  (snap::snap_lock::SNAP_LOCK_MINIMUM_TIMEOUT)
                                   (".");
 
                     snap::snap_communicator_message lock_failed_message;
@@ -2773,53 +2754,83 @@ void snaplock::msg_lock_entering(snap::snap_communicator_message & message)
 
                     return;
                 }
+
+                int32_t unlock_duration(snap::snap_lock::SNAP_UNLOCK_USES_LOCK_TIMEOUT);
+                if(message.has_parameter("unlock_duration"))
+                {
+                    unlock_duration = message.get_integer_parameter("unlock_duration");
+                    if(unlock_duration != snap::snap_lock::SNAP_UNLOCK_USES_LOCK_TIMEOUT
+                    && unlock_duration < snap::snap_lock::SNAP_UNLOCK_MINIMUM_TIMEOUT)
+                    {
+                        // invalid duration, minimum is 60
+                        //
+                        SNAP_LOG_ERROR(duration)
+                                      (" is an invalid unlock duration, the minimum accepted is ")
+                                      (snap::snap_lock::SNAP_UNLOCK_MINIMUM_TIMEOUT)
+                                      (".");
+
+                        snap::snap_communicator_message lock_failed_message;
+                        lock_failed_message.set_command("LOCKFAILED");
+                        lock_failed_message.reply_to(message);
+                        lock_failed_message.add_parameter("object_name", object_name);
+                        lock_failed_message.add_parameter("key", key);
+                        lock_failed_message.add_parameter("error", "invalid");
+                        send_message(lock_failed_message);
+
+                        return;
+                    }
+                }
+
+                // we have to know where this message comes from
+                //
+                snap::snap_string_list const source_segments(source.split("/"));
+                if(source_segments.size() != 2)
+                {
+                    SNAP_LOG_ERROR("Invalid number of parameters in source (found ")
+                                  (source_segments.size())
+                                  (", expected 2.)");
+
+                    snap::snap_communicator_message lock_failed_message;
+                    lock_failed_message.set_command("LOCKFAILED");
+                    lock_failed_message.reply_to(message);
+                    lock_failed_message.add_parameter("object_name", object_name);
+                    lock_failed_message.add_parameter("key", key);
+                    lock_failed_message.add_parameter("error", "invalid");
+                    send_message(lock_failed_message);
+
+                    return;
+                }
+
+                snaplock_ticket::pointer_t ticket(std::make_shared<snaplock_ticket>(
+                                          this
+                                        , f_messenger
+                                        , object_name
+                                        , key
+                                        , timeout
+                                        , duration
+                                        , source_segments[0]
+                                        , source_segments[1]));
+
+                f_entering_tickets[object_name][key] = ticket;
+
+                // finish up on ticket initialization
+                //
+                ticket->set_owner(message.get_sent_from_server());
+                ticket->set_unlock_duration(unlock_duration);
+                ticket->set_serial(message.get_integer_parameter("serial"));
             }
 
-            // we have to know where this message comes from
-            //
-            snap::snap_string_list const source_segments(source.split("/"));
-            if(source_segments.size() != 2)
-            {
-                SNAP_LOG_ERROR("Invalid number of parameters in source (found ")
-                              (source_segments.size())
-                              (", expected 2.)");
-
-                snap::snap_communicator_message lock_failed_message;
-                lock_failed_message.set_command("LOCKFAILED");
-                lock_failed_message.reply_to(message);
-                lock_failed_message.add_parameter("object_name", object_name);
-                lock_failed_message.add_parameter("key", key);
-                lock_failed_message.add_parameter("error", "invalid");
-                send_message(lock_failed_message);
-
-                return;
-            }
-
-            snaplock_ticket::pointer_t ticket(std::make_shared<snaplock_ticket>(
-                                      this
-                                    , f_messenger
-                                    , object_name
-                                    , key
-                                    , timeout
-                                    , duration
-                                    , source_segments[0]
-                                    , source_segments[1]));
-
-            f_entering_tickets[object_name][key] = ticket;
-
-            // finish up on ticket initialization
-            //
-            ticket->set_owner(message.get_sent_from_server());
-            ticket->set_unlock_duration(unlock_duration);
-            ticket->set_serial(message.get_integer_parameter("serial"));
+            snap::snap_communicator_message reply;
+            reply.set_command("LOCKENTERED");
+            reply.reply_to(message);
+            reply.add_parameter("object_name", object_name);
+            reply.add_parameter("key", key);
+            send_message(reply);
         }
-
-        snap::snap_communicator_message reply;
-        reply.set_command("LOCKENTERED");
-        reply.reply_to(message);
-        reply.add_parameter("object_name", object_name);
-        reply.add_parameter("key", key);
-        send_message(reply);
+        else
+        {
+            SNAP_LOG_DEBUG("received LOCKENTERING while we are thinking we are not ready.");
+        }
     }
 
     cleanup();

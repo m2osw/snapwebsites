@@ -1,3 +1,9 @@
+snapwebsites (1.6.10.0~xenial) xenial; urgency=high
+
+  * Added logs to better understand why is_ready() returns false.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Sep 2018 14:28:26 -0700
+
 snapwebsites (1.6.9.0~xenial) xenial; urgency=high
 
   * Fixed the set_command() in CLUSTERSTATUS replies.
