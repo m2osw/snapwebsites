@@ -1657,12 +1657,27 @@ void snaplock::msg_lock_leaders(snap::snap_communicator_message & message)
         QString const param_name(QString("leader%1").arg(idx));
         if(message.has_parameter(param_name))
         {
-            QString const leader(message.get_parameter(param_name));
-            for(auto & c : f_computers)
+            computer_t::pointer_t leader(std::make_shared<computer_t>());
+            QString const lockid(message.get_parameter(param_name));
+            if(leader->set_id(lockid))
             {
-                if(c.second->get_id() == leader)
+                computer_t::map_t::iterator exists(f_computers.find(leader->get_name()));
+                if(exists != f_computers.end())
                 {
-                    f_leaders.push_back(c.second);
+                    // it already exists, use our existing instance
+                    //
+                    f_leaders.push_back(exists->second);
+                }
+                else
+                {
+                    // we do not yet know of that computer, even though
+                    // it is a leader! (i.e. we are not yet aware that
+                    // somehow we are connected to it)
+                    //
+                    leader->set_connected(false);
+                    f_computers[leader->get_name()] = leader;
+
+                    f_leaders.push_back(leader);
                 }
             }
         }
