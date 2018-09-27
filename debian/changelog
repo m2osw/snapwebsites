@@ -1,3 +1,10 @@
+snapwebsites (1.6.9.0~xenial) xenial; urgency=high
+
+  * Fixed the set_command() in CLUSTERSTATUS replies.
+  * Changed "debug_lock_messages" with "debug_all_messages" in snapcommunicator.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Sep 2018 09:25:42 -0700
+
 snapwebsites (1.6.8.0~xenial) xenial; urgency=high
 
   * Initialize start time in the constructor.

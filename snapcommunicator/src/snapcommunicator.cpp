@@ -428,7 +428,7 @@ private:
     size_t                                              f_max_connections = SNAP_COMMUNICATOR_MAX_CONNECTIONS;
     size_t                                              f_total_count_sent = 0; // f_all_neighbors.size() sent along CLUSTERUP/DOWN/COMPLETE/INCOMPLETE
     bool                                                f_shutdown = false;
-    bool                                                f_debug_lock = false;
+    bool                                                f_debug_all_messages = false;
     bool                                                f_force_restart = false;
     message_cache::vector_t                             f_local_message_cache = message_cache::vector_t();
     std::map<QString, time_t>                           f_received_broadcast_messages = (std::map<QString, time_t>());
@@ -2050,7 +2050,7 @@ void snap_communicator_server::init()
 
     f_number_of_processors = std::max(1U, std::thread::hardware_concurrency());
 
-    f_debug_lock = !f_server->get_parameter("debug_lock_messages").isEmpty();
+    f_debug_all_messages = !f_server->get_parameter("debug_all_messages").isEmpty();
 
     {
         // check a user defined maximum number of connections
@@ -2580,7 +2580,7 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
     QString const command(message.get_command());
     QString const sent_from_service(message.get_sent_from_service());
 
-    if(f_debug_lock
+    if(f_debug_all_messages
     || (command != "UNLOCKED"
      && sent_from_service != "snaplock"
      && !sent_from_service.startsWith("lock_")
@@ -4574,7 +4574,7 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
         // the status to everyone
         //
         snap::snap_communicator_message cluster_status_msg;
-        cluster_status_msg.set_command(f_cluster_status);
+        cluster_status_msg.set_command(new_status);
         cluster_status_msg.set_service(".");
         cluster_status_msg.add_parameter("neighbors_count", total_count);
         if(reply_connection != nullptr)
@@ -4607,7 +4607,7 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
         // the complete to everyone
         //
         snap::snap_communicator_message cluster_complete_msg;
-        cluster_complete_msg.set_command(f_cluster_complete);
+        cluster_complete_msg.set_command(new_complete);
         cluster_complete_msg.set_service(".");
         cluster_complete_msg.add_parameter("neighbors_count", QString("%1").arg(total_count));
         if(reply_connection != nullptr)
