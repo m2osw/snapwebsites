@@ -78,6 +78,8 @@ public:
     void                unlock();
 
     time_t              get_timeout_date() const;
+    bool                is_locked() const;
+    bool                lock_timedout() const;
 
 private:
     std::shared_ptr<details::lock_connection>    f_lock_connection = std::shared_ptr<details::lock_connection>();

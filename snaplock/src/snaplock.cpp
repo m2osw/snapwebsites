@@ -744,6 +744,8 @@ snaplock::snaplock(int argc, char * argv[])
         snap::NOTREACHED();
     }
 
+    f_start_time = time(nullptr);
+
     // add ourselves to the list of computers
     //
     // mark ourselves as connected, obviously
@@ -751,6 +753,7 @@ snaplock::snaplock(int argc, char * argv[])
     // as a side effect: it generates our identifier
     //
     f_computers[f_server_name] = std::make_shared<computer_t>(f_server_name, priority);
+    f_computers[f_server_name]->set_start_time(f_start_time);
     f_computers[f_server_name]->set_connected(true);
     f_my_id = f_computers[f_server_name]->get_id();
     f_my_ip_address = f_computers[f_server_name]->get_ip_address();
@@ -790,8 +793,6 @@ void snaplock::usage(advgetopt::getopt::status_t status)
  */
 void snaplock::run()
 {
-    f_start_time = time(nullptr);
-
     // Stop on these signals, log them, then terminate.
     //
     signal( SIGSEGV, snaplock::sighandler );
@@ -1715,11 +1716,7 @@ void snaplock::msg_lock_started(snap::snap_communicator_message & message)
         return;
     }
 
-    time_t start_time(0);
-    if(message.has_parameter("starttime"))
-    {
-        start_time = message.get_integer_parameter("starttime");
-    }
+    time_t const start_time(message.get_integer_parameter("starttime"));
 
     computer_t::map_t::iterator it(f_computers.find(server_name));
     bool new_computer(it == f_computers.end());
@@ -1737,6 +1734,7 @@ void snaplock::msg_lock_started(snap::snap_communicator_message & message)
             //
             return;
         }
+        computer->set_start_time(start_time);
 
         f_computers[computer->get_name()] = computer;
     }
@@ -1752,8 +1750,7 @@ void snaplock::msg_lock_started(snap::snap_communicator_message & message)
             it->second->set_connected(true);
         }
 
-        if(start_time != 0
-        && it->second->get_start_time() != start_time)
+        if(it->second->get_start_time() != start_time)
         {
             // when the start time changes that means snaplock
             // restarted which can happen without snapcommunicator
@@ -1780,18 +1777,12 @@ void snaplock::msg_lock_started(snap::snap_communicator_message & message)
     }
 
     bool const set_my_leaders(f_leaders.empty());
-    for(int idx(0); idx < 3; ++idx)
+    if(set_my_leaders)
     {
-        QString const param_name(QString("leader%1").arg(idx));
-        if(message.has_parameter(param_name))
+        for(int idx(0); idx < 3; ++idx)
         {
-            //if(idx == 0)
-            //{
-            //    f_computers[server_name]->clear_leaders();
-            //}
-            //f_computers[server_name]->add_leader(lockid);
-
-            if(set_my_leaders)
+            QString const param_name(QString("leader%1").arg(idx));
+            if(message.has_parameter(param_name))
             {
                 computer_t::pointer_t leader(std::make_shared<computer_t>());
                 QString const lockid(message.get_parameter(param_name));

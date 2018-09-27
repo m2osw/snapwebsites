@@ -1,3 +1,15 @@
+snapwebsites (1.6.8.0~xenial) xenial; urgency=high
+
+  * Initialize start time in the constructor.
+  * Set our start time in our constructor.
+  * Immediately set the start time of new computers.
+  * Moved the `if(set_my_leaders)` outside of the loop.
+  * Added functions to access the is_locked() and lock_timedout() functions.
+  * Removed the get_obtention_timeout_date() function since it wasn't used
+    (and once we returned it's useless since we obtained the lock.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 26 Sep 2018 22:08:13 -0700
+
 snapwebsites (1.6.7.0~xenial) xenial; urgency=high
 
   * Fixed the CLUSTERUP/DOWN/[IN]COMPLETE neighbors_count so it gets resent

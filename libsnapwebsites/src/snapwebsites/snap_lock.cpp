@@ -205,7 +205,6 @@ public:
     bool                    is_locked() const;
     bool                    lock_timedout() const;
     time_t                  get_lock_timeout_date() const;
-    time_t                  get_obtention_timeout_date() const;
 
     // implementation of snap_communicator::snap_tcp_blocking_client_message_connection
     virtual void            process_timeout() override;
@@ -580,20 +579,6 @@ bool lock_connection::lock_timedout() const
 time_t lock_connection::get_lock_timeout_date() const
 {
     return f_lock_timeout_date;
-}
-
-
-/** \brief Retrieve the cutoff time for this lock.
- *
- * This lock will time out when this date is reached.
- *
- * If the value is zero, then the lock was not yet obtained.
- *
- * \return The lock timeout date
- */
-time_t lock_connection::get_obtention_timeout_date() const
-{
-    return f_obtention_timeout_date;
 }
 
 
@@ -1185,6 +1170,9 @@ void snap_lock::unlock()
  *
  * \return The date when this lock will be over, or zero if the lock is
  *         not currently active.
+ *
+ * \sa lock_timedout()
+ * \sa is_locked()
  */
 time_t snap_lock::get_timeout_date() const
 {
@@ -1194,6 +1182,86 @@ time_t snap_lock::get_timeout_date() const
     }
 
     return 0;
+}
+
+
+/** \brief This function checks whether the lock is considered locked.
+ *
+ * This function checks whether the lock worked and is still considered
+ * locked, as in, it did not yet time out.
+ *
+ * This function does not access the network at all. It checks whether
+ * the lock is still valid using the current time and the time at which
+ * the LOCKED message said the lock would time out.
+ *
+ * If you want to know whether snaplock decided that the lock timed out
+ * then you need to consider calling the lock_timedout() function instead.
+ *
+ * If you want to know how my time you have left on this lock, use the
+ * get_timeout_date() instead and subtract time(nullptr). If positive,
+ * that's the number of seconds you have left.
+ *
+ * \note
+ * The function returns false if there is no lock connection, which
+ * means that there is no a lock in effect at this time.
+ *
+ * \return true if the lock is still in effect.
+ *
+ * \sa lock_timedout()
+ * \sa get_timeout_date()
+ */
+bool snap_lock::is_locked() const
+{
+    if(f_lock_connection)
+    {
+        return f_lock_connection->is_locked();
+    }
+
+    return false;
+}
+
+
+/** \brief This function checks whether the lock timed out.
+ *
+ * This function checks whether the lock went passed the deadline and
+ * we were sent an UNLOCKED message with the error set to "timedout".
+ * If so, this function returns true and that means we have to stop
+ * the work we are doing as soon as possible or the resource may be
+ * released to another process and thus a mess may happen.
+ *
+ * Note that the snaplock daemon holds a lock after it send an UNLOCKED
+ * with a "timedout" error for an amount of time equal to the duration
+ * of the lock or one minute, whichever is longer (most often, it will
+ * be one minute, although some locks for backends are often held for
+ * a much longer period of time.)
+ *
+ * \note
+ * The function checks whether a message was received, so it does not
+ * really spend much time at all with the network. It just looks at
+ * the socket buffer and if data is present, it reads only. However,
+ * it reads those bytes one by one, so that can be a bit slow. Only
+ * the UNLOCKED message should be sent and it will be rather short
+ * so I would not worry about it since it will work with a buffer
+ * which is going to be really fast anyway.
+ *
+ * \note
+ * The function returns true if there is no lock connection, which
+ * means that there is no a lock in effect at this time.
+ *
+ * \return true if the lock timed out and you need to stop work on
+ *         the locked resource as soon as possible.
+ *
+ * \sa is_locked()
+ * \sa get_timeout_date()
+ */
+bool snap_lock::lock_timedout() const
+{
+    if(f_lock_connection)
+    {
+        return f_lock_connection->lock_timedout();
+    }
+
+    return true;
 }
 
 
