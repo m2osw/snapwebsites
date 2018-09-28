@@ -208,12 +208,18 @@ public:
 
                         keyword(token const & t);
 
+        token const &   get_token() const;
+
         void            set_command(token_type_t command);
         token_type_t    get_command() const;
 
         void            add_index(keyword const & k);
         void            add_field(keyword const & k);
         void            add_value(keyword const & k);
+
+        vector_t const &    get_indexes() const;
+        vector_t const &    get_fields() const;
+        vector_t const &    get_values() const;
 
     private:
         token           f_token = token();          // keyword
@@ -240,6 +246,7 @@ private:
     int                 edit_option();
     int                 recursive_option(keyword & p);
     int                 match();
+    bool                match_indexes(keyword const & k, keyword const & o);
 
     advgetopt::getopt   f_opt; // initialized in constructor
     bool                f_debug = false;
@@ -353,6 +360,12 @@ dns_options::keyword::keyword(token const & t)
 }
 
 
+dns_options::token const & dns_options::keyword::get_token() const
+{
+    return f_token;
+}
+
+
 void dns_options::keyword::set_command(token_type_t command)
 {
     f_command = command;
@@ -382,6 +395,23 @@ void dns_options::keyword::add_value(keyword const & k)
     f_value.push_back(k);
 }
 
+
+dns_options::keyword::vector_t const & dns_options::keyword::get_indexes() const
+{
+    return f_index;
+}
+
+
+dns_options::keyword::vector_t const & dns_options::keyword::get_fields() const
+{
+    return f_fields;
+}
+
+
+dns_options::keyword::vector_t const & dns_options::keyword::get_values() const
+{
+    return f_value;
+}
 
 
 
@@ -461,13 +491,17 @@ int dns_options::run()
         return r;
     }
 
-    // then execute the command
+    // read the options from the input file
     //
     r = edit_option();
     if(r != 0)
     {
         return r;
     }
+
+    // then execute the command
+    //
+    match();
 
     // done
     //
@@ -1233,10 +1267,6 @@ int dns_options::edit_option()
         f_options.add_value(k);
     }
 
-std::cerr << "try matching against command line...\n";
-
-    match();
-
     return 0;
 }
 
@@ -1346,12 +1376,106 @@ int dns_options::recursive_option(keyword & in)
 
 int dns_options::match()
 {
+std::cerr << "try matching against command line...\n";
+
     // the match is in f_keyword
     //
     // what to match (the files of options) is in f_options
     //
+
+// 'options.version [+?]= "none"'
+// 'logging.channel["logs"].print-category [+?]= yes'
+// 'logging.channel["logs"].print-time = null'
+// 'logging.channel["*"].severity'
+//
+// sample data:
+//
+// logging { channel "any-name" { severity 123 } }
+
+    auto const & token_thought(f_keyword.get_token());
+    auto const type(token_thought.get_type());
+
+    auto const & values(f_options.get_values());
+    for(auto const & v : values)
+    {
+        auto const o(v.get_token());
+        auto const t(o.get_type());
+        if(t == type)
+        {
+            // the type matches, check the keyword itself now
+            //
+            if(o.get_word() == token_thought.get_word())
+            {
+                // it is a match, try going down that route
+                //
+                if(match_indexes(f_keyword, v))
+                {
+                }
+            }
+        }
+    }
+
     return 0;
 }
+
+
+bool dns_options::match_indexes(keyword const & k, keyword const & o)
+{
+    // WARNING: the keywords (k--command line) have indexes
+    //          which should match fields in object (o--file contents)
+    //
+    auto const & expected_fields(k.get_indexes());
+    auto const & existing_fields(o.get_fields());
+
+    if(expected_fields.size() != existing_fields.size())
+    {
+        return false;
+    }
+
+    for(size_t idx(0); idx < expected_fields.size(); ++idx)
+    {
+        auto const & expected_token(expected_fields[idx].get_token());
+        auto const & existing_token(existing_fields[idx].get_token());
+        if(expected_token.get_type() == token_type_t::TOKEN_KEYWORD)
+        {
+            // keywords have to match one to one
+            //
+            if(existing_token.get_type() != token_type_t::TOKEN_KEYWORD)
+            {
+                return false;
+            }
+            if(expected_token.get_word() != existing_token.get_word())
+            {
+                return false;
+            }
+        }
+        else if(expected_token.get_type() == token_type_t::TOKEN_STRING)
+        {
+            if(existing_token.get_type() != token_type_t::TOKEN_KEYWORD
+            && existing_token.get_type() != token_type_t::TOKEN_STRING)
+            {
+                return false;
+            }
+            std::string const word(expected_token.get_word());
+            if(word != "*")
+            {
+                // words need to be a match
+                //
+                if(word != existing_token.get_word())
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 
 

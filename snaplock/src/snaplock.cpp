@@ -3292,15 +3292,29 @@ void snaplock::msg_ticket_added(snap::snap_communicator_message & message)
                 // gets removed on the first TICKETADDED we receive so
                 // on the second one we get here...
                 //
-                //SNAP_LOG_TRACE("called with object \"")
-                //              (object_name)
-                //              ("\" not present in f_entering_ticket (key: \"")
-                //              (key)
-                //              ("\".)");
+                SNAP_LOG_TRACE("called with object \"")
+                              (object_name)
+                              ("\" not present in f_entering_ticket (key: \"")
+                              (key)
+                              ("\".)");
                 return;
             }
             key_ticket->second->ticket_added(obj_entering_ticket->second);
         }
+        else
+        {
+            SNAP_LOG_DEBUG("found object \"")
+                          (object_name)
+                          ("\" but could not find a ticket with key \"")
+                          (key)
+                          ("\"...");
+        }
+    }
+    else
+    {
+        SNAP_LOG_DEBUG("object \"")
+                      (object_name)
+                      ("\" not found.");
     }
 }
 
