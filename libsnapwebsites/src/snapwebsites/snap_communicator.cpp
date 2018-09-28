@@ -1251,11 +1251,15 @@ void snap_communicator::snap_dispatcher_support::set_dispatcher(dispatcher_base:
  * This function returns the dispatcher one set with the set_dispatcher()
  * function. It may be a nullptr.
  *
- * \return The pointer to the dispatcher used to execite messages.
+ * \warning
+ * Note that it may return nullptr because the weak pointer was just
+ * set to nullptr as the owner of the dispatcher was deleted.
+ *
+ * \return The pointer to the dispatcher used to execite messages or nullptr.
  */
 dispatcher_base::pointer_t snap_communicator::snap_dispatcher_support::get_dispatcher() const
 {
-    return f_dispatcher;
+    return f_dispatcher.lock();
 }
 
 
@@ -1292,11 +1296,12 @@ dispatcher_base::pointer_t snap_communicator::snap_dispatcher_support::get_dispa
  */
 bool snap_communicator::snap_dispatcher_support::dispatch_message(snap::snap_communicator_message & message)
 {
-    if(f_dispatcher != nullptr)
+    auto d(f_dispatcher.lock());
+    if(d != nullptr)
     {
         // we have a dispatcher installed, try to dispatch that message
         //
-        if(f_dispatcher->dispatch(message))
+        if(d->dispatch(message))
         {
             return true;
         }

@@ -833,7 +833,7 @@ void lock_connection::msg_unlocked(snap::snap_communicator_message & message)
 
 
 }
-// no name namespace
+// details namespace
 
 
 
@@ -1129,7 +1129,7 @@ bool snap_lock::lock(QString const & object_name, timeout_t lock_duration, timeo
  */
 void snap_lock::unlock()
 {
-    if(f_lock_connection)
+    if(f_lock_connection != nullptr)
     {
         // be explicit although the destructor of the lock connection
         // calls unlock() on its own
@@ -1176,7 +1176,7 @@ void snap_lock::unlock()
  */
 time_t snap_lock::get_timeout_date() const
 {
-    if(f_lock_connection)
+    if(f_lock_connection != nullptr)
     {
         return f_lock_connection->get_lock_timeout_date();
     }
@@ -1212,7 +1212,7 @@ time_t snap_lock::get_timeout_date() const
  */
 bool snap_lock::is_locked() const
 {
-    if(f_lock_connection)
+    if(f_lock_connection != nullptr)
     {
         return f_lock_connection->is_locked();
     }
@@ -1256,7 +1256,7 @@ bool snap_lock::is_locked() const
  */
 bool snap_lock::lock_timedout() const
 {
-    if(f_lock_connection)
+    if(f_lock_connection != nullptr)
     {
         return f_lock_connection->lock_timedout();
     }

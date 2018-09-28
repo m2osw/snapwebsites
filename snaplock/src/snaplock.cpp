@@ -1525,28 +1525,29 @@ void snaplock::election_status()
         }
     }
 
-    if(f_computers.size() - off < 3)
+    if(f_computers.size() <= 3)
     {
-        if(f_computers.size() <= 3)
+        if(off != 0)
         {
             SNAP_LOG_FATAL(
                     "you cannot have any computer turned OFF when you"
                     " have three or less computers total in your cluster."
                     " The elections cannot be completed in these"
                     " circumstances.");
+            return;
         }
-        else
-        {
-            SNAP_LOG_FATAL("you have a total of ")
-                    (f_computers.size())
-                    (" computers in your cluster. You turned off ")
-                    (off)
-                    (" of them, which means less than three are left"
-                     " as candidates for leadership which is not enough."
-                     " You can have a maximum of ")
-                    (f_computers.size() - 3)
-                    (" that are turned off on this cluster.");
-        }
+    }
+    else if(f_computers.size() - off < 3)
+    {
+        SNAP_LOG_FATAL("you have a total of ")
+                (f_computers.size())
+                (" computers in your cluster. You turned off ")
+                (off)
+                (" of them, which means less than three are left"
+                 " as candidates for leadership which is not enough."
+                 " You can have a maximum of ")
+                (f_computers.size() - 3)
+                (" that are turned off on this cluster.");
         return;
     }
 

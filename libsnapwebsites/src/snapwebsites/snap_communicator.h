@@ -145,6 +145,7 @@ class dispatcher_base
 {
 public:
     typedef std::shared_ptr<dispatcher_base>    pointer_t;
+    typedef std::weak_ptr<dispatcher_base>      weak_t;
 
     virtual                 ~dispatcher_base();
 
@@ -196,7 +197,7 @@ public:
         virtual void                process_message(snap_communicator_message const & message);
 
     private:
-        dispatcher_base::pointer_t  f_dispatcher = dispatcher_base::pointer_t();
+        dispatcher_base::weak_t     f_dispatcher = dispatcher_base::weak_t();
     };
 
     class snap_connection

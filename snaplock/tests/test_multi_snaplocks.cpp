@@ -64,8 +64,6 @@
 // snapwebsites lib
 //
 #include <snapwebsites/mkdir_p.h>
-//#include <snapwebsites/snap_lock.h>
-//#include <snapwebsites/snapwebsites.h>
 #include <snapwebsites/qstring_stream.h>
 
 // Qt lib
@@ -78,7 +76,6 @@
 
 // C lib
 //
-//#include <unistd.h>
 #include <sys/wait.h>
 
 

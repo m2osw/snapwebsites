@@ -1,3 +1,13 @@
+snapwebsites (1.6.14.0~xenial) xenial; urgency=high
+
+  * Applied a fix so the lock_connection object gets released: i.e. the
+    dispatcher needed to use a weak pointer in case it's to itself.
+  * Fixed the test which ensures at least 3 computers for leadership when
+    the cluster is 3 or more computers.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 28 Sep 2018 11:38:59 -0700
+
 snapwebsites (1.6.13.0~xenial) xenial; urgency=high
 
   * Added debug logs when TICKETADDED fails so we know why.

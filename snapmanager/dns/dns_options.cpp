@@ -15,9 +15,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// dns
+// itself
 //
-//#include "dns.h"
+//#include "dns_options.h"
 
 // advgetopt lib
 //
@@ -25,17 +25,10 @@
 
 // snapwebsites lib
 //
-//#include <snapwebsites/chownnm.h>
 #include <snapwebsites/file_content.h>
-//#include <snapwebsites/log.h>
-//#include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/not_reached.h>
 //#include <snapwebsites/not_used.h>
 #include <snapwebsites/version.h>
-
-// Qt5
-//
-//#include <QtCore>
 
 // C++ lib
 //
