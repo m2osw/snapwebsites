@@ -495,6 +495,7 @@ private:
     snaplock_ticket::object_map_t       f_tickets = snaplock_ticket::object_map_t();
     int64_t                             f_election_date = 0;
     snaplock_ticket::serial_t           f_ticket_serial = 0;
+    mutable time_t                      f_pace_lockstarted = 0;
 };
 #pragma GCC diagnostic pop
 

@@ -1119,7 +1119,32 @@ bool snaplock::is_ready() const
     {
         if(!l->get_connected())
         {
-            SNAP_LOG_TRACE("not considered ready: no direct connection with one of the leaders.");
+            SNAP_LOG_TRACE("not considered ready: no direct connection with leader: \"")
+                          (l->get_name())
+                          ("\".");
+
+            // attempt resending a LOCKSTARTED because it could be that it
+            // did not work quite right and the snaplock daemons are not
+            // going to ever talk with each others otherwise
+            //
+            // we also make sure we do not send the message too many times,
+            // in five seconds it should be resolved...
+            //
+            time_t const now(time(nullptr));
+            if(now > f_pace_lockstarted)
+            {
+                // pause for 5 to 6 seconds in case this happens a lot
+                //
+                f_pace_lockstarted = now + 5;
+
+                // only send it to that specific server snaplock daemon
+                //
+                snap::snap_communicator_message temporary_message;
+                temporary_message.set_sent_from_server(l->get_name());
+                temporary_message.set_sent_from_service("snaplock");
+                const_cast<snaplock *>(this)->send_lockstarted(&temporary_message);
+            }
+
             return false;
         }
     }

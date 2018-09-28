@@ -1,3 +1,10 @@
+snapwebsites (1.6.12.0~xenial) xenial; urgency=high
+
+  * Somehow it looks like at times the LOCKSTARTED message is not received.
+    I added an instanced sent from is_ready() when a leader is missing.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 27 Sep 2018 17:38:14 -0700
+
 snapwebsites (1.6.11.0~xenial) xenial; urgency=high
 
   * Fixed the handling of the LOCKLEADERS message: we must create new computers
