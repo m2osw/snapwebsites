@@ -11,6 +11,16 @@
   </description>
   <packages>bind9</packages>
   <postinst>
+    # Fixed a few parameters which are considered unsafe by PCI
+    # (these are really just ofuscation of the DNS)
+    if test ! -f /etc/bind/named.conf.options.bak
+    then
+      cp /etc/bind/named.conf.options /etc/bind/named.conf.options.bak
+    fi
+    dns_options -e 'options.version = none' /etc/bind/named.conf.options
+    dns_options -e 'options.hostname = none' /etc/bind/named.conf.options
+    dns_options -e 'options.server-id = none' /etc/bind/named.conf.options
+
     # Install the bind9 jail knowing that fail2ban may not be installed
     if test ! -d /etc/fail2ban/jail.d
     then
