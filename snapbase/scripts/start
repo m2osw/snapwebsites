@@ -87,30 +87,33 @@ do
 	VARNAME=DAEMON${idx}
 	cmd=`eval echo \\\$\${VARNAME}`
 
-	# Now start the command
-	#
-	echo $cmd
-	if $QUIET
+	if test -n "$cmd"
 	then
-		$cmd >/dev/null 2>&1 &
-	else
-		$cmd &
-	fi
-	PID=$!
+		# Now start the command
+		#
+		echo $cmd
+		if $QUIET
+		then
+			$cmd >/dev/null 2>&1 &
+		else
+			$cmd &
+		fi
+		PID=$!
 
-	BASENAME=`echo $cmd | grep :: | sed -e 's/.* [a-z]\+::\([a-z]\+\).*/\1/'`
-	if test -z "$BASENAME"
-	then
-		BASENAME=`basename $cmd`
-	fi
-	echo $PID >${HERE}/tmp/${BASENAME}.pid
+		BASENAME=`echo $cmd | grep :: | sed -e 's/.* [a-z]\+::\([a-z]\+\).*/\1/'`
+		if test -z "$BASENAME"
+		then
+			BASENAME=`basename $cmd`
+		fi
+		echo $PID >${HERE}/tmp/${BASENAME}.pid
 
-	# add one random pause to further prove that it does not need to
-	# all sort exactly at the same time
-	#
-	if test $idx -eq $PAUSE
-	then
-		sleep 1
+		# add one random pause to further prove that it does not need to
+		# all sort exactly at the same time
+		#
+		if test $idx -eq $PAUSE
+		then
+			sleep 1
+		fi
 	fi
 done
 
@@ -134,19 +137,24 @@ do
 		do
 			VARNAME=DAEMON${idx}
 			cmd=`eval echo \\\$\${VARNAME}`
-			BASENAME=`echo $cmd | grep :: | sed -e 's/.* [a-z]\+::\([a-z]\+\).*/\1/'`
-			if test -z "$BASENAME"
+			# In case you comment out one daemon for test purposes
+			# this would break
+			if test -n "$cmd"
 			then
-				BASENAME=`basename $cmd`
-			fi
-			if test -f ${HERE}/tmp/${BASENAME}.pid
-			then
-				# at least one daemon is considered to be
-				# running (the stop script deletes these
-				# files)
-				#
-				RUNNING=true
-				break
+				BASENAME=`echo $cmd | grep :: | sed -e 's/.* [a-z]\+::\([a-z]\+\).*/\1/'`
+				if test -z "$BASENAME"
+				then
+					BASENAME=`basename $cmd`
+				fi
+				if test -f ${HERE}/tmp/${BASENAME}.pid
+				then
+					# at least one daemon is considered to be
+					# running (the stop script deletes these
+					# files)
+					#
+					RUNNING=true
+					break
+				fi
 			fi
 		done
 
