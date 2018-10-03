@@ -81,11 +81,6 @@ snap::snap_thread::snap_mutex  g_connections_mutex;
 QByteArray  g_cluster_description;
 
 
-void signalfd_deleted(int s)
-{
-    close(s);
-}
-
 
 int64_t timeofday()
 {
@@ -165,7 +160,7 @@ void snapdbproxy_connection::run()
             libdbproxy::order order(f_proxy.receiveOrder(*this));
 
             if(order.validOrder()
-                && f_session->isConnected())
+            && f_session->isConnected())
             {
                 // order can be executed now
                 //
@@ -347,6 +342,17 @@ ssize_t snapdbproxy_connection::read(void * buf, size_t count)
         }
         if(r > 0)
         {
+            if(static_cast<size_t>(r) > count)
+            {
+                // this should not be possible
+                //
+                throw snap::snap_logic_exception(
+                              "somehow read() returned more than count ("
+                            + std::to_string(r)
+                            + " > "
+                            + std::to_string(count)
+                            + ")");
+            }
             count -= r;
             size += r;
             if(count == 0)
@@ -485,7 +491,20 @@ void snapdbproxy_connection::close()
     // the client is only in the thread runner so it is safe to do
     // that outside of the lock
     //
+    // WARNING: we must make sure that all is over with the client
+    //          before we cleanup the thread (see call below)
+    //
     f_client.reset();
+    f_cursors.clear();
+    f_batches.clear();
+    f_session.reset();
+
+    // in case some errors are still in our thread queue, we need to
+    // delete them before we return
+    //
+    // note: this may not be required
+    //
+    tcp_client_server::cleanup_on_thread_exit();
 }
 
 
@@ -636,37 +655,39 @@ void snapdbproxy_connection::describe_cluster(libdbproxy::order const & order)
 {
     QString const cql(order.cql());
 
-    // we can use DESCRIBE CLUSTER ANEW to reset the current description
-    //
-    // it is used when we create tables and could be used in some other
-    // situations later
-    //
-    // this test is really weak, we may want to consider using a much
-    // stronger test which verifies the CQL command in full
-    //
-    if(cql.indexOf("ANEW") >= 0)
-    {
-        // making the cluster description empty will force a new
-        // retrieval from the Cassandra cluster instead of our cache
-        //
-        g_cluster_description.clear();
-    }
-
     libdbproxy::order_result result;
 
     {
         snap::snap_thread::snap_lock lock(g_connections_mutex);
 
+        // we can use DESCRIBE CLUSTER ANEW to reset the current description
+        //
+        // it is used when we create tables and could be used in some other
+        // situations later
+        //
+        // this test is really weak, we may want to consider using a much
+        // stronger test which verifies the CQL command in full
+        //
+        if(cql.indexOf("ANEW") >= 0)
+        {
+            // making the cluster description empty will force a new
+            // retrieval from the Cassandra cluster instead of our cache
+            //
+            g_cluster_description.clear();
+        }
+
         if(g_cluster_description.isEmpty())
         {
             // load the meta data
-            casswrapper::schema::SessionMeta::pointer_t session_meta( casswrapper::schema::SessionMeta::create(f_session) );
+            //
+            casswrapper::schema::SessionMeta::pointer_t session_meta(casswrapper::schema::SessionMeta::create(f_session));
             session_meta->loadSchema();
             g_cluster_description = session_meta->encodeSessionMeta();
         }
 
         // convert the meta data to a blob and send it over the wire
-        result.addResult( g_cluster_description );
+        //
+        result.addResult(g_cluster_description);
     }
 
     result.setSucceeded(true);
@@ -744,6 +765,11 @@ void snapdbproxy_connection::close_cursor(libdbproxy::order const & order)
     if(!f_proxy.sendResult(*this, result))
     {
         close();
+
+        // no need to go on since we cannot send a reply to the
+        // client (we just closed that connection)
+        //
+        return;
     }
 
     // now actually do the clean up
@@ -755,7 +781,8 @@ void snapdbproxy_connection::close_cursor(libdbproxy::order const & order)
     // remove all the cursors that were closed if possible so the
     // vector does not grow indefinitly
     //
-    while(!f_cursors.empty() && !f_cursors.rbegin()->f_query)
+    while(!f_cursors.empty()
+       && f_cursors.rbegin()->f_query == nullptr)
     {
         f_cursors.pop_back();
     }
@@ -783,6 +810,8 @@ void snapdbproxy_connection::commit_batch(libdbproxy::order const & order)
     if(!f_proxy.sendResult(*this, result))
     {
         close();
+
+        // clear_batch() will not hurt after a close()
     }
 
     clear_batch( batch_index );
@@ -821,7 +850,8 @@ void snapdbproxy_connection::clear_batch( int32_t const batch_index )
         f_batches[batch_index].f_query.reset();
     }
     //
-    while(!f_batches.empty() && !f_batches.rbegin()->f_query)
+    while(!f_batches.empty()
+       && f_batches.rbegin()->f_query == nullptr)
     {
         f_batches.pop_back();
     }

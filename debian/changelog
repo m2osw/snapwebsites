@@ -1,3 +1,24 @@
+snapwebsites (1.6.16.0~xenial) xenial; urgency=high
+
+  * SNAP-663: the start() and stop() functions needed work to properly support
+    the joining of our threads. They were not being joined so each time we
+    would lose a lot of RAM and that's what I noticed in SNAP-663.
+  * snap_thread: Fixed the start() function, when the pthread_create() fails,
+    we must reset f_running back to false before returning.
+  * libdbproxy: Show result and what was expected in a couple of errors.
+  * log: Added support to log pointers.
+  * tcp client/server: fixed the plain mode, deleter was not specified for
+    the listen BIO object so delete would be used against a BIO object.
+  * tcp client/server: added a couple of functions to ensure proper clean up
+    of BIO objects. One to call when quitting a thread.
+  * snapdbproxy: call tcp_client_server::cleanup() on exit.
+  * start: added a test on $cmd so one can comment a command to avoid starting
+    it from the start script.
+  * snapdbproxy: check the ANEW flag when locked because if present we clear
+    the g_cluster_description pointer which is a global!
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  2 Oct 2018 23:13:32 -0700
+
 snapwebsites (1.6.15.0~xenial) xenial; urgency=high
 
   * Finished up an implementation of dns_options that is enough for SNAP-522.

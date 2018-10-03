@@ -563,12 +563,13 @@ void snap_thread::snap_mutex::broadcast()
  *
  * \param[in] mutex  The Snap! mutex to lock.
  */
-snap_thread::snap_lock::snap_lock(snap_mutex& mutex)
+snap_thread::snap_lock::snap_lock(snap_mutex & mutex)
     : f_mutex(&mutex)
 {
     if(!f_mutex)
     {
         // mutex is mandatory
+        //
         throw snap_thread_exception_invalid_error("mutex missing in snap_lock() constructor");
     }
     f_mutex->lock();
@@ -590,7 +591,7 @@ snap_thread::snap_lock::~snap_lock()
     {
         unlock();
     }
-    catch(const std::exception& e)
+    catch(std::exception const & e)
     {
         // a log was already printed, we do not absolutely need another one
         exit(1);
@@ -920,7 +921,7 @@ void * func_internal_start(void * thread)
  *
  * This function is called by the func_internal_start() so we run from
  * within the snap_thread class. (i.e. the func_internal_start() function
- * is static.)
+ * itself is static.)
  *
  * The function marks the thread as started which allows the parent start()
  * function to return.
@@ -945,25 +946,17 @@ void snap_thread::internal_run()
 
         f_runner->run();
 
-        {
-            snap_lock lock(f_mutex);
-            f_running = false;
-            f_mutex.signal();
-        }
+        // if useful (necessary) it would probably be better to call this
+        // function from here; see function and read the "note" section
+        // for additional info
+        //
+        //tcp_client_server::cleanup_on_thread_exit();
     }
     catch(std::exception const &)
     {
         // keep a copy of the exception
         //
         f_exception = std::current_exception();
-
-        // also make sure we mark the thread as not running anymore
-        // if the lock or signal throw, then we go in lala land from here
-        {
-            snap_lock lock(f_mutex);
-            f_running = false;
-            f_mutex.signal();
-        }
     }
     catch(...)
     {
@@ -975,6 +968,15 @@ void snap_thread::internal_run()
         // have a log about it
         //
         throw;
+    }
+
+    // marked we are done (outside of the try/catch because if this one
+    // fails, we have a big problem... (i.e. invalid mutex or more unlock
+    // than locks)
+    {
+        snap_lock lock(f_mutex);
+        f_running = false;
+        f_mutex.signal();
     }
 }
 
@@ -994,7 +996,7 @@ bool snap_thread::start()
 {
     snap_lock lock(f_mutex);
 
-    if(f_running)
+    if(f_running || f_started)
     {
         SNAP_LOG_WARNING("the thread is already running");
         return false;
@@ -1013,6 +1015,8 @@ bool snap_thread::start()
     int const err(pthread_create(&f_thread_id, &f_thread_attr, &func_internal_start, this));
     if(err != 0)
     {
+        f_running = false;
+
         SNAP_LOG_ERROR("the thread could not be created, error #")(err);
         return false;
     }
@@ -1045,10 +1049,10 @@ void snap_thread::stop()
     {
         snap_lock lock(f_mutex);
 
-        if(!f_running)
+        if(!f_running && !f_started)
         {
             // we return immediately in this case because
-            // no exception can happen if the thread never
+            // there is nothing to join when the thread never
             // started...
             //
             return;

@@ -219,7 +219,7 @@ public:
     virtual ssize_t             read(void * buf, size_t count) override;
     virtual ssize_t             write(void const * buf, size_t count) override;
 
-    void                        kill();
+    void                        kill();  // this just shuts down the socket (READ only)
 
 private:
     struct cursor_t

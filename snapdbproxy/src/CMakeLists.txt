@@ -37,6 +37,12 @@
 ##
 project(snapdbproxy)
 
+# Use just here to check for memory leaks that snapdbproxy may generate
+# See SNAP-663 -- however, this did not help me, there are no leaks that SAN
+#                 detects so I had to look in another way (i.e. when leaving
+#                 the application cleanly, all memory is cleanly freed)
+#set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=enum -fsanitize=unreachable -fsanitize=leak")
+
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 

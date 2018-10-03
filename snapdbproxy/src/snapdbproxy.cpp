@@ -440,6 +440,14 @@ void snapdbproxy::run()
     //
     f_communicator->run();
 
+#ifdef _DEBUG
+    // this cleans up a few more things
+    // (useful when testing for memory leaks, useless otherwise, which is
+    // why it's in the debug version only)
+    //
+    tcp_client_server::cleanup();
+#endif
+
     if(f_force_restart)
     {
         // by exiting with 1 systemd thinks we have failed and restarts
@@ -775,13 +783,14 @@ void snapdbproxy::process_connection(tcp_client_server::bio_client::pointer_t & 
     //
     snapdbproxy_thread::pointer_t thread(std::make_shared<snapdbproxy_thread>
                                          ( this
-                                          , f_session
-                                          , client
-                                          , f_cassandra_host_list
-                                          , f_cassandra_port
-                                          , use_ssl()
-                                          ));
-    if(thread && thread->is_running())
+                                         , f_session
+                                         , client
+                                         , f_cassandra_host_list
+                                         , f_cassandra_port
+                                         , use_ssl()
+                                         ));
+    if(thread != nullptr
+    && thread->is_running())
     {
         f_connections.push_back(thread);
     }
