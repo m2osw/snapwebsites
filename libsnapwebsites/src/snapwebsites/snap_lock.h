@@ -45,6 +45,12 @@ class lock_connection;
 }
 
 
+/** \brief Inter-computer snap_lock.
+ *
+ * \todo
+ * We may want to rethink about the name because we already have a snap_lock
+ * inside our snap_thread.
+ */
 class snap_lock
 {
 public:
