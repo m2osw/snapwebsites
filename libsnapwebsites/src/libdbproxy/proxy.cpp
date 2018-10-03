@@ -219,9 +219,10 @@ order_result proxy::sendOrder(order const & order)
         // of data encoded as per the order_result scheme
         //
         unsigned char buf[8];
-        if(bio_read(buf, 8) != 8) // 4 letters + 4 bytes for size
+        int const r(bio_read(buf, sizeof(buf)));
+        if(r != sizeof(buf)) // 4 letters + 4 bytes for size
         {
-            SNAP_LOG_DEBUG("++++ bio_read() failed!");
+            SNAP_LOG_DEBUG("++++ bio_read() could not read ")(sizeof(buf))(" bytes of header, instead it got ")(r)(" bytes, so it failed!");
             return result;
         }
 
@@ -305,9 +306,17 @@ order proxy::receiveOrder(proxy_io & io)
     // each order starts with a 4 letter command
     //
     unsigned char buf[8];
-    if(io.read(buf, 8) != 8)
+    int const r(io.read(buf, sizeof(buf)));
+    if(r != sizeof(buf)) // 4 letters + 4 bytes for size
     {
-        SNAP_LOG_DEBUG("++++ io.read() failed, not 8 bytes!");
+        // this one happens all the time when the client exits without
+        // sending a clean disconnect to the snapdbproxy daemon
+        //
+        SNAP_LOG_DEBUG("++++ io.read() could not read ")
+                      (sizeof(buf))
+                      (" bytes of header, instead it got ")
+                      (r)
+                      (" bytes, so it failed!");
         return order;
     }
 
