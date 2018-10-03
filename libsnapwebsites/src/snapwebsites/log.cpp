@@ -204,6 +204,7 @@ public:
     logger &        operator () (float const v)                 { NOTUSED(v); return *this; }
     logger &        operator () (double const v)                { NOTUSED(v); return *this; }
     logger &        operator () (bool const v)                  { NOTUSED(v); return *this; }
+    logger &        operator () (void const * p)                { NOTUSED(p); return *this; }
 };
 
 
@@ -1313,6 +1314,13 @@ logger & logger::operator () (double const v)
 logger & logger::operator () (bool const v)
 {
     f_message += QString("%1").arg(static_cast<int>(v));
+    return *this;
+}
+
+
+logger & logger::operator () (void const * p)
+{
+    f_message += QString("0x%1").arg(reinterpret_cast<qulonglong>(p), 0, 16);
     return *this;
 }
 

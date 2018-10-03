@@ -89,6 +89,7 @@ public:
     logger &        operator () (float const v);
     logger &        operator () (double const v);
     logger &        operator () (bool const v);
+    logger &        operator () (void const * p);
 
 protected:
     mutable bool                        f_ignore = false;
