@@ -248,6 +248,11 @@ private:
 };
 
 
+void cleanup();
+void cleanup_on_thread_exit();
+
+
+
 bool is_ipv4(char const * ip);
 bool is_ipv6(char const * ip);
 void get_addr_port(QString const & addr_port, QString & addr, int & port, char const * protocol);

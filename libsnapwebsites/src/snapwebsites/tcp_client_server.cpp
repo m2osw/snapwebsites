@@ -209,7 +209,19 @@ void thread_cleanup()
 }
 
 
-
+/** \brief This function cleans up the error state of a thread.
+ *
+ * Whenever the OpenSSL system runs in a thread, it may create a
+ * state to save various information, especially its error queue.
+ *
+ * This function should be called before your
+ * snap::snap_thread::snap_runner::run()
+ * function returns.
+ */
+void per_thread_cleanup()
+{
+    ERR_remove_thread_state(nullptr);
+}
 
 
 
@@ -244,6 +256,7 @@ void bio_initialize()
     //
 
     // already initialized?
+    //
     if(g_bio_initialized)
     {
         return;
@@ -272,6 +285,27 @@ void bio_initialize()
     // environment
     //
     crypto_thread_setup();
+}
+
+
+/** \brief Clean up the BIO environment.
+ *
+ * This function cleans up the BIO environment.
+ *
+ * \note
+ * This function is here mainly for documentation rather than to get called.
+ * Whenever you exit a process that uses the BIO calls it will leak
+ * a few things. To make the process really spanking clean, you want
+ * to call this function before exit(3). You have to make sure that
+ * you call this function only after every single BIO object was
+ * closed and none must be opened after this call.
+ */
+void bio_cleanup()
+{
+    ERR_remove_state(0);
+    EVP_cleanup();
+    CRYPTO_cleanup_all_ex_data();
+    ERR_free_strings();
 }
 
 
@@ -1554,8 +1588,6 @@ std::string const & bio_client::options::get_host() const
  * \param[in] opt  Additional options.
  */
 bio_client::bio_client(std::string const & addr, int port, mode_t mode, options const & opt)
-    //: f_ssl_ctx(nullptr) -- auto-init
-    //, f_bio(nullptr) -- auto-init
 {
     if(port < 0 || port >= 65536)
     {
@@ -2427,7 +2459,7 @@ bio_server::bio_server(addr::addr const & addr_port, int max_connections, bool r
 
     case mode_t::MODE_PLAIN:
         {
-            std::shared_ptr<BIO> listen(BIO_new_accept(addr_port.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()));
+            std::shared_ptr<BIO> listen(BIO_new_accept(addr_port.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()), bio_deleter);
             if(!listen)
             {
                 bio_log_errors();
@@ -2469,7 +2501,7 @@ bio_server::bio_server(addr::addr const & addr_port, int max_connections, bool r
  */
 bool bio_server::is_secure() const
 {
-    return static_cast<bool>(f_ssl_ctx);
+    return f_ssl_ctx != nullptr;
 }
 
 
@@ -2568,6 +2600,52 @@ bio_client::pointer_t bio_server::accept()
 
 
 
+
+/** \brief Clean up the BIO environment.
+ *
+ * This function cleans up the BIO environment.
+ *
+ * \note
+ * This function is here for documentation rather than to get called.
+ * Whenever you exit a process that uses the BIO calls it will leak
+ * a few things. To make the process really spanking clean, you want
+ * to call this function before exit(3). You have to make sure that
+ * you call this function only after every single BIO object was
+ * closed and none must be opened after this call.
+ */
+void cleanup()
+{
+    thread_cleanup();
+    bio_cleanup();
+}
+
+
+/** \brief Before a thread exits, this function must be called.
+ *
+ * Any error which is still attached to a thread must be removed
+ * before the thread dies or it will be lost. This function must
+ * be called before you return from your
+ * snap::snap_thread::snap_runner::run()
+ * function.
+ *
+ * The thread must be pro-active and make sure to catch() errors
+ * if necessary to ensure that this function gets called before
+ * it exists.
+ *
+ * Also, this means all BIO connections were properly terminated
+ * before the thread returns.
+ *
+ * \note
+ * TBD--this may not be required. I read a few things a while back
+ * saying that certain things were now automatic in the BIO library
+ * and this may very well be one of them. To test this function,
+ * see the snapdbproxy/src/snapdbproxy_connection.cpp and see how
+ * it works one way or the other.
+ */
+void cleanup_on_thread_exit()
+{
+    per_thread_cleanup();
+}
 
 
 
@@ -3029,6 +3107,7 @@ void get_addr_port(QString const & addr_port, QString & addr, int & port, char c
         throw tcp_client_server_parameter_error("get_addr_port(): invalid addr:port specification, port number is out of bounds (1 .. 65535).");
     }
 }
+
 
 
 } // namespace tcp_client_server
