@@ -873,7 +873,7 @@ void snapdb::set_cell() const
         q->start();
         q->end();
     }
-    catch( const std::exception& ex )
+    catch( std::exception const & ex )
     {
         std::cerr << "QCassandraQuery exception caught! what=" << ex.what() << std::endl;
         exit(1);
