@@ -92,6 +92,26 @@ private:
 };
 
 
+class raii_lock_duration_timeout
+{
+public:
+    raii_lock_duration_timeout(snap_lock::timeout_t temporary_lock_timeout);
+    ~raii_lock_duration_timeout();
+
+private:
+    snap_lock::timeout_t  f_save_timeout = -1;
+};
+
+
+class raii_lock_obtention_timeout
+{
+public:
+    raii_lock_obtention_timeout(snap_lock::timeout_t temporary_lock_timeout);
+    ~raii_lock_obtention_timeout();
+
+private:
+    snap_lock::timeout_t  f_save_timeout = -1;
+};
 
 
 } // namespace snap

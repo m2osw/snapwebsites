@@ -3127,6 +3127,17 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         exit(0);
         NOTREACHED();
     }
+    catch( snap_lock_failed_exception const & except )
+    {
+        SNAP_LOG_FATAL("snap_child::process(): snap_lock_failed_exception caught: ")(except.what());
+
+        // die with a "server locked" error instead of a "random" 500
+        //
+        die(http_code_t::HTTP_CODE_LOCKED, "",
+            "One of the resources you tried to access is currently locked. Please try again in a moment.",
+            QString("A lock failed (%1)").arg(except.what()));
+        NOTREACHED();
+    }
     catch( snap_exception const & except )
     {
         SNAP_LOG_FATAL("snap_child::process(): snap_exception caught: ")(except.what());

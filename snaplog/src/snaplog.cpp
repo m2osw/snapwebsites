@@ -489,6 +489,14 @@ void snaplog::no_mysql()
 {
     SNAP_LOG_TRACE("no_mysql() called.");
 
+    // if still marked as open by Qt, make sure to close the database
+    // since this function says that it's closed!
+    //
+    if( QSqlDatabase::database().isOpen() )
+    {
+        QSqlDatabase::database().close();
+    }
+
     if(f_timer != nullptr)
     {
         f_timer->set_enable( true );
@@ -541,6 +549,9 @@ void snaplog::add_message_to_db( snap::snap_communicator_message const & message
     if( !q.exec() )
     {
         SNAP_LOG_ERROR("Query error! [")(q.lastError().text())("], lastQuery=[")(q.lastQuery())("]");
+
+        // the following will close the database if still open
+        //
         no_mysql();
     }
 }
@@ -574,6 +585,7 @@ void snaplog::process_message(snap::snap_communicator_message const & message)
 //       (I have it written, it uses a map like scheme, we now need to convert all
 //       the process_message() in using the new scheme which can calls a separate
 //       function for each message you support!)
+//       examples: snapwatchdog and snaplock at this time
 
     if(command == "SNAPLOG")
     {

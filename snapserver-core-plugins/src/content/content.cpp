@@ -1815,6 +1815,13 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
             }
             else
             {
+                // increase the time to way for a lock, by default it is
+                // 5 seconds and here we change that to 1 minute because
+                // backends may work on files for a little while and 5s
+                // is often not enough
+                //
+                raii_lock_obtention_timeout raii_lock_obtention_timeout(60);
+
                 if(snap_version::SPECIAL_VERSION_UNDEFINED == branch_number)
                 {
                     // this should nearly never (if ever) happen

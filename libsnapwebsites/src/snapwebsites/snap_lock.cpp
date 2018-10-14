@@ -1265,5 +1265,110 @@ bool snap_lock::lock_timedout() const
 }
 
 
+/** \brief Initialize an RAII lock duration timeout.
+ *
+ * You may change the lock duration timeout for a part of your code by
+ * using this RAII lock object. Create it on the stack and it will
+ * automatically restore the old timeout once you exit your block.
+ *
+ * \code
+ *    {
+ *        // change duration to at least 5 min.
+ *        //
+ *        raii_lock_duration_timeout raii_lock_duration_timeout_instance(300);
+ *
+ *        // create the lock
+ *        //
+ *        snap_lock lock(object_we_are_to_work_on);
+ *
+ *        [...do work...]
+ *    }
+ *    // here the pervious timeout was restored
+ * \endcode
+ *
+ * \important
+ * The new timeout is ignored if smaller than the current timeout.
+ *
+ * \todo
+ * We probably want to offer a way to define the comparison function so
+ * that way we can force the change, or make it only if smaller instead
+ * of larger.
+ *
+ * \param[in] temporary_lock_timeout  The new timeout.
+ */
+raii_lock_duration_timeout::raii_lock_duration_timeout(snap_lock::timeout_t temporary_lock_timeout)
+    : f_save_timeout(snap::snap_lock::current_lock_obtention_timeout())
+{
+    if(temporary_lock_timeout > f_save_timeout)
+    {
+        snap::snap_lock::initialize_lock_duration_timeout(temporary_lock_timeout);
+    }
+}
+
+
+/** \brief The destructor restores the previous timeout value.
+ *
+ * This destructor restores the lock duration timeout to the value it was
+ * set to before you instantiated this object.
+ */
+raii_lock_duration_timeout::~raii_lock_duration_timeout()
+{
+    snap::snap_lock::initialize_lock_duration_timeout(f_save_timeout);
+}
+
+
+
+/** \brief Initialize an RAII lock obtention timeout.
+ *
+ * You may change the lock obtention timeout for a part of your code by
+ * using this RAII lock object. Create it on the stack and it will
+ * automatically restore the old timeout once you exit your block.
+ *
+ * \code
+ *    {
+ *        // change obtention to at least 5 min.
+ *        //
+ *        raii_lock_obtention_timeout raii_lock_obtention_timeout_instance(300);
+ *
+ *        // create the lock
+ *        //
+ *        snap_lock lock(object_we_are_to_work_on);
+ *
+ *        [...do work...]
+ *    }
+ *    // here the pervious timeout was restored
+ * \endcode
+ *
+ * \important
+ * The new timeout is ignored if smaller than the current timeout.
+ *
+ * \todo
+ * We probably want to offer a way to define the comparison function so
+ * that way we can force the change, or make it only if smaller instead
+ * of larger.
+ *
+ * \param[in] temporary_lock_timeout  The new timeout.
+ */
+raii_lock_obtention_timeout::raii_lock_obtention_timeout(snap_lock::timeout_t temporary_lock_timeout)
+    : f_save_timeout(snap::snap_lock::current_lock_obtention_timeout())
+{
+    if(temporary_lock_timeout > f_save_timeout)
+    {
+        snap::snap_lock::initialize_lock_obtention_timeout(temporary_lock_timeout);
+    }
+}
+
+
+/** \brief The destructor restores the previous timeout value.
+ *
+ * This destructor restores the lock obtention timeout to the value it was
+ * set to before you instantiated this object.
+ */
+raii_lock_obtention_timeout::~raii_lock_obtention_timeout()
+{
+    snap::snap_lock::initialize_lock_obtention_timeout(f_save_timeout);
+}
+
+
 } // namespace snap
 // vim: ts=4 sw=4 et

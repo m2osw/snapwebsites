@@ -556,6 +556,7 @@ snap_version::version_number_t content::get_new_revision(
             : old_branch);
 
     // define the keys
+    //
     QString last_revision_key(QString("%1::%2::%3")
                 .arg(get_name(name_t::SNAP_NAME_CONTENT_REVISION_CONTROL))
                 .arg(get_name(name_t::SNAP_NAME_CONTENT_REVISION_CONTROL_LAST_REVISION))
@@ -574,6 +575,7 @@ snap_version::version_number_t content::get_new_revision(
     }
 
     // increase revision if one exists, otherwise we keep the default (0)
+    //
     snap_version::version_number_t revision(snap_version::SPECIAL_VERSION_FIRST_REVISION);
 
     snap_lock lock(key);

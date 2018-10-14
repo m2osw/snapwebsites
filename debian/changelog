@@ -1,3 +1,15 @@
+snapwebsites (1.6.17.0~xenial) xenial; urgency=high
+
+  * Moved the RAII lock object from finball to snap.
+  * Use the RAII lock to increase the lock obtention when the content plugin
+    tries to add an attachment, in case the file is being worked on.
+  * Fixed the snaplog no_mysql() function to actually explicitly close the
+    database (in case it was still open, to avoid "infinite" logs)
+  * Added a catch() of the "failed lock" so we can die() with a 423 error
+    (locked) instead of the default/usual not talkative 500 error.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Oct 2018 23:02:55 -0700
+
 snapwebsites (1.6.16.0~xenial) xenial; urgency=high
 
   * SNAP-663: the start() and stop() functions needed work to properly support
