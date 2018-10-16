@@ -547,6 +547,14 @@ bool snap_cgi::verify()
             snap::server::block_ip(remote_addr, "year", "user is trying to access phpmyadmin through snap.cgi");
             return false;
         }
+
+        if(strcasestr(request_uri, "GponForm/diag_Form?images") != nullptr)
+        {
+            // block CVE-2018-10561 accessors
+            error("410 Gone", "You were nearly logged in.", nullptr);
+            snap::server::block_ip(remote_addr, "year", "user is trying to access GPON router");
+            return false;
+        }
     }
 
     {
