@@ -548,11 +548,21 @@ bool snap_cgi::verify()
             return false;
         }
 
+        // TODO: move to snapserver because this could be the name of a legal page...
         if(strcasestr(request_uri, "GponForm/diag_Form?images") != nullptr)
         {
             // block CVE-2018-10561 accessors
             error("410 Gone", "You were nearly logged in.", nullptr);
             snap::server::block_ip(remote_addr, "year", "user is trying to access GPON router");
+            return false;
+        }
+
+        // TODO: move to snapserver because this could be the name of a legal page...
+        if(strcasestr(request_uri, "wp-login.php") != nullptr)
+        {
+            // block attempt to login as if we were a WordPress site
+            error("410 Gone", "Form not found.", nullptr);
+            snap::server::block_ip(remote_addr, "year", "user is trying to log in as if this was a WordPress website");
             return false;
         }
     }
