@@ -321,7 +321,7 @@ int main(int argc, char * argv[])
                 break;
             }
 
-            // unfortunately, I do not have a non-poll version for this
+            // unfortunately, I do not have a non-polling version for this
             // one yet...
             //
             sleep(1);

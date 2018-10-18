@@ -6901,6 +6901,17 @@ public:
         //
         snap_communicator::instance()->remove_connection(f_thread_done);
 
+        // we will access the f_last_error member of the thread runner
+        // which may not be available to the main thread yet, calling
+        // stop forces a memory barrier so we are all good.
+        //
+        // calling stop() has no effect if we did not use the thread,
+        // however, not calling stop() when we did use the thread
+        // causes all sorts of other problems (especially, the thread
+        // never gets joined)
+        //
+        f_thread.stop();
+
         tcp_client_server::bio_client::pointer_t client(f_thread_runner.release_client());
         if(f_done)
         {
@@ -6913,12 +6924,6 @@ public:
 
         if(client == nullptr)
         {
-            // we will access the f_last_error member of the thread runner
-            // which may not be available to the main thread yet, calling
-            // stop forces a memory barrier so we are all good.
-            //
-            f_thread.stop();
-
             // TODO: fix address in error message using a snap::addr so
             //       as to handle IPv6 seemlessly.
             //

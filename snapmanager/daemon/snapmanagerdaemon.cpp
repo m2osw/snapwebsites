@@ -123,6 +123,9 @@ void manager_daemon::init(int argc, char * argv[])
                 SNAP_LOG_ERROR("snapmanagerdaemon could not start the bundle loader thread.");
                 // we do not prevent continuing...
             }
+            // TODO: we never stop the thread, it ends on its own but we
+            //       would need to join() at some point to clean up its
+            //       stack (which is not that small!)
         }
     }
 }
@@ -570,6 +573,8 @@ void manager_daemon::stop(bool quitting)
             snap::snap_communicator_message cmd;
             cmd.set_command("STOP");
             f_status_connection->send_message(cmd);
+
+            //f_status_thread.stop() -- TODO: not so sure you can do this here? if not, where?
         }
 
         // WARNING: currently, the send_message() of an inter-process

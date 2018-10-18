@@ -71,6 +71,11 @@ void bundle_loader::set_bundle_uri(QString const & bundles_path, std::vector<std
  * timestamp in it. If that file exists, no reads will happen. Delete
  * the file, restart snapmanagerdaemon and you will get a new reload
  * of the bundles.
+ *
+ * \todo
+ * We need to send a signal to our parent thread so it can call the
+ * stop() function and release the thread completely (instead of
+ * keeping a zombie with its whole stack!)
  */
 void bundle_loader::run()
 {

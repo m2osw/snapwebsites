@@ -36,8 +36,6 @@ snap_initialize_website::snap_initialize_website_runner::snap_initialize_website
                                                 QString const & query_string, QString const & protocol)
     : snap_runner("initialize_website")
     , f_parent(parent)
-    //, f_mutex() -- auto-init
-    //, f_done() -- auto-init
     , f_snap_host(snap_host)
     , f_snap_port(snap_port)
     , f_secure(secure)

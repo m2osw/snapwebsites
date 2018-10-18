@@ -31,7 +31,6 @@
 #include <snapwebsites/snap_cassandra.h>
 #include <snapwebsites/snap_config.h>
 #include <snapwebsites/snap_exception.h>
-#include <snapwebsites/snap_thread.h>
 #include <snapwebsites/snapwebsites.h>
 
 // contrib lib
