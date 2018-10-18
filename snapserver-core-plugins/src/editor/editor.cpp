@@ -460,7 +460,7 @@ int64_t editor::do_update(int64_t last_updated)
 {
     SNAP_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 6, 18, 18, 58, 30, content_update);
+    SNAP_PLUGIN_UPDATE(2018, 10, 17, 17, 7, 19, content_update);
 
     SNAP_PLUGIN_UPDATE_EXIT();
 }
@@ -2911,7 +2911,7 @@ bool editor::validate_editor_post_for_widget_impl(
                     }
                     else if(f_snap->postfile_exists(widget_name))
                     {
-                        snap_child::post_file_t const& image(f_snap->postfile(widget_name));
+                        snap_child::post_file_t const & image(f_snap->postfile(widget_name));
                         int image_width(image.get_image_width());
                         int image_height(image.get_image_height());
                         if(width == 0 || height == 0)

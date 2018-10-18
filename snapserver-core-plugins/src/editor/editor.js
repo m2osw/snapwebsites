@@ -1,6 +1,6 @@
 /** @preserve
  * Name: editor
- * Version: 0.0.3.949
+ * Version: 0.0.3.952
  * Browsers: all
  * Depends: output (>= 0.1.4), popup (>= 0.1.0.1), server-access (>= 0.0.1.11), mimetype-basics (>= 0.0.3)
  * Copyright: Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
@@ -9507,9 +9507,50 @@ snapwebsites.EditorWidgetTypeDroppedFileWithPreview.prototype.initializeWidget =
 };
 
 
+/** \brief Validate the widget content.
+ *
+ * This function gets called to validate the widget whenever the user
+ * is ready to save the form.
+ *
+ * In general the validation consists of making sure that the content
+ * is valid as per the programmer's specification. For example, a
+ * line-edit needs to have a minimum and maximum number of characters.
+ * The maximum is checked as new characters are added, but the minimum
+ * is only checked before the save and thus in this validation function.
+ *
+ * In case of a Dropped File, we consider the object as being invalid
+ * while it's transferring data to the server.
+ *
+ * @param {Object} widget  The widget to validate.
+ *
+ * @return {boolean}  true if the widget is considered valid.
+ */
+snapwebsites.EditorWidgetTypeDroppedFileWithPreview.prototype.validate = function(widget) // virtual
+{
+    var editor_widget = /** @type {snapwebsites.EditorWidget} */ (widget),
+        w = editor_widget.getWidget(),
+        label;
+
+    if(!w.hasClass("processing-attachment"))
+    {
+        return true;
+    }
+
+    label = "<strong>" + editor_widget.getLabel(true) + "</strong>";
+
+    snapwebsites.OutputInstance.displayOneMessage(
+            "Field is Busy",
+            "Field " + label + " is busy handling a file. Please wait a little and try again.",
+            "warning",
+            true);
+
+    return false;
+};
+
+
 /** \brief Handle the dropped file.
  *
- * This function handles the dropped image by saving it in the target
+ * This function handles the dropped file by saving it in the target
  * element.
  *
  * \todo
@@ -9564,12 +9605,6 @@ snapwebsites.EditorWidgetTypeDroppedFileWithPreview.prototype.droppedAttachment 
     form_data.append("_editor_widget_names", name); // this field supports multiple names separated by commas
     form_data.append(name, e.target.snapEditorFile);
 
-    // mark widget as processing (allows for CSS effects)
-    w.addClass("processing-attachment");
-
-    // show a "Please Wait" image
-    editor_widget.showWaitImage();
-
     this.ajaxReason_ = "dropped_file_with_preview";
     if(!this.serverAccess_)
     {
@@ -9578,6 +9613,12 @@ snapwebsites.EditorWidgetTypeDroppedFileWithPreview.prototype.droppedAttachment 
     this.serverAccess_.setURI(snapwebsites.castToString(jQuery("link[rel='page-uri']").attr("href"), "casting href of the page-uri link to a string in snapwebsites.EditorWidgetTypeDroppedFileWithPreview.droppedAttachment()"));
     this.serverAccess_.setData(form_data);
     this.serverAccess_.send(e);
+
+    // mark widget as processing (allows for CSS effects)
+    // show a "Please Wait" image
+    //
+    w.addClass("processing-attachment");
+    editor_widget.showWaitImage();
 };
 
 
@@ -9717,10 +9758,17 @@ snapwebsites.EditorWidgetTypeDroppedFileWithPreview.prototype.serverAccessError 
  */
 snapwebsites.EditorWidgetTypeDroppedFileWithPreview.prototype.serverAccessComplete = function(result) // virtual
 {
+    var w = result.userdata.target.snapEditorWidget.getWidget();
+
     snapwebsites.EditorWidgetTypeDroppedFileWithPreview.superClass_.serverAccessComplete.call(this, result);
 
     // done processing
-    result.userdata.target.snapEditorWidget.getWidget().removeClass("processing-attachment");
+    //
+    // note: erroneous may be added because the user clicks a Save button
+    //       too soon
+    //
+    w.removeClass("processing-attachment");
+    w.removeClass("erroneous");
 };
 /*jslint unparam: false */
 
@@ -9903,6 +9951,47 @@ snapwebsites.EditorWidgetTypeDroppedFile.prototype.initializeWidget = function(w
 };
 
 
+/** \brief Validate the widget content.
+ *
+ * This function gets called to validate the widget whenever the user
+ * is ready to save the form.
+ *
+ * In general the validation consists of making sure that the content
+ * is valid as per the programmer's specification. For example, a
+ * line-edit needs to have a minimum and maximum number of characters.
+ * The maximum is checked as new characters are added, but the minimum
+ * is only checked before the save and thus in this validation function.
+ *
+ * In case of a Dropped File, we consider the object as being invalid
+ * while it's transferring data to the server.
+ *
+ * @param {Object} widget  The widget to validate.
+ *
+ * @return {boolean}  true if the widget is considered valid.
+ */
+snapwebsites.EditorWidgetTypeDroppedFile.prototype.validate = function(widget) // virtual
+{
+    var editor_widget = /** @type {snapwebsites.EditorWidget} */ (widget),
+        w = editor_widget.getWidget(),
+        label;
+
+    if(!w.hasClass("processing-attachment"))
+    {
+        return true;
+    }
+
+    label = "<strong>" + editor_widget.getLabel(true) + "</strong>";
+
+    snapwebsites.OutputInstance.displayOneMessage(
+            "Field is Busy",
+            "Field " + label + " is busy handling a file. Please wait a little and try again.",
+            "warning",
+            true);
+
+    return false;
+};
+
+
 /** \brief Implement the Upload button.
  *
  * This function implements the Upload button for the specified editor
@@ -10075,13 +10164,18 @@ snapwebsites.EditorWidgetTypeDroppedFile.prototype.setValue = function(widget, v
 
 /** \brief Handle the dropped file.
  *
- * This function handles the dropped image by saving it in the target
+ * This function handles the dropped file by saving it in the target
  * element.
  *
  * \todo
  * We may want to look into generating an MD5 checksum and check that first
  * because the file may already be available on the server. Calculating an
  * MD5 in JavaScript is not that hard...
+ *
+ * \todo
+ * The EditorWidgetTypeDroppedFile and EditorWidgetTypeDroppedFileWithPreview
+ * are both doing nearly the same thing once a file is dropped. We want to
+ * have functions shared between both classes.
  *
  * @param {ProgressEvent} e  The event.
  *
@@ -10100,6 +10194,7 @@ snapwebsites.EditorWidgetTypeDroppedFile.prototype.droppedAttachment = function(
         icon_widget = w.children(".dropped-file-icon");
 
     // hide previous icons if the user is doing this a second time
+    //
     broken_icon.hide();
     icon_widget.hide();
 
@@ -10130,12 +10225,6 @@ snapwebsites.EditorWidgetTypeDroppedFile.prototype.droppedAttachment = function(
     form_data.append("_editor_widget_names", name); // this field supports multiple names separated by commas
     form_data.append(name, e.target.snapEditorFile);
 
-    // mark widget as processing (allows for CSS effects)
-    w.addClass("processing-attachment");
-
-    // show a "Please Wait" image
-    editor_widget.showWaitImage();
-
     this.ajaxReason_ = "dropped_file";
     if(!this.serverAccess_)
     {
@@ -10144,6 +10233,12 @@ snapwebsites.EditorWidgetTypeDroppedFile.prototype.droppedAttachment = function(
     this.serverAccess_.setURI(snapwebsites.castToString(jQuery("link[rel='page-uri']").attr("href"), "casting href of the page-uri link to a string in snapwebsites.EditorWidgetTypeDroppedFile.droppedAttachment()"));
     this.serverAccess_.setData(form_data);
     this.serverAccess_.send(e);
+
+    // mark widget as processing (allows for CSS effects)
+    // show a "Please Wait" image in the widget too
+    //
+    w.addClass("processing-attachment");
+    editor_widget.showWaitImage();
 };
 
 
@@ -10198,13 +10293,19 @@ snapwebsites.EditorWidgetTypeDroppedFile.prototype.serverAccessSuccess = functio
 snapwebsites.EditorWidgetTypeDroppedFile.prototype.serverAccessComplete = function(result) // virtual
 {
     var editor_widget = /** @type {snapwebsites.EditorWidget} */ (result.userdata.target.snapEditorWidget);
+        w = editor_widget.getWidget();
 
     snapwebsites.EditorWidgetTypeDroppedFile.superClass_.serverAccessComplete.call(this, result);
 
     editor_widget.hideWaitImage();
 
     // done processing
-    result.userdata.target.snapEditorWidget.getWidget().removeClass("processing-attachment");
+    //
+    // note: erroneous may be added because the user clicks a Save button
+    //       too soon
+    //
+    w.removeClass("processing-attachment");
+    w.removeClass("erroneous");
 };
 
 

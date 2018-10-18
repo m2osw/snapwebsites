@@ -1,3 +1,14 @@
+snapwebsites (1.6.18.0~xenial) xenial; urgency=high
+
+  * Block IP address if user attempts to go to "wp-login.php" or
+    "GponForm/diag_Form?images".
+  * Updated the editor.js so we do not attempt to save if a file is being
+    processed (i.e. our file drop areas immediately send the file to the
+    server and attempting to Save to see would generate a "weird" error
+    saying that the file is missing.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 17 Oct 2018 17:14:31 -0700
+
 snapwebsites (1.6.17.0~xenial) xenial; urgency=high
 
   * Moved the RAII lock object from finball to snap.
