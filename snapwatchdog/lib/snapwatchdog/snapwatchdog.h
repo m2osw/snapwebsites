@@ -40,6 +40,10 @@ enum class name_t
     SNAP_NAME_WATCHDOG_CACHE_PATH,
     SNAP_NAME_WATCHDOG_DATA_PATH,
     SNAP_NAME_WATCHDOG_DEFAULT_LOG_PATH,
+    SNAP_NAME_WATCHDOG_ERROR_REPORT_CRITICAL_PRIORITY,
+    SNAP_NAME_WATCHDOG_ERROR_REPORT_LOW_PRIORITY,
+    SNAP_NAME_WATCHDOG_ERROR_REPORT_MEDIUM_PRIORITY,
+    SNAP_NAME_WATCHDOG_ERROR_REPORT_SETTLE_TIME,
     SNAP_NAME_WATCHDOG_FROM_EMAIL,
     SNAP_NAME_WATCHDOG_LOG_DEFINITIONS_PATH,
     SNAP_NAME_WATCHDOG_LOG_PATH,
@@ -120,6 +124,14 @@ public:
     void                msg_rusage(snap::snap_communicator_message & message);
     void                msg_reload_config(snap::snap_communicator_message & message);
 
+    int64_t             get_error_report_settle_time() const;
+    int64_t             get_error_report_low_priority() const;
+    int64_t             get_error_report_low_span() const;
+    int64_t             get_error_report_medium_priority() const;
+    int64_t             get_error_report_medium_span() const;
+    int64_t             get_error_report_critical_priority() const;
+    int64_t             get_error_report_critical_span() const;
+
 private:
     void                define_server_name();
     void                init_parameters();
@@ -129,7 +141,14 @@ private:
     int64_t                                         f_statistics_frequency = 0;
     int64_t                                         f_statistics_period = 0;
     int64_t                                         f_statistics_ttl = 0;
-    std::vector<std::shared_ptr<watchdog_child>>    f_processes = std::vector< std::shared_ptr<watchdog_child>>();
+    int64_t                                         f_error_report_settle_time = 5 * 60;
+    int64_t                                         f_error_report_low_priority = 10;
+    int64_t                                         f_error_report_low_span = 86400 * 7;
+    int64_t                                         f_error_report_medium_priority = 50;
+    int64_t                                         f_error_report_medium_span = 86400 * 3;
+    int64_t                                         f_error_report_critical_priority = 90;
+    int64_t                                         f_error_report_critical_span = 86400 * 1;
+    std::vector<std::shared_ptr<watchdog_child>>    f_processes = std::vector<std::shared_ptr<watchdog_child>>();
     bool                                            f_stopping = false;
     bool                                            f_force_restart = false;
     int64_t                                         f_snapcommunicator_connected = 0;

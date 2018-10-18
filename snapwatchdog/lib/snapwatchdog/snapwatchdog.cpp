@@ -544,6 +544,18 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_WATCHDOG_DEFAULT_LOG_PATH:
         return "/var/log/snapwebsites";
 
+    case name_t::SNAP_NAME_WATCHDOG_ERROR_REPORT_CRITICAL_PRIORITY:
+        return "error_report_critical_priority";
+
+    case name_t::SNAP_NAME_WATCHDOG_ERROR_REPORT_LOW_PRIORITY:
+        return "error_report_low_priority";
+
+    case name_t::SNAP_NAME_WATCHDOG_ERROR_REPORT_MEDIUM_PRIORITY:
+        return "error_report_medium_priority";
+
+    case name_t::SNAP_NAME_WATCHDOG_ERROR_REPORT_SETTLE_TIME:
+        return "error_report_settle_time";
+
     case name_t::SNAP_NAME_WATCHDOG_FROM_EMAIL:
         return "from_email";
 
@@ -907,12 +919,12 @@ void watchdog_server::init_parameters()
         f_statistics_frequency = static_cast<int64_t>(statistics_frequency.toLongLong(&ok));
         if(!ok)
         {
-            SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic frequency \"")(statistics_frequency)("\" is not a valid number.");
+            SNAP_LOG_FATAL("statistic frequency \"")(statistics_frequency)("\" is not a valid number.");
             exit(1);
         }
         if(f_statistics_frequency < 0)
         {
-            SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic frequency (")(statistics_frequency)(") cannot be a negative number.");
+            SNAP_LOG_FATAL("statistic frequency (")(statistics_frequency)(") cannot be a negative number.");
             exit(1);
         }
         if(f_statistics_frequency < 60)
@@ -930,12 +942,12 @@ void watchdog_server::init_parameters()
         f_statistics_period = static_cast<int64_t>(statistics_period.toLongLong(&ok));
         if(!ok)
         {
-            SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic period \"")(statistics_period)("\" is not a valid number.");
+            SNAP_LOG_FATAL("statistic period \"")(statistics_period)("\" is not a valid number.");
             exit(1);
         }
         if(f_statistics_period < 0)
         {
-            SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic period (")(statistics_period)(") cannot be a negative number.");
+            SNAP_LOG_FATAL("statistic period (")(statistics_period)(") cannot be a negative number.");
             exit(1);
         }
         if(f_statistics_period < 3600)
@@ -966,12 +978,12 @@ void watchdog_server::init_parameters()
             f_statistics_ttl = static_cast<int64_t>(statistics_ttl.toLongLong(&ok));
             if(!ok)
             {
-                SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic ttl \"")(statistics_ttl)("\" is not a valid number.");
+                SNAP_LOG_FATAL("statistic ttl \"")(statistics_ttl)("\" is not a valid number.");
                 exit(1);
             }
             if(f_statistics_ttl < 0)
             {
-                SNAP_LOG_FATAL("watchdog_server::init_parameters(): statistic ttl (")(statistics_ttl)(") cannot be a negative number.");
+                SNAP_LOG_FATAL("statistic ttl (")(statistics_ttl)(") cannot be a negative number.");
                 exit(1);
             }
             if(f_statistics_ttl != 0
@@ -982,6 +994,270 @@ void watchdog_server::init_parameters()
                 f_statistics_ttl = 3600;
             }
         }
+    }
+
+    // Amount of time before we start sending reports by email
+    {
+        QString const settle_time(get_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_ERROR_REPORT_SETTLE_TIME)));
+        if(!settle_time.isEmpty())
+        {
+            bool ok(false);
+            f_error_report_settle_time = static_cast<int64_t>(settle_time.toLongLong(&ok));
+            if(!ok)
+            {
+                SNAP_LOG_FATAL("error report settle time \"")
+                              (settle_time)
+                              ("\" is not a valid number.");
+                exit(1);
+            }
+            if(f_error_report_settle_time < 0)
+            {
+                SNAP_LOG_FATAL("error report settle time (")
+                              (settle_time)
+                              (") cannot be a negative number.");
+                exit(1);
+            }
+            if(f_error_report_settle_time < 60)
+            {
+                // minimum is 1 minute
+                //
+                f_error_report_settle_time = 60;
+            }
+            // TBD: should we have a maximum like 1h?
+        }
+    }
+
+    // Low priority and span
+    {
+        QString const low_priority(get_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_ERROR_REPORT_LOW_PRIORITY)));
+        if(!low_priority.isEmpty())
+        {
+            snap::snap_string_list prio_span(low_priority.split(','));
+            if(prio_span.size() > 2)
+            {
+                SNAP_LOG_FATAL("error report low priority \"")
+                              (low_priority)
+                              ("\" is expect to have two numbers separated by one comma. The second number is optional.");
+                exit(1);
+            }
+
+            bool ok(false);
+            f_error_report_low_priority = static_cast<int64_t>(prio_span[0].toLongLong(&ok));
+            if(!ok)
+            {
+                SNAP_LOG_FATAL("error report low priority \"")
+                              (low_priority)
+                              ("\" is not a valid number.");
+                exit(1);
+            }
+            if(f_error_report_low_priority < 1)
+            {
+                SNAP_LOG_FATAL("error report low priority (")
+                              (low_priority)
+                              (") cannot be negative or null.");
+                exit(1);
+            }
+            if(f_error_report_low_priority > 50)
+            {
+                // maximum is 50
+                //
+                f_error_report_low_priority = 50;
+            }
+
+            if(prio_span.size() == 2
+            && !prio_span[1].isEmpty())
+            {
+                f_error_report_low_span = static_cast<int64_t>(prio_span[1].toLongLong(&ok));
+                if(!ok)
+                {
+                    SNAP_LOG_FATAL("error report low span \"")
+                                  (low_priority)
+                                  ("\" is not a valid number.");
+                    exit(1);
+                }
+                if(f_error_report_low_span < 0)
+                {
+                    SNAP_LOG_FATAL("error report low span (")
+                                  (low_priority)
+                                  (") cannot be negative or null.");
+                    exit(1);
+                }
+                if(f_error_report_low_span < 86400)
+                {
+                    // minimum is one day
+                    //
+                    f_error_report_low_span = 86400;
+                }
+            }
+        }
+    }
+
+    // Medium priority and span
+    {
+        QString const medium_priority(get_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_ERROR_REPORT_MEDIUM_PRIORITY)));
+        if(!medium_priority.isEmpty())
+        {
+            snap::snap_string_list prio_span(medium_priority.split(','));
+            if(prio_span.size() > 2)
+            {
+                SNAP_LOG_FATAL("error report medium priority \"")
+                              (medium_priority)
+                              ("\" is expect to have two numbers separated by one comma. The second number is optional.");
+                exit(1);
+            }
+
+            bool ok(false);
+            f_error_report_medium_priority = static_cast<int64_t>(prio_span[0].toLongLong(&ok));
+            if(!ok)
+            {
+                SNAP_LOG_FATAL("error report medium priority \"")
+                              (medium_priority)
+                              ("\" is not a valid number.");
+                exit(1);
+            }
+            if(f_error_report_medium_priority < 1)
+            {
+                SNAP_LOG_FATAL("error report medium priority (")
+                              (medium_priority)
+                              (") cannot be negative or null.");
+                exit(1);
+            }
+
+            if(prio_span.size() == 2
+            && !prio_span[1].isEmpty())
+            {
+                f_error_report_medium_span = static_cast<int64_t>(prio_span[1].toLongLong(&ok));
+                if(!ok)
+                {
+                    SNAP_LOG_FATAL("error report medium span \"")
+                                  (medium_priority)
+                                  ("\" is not a valid number.");
+                    exit(1);
+                }
+                if(f_error_report_medium_span < 0)
+                {
+                    SNAP_LOG_FATAL("error report medium span (")
+                                  (medium_priority)
+                                  (") cannot be negative or null.");
+                    exit(1);
+                }
+                if(f_error_report_medium_span < 3600)
+                {
+                    // minimum is one hour
+                    //
+                    f_error_report_medium_span = 3600;
+                }
+            }
+        }
+    }
+
+    // Critical priority and span
+    {
+        QString const critical_priority(get_parameter(get_name(watchdog::name_t::SNAP_NAME_WATCHDOG_ERROR_REPORT_CRITICAL_PRIORITY)));
+        if(!critical_priority.isEmpty())
+        {
+            snap::snap_string_list prio_span(critical_priority.split(','));
+            if(prio_span.size() > 2)
+            {
+                SNAP_LOG_FATAL("error report critical priority \"")
+                              (critical_priority)
+                              ("\" is expect to have two numbers separated by one comma. The second number is optional.");
+                exit(1);
+            }
+
+            bool ok(false);
+            f_error_report_critical_priority = static_cast<int64_t>(prio_span[0].toLongLong(&ok));
+            if(!ok)
+            {
+                SNAP_LOG_FATAL("error report critical priority \"")
+                              (critical_priority)
+                              ("\" is not a valid number.");
+                exit(1);
+            }
+            if(f_error_report_critical_priority < 1)
+            {
+                SNAP_LOG_FATAL("error report critical priority (")
+                              (critical_priority)
+                              (") cannot be negative or null.");
+                exit(1);
+            }
+            if(f_error_report_critical_priority > 100)
+            {
+                // TBD: should we just clamp silently instead of a fatal error?
+                //
+                SNAP_LOG_FATAL("error report critical priority (")
+                              (critical_priority)
+                              (") cannot be larger than 100.");
+                exit(1);
+            }
+
+            if(prio_span.size() == 2
+            && !prio_span[1].isEmpty())
+            {
+                f_error_report_critical_span = static_cast<int64_t>(prio_span[1].toLongLong(&ok));
+                if(!ok)
+                {
+                    SNAP_LOG_FATAL("error report critical span \"")
+                                  (critical_priority)
+                                  ("\" is not a valid number.");
+                    exit(1);
+                }
+                if(f_error_report_critical_span < 0)
+                {
+                    SNAP_LOG_FATAL("error report critical span (")
+                                  (critical_priority)
+                                  (") cannot be negative or null.");
+                    exit(1);
+                }
+                if(f_error_report_critical_span < 300)
+                {
+                    // minimum is five minutes
+                    //
+                    f_error_report_critical_span = 300;
+                }
+            }
+        }
+    }
+
+    // now that all the priority & span numbers are defined we can verify
+    // that they are properly sorted
+    //
+    if(f_error_report_medium_priority < f_error_report_low_priority)
+    {
+        SNAP_LOG_FATAL("error report medium priority (")
+                      (f_error_report_medium_priority)
+                      (") cannot be less than the low priority (")
+                      (f_error_report_low_priority)
+                      (").");
+        exit(1);
+    }
+    if(f_error_report_critical_priority < f_error_report_medium_priority)
+    {
+        SNAP_LOG_FATAL("error report critical priority (")
+                      (f_error_report_critical_priority)
+                      (") cannot be less than the medium priority (")
+                      (f_error_report_medium_priority)
+                      (").");
+        exit(1);
+    }
+
+    if(f_error_report_medium_span > f_error_report_low_span)
+    {
+        SNAP_LOG_FATAL("error report medium span (")
+                      (f_error_report_medium_span)
+                      (") cannot be more than the low span (")
+                      (f_error_report_low_span)
+                      (").");
+        exit(1);
+    }
+    if(f_error_report_critical_span > f_error_report_medium_span)
+    {
+        SNAP_LOG_FATAL("error report critical span (")
+                      (f_error_report_critical_span)
+                      (") cannot be more than the medium span (")
+                      (f_error_report_medium_span)
+                      (").");
+        exit(1);
     }
 }
 
@@ -1077,6 +1353,51 @@ void watchdog_server::msg_reload_config(snap::snap_communicator_message & messag
     f_force_restart = true;
     stop(false);
 }
+
+
+int64_t watchdog_server::get_error_report_settle_time() const
+{
+    return f_error_report_settle_time;
+}
+
+
+int64_t watchdog_server::get_error_report_low_priority() const
+{
+    return f_error_report_low_priority;
+}
+
+
+int64_t watchdog_server::get_error_report_low_span() const
+{
+    return f_error_report_low_span;
+}
+
+
+int64_t watchdog_server::get_error_report_medium_priority() const
+{
+    return f_error_report_medium_priority;
+}
+
+
+int64_t watchdog_server::get_error_report_medium_span() const
+{
+    return f_error_report_medium_span;
+}
+
+
+int64_t watchdog_server::get_error_report_critical_priority() const
+{
+    return f_error_report_critical_priority;
+}
+
+
+int64_t watchdog_server::get_error_report_critical_span() const
+{
+    return f_error_report_critical_span;
+}
+
+
+
 
 
 void watchdog_server::stop(bool quitting)
@@ -1397,7 +1718,7 @@ bool watchdog_child::run_watchdog_plugins()
             time_t const server_start_date(server->get_server_start_date());
             time_t const now(time(nullptr));
             int64_t diff(now - server_start_date);
-            if(diff >= 5 * 60)
+            if(diff >= server->get_error_report_settle_time())
             {
                 QDomElement error(snap_dom::get_child_element(doc, "watchdog/error"));
                 if(!error.isNull())
@@ -1431,21 +1752,38 @@ bool watchdog_child::run_watchdog_plugins()
                     // TODO: make this "10" a parameter in the watchdog.conf
                     //       file so the user can choose what to receive
                     //
-                    if(max_priority >= 10)
+                    if(max_priority >= server->get_error_report_low_priority())
                     {
                         // how often to send an email depends on the priority
-                        // if 90+, always send an email
-                        // if
+                        // and the span parameters
                         //
-                        int64_t span(86400);    // 1 day by default
-                        if(max_priority >= 90)
-                        {
-                            span = 15 * 60;     // 15 min.
-                        }
-                        else if(max_priority >= 50)
-                        {
-                            span = 60 * 60;     // 1 hour
-                        }
+                        // note that too often on a large cluster and you'll
+                        // die under the pressure! (some even call it spam)
+                        // so we limit the emails quite a bit by default...
+                        // admins can check the status any time from the
+                        // server side in snapmanager anyway and also the
+                        // priorities and span parameters can be changed
+                        // in the configuration file (search for
+                        // `error_report_` parameters in snapwatchdog.conf)
+                        //
+                        // note that the span does last across restarts of
+                        // the application
+                        //
+                        // the defaults at this time are:
+                        //
+                        // +----------+----------+--------+
+                        // | name     | priority | span   |
+                        // +----------+----------+--------+
+                        // | low      |       10 | 1 week |
+                        // | medium   |       50 | 3 days |
+                        // | critical |       90 | 1 day  |
+                        // +----------+----------+--------+
+                        //
+                        int64_t const span(max_priority >= server->get_error_report_critical_priority()
+                                                ? server->get_error_report_critical_span()
+                                                : (max_priority >= server->get_error_report_medium_priority()
+                                                    ? server->get_error_report_medium_span()
+                                                    : server->get_error_report_low_span()));
 
                         // use a file in the cache area since we are likely
                         // to regenerate it often or just ignore it for a

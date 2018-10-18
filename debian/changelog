@@ -1,3 +1,11 @@
+snapwebsites (1.6.19.0~xenial) xenial; urgency=high
+
+  * Updated the snapwatchdog server to use larger span times to send emails
+    (changed from 15min, 1h, 1d, to 1d, 3d, 1w)
+  * Made these spans and corresponding priorities editable (in conf file).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 17 Oct 2018 20:59:22 -0700
+
 snapwebsites (1.6.18.0~xenial) xenial; urgency=high
 
   * Block IP address if user attempts to go to "wp-login.php" or
