@@ -2015,6 +2015,7 @@ std::cerr << "------- CREATE: replacement [" << f_execute.substr(replacement_sta
             //       multiple levels require the '{' ... '}' at each level
             //
             std::string field_names(word);
+            std::string end_field;
             for(auto i : f_keyword->get_indexes())
             {
                 field_names += ' ';
@@ -2037,6 +2038,54 @@ std::cerr << "------- CREATE: replacement [" << f_execute.substr(replacement_sta
                 }
             }
             field_names += " ";
+
+            size_t const max(f_keyword->get_fields().size());
+            auto const & fields(f_keyword->get_fields());
+            for(size_t idx(0); idx < max; ++idx)
+            {
+                std::string const name(fields[idx]->get_token().get_word());
+
+                // the special name "_" means that there is no
+                // name for that field
+                //
+                if(name != "_")
+                {
+                    if(idx + 1 < max)
+                    {
+                        field_names += "{\n";
+                        for(size_t j(0); j < idx + 1; ++j)
+                        {
+                            field_names += '\t';
+                            end_field += '\t';
+                        }
+                        end_field += "};\n";
+                    }
+
+                    field_names += name;
+                    for(auto i : fields[idx]->get_indexes())
+                    {
+                        field_names += ' ';
+                        auto const & tok(i->get_token());
+                        if(tok.get_type() == token_type_t::TOKEN_STRING)
+                        {
+                            if(tok.get_word() == "*")
+                            {
+                                std::cerr << "dns_options:error: you cannot create or update a field using \"*\" as one of its indices."
+                                          << std::endl;
+                                return 1;
+                            }
+                            field_names += '"';
+                            field_names += tok.get_word();
+                            field_names += '"';
+                        }
+                        else
+                        {
+                            field_names += i->get_token().get_word();
+                        }
+                    }
+                    field_names += " ";
+                }
+            }
 
             int const replacement_start(f_keyword->value_start());
             int const replacement_end(f_keyword->value_end());
@@ -2072,13 +2121,20 @@ std::cerr << "------- TOTAL CREATE: replacement [" << f_execute.substr(replaceme
                 f_data += "\n";
             }
 
+            std::string replacement;
+            for(size_t idx(0); idx < max; ++idx)
+            {
+                replacement += '\t';
+            }
+            replacement += f_execute.substr(replacement_start, replacement_end - replacement_start);
+
             // here the added newlines and tab are quite arbitrary...
             //
             f_data += field_names
                       + "{\n"
-                        + "\t"
-                        + f_execute.substr(replacement_start, replacement_end - replacement_start)
+                        + replacement
                       + ";\n"
+                    + end_field
                     + "};\n"
                     + "\n";
             if(f_stdout)
@@ -2163,6 +2219,8 @@ std::cerr << "  --- types: "
                 // in this case we do not expect indexes, although it if
                 // that's the case then match_indexes() returns true
                 //
+                // TODO: find a way to calculate the replacement only once
+                //
                 int const replacement_start(f_keyword->value_start());
                 int const replacement_end(f_keyword->value_end());
                 std::string replacement(f_execute.substr(replacement_start, replacement_end - replacement_start));
@@ -2171,6 +2229,7 @@ std::cerr << "  --- types: "
 #if 0
 std::cerr << "    *** MATCH VALUE! [" << replacement << "]\n";
 #endif
+                    ++field_idx;
                     return v;
                 }
             }
@@ -2178,12 +2237,7 @@ std::cerr << "    *** MATCH VALUE! [" << replacement << "]\n";
             {
 //std::cerr << "    *** MATCHED FIELDS!\n";
                 ++field_idx;
-                auto result(match_fields(field_idx, v, previous_level));
-                if(result != nullptr)
-                {
-                    return result;
-                }
-                --field_idx;
+                return match_fields(field_idx, v, previous_level);
             }
         }
     }

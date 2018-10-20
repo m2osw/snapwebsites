@@ -1,0 +1,11 @@
+options {
+	directory "/var/cache/bind";
+	query-source address * port 53;
+	auth-nxdomain no;    # conform to RFC1035
+	allow-recursion { localnets; };
+	datasize 100m;
+	//files 50;
+	tcp-clients 20;
+	max-cache-size 30m;
+	listen-on-v6 { any; };
+};

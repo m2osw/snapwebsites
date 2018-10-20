@@ -14,29 +14,51 @@
     # Fixed a few parameters which are considered unsafe by PCI
     # (these are really just ofuscation of the DNS)
     NAMED_CONF=/etc/bind/named.conf.options
+    DNS_OPTIONS=dns_options
+    NAMED_LOG_PATH=/var/log/named
 
     if test ! -f ${NAMED_CONF}.bak
     then
       cp ${NAMED_CONF} ${NAMED_CONF}.bak
     fi
 
-    # 
-    dns_options -e 'options.version = none'   ${NAMED_CONF}
-    dns_options -e 'options.hostname = none'  ${NAMED_CONF}
-    dns_options -e 'options.server-id = none' ${NAMED_CONF}
+    # Setup the three most important values used to hide the DNS implementation
+    # (See SNAP-522)
+    #
+    ${DNS_OPTIONS} -e 'options.version = none'   ${NAMED_CONF}
+    ${DNS_OPTIONS} -e 'options.hostname = none'  ${NAMED_CONF}
+    ${DNS_OPTIONS} -e 'options.server-id = none' ${NAMED_CONF}
 
-    dns_options -e 'acl[bogusnets]._ = 0.0.0.0/8;'      ${NAMED_CONF}
-    dns_options -e 'acl[bogusnets]._ = 192.0.2.0/24;'   ${NAMED_CONF}
-    dns_options -e 'acl[bogusnets]._ = 224.0.0.0/3;'    ${NAMED_CONF}
+    # Setup the bogus network IP addresses
+    # (See SNAP-553)
+    #
+    ${DNS_OPTIONS} -e 'acl[bogusnets]._ = 0.0.0.0/8;'      ${NAMED_CONF}
+    ${DNS_OPTIONS} -e 'acl[bogusnets]._ = 192.0.2.0/24;'   ${NAMED_CONF}
+    ${DNS_OPTIONS} -e 'acl[bogusnets]._ = 224.0.0.0/3;'    ${NAMED_CONF}
 
     # The following may be used by the private network
-    #dns_options -e 'acl[bogusnets]._ = 10.0.0.0/8;'     ${NAMED_CONF}
-    #dns_options -e 'acl[bogusnets]._ = 172.16.0.0/12;'  ${NAMED_CONF}
-    #dns_options -e 'acl[bogusnets]._ = 192.168.0.0/16;' ${NAMED_CONF}
+    #${DNS_OPTIONS} -e 'acl[bogusnets]._ = 10.0.0.0/8;'     ${NAMED_CONF}
+    #${DNS_OPTIONS} -e 'acl[bogusnets]._ = 172.16.0.0/12;'  ${NAMED_CONF}
+    #${DNS_OPTIONS} -e 'acl[bogusnets]._ = 192.168.0.0/16;' ${NAMED_CONF}
 
-    dns_options -e 'options.blackhole._ = bogusnets;' ${NAMED_CONF}
+    ${DNS_OPTIONS} -e 'options.blackhole._ = bogusnets;' ${NAMED_CONF}
 
-    # Install the bind9 jail knowing that fail2ban may not be installed
+    # Define a security log file
+    # (See SNAP-483)
+    #
+    ${DNS_OPTIONS} -e 'logging.category[security]._ = security_file' ${NAMED_CONF}
+    ${DNS_OPTIONS} -e 'logging.channel[security_file].file = "'${NAMED_LOG_PATH}'/security.log" versions 3 size 30m' ${NAMED_CONF}
+    ${DNS_OPTIONS} -e 'logging.channel[security_file].severity = dynamic' ${NAMED_CONF}
+    ${DNS_OPTIONS} -e 'logging.channel[security_file].print-time = yes' ${NAMED_CONF}
+
+    if test ! -d ${NAMED_LOG_PATH}
+    then
+      mkdir -p ${NAMED_LOG_PATH}
+      chown bind:bind ${NAMED_LOG_PATH}
+    fi
+
+    # Install the bind9 jail knowing that fail2ban may not ever be installed
+    #
     if test ! -d /etc/fail2ban/jail.d
     then
       mkdir -p /etc/fail2ban/jail.d

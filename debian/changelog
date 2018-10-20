@@ -7,12 +7,17 @@ snapwebsites (1.6.19.0~xenial) xenial; urgency=high
     have to call the stop() function, no matter what.
   * Reviewed the rest of the snap_thread usage and it all looks good, except
     in snapmanagerdaemon where I put a TODO note.
-  * Enhanced the dns_options tool to support adding acl bogusnets even when
-    not defined at all in the options file.
-  * Added the dns_options to the DNS bundle.
+  * Enhanced the dns_options tool to support adding acl bogusnets and logging
+    options even when not defined at all in the options file.
+  * Properly handle the case where multiple levels are missing on a CREATE.
+  * Fixed some tabulations although there are still problems.
+  * Added the ACL DNS options in the DNS bundle.
+  * Added the log DNS options in the DNS bundle.
   * Added some missing std::endl in various messages.
   * Fixed the reading of the value of the expression on the command line, the
     get_token() needed to use `false` in that case.
+  * Use more variables in the DNS bundle.
+  * Added a test to verify all the dns_options we have in our bundle.
 
  -- Alexis Wilke <alexis@m2osw.com>  Wed, 17 Oct 2018 20:59:22 -0700
 
