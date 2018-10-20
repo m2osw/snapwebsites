@@ -1,3 +1,11 @@
+snapwebsites (1.6.20.0~xenial) xenial; urgency=high
+
+  * Enabled the [named-resufed] jail now that SNAP-483 is complete.
+  * Added a restart of bind9 to the DNS bundle.
+  * Delete the bind9 logs on uninstallation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 20 Oct 2018 16:07:59 -0700
+
 snapwebsites (1.6.19.0~xenial) xenial; urgency=high
 
   * Updated the snapwatchdog server to use larger span times to send emails
@@ -11,8 +19,8 @@ snapwebsites (1.6.19.0~xenial) xenial; urgency=high
     options even when not defined at all in the options file.
   * Properly handle the case where multiple levels are missing on a CREATE.
   * Fixed some tabulations although there are still problems.
-  * Added the ACL DNS options in the DNS bundle.
-  * Added the log DNS options in the DNS bundle.
+  * SNAP-553: Added the ACL DNS options in the DNS bundle.
+  * SNAP-483: Added the log DNS options in the DNS bundle.
   * Added some missing std::endl in various messages.
   * Fixed the reading of the value of the expression on the command line, the
     get_token() needed to use `false` in that case.

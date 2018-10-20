@@ -51,6 +51,10 @@
     ${DNS_OPTIONS} -e 'logging.channel[security_file].severity = dynamic' ${NAMED_CONF}
     ${DNS_OPTIONS} -e 'logging.channel[security_file].print-time = yes' ${NAMED_CONF}
 
+    # Create the log folder, no rotation is required as the definition
+    # in the options already defines how many files and their size we
+    # accept (i.e. 3 files each of up to 30Mb)
+    #
     if test ! -d ${NAMED_LOG_PATH}
     then
       mkdir -p ${NAMED_LOG_PATH}
@@ -66,12 +70,18 @@
       chmod 755 /etc/fail2ban/jail.d
     fi
     cp /usr/share/snapwebsites/fail2ban/snap-named-jail.conf /etc/fail2ban/jail.d/.
+
+    # Make sure all the new settings are taken in account
+    #
+    systemctl restart bind9
   </postinst>
   <!--
     Leave the zone files just in case the user wants to reuse them after
     removal.
   -->
   <prerm>
+    NAMED_LOG_PATH=/var/log/named
+
     # Remove locally generated files...
     #rm /etc/bind/*.zone*
 
@@ -79,6 +89,9 @@
     rm -f /etc/fail2ban/jail.d/snap-named-jail.conf
     rmdir --ignore-fail-on-non-empty /etc/fail2ban/jail.d
     rmdir --ignore-fail-on-non-empty /etc/fail2ban
+
+    # Remove the logs
+    rm -rf ${NAMED_LOG_PATH}
   </prerm>
 </bundle>
 <!--
