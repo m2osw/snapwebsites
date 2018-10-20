@@ -13,13 +13,28 @@
   <postinst>
     # Fixed a few parameters which are considered unsafe by PCI
     # (these are really just ofuscation of the DNS)
-    if test ! -f /etc/bind/named.conf.options.bak
+    NAMED_CONF=/etc/bind/named.conf.options
+
+    if test ! -f ${NAMED_CONF}.bak
     then
-      cp /etc/bind/named.conf.options /etc/bind/named.conf.options.bak
+      cp ${NAMED_CONF} ${NAMED_CONF}.bak
     fi
-    dns_options -e 'options.version = none' /etc/bind/named.conf.options
-    dns_options -e 'options.hostname = none' /etc/bind/named.conf.options
-    dns_options -e 'options.server-id = none' /etc/bind/named.conf.options
+
+    # 
+    dns_options -e 'options.version = none'   ${NAMED_CONF}
+    dns_options -e 'options.hostname = none'  ${NAMED_CONF}
+    dns_options -e 'options.server-id = none' ${NAMED_CONF}
+
+    dns_options -e 'acl[bogusnets]._ = 0.0.0.0/8;'      ${NAMED_CONF}
+    dns_options -e 'acl[bogusnets]._ = 192.0.2.0/24;'   ${NAMED_CONF}
+    dns_options -e 'acl[bogusnets]._ = 224.0.0.0/3;'    ${NAMED_CONF}
+
+    # The following may be used by the private network
+    #dns_options -e 'acl[bogusnets]._ = 10.0.0.0/8;'     ${NAMED_CONF}
+    #dns_options -e 'acl[bogusnets]._ = 172.16.0.0/12;'  ${NAMED_CONF}
+    #dns_options -e 'acl[bogusnets]._ = 192.168.0.0/16;' ${NAMED_CONF}
+
+    dns_options -e 'options.blackhole._ = bogusnets;' ${NAMED_CONF}
 
     # Install the bind9 jail knowing that fail2ban may not be installed
     if test ! -d /etc/fail2ban/jail.d

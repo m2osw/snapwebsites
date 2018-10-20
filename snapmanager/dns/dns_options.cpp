@@ -264,7 +264,7 @@ private:
     int                 edit_option();
     int                 recursive_option(keyword::pointer_t p);
     int                 match();
-    keyword::pointer_t  match_fields(size_t field_idx, keyword::pointer_t opt, keyword::pointer_t & previous_level);
+    keyword::pointer_t  match_fields(size_t & field_idx, keyword::pointer_t opt, keyword::pointer_t & previous_level);
     bool                match_indexes(keyword::pointer_t k, keyword::pointer_t o);
 
     advgetopt::getopt   f_opt; // initialized in constructor
@@ -587,7 +587,9 @@ int dns_options::run()
     //
     if(!f_opt.is_defined("--"))
     {
-        std::cerr << f_opt.get_program_name() << ":error: no filename was specified." << std::endl;
+        std::cerr << f_opt.get_program_name()
+                  << ":error: no filename was specified."
+                  << std::endl;
         return 1;
     }
 
@@ -596,7 +598,9 @@ int dns_options::run()
     f_filename = f_opt.get_string("--");
     if(f_filename.empty())
     {
-        std::cerr << f_opt.get_program_name() << ":error: an empty filename was specified." << std::endl;
+        std::cerr << f_opt.get_program_name()
+                  << ":error: an empty filename was specified."
+                  << std::endl;
         return 1;
     }
 
@@ -604,7 +608,9 @@ int dns_options::run()
     //
     if(!f_opt.is_defined("execute"))
     {
-        std::cerr << f_opt.get_program_name() << ":error: mandatory --execute option missing." << std::endl;
+        std::cerr << f_opt.get_program_name()
+                  << ":error: mandatory --execute option missing."
+                  << std::endl;
         return 1;
     }
 
@@ -661,7 +667,10 @@ int dns_options::load_file()
     {
         // could not open file for reading
         //
-        std::cerr << "dns_options:error: can't open file \"" << f_filename << "\" for reading.";
+        std::cerr << "dns_options:error: can't open file \""
+                  << f_filename
+                  << "\" for reading."
+                  << std::endl;
         return 1;
     }
 
@@ -845,7 +854,12 @@ dns_options::token dns_options::get_token(bool extensions)
                 {
                     if(c == EOF)
                     {
-                        std::cerr << "dns_options:error:" << f_filename << ":" << f_line << ": end of C-like comment not found before EOF." << std::endl;
+                        std::cerr << "dns_options:error:"
+                                  << f_filename
+                                  << ":"
+                                  << f_line
+                                  << ": end of C-like comment not found before EOF."
+                                  << std::endl;
                         result.set_type(token_type_t::TOKEN_ERROR);
                         result.set_end(f_pos - f_unget.length());
                         return result;
@@ -902,7 +916,12 @@ dns_options::token dns_options::get_token(bool extensions)
                     // "start...\x5C
                     // ...end"
                     //
-                    std::cerr << "dns_options:error:" << f_filename << ":" << f_line << ": quoted string includes a non-escaped newline." << std::endl;
+                    std::cerr << "dns_options:error:"
+                              << f_filename
+                              << ":"
+                              << f_line
+                              << ": quoted string includes a non-escaped newline."
+                              << std::endl;
                     result.set_type(token_type_t::TOKEN_ERROR);
                     result.set_end(f_pos - f_unget.length());
                     return result;
@@ -911,7 +930,12 @@ dns_options::token dns_options::get_token(bool extensions)
             }
             if(c != '"')
             {
-                std::cerr << "dns_options:error:" << f_filename << ":" << f_line << ": quoted string was never closed." << std::endl;
+                std::cerr << "dns_options:error:"
+                          << f_filename
+                          << ":"
+                          << f_line
+                          << ": quoted string was never closed."
+                          << std::endl;
                 result.set_type(token_type_t::TOKEN_ERROR);
                 result.set_end(f_pos - f_unget.length());
                 return result;
@@ -935,7 +959,12 @@ dns_options::token dns_options::get_token(bool extensions)
         case '}':
             if(f_block_level <= 0)
             {
-                std::cerr << "dns_options:error:" << f_filename << ":" << f_line << ": '}' mismatch, '{' missing for this one.";
+                std::cerr << "dns_options:error:"
+                          << f_filename
+                          << ":"
+                          << f_line
+                          << ": '}' mismatch, '{' missing for this one."
+                          << std::endl;
                 result.set_type(token_type_t::TOKEN_ERROR);
                 result.set_end(f_pos - f_unget.length());
                 return result;
@@ -1115,7 +1144,10 @@ int dns_options::parse_command_line()
     {
         if(t.get_type() != token_type_t::TOKEN_ERROR)
         {
-            std::cerr << "dns_options:error:<execute>:" << f_line << ": we first expected a keyword on your command line.";
+            std::cerr << "dns_options:error:<execute>:"
+                      << f_line
+                      << ": we first expected a keyword on your command line."
+                      << std::endl;
         }
         return 1;
     }
@@ -1141,7 +1173,10 @@ int dns_options::parse_command_line()
                     break;
 
                 default:
-                    std::cerr << "dns_options:error:<execute>:" << f_line << ": we expected a keyword or a quoted string as an index.";
+                    std::cerr << "dns_options:error:<execute>:"
+                              << f_line
+                              << ": we expected a keyword or a quoted string as an index."
+                              << std::endl;
                     return 1;
 
                 }
@@ -1151,7 +1186,10 @@ int dns_options::parse_command_line()
                 t = get_token(true);
                 if(t.get_type() != token_type_t::TOKEN_CLOSE_INDEX)
                 {
-                    std::cerr << "dns_options:error:<execute>:" << f_line << ": we expected a ']' to close an index.";
+                    std::cerr << "dns_options:error:<execute>:"
+                              << f_line
+                              << ": we expected a ']' to close an index."
+                              << std::endl;
                     return 1;
                 }
                 // skip the ']'
@@ -1199,7 +1237,10 @@ int dns_options::parse_command_line()
         if(t.get_type() != token_type_t::TOKEN_KEYWORD
         && t.get_type() != token_type_t::TOKEN_STRING)
         {
-            std::cerr << "dns_options:error:<execute>:" << f_line << ": we expected a keyword or a quoted string as the field name.";
+            std::cerr << "dns_options:error:<execute>:"
+                      << f_line
+                      << ": we expected a keyword or a quoted string as the field name."
+                      << std::endl;
             return 1;
         }
 
@@ -1230,7 +1271,10 @@ int dns_options::parse_command_line()
         t = get_token(true);
         if(t.get_type() != token_type_t::TOKEN_EOT)
         {
-            std::cerr << "dns_options:error:<execute>:" << f_line << ": nothing was expected after the ';'.";
+            std::cerr << "dns_options:error:<execute>:"
+                      << f_line
+                      << ": nothing was expected after the ';'."
+                      << std::endl;
             return 1;
         }
 
@@ -1251,32 +1295,41 @@ int dns_options::parse_command_line()
         break;
 
     default:
-        std::cerr << "dns_options:error:<execute>:" << f_line << ": end of line or an assignment operator (=, ?=, +=) was expected.";
+        std::cerr << "dns_options:error:<execute>:"
+                  << f_line
+                  << ": end of line or an assignment operator (=, ?=, +=) was expected."
+                  << std::endl;
         return 1;
 
     }
 
     // we have an assignment, read the value
     //
-    t = get_token(true);
+    t = get_token(false);
 
     if(t.is_null())
     {
         if(f_keyword->get_command() != token_type_t::TOKEN_ASSIGN)
         {
-            std::cerr << "dns_options:error:<execute>:" << f_line << ": an assignment to null only works with the '=' operator.";
+            std::cerr << "dns_options:error:<execute>:"
+                      << f_line
+                      << ": an assignment to null only works with the '=' operator."
+                      << std::endl;
             return 1;
         }
         f_keyword->set_command(token_type_t::TOKEN_REMOVE);
 
-        t = get_token(true);
+        t = get_token(false);
         if(t.get_type() == token_type_t::TOKEN_END_OF_DEFINITION)
         {
-            t = get_token(true);
+            t = get_token(false);
         }
         if(t.get_type() != token_type_t::TOKEN_EOT)
         {
-            std::cerr << "dns_options:error:<execute>:" << f_line << ": an assignment to null cannot include anything else.";
+            std::cerr << "dns_options:error:<execute>:"
+                      << f_line
+                      << ": an assignment to null cannot include anything else."
+                      << std::endl;
             return 1;
         }
 
@@ -1287,7 +1340,7 @@ int dns_options::parse_command_line()
 
     // read the value
     //
-    for(;; t = get_token(true))
+    for(;; t = get_token(false))
     {
         switch(t.get_type())
         {
@@ -1295,10 +1348,13 @@ int dns_options::parse_command_line()
             return 0;
 
         case token_type_t::TOKEN_END_OF_DEFINITION:
-            t = get_token(true);
+            t = get_token(false);
             if(t.get_type() != token_type_t::TOKEN_EOT)
             {
-                std::cerr << "dns_options:error:<execute>:" << f_line << ": nothing was expected after the ';'.";
+                std::cerr << "dns_options:error:<execute>:"
+                          << f_line
+                          << ": nothing was expected after the ';'."
+                          << std::endl;
                 return 1;
             }
             return 0;
@@ -1312,7 +1368,10 @@ int dns_options::parse_command_line()
             break;
 
         default:
-            std::cerr << "dns_options:error:<execute>:" << f_line << ": the value can only be composed of keywords and quoted strings.";
+            std::cerr << "dns_options:error:<execute>:"
+                      << f_line
+                      << ": the command line value cannot include a block."
+                      << std::endl;
             return 1;
 
         }
@@ -1382,7 +1441,8 @@ int dns_options::edit_option()
             switch(t.get_type())
             {
             case token_type_t::TOKEN_EOT:
-                std::cerr << "dns_options:error: found EOT, expected a ';' before the end of the file.\n";
+                std::cerr << "dns_options:error: found EOT, expected a ';' before the end of the file."
+                          << std::endl;
                 return 1;
 
             case token_type_t::TOKEN_ERROR:
@@ -1401,7 +1461,8 @@ int dns_options::edit_option()
                 break;
 
             case token_type_t::TOKEN_CLOSE_BLOCK:
-                std::cerr << "dns_options:error: found '}' without first finding a '{'." << std::endl;
+                std::cerr << "dns_options:error: found '}' without first finding a '{'."
+                          << std::endl;
                 return 1;
 
             case token_type_t::TOKEN_KEYWORD:
@@ -1410,7 +1471,10 @@ int dns_options::edit_option()
                 break;
 
             default:
-                std::cerr << "dns_options:error: unexpected token " << static_cast<int>(t.get_type()) << "." << std::endl;
+                std::cerr << "dns_options:error: unexpected token "
+                          << static_cast<int>(t.get_type())
+                          << "."
+                          << std::endl;
                 return 1;
 
             }
@@ -1450,7 +1514,8 @@ int dns_options::recursive_option(keyword::pointer_t in)
         {
             // done?
             //
-            std::cerr << "dns_options:error: found end of input before '}'." << std::endl;
+            std::cerr << "dns_options:error: found end of input before '}'."
+                      << std::endl;
             return 1;
         }
         if(t.get_type() == token_type_t::TOKEN_ERROR)
@@ -1479,7 +1544,8 @@ int dns_options::recursive_option(keyword::pointer_t in)
             switch(t.get_type())
             {
             case token_type_t::TOKEN_EOT:
-                std::cerr << "dns_options:error: found EOT, expected a ';' before the end of the file." << std::endl;
+                std::cerr << "dns_options:error: found EOT, expected a ';' before the end of the file."
+                          << std::endl;
                 return 1;
 
             case token_type_t::TOKEN_ERROR:
@@ -1500,7 +1566,8 @@ int dns_options::recursive_option(keyword::pointer_t in)
             case token_type_t::TOKEN_CLOSE_BLOCK:
                 // end of block, return
                 //
-                std::cerr << "dns_options:warning: found '}' without a ';' to end the last line." << std::endl;
+                std::cerr << "dns_options:warning: found '}' without a ';' to end the last line."
+                          << std::endl;
                 in->add_value(k);
                 return 0;
 
@@ -1510,7 +1577,10 @@ int dns_options::recursive_option(keyword::pointer_t in)
                 break;
 
             default:
-                std::cerr << "dns_options:error: unexpected token " << static_cast<int>(t.get_type()) << "." << std::endl;
+                std::cerr << "dns_options:error: unexpected token "
+                          << static_cast<int>(t.get_type())
+                          << "."
+                          << std::endl;
                 return 1;
 
             }
@@ -1587,15 +1657,17 @@ int dns_options::match()
     for(auto const & v : values)
     {
         auto const o(v->get_token());
-//std::cerr << "types: "
-//            << static_cast<int>(o.get_type())
-//            << "/"
-//            << static_cast<int>(type)
-//          << ", words: "
-//            << o.get_word()
-//            << "/"
-//            << word
-//          << "\n";
+#if 0
+std::cerr << "types: "
+            << static_cast<int>(o.get_type())
+            << "/"
+            << static_cast<int>(type)
+          << ", words: "
+            << o.get_word()
+            << "/"
+            << word
+          << "\n";
+#endif
         if(o.get_type() == type
         && o.get_word() == word
         && match_indexes(f_keyword, v))
@@ -1603,35 +1675,61 @@ int dns_options::match()
             // if f_keyword has further fields, then we need to go further
             //
             keyword::pointer_t previous_level;
-            keyword::pointer_t result(match_fields(0, v, previous_level));
-//std::cerr << " == matching result " << (result == nullptr ? "nullptr" : "YES")
-//          << ", previous_level " << (previous_level == nullptr ? "nullptr" : "YES")
-//          << "\n";
+            size_t field_idx(0);
+            keyword::pointer_t result(match_fields(field_idx, v, previous_level));
+#if 0
+std::cerr << " == matching result " << (result == nullptr ? "nullptr" : "YES")
+          << ", previous_level " << (previous_level == nullptr ? "nullptr" : "YES")
+          << "\n";
+#endif
             if(result != nullptr)
             {
                 int const start(result->field_value_start());
                 int const end(result->field_value_end());
 
-//std::cerr << "------- found [" << f_execute << "] (" << start << ", " << end << ")!\n";
+#if 0
+std::cerr << "------- found [" << f_execute << "] (" << start << ", " << end << ")!\n";
+#endif
                 switch(f_keyword->get_command())
                 {
                 case token_type_t::TOKEN_ASSIGN:
                 case token_type_t::TOKEN_UPDATE:
                     {
+                        auto const & field(*f_keyword->get_fields().rbegin());
+                        std::string field_name(field->get_token().get_word());
+                        if(field_name == "_")
+                        {
+                            // nothing to do, the unnamed value already exists
+                            //
+                            break;
+                        }
+
                         int const replacement_start(f_keyword->value_start());
                         int const replacement_end(f_keyword->value_end());
+#if 0
+std::cerr << "------- replacement ["
+                    << f_execute.substr(replacement_start, replacement_end - replacement_start)
+                    << "] -> ["
+                    << f_execute.substr(replacement_end)
+                    << "] (" << replacement_start << ", "
+                    << replacement_end
+                    << ", "
+                    << replacement_end - replacement_start
+                    << ")!\n";
+#endif
 
                         if(start == -1
                         || end == -1
                         || replacement_start == -1
                         || replacement_end == -1)
                         {
-                            std::cerr << "dns_options:error: start/end parameters not properly defined to SET/UPDATE this value." << std::endl;
+                            std::cerr << "dns_options:error: start/end parameters not properly defined to SET/UPDATE this value."
+                                      << std::endl;
                             return 1;
                         }
 
                         f_data = f_data.substr(0, start)
-                               + f_execute.substr(replacement_start, replacement_start - replacement_end)
+                               + f_execute.substr(replacement_start, replacement_end - replacement_start)
                                + f_data.substr(end);
                         if(f_stdout)
                         {
@@ -1657,7 +1755,8 @@ int dns_options::match()
                         keyword::pointer_t parent(result->get_parent());
                         if(parent == nullptr)
                         {
-                            std::cerr << "dns_options:error: no parent field found for a REMOVE." << std::endl;
+                            std::cerr << "dns_options:error: no parent field found for a REMOVE."
+                                      << std::endl;
                             return 1;
                         }
 
@@ -1668,7 +1767,8 @@ int dns_options::match()
                                 , result));
                         if(vit == vals.end())
                         {
-                            std::cerr << "dns_options:error: invalid result, could not find it in the parent list of values." << std::endl;
+                            std::cerr << "dns_options:error: invalid result, could not find it in the parent list of values."
+                                      << std::endl;
                             return 1;
                         }
 
@@ -1741,7 +1841,8 @@ int dns_options::match()
                     if(start == -1
                     || end == -1)
                     {
-                        std::cerr << "dns_options:error: start/end parameters not properly defined to GET this value." << std::endl;
+                        std::cerr << "dns_options:error: start/end parameters not properly defined to GET this value."
+                                  << std::endl;
                         return 1;
                     }
 
@@ -1749,7 +1850,8 @@ int dns_options::match()
                     break;
 
                 default:
-                    std::cerr << "dns_options:fatal error: unknown command in match()." << std::endl;
+                    std::cerr << "dns_options:fatal error: unknown command in match()."
+                              << std::endl;
                     return 1;
 
                 }
@@ -1762,63 +1864,112 @@ int dns_options::match()
                 case token_type_t::TOKEN_ASSIGN:
                 case token_type_t::TOKEN_CREATE:
                     {
-                        int pos(previous_level->get_token().get_end_of_value());
-                        if(pos > 0
-                        && f_data[pos - 1] == ';')
+                        int end(previous_level->get_token().get_end_of_value());
+                        if(end > 0
+                        && f_data[end - 1] == ';')
                         {
-                            --pos;
+                            --end;
                             // TODO: skip spaces too
-                            if(pos > 0
-                            && f_data[pos - 1] == '}')
+                            if(end > 0
+                            && f_data[end - 1] == '}')
                             {
-                                --pos;
+                                --end;
                             }
                         }
-
-                        auto const & field(*f_keyword->get_fields().rbegin());
-                        std::string field_names(field->get_token().get_word());
-                        for(auto i : field->get_indexes())
+                        int start(end);
+                        while(start > 0
+                           && f_data[start - 1] == '\n')
                         {
-                            field_names += ' ';
-                            auto const & tok(i->get_token());
-                            if(tok.get_type() == token_type_t::TOKEN_STRING)
+                            --start;
+                        }
+
+                        // here field_idx represents the index that matched,
+                        // we want to increment it once to get at the right
+                        // location
+                        //
+                        size_t const max(f_keyword->get_fields().size());
+                        auto const & fields(f_keyword->get_fields());
+                        std::string field_names;
+                        std::string end_field;
+                        size_t idx(field_idx);
+                        for(; idx < max; ++idx)
+                        {
+                            std::string const name(fields[idx]->get_token().get_word());
+
+                            // the special name "_" means that there is no
+                            // name for that field
+                            //
+                            if(name != "_")
                             {
-                                if(tok.get_word() == "*")
+                                field_names += name;
+                                for(auto i : fields[idx]->get_indexes())
                                 {
-                                    std::cerr << "dns_options:error: you cannot create or update a field using \"*\" as one of its indices."
-                                              << std::endl;
-                                    return 1;
+                                    field_names += ' ';
+                                    auto const & tok(i->get_token());
+                                    if(tok.get_type() == token_type_t::TOKEN_STRING)
+                                    {
+                                        if(tok.get_word() == "*")
+                                        {
+                                            std::cerr << "dns_options:error: you cannot create or update a field using \"*\" as one of its indices."
+                                                      << std::endl;
+                                            return 1;
+                                        }
+                                        field_names += '"';
+                                        field_names += tok.get_word();
+                                        field_names += '"';
+                                    }
+                                    else
+                                    {
+                                        field_names += i->get_token().get_word();
+                                    }
                                 }
-                                field_names += '"';
-                                field_names += tok.get_word();
-                                field_names += '"';
-                            }
-                            else
-                            {
-                                field_names += i->get_token().get_word();
+                                field_names += " ";
+
+                                if(idx + 1 < max)
+                                {
+                                    field_names += "{\n\t";
+                                    for(size_t j(0); j < idx + 1; ++j)
+                                    {
+                                        field_names += '\t';
+                                        end_field += '\t';
+                                    }
+                                    end_field += "};\n";
+                                }
                             }
                         }
 
                         int const replacement_start(f_keyword->value_start());
                         int const replacement_end(f_keyword->value_end());
+#if 0
+std::cerr << "------- CREATE: replacement [" << f_execute.substr(replacement_start, replacement_end - replacement_start)
+                    << "] -> ["
+                    << f_execute.substr(replacement_end)
+                    << "] (" << replacement_start << ", "
+                    << replacement_end
+                    << ", "
+                    << replacement_end - replacement_start
+                    << ")!\n";
+#endif
 
-                        if(pos == -1
+                        if(start == -1
+                        || end == -1
                         || replacement_start == -1
                         || replacement_end == -1)
                         {
-                            std::cerr << "dns_options:error: pos/start/end parameters not properly defined to SET/CREATE this value." << std::endl;
+                            std::cerr << "dns_options:error: start/end parameters not properly defined to SET/CREATE this value."
+                                      << std::endl;
                             return 1;
                         }
 
                         // here the added newlines and tab are quite arbitrary...
                         //
-                        f_data = f_data.substr(0, pos)
+                        f_data = f_data.substr(0, start)
                                + "\n\t"
                                     + field_names
-                                    + " "
-                                    + f_execute.substr(replacement_start, replacement_start - replacement_end)
+                                    + f_execute.substr(replacement_start, replacement_end - replacement_start)
                                             + ";\n"
-                               + f_data.substr(pos);
+                                    + end_field
+                               + f_data.substr(end);
                         if(f_stdout)
                         {
                             std::cout << f_data;
@@ -1842,12 +1993,109 @@ int dns_options::match()
                     break;
 
                 default:
-                    std::cerr << "dns_options:fatal error: unknown command in match()." << std::endl;
+                    std::cerr << "dns_options:fatal error: unknown command in match()."
+                              << std::endl;
                     return 1;
 
                 }
             }
+
+            // if we reach here, we had a partial match
+            //
+            break;
         }
+    }
+
+    switch(f_keyword->get_command())
+    {
+    case token_type_t::TOKEN_ASSIGN:
+    case token_type_t::TOKEN_CREATE:
+        {
+            // TODO: the following only supports one level
+            //       multiple levels require the '{' ... '}' at each level
+            //
+            std::string field_names(word);
+            for(auto i : f_keyword->get_indexes())
+            {
+                field_names += ' ';
+                auto const & tok(i->get_token());
+                if(tok.get_type() == token_type_t::TOKEN_STRING)
+                {
+                    if(tok.get_word() == "*")
+                    {
+                        std::cerr << "dns_options:error: you cannot create or update a field using \"*\" as one of its indices."
+                                  << std::endl;
+                        return 1;
+                    }
+                    field_names += '"';
+                    field_names += tok.get_word();
+                    field_names += '"';
+                }
+                else
+                {
+                    field_names += i->get_token().get_word();
+                }
+            }
+            field_names += " ";
+
+            int const replacement_start(f_keyword->value_start());
+            int const replacement_end(f_keyword->value_end());
+#if 0
+std::cerr << "------- TOTAL CREATE: replacement [" << f_execute.substr(replacement_start, replacement_end - replacement_start)
+        << "] -> ["
+        << f_execute.substr(replacement_end)
+        << "] (" << replacement_start << ", "
+        << replacement_end
+        << ", "
+        << replacement_end - replacement_start
+        << ")!\n";
+#endif
+
+            if(replacement_start == -1
+            || replacement_end == -1)
+            {
+                std::cerr << "dns_options:error: start/end parameters not properly defined to SET/CREATE this value."
+                          << std::endl;
+                return 1;
+            }
+
+            // make sure we have at least one empty line after the last option
+            //
+            if(f_data.length() >= 1
+            && f_data[f_data.length() - 1] != '\n')
+            {
+                f_data += "\n";
+            }
+            if(f_data.length() >= 2
+            && f_data[f_data.length() - 2] != '\n')
+            {
+                f_data += "\n";
+            }
+
+            // here the added newlines and tab are quite arbitrary...
+            //
+            f_data += field_names
+                      + "{\n"
+                        + "\t"
+                        + f_execute.substr(replacement_start, replacement_end - replacement_start)
+                      + ";\n"
+                    + "};\n"
+                    + "\n";
+            if(f_stdout)
+            {
+                std::cout << f_data;
+            }
+            else
+            {
+                return save_file();
+            }
+        }
+        return 0;
+
+    default:
+        // only the ASSIGN and CREATE do miracles in this case
+        break;
+
     }
 
     std::cerr << "dns_options:error: field \""
@@ -1859,9 +2107,12 @@ int dns_options::match()
 }
 
 
-dns_options::keyword::pointer_t dns_options::match_fields(size_t field_idx, keyword::pointer_t opt, keyword::pointer_t & previous_level)
+dns_options::keyword::pointer_t dns_options::match_fields(size_t & field_idx, keyword::pointer_t opt, keyword::pointer_t & previous_level)
 {
     auto const & fields(f_keyword->get_fields());
+#if 0
+std::cerr << "number of fields in match_fields: " << fields.size() << std::endl;
+#endif
     if(field_idx >= fields.size())
     {
         // we reached the end of the fields defined on the command line
@@ -1887,27 +2138,52 @@ dns_options::keyword::pointer_t dns_options::match_fields(size_t field_idx, keyw
     {
         auto const o(v->get_token());
 
-//std::cerr << "  --- types: "
-//        << static_cast<int>(o.get_type())
-//        << "/"
-//        << static_cast<int>(type)
-//      << ", words: "
-//        << o.get_word()
-//        << "/"
-//        << word
-//      << " -> match_indexes = "
-//        << match_indexes(f, v)
-//      << "\n";
+#if 0
+std::cerr << "  --- types: "
+        << static_cast<int>(o.get_type())
+        << "/"
+        << static_cast<int>(type)
+      << ", words: "
+        << o.get_word()
+        << "/"
+        << word
+      << " -> match_indexes = "
+        << match_indexes(f, v)
+      << "\n";
+#endif
 
         if(o.get_type() == type
-        && o.get_word() == word
         && match_indexes(f, v))
         {
-//std::cerr << "    *** MATCHED FIELDS!\n";
-            auto result(match_fields(field_idx + 1, v, previous_level));
-            if(result != nullptr)
+            if(word == "_")
             {
-                return result;
+                // special case where we have to match the value, not the field
+                // name (i.e. when there is no field name within the block)
+                //
+                // in this case we do not expect indexes, although it if
+                // that's the case then match_indexes() returns true
+                //
+                int const replacement_start(f_keyword->value_start());
+                int const replacement_end(f_keyword->value_end());
+                std::string replacement(f_execute.substr(replacement_start, replacement_end - replacement_start));
+                if(o.get_word() == replacement)
+                {
+#if 0
+std::cerr << "    *** MATCH VALUE! [" << replacement << "]\n";
+#endif
+                    return v;
+                }
+            }
+            else if(o.get_word() == word)
+            {
+//std::cerr << "    *** MATCHED FIELDS!\n";
+                ++field_idx;
+                auto result(match_fields(field_idx, v, previous_level));
+                if(result != nullptr)
+                {
+                    return result;
+                }
+                --field_idx;
             }
         }
     }
@@ -1918,8 +2194,8 @@ dns_options::keyword::pointer_t dns_options::match_fields(size_t field_idx, keyw
 
 bool dns_options::match_indexes(keyword::pointer_t kwd, keyword::pointer_t opt)
 {
-    // WARNING: the keywords (k--command line) have indexes
-    //          which should match fields in object (o--file contents)
+    // WARNING: the keywords (kwd--command line) have indexes
+    //          which should match fields in object (opt--file contents)
     //
     auto const & expected_fields(kwd->get_indexes());
     auto const & existing_fields(opt->get_fields());
@@ -1969,6 +2245,21 @@ bool dns_options::match_indexes(keyword::pointer_t kwd, keyword::pointer_t opt)
         {
             return false;
         }
+#if 0
+std::cerr << "existing token in indexes: value start = "
+          << existing_fields[idx]->value_start()
+          << ", end = "
+          << existing_fields[idx]->value_end()
+          << ", field start = "
+          << existing_fields[idx]->field_start()
+          << ", end = "
+          << existing_fields[idx]->field_end()
+          << ", field value start = "
+          << existing_fields[idx]->field_value_start()
+          << ", end = "
+          << existing_fields[idx]->field_value_end()
+          << "\n";
+#endif
     }
 
     return true;
@@ -2129,7 +2420,9 @@ int main(int argc, char * argv[])
     }
     catch(std::exception const & e)
     {
-        std::cerr << "dns_options:error: an exception occurred: " << e.what() << std::endl;
+        std::cerr << "dns_options:error: an exception occurred: "
+                  << e.what()
+                  << std::endl;
         r = 1;
     }
     return r;
