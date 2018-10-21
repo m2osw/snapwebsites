@@ -13,10 +13,14 @@
   <postinst>
     # Fixed a few parameters which are considered unsafe by PCI
     # (these are really just ofuscation of the DNS)
+    #
     NAMED_CONF=/etc/bind/named.conf.options
     DNS_OPTIONS=dns_options
     NAMED_LOG_PATH=/var/log/named
 
+    # Make a backup but only once (in case the .bak already exists, do not
+    # do a backup)
+    #
     if test ! -f ${NAMED_CONF}.bak
     then
       cp ${NAMED_CONF} ${NAMED_CONF}.bak
@@ -37,6 +41,7 @@
     ${DNS_OPTIONS} -e 'acl[bogusnets]._ = 224.0.0.0/3;'    ${NAMED_CONF}
 
     # The following may be used by the private network
+    #
     #${DNS_OPTIONS} -e 'acl[bogusnets]._ = 10.0.0.0/8;'     ${NAMED_CONF}
     #${DNS_OPTIONS} -e 'acl[bogusnets]._ = 172.16.0.0/12;'  ${NAMED_CONF}
     #${DNS_OPTIONS} -e 'acl[bogusnets]._ = 192.168.0.0/16;' ${NAMED_CONF}
@@ -61,7 +66,8 @@
       chown bind:bind ${NAMED_LOG_PATH}
     fi
 
-    # Install the bind9 jail knowing that fail2ban may not ever be installed
+    # Install the bind9 jail and filter knowing that fail2ban may not
+    # ever be installed on this system
     #
     if test ! -d /etc/fail2ban/jail.d
     then
@@ -69,11 +75,25 @@
       chmod 775 /etc/fail2ban
       chmod 755 /etc/fail2ban/jail.d
     fi
+    if test ! -d /etc/fail2ban/filter.d
+    then
+      mkdir -p /etc/fail2ban/filter.d
+      chmod 755 /etc/fail2ban/filter.d
+    fi
     cp /usr/share/snapwebsites/fail2ban/snap-named-jail.conf /etc/fail2ban/jail.d/.
+    cp /usr/share/snapwebsites/fail2ban/snap-named-refused.conf /etc/fail2ban/filter.d/.
 
     # Make sure all the new settings are taken in account
     #
     systemctl restart bind9
+
+    # To make sure the new jail is taken in account restart fail2ban if it
+    # is available
+    #
+    if test -x /usr/bin/fail2ban-server
+    then
+      systemctl restart fail2ban
+    fi
   </postinst>
   <!--
     Leave the zone files just in case the user wants to reuse them after
@@ -83,14 +103,19 @@
     NAMED_LOG_PATH=/var/log/named
 
     # Remove locally generated files...
+    #
     #rm /etc/bind/*.zone*
 
-    # Remove the jail we installed manually
+    # Remove the jail and filter we installed manually
+    #
     rm -f /etc/fail2ban/jail.d/snap-named-jail.conf
+    rm -f /etc/fail2ban/filter.d/snap-named-refused.conf
     rmdir --ignore-fail-on-non-empty /etc/fail2ban/jail.d
+    rmdir --ignore-fail-on-non-empty /etc/fail2ban/filter.d
     rmdir --ignore-fail-on-non-empty /etc/fail2ban
 
     # Remove the logs
+    #
     rm -rf ${NAMED_LOG_PATH}
   </prerm>
 </bundle>

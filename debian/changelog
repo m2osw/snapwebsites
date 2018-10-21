@@ -3,6 +3,9 @@ snapwebsites (1.6.20.0~xenial) xenial; urgency=high
   * Enabled the [named-resufed] jail now that SNAP-483 is complete.
   * Added a restart of bind9 to the DNS bundle.
   * Delete the bind9 logs on uninstallation.
+  * We got some logs on one of our server so I could test the fail2ban
+    named-refused.conf and it does not work as is. Here is a version that
+    works (snap-named-refused.conf) and the necessary [un]install script.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 20 Oct 2018 16:07:59 -0700
 
