@@ -140,6 +140,7 @@ install(
 install(
     FILES
         snap-named-jail.conf
+        snap-named-refused.conf
 
     DESTINATION
         share/snapwebsites/fail2ban

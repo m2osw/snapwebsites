@@ -1,3 +1,9 @@
+snapwebsites (1.6.21.0~xenial) xenial; urgency=high
+
+  * Actually install the snap-named-refused.conf file in our CMakeLists.txt.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 20 Oct 2018 21:49:40 -0700
+
 snapwebsites (1.6.20.0~xenial) xenial; urgency=high
 
   * Enabled the [named-resufed] jail now that SNAP-483 is complete.
