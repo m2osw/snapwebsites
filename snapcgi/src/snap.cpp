@@ -565,6 +565,15 @@ bool snap_cgi::verify()
             snap::server::block_ip(remote_addr, "year", "user is trying to log in as if this was a WordPress website");
             return false;
         }
+
+        // TODO: move to snapserver because this could be the name of a legal page...
+        if(strcasestr(request_uri, "w00tw00t") != nullptr)
+        {
+            // block attempt to login as if we were a WordPress site
+            error("410 Gone", "Form not found.", nullptr);
+            snap::server::block_ip(remote_addr, "year", "w00tw00t scanner detected.");
+            return false;
+        }
     }
 
     {

@@ -1,3 +1,10 @@
+snapwebsites (1.7.0.0~xenial) xenial; urgency=high
+
+  * Create a new official version, this is much more stable than 1.6.
+  * Added a test against w00tw00t scanners (block IPs).
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 22 Oct 2018 15:33:39 -0700
+
 snapwebsites (1.6.21.0~xenial) xenial; urgency=high
 
   * Actually install the snap-named-refused.conf file in our CMakeLists.txt.
