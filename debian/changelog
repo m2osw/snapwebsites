@@ -157,7 +157,7 @@ snapwebsites (1.6.8.0~xenial) xenial; urgency=high
 
 snapwebsites (1.6.7.0~xenial) xenial; urgency=high
 
-  * Fixed the CLUSTERUP/DOWN/[IN]COMPLETE neighbors_count so it gets resent
+  * Fixed the CLUSTERUP/DOWN/[IN]COMPLETE neighbors_count so it gets reset
     when the count changes, which allows adding/removing neighbors dynamically.
   * Fixed updating the f_cluster_status as it can't be done when
     reply_connection is not a null pointer.
@@ -203,7 +203,7 @@ snapwebsites (1.6.5.0~xenial) xenial; urgency=high
   * Mark ourselves as connected otherwise the election doesn't pick up.
   * Generate an error if the cluster is 3 or less computers and one or more
     is turned off.
-  * Added a lock manager plugin to setup the candidate priority.
+  * Added a lock manager plugin to set up the candidate priority.
 
  -- Alexis Wilke <alexis@m2osw.com>  Tue, 25 Sep 2018 16:03:31 -0700
 
@@ -224,7 +224,7 @@ snapwebsites (1.6.3.0~xenial) xenial; urgency=high
     from nearly anywhere.
   * SNAP-661: moved the raise_flag.cpp tool to libsnapwebsites/tools.
   * Moved 3 tools from snapserver to libsnapwebsites where they were supposed
-    to be (there are there more to debug the library than real useful tools.)
+    to be (there are there more to debug the library than really useful tools.)
   * SNAP-660: snapcommunicator tries to connect to any IP even invalid once,
     now we flag those that fail to connect for too long or too many times.
   * SNAP-350: added support for CLUSTERSTATUS, CLUSTERUP, CLUSTERDOWN,
@@ -234,7 +234,7 @@ snapwebsites (1.6.3.0~xenial) xenial; urgency=high
   * SNAP-350: added a LOCKSTATUS, LOCKREADY, NOLOCK set of messages. This
     was a bonus because of the CLUSTERUP and CLUSTERDOWN messages from the
     snapmanager. We don't internally use those, but they will be used by
-    other deamons (snapserver/snapbackend).
+    other daemons (snapserver/snapbackend).
   * SNAP-533: change the LOCKSTARTUP (was LOCKREADY) to start the election
     process by counting the number of computers connected and use the CLUSTERUP
     total number of computers to know we attained a QUORUM of computers.
@@ -247,15 +247,15 @@ snapwebsites (1.6.3.0~xenial) xenial; urgency=high
   * SNAP-533: prevent locks from starting until QUORUM is reached.
   * SNAP-471: the new implementation clearly uses 3 leaders and sends messages
     with a key which is unique so overlap cannot happen.
-  * SNAP-343: locks now time out as expected, snaplock sends an UNLOCKED at
-    the time of the timeout (and wait for acknowledgement with an UNLOCK.)
+  * SNAP-343: locks now timeout as expected, snaplock sends an UNLOCKED at
+    the time of the timeout (and wait for acknowledgment with an UNLOCK.)
   * SNAP-536: fixed the path to the snapserver-core-plugins documentation.
   * Fixed the source/destination of a few *-doc.install definitions.
   * Moved the additional libsnapwebsites docs to the libsnapwebsites directory
     instead of snapwebsites.
   * In threads, log a fatal error in case a thread throws an unknown exception.
   * Raise a flag in snap_child if the fork() happens with more than one thread.
-  * Updated the debian/*docs for project that have their own README.txt/md.
+  * Updated the debian/*docs for projects that have their own README.txt/md.
   * Added the necessary to temporarily change the logged log_level_t.
   * Reduce logs from snapwatchdog by raising log level to WARNING while running
     the plugins to reduce the logs by probably 10Mb or so...
@@ -278,7 +278,7 @@ snapwebsites (1.6.3.0~xenial) xenial; urgency=high
     which means we can add a callback within our dispatcher tables.
   * Enhanced message of header of configuration files, including date too.
   * Implemented the dispatcher in snap_lock.cpp.
-  * Added an unlock duration as UNLOCKED needs acknowledgement when due to a
+  * Added an unlock duration as UNLOCKED needs acknowledgment when due to a
     timeout.
   * Fixed the snapcommunicator count_live_connections().
   * In some cases a server name was needed in snapcommunicator and not added,
@@ -334,7 +334,7 @@ snapwebsites (1.6.0.0~xenial) xenial; urgency=high
   * Applied a fix to the snapbase script clearing the cache of old files
     so we do not get errors when the cache directory is empty.
   * Send a STOP message to snapmanagerdaemon in ./stop so it works.
-  * Added my couple of commands to setup my developer environment in ./start.
+  * Added my couple of commands to set up my developer environment in ./start.
   * Edited those scripts to use full paths.
   * Changed log level input in a select.
   * Enhanced the help of the check of snapcommunicator connections.
@@ -832,7 +832,7 @@ snapwebsites (1.5.123.0~xenial) xenial; urgency=high
 
 snapwebsites (1.5.122.0~xenial) xenial; urgency=high
 
-  * SNAP-546: Added a way to setup the name of a child process.
+  * SNAP-546: Added a way to set up the name of a child process.
   * Set the name of snap_child and process children.
 
  -- Alexis Wilke <alexis@m2osw.com>  Fri, 10 Aug 2018 04:02:59 -0700
