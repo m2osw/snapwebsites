@@ -47,7 +47,7 @@
       154 | Open        | Cart: the JavaScript implementation needs to use XSLT instead
       157 | Open        | Editor: Save with Error, then successful... Error Message sticks around
       161 | In Progress | Editor: saving needs to make use of a separate body so we can distinguish between the original and filtered data
-      163 | In Progress | e-Payment: really cheap credit card payment solution (i.e. % and no monthly fee)
+      163 | Open        | e-Payment: really cheap credit card payment solution (i.e. % and no monthly fee)
       166 | Open        | e-Payment: Buy Now button problem
       168 | In Progress | snap communicator: RPC Server
       171 | Open        | Editor: rename the classes so they make more sense!
@@ -55,7 +55,7 @@
       176 | Open        | editor: Type one letter then Tab immediately, background not hidden
       178 | Open        | Content: Who is the author? (installation)
       179 | Open        | as2js: finish writing tests to get the compiler to do its work and then write the output ("assembler") module
-      181 | In Progress | firewall tool & setup plugin
+      181 | Open        | firewall tool & setup plugin
       185 | Open        | layout: the Canonical path does not include the query string if there is one for that page...
       187 | In Progress | CSS Preprocessor
       188 | Reopened    | Snap! update: Enhance how the upgrade currently works...
@@ -96,7 +96,7 @@
       247 | Open        | Blog: add a journal like plugin that replicates a blog functionality
       248 | Open        | Book: create necessary links / functionality to easily create books online
       249 | Open        | Photo Gallery
-      250 | Open        | Filter: check out links in the body
+      250 | Open        | Filter: check out links in the body — Link Checker
       252 | In Progress | Anti-Hammering plugin
       255 | Open        | mailing list implementation
       256 | Open        | Taxonomy: UI for Management
@@ -139,12 +139,9 @@
       336 | Open        | Timezone and Locale between various servers...
       337 | Open        | Editor: background values using an absolute position conflicts with scrolling areas
       338 | Open        | cmake: The ImageMagick cmake environment is "hard coded"
-      343 | Open        | snaplock: if you create one lock and sit there, the lock never times out...
-      344 | Open        | snaplock: sending UNLOCKED but snap_lock library not listening...
       346 | Open        | ScyllaDB or Rocksandra instead of Cassandra?
       348 | Open        | snaplock: build a "standalone" project
       349 | Open        | snap_addr, tcp_client_server, snap_communicator, snapserver, ... and IP:port handling
-      350 | Open        | snaplock: elect lock managers (was: LOCKREADY repeating itself quite a bit much...)
       355 | Reopened    | snapfirewall: allow the startup of this tool without database if it is to setup & manage the basic and dynamic firewall rules
       358 | Open        | snapcommunicator: transform local connections from full TCP/IP sockets to Unix streams
       359 | Open        | advgetopt: copy the existing test (from wpkg) to the library in snap
@@ -190,7 +187,6 @@
       467 | Open        | Page loaded from a draft should warn the user about the fact.
       469 | Open        | Date widget shows a date using the current locale which fails verification
       470 | Open        | snaplock: add support for semaphores
-      471 | Open        | snaplock: QUORUM votes and multiple values
       474 | Open        | Add a bundle to create/manage a redirect on computers other than front end computers
       476 | Open        | Build: Add the GIT branch so we can have a -DGIT_BRANCH=... on the c++ command line
       478 | Open        | List are slow to react: (1) use blobs, (2) use ScyllaDB, (3) pre-calculate some lists
@@ -212,7 +208,6 @@
       523 | Open        | Help with cell phone / smart phone / mobile optimization
       528 | Open        | A small refactor for the batch functionality is needed in the casswrapper::Query object
       535 | Open        | Schema.org: What Google really supports from the schema
-      536 | Open        | Filename mismatch because of the dashes in "snapserver-core-plugins"
       538 | Open        | cassview: have a "Save to File ..." so one can save the data of a cell to a file.
       542 | Open        | cmake: add a changelog linter capability so we avoid problems on the format...
       544 | Open        | Move snap_config into `libadvgetopt`, and remove all `exit(1)` calls from the library.
@@ -239,7 +234,7 @@
       582 | Open        | Users: multi-window errors are most often sent to ONE window...
       583 | Open        | sendmail: HTML emails must include the viewport meta tag
       585 | Open        | Write MySQL snapmanager plugin which can create/drop users/tables.
-      587 | Open        | Implement the necessary to know of all the domain names that will be hit and put them in DNS-Prefetch
+      587 | Open        | DNS-Prefetch: Implement the necessary to know of all the domain names that will be hit and put them in DNS-Prefetch
       588 | Open        | Editor & Images: saving an image in the body won't include a valid field name
       594 | Open        | snapcommunicator: it always generates an error about reading from a certain socket
       597 | Open        | SnapLite: Allow MySQL to replace the Cassandra backend with a configuration switch.
@@ -269,14 +264,12 @@
       625 | Open        | Tracking work done on pages with an easy set of checkmarks
       626 | Open        | GDPR, Privacy Policy, Cookies
       627 | Open        | Our editor "Anchor" feature needs to be checked properly
-      631 | Open        | snapmanager: Adapt the snapcommunicator script used to check connections to snapmanager.cgi
       632 | Open        | snapmanager: Add support to edit Postfix mynetworks -- to allow the entry of the IP addresses of the other computers on the network
       633 | Open        | A cluster (LAN) DNS to name each computer only locally with their local network IP?
       634 | Open        | snapmanager: Add support to edit the /etc/aliases file from snapmanager.cgi
       636 | Open        | snapmanager: Look into auto-updating the interface when snapmanager.cgi is up
       637 | Open        | snapmanager: Most errors do not get reported at all!
       638 | Open        | snapwatchdog: test whether errors occurred while running snapbackup
-      639 | Open        | snapwatchdog: Add Postfix & DNS processes
       640 | Open        | snapwatchdog: Add swap used by processes (mysql is a hog on finball3)
       642 | Open        | Permissions: Virtual pages probably don't get access to cached permissions at all
       643 | Open        | snapmanager: When auto-updating a tab where the highlighting level changes, it's not reflected properly
@@ -288,7 +281,8 @@
       653 | Open        | snapwatchdog: Inter-computer checks, verify that the watchdog is running on all machines
       655 | Open        | shorturl: Implement a REST API
       656 | Open        | snapmanager: Retrieve list of packages to be upgraded
-      657 | Open        | snapmanager: Current Reboot process fails to "wake up" because field "disappear"
+      657 | Open        | snapmanager: Current Reboot process fails to "wake up" because field "disappears"
       658 | In Progress | snaprfs: create a tool that allows us to efficiently copy files between computers
-(290 rows)
+      664 | Open        | snapwatchdog: look into running logrotate against large log files
+(284 rows)
 
