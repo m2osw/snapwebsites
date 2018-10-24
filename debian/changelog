@@ -1,3 +1,9 @@
+snapwebsites (1.7.1.0~xenial) xenial; urgency=high
+
+  * Previous throwing when a plugin version is not correct.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 24 Oct 2018 01:34:18 -0700
+
 snapwebsites (1.7.0.0~xenial) xenial; urgency=high
 
   * Create a new official version, this is much more stable than 1.6.

@@ -518,14 +518,30 @@ void register_plugin(QString const & name, plugin * p)
         // of a plugin which does not correspond one to one to its server
         // version
         //
-        throw plugin_exception(QString("incompatible server versions between this server (%1.%2.%3) and this plugin (%4.%5.%6) -- Note: we ignore the patch version")
+        // I ran in a problem with building finball and thus could not jump
+        // from 1.6.x to 1.7.x (pbuilder would not install some packages
+        // because of invalid versions.) So for now we just want to emit an
+        // error. We'll have to see later how we want to deal with this
+        // problem.
+        //
+        SNAP_LOG_ERROR(QString("incompatible server versions between this server (%1.%2.%3) and this plugin \"%7\" (%4.%5.%6) -- Note: we ignore the patch version")
                     .arg(SNAPWEBSITES_VERSION_MAJOR)
                     .arg(SNAPWEBSITES_VERSION_MINOR)
                     .arg(SNAPWEBSITES_VERSION_PATCH)
                     .arg(p->get_server_major_version())
                     .arg(p->get_server_minor_version())
                     .arg(p->get_server_patch_version())
+                    .arg(name)
                     );
+        //throw plugin_exception(QString("incompatible server versions between this server (%1.%2.%3) and plugin \"%7\" (%4.%5.%6) -- Note: we ignore the patch version")
+        //            .arg(SNAPWEBSITES_VERSION_MAJOR)
+        //            .arg(SNAPWEBSITES_VERSION_MINOR)
+        //            .arg(SNAPWEBSITES_VERSION_PATCH)
+        //            .arg(p->get_server_major_version())
+        //            .arg(p->get_server_minor_version())
+        //            .arg(p->get_server_patch_version())
+        //            .arg(name)
+        //            );
     }
 #endif
 
