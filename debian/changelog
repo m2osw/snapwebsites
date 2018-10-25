@@ -1,3 +1,9 @@
+snapwebsites (1.7.2.0~xenial) xenial; urgency=high
+
+  * Make use of snapbase.tmpfile to create the /run/snapwebsites folder.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 25 Oct 2018 09:47:04 -0700
+
 snapwebsites (1.7.1.0~xenial) xenial; urgency=high
 
   * Previous throwing when a plugin version is not correct.

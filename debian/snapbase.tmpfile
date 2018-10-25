@@ -1,0 +1,18 @@
+# This file is part of snapwebsites
+#
+# See tmpfiles.d(5) for details
+
+# See also: snapbootinit which sets the user:group to these parameters as
+#           found in snapbase/conf/snapserver.conf
+#
+d /run/snapwebsites 0755 snapwebsites snapwebsites -
+
+# See also: snapbootinit which sets the user:group to these parameters as
+#           found in snapbase/conf/snapserver.conf
+#
+d /run/lock/snapwebsites 0755 snapwebsites snapwebsites -
+
+# See debian/snapbase.cron.monthly
+#
+d /var/cache/snapwebsites 770 snapwebsites snapwebsites 31d
+d /var/cache/www-snapwebsites 770 www-data www-data 31d

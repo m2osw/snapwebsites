@@ -9,6 +9,7 @@ Type=oneshot
 ExecStart=/usr/sbin/snapbootinit
 User=root
 Group=root
+RuntimeDirectory=snapwebsites
 
 [Install]
 WantedBy=multi-user.target

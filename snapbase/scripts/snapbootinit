@@ -46,13 +46,13 @@ GROUP=`getvalue group snapwebsites`
 # Create the LOCK_PATH
 #
 LOCK_PATH=`getvalue lock_path /run/lock/snapwebsites`
-mkdir -p $LOCK_PATH
+#mkdir -p $LOCK_PATH -- see snapbase.tmpfile
 chown $USER:$GROUP $LOCK_PATH
 
 # Create the RUN_PATH
 #
 RUN_PATH=`getvalue run_path /run/snapwebsites`
-mkdir -p $RUN_PATH
+#mkdir -p $RUN_PATH -- see snapbase.tmpfile
 chown $USER:$GROUP $RUN_PATH
 
 # vim: ts=4 sw=4 et
