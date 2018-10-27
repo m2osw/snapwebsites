@@ -1,3 +1,9 @@
+snapwebsites (1.7.3.0~xenial) xenial; urgency=high
+
+  * Remove reference to /run/snapwebsites from snapbuild.service.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 27 Oct 2018 11:37:48 -0700
+
 snapwebsites (1.7.2.0~xenial) xenial; urgency=high
 
   * Make use of snapbase.tmpfile to create the /run/snapwebsites folder.

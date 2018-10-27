@@ -56,7 +56,7 @@ var snapwebsites = {};
  *
  * @final
  */
-snapwebsites.base = function(base_class)
+snapwebsites.base = function(base_class) // static
 {
 //#ifdef DEBUG
     base_class.snapwebsitesBased_ = true;
