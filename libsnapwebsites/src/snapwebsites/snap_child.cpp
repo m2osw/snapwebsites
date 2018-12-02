@@ -2392,7 +2392,7 @@ QString snap_child::locale_info_t::get_composed() const
  *
  * \sa snap::get_mime_type();
  */
-void snap_child::post_file_t::set_data(QByteArray const& data)
+void snap_child::post_file_t::set_data(QByteArray const & data)
 {
     f_data = data;
     f_size = data.size();

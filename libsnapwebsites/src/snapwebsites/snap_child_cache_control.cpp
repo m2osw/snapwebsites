@@ -483,7 +483,7 @@ void snap_child::set_cache_control()
 
         // use a date in the past so nothing gets cached
         //
-        set_header("Expires", "Sat,  1 Jan 2000 00:00:00 GMT", HEADER_MODE_EVERYWHERE);
+        set_header("Expires", "Sat, 01 Jan 2000 00:00:00 GMT", HEADER_MODE_EVERYWHERE);
 
         // I put all the possible "do not cache anything" in this case
         //

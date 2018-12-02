@@ -1256,7 +1256,10 @@ bool users::is_transparent_hit()
  *         that does not mean the user is logged in. You still need to call
  *         authenticated_user() to make sure of that.
  */
-users::login_status_t users::load_login_session(QString const & session_cookie, sessions::sessions::session_info & info, bool const check_time_limit)
+users::login_status_t users::load_login_session(
+            QString const & session_cookie,
+            sessions::sessions::session_info & info,
+            bool const check_time_limit)
 {
     login_status_t authenticated(LOGIN_STATUS_OK);
 
@@ -2621,8 +2624,10 @@ void users::make_cookie_secure(http_cookie & cookie)
                           "snapserver-plugin"
                         , "users"
                         , "secure-cookie"
-                        , "website \"" + site + "\" "
-                          " is marked as being secure, but it was successfully access with the HTTP protocol; NOT MARKING COOKIE AS SECURE UNTIL THIS GETS FIXED"));
+                        , "website \""
+                            + site
+                            + "\" is marked as being secure, but it was successfully access with the HTTP protocol;"
+                              " NOT MARKING COOKIE AS SECURE UNTIL THIS GETS FIXED"));
             flag->set_priority(98);
             flag->set_manual_down(true); // use manual as it is a bit costly to mark a flag DOWN on each run!
             flag->save();

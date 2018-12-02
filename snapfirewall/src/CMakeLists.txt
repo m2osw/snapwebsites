@@ -70,6 +70,7 @@ install(
         count-unwanted
         showfw
         unblock-all
+        unblock-ip
 
     DESTINATION
         bin

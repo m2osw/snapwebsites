@@ -1866,19 +1866,24 @@ public:
 
         // TBD: is that a really weak test?
         //
-        // TODO: use the snap::addr class and use the type of IP address
-        //       instead of what we have here
+        //QString const addr(connection->get_remote_address());
+        // the get_remote_address() function may return an IP and a port so
+        // parse that to remove the port; also remote_addr() has a function
+        // that tells us whether the IP is private, local, or public
         //
-        // XXX: add support for IPv6 (automatic with snap::addr?)
-        //
-        QString const addr(connection->get_remote_address());
+        addr::addr const remote_addr(addr::string_to_addr(connection->get_remote_address().toUtf8().data(), "0.0.0.0", 4040, "tcp"));
+        addr::addr::network_type_t const network_type(remote_addr.addr::get_network_type());
         if(f_local)
         {
-            // TODO: use the addr class instead and then we can check the type for localhost
-            if(addr != "127.0.0.1")
+            if(network_type != addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK)
             {
-                // TODO: find out why we do not get 127.0.0.1 when using such to connect...
-                SNAP_LOG_WARNING("received what should be a local connection from \"")(addr)("\".");
+                // TODO: look into making this an ERROR() again and return, in
+                //       effect viewing the error as a problem and refusing the
+                //       connection (we had a problem with the IP detection
+                //       which should be resolved now that we use the `addr`
+                //       class
+                //
+                SNAP_LOG_WARNING("received what should be a local connection from \"")(connection->get_remote_address())("\".");
                 //return;
             }
 
@@ -1891,10 +1896,9 @@ public:
         }
         else
         {
-            // TODO: use the addr class instead and then we can check the type for localhost
-            if(addr == "127.0.0.1")
+            if(network_type == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK)
             {
-                SNAP_LOG_ERROR("received what should be a remote connection from \"")(addr)("\".");
+                SNAP_LOG_ERROR("received what should be a remote connection from \"")(connection->get_remote_address())("\".");
                 return;
             }
 
@@ -1908,7 +1912,7 @@ public:
             // we will change the name once we receive the CONNECT message
             // and as we send the ACCEPT message
             //
-            connection->set_name(QString("remote connection from: %1").arg(addr)); // remote host connected to us
+            connection->set_name(QString("remote connection from: %1").arg(connection->get_remote_address())); // remote host connected to us
             connection->mark_as_remote();
         }
 

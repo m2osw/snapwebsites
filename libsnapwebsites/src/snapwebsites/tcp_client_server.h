@@ -177,6 +177,8 @@ public:
 
         void                set_ssl_certificate_path(std::string const path);
         std::string const & get_ssl_certificate_path() const;
+        void                set_keepalive(bool keepalive = true);
+        bool                get_keepalive() const;
 
         void                set_sni(bool sni = true);
         bool                get_sni() const;
@@ -188,6 +190,7 @@ public:
         size_t              f_verification_depth = 4;
         uint32_t            f_ssl_options = DEFAULT_SSL_OPTIONS;
         std::string         f_ssl_certificate_path = std::string("/etc/ssl/certs");
+        bool                f_keepalive = true;
         bool                f_sni = true;
         std::string         f_host = std::string();
     };

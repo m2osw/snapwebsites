@@ -233,6 +233,9 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_SESSIONS_USED_UP:
         return "sessions::used_up";
 
+    case name_t::SNAP_NAME_SESSIONS_USED_UP_DATE:
+        return "sessions::used_up_date";
+
     case name_t::SNAP_NAME_SESSIONS_USER_AGENT:
         return "sessions::user_agent";
 
@@ -1392,6 +1395,7 @@ void sessions::clean_session_table(int64_t variables_timestamp)
 
     QString const used_up(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP));
     QString const id(get_name(name_t::SNAP_NAME_SESSIONS_ID));
+    int64_t const now(f_snap->get_start_date());
 
     libdbproxy::table::pointer_t sessions_table(get_sessions_table());
     sessions_table->clearCache();
@@ -1421,6 +1425,8 @@ void sessions::clean_session_table(int64_t variables_timestamp)
                     libdbproxy::value value((*o)->getCell(id)->getValue());
                     value.setCharValue(1);
                     (*o)->getCell(used_up)->setValue(value);
+                    value.setInt64Value(now);
+                    (*o)->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP_DATE))->setValue(value);
                 }
                 else
                 {
@@ -1891,6 +1897,8 @@ void sessions::load_session(QString const & session_key, session_info & info, bo
         //
         value.setCharValue(1);
         row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->setValue(value);
+        value.setInt64Value(f_snap->get_start_date());
+        row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP_DATE))->setValue(value);
     }
 
     // a session has three time limits:
@@ -1973,9 +1981,12 @@ bool sessions::destroy_session(session_info & info)
     }
 
     libdbproxy::value value;
-    value.setTtl(info.get_ttl(f_snap->get_start_time()));
+    int64_t const now(f_snap->get_start_time());
+    value.setTtl(info.get_ttl(now));
     value.setCharValue(1);
     row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP))->setValue(value);
+    value.setInt64Value(now);
+    row->getCell(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP_DATE))->setValue(value);
 
     info.set_session_type(session_info::session_info_type_t::SESSION_INFO_USED_UP);
 

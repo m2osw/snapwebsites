@@ -507,6 +507,7 @@ tcp_client::tcp_client(std::string const & addr, int port)
     std::string port_str(decimal_port.str());
     struct addrinfo * addrinfo(nullptr);
     int const r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &addrinfo));
+    addrinfo_t addr_info(addrinfo);
     if(r != 0
     || addrinfo == nullptr)
     {
@@ -514,7 +515,6 @@ tcp_client::tcp_client(std::string const & addr, int port)
         SNAP_LOG_FATAL("getaddrinfo() failed to parse the address and port strings (errno: ")(e)(" -- ")(strerror(e))(")");
         throw tcp_client_server_runtime_error("invalid address or port: \"" + addr + ":" + port_str + "\"");
     }
-    addrinfo_t addr_info(addrinfo);
 
     f_socket = socket(addr_info.get()->ai_family, SOCK_STREAM, IPPROTO_TCP);
     if(f_socket < 0)
@@ -639,12 +639,18 @@ std::string tcp_client::get_client_addr() const
     switch(addr.sa_family)
     {
     case AF_INET:
-        // TODO: verify that 'r' >= sizeof(something)
+        if(len < sizeof(struct sockaddr_in))
+        {
+            throw tcp_client_server_runtime_error("address size incompatible (AF_INET)");
+        }
         inet_ntop(AF_INET, &reinterpret_cast<struct sockaddr_in *>(&addr)->sin_addr, buf, sizeof(buf));
         break;
 
     case AF_INET6:
-        // TODO: verify that 'r' >= sizeof(something)
+        if(len < sizeof(struct sockaddr_in6))
+        {
+            throw tcp_client_server_runtime_error("address size incompatible (AF_INET6)");
+        }
         inet_ntop(AF_INET6, &reinterpret_cast<struct sockaddr_in6 *>(&addr)->sin6_addr, buf, sizeof(buf));
         break;
 
@@ -819,12 +825,12 @@ tcp_server::tcp_server(std::string const & addr, int port, int max_connections, 
     std::string port_str(decimal_port.str());
     struct addrinfo * addrinfo(nullptr);
     int const r(getaddrinfo(addr.c_str(), port_str.c_str(), &hints, &addrinfo));
+    addrinfo_t addr_info(addrinfo);
     if(r != 0
     || addrinfo == nullptr)
     {
         throw tcp_client_server_runtime_error("invalid address or port: \"" + addr + ":" + port_str + "\"");
     }
-    addrinfo_t addr_info(addrinfo);
 
     f_socket = socket(addr_info.get()->ai_family, SOCK_STREAM, IPPROTO_TCP);
     if(f_socket < 0)
@@ -1465,6 +1471,78 @@ std::string const & bio_client::options::get_ssl_certificate_path() const
 }
 
 
+/** \brief Set whether the SO_KEEPALIVE should be set.
+ *
+ * By default this option is turned ON meaning that all BIO_client have their
+ * SO_KEEPALIVE turned on when created.
+ *
+ * You may turn this off if you are creating a socket for a very short
+ * period of time, such as to send a fast REST command to a server.
+ *
+ * \important
+ * As per the TCP RFC, you should only use keepalive on a server, not a
+ * client. (The client can quit any time and if it tries to access the
+ * server and it fails, it can either quit or reconnect then.) That being
+ * said, at times a server does not set the Keep-Alive and the client may
+ * want to use it to maintain the connection when not much happens for
+ * long durations.
+ *
+ * https://tools.ietf.org/html/rfc1122#page-101
+ *
+ * Some numbers about Keep-Alive:
+ *
+ * https://www.veritas.com/support/en_US/article.100028680
+ *
+ * For Linux (in seconds):
+ *
+ * \code
+ * tcp_keepalive_time = 7200
+ * tcp_keepalive_intvl = 75
+ * tcp_keepalive_probes = 9
+ * \endcode
+ *
+ * These can be access through the /proc file system:
+ *
+ * \code
+ * /proc/sys/net/ipv4/tcp_keepalive_time
+ * /proc/sys/net/ipv4/tcp_keepalive_intvl
+ * /proc/sys/net/ipv4/tcp_keepalive_probes
+ * \endcode
+ *
+ * See: http://tldp.org/HOWTO/TCP-Keepalive-HOWTO/usingkeepalive.html
+ *
+ * \warning
+ * These numbers are used by all applications using TCP. Remember that
+ * changing them will affect all your clients and servers.
+ *
+ * \param[in] keepalive  true if you want the SO_KEEP_ALIVE turned on.
+ *
+ * \sa get_keepalive()
+ */
+void bio_client::options::set_keepalive(bool keepalive)
+{
+    f_keepalive = keepalive;
+}
+
+
+/** \brief Retrieve the SO_KEEPALIVE flag.
+ *
+ * This function returns the current value of the SO_KEEPALIVE flag. By
+ * default this is true.
+ *
+ * Note that this function returns the flag status in the options, not
+ * a connected socket.
+ *
+ * \return The current status of the SO_KEEPALIVE flag (true or false).
+ *
+ * \sa set_keepalive()
+ */
+bool bio_client::options::get_keepalive() const
+{
+    return f_keepalive;
+}
+
+
 /** \brief Set whether the SNI should be included in the SSL request.
  *
  * Whenever SSL connects a server, it has the option to include the
@@ -1731,7 +1809,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
                             " See the bio_client::options::set_sni().");
                 }
                 bio_log_errors();
-                throw tcp_client_server_initialization_error("failed connecting BIO object to server");
+                throw tcp_client_server_initialization_error("SSL BIO_do_connect() failed connecting BIO object to server");
             }
 
             // encryption handshake
@@ -1820,6 +1898,29 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
         }
         break;
 
+    }
+
+    if(opt.get_keepalive())
+    {
+        // retrieve the socket (we are still in the constructor so avoid
+        // calling other functions...)
+        //
+        int socket(-1);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+        BIO_get_fd(f_bio.get(), &socket);
+#pragma GCC diagnostic pop
+        if(socket >= 0)
+        {
+            // if this call fails, we ignore the error, but still log the event
+            //
+            int optval(1);
+            socklen_t const optlen(sizeof(optval));
+            if(setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) != 0)
+            {
+                SNAP_LOG_WARNING("an error occurred trying to mark client socket with SO_KEEPALIVE.");
+            }
+        }
     }
 }
 
@@ -2568,7 +2669,7 @@ bio_client::pointer_t bio_server::accept()
         // retrieve the socket (we do not yet have a bio_client object
         // so we cannot call a get_socket() function...)
         //
-        int socket;
+        int socket(-1);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
         BIO_get_fd(bio.get(), &socket);

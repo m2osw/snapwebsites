@@ -42,6 +42,7 @@ enum class name_t
     SNAP_NAME_SESSIONS_TIME_TO_LIVE,
     SNAP_NAME_SESSIONS_TIME_LIMIT,
     SNAP_NAME_SESSIONS_USED_UP,
+    SNAP_NAME_SESSIONS_USED_UP_DATE,
     SNAP_NAME_SESSIONS_USER_AGENT
 };
 char const * get_name(name_t name) __attribute__ ((const));

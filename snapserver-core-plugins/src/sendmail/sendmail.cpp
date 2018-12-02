@@ -18,12 +18,19 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "sendmail.h"
 
+// plugins
+//
 #include "../locale/snap_locale.h"
 #include "../output/output.h"
 #include "../users/users.h"
 
+// snapwebsites lib
+//
+#include <snapwebsites/flags.h>
 #include <snapwebsites/http_strings.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkgmtime.h>
@@ -35,17 +42,32 @@
 #include <snapwebsites/snap_magic.h>
 #include <snapwebsites/snap_pipe.h>
 
+// libtld
+//
 #include <libtld/tld.h>
+
+// libdbproxy
+//
 #include <libdbproxy/value.h>
+
+// Qt Serialization library
+//
 #include <QtSerialization/QSerializationComposite.h>
 #include <QtSerialization/QSerializationFieldString.h>
 #include <QtSerialization/QSerializationFieldTag.h>
 
+// C++
+//
 #include <fstream>
 #include <iostream>
 
+// Qt
+//
 #include <QFile>
 
+
+// last entry
+//
 #include <snapwebsites/poison.h>
 
 
@@ -130,6 +152,9 @@ char const * get_name(name_t name)
 
     case name_t::SNAP_NAME_SENDMAIL_INDEX:
         return "*index*";
+
+    case name_t::SNAP_NAME_SENDMAIL_IS_ADMIN:
+        return "sendmail::is_admin";
 
     case name_t::SNAP_NAME_SENDMAIL_LAYOUT_NAME:
         return "sendmail";
@@ -590,10 +615,51 @@ void sendmail::on_check_user_security(users::users::user_security_t & security)
                 }
                 if(arrival_date_us != 0)
                 {
+                    bool is_admin(false);
+                    libdbproxy::value is_admin_value;
+                    if(user_info.load_user_parameter(get_name(name_t::SNAP_NAME_SENDMAIL_IS_ADMIN), is_admin_value))
+                    {
+                        is_admin = is_admin_value.signedCharValue();
+                    }
+                    if(is_admin)
+                    {
+                        // this is an administrator, do not prevent sending emails
+                        // even though they may always bounce back however
+                        // admins are not unlikely to have multiple emails
+                        // and if one bounces back the others are not unlikely
+                        // to work just fine...
+                        //
+                        SNAP_LOG_WARNING("Email \"")
+                                        (user_email)
+                                        ("\" will be sent a message even though it was marked as invalid (")
+                                        (diagnostic)
+                                        (").");
+
+                        // generate a low priority flag too
+                        //
+                        // a flag doesn't work well because we'd need one per
+                        // email... at this point I'm not too sure what
+                        // we could do about it anyway; the names can't
+                        // include an email address...
+                        //
+                        snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
+                                  "snapserver-plugin"
+                                , "sendmail"
+                                , "email-bounced"
+                                , "email(s) sent to \""
+                                    + user_email
+                                    + "\" bounced (warning, this flag only records information about the last bounced email, you may have others...)"));
+                        flag->set_priority(3);
+                        flag->set_manual_down(true); // use "manual" because we don't have a good way to remove this flag
+                        flag->save();
+                    }
+                    else
+                    {
 SNAP_LOG_TRACE("arrival_date_us=")(arrival_date_us);
-                    security.get_secure().not_permitted(QString("\"%1\" does not look like a valid email address.").arg(user_email));
-                    security.set_status(users::users::status_t::STATUS_BLOCKED);
-                    return;
+                        security.get_secure().not_permitted(QString("\"%1\" does not look like a valid email address since it returned a 5XX error code.").arg(user_email));
+                        security.set_status(users::users::status_t::STATUS_BLOCKED);
+                        return;
+                    }
                 }
             }
         }
@@ -621,7 +687,7 @@ SNAP_LOG_TRACE("arrival_date_us=")(arrival_date_us);
         if(level == get_name(name_t::SNAP_NAME_SENDMAIL_LEVEL_BLACKLIST)
         || level == get_name(name_t::SNAP_NAME_SENDMAIL_LEVEL_ANGRYLIST))
         {
-            security.get_secure().not_permitted(QString("\"%1\" does not look like a valid email address.").arg(user_email));
+            security.get_secure().not_permitted(QString("\"%1\" is in the blacklist or angrylist (i.e. user is unsubscribed).").arg(user_email));
             security.set_status(users::users::status_t::STATUS_BLOCKED);
             return;
         }
@@ -2021,7 +2087,11 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
             //
             sending_value.setStringValue(get_name(name_t::SNAP_NAME_SENDMAIL_STATUS_INVALID));
             row->getCell(sending_status)->setValue(sending_value);
-            SNAP_LOG_INFO("User \"")(to)("\" has an email address, which returned an unrecoverable 5XX error code. Email with key \"")(unique_key)("\" will not be sent.");
+            SNAP_LOG_INFO("User \"")
+                         (to)
+                         ("\" has an email address which returned an unrecoverable 5XX error code or was blacklisted in some way. Email with key \"")
+                         (unique_key)
+                         ("\" will not be sent.");
             return;
         }
     }

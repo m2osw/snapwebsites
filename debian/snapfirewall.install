@@ -1,4 +1,5 @@
 debian/tmp/usr/bin/unblock-all                                                    usr/bin/
+debian/tmp/usr/bin/unblock-ip                                                     usr/bin/
 debian/tmp/usr/sbin/snapfirewall                                                  usr/sbin/
 debian/tmp/usr/bin/showfw                                                         usr/bin/
 debian/tmp/usr/bin/snapresetfail2ban                                              usr/bin/

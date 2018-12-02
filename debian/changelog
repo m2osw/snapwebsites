@@ -1,3 +1,18 @@
+snapwebsites (1.7.4.0~xenial) xenial; urgency=high
+
+  * Changed the sendmail algorithm to allow for ignoring the fact that the
+    user's email address failed with a bounce before if the user is an admin.
+  * When marking a session as used up, save the date when the event happened.
+  * Install the unblock-ip script even though it's not very useful as it stands.
+  * Converted the snapcommunicator address test to make use of addr::addr
+    (the domain name includes the port!)
+  * Added a script one can use to search for users who have a bounced email.
+  * Add the address to the addrinfo_t unique_ptr<>() because it could be that
+    we had an error (r != 0) and a pointer (addrinfo != null).
+  * Verify buffer length in get_client_addr().
+  * Added support for keepalive in the client BIO.
+  * Properly initialize a variable in case BIO_get_fd() fails.
+
 snapwebsites (1.7.3.0~xenial) xenial; urgency=high
 
   * Remove reference to /run/snapwebsites from snapbuild.service.

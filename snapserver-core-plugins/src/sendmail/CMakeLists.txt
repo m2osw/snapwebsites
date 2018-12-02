@@ -66,16 +66,35 @@ add_library(sendmail SHARED
 target_link_libraries( sendmail Qt5::Core )
 
 install(
-    TARGETS sendmail LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        sendmail
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
 install(
-    FILES "sendmail-tables.xml"
-    DESTINATION ${SNAP_TABLE_DESCRIPTION_PATH}
+    PROGRAMS
+        find-bounced-emails.sh
+
+    DESTINATION
+        bin
 )
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/sendmail
-    FILES_MATCHING PATTERN "*.h"
+    FILES
+        sendmail-tables.xml
+
+    DESTINATION
+        ${SNAP_TABLE_DESCRIPTION_PATH}
+)
+install(
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/sendmail
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
 
 # vim: ts=4 sw=4 et
