@@ -47,11 +47,14 @@
 	line-height: 140px;
 	width: 140px;
 	height: 140px;
+	vertical-align: middle;
 }
 
 .epayment-facilities .epayment-facility .facility-icon
 {
-	vertical-align: middle;
+	display: block; /* required for the "vertical-align: middle" to work as expected */
+	max-width: 100%;
+	max-height: 100%;
 }
 
 .epayment-buttons

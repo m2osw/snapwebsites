@@ -69,7 +69,10 @@ snapwebsites.ePaymentCreditCard = function(gateway)
     this.popup_ = {
         id: "e-payment-credit-card",
         title: "Credit Card Details",
-        path: "/epayment/credit-card?gateway=" + this.gateway_ + "&from=" + jQuery("link[rel='page-uri']").attr("href"),
+        path: "/epayment/credit-card?gateway="
+            + this.gateway_
+            + "&from="
+            + jQuery("link[rel='page-uri']").attr("href"),
         darken: 150,
         width: 500,
         height: 375
