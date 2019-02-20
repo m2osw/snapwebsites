@@ -12,6 +12,8 @@ snapwebsites (1.7.4.0~xenial) xenial; urgency=high
   * Verify buffer length in get_client_addr().
   * Added support for keepalive in the client BIO.
   * Properly initialize a variable in case BIO_get_fd() fails.
+  * Applied a fix to the snapmanager so it does not crash if the name of the
+    host specified on the query string is unknown.
 
 snapwebsites (1.7.3.0~xenial) xenial; urgency=high
 
