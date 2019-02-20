@@ -419,7 +419,7 @@ bool content::copy_branch_cells_impl(libdbproxy::cells & source_cells, libdbprox
             // keep the other branch fields as is, other plugins can handle
             // them as required by implementing this signal
             //
-            // note that the map is a map a shared pointers so it is fast
+            // note that the map is a map of shared pointers so it is fast
             // to make a copy like this
             //
             left_cells[cell_key] = source_cell;
@@ -430,7 +430,7 @@ bool content::copy_branch_cells_impl(libdbproxy::cells & source_cells, libdbprox
     //
     source_cells = left_cells;
 
-    // continue process if there are still cells to handle
+    // continue processing if there are still cells to handle
     // (often false since content::... and links::... were already worked on)
     //
     return !source_cells.isEmpty();

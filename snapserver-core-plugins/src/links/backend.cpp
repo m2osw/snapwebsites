@@ -62,7 +62,8 @@ SNAP_PLUGIN_EXTENSION_START(links)
  * \li createlink -- create a link between two pages
  *
  * \code
- * snapbackend [--config snapserver.conf] [website-url] \
+ * snapbackend [website-url] \
+ *      [--config snapserver.conf] \
  *      --action links::createlink \
  *      --param SOURCE_LINK_NAME=users::author \
  *              SOURCE_LINK=http://csnap.example.com/ \
@@ -79,8 +80,8 @@ SNAP_PLUGIN_EXTENSION_START(links)
  *
  * \code
  * # delete one specific link between two pages
- * snapbackend your-snap.website.ext \
- *      [--config snapserver.conf]
+ * snapbackend [website-url] \
+ *      [--config snapserver.conf] \
  *      --action links::deletelink \
  *      --param SOURCE_LINK_NAME=users::author \
  *              SOURCE_LINK=/ \
@@ -89,7 +90,7 @@ SNAP_PLUGIN_EXTENSION_START(links)
  *              'LINK_MODE=1,*'
  *
  * # delete all links named users::author in this page
- * snapbackend your-snap.website.ext \
+ * snapbackend [website-url] \
  *      [--config snapserver.conf]
  *      --action links::deletelink \
  *      --param SOURCE_LINK_NAME=users::author \
