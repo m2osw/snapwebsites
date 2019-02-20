@@ -2704,8 +2704,8 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
     {
         messages_plugin->set_error(
             "Invoice Not Found",
-            "Somehow we could be get an invoice to charge your account.",
-            "No invoice... that can happen if your generate_invoice() callbacks all fail to generate a valid invoice.",
+            "Somehow we could not get the invoice to charge your account.",
+            "No invoice... that happens when your generate_invoice() callbacks all fail to generate a valid invoice.",
             false
         );
         return false;
