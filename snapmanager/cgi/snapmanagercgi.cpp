@@ -2195,7 +2195,7 @@ void manager_cgi::generate_plugin_status
 }
 
 
-void manager_cgi::get_status_map( QString const & host, status_map_t& map )
+void manager_cgi::get_status_map( QString const & host, status_map_t & map )
 {
     // create, open, read the file
     //
@@ -2213,7 +2213,10 @@ void manager_cgi::get_status_map( QString const & host, status_map_t& map )
     for(auto const & s : file.get_statuses())
     {
         QString const & plugin_name(s.second.get_plugin_name());
-        if( plugin_name == "header" ) continue; // avoid the "header" plugins, since we cannot modify those statuses anyway
+        if( plugin_name == "header" )
+        {
+            continue; // avoid the "header" plugins, since we cannot modify those statuses anyway
+        }
         map[plugin_name].push_back( s.second );
     }
 }
@@ -2256,9 +2259,13 @@ void manager_cgi::get_host_status(QDomDocument doc, QDomElement output, QString 
     get_status_map( host, status_map );
 
     // Sort self first, then respect the order of the rest of the map
+    // (self should always be there unless the 'host' file is missing)
     //
     std::vector<status_list_t> ordered_statuses;
-    ordered_statuses.push_back(status_map["self"]);
+    if(status_map.find("self") != status_map.end())
+    {
+        ordered_statuses.push_back(status_map["self"]);
+    }
     for( auto const & s : status_map )
     {
         if( s.first == "self" )
