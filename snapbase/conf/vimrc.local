@@ -1,0 +1,2 @@
+set modeline ai nowrap hls nocindent incsearch vb sc ru number
+set backspace=indent,eol,start

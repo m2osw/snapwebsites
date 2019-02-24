@@ -1452,7 +1452,7 @@ void cassandra::on_add_plugin_commands(snap::snap_string_list & understood_comma
 namespace
 {
 
-void import_server_key( const QString& msg_listen_address, const QString& key )
+void import_server_key( QString const & msg_listen_address, QString const & key )
 {
     // Open the file...
     //
@@ -1594,8 +1594,15 @@ void cassandra::on_process_plugin_message(snap::snap_communicator_message const 
     }
     else if( command == "CASSANDRASERVERKEY" )
     {
-        SNAP_LOG_TRACE("Processing command CASSANDRASERVERKEY");
-        import_server_key( message.get_parameter("listen_address"), message.get_parameter("key") );
+        if(message.has_parameter("listen_address"))
+        {
+            SNAP_LOG_TRACE("Processing command CASSANDRASERVERKEY");
+            import_server_key( message.get_parameter("listen_address"), message.get_parameter("key") );
+        }
+        else
+        {
+            SNAP_LOG_TRACE("Command CASSANDRASERVERKEY is missing the \"listen_address\" parameter, is Cassandra properly installed?");
+        }
         processed = true;
     }
 }

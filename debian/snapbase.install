@@ -13,3 +13,4 @@ snapbase/conf/snap-httpoxy.conf                          etc/apache2/conf-availa
 snapbase/conf/snap-apache2-ssl-log.conf                  etc/apache2/conf-available/
 snapbase/conf/snap-apache2-ssl.conf                      etc/apache2/ssl-snap/
 snapbase/conf/ssl-README.md                              etc/apache2/ssl-snap/
+snapbase/conf/vimrc.local                                etc/vim/

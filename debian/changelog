@@ -14,6 +14,11 @@ snapwebsites (1.7.4.0~xenial) xenial; urgency=high
   * Properly initialize a variable in case BIO_get_fd() fails.
   * Applied a fix to the snapmanager so it does not crash if the name of the
     host specified on the query string is unknown.
+  * Fixed the cassandra plugin, if the "listen_address" is not defined it
+    would _crash_ when trying to get the parameter when it's not defined.
+  * Applied a fix to the snapstop making the `--service` parameter is optional.
+    (The `--service "$MAINPID"` becomes `--service` when $MAINPID is empty.)
+  * Added /etc/vim/vimrc.local so we get our search, line numbers, etc.
 
 snapwebsites (1.7.3.0~xenial) xenial; urgency=high
 

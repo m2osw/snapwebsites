@@ -63,7 +63,7 @@ namespace
             "service",
             nullptr,
             "PID (only digits) or name of the service to stop.",
-            advgetopt::getopt::argument_mode_t::required_argument
+            advgetopt::getopt::argument_mode_t::optional_argument       // not required because systemd removes the parameter when $MAINPID is empty (even with the quotes)
         },
         {
             '\0',
