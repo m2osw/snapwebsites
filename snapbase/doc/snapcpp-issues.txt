@@ -103,7 +103,6 @@
       260 | Open        | User: Profile
       261 | Open        | User: list of users when going to /user
       262 | Open        | List: UI to setup a list (i.e. write a set of list scripts)
-      267 | In Progress | Cassandra: table setup for each plugin
       269 | In Progress | Editor: create a password widget
       272 | Open        | Layout: do a sweep over the on_generate_main_content() functions that could instead use output as the owner.
       273 | Open        | snapcommunicator: proper GOSSIP implementation (i.e. ring topology first, then full web)
@@ -168,11 +167,9 @@
       408 | Open        | Create a plugin (or in snapmanager.cgi?) to install a letsencrypt SSL certificate
       409 | Open        | Defaults in configuration files...
       411 | Open        | swap file, bundles uses fstab instead of systemd
-      413 | Open        | snapcreatetables -- replace with such in snapdbproxy instead
       414 | Open        | Changing the name of a computer is not well acknowledged by snapmanagerdaemon / snapmanager.cgi
       416 | Open        | Project version does not get updated dynamically when changelog is edited
       418 | Open        | Somehow we added 127.0.0.1 to the list of neighbors
-      421 | Open        | The snapcreatetables tool only installs tables defined on that machine
       423 | Open        | Write unittest for QCassandraSchema, to make sure resources are truly freed.
       429 | Open        | snapcommunicator: Start only after tun0 if required (was: Make the listener tolerant)
       437 | Open        | snapmanager: only one? but how do we "share" plugins?
@@ -189,7 +186,7 @@
       470 | Open        | snaplock: add support for semaphores
       474 | Open        | Add a bundle to create/manage a redirect on computers other than front end computers
       476 | Open        | Build: Add the GIT branch so we can have a -DGIT_BRANCH=... on the c++ command line
-      478 | Open        | List are slow to react: (1) use blobs, (2) use ScyllaDB, (3) pre-calculate some lists
+      478 | Open        | List are slow to react: (1) use blobs, (2) use ScyllaDB, (3) pre-calculate some lists, (4) use a Cassandra index
       480 | Open        | snapinstallwebsite does not properly unlock when Ctrl-C is used...
       486 | Open        | Access to website log from Snap! frontend
       488 | Open        | Build: add two more variables for the URI to use for the build server, repository and bundles
@@ -284,5 +281,16 @@
       657 | Open        | snapmanager: Current Reboot process fails to "wake up" because field "disappears"
       658 | In Progress | snaprfs: create a tool that allows us to efficiently copy files between computers
       664 | Open        | snapwatchdog: look into running logrotate against large log files
-(284 rows)
+      666 | Open        | /run/snapwebsites and other temporary folder to be created by systemd
+      668 | Open        | snapwatchdog: Postfix TLS/SSL certificate not working
+      669 | Open        | as2js: syntax choices
+      670 | Open        | sendmail: the plugin now forcibly sends email to administrator
+      671 | Open        | Review/Test Express-Cassandra to query our database as a full RDBM
+      672 | Open        | ZipIos (and others) has to check it's versions so we can push proper quality code...
+      673 | Open        | No Reboot button when /run/reboot doesn't exist
+      674 | Open        | xmlsitemap: Implement the hreflang="..." in the xmlsitemap
+      675 | Open        | snapmanager: Installing a package which does not have correct keys results in a silent failed attempt
+      677 | Open        | snapmanager: add support to change snapdb info (especially the host)
+      678 | Open        | snapmanager: my new installation with an SSD prevents an Apache restart
+(292 rows)
 
