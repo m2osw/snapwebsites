@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<!--
+Snap Websites Server == index plugin database setup
+Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+<snap-tree>
+  <content path="/js/index">
+    <param name="content::title" revision="revision">Index JavaScripts</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>JavaScript code to help with indexes on client's computer.</p>]]>
+    </param>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="jquery" type="attachment/public">
+      <path>:/js/index/index.js</path>
+      <mime-type>text/javascript</mime-type>
+      <dependency>output (&gt;= 0.0.4)</dependency>
+    </attachment>
+  </content>
+  <content path="/types/taxonomy/system/index">
+    <param name="taxonomy::name">index</param>
+    <param name="content::title" revision="revision">Index</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>All your indexes are marked with this tag. This allows the index plugin to find all the indexes on a website.</p>]]>
+    </param>
+    <!-- use another type to "better" categorize a index, this one type is final -->
+    <param name="content::final" type="int8" revision="global">1</param>
+    <!-- permissions of this page are still TBD -->
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer</link>
+    <link name="permissions::direct::action::create" to="permissions::link_back::create" mode="*:*">/types/permissions/rights/create</link>
+    <link name="permissions::direct::action::delete" to="permissions::link_back::delete" mode="*:*">/types/permissions/rights/delete</link>
+    <link name="permissions::direct::action::edit" to="permissions::link_back::edit" mode="*:*">/types/permissions/rights/administer</link>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view</link>
+  </content>
+  <content path="/images/index">
+    <param name="content::title" revision="revision">Index Images</param>
+    <param name="content::body" revision="revision">
+      <![CDATA[<p>Set of images offered and used by the index plugin.</p>]]>
+    </param>
+    <link name="permissions::direct::action::view" to="permissions::link_back::view" mode="*:*">/types/permissions/rights/view/attachment/public</link>
+    <link name="permissions::direct::action::administer" to="permissions::link_back::administer" mode="*:*">/types/permissions/rights/administer/website/info</link>
+    <attachment name="index-logo-64x64" type="attachment/public">
+      <path>:/images/index/index-logo-64x64.png</path>
+      <mime-type>image/png</mime-type>
+    </attachment>
+  </content>
+</snap-tree>
+<!-- vim: ts=2 sw=2 et syntax=xml
+-->
