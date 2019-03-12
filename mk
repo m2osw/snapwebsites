@@ -6,7 +6,8 @@ case "$1" in
 "-a"|"--all")
     # Rebuild all
     #
-    make -C ../../BUILD
+    shift
+    make -C ../../BUILD $*
     ;;
 
 "-l"|"--less")
