@@ -2594,8 +2594,10 @@ void snap_communicator_server::process_message(snap::snap_communicator::snap_con
      && command != "SNAPLOG"))
     {
         SNAP_LOG_TRACE("received command=[")(command)
-                ("], server_name=[")(server_name)("], service=[")(service)
-                ("], message=[")(message.to_message())("]");
+                ("], server_name=[")(server_name)
+                ("], service=[")(service)
+                ("], message=[")(message.to_message())
+                ("]");
     }
 
     base_connection::pointer_t base(std::dynamic_pointer_cast<base_connection>(connection));
@@ -4058,6 +4060,7 @@ SNAP_LOG_ERROR("GOSSIP is not yet fully implemented.");
                         SNAP_LOG_ERROR("invalid TTL in message [")(message.to_message())("]");
 
                         // revert to default
+                        //
                         ttl = 60;
                     }
                 }
@@ -4068,6 +4071,17 @@ SNAP_LOG_ERROR("GOSSIP is not yet fully implemented.");
                 cache_message.f_timeout_timestamp = time(nullptr) + ttl;
                 cache_message.f_message = message;
                 f_local_message_cache.push_back(cache_message);
+
+#ifdef _DEBUG
+                // to make sure we get messages cached as expected
+                //
+                SNAP_LOG_TRACE("cached command=[")(command)
+                        ("], server_name=[")(server_name)
+                        ("], service=[")(service)
+                        ("], message=[")(message.to_message())
+                        ("], ttl=[")(ttl)
+                        ("]");
+#endif
             }
             transmission_report();
             return;

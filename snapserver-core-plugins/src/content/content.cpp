@@ -595,6 +595,9 @@ int64_t content::do_update(int64_t last_updated)
  * the compressors are sorted (i.e. smallest version first, largets last)
  * so that way we do not have to check each size field one by one to know
  * which of the version to select and send to the user.
+ *
+ * \param[in] variables_timestamp  The timestamp for all the variables added
+ * to the database by this update (in micro-seconds).
  */
 void content::remove_files_compressor(int64_t variables_timestamp)
 {
@@ -631,7 +634,8 @@ void content::remove_files_compressor(int64_t variables_timestamp)
  * Send our content to the database so the system can find us when a
  * user references our pages.
  *
- * \param[in] variables_timestamp  The timestamp for all the variables added to the database by this update (in micro-seconds).
+ * \param[in] variables_timestamp  The timestamp for all the variables added
+ * to the database by this update (in micro-seconds).
  */
 void content::content_update(int64_t variables_timestamp)
 {
@@ -1025,7 +1029,9 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
             // TODO: here we probably need to force a new branch so the
             //       user would not see the old revisions by default...
             //
-            SNAP_LOG_WARNING("Re-instating (i.e. \"Undeleting\") page \"")(ipath.get_key())("\" as we received a create_content() request on a deleted page.");
+            SNAP_LOG_WARNING("Re-instating (i.e. \"Undeleting\") page \"")
+                            (ipath.get_key())
+                            ("\" as we received a create_content() request on a deleted page.");
             status.reset_state(path_info_t::status_t::state_t::NORMAL);
             ipath.set_status(status);
         }
@@ -1100,6 +1106,7 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
     }
 
     // add the different basic content dates setup
+    //
     int64_t const start_date(f_snap->get_start_date());
     row->getCell(get_name(name_t::SNAP_NAME_CONTENT_CREATED))->setValue(start_date);
 
@@ -3479,6 +3486,7 @@ void content::add_attachment(QString const& path, content_attachment const& ca)
 void content::on_save_content()
 {
     // anything to save?
+    //
     if(f_blocks.isEmpty())
     {
         return;
@@ -3510,6 +3518,7 @@ void content::on_save_content()
     // lock the entire website (this does not prevent others from accessing
     // the site, however, it prevents them from upgrading the database at the
     // same time... note that this is one lock per website)
+    //
     snap_lock lock(QString("%1#updating").arg(site_key));
 
     libdbproxy::table::pointer_t content_table(get_content_table());
@@ -3521,6 +3530,7 @@ void content::on_save_content()
         // now do the actual save
         // connect this entry to the corresponding plugin
         // (unless that field is already defined!)
+        //
         path_info_t ipath;
         ipath.set_path(d->f_path);
 

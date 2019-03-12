@@ -77,14 +77,10 @@ install(
 ################################################################################
 # Install XSD files.
 #
-set( DIST_FILES
-    siteindex.xsd
-    sitemap.xsd
-)
-
 install(
     FILES
-        ${DIST_FILES}
+        siteindex.xsd
+        sitemap.xsd
 
     DESTINATION
         share/snapwebsites/xsd

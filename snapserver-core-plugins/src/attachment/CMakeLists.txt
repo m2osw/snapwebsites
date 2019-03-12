@@ -52,8 +52,10 @@ snap_validate_xml( content.xml content.dtd )
 add_library(attachment SHARED
     attachment.cpp
     backend.cpp
+
     ${SNAP_MANAGER_MOC_CXX}
     ${SNAP_MANAGER_RESOURCES_RCC}
+
     attachment-logo-64x64.png
 )
 

@@ -2099,7 +2099,7 @@ void list::on_create_content(content::path_info_t & ipath, QString const & owner
  * \warning
  * As a limitation, a list script that checks the links of another list
  * will likely not update properly. This is because this function will
- * no mark a page as modified when the link being created is a link
+ * not mark a page as modified when the link being created is a link
  * from the list to a page that the list includes.
  *
  * \param[in] link  The link that was just created or deleted.
@@ -2465,7 +2465,7 @@ int64_t list::get_start_date_offset() const
  * that.
  *
  * \todo
- * Note that at this point this function reads ALL item item from 0 to start
+ * Note that at this point this function reads ALL the items from 0 to start
  * and throw them away. Later we'll add sub-indexes that will allow us to
  * reach any item very quickly. The sub-index will be something like this:
  *
@@ -2573,9 +2573,9 @@ list_item_vector_t list::read_list(content::path_info_t & ipath, int start, int 
 }
 
 
-/** \brief Register the pagelist action.
+/** \brief Register the CRON actions supported by the list plugin.
  *
- * This function registers this plugin CRON action named pagelist.
+ * This function registers this plugin CRON actions as follow:
  *
  * \li listjournal
  *
@@ -2593,7 +2593,8 @@ list_item_vector_t list::read_list(content::path_info_t & ipath, int start, int 
  * The "pagelist" is used by the backend to continuously and as fast as
  * possible build and update lists of pages.
  *
- * \param[in,out] actions  The list of supported actions where we add ourselves.
+ * \param[in,out] actions  The vector of supported actions where we add
+ *                         our own actions.
  */
 void list::on_register_backend_cron(server::backend_action_set & actions)
 {
@@ -2644,7 +2645,8 @@ void list::on_register_backend_cron(server::backend_action_set & actions)
  * snapbackend http://example.com/ --action list::resetlists
  * \endcode
  *
- * \param[in,out] actions  The list of supported actions where we add ourselves.
+ * \param[in,out] actions  The vector of supported actions where we add
+ *                         our own actions.
  */
 void list::on_register_backend_action(server::backend_action_set & actions)
 {

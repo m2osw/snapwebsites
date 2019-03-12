@@ -82,7 +82,7 @@ snapdbproxy_thread::snapdbproxy_thread
  * This function make sure to clean up a thread.
  *
  * First it makes sure that the thread was terminated and then it closes
- * the socket assiciated with this thread.
+ * the socket associated with this thread.
  */
 snapdbproxy_thread::~snapdbproxy_thread()
 {

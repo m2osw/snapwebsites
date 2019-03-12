@@ -1112,15 +1112,15 @@ void content::backend_minify_css_file(libdbproxy::row::pointer_t file_row, attac
         {
             if(error_tracker.error_happened())
             {
-                SNAP_LOG_ERROR("backend_process: CSS compiler errors: ")(messages);
+                SNAP_LOG_ERROR("CSS compiler errors: ")(messages);
             }
             else if(error_tracker.warning_happened())
             {
-                SNAP_LOG_WARNING("backend_process: CSS compiler warnings: ")(messages);
+                SNAP_LOG_WARNING("CSS compiler warnings: ")(messages);
             }
             else
             {
-                SNAP_LOG_INFO("backend_process: CSS compiler messages: ")(messages);
+                SNAP_LOG_INFO("CSS compiler messages: ")(messages);
             }
         }
     }

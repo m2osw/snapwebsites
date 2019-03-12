@@ -2738,7 +2738,10 @@ void server::listen()
     // get the snapcommunicator IP and port
     QString communicator_addr("127.0.0.1");
     int communicator_port(4040);
-    tcp_client_server::get_addr_port(QString::fromUtf8(f_parameters("snapcommunicator", "local_listen").c_str()), communicator_addr, communicator_port, "tcp");
+    tcp_client_server::get_addr_port(QString::fromUtf8(f_parameters("snapcommunicator", "local_listen").c_str())
+                                   , communicator_addr
+                                   , communicator_port
+                                   , "tcp");
 
     // TBD: Would we need a lock sooner? if so, we are in trouble...
     //      Initialize the snap communicator information in snap_lock

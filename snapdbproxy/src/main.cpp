@@ -69,7 +69,7 @@ int main(int argc, char * argv[])
     {
         // create an instance of the snap_firewall object
         //
-        snapdbproxy dbproxy( argc, argv );
+        snapdbproxy dbproxy(argc, argv);
 
         SNAP_LOG_INFO("--------------------------------- snapdbproxy v" SNAPDBPROXY_VERSION_STRING " started on ")(dbproxy.server_name());
 
@@ -82,7 +82,7 @@ int main(int argc, char * argv[])
         //
         return 0;
     }
-    catch( snap::snap_exception const & e )
+    catch(snap::snap_exception const & e)
     {
         SNAP_LOG_FATAL("snapdbproxy: snap_exception caught! ")(e.what());
         if(g_isatty)
@@ -90,7 +90,7 @@ int main(int argc, char * argv[])
             std::cerr << "snapdbproxy: snap_exception caught! " << e.what() << std::endl;
         }
     }
-    catch( std::invalid_argument const & e )
+    catch(std::invalid_argument const & e)
     {
         SNAP_LOG_FATAL("snapdbproxy: invalid argument: ")(e.what());
         if(g_isatty)
@@ -98,7 +98,7 @@ int main(int argc, char * argv[])
             std::cerr << "snapdbproxy: invalid argument: " << e.what() << std::endl;
         }
     }
-    catch( std::exception const & e )
+    catch(std::exception const & e)
     {
         SNAP_LOG_FATAL("snapdbproxy: std::exception caught! ")(e.what());
         if(g_isatty)
@@ -106,7 +106,7 @@ int main(int argc, char * argv[])
             std::cerr << "snapdbproxy: std::exception caught! " << e.what() << std::endl;
         }
     }
-    catch( ... )
+    catch(...)
     {
         SNAP_LOG_FATAL("snapdbproxy: unknown exception caught!");
         if(g_isatty)

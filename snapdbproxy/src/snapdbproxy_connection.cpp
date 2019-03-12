@@ -8,7 +8,7 @@
  *      gets closed by the client, the thread terminates.
  *
  *      TODO: we certainly want to look into reusing threads in a pool
- *            instead of having a onetime run like we have now.
+ *            instead of having a one-time run like we have now.
  *
  * License:
  *      Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
@@ -233,11 +233,15 @@ SNAP_LOG_TRACE("got an order: ")
                 //
                 if(order.validOrder())
                 {
-                    SNAP_LOG_TRACE("snapdbproxy connection socket is gone (")(f_client != nullptr ? f_client->get_socket() : -1)(").");
+                    SNAP_LOG_TRACE("snapdbproxy connection socket is gone (")
+                                  (f_client != nullptr ? f_client->get_socket() : -1)
+                                  (").");
                 }
                 else
                 {
-                    SNAP_LOG_TRACE("snapdbproxy received an invalid order (")(f_client != nullptr ? f_client->get_socket() : -1)(").");
+                    SNAP_LOG_TRACE("snapdbproxy received an invalid order (")
+                                  (f_client != nullptr ? f_client->get_socket() : -1)
+                                  (").");
                 }
 
                 close();
@@ -914,6 +918,7 @@ void snapdbproxy_connection::execute_command(libdbproxy::order const & order)
     send_order(q, order);
 
     // success
+    //
     libdbproxy::order_result result;
     result.setSucceeded(true);
     if(!f_proxy.sendResult(*this, result))

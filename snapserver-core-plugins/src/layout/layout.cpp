@@ -280,7 +280,8 @@ int64_t layout::do_dynamic_update(int64_t last_updated)
  * This first initialization is used to initialize the default
  * layout.
  *
- * \param[in] variables_timestamp  The timestamp for all the variables added to the database by this update (in micro-seconds).
+ * \param[in] last_updated  The timestamp for all the variables added to the
+ * database by this update (in micro-seconds).
  */
 void layout::content_update(int64_t const last_updated)
 {

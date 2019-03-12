@@ -125,8 +125,8 @@ include( SnapXmlLint   )
 include( SnapZipLayout )
 
 # WARNING: the order of the following is important
-#          we have to build libsnapwebsites before all the other C++
-#          sub-projects for example
+#          for example we have to build libsnapwebsites before all the
+#          other C++ sub-projects
 #
 add_subdirectory( cmake                   )
 add_subdirectory( libsnapwebsites         )

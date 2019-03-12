@@ -21,9 +21,9 @@
 #include <snapwebsites/not_reached.h>
 
 
-int main(int argc, char * argv[])
+int main( int argc, char * argv[] )
 {
-    int exitval(1);
+    int exitval( 1 );
     try
     {
         // create a server object
