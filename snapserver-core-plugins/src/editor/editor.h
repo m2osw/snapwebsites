@@ -87,6 +87,9 @@ public:
 
 
 
+class editor;
+
+
 
 enum class name_t
 {
@@ -138,6 +141,72 @@ private:
     bool                        f_modified = false;
     bool                        f_has_errors = false;
 };
+
+
+class create_page_t
+{
+public:
+    typedef std::map<QString, libdbproxy::value>    fields_t;
+
+                        create_page_t();
+
+    // basics
+    //
+    void                set_path(QString const & path);
+    void                set_type(QString const & type);
+    void                set_owner(QString const & owner);
+    void                set_locale(QString const & locale);
+    void                set_dynamic_path(signed char dynamic = 1);
+
+    // global parameters
+    //
+    void                set_global_field(QString const & field_name, libdbproxy::value const & value);
+    void                set_global_field(QString const & field_name, QString const & value);
+    void                set_global_field(QString const & field_name, std::string const & value);
+    void                set_global_field(QString const & field_name, char const * value);
+
+    void                set_quoted_global_field(QString const & field_name, QString const & value);     // add double quote around the value
+    void                set_quoted_global_field(QString const & field_name, std::string const & value);     // add double quote around the value
+    void                set_quoted_global_field(QString const & field_name, char const * value);     // add double quote around the value
+
+    void                set_layout_layout(QString const & value);
+    void                set_layout_theme(QString const & value); // only use this one for themes such as "notheme"
+    void                set_editor_layout(QString const & value);
+
+    // branch parameters
+    //
+    void                set_branch_field(QString const & field_name, libdbproxy::value const & value);
+    void                set_branch_field(QString const & field_name, QString const & value);
+    void                set_branch_field(QString const & field_name, std::string const & value);
+    void                set_branch_field(QString const & field_name, char const * value);
+
+    void                set_list_test_script(QString const & value);
+    void                set_list_key_script(QString const & value);
+    void                set_list_selector(QString const & value);
+
+    // revision parameters
+    //
+    void                set_revision_field(QString const & field_name, libdbproxy::value const & value);
+    void                set_revision_field(QString const & field_name, QString const & value);
+    void                set_revision_field(QString const & field_name, std::string const & value);
+    void                set_revision_field(QString const & field_name, char const * value);
+
+    void                set_title(QString const & title);
+    void                set_body(QString const & body);
+
+private:
+    friend class editor;
+
+    QString             f_path = QString();
+    QString             f_type = QString();
+    QString             f_owner = QString();
+    QString             f_locale = QString("xx");
+
+    fields_t            f_global_fields = fields_t();
+    fields_t            f_branch_fields = fields_t();
+    fields_t            f_revision_fields = fields_t();
+};
+
 
 
 
@@ -340,6 +409,8 @@ public:
 
     bool                has_value( QString const & name ) const;
     libdbproxy::value   get_value( QString const & name ) const;
+
+    content::path_info_t create_page(create_page_t const & page);
 
 private:
     typedef QMap<QString, QString>      value_map_t;
