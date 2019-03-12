@@ -759,7 +759,7 @@ Query::pointer_t snap_manager::createQuery
             .arg(context_name)
             , q_str.count('?')
             );
-    connect( query.get(), &Query::queryFinished, this, &snap_manager::onQueryFinished );
+    connect( query.data(), &Query::queryFinished, this, &snap_manager::onQueryFinished );
     return query;
 }
 
@@ -775,7 +775,7 @@ Query::pointer_t snap_manager::createQuery
             .arg(table_name)
             , q_str.count('?')
             );
-    connect( query.get(), &Query::queryFinished, this, &snap_manager::onQueryFinished );
+    connect( query.data(), &Query::queryFinished, this, &snap_manager::onQueryFinished );
     return query;
 }
 
@@ -923,7 +923,7 @@ void snap_manager::create_context(int replication_factor, int strategy, snap::sn
     create_table(snap::get_name(snap::name_t::SNAP_NAME_WEBSITES), "List of website rules");
     create_table(snap::get_name(snap::name_t::SNAP_NAME_SITES),    "Various global settings for websites");
 
-    connect( f_queryQueue.back().get(), &Query::queryFinished, this, &snap_manager::onContextCreated );
+    connect( f_queryQueue.back().data(), &Query::queryFinished, this, &snap_manager::onContextCreated );
     startQuery();
 }
 
@@ -1340,7 +1340,7 @@ void snap_manager::saveDomain()
     query->bindByteArray( num++, name.toUtf8() );
     query->bindByteArray( num++, core_rules_name.toUtf8() );
     query->bindByteArray( num++, compiled_rules );
-    connect( query.get(), &Query::queryFinished, this, &snap_manager::onFinishedSaveDomain );
+    connect( query.data(), &Query::queryFinished, this, &snap_manager::onFinishedSaveDomain );
     addQuery(query);
 
     startQuery();
@@ -1688,7 +1688,7 @@ void snap_manager::on_websiteSelectionChanged( const QModelIndex & /*selected*/,
     size_t num = 0;
     query->bindByteArray( num++, f_website_org_name.toUtf8() );
     query->bindByteArray( num++, core_original_rules_name.toUtf8() );
-    connect( query.get(), &Query::queryFinished, this, &snap_manager::onLoadWebsite );
+    connect( query.data(), &Query::queryFinished, this, &snap_manager::onLoadWebsite );
     addQuery(query);
     startQuery();
 }
@@ -1837,7 +1837,7 @@ void snap_manager::on_websiteSave_clicked()
         query->bindByteArray( num++, name.toUtf8() );
         query->bindByteArray( num++, core_rules_name.toUtf8() );
         query->bindByteArray( num++, compiled_rules );
-        connect( query.get(), &Query::queryFinished, this, &snap_manager::onFinishedSaveWebsite );
+        connect( query.data(), &Query::queryFinished, this, &snap_manager::onFinishedSaveWebsite );
         addQuery(query);
 
         // all those are not valid anymore
@@ -1927,7 +1927,7 @@ void snap_manager::on_websiteDelete_clicked()
     query->setDescription( QString("Delete website") );
     size_t num = 0;
     query->bindByteArray( num++, name.toUtf8() );
-    connect( query.get(), &Query::queryFinished, this, &snap_manager::onDeleteWebsite );
+    connect( query.data(), &Query::queryFinished, this, &snap_manager::onDeleteWebsite );
     addQuery(query);
 
     startQuery();
@@ -2184,8 +2184,10 @@ void snap_manager::onSitesApplyClicked( bool clicked )
 
     if( !f_queryQueue.empty() )
     {
-        connect( f_queryQueue.back().get(), &Query::queryFinished,
-                this, &snap_manager::onSitesParamSaveFinished );
+        connect(f_queryQueue.back().data()
+              , &Query::queryFinished
+              , this
+              , &snap_manager::onSitesParamSaveFinished);
     }
     startQuery();
 }

@@ -50,6 +50,8 @@ target_link_libraries(${PROJECT_NAME}
     ${ADVGETOPT_LIBRARIES}
     ${QT_LIBRARIES}
     ${CASSWRAPPER_LIBRARIES}
+    ${AS2JS_LIBRARIES}
+    ${LIBEXCEPT_LIBRARIES}
 )
 
 install(
