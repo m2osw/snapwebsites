@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <html>
 <!--
 
@@ -138,6 +139,14 @@ License:
 				then you will get a <strong>403 Forbidden</strong>
 				error.</p>
 
+				<p class="notes"><strong>Note:</strong> this page is not served
+				by <code>snapmanager.cgi</code>, it is directly served by Apache2.
+				So you do not get a 403 here. However, once things are installed
+				and working, you should be redirected to the <code>snapmanager.cgi</code>
+				home page automatically (i.e. we have an option marked as either "new"
+				or "installed", by default it is set to "new" and when changed to
+				"installed", this page <i>disappears</i></p>
+
 				<p>To allow yourself, edit the
 				<code>/etc/snapwebsites/snapwebsites.d/snapmanager.conf</code>
 				file and put your IP address which your browser
@@ -160,12 +169,12 @@ License:
 				<p>We, on purpose, do not support a mask because only a very
 				few computers should be used to manage your Snap! Websites
 				cluster.</p>
-				<p class="notes"><strong>Note:</strong> It is not recommended that you edit the
-				<code>/etc/snapwebsites/snapmanager.conf</code> file.
+				<p class="notes"><strong>Note:</strong> It is not recommended that you
+				edit the <code>/etc/snapwebsites/snapmanager.conf</code> file.
 				Please only make changes in the
 				<code>/etc/snapwebsites/snapwebsites.d/snapmanager.conf</code>
 				file. In fact, this is recommended for any
-				<strong>Snap!</strong> service in general (<u>.conf</u> files).</em></p>
+				<strong>Snap!</strong> service in general (<u>.conf</u> files).</p>
 
 			<h3>Server Name</h3>
 				<p>It is recommended that you set the <code>server_name</code> variable in
@@ -178,8 +187,8 @@ License:
 					<pre>server_name=frontend1</pre>
 				</blockquote>
 				<p>This may be required if your computer hostname is not
-				compatible with the Snap! environment. (includes characters
-				other than a-z, 0-9, and underscores, or starts with a digit.</p>
+				compatible with the Snap! environment (includes characters
+				other than a-z, 0-9, and underscores, or starts with a digit.)</p>
 
 			<h3>Apache Conflict: The fight between Snap Manager CGI &amp; Snap CGI</h3>
 				<p>Although it is possible (we have done it) to
