@@ -85,6 +85,16 @@
     # those IP addresses and interface names, so we set it up now
     #
     /etc/network/firewall
+
+    # Fail2ban runs at full speed when we think it should have a nice value
+    # higher so if other processes have to run, fail2ban _pauses_
+    #
+    # TODO: unfortunate but we have to edit the init.d script which mean
+    #       we will lose that --nicelevel in case fail2ban gets updated...
+    #
+    sed -i.bak \
+      -e "s/start-stop-daemon /start-stop-daemon --nicelevel 10/" \
+            /etc/init.d/fail2ban
   </postinst>
 </bundle>
 <!--
