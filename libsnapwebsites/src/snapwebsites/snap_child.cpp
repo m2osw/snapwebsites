@@ -4819,10 +4819,12 @@ void snap_child::canonicalize_domain()
     libdbproxy::table::pointer_t table(f_context->getTable(table_name));
 
     // row for that domain exists?
+    //
     f_domain_key = f_uri.domain() + f_uri.top_level_domain();
     if(!table->exists(f_domain_key))
     {
         // this domain doesn't exist; i.e. that's a 404
+        //
         die(http_code_t::HTTP_CODE_NOT_FOUND,
                     "Domain Not Found",
                     "This website does not exist. Please check the URI and make corrections as required.",
@@ -4831,11 +4833,13 @@ void snap_child::canonicalize_domain()
     }
 
     // get the core::rules
+    //
     libdbproxy::value value(table->getRow(f_domain_key)->getCell(QString(get_name(name_t::SNAP_NAME_CORE_RULES)))->getValue());
     if(value.nullValue())
     {
         // Null value means an empty string or undefined column and either
         // way it's wrong here
+        //
         die(http_code_t::HTTP_CODE_NOT_FOUND,
                     "Domain Not Found",
                     "This website does not exist. Please check the URI and make corrections as required.",
@@ -4844,6 +4848,7 @@ void snap_child::canonicalize_domain()
     }
 
     // parse the rules to our domain structures
+    //
     domain_rules r;
     // QBuffer takes a non-const QByteArray so we have to create a copy
     QByteArray data(value.binaryValue());
@@ -4854,6 +4859,7 @@ void snap_child::canonicalize_domain()
 
     // we add a dot because the list of variables are expected to
     // end with a dot, but only if sub_domains is not empty
+    //
     QString sub_domains(f_uri.sub_domains());
     if(!sub_domains.isEmpty())
     {
@@ -4866,6 +4872,7 @@ void snap_child::canonicalize_domain()
 
         // build the regex (TODO: pre-compile the regex?
         // the problem is the var. name versus data parsed)
+        //
         QString re;
         int vmax(info->size());
         for(int v = 0; v < vmax; ++v)
@@ -4885,6 +4892,7 @@ void snap_child::canonicalize_domain()
         if(regex.exactMatch(sub_domains))
         {
             // we found the domain!
+            //
             snap_string_list captured(regex.capturedTexts());
             QString canonicalized;
 
@@ -8350,39 +8358,60 @@ void snap_child::execute()
     //
     if(f_output.buffer().size() == 0)
     {
-        // let plugins detach whatever data they attached to the user session
-        // (note: nothing to do with the fork() which was called a while back)
-        //
-        server->detach_from_session();
+        class attach_session
+        {
+        public:
+            attach_session(server::pointer_t server)
+                : f_server(server)
+            {
+                // let plugins detach whatever data they attached to the user session
+                // (note: nothing to do with the fork() which was called a while back)
+                //
+                server->detach_from_session();
+            }
 
-        f_ready = true;
+            ~attach_session()
+            {
+                // TODO: look into having this call to the exit() function too
+                //       since it should be called no matter what--at that
+                //       point we will need a flag because we can't call the
+                //       function more than once
+                //
+                // now that execution is over, we want to re-attach whatever did
+                // not make it in this session (i.e. a message that was posted
+                // after messages were added to the current page, or this page
+                // did not make use of the messages that were detached earlier)
+                //
+                f_server->attach_to_session();
+            }
 
-        // generate the output
-        //
-        // on_execute() is defined in the path plugin which retrieves the
-        // path::primary_owner of the content that match f_uri.path() and
-        // then calls the corresponding on_path_execute() function of that
-        // primary owner
-        //
-        server->execute(f_uri.path());
+        private:
+            server::pointer_t   f_server = server::pointer_t();
+        };
 
-        // TODO: look into moving this call to the exit() function since
-        //       it should be called no matter what (or maybe have some
-        //       form of RAII, but if exit() gets called, RAII will not
-        //       do us any good...)
-        //
-        // now that execution is over, we want to re-attach whatever did
-        // not make it in this session (i.e. a message that was posted
-        // after messages were added to the current page, or this page
-        // did not make use of the messages that were detached earlier)
-        //
-        server->attach_to_session();
+        // detach/re-attach the session using this RAII class within
+        // the following block
+        {
+            attach_session raii_session(server);
+
+            f_ready = true;
+
+            // generate the output
+            //
+            // on_execute() is defined in the path plugin which retrieves the
+            // path::primary_owner of the content that match f_uri.path() and
+            // then calls the corresponding on_path_execute() function of that
+            // primary owner
+            //
+            server->execute(f_uri.path());
+        }
 
         if(f_output.buffer().size() == 0)
         {
             // somehow nothing was output...
             // (that should not happen because the path::on_execute() function
             // checks and generates a Page Not Found on empty content)
+            //
             die(http_code_t::HTTP_CODE_NOT_FOUND, "Page Empty",
                 "Somehow this page could not be generated.",
                 "the execute() command ran but the output is empty (this is never correct with HTML data, it could be with text/plain responses though)");
