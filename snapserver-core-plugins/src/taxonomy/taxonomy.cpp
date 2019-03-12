@@ -272,64 +272,131 @@ void taxonomy::bootstrap(snap_child * snap)
  *
  * \return The value found in the Cassandra database.
  */
-libdbproxy::value taxonomy::find_type_with(content::path_info_t & ipath, QString const & taxonomy_name, QString const & col_name, QString const & limit_name)
+libdbproxy::value taxonomy::find_type_with(
+              content::path_info_t & ipath
+            , QString const & taxonomy_name
+            , QString const & col_name
+            , QString const & limit_name)
 {
+    // value returned in case the type doesn't deliver
+    //
     libdbproxy::value const not_found;
+    f_tpath = content::path_info_t();
+
     // get link taxonomy_name from ipath
+    //
     links::link_info type_info(taxonomy_name, true, ipath.get_key(), ipath.get_branch());
     QSharedPointer<links::link_context> type_ctxt(links::links::instance()->new_link_context(type_info));
     links::link_info link_type;
     if(!type_ctxt->next_link(link_type))
     {
         // this should not happen assuming the pages are properly defined
+        //
         return not_found;
     }
+
     QString type_key(link_type.key());
-    if(type_key.isEmpty())
-    {
-        return not_found;
-    }
     libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
     for(;;)
     {
-        // TODO: determine whether the type should be checked in the branch instead of global area.
-        content::path_info_t tpath;
-        tpath.set_path(type_key);
+        if(type_key.isEmpty())
+        {
+            // this should not happen
+            // a link key just can't be empty
+            //
+            return not_found;
+        }
+
+        // TODO: determine whether the type should be checked in the
+        //       branch instead of the content table.
+        //
+        f_tpath.set_path(type_key);
 
         if(!content_table->exists(type_key))
         {
-            // TODO: should this be an error instead? all the types should exist!
+            // TODO: should this be an error instead?
+            //       all the types should exist!
+            //
             return not_found;
         }
         libdbproxy::row::pointer_t row(content_table->getRow(type_key));
 
         // check for the key, if it exists we found what the user is
         // looking for!
+        //
         libdbproxy::value result(row->getCell(col_name)->getValue());
         if(!result.nullValue())
         {
             return result;
         }
+
         // have we reached the limit
+        //
         libdbproxy::value limit(row->getCell(QString(get_name(name_t::SNAP_NAME_TAXONOMY_NAME)))->getValue());
-        if(!limit.nullValue() && limit.stringValue() == limit_name)
+        if(!limit.nullValue()
+        && limit.stringValue() == limit_name)
         {
             // we reached the limit and have not found a result
+            //
             return not_found;
         }
+
         // get the parent
-        links::link_info info(content::get_name(content::name_t::SNAP_NAME_CONTENT_PARENT), true, tpath.get_key(), tpath.get_branch());
+        //
+        links::link_info info(content::get_name(content::name_t::SNAP_NAME_CONTENT_PARENT), true, f_tpath.get_key(), f_tpath.get_branch());
         QSharedPointer<links::link_context> ctxt(links::links::instance()->new_link_context(info));
         links::link_info link_info;
         if(!ctxt->next_link(link_info))
         {
             // this should never happen because we should always have a parent
             // up until limit_name is found
+            //
             return not_found;
         }
+
         type_key = link_info.key();
     }
     NOTREACHED();
+}
+
+
+/** \brief Retrieve the type path_info_t parameter.
+ *
+ * Immediately after a call to the find_type_with() function, you can call
+ * this function to retreive a copy of the `path_info_t` parameter used
+ * to find the parameter sought.
+ *
+ * \warning
+ * Calling the find_type_ipath() again will reset the type `path_info_t`
+ * parameter and re-assign the corresponding type if the function is
+ * successful. It is important to make a copy of your ipath object if
+ * you are to call the find_type_ipath() or do not know whether it will
+ * be called under your feet.
+ *
+ * \code
+ *      // first try to find that field
+ *      //
+ *      libdbproxy::value value(taxonomy::find_type_with(
+ *                    ipath
+ *                  , content::get_name(content::name_t::SNAP_NAME_CONTENT_PAGE_TYPE)
+ *                  , get_name(name_t::SNAP_NAME_<plugin-name>_<field-sought>)
+ *                  , content::get_name(content::name_t::SNAP_NAME_CONTENT_CONTENT_TYPES_NAME));
+ *      if(value.nullValue())
+ *      {
+ *          // field not found, ignore
+ *          //
+ *          return;
+ *      }
+ *      // field was found, get the path to the type
+ *      //
+ *      content::path_info_t type_ipath(taxonomy::get_type_ipath());
+ * \endcode
+ *
+ * \return A reference to the path_info_t object representing the type ipath.
+ */
+content::path_info_t const & taxonomy::get_type_ipath() const
+{
+    return f_tpath;
 }
 
 
