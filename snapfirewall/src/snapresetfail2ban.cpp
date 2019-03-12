@@ -252,14 +252,14 @@ void snap_resetfail2ban::run()
 int main(int argc, char * argv[])
 {
     QCoreApplication app(argc, argv);
-    app.setApplicationName   ( "snapbackup"                );
+    app.setApplicationName   ( "snapresetfail2ban"         );
     app.setApplicationVersion( SNAPFIREWALL_VERSION_STRING );
     app.setOrganizationDomain( "snapwebsites.org"          );
     app.setOrganizationName  ( "M2OSW"                     );
 
     try
     {
-        // create an instance of the snap_firewall object
+        // create an instance of the snap_resetfail2ban object
         //
         snap_resetfail2ban resetf2b( argc, argv );
 
@@ -274,19 +274,19 @@ int main(int argc, char * argv[])
     }
     catch( snap::snap_exception const & e )
     {
-        SNAP_LOG_FATAL("snapfirewall: snap_exception caught! ")(e.what());
+        SNAP_LOG_FATAL("snap_exception caught! ")(e.what());
     }
     catch( std::invalid_argument const & e )
     {
-        SNAP_LOG_FATAL("snapfirewall: invalid argument: ")(e.what());
+        SNAP_LOG_FATAL("invalid argument: ")(e.what());
     }
     catch( std::exception const & e )
     {
-        SNAP_LOG_FATAL("snapfirewall: std::exception caught! ")(e.what());
+        SNAP_LOG_FATAL("std::exception caught! ")(e.what());
     }
     catch( ... )
     {
-        SNAP_LOG_FATAL("snapfirewall: unknown exception caught!");
+        SNAP_LOG_FATAL("unknown exception caught!");
     }
 
     return 1;
