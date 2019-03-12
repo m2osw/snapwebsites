@@ -34,6 +34,8 @@ public:
     {
         CT_int8_value,
         CT_uint8_value,
+        CT_int16_value,
+        CT_uint16_value,
         CT_int32_value,
         CT_uint32_value,
         CT_int64_value,
@@ -51,7 +53,8 @@ public:
         CT_secure_value,
         CT_status_value,
         CT_string_value,
-        CT_rights_value
+        CT_rights_value,
+        CT_binary_value
     };
 
                         dbutils( QString const & table_name, QString const & row_name );
@@ -87,6 +90,8 @@ public:
 
     column_type_t       get_column_type( libdbproxy::cell::pointer_t c ) const;
     column_type_t       get_column_type( const QByteArray& key ) const;
+    static column_type_t
+                        get_column_type( QString const & name );
 
     QString             get_column_type_name( const QByteArray& key ) const;
     static QString      get_column_type_name( column_type_t val );

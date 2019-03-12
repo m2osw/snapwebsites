@@ -32,7 +32,9 @@
 
 project(snapfirewall_conf)
 
-snap_validate_xml( bundle-firewall.xml bundles.xsd )
+snap_validate_xml( bundle-firewall.xml     bundles.xsd )
+
+snap_validate_xml( snapfirewall-tables.xml tables.xsd  )
 
 
 ###############################################################################

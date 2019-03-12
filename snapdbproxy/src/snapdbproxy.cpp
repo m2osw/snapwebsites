@@ -189,7 +189,7 @@ snapdbproxy::pointer_t                    snapdbproxy::g_instance;
  * \param[in] argv  The array of argument strings.
  */
 snapdbproxy::snapdbproxy(int argc, char * argv[])
-    : f_opt( argc, argv, g_snapdbproxy_options, g_configuration_files, nullptr )
+    : f_opt(argc, argv, g_snapdbproxy_options, g_configuration_files, nullptr)
     , f_config( "snapdbproxy" )
     , f_session( casswrapper::Session::create() )
 {
@@ -216,12 +216,18 @@ snapdbproxy::snapdbproxy(int argc, char * argv[])
     }
 
     // --debug
+    //
     f_debug = f_opt.is_defined("debug");
 
     // local_listen=... from snapcommunicator.conf
-    tcp_client_server::get_addr_port(QString::fromUtf8(f_config("snapcommunicator", "local_listen").c_str()), f_communicator_addr, f_communicator_port, "tcp");
+    //
+    tcp_client_server::get_addr_port(QString::fromUtf8(f_config("snapcommunicator", "local_listen").c_str())
+                                   , f_communicator_addr
+                                   , f_communicator_port
+                                   , "tcp");
 
     // listen=... from snapdbproxy.conf
+    //
     tcp_client_server::get_addr_port(QString::fromUtf8(f_config("listen").c_str()), f_snapdbproxy_addr, f_snapdbproxy_port, "tcp");
 
     // setup the logger: --nolog, --logfile, or config file log_config
@@ -353,15 +359,22 @@ std::string snapdbproxy::server_name() const
  * This checks the configuration settings for "cassandra_use_ssl".
  * If present and set to "true", this method returns true, false
  * otherwise.
+ *
+ * \return true if the user says he wants to use SSL to access Cassandra.
  */
 bool snapdbproxy::use_ssl() const
 {
-    if( f_config.has_parameter("cassandra_use_ssl") )
+    static int ssl = -1;
+
+    if(ssl == -1)
     {
-        return f_config["cassandra_use_ssl"] == "true";
+        ssl = f_config.has_parameter("cassandra_use_ssl")
+           && f_config["cassandra_use_ssl"] == "true"
+                    ? 1
+                    : 0;
     }
 
-    return false;
+    return ssl == 1;
 }
 
 
@@ -398,6 +411,10 @@ void snapdbproxy::run()
     signal( SIGTTIN,  SIG_IGN );
     signal( SIGTTOU,  SIG_IGN );
 
+    // make sure snap_lock uses the correct snapcommunicator
+    //
+    snap::snap_lock::initialize_snapcommunicator(f_communicator_addr.toUtf8().data(), f_communicator_port);
+
     // initialize the communicator and its connections
     //
     f_communicator = snap::snap_communicator::instance();
@@ -411,6 +428,20 @@ void snapdbproxy::run()
     //
     f_nocassandra.reset(new snapdbproxy_nocassandra(this));
     f_communicator->add_connection(f_nocassandra);
+
+    // capture "statuschanged" signal (SIGUSR2)
+    //
+    f_statuschanged.reset(new snapdbproxy_statuschanged(this));
+    f_communicator->add_connection(f_statuschanged);
+
+    // finish up initialization with the initializer thread
+    // this thread creates the context & tables if required
+    // it may require a LOCK to do so
+    //
+    // WARNING: the SIGUSR2 signal must be ready before we start
+    //          this thread or we are likely to die with a SIGUSR2 error
+    //
+    f_initializer_thread.reset(new snapdbproxy_initializer_thread(this, f_cassandra_host_list, f_cassandra_port, use_ssl()));
 
     // create a listener
     //
@@ -428,7 +459,7 @@ void snapdbproxy::run()
 
     // Add the logging server through snapcommunicator:
     //
-    snap::logging::set_log_messenger( f_messenger );
+    snap::logging::set_log_messenger(f_messenger);
 
     // create a timer, it will immediately kick in and attempt a connection
     // to Cassandra; if it fails, it will continue to tick until it works.
@@ -559,7 +590,7 @@ void snapdbproxy::process_message(snap::snap_communicator_message const & messag
         return;
     }
 
-    if( command == "CASSANDRAKEY" )
+    if(command == "CASSANDRAKEY")
     {
         QDir key_path(f_session->get_keys_path());
         if( !key_path.exists() )
@@ -660,7 +691,7 @@ void snapdbproxy::process_message(snap::snap_communicator_message const & messag
     {
         f_ready = true;
 
-        if( use_ssl() )
+        if(use_ssl())
         {
             // Ask for server certs first from each snapmanager cassandra
             // throughout the entire cluster.
@@ -679,6 +710,23 @@ void snapdbproxy::process_message(snap::snap_communicator_message const & messag
             cassandra_ready();
         }
 
+        // just in case status_changed() was called before `f_ready = true`
+        //
+        status_changed();
+
+        return;
+    }
+
+    if(command == "LOCKREADY")
+    {
+        f_lock_ready = true;
+        status_changed();
+        return;
+    }
+
+    if(command == "NOLOCK")
+    {
+        f_lock_ready = false;
         return;
     }
 
@@ -694,9 +742,19 @@ void snapdbproxy::process_message(snap::snap_communicator_message const & messag
         // a package just got installed and that package included a
         // table definition
         //
+        // TBD: can the initializer thread be restarted here just like that?
+        //      also we need to go to "NOCASSANDRA" status while running
+        //      the initializer thread...
+        //
+        //      we can also "just" restart so we do that for now.
+        //
+        //if(f_initializer_thread == nullptr)
+        //{
+        //    f_initializer_thread.reset(new snapdbproxy_initializer_thread(this, f_cassandra_host_list, f_cassandra_port, use_ssl()));
+        //}
 
-SNAP_LOG_WARNING("NEWTABLE not yet implemented...");
-
+        f_force_restart = true;
+        stop(false);
         return;
     }
 
@@ -709,7 +767,7 @@ SNAP_LOG_WARNING("NEWTABLE not yet implemented...");
 
         // list of commands understood by service
         //
-        reply.add_parameter("list", "CASSANDRAKEY,CASSANDRASTATUS,HELP,LOG,NEWTABLE,QUITTING,READY,RELOADCONFIG,STOP,UNKNOWN");
+        reply.add_parameter("list", "CASSANDRAKEY,CASSANDRASTATUS,HELP,LOCKREADY,LOG,NEWTABLE,NOLOCK,QUITTING,READY,RELOADCONFIG,STOP,UNKNOWN");
 
         f_messenger->send_message(reply);
         return;
@@ -817,7 +875,7 @@ void snapdbproxy::process_timeout()
         // "physical" connections to any number of nodes so we do not
         // need to monitor those connections.
         //
-        f_session->connect( f_cassandra_host_list, f_cassandra_port, use_ssl() ); // throws on failure!
+        f_session->connect(f_cassandra_host_list, f_cassandra_port, use_ssl()); // throws on failure!
 
         // the connection succeeded, turn off the timer we do not need
         // it for now...
@@ -829,10 +887,11 @@ void snapdbproxy::process_timeout()
         f_no_cassandra_sent = false;
 
         // reset the delay to about 1 second
-        // (we use 1.625 so that way we will have 1s, 3s, 7s, 15s, 30s, 60s
-        // and thus 1 minute.)
         //
-        f_cassandra_connect_timer_index = 1.625f;
+        // the delay is multiplied by 2 on each failure up to 1 min.
+        // we want 6 attempts to reach 1 min. between attempts
+        //
+        f_cassandra_connect_timer_index = static_cast<float>(60.0 / 32.0); // = 1.875f
 
         cassandra_ready();
     }
@@ -843,6 +902,117 @@ void snapdbproxy::process_timeout()
         //
         no_cassandra();
     }
+}
+
+
+/** \brief Change the status (thread safe).
+ *
+ * This function changes the status from one state to another. We use
+ * this status to \em communicate between the main thread and the
+ * initialization thread when a lock is necessary in order to create
+ * the context and tables.
+ *
+ * \param[in] status  The new status.
+ */
+void snapdbproxy::set_status(status_t status)
+{
+std::cerr << "set_status() called!? " << static_cast<int>(status) << "\n";
+    {
+        snap::snap_thread::snap_lock lock(f_mutex);
+        f_status = status;
+    }
+    ::kill(getpid(), SIGUSR2);
+}
+
+
+/** \brief Retrieve the current status (thread safe).
+ *
+ * This function obtains a mutex lock and then returns the current status.
+ *
+ * \return The current status.
+ */
+snapdbproxy::status_t snapdbproxy::get_status() const
+{
+    snap::snap_thread::snap_lock lock(f_mutex);
+    return f_status;
+}
+
+
+/** \brief The initialization thread just woke us up about a status change.
+ *
+ * This function gets called when we receive a signal (SIGUSR2 at the moment)
+ * telling us to do so. We then check the status to know what to do:
+ *
+ * \li STATUS_LOCK -- the intializer thread wants us to generate a LOCK.
+ * \li STATUS_READY -- the initializer thread is about to exit. We are
+ * ready to unlock if we still have a lock in place.
+ *
+ * \return The current status.
+ */
+void snapdbproxy::status_changed()
+{
+    switch(get_status())
+    {
+    case status_t::STATUS_LOCK:
+        if(!f_ready)
+        {
+            // we can't obtain a lock without a connection to snapcommunicator
+            // (that is, the snap_lock() breaks immediately if it can't
+            // connect to snapcommunicator)
+            //
+            break;
+        }
+
+        if(!f_lock_ready)
+        {
+            // if the lock is not marked as ready yet, send a LOCKSTATUS
+            // first, that one doesn't get lost like a LOCK
+            //
+            snap::snap_communicator_message cmd;
+            cmd.set_command("LOCKSTATUS");
+            cmd.set_service("snaplock");
+            f_messenger->send_message(cmd);
+            break;
+        }
+
+        // obtain the lock
+        //
+        try
+        {
+            f_initializer_lock.reset(new snap::snap_lock(
+                    "snapdbproxy_initializer",
+                    60 * 60,        // lock duration
+                    60 * 60,        // lock obtention
+                    60));           // unlock duration
+        }
+        catch(std::exception const & e)
+        {
+            set_status(status_t::STATUS_NO_LOCK);
+            SNAP_LOG_FATAL("failed obtaining lock to setup database. (")
+                          (e.what())
+                          (")");
+            throw;
+        }
+
+        // we have the lock, go on with the initialization
+        //
+        set_status(status_t::STATUS_CONTEXT);
+        break;
+
+    case status_t::STATUS_PAUSE:
+    case status_t::STATUS_READY:
+    case status_t::STATUS_NO_LOCK:
+        f_initializer_lock.reset();
+        break;
+
+    default:
+        break;
+
+    }
+
+    // check whether the CASSANDRAREADY message should be sent now
+    //
+    cassandra_ready();
 }
 
 
@@ -887,7 +1057,8 @@ void snapdbproxy::no_cassandra()
 
 void snapdbproxy::cassandra_ready()
 {
-    if(f_ready)
+    if(f_status == status_t::STATUS_READY
+    && f_ready)
     {
         // let other services know when cassandra is (finally) ready
         //
@@ -962,6 +1133,9 @@ void snapdbproxy::stop(bool quitting)
 
         f_communicator->remove_connection(f_nocassandra);
         f_nocassandra.reset();
+
+        f_communicator->remove_connection(f_statuschanged);
+        f_statuschanged.reset();
     }
 }
 

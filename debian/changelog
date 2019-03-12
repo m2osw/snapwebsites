@@ -16,9 +16,23 @@ snapwebsites (1.7.4.0~xenial) xenial; urgency=high
     host specified on the query string is unknown.
   * Fixed the cassandra plugin, if the "listen_address" is not defined it
     would _crash_ when trying to get the parameter when it's not defined.
-  * Applied a fix to the snapstop making the `--service` parameter is optional.
+  * Applied a fix to the snapstop making the `--service` parameter optional.
     (The `--service "$MAINPID"` becomes `--service` when $MAINPID is empty.)
   * Added /etc/vim/vimrc.local so we get our search, line numbers, etc.
+  * SNAP-413 and SNAP-421 and SNAP-454: Moved the snapcreatecontext
+    functionality to snapdbproxy.
+  * SNAP-413: Moved the snapcreatetables functionality to snapdbproxy.
+  * SNAP-413: Fixed the NEWTABLE implementation.
+  * Made the attach/detach session RAII so it at least happens on exceptions.
+  * SNAP-267: Added an XSD to verify tables.xml files and updated the
+    CMakeLists.txt.
+  * Fixed the f_cassandra_connect_timer_index calculation.
+  * Made the type found by find_type_with() available through another call.
+  * Fixed the default watchdog plugins list, "package" was wrong, "s" missing.
+  * SNAP-679: added a "temporary" fix to the fail2ban nice value.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 05 Mar 2019 10:49:22 -0700
 
 snapwebsites (1.7.3.0~xenial) xenial; urgency=high
 

@@ -47,7 +47,8 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     sessions.qrc
 )
 
-snap_validate_xml( content.xml content.dtd )
+snap_validate_xml( content.xml         content.dtd )
+snap_validate_xml( sessions-tables.xml tables.xsd  )
 
 add_library(sessions SHARED
     sessions.cpp

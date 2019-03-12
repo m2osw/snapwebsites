@@ -42,6 +42,7 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 )
 
 snap_validate_xml( content.xml            content.dtd           )
+snap_validate_xml( test_plugin-tables.xml tables.xsd            )
 snap_validate_xml( test-plugin-parser.xsl simplified-xslt20.dtd )
 snap_validate_css( test-plugin.css                              )
 

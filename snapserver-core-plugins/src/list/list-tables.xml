@@ -17,16 +17,22 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-See libsnapwebsites/src/core-tables.xml for documentation.
+See libsnapwebsites/src/snapwebsites/tables.xsd for documentation.
 -->
 <keyspace>
   <!-- these two tables are not used anymore, the drop="drop" flag says
        they have to be deleted -->
   <table name="list" model="queue" drop="drop">
     <description>A queue used to know what pages to check next for inclusion or removal from lists</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="listref" model="queue" drop="drop">
     <description>A counter part of the 'list' table</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
 </keyspace>
 <!--

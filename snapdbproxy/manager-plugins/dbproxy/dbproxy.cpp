@@ -244,12 +244,17 @@ void dbproxy::on_retrieve_status(snap_manager::server_status & server_status)
         server_status.set_field(use_ssl_switch);
     }
 
+    // run a quick test to see whether the setup is correct and if so whether
+    // it's possible to connect to the database
+    //
+    int port(9042);
+    bool can_connect(false);
+    QString message("database is ready");
     try
     {
         // if the connection fails, we cannot have either of the following
         // fields so the catch() makes sure to avoid them
         //
-        int port(9042);
         QString const port_str(snap_dbproxy_conf["cassandra_port"]);
         if(!port_str.isEmpty())
         {
@@ -260,6 +265,7 @@ void dbproxy::on_retrieve_status(snap_manager::server_status & server_status)
             || port > 65535)
             {
                 SNAP_LOG_ERROR( "Invalid cassandra_port specification in snapdbproxy.conf (invalid number, smaller than 1 or larger than 65535)" );
+                message = QString("cassandra_port is invalid (%1).").arg(port);
                 port = 0;
             }
         }
@@ -267,55 +273,35 @@ void dbproxy::on_retrieve_status(snap_manager::server_status & server_status)
         {
             bool const use_ssl(snap_dbproxy_conf["cassandra_use_ssl"] == "true");
             SNAP_LOG_DEBUG("connection attempt to Cassandra cluster ")(use_ssl ? " with SSL." : " in plain mode.");
-            auto session( casswrapper::Session::create() );
+            auto session(casswrapper::Session::create());
             session->connect(snap_dbproxy_conf["cassandra_host_list"], port, use_ssl);
-            if( !session->isConnected() )
-            {
-                SNAP_LOG_WARNING( "Cannot connect to cassandra host! Check cassandra_host_list and cassandra_port in snapdbproxy.conf!" );
-            }
-            else
-            {
-                auto meta( casswrapper::schema::SessionMeta::create( session ) );
-                meta->loadSchema();
-                auto const & keyspaces( meta->getKeyspaces() );
-                QString const context_name(snap::get_name(snap::name_t::SNAP_NAME_CONTEXT));
-                if( keyspaces.find(context_name) == std::end(keyspaces) )
-                {
-                    // no context yet, offer to create the context
-                    //
-                    snap_manager::status_t const create_context(
-                                  snap_manager::status_t::state_t::STATUS_STATE_INFO
-                                , get_plugin_name()
-                                , "cassandra_create_context"
-                                , context_name
-                                );
-                    server_status.set_field(create_context);
-                }
-                else
-                {
-                    // database is available and context is available,
-                    // offer to create the tables (it should be automatic
-                    // though, but this way we can click on this one last
-                    // time before installing a website)
-                    //
-                    snap_manager::status_t const create_tables(
-                                  snap_manager::status_t::state_t::STATUS_STATE_INFO
-                                , get_plugin_name()
-                                , "cassandra_create_tables"
-                                , context_name
-                                );
-                    server_status.set_field(create_tables);
-                }
-            }
+            can_connect = session->isConnected();
         }
+
     }
-    catch( std::exception const & e )
+    catch(std::exception const & e)
     {
         SNAP_LOG_WARNING("Caught exception: ")(e.what());
+        message = QString("attempt at connecting to Cassandra resulted in an exception (%1).").arg(e.what());
     }
-    catch( ... )
+    catch(...)
     {
         SNAP_LOG_ERROR("Caught unknown exception!");
+        message = "attempt at connecting to Cassandra resulted in an exception (unknown exception).";
+    }
+
+    {
+        snap_manager::status_t const cassandra_status(
+                      port < 0
+                        ? snap_manager::status_t::state_t::STATUS_STATE_ERROR
+                        : (can_connect
+                            ? snap_manager::status_t::state_t::STATUS_STATE_INFO
+                            : snap_manager::status_t::state_t::STATUS_STATE_WARNING)
+                    , get_plugin_name()
+                    , "cassandra_status"
+                    , snap::get_name(snap::name_t::SNAP_NAME_CONTEXT)
+                );
+        server_status.set_field(cassandra_status);
     }
 }
 
@@ -401,59 +387,27 @@ bool dbproxy::display_value(QDomElement parent, snap_manager::status_t const & s
         return true;
     }
 
-    if(s.get_field_name() == "cassandra_create_context")
+    if(s.get_field_name() == "cassandra_status")
     {
-        // the list if frontend snapmanagers that are to receive statuses
-        // of the cluster computers; may be just one computer; should not
-        // be empty; shows a text input field
+        // display the current status of the database
+        // (note: it could be scylla or cassandra)
         //
         snap_manager::form f(
                   get_plugin_name()
                 , s.get_field_name()
-                , snap_manager::form::FORM_BUTTON_SAVE
-                );
+                , snap_manager::form::FORM_BUTTON_NONE
+            );
 
         snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
-                          "Create Snap! Websites Context:"
+                          "Database Status"
                         , s.get_field_name()
                         , s.get_value()
-                        , "The Snap! Websites Server makes use of a Cassandra context named snap_websites."
-                         " It looks like that context does not yet exist."
-                         " To create it, just click on the Save button. The value of the field is currently ignored."
-                         " Note: be patient. The creation of the context can take a bit of time..."
-                        ));
-        f.add_widget(field);
-
-        f.generate(parent, uri);
-
-        return true;
-    }
-
-    if(s.get_field_name() == "cassandra_create_tables")
-    {
-        // the list if frontend snapmanagers that are to receive statuses
-        // of the cluster computers; may be just one computer; should not
-        // be empty; shows a text input field
-        //
-        snap_manager::form f(
-                  get_plugin_name()
-                , s.get_field_name()
-                , snap_manager::form::FORM_BUTTON_SAVE
-                );
-
-        snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
-                          "Create Missing Snap! Websites Tables:"
-                        , s.get_field_name()
-                        , s.get_value()
-                        , "The Snap! Websites Server makes use of a Cassandra context with various tables."
-                         " Those tables must be created before one can install a Snap! domain and website."
-                         " This function creates the missing tables. Tables that are already there are untouched."
-                         " (i.e. we use CREATE IF NOT EXIST ...)."
-                         " We ignore the value of the field here. Just click on the Save button to create the missing tables."
-                         " Note: assuming that you install snapdb, create the context and then install other modules, then the"
-                         " tables will get installed when installing those modules. To help developers, however, it can be"
-                         " practical to have this button."
-                        ));
+                        , "This entry shows the current status of the Cassandra cluster."
+                         " If it shows as an error, the setup is currently not acceptable and not connection can be obtained."
+                         " If it shows as a warning, we are not able to connect to the database."
+                         " If it does not show an error or a warning, we can connect to the database."
+                         " Note: this test does not check anything within the database, only that it is accessible."
+                    ));
         f.add_widget(field);
 
         f.generate(parent, uri);
@@ -523,47 +477,11 @@ bool dbproxy::apply_setting(QString const & button_name, QString const & field_n
         //    // Send restart message to snapdbproxy, because we changed the configuration.
         //    //
         //    snap::snap_communicator_message cmd;
-        //    cmd.set_service("snapdbproxy");         // TODO: Is this correct?
+        //    cmd.set_service("snapdbproxy");
         //    cmd.set_command("RELOADCONFIG");
         //    f_snap->forward_message(cmd);
         //}
 
-        return true;
-    }
-
-    if(field_name == "cassandra_create_context")
-    {
-        snap::process p("create context");
-        p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-        p.set_command("snapcreatecontext");
-        int const r(p.run());
-        QString const output(p.get_output(true));
-        if(!output.isEmpty())
-        {
-            SNAP_LOG_INFO("\"snapcreatecontext\" function output: ")(output);
-        }
-        if(r != 0)
-        {
-            SNAP_LOG_ERROR("creation of the \"snap_websites\" context failed.");
-        }
-        return true;
-    }
-
-    if(field_name == "cassandra_create_tables")
-    {
-        snap::process p("create tables");
-        p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-        p.set_command("snapcreatetables");
-        int const r(p.run());
-        QString const output(p.get_output(true));
-        if(!output.isEmpty())
-        {
-            SNAP_LOG_INFO("\"snapcreatetables\" function output: ")(output);
-        }
-        if(r != 0)
-        {
-            SNAP_LOG_ERROR("creation of the snap tables failed.");
-        }
         return true;
     }
 

@@ -42,6 +42,8 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     content.qrc
 )
 
+snap_validate_xml( content-tables.xml tables.xsd )
+
 
 add_library(content SHARED
     content.cpp

@@ -47,6 +47,7 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
 )
 
 snap_validate_xml( content.xml                      content.dtd           )
+snap_validate_xml( sendmail-tables.xml              tables.xsd            )
 snap_validate_xml( layout/sendmail-content.xml      content.dtd           )
 snap_validate_xml( layout/sendmail-theme-parser.xsl simplified-xslt20.dtd )
 snap_validate_xml( layout/sendmail-body-parser.xsl  simplified-xslt20.dtd )

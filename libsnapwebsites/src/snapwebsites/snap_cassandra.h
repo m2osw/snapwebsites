@@ -56,7 +56,6 @@ public:
     void                                connect();
     void                                disconnect();
     libdbproxy::context::pointer_t      get_snap_context();
-    void                                create_table_list();
     libdbproxy::table::pointer_t        get_table(QString const & table_name);
 
     QString                             get_snapdbproxy_addr() const;

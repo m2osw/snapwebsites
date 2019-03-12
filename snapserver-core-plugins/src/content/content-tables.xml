@@ -17,37 +17,66 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-See libsnapwebsites/src/core-tables.xml for documentation.
+See libsnapwebsites/src/snapwebsites/tables.xsd for documentation.
 -->
 <keyspace>
-  <!-- TODO: enter the schema -->
   <table name="content" model="data">
     <description>Website content table (one row per page)</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="secret" model="data">
-    <description>Website secret table (one row per page, registers data that either requires higher permission for access or is intended to use only from backend processes)</description>
+    <description>
+      Website secret table (one row per page, registers data that either
+      requires higher permission for access or is intended to use only
+      from backend processes)
+    </description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="processing" model="queue">
-    <description>Website processing table (one row per created or modified pages)</description>
+    <description>
+      Website processing table (one row per created or modified pages)
+    </description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="cache" model="content">
     <description>Website cache table (one row per page)</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="branch" model="content">
     <description>Website branch table (one row per branch)</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="revision" model="data">
     <description>Website revision table (one row per revision)</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="files" model="data">
     <description>Website files table (one row per file version)</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="journal" model="queue">
     <description>
-        Journal table, which keeps track of page creations.
-        If a page isn't created after a certain time, it is deleted
-        by the snapbackend.
+      Journal table, which keeps track of page creations.
+      When the creation of a page fails, its information remains in the
+      journal and it automatically gets deleted by the snapbackend.
     </description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
 </keyspace>
 <!--

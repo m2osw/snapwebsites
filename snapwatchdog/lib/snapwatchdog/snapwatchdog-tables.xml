@@ -20,11 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 See libsnapwebsites/src/core-tables.xml for documentation.
 -->
 <keyspace>
-  <!-- TODO: enter the schema -->
   <table name="serverstats" model="log">
     <!-- this is more like log data, i.e. we want the writes to be as fast
          as possible -->
     <description>Statistics of all our servers</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
 </keyspace>
 <!--

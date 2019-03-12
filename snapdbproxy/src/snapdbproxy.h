@@ -41,9 +41,11 @@
 
 // snapwebsites lib
 //
-#include <snapwebsites/snapwebsites.h>
 #include <snapwebsites/snap_communicator.h>
+#include <snapwebsites/snap_lock.h>
+#include <snapwebsites/snap_tables.h>
 #include <snapwebsites/snap_thread.h>
+#include <snapwebsites/snapwebsites.h>
 
 // advgetopt lib
 //
@@ -99,6 +101,26 @@ public:
     virtual                     ~snapdbproxy_nocassandra() override {}
 
     snapdbproxy_nocassandra &   operator = (snapdbproxy_nocassandra const & rhs) = delete;
+
+    // snap::snap_communicator::snap_signal implementation
+    virtual void                process_signal() override;
+
+private:
+    snapdbproxy *               f_snapdbproxy = nullptr;
+};
+
+
+class snapdbproxy_statuschanged
+    : public snap::snap_communicator::snap_signal
+{
+public:
+    typedef std::shared_ptr<snapdbproxy_statuschanged>     pointer_t;
+
+                                snapdbproxy_statuschanged(snapdbproxy * s);
+                                snapdbproxy_statuschanged(snapdbproxy_statuschanged const & rhs) = delete;
+    virtual                     ~snapdbproxy_statuschanged() override {}
+
+    snapdbproxy_statuschanged & operator = (snapdbproxy_statuschanged const & rhs) = delete;
 
     // snap::snap_communicator::snap_signal implementation
     virtual void                process_signal() override;
@@ -250,7 +272,9 @@ private:
     void                        clear_batch( int32_t const batch_index );
 
     // this is owned by a snapdbproxy function so no need for a smart pointer
-    // (and it would create a loop)
+    // (and it would create a loop or we'd need a weak pointer and locks
+    // everywhere we use it...)
+    //
     snapdbproxy *                               f_snapdbproxy = nullptr;
 
     libdbproxy::proxy                           f_proxy = libdbproxy::proxy();
@@ -290,12 +314,133 @@ private:
 
 
 
+
+//class snapdbproxy_table
+//{
+//public:
+//    typedef std::shared_ptr<snapdbproxy_table>              pointer_t;
+//    typedef std::map<QString, snapdbproxy_table::pointer_t> map_t;
+//
+//                            snapdbproxy_table(QString const & name);
+//
+//    QString const &         name() const;
+//
+//    void                    found();
+//    bool                    exists() const;
+//
+//private:
+//    QString                 f_name = QString();
+//    bool                    f_exists = false;
+//};
+
+
+class snapdbproxy_initializer
+    : public snap::snap_thread::snap_runner
+{
+public:
+    static int const INITIALIZER_SESSION_TIMEOUT = 5 * 60 * 1000; // timeout = 5 min.
+
+                                snapdbproxy_initializer
+                                    ( snapdbproxy * proxy
+                                    , QString const & cassandra_host_list
+                                    , int cassandra_port
+                                    , bool use_ssl
+                                    );
+                                snapdbproxy_initializer(snapdbproxy_initializer const & rhs) = delete;
+    virtual                     ~snapdbproxy_initializer() override;
+
+    snapdbproxy_initializer &    operator = (snapdbproxy_initializer const & rhs) = delete;
+
+    // implement snap_runner
+    virtual bool                continue_running() const;
+    virtual void                run() override;
+
+private:
+    bool                        load_tables();
+    bool                        connect();
+    bool                        load_cassandra_tables();
+    bool                        load_cassandra_indexes();
+    bool                        has_missing_tables();
+    bool                        has_missing_indexes();
+    bool                        obtain_lock();
+    bool                        create_context();
+    bool                        create_tables();
+    void                        create_table(snap::snap_tables::table_schema_t const & schema);
+    void                        drop_table(snap::snap_tables::table_schema_t const & schema);
+    bool                        create_indexes();
+    void                        create_index(
+                                      snap::snap_tables::table_schema_t const & schema
+                                    , snap::snap_tables::secondary_index_t const & index);
+
+    // this is owned by a snapdbproxy function so no need for a smart pointer
+    // (and it would create a loop or we'd need a weak pointer and locks
+    // everywhere we use it...)
+    //
+    snapdbproxy *                               f_snapdbproxy = nullptr;
+
+    casswrapper::Session::pointer_t             f_session = casswrapper::Session::pointer_t();
+    QString const                               f_cassandra_host_list = QString("localhost");
+    int const                                   f_cassandra_port = 9042;
+    bool const                                  f_use_ssl = false;
+    bool                                        f_locked = false;
+    QString                                     f_context_name = QString("snap_websites");
+    snap::snap_tables                           f_tables = snap::snap_tables();
+    snap::snap_string_list                      f_existing_tables = snap::snap_string_list();
+    snap::snap_string_list                      f_existing_indexes = snap::snap_string_list();
+};
+
+
+class snapdbproxy_initializer_thread
+{
+public:
+    typedef std::shared_ptr<snapdbproxy_initializer_thread> pointer_t;
+
+                            snapdbproxy_initializer_thread
+                                ( snapdbproxy * proxy
+                                , QString const & cassandra_host_list
+                                , int cassandra_port
+                                , bool use_ssl
+                                );
+                            snapdbproxy_initializer_thread(snapdbproxy_initializer_thread const & rhs) = delete;
+                            ~snapdbproxy_initializer_thread();
+
+    snapdbproxy_initializer_thread &
+                            operator = (snapdbproxy_initializer_thread const & rhs) = delete;
+
+    bool                    is_running() const;
+
+private:
+    snapdbproxy *           f_snapdbproxy = nullptr;
+
+    snapdbproxy_initializer f_initializer;
+    snap::snap_thread       f_thread;
+};
+
+
+
+
+
+
+
 class snapdbproxy
 {
 public:
     typedef std::shared_ptr<snapdbproxy>      pointer_t;
 
-                                snapdbproxy( int argc, char * argv[] );
+    enum class status_t
+    {
+        STATUS_START,       // need to connect
+        STATUS_LOCK,        // obtaining lock before creating context & tables
+        STATUS_PAUSE,       // pause for a little while, unlock while paused
+        STATUS_NO_LOCK,     // could not obtain lock
+        STATUS_STOPPED,     // could not finish before receiving a stop signal
+        STATUS_CONTEXT,     // creating context ("snap_websites")
+        STATUS_TABLES,      // creating tables
+        STATUS_READY,       // ready to accept connections
+        STATUS_INVALID      // an unknown exception occurred
+    };
+
+                                snapdbproxy(int argc, char * argv[]);
                                 ~snapdbproxy();
 
     std::string                 server_name() const;
@@ -306,6 +451,9 @@ public:
     void                        process_timeout();
     void                        stop(bool quitting);
 
+    void                        set_status(status_t status);
+    status_t                    get_status() const;
+    void                        status_changed();
     void                        no_cassandra();
     void                        cassandra_ready();
 
@@ -322,12 +470,16 @@ private:
 
     static pointer_t                            g_instance;
 
+    mutable snap::snap_thread::snap_mutex       f_mutex = snap::snap_thread::snap_mutex();
     advgetopt::getopt                           f_opt;
     snap::snap_config                           f_config = snap::snap_config();
     QString                                     f_log_conf = QString("/etc/snapwebsites/logger/snapdbproxy.properties");
     std::string                                 f_server_name = std::string();
     QString                                     f_communicator_addr = QString("127.0.0.1");
     int                                         f_communicator_port = 4040;
+    status_t                                    f_status = status_t::STATUS_START;
+    snapdbproxy_initializer_thread::pointer_t   f_initializer_thread = snapdbproxy_initializer_thread::pointer_t();
+    snap::snap_lock::pointer_t                  f_initializer_lock = nullptr;
     QString                                     f_snapdbproxy_addr = QString("127.0.0.1");
     int                                         f_snapdbproxy_port = 4042;
     snap::snap_communicator::pointer_t          f_communicator = snap::snap_communicator::pointer_t();
@@ -335,11 +487,13 @@ private:
     int                                         f_cassandra_port = 9042;
     snapdbproxy_interrupt::pointer_t            f_interrupt = snapdbproxy_interrupt::pointer_t();
     snapdbproxy_nocassandra::pointer_t          f_nocassandra = snapdbproxy_nocassandra::pointer_t();
+    snapdbproxy_statuschanged::pointer_t        f_statuschanged = snapdbproxy_statuschanged::pointer_t();
     snapdbproxy_messenger::pointer_t            f_messenger = snapdbproxy_messenger::pointer_t();
     snapdbproxy_listener::pointer_t             f_listener = snapdbproxy_listener::pointer_t();
     snapdbproxy_timer::pointer_t                f_timer = snapdbproxy_timer::pointer_t();
     int                                         f_max_pending_connections = -1;
     bool                                        f_ready = false;
+    bool                                        f_lock_ready = false;
     bool                                        f_force_restart = false;
     bool                                        f_stop_received = false;
     bool                                        f_debug = false;

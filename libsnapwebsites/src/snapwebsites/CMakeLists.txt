@@ -56,6 +56,9 @@ qt5_add_resources(SNAP_LIBRARY_RESOURCES_RCC
     snap.qrc
 )
 
+snap_validate_xml( core-tables.xml tables.xsd )
+
+
 set( HEADERS
     cache_control.h
     chownnm.h
@@ -219,20 +222,58 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
 )
 
 install(
-    TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib
+    TARGETS
+        ${PROJECT_NAME}
+
+    LIBRARY DESTINATION
+        lib
 )
+
 install(
-    FILES "core-tables.xml"
-    DESTINATION ${SNAP_TABLE_DESCRIPTION_PATH}
+    FILES
+        tables.xsd
+
+    DESTINATION
+        share/snapwebsites/xsd
 )
+
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites
-    FILES_MATCHING PATTERN "*.h"
+    FILES
+        core-tables.xml
+
+    DESTINATION
+        ${SNAP_TABLE_DESCRIPTION_PATH}
 )
+
 install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h
-    DESTINATION include/snapwebsites
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites
+
+    FILES_MATCHING PATTERN
+        "*.h"
 )
+
+install(
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/version.h
+
+    DESTINATION
+        include/snapwebsites
+)
+
+#
+# WARNING: we use a configure_file(...) on top of an install(FILES ...)
+#          so we can access the file in our SnapXmlLint.cmake without
+#          any additional magic
+#
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/tables.xsd
+    ${SNAP_COMMON_DIR}/xsd/tables.xsd
+    COPYONLY
+)
+
 
 # vim: ts=4 sw=4 et nocindent

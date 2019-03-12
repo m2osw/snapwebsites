@@ -30,54 +30,8 @@
 #
 
 
-#######################################
-## Snap Create Context
-#######################################
-
-project(snapcreatecontext)
-
-add_executable(${PROJECT_NAME}
-    snapcreatecontext.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-    snapwebsites
-    libdbproxy
-    ${ADVGETOPT_LIBRARIES}
-    ${CASSWRAPPER_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${LIBTLD_LIBRARIES}
-)
-
-install(
-    TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin
-)
 
 
-#######################################
-## Snap Create Tables
-#######################################
-
-project(snapcreatetables)
-
-add_executable(${PROJECT_NAME}
-    snapcreatetables.cpp
-)
-
-target_link_libraries(${PROJECT_NAME}
-    snapwebsites
-    libdbproxy
-    ${ADVGETOPT_LIBRARIES}
-    ${CASSWRAPPER_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${LIBTLD_LIBRARIES}
-)
-
-install(
-    TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin
-)
 
 
 #######################################

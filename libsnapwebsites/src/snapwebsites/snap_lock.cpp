@@ -107,6 +107,22 @@ snap_lock::timeout_t g_lock_obtention_timeout = snap_lock::SNAP_LOCK_DEFAULT_TIM
 snap_lock::timeout_t g_unlock_duration_timeout = snap_lock::SNAP_UNLOCK_MINIMUM_TIMEOUT;
 
 
+#ifdef _DEBUG
+/** \brief Whether the snapcommunicator parameters were initialized.
+ *
+ * This variable is only used in debug mode. This allows us to know whether
+ * the initialize_snapcommunicator() was called before we make use of the
+ * snap_lock() interface. Without that initialization, we may run in various
+ * problems if the administrator changed his snapcommunicator parameters
+ * such as the port to which we need to connect. This would be a bug in
+ * the code.
+ *
+ * In release mode we ignore that flag.
+ */
+bool g_snapcommunicator_initialized = false;
+#endif
+
+
 /** \brief The default snapcommunicator address.
  *
  * This variable holds the snapcommunicator IP address used to create
@@ -322,6 +338,12 @@ lock_connection::lock_connection(QString const & object_name, snap_lock::timeout
     , f_obtention_timeout_date((lock_obtention_timeout == -1 ? g_lock_obtention_timeout : lock_obtention_timeout) + time(nullptr))
     , f_unlock_duration(unlock_duration)
 {
+#ifdef _DEBUG
+    if(!g_snapcommunicator_initialized)
+    {
+        throw snap_lock_not_initialized("your process must call snap::snap_lock::initialize_snapcommunicator() at least once before you can create locks.");
+    }
+#endif
     add_snap_communicator_commands();
 
     // tell the lower level when the lock obtention times out;

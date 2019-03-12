@@ -50,6 +50,8 @@ snap_validate_xml( list/default-item-body.xsl   simplified-xslt20.dtd )
 snap_validate_xml( list/default-list-theme.xsl  simplified-xslt20.dtd )
 snap_validate_xml( list/default-list-body.xsl   simplified-xslt20.dtd )
 
+snap_validate_xml( list-tables.xml              tables.xsd )
+
 snap_validate_js( list/list.js )
 
 add_library(list SHARED

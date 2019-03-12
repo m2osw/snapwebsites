@@ -576,6 +576,7 @@ dbutils::column_type_t dbutils::get_column_type( libdbproxy::cell::pointer_t c )
     return get_column_type( c->columnKey() );
 }
 
+
 dbutils::column_type_t dbutils::get_column_type( const QByteArray& key ) const
 {
     QString const n( get_column_name( key ) );
@@ -914,6 +915,95 @@ dbutils::column_type_t dbutils::get_column_type( const QByteArray& key ) const
 }
 
 
+dbutils::column_type_t dbutils::get_column_type( QString const & name )
+{
+    if(name.isEmpty())
+    {
+        throw snap_exception( "error: get_column_type() can't be called with an empty column name" );
+    }
+
+    switch(name[0].unicode())
+    {
+    case 'b':
+        if(name == "binary") // replacement of CT_hexarray and CT_hexarray_limited
+        {
+            return column_type_t::CT_binary_value;
+        }
+        break;
+
+    case 'f':
+        if(name == "float32")
+        {
+            return column_type_t::CT_float32_value;
+        }
+        if(name == "float64")
+        {
+            return column_type_t::CT_float64_value;
+        }
+        break;
+
+    case 'i':
+        if(name == "int8")
+        {
+            return column_type_t::CT_int8_value;
+        }
+        if(name == "int16")
+        {
+            return column_type_t::CT_int16_value;
+        }
+        if(name == "int32")
+        {
+            return column_type_t::CT_int32_value;
+        }
+        if(name == "int64")
+        {
+            return column_type_t::CT_int64_value;
+        }
+        break;
+
+    case 's':
+        if(name == "string")
+        {
+            return column_type_t::CT_string_value;
+        }
+        break;
+
+    case 't':
+        if(name == "time_microseconds")
+        {
+            return column_type_t::CT_time_microseconds;
+        }
+        if(name == "time_seconds")
+        {
+            return column_type_t::CT_time_seconds;
+        }
+        break;
+
+    case 'u':
+        if(name == "uint8")
+        {
+            return column_type_t::CT_uint8_value;
+        }
+        if(name == "uint16")
+        {
+            return column_type_t::CT_uint16_value;
+        }
+        if(name == "uint32")
+        {
+            return column_type_t::CT_uint32_value;
+        }
+        if(name == "uint64")
+        {
+            return column_type_t::CT_uint64_value;
+        }
+        break;
+
+    }
+
+    throw snap_exception( "error: get_column_type() doesn't know about type " + std::string(name.toUtf8().data()) );
+}
+
+
 QString dbutils::get_column_type_name( column_type_t val )
 {
     QString name;
@@ -921,6 +1011,8 @@ QString dbutils::get_column_type_name( column_type_t val )
     {
         case column_type_t::CT_int8_value                                : name = "int8"                                      ; break;
         case column_type_t::CT_uint8_value                               : name = "uint8"                                     ; break;
+        case column_type_t::CT_int16_value                               : name = "int16"                                     ; break;
+        case column_type_t::CT_uint16_value                              : name = "uint16"                                    ; break;
         case column_type_t::CT_int32_value                               : name = "int32"                                     ; break;
         case column_type_t::CT_uint32_value                              : name = "uint32"                                    ; break;
         case column_type_t::CT_int64_value                               : name = "int64"                                     ; break;
@@ -939,6 +1031,7 @@ QString dbutils::get_column_type_name( column_type_t val )
         case column_type_t::CT_status_value                              : name = "status"                                    ; break;
         case column_type_t::CT_string_value                              : name = "string"                                    ; break;
         case column_type_t::CT_rights_value                              : name = "rights"                                    ; break;
+        case column_type_t::CT_binary_value                              : name = "binary"                                    ; break;
     }
     return name;
 }
@@ -983,6 +1076,20 @@ QString dbutils::get_column_value( const QByteArray& key, const libdbproxy::valu
                 // unsigned 8 bit value
                 // cast to integer so arg() doesn't take it as a character
                 v = QString("%1").arg(static_cast<int>(value.unsignedCharValue()));
+            }
+            break;
+
+            case column_type_t::CT_int16_value:
+            {
+                // 16 bit value
+                v = QString("%1").arg(value.int16Value());
+            }
+            break;
+
+            case column_type_t::CT_uint16_value:
+            {
+                // 16 bit value
+                v = QString("%1").arg(value.uint16Value());
             }
             break;
 
@@ -1094,6 +1201,7 @@ QString dbutils::get_column_value( const QByteArray& key, const libdbproxy::valu
             }
             break;
 
+            case column_type_t::CT_binary_value:
             case column_type_t::CT_hexarray_value:
             case column_type_t::CT_hexarray_limited_value:
             {
@@ -1291,6 +1399,18 @@ void dbutils::set_column_value( const QByteArray& key, libdbproxy::value& cvalue
         }
         break;
 
+        case column_type_t::CT_int16_value:
+        {
+            cvalue.setInt16Value( static_cast<signed char>(v.toInt()) );
+        }
+        break;
+
+        case column_type_t::CT_uint16_value:
+        {
+            cvalue.setUInt16Value( static_cast<unsigned char>(v.toUInt()) );
+        }
+        break;
+
         case column_type_t::CT_int32_value:
         {
             cvalue.setInt32Value( static_cast<int32_t>(v.toLong()) );
@@ -1476,6 +1596,7 @@ void dbutils::set_column_value( const QByteArray& key, libdbproxy::value& cvalue
         }
         break;
 
+        case column_type_t::CT_binary_value:
         case column_type_t::CT_hexarray_value:
         case column_type_t::CT_hexarray_limited_value:
         {

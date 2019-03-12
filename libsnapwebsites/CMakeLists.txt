@@ -123,6 +123,13 @@ add_subdirectory(tools)         # Various tools built with the libraries
 add_subdirectory(tests)         # Unit tests
 
 ##
+## Analyse css, xml and javascript
+##
+#snap_build_css_targets()
+#snap_build_js_targets()
+snap_build_xml_targets()
+
+##
 ## Code Analysis
 ##
 ## TODO:

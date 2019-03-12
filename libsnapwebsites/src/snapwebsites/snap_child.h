@@ -358,11 +358,12 @@ public:
     QString                     get_data_path();
     QString                     get_list_data_path();
     void                        reset_sites_table();
-    libdbproxy::value
-                                get_site_parameter(QString const & name);
+    libdbproxy::value           get_site_parameter(QString const & name);
     void                        set_site_parameter(QString const & name, libdbproxy::value const & value);
     void                        improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag);
     QString                     error_body(http_code_t err_code, QString const & err_name, QString const & err_description);
+    libdbproxy::libdbproxy::pointer_t
+                                get_cassandra() { return f_cassandra; }
     libdbproxy::context::pointer_t
                                 get_context() { return f_context; }
     QString const &             get_domain_key() const { return f_domain_key; }

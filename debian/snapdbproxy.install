@@ -1,8 +1,6 @@
 debian/tmp/usr/sbin/snapdbproxy                                 usr/sbin/
-debian/tmp/usr/bin/snapcreatetables                             usr/bin/
 debian/tmp/usr/bin/snapinstallwebsite                           usr/bin/
 debian/tmp/usr/bin/snapwebsiteready                             usr/bin/
-debian/tmp/usr/bin/snapcreatecontext                            usr/bin/
 debian/tmp/usr/lib/snapwebsites/manager_plugins/libdbproxy.so   usr/lib/snapwebsites/manager_plugins/
 debian/tmp/usr/share/snapwebsites/logger/snapdbproxy.properties usr/share/snapwebsites/logger/
 snapdbproxy/conf/snapdbproxy.conf                               etc/snapwebsites/

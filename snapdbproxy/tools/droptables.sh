@@ -68,10 +68,9 @@ echo "         remember that it caches the Meta Data. That means it will"
 echo "         believe the tables are still there until restarted."
 echo
 echo "Then later reinstall the websites with:"
-echo "Now you may recreate the tables, empty, with the command:"
-echo "         snapcreatetables"
+echo "1. restart snapdbproxy to create the context and empty tables"
 echo
-echo "Then later reinstall the websites with:"
+echo "2. reinstall websites with:"
 echo "         snapinstallwebsite --domain <your-[sub-]domain> --port <80|443>"
 echo
 

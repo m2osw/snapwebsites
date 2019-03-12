@@ -28,6 +28,8 @@
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/tcp_client_server.h>
 
+// as2js lib
+//
 #include <as2js/json.h>
 
 #include <iostream>

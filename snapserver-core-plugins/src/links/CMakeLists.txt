@@ -42,6 +42,8 @@ qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     links.qrc
 )
 
+snap_validate_xml( links-tables.xml tables.xsd )
+
 add_library(links SHARED
     links.cpp
     backend.cpp

@@ -52,6 +52,7 @@ snap_validate_xml( editor/password-policy-page.xml      editor-form.dtd       )
 snap_validate_xml( layout/password-blacklist-parser.xsl simplified-xslt20.dtd )
 snap_validate_xml( layout/password-policy-parser.xsl    simplified-xslt20.dtd )
 snap_validate_xml( password_widgets/password-form.xsl   simplified-xslt20.dtd )
+snap_validate_xml( password-tables.xml                  tables.xsd            )
 snap_validate_js ( password.js                                                )
 
 

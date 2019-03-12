@@ -51,6 +51,7 @@ snap_validate_xml( layout/default-theme-parser.xsl simplified-xslt20.dtd )
 snap_validate_xml( layout/functions.xsl            simplified-xslt20.dtd )
 snap_validate_xml( layout/user-messages.xsl        simplified-xslt20.dtd )
 snap_validate_xml( layout/default-body-parser.xsl  simplified-xslt20.dtd )
+snap_validate_xml( layout-tables.xml               tables.xsd            )
 snap_validate_css( layout/style.css                                      )
 
 

@@ -50,10 +50,13 @@ add_executable(${PROJECT_NAME}
     snapdbproxy.cpp
     main.cpp
     snapdbproxy_connection.cpp
+    snapdbproxy_initializer.cpp
+    snapdbproxy_initializer_thread.cpp
     snapdbproxy_interrupt.cpp
     snapdbproxy_listener.cpp
     snapdbproxy_messenger.cpp
     snapdbproxy_nocassandra.cpp
+    snapdbproxy_statuschanged.cpp
     snapdbproxy_thread.cpp
 )
 

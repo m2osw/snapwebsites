@@ -15,101 +15,45 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
 
-
-  There is the basic format:
- 
-     <keyspace>
-         <table name="..." model="..." row-type="...">
-             <description>human readable description for this table</description>
-             <schema>
-                 <column type="...">column name</column>
-             </schema>
-         </table>
-         <complex-type name="...">
-             <type>type name</type>
-         </complex-type>
-     </keyspace>
- 
-  The \<name> tag defines the table name. This name is verified. It
-  can only include letters 'a' to 'z', digits '0' to '9', and the
-  underscore '_' character. Also the name cannot start with a digit.
-  Uppercase letters are functional but require quoting the table name
-  each time it gets used so it is not recommended.
- 
-  The \<description> tag is saved as the table comment. It can be any
-  kind of sensible description of what the table is used for. This tag
-  is optional.
- 
-  The \<model> tag defines how the table is to be used. Internally we
-  have ways to transform the \<model> to a set of Cassandra parameters
-  without the need for the end user to choose over a complex set of
-  parameters which most people have no clue how to tweak properly
-  (including me!)
- 
-  The available models are:
- 
-  \li content == a standard content table, such tables are expected
-                 to be used to save data once and read it many times,
-                 also a content table is likely to have many updates too
-                 (i.e. branch table)
-  \li data == a content table which is written once and read many times
-              and has nearly no updates (i.e. revision table)
-  \li queue == the table is used in an anti-patterns, as far as Cassandra
-               is concerned (at some point we will add capability to avoid
-               Cassandra for these tables); this type of table has rows
-               that are written once, read once, then dropped; these are
-               used as work journals by plugins such as list and images
-  \li log == a table that is mainly used to write to in normal operation;
-             obviously we want to be able to read from those tables, but
-             they will be optimized for writing
-  \li session ==  a table which is both written and read equally; also
-                  the rows are likely setup to timeout automatically;
-                  tables are not likely to grow forever, although they
-                  could still be really large
-
-  The \<row-key> tag defines what the key is. In most cases it certainly
-  is a string, but it can be a complex type including numbers and strings
-  (i.e. a dynamic C-like structure.)
- 
-  The \<schema> tag defines the column names and types. This is useful
-  as a way to extract data from a table and displaying it to a client.
-  This is mainly for developers while they work on their tables to make
-  sure that the data is valid.
- 
-  The \<column> tag defines a column name and a corresponding type. The
-  current version does not yet allow for varying column names. However,
-  this is most often an artifact of the lack of indexes in Cassandra
-  and not something we should support long term.
- 
-  The \<complex-type> tag let you define a complex type based on a list
-  of types. These can be used to define a \<column> or a \<row-key>
-  type. The name must be a user defined name (i.e. you cannot replace
-  a system type with a \<complex-type> definition.) The order of the
-  \<type> tags within a \<complex-type> is important.
-
-  The \<type> tag defines a \em field within a complex type. A type with
-  a variable size which is not specified, such as a plain string, can only
-  be found last in the list of types.
- 
+See libsnapwebsites/src/snapwebsites/tables.xsd for documentation.
 -->
 <keyspace>
-  <!-- TODO: enter the schema -->
   <table name="domains" model="data">
-    <description>List of domain rules</description>
+    <description>List of domain rules, transforms a domain in a number</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="websites" model="data">
-    <description>List of website rules</description>
+    <description>List of website rules, transforms a website in a number</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
+  <!--table name="tree" model="data">
+    <description>List of paths in a website</description>
+    <schema kind="thrift">
+    </schema>
+  </table-->
   <table name="sites" model="data">
     <description>Various global settings for websites</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="backend" model="queue">
     <description>List of website URIs to run backends against</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
   <table name="mx" model="data">
     <description>List of domain names that have/do not have an MX record</description>
+    <schema kind="thrift">
+      <!-- TODO: enter the schema -->
+    </schema>
   </table>
 </keyspace>
 <!--
