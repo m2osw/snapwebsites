@@ -60,7 +60,6 @@ char const * get_name(name_t name)
  * This function is used to initialize the taxonomy plugin object.
  */
 taxonomy::taxonomy()
-    //: f_snap(NULL) -- auto-init
 {
 }
 
@@ -281,7 +280,7 @@ libdbproxy::value taxonomy::find_type_with(
     // value returned in case the type doesn't deliver
     //
     libdbproxy::value const not_found;
-    f_tpath = content::path_info_t();
+    f_tpath.reset(new content::path_info_t());
 
     // get link taxonomy_name from ipath
     //
@@ -310,7 +309,7 @@ libdbproxy::value taxonomy::find_type_with(
         // TODO: determine whether the type should be checked in the
         //       branch instead of the content table.
         //
-        f_tpath.set_path(type_key);
+        f_tpath->set_path(type_key);
 
         if(!content_table->exists(type_key))
         {
@@ -343,7 +342,7 @@ libdbproxy::value taxonomy::find_type_with(
 
         // get the parent
         //
-        links::link_info info(content::get_name(content::name_t::SNAP_NAME_CONTENT_PARENT), true, f_tpath.get_key(), f_tpath.get_branch());
+        links::link_info info(content::get_name(content::name_t::SNAP_NAME_CONTENT_PARENT), true, f_tpath->get_key(), f_tpath->get_branch());
         QSharedPointer<links::link_context> ctxt(links::links::instance()->new_link_context(info));
         links::link_info link_info;
         if(!ctxt->next_link(link_info))
@@ -396,7 +395,7 @@ libdbproxy::value taxonomy::find_type_with(
  */
 content::path_info_t const & taxonomy::get_type_ipath() const
 {
-    return f_tpath;
+    return *f_tpath;
 }
 
 

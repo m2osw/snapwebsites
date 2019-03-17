@@ -65,8 +65,8 @@ private:
     void                content_update(int64_t variables_timestamp);
     void                owner_update(int64_t variables_timestamp);
 
-    snap_child *            f_snap = nullptr;
-    content::path_info_t    f_tpath = content::path_info_t();
+    snap_child *                    f_snap = nullptr;
+    content::path_info_t::pointer_t f_tpath = content::path_info_t::pointer_t();
 };
 
 } // namespace taxonomy
