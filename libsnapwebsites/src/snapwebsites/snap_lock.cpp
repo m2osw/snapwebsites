@@ -1088,6 +1088,10 @@ void snap_lock::initialize_snapcommunicator(std::string const & addr, int port, 
     g_snapcommunicator_address = addr;
     g_snapcommunicator_port = port;
     g_snapcommunicator_mode = mode;
+
+#ifdef _DEBUG
+    g_snapcommunicator_initialized = true;
+#endif
 }
 
 
