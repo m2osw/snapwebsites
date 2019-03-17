@@ -1807,7 +1807,7 @@ process_list::proc_info::pointer_t process_list::next()
 
     if(!f_proctab)
     {
-        f_proctab = std::shared_ptr<PROCTAB>(openproc(f_flags, 0, 0), deleters::delete_proctab);
+        f_proctab.reset(openproc(f_flags, 0, 0), deleters::delete_proctab);
         if(!f_proctab)
         {
             throw snap_process_exception_openproc("process_list::next(): openproc() failed opening \"proc\", cannot read processes.");
@@ -1817,7 +1817,8 @@ process_list::proc_info::pointer_t process_list::next()
     // I tested and if readproc() is called again after returning nullptr, it
     // continues to return nullptr so no need to do anything more
     //
-    std::shared_ptr<proc_t> p(std::shared_ptr<proc_t>(readproc(f_proctab.get(), nullptr), deleters::delete_proc));
+    std::shared_ptr<proc_t> p; // use reset(), see SNAP-507
+    p.reset(readproc(f_proctab.get(), nullptr), deleters::delete_proc);
     if(p)
     {
         return proc_info::pointer_t(new proc_info(p, f_flags));

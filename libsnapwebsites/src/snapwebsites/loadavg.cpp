@@ -22,6 +22,7 @@
 // our lib
 //
 #include "snapwebsites/log.h"
+#include "snapwebsites/raii_generic_deleter.h"
 
 // C lib
 //
@@ -49,21 +50,13 @@ namespace
 std::string g_filename;
 
 
-void file_descriptor_deleter(int * fd)
-{
-    if(close(*fd) != 0)
-    {
-        int const e(errno);
-        SNAP_LOG_WARNING("closing file descriptor failed (errno: ")(e)(", ")(strerror(e))(")");
-    }
-}
 
 
 int const LOADAVG_VERSION = 1;
 
 struct loadavg_magic
 {
-    char                    f_name[4]{'L', 'A', 'V', 'G'};  // 'L', 'A', 'V', 'G'
+    char                    f_name[4]{'L', 'A', 'V', 'G'};  // 'LAVG'
     uint16_t                f_version = LOADAVG_VERSION;    // 1+ representing the version
 };
 
@@ -75,16 +68,15 @@ bool loadavg_file::load()
 {
     // open the file
     //
-    int fd(open(g_filename.c_str(), O_RDONLY));
-    if(fd == -1)
+    raii_fd_t safe_fd(open(g_filename.c_str(), O_RDONLY));
+    if(!safe_fd)
     {
         return false;
     }
-    std::shared_ptr<int> safe_fd(&fd, file_descriptor_deleter);
 
     // lock the file in share mode (multiple read, no writes)
     //
-    if(flock(fd, LOCK_SH) != 0)
+    if(flock(safe_fd.get(), LOCK_SH) != 0)
     {
         return false;
     }
@@ -92,7 +84,7 @@ bool loadavg_file::load()
     // verify the magic
     //
     loadavg_magic magic;
-    if(read(fd, &magic, sizeof(magic)) != sizeof(magic))
+    if(read(safe_fd.get(), &magic, sizeof(magic)) != sizeof(magic))
     {
         return false;
     }
@@ -110,7 +102,7 @@ bool loadavg_file::load()
     for(;;)
     {
         loadavg_item item;
-        ssize_t const r(read(fd, &item, sizeof(item)));
+        ssize_t const r(read(safe_fd.get(), &item, sizeof(item)));
         if(r < 0)
         {
             return false;
@@ -133,16 +125,15 @@ bool loadavg_file::save() const
 {
     // open the file
     //
-    int fd(open(g_filename.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
-    if(fd == -1)
+    raii_fd_t safe_fd(open(g_filename.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
+    if(!safe_fd)
     {
         return false;
     }
-    std::shared_ptr<int> safe_fd(&fd, file_descriptor_deleter);
 
     // lock the file in share mode (multiple read, no writes)
     //
-    if(flock(fd, LOCK_EX) != 0)
+    if(flock(safe_fd.get(), LOCK_EX) != 0)
     {
         return false;
     }
@@ -151,7 +142,7 @@ bool loadavg_file::save() const
     // or we are creating a new file)
     //
     loadavg_magic magic;
-    if(write(fd, &magic, sizeof(magic)) != sizeof(magic))
+    if(write(safe_fd.get(), &magic, sizeof(magic)) != sizeof(magic))
     {
         return false;
     }
@@ -160,7 +151,7 @@ bool loadavg_file::save() const
     //
     for(auto const & item : f_items)
     {
-        ssize_t const r(write(fd, &item, sizeof(item)));
+        ssize_t const r(write(safe_fd.get(), &item, sizeof(item)));
         if(r < 0)
         {
             return false;

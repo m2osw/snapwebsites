@@ -251,16 +251,12 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
     // we test the flag once and then go in a loop that's going to be
     // rather slow and a process may lock the database at that point
     //
-    int lock_fd(open("/var/lib/dpkg/lock", O_RDONLY | O_CLOEXEC, 0));
-    if(lock_fd != -1)
+    raii_fd_t const lock_fd(open("/var/lib/dpkg/lock", O_RDONLY | O_CLOEXEC, 0));
+    if(lock_fd)
     {
-        // RAII for the close
-        //
-        std::shared_ptr<int> auto_close(&lock_fd, file_descriptor_deleter);
-
         // the lock file exists, attempt a lock
         //
-        if(::flock(lock_fd, LOCK_EX) != 0)
+        if(::flock(lock_fd.get(), LOCK_EX) != 0)
         {
             return;
         }

@@ -1687,7 +1687,8 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
             // (see below the SSL_CTX_set_options() for additional details
             // about that since here it does indeed say SSLv23...)
             //
-            std::shared_ptr<SSL_CTX> ssl_ctx(SSL_CTX_new(SSLv23_client_method()), ssl_ctx_deleter);
+            std::shared_ptr<SSL_CTX> ssl_ctx; // use a reset(), see SNAP-507
+            ssl_ctx.reset(SSL_CTX_new(SSLv23_client_method()), ssl_ctx_deleter);
             if(ssl_ctx == nullptr)
             {
                 bio_log_errors();
@@ -1734,7 +1735,8 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
 
             // create a BIO connected to SSL ciphers
             //
-            std::shared_ptr<BIO> bio(BIO_new_ssl_connect(ssl_ctx.get()), bio_deleter);
+            std::shared_ptr<BIO> bio;
+            bio.reset(BIO_new_ssl_connect(ssl_ctx.get()), bio_deleter);
             if(!bio)
             {
                 bio_log_errors();
@@ -1869,7 +1871,8 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
         {
             // create a plain BIO connection
             //
-            std::shared_ptr<BIO> bio(BIO_new(BIO_s_connect()), bio_deleter);
+            std::shared_ptr<BIO> bio;  // use reset(), see SNAP-507
+            bio.reset(BIO_new(BIO_s_connect()), bio_deleter);
             if(!bio)
             {
                 bio_log_errors();
@@ -2438,7 +2441,8 @@ bio_server::bio_server(addr::addr const & addr_port, int max_connections, bool r
                 throw tcp_client_server_parameter_error("with MODE_SECURE you must specify a certificate and a private_key filename");
             }
 
-            std::shared_ptr<SSL_CTX> ssl_ctx(SSL_CTX_new(SSLv23_server_method()), ssl_ctx_deleter);
+            std::shared_ptr<SSL_CTX> ssl_ctx; // use reset(), see SNAP-507
+            ssl_ctx.reset(SSL_CTX_new(SSLv23_server_method()), ssl_ctx_deleter);
             if(!ssl_ctx)
             {
                 bio_log_errors();
@@ -2512,7 +2516,8 @@ bio_server::bio_server(addr::addr const & addr_port, int max_connections, bool r
 
             // create a listening connection
             //
-            std::shared_ptr<BIO> listen(BIO_new_accept(addr_port.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()), bio_deleter);
+            std::shared_ptr<BIO> listen;  // use reset(), see SNAP-507
+            listen.reset(BIO_new_accept(addr_port.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()), bio_deleter);
             if(!listen)
             {
                 bio_log_errors();
@@ -2560,7 +2565,8 @@ bio_server::bio_server(addr::addr const & addr_port, int max_connections, bool r
 
     case mode_t::MODE_PLAIN:
         {
-            std::shared_ptr<BIO> listen(BIO_new_accept(addr_port.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()), bio_deleter);
+            std::shared_ptr<BIO> listen; // use reset(), see SNAP-507
+            listen.reset(BIO_new_accept(addr_port.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()), bio_deleter);
             if(!listen)
             {
                 bio_log_errors();
@@ -2656,7 +2662,8 @@ bio_client::pointer_t bio_server::accept()
 
     // retrieve the new connection by "popping it"
     //
-    std::shared_ptr<BIO> bio(BIO_pop(f_listen.get()), bio_deleter);
+    std::shared_ptr<BIO> bio; // use reset(), see SNAP-507
+    bio.reset(BIO_pop(f_listen.get()), bio_deleter);
     if(bio == nullptr)
     {
         bio_log_errors();

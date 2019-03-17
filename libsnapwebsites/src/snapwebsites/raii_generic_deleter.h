@@ -36,7 +36,7 @@ namespace snap
 {
 
 
-/** \brief A templated used to allow unique_ptr<>() of nearly any type.
+/** \brief A template used to allow unique_ptr<>() of nearly any type.
  *
  * This template is used with nearly any type representing a resource
  * that you would like to automatically delete (RAII) by using a
@@ -189,11 +189,24 @@ public:
          * This operator allows for converting the pointer to a bool
          * which is often done in an `if(ptr)` or equivalent statement.
          *
-         * \return true if the pointer is `null_value`.
+         * \return true if the pointer is not `null_value`.
          */
         explicit operator bool () const
         {
             return f_pointer != null_value;
+        }
+
+        /** \brief Convert pointer to "not bool".
+         *
+         * This operator allows for converting the pointer to a bool
+         * when preceeded by a Boolean NOT operator, which is often
+         * done in an `if(!ptr)` or equivalent statement.
+         *
+         * \return true if the pointer is `null_value`.
+         */
+        bool operator ! () const
+        {
+            return f_pointer == null_value;
         }
 
         /** \brief Compare two pointers against each other for equality.

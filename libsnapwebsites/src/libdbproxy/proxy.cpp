@@ -419,7 +419,8 @@ void proxy::bio_get()
         bio_initialize();
 
         // create a plain BIO connection
-        std::shared_ptr<BIO> bio(BIO_new(BIO_s_connect()), bio_deleter);
+        std::shared_ptr<BIO> bio;  // use reset(), see SNAP-507
+        bio.reset(BIO_new(BIO_s_connect()), bio_deleter);
         if(!bio)
         {
             ERR_print_errors_fp(stderr);

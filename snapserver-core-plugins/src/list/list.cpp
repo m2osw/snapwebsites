@@ -175,19 +175,6 @@ namespace
 {
 
 
-namespace
-{
-
-void file_descriptor_deleter(int * fd)
-{
-    if(close(*fd) != 0)
-    {
-        int const e(errno);
-        SNAP_LOG_WARNING("closing file descriptor failed (errno: ")(e)(", ")(strerror(e))(")");
-    }
-}
-
-} // no name namespace
 
 
 
@@ -2235,40 +2222,39 @@ void list::on_modified_content(content::path_info_t & ipath)
                 + ";uri=" + canonicalized_key.toUtf8().data()
                 + "\n");
 
-    std::string const journal_filename(std::string(path.c_str()) + "/" + std::to_string(hour) + ".msg");
-    int fd(open(journal_filename.c_str(), O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR));
-    if(fd < 0)
-    {
-        SNAP_LOG_ERROR("could not open file \"")(journal_filename)("\" for writing");
-        return;
-    }
-    if(chownnm(journal_filename, "snapwebsites", "snapwebsites") != 0)
-    {
-        // as a programmer, if you're not running as snapwebsites, this
-        // warning is normal (I most often run as myself)
-        //
-        int const e(errno);
-        SNAP_LOG_WARNING("could not properly change the ownership of list journal file \"")
-                        (journal_filename)
-                        ("\" to snapwebsites:snapwebsites (errno: ")
-                        (e)
-                        (" -- ")
-                        (strerror(e))
-                        (")");
-    }
-
     // create a block so fd gets closed ASAP (since we have a lock on it,
     // it is best this way)
     {
-        std::shared_ptr<int> safe_fd(&fd, file_descriptor_deleter);
+        std::string const journal_filename(std::string(path.c_str()) + "/" + std::to_string(hour) + ".msg");
+        raii_fd_t safe_fd(open(journal_filename.c_str(), O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR));
+        if(!safe_fd)
+        {
+            SNAP_LOG_ERROR("could not open file \"")(journal_filename)("\" for writing");
+            return;
+        }
 
-        if(flock(fd, LOCK_EX) != 0)
+        if(chownnm(journal_filename, "snapwebsites", "snapwebsites") != 0)
+        {
+            // as a programmer, if you're not running as snapwebsites, this
+            // warning is normal (I most often run as myself)
+            //
+            int const e(errno);
+            SNAP_LOG_WARNING("could not properly change the ownership of list journal file \"")
+                            (journal_filename)
+                            ("\" to snapwebsites:snapwebsites (errno: ")
+                            (e)
+                            (" -- ")
+                            (strerror(e))
+                            (")");
+        }
+
+        if(flock(safe_fd.get(), LOCK_EX) != 0)
         {
             SNAP_LOG_ERROR("could not lock file \"")(journal_filename)("\" before appending message");
             return;
         }
 
-        if(write(fd, list_item.c_str(), list_item.length()) != static_cast<ssize_t>(list_item.length()))
+        if(write(safe_fd.get(), list_item.c_str(), list_item.length()) != static_cast<ssize_t>(list_item.length()))
         {
             SNAP_LOG_FATAL("could not write to file \"")(journal_filename)("\", list manager may be hosed now");
             return;

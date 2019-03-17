@@ -805,13 +805,18 @@ snap_configurations::pointer_t snap_configurations::get_instance()
 
         // first do all allocations, so if one fails, it is exception safe
         //
-        std::shared_ptr<snap_configurations> configurations(new snap_configurations());
-        std::shared_ptr<snap_thread::snap_mutex> mutex(new snap_thread::snap_mutex());
+        // WARNING: remember that shared_ptr<>() are not safe as is
+        //          (see SNAP-507 for details)
+        //
+        std::shared_ptr<snap_configurations> configurations; // use reset(), see SNAP-507, can't use make_shared() because constructor is private
+        configurations.reset(new snap_configurations());
+
+        std::shared_ptr<snap_thread::snap_mutex> mutex(std::make_shared<snap_thread::snap_mutex>());
 
         // now that all allocations were done, save the results
         //
-        g_configurations = configurations;
-        g_mutex = mutex;
+        g_configurations.swap(configurations);
+        g_mutex.swap(mutex);
     }
 
     return g_configurations;
