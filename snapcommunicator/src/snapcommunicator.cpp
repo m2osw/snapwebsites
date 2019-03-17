@@ -2084,74 +2084,6 @@ void snap_communicator_server::init()
             path_to_services = "/usr/share/snapwebsites/services";
         }
         path_to_services += "/*.service";
-#if 0
-        QByteArray pattern(path_to_services.toUtf8());
-        glob_t dir = glob_t();
-        int const r(glob(
-                      pattern.data()
-                    , GLOB_NOESCAPE
-                    , glob_error_callback
-                    , &dir));
-        std::shared_ptr<glob_t> ai(&dir, glob_deleter);
-
-        if(r != 0)
-        {
-            // do nothing when errors occur
-            //
-            switch(r)
-            {
-            case GLOB_NOSPACE:
-                SNAP_LOG_FATAL("glob() did not have enough memory to alllocate its buffers.");
-                throw snap::snap_exception("glob() did not have enough memory to alllocate its buffers.");
-
-            case GLOB_ABORTED:
-                SNAP_LOG_FATAL("glob() was aborted after a read error.");
-                throw snap::snap_exception("glob() was aborted after a read error.");
-
-            case GLOB_NOMATCH:
-                // this is a legal case, absolutely no local services...
-                //
-                SNAP_LOG_DEBUG("glob() could not find any status information.");
-                break;
-
-            default:
-                SNAP_LOG_FATAL(QString("unknown glob() error code: %1.").arg(r));
-                throw snap::snap_exception(QString("unknown glob() error code: %1.").arg(r));
-
-            }
-        }
-        else
-        {
-            // we have some local services (note that snapcommunicator is
-            // not added as a local service)
-            //
-            for(size_t idx(0); idx < dir.gl_pathc; ++idx)
-            {
-                char const * basename(strrchr(dir.gl_pathv[idx], '/'));
-                if(basename == nullptr)
-                {
-                    basename = dir.gl_pathv[idx];
-                }
-                else
-                {
-                    ++basename;
-                }
-                char const * end(strstr(basename, ".service"));
-                if(end == nullptr)
-                {
-                    end = basename + strlen(basename);
-                }
-                QString const key(QString::fromUtf8(basename, end - basename));
-                f_local_services_list[key] = true;
-            }
-
-            // the list of local services cannot (currently) change while
-            // snapcommunicator is running so generate the corresponding
-            // string once
-            //
-            f_local_services = f_local_services_list.keys().join(",");
-        }
-#else
         try
         {
             snap::glob_dir dir( path_to_services, GLOB_NOESCAPE );
@@ -2211,7 +2143,6 @@ void snap_communicator_server::init()
             SNAP_LOG_FATAL("Unknown exception caught!");
             throw snap::snap_exception("Unknown exception caught!");
         }
-#endif
     }
 
     f_communicator = snap::snap_communicator::instance();
