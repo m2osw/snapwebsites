@@ -27,7 +27,7 @@
         the Cassandra server cluster.</description>
     </field>
   </fields>
-  <packages>snapbackup,libsnapbackup</packages>
+  <packages>snapbackup</packages>
   <postinst>
     # Now put the HOST ip address into /etc/default/snapbackup
     #
