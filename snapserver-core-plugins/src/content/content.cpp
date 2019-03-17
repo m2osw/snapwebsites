@@ -455,7 +455,6 @@ char const * css_extensions[] =
  * This function is used to initialize the content plugin object.
  */
 content::content()
-    //: f_snap(nullptr) -- auto-init
 {
 }
 
