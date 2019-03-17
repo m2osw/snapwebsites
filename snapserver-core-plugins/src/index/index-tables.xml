@@ -28,25 +28,6 @@ See libsnapwebsites/src/snapwebsites/tables.xsd for documentation.
     </schema>
     <secondary-index column="value"/>
   </table>
-  <table name="indexes_blob" model="data">
-    <description>A table used to build indexes.</description>
-    <schema kind="blob">
-      <column name="key" type="binary" required="required">
-        <description>
-          The key is built from the URL of the index definition and
-          the concatenation of a '#' and the name of the index.
-          If the index was not given a name or was named "default",
-          then the concatenation does not happen (Saving some space
-          and time.)
-        </description>
-      </column>
-      <column name="value" type="binary" required="required">
-        <description>
-          This is the value parameter. It can be really anything.
-        </description>
-      </column>
-    </schema>
-  </table>
 </keyspace>
 <!--
 vim: ts=2 sw=2 et
