@@ -2,7 +2,7 @@
  * Name: no-iframe
  * Version: 0.0.1.3
  * Browsers: all
- * Copyright: Copyright (c) 2017-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2017-2019  Made to Order Software Corp.  All Rights Reserved
  * Depends: jquery (1.11)
  * License: GPL 2.0
  */

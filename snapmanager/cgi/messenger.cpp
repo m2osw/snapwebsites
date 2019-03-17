@@ -2,7 +2,7 @@
 // File:        snapmanager/cgi/messenger.cpp
 // Object:      Allow for managing a Snap! Cluster.
 //
-// Copyright:   Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
+// Copyright:   Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //              All Rights Reserved.
 //
 // https://snapwebsites.org/

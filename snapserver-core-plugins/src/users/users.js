@@ -3,7 +3,7 @@
  * Version: 0.0.1.19
  * Browsers: all
  * Depends: output (>= 0.1.5)
- * Copyright: Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
  * License: GPL 2.0
  */
 

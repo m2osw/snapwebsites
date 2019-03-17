@@ -3,7 +3,7 @@
  * Version: 0.0.1.17
  * Browsers: all
  * Depends: server-access (>= 0.0.1.16)
- * Copyright: Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
  * License: GPL 2.0
  */
 

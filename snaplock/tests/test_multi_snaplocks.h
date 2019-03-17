@@ -7,7 +7,7 @@
  *      and only using a single computer.
  *
  * License:
- *      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
  * 
  *      https://snapwebsites.org/
  *      contact@m2osw.com

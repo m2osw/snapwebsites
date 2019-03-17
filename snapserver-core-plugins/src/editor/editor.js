@@ -3,7 +3,7 @@
  * Version: 0.0.3.952
  * Browsers: all
  * Depends: output (>= 0.1.4), popup (>= 0.1.0.1), server-access (>= 0.0.1.11), mimetype-basics (>= 0.0.3)
- * Copyright: Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
  * License: GPL 2.0
  */
 

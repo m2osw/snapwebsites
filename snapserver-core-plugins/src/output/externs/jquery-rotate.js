@@ -2,7 +2,7 @@
  * Name: jquery-rotate
  * Version: 1.0.1
  * Browsers: all
- * Copyright: Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
  * Depends: jquery (1.11)
  * License: GPL 2.0
  */

@@ -2,7 +2,7 @@
 // File:        snapmanager/cgi/main.cpp
 // Object:      Initialize and starts the snapmanager.cgi process.
 //
-// Copyright:   Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
+// Copyright:   Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //              All Rights Reserved.
 //
 // https://snapwebsites.org/

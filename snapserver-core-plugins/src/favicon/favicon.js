@@ -2,7 +2,7 @@
  * Name: favicon
  * Version: 0.0.1.16
  * Browsers: all
- * Copyright: Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
  * Depends: output (0.1.5)
  * License: GPL 2.0
  */

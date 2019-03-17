@@ -2,7 +2,7 @@
  * Name: adframe
  * Version: 0.0.1
  * Browsers: all
- * Copyright: Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
  * Depends: detectadblocker (0.0.1)
  * License: GPL 2.0
  */

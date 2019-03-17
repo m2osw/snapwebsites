@@ -1,5 +1,5 @@
 // Snap Websites Server -- read /proc/meminfo
-// Copyright (C) 2018  Made to Order Software Corp.
+// Copyright (c) 2018-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
 // contact@m2osw.com

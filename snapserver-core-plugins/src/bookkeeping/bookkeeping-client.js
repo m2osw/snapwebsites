@@ -2,7 +2,7 @@
  * Name: bookkeeping-client
  * Version: 0.0.1.3
  * Browsers: all
- * Copyright: Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
  * Depends: output (0.1.5)
  * License: GPL 2.0
  */

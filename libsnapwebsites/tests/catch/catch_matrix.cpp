@@ -1,5 +1,5 @@
 /* catch_matrix.cpp
- * Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2018-2019  Made to Order Software Corp.  All Rights Reserved
  *
  * Project: https://snapwebsites.org/project/snapwebsites
  *

@@ -3,7 +3,7 @@
  * Version: 0.0.1.6
  * Browsers: all
  * Depends: epayment (>= 0.0.1.33)
- * Copyright: Copyright (c) 2016-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
  * License: GPL 2.0
  */
 

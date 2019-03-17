@@ -6,7 +6,7 @@
  *      Dumps and restores the "snap_websites" context to/from a SQLite database.
  *
  * License:
- *      Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
  *
  *      https://snapwebsites.org/
  *      contact@m2osw.com

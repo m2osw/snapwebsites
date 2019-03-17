@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 Snap Websites Server == editor form for the main feed settings
-Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
+Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

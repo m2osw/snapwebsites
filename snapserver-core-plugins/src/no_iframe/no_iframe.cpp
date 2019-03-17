@@ -1,5 +1,5 @@
 // Snap Websites Server -- manager the No IFRAME JavaScript
-// Copyright (c) 2017-2018  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2017-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

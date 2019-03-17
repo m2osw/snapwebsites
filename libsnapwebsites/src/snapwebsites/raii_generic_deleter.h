@@ -1,5 +1,5 @@
 // RAII Generic Deleter -- allow for any type of RAII deleter
-// Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2018-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

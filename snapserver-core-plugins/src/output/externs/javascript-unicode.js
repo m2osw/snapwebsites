@@ -2,7 +2,7 @@
  * Name: javascript-unicode
  * Version: 1.0.0
  * Browsers: all
- * Copyright: Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
  * License: GPL 2.0
  */
 

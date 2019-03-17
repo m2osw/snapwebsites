@@ -3,7 +3,7 @@
  * Version: 0.0.1.25
  * Browsers: all
  * Depends: editor (>= 0.0.3.468), javascript-unicode (>= 0.0.1)
- * Copyright: Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
+ * Copyright: Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
  * License: GPL 2.0
  */
 
