@@ -1047,6 +1047,11 @@ void server::config(int argc, char * argv[])
     //
     f_servername = f_opt->get_program_name();
 
+    if(f_service_name.empty())
+    {
+        f_service_name = f_servername;
+    }
+
     // Keep the server in the foreground?
     //
     f_foreground = !f_opt->is_defined( "background" );
@@ -1245,6 +1250,49 @@ void server::config(int argc, char * argv[])
 }
 
 
+/** \brief Define the service name.
+ *
+ * This function sets the service name to the specified parameter. By
+ * default the service name is set to the process name. So for example
+ * the snapserver service name is "snapserver".
+ *
+ * This function is useful to change the service name of processes such
+ * as the snapbackend processes which all use the same process but perform
+ * different services.
+ *
+ * \param[in] service_name  The name of the service using the server class.
+ */
+void server::set_service_name(std::string const & service_name)
+{
+    f_service_name = service_name;
+}
+
+
+/** \brief Retrieve the service name.
+ *
+ * This function returns the service name. This is most often the same
+ * as the servername() parameter only sometimes the service name gets
+ * changed to avoid confusion. For example, snapbackend is used for
+ * several different services such as "list::pagelist" and "images::images".
+ *
+ * \note
+ * The service names should not include colons in their names. The
+ * snapbackend will transform the action name to use underscores
+ * instead (i.e. "list__pagelist" or "images__images".)
+ *
+ * \note
+ * This name is used as the PID filename. It is important for us to be
+ * able to distinguish between various snapbackend processes since each
+ * PID file needs a distinct filename.
+ *
+ * \return A reference to the service name.
+ */
+std::string const & server::get_service_name() const
+{
+    return f_service_name;
+}
+
+
 /** \brief Get the server name.
  *
  * This function retrieves the name of the server. If it is defined in
@@ -1300,7 +1348,7 @@ std::string server::get_server_name()
             if(gethostname(host, sizeof(host)) != 0
             || strlen(host) == 0)
             {
-                throw snapwebsites_exception_parameter_no_available("snapwebsites.cpp: server::get_server_name() could not determine the name of this server.");
+                throw snapwebsites_exception_parameter_not_available("snapwebsites.cpp: server::get_server_name() could not determine the name of this server.");
             }
             // TODO: add code to verify that we like that name (i.e. if the
             //       name includes periods we will reject it when sending
@@ -1651,6 +1699,16 @@ bool server::check_cassandra(QString const & mandatory_table, bool & timer_requi
 /** \brief Detach the server unless in foreground mode.
  *
  * This function detaches the server unless it is in foreground mode.
+ *
+ * \warning
+ * It is very important that you call the server_loop_ready() function
+ * after having called the detach() function. We expect that other
+ * function to be called just before you enter the server loop.
+ * In our case that generally means before calling the
+ * snap_communicator->run() function. That way, if anything in the
+ * initialization process fails and the loop is never enetered, we
+ * never signal systemd about being successful which is exactly what
+ * we want.
  */
 void server::detach()
 {
@@ -1659,12 +1717,28 @@ void server::detach()
         return;
     }
 
+    // create a new PID file, this gets a pipe ready for communication
+    // (i.e. the parent wants to wait for the child to be ready and
+    // have had time to create the PID file, something that can only
+    // happen after we called fork() unfortunately...)
+    //
+    f_pid_file.reset(new snap_pid(f_service_name));
+
     // detaching using fork()
+    //
     pid_t const child_pid(fork());
     if(child_pid == 0)
     {
         // this is the child, make sure we keep the log alive
+        //
         logging::reconfigure();
+
+        // at some point we want to save our PID in the PID file,
+        // this means we're ready (as far as systemd is concerned)
+        // but we want to do that just before entering the server
+        // loop because if anything fails before that happens we
+        // do not want to tell systemd that we succeessfully started
+        //
         return;
     }
 
@@ -1675,12 +1749,33 @@ void server::detach()
         exit(1);
     }
 
-    // since we are quitting immediately we do not need to save the child_pid
-    //
-    // TODO: actually save the child PID in a file... this would make
-    //       systemd happy (know once the process is considered initialized)
+    int const code(f_pid_file->wait_signal() ? 0 : 1);
 
-    exit(0);
+    exit(code);
+}
+
+
+/** \brief The server is ready to enter the server loop.
+ *
+ * If you use the detach() function, this function must be called just
+ * before you enter the server loop itself. In most cases, our server
+ * loop starts at the time we call the snap_communicator::run() function.
+ *
+ * This function finishes up the PID file initialization by creating the
+ * actual file and sending a signal to the parent process (through the
+ * pipe created for this purpose.)
+ *
+ * It is very important that this function gets called because otherwise
+ * the parent stays stuck waiting for its signal and instead of returning
+ * as expected, it will linger. This means systemd will not understand
+ * what the process status is.
+ */
+void server::server_loop_ready()
+{
+    if(f_pid_file != nullptr)
+    {
+        f_pid_file->create_pid_file();
+    }
 }
 
 
@@ -2788,6 +2883,8 @@ void server::listen()
     // the server was successfully started
     SNAP_LOG_INFO("Snap v" SNAPWEBSITES_VERSION_STRING " on \"")(get_server_name())("\" started.");
 
+    server_loop_ready();
+
     // run until we get killed
     g_connection->f_communicator->run();
 
@@ -3607,7 +3704,8 @@ void server::backend_action_set::add_action(QString const & action, plugin * p)
     backend_action * ba(dynamic_cast<backend_action *>(p));
     if(ba == nullptr)
     {
-        throw snapwebsites_exception_invalid_parameters("snapwebsites.cpp: server::backend_action_set::add_action() was called with \"%1\" twice.");
+        throw snapwebsites_exception_invalid_parameters("snapwebsites.cpp:"
+                            " could not cast p to a backend_action pointer");
     }
 
     // calculate the full name of this action
@@ -3618,9 +3716,12 @@ void server::backend_action_set::add_action(QString const & action, plugin * p)
     //
     if(f_actions.contains(name))
     {
-        throw snapwebsites_exception_invalid_parameters("snapwebsites.cpp: server::backend_action_set::add_action() was called with \"%1\" twice.");
+        throw snapwebsites_exception_invalid_parameters(
+                QString("snapwebsites.cpp: server::backend_action_set::add_action()"
+                        " was called with \"%1\" twice.").arg(name));
     }
 
+SNAP_LOG_DEBUG("adding action \"")(name)("\".");
     f_actions[name] = ba;
 }
 

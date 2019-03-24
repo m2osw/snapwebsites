@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Before running `start`, you may want to truncate your logs. This script does
+# that. Adapt to your installation first.
+#
+# Make sure to backup your logs if you think you may need a copy later.
+
+# The --no-create is important if you do not yet have log files
+#
+sudo truncate --no-create --size=0 /var/log/snapwebsites/*.log
+
+# vim: ts=4 sw=4 et

@@ -88,6 +88,10 @@ public:
                             message(message_type_t t, QString const & title, QString const & body);
                             message(message const & rhs);
 
+        snap_child::user_status_t
+                            get_user_status() const;
+        snap_child::user_identifier_t
+                            get_user_id() const;
         message_type_t      get_type() const;
         int                 get_id() const;
         QString const &     get_title() const;
@@ -102,11 +106,17 @@ public:
         void                serialize(QtSerialization::QWriter & w) const;
 
     private:
+        void                set_user_status();
+
         message_type_t              f_type = message_type_t::MESSAGE_TYPE_DEBUG;
         int32_t                     f_id = -1;
         QString                     f_title = QString();
         QString                     f_body = QString();
         QString                     f_widget_name = QString();
+        time_t                      f_date = time(nullptr);
+        snap_child::user_status_t   f_user_status = snap_child::user_status_t::USER_STATUS_UNKNOWN;
+        snap_child::user_identifier_t
+                                    f_user_id = 0;  // we do not have access to users::IDENTIFIER_ANONYMOUS
     };
 
                         messages();
@@ -125,6 +135,9 @@ public:
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 
+    // server signals
+    void                on_user_status(snap_child::user_status_t status, snap_child::user_identifier_t id);
+
     message &           set_http_error(snap_child::http_code_t err_code, QString err_name, QString const & err_description, QString const & err_details, bool err_security);
     message &           set_error(QString err_name, QString const & err_description, QString const & err_details, bool err_security);
     message &           set_warning(QString warning_name, QString const & warning_description, QString const & warning_details);
@@ -133,10 +146,15 @@ public:
 
     void                clear_messages();
     message const &     get_message(int idx) const;
+    void                remove_message(int idx);
     message const &     get_last_message() const;
     int                 get_message_count() const;
     int                 get_error_count() const;
     int                 get_warning_count() const;
+    snap_child::user_status_t
+                        get_current_user_status() const;
+    snap_child::user_identifier_t
+                        get_current_user_id() const;
 
     // "internal" functions used to save the data serialized
     void                unserialize(QString const & data);
@@ -148,6 +166,9 @@ private:
     QVector<message>            f_messages = QVector<message>();
     int32_t                     f_error_count = 0;
     int32_t                     f_warning_count = 0;
+    snap_child::user_status_t   f_current_user_status = snap_child::user_status_t::USER_STATUS_UNKNOWN;
+    snap_child::user_identifier_t
+                                f_current_user_id = 0;  // we do not have access to users::IDENTIFIER_ANONYMOUS
 };
 
 } // namespace messages

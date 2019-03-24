@@ -719,6 +719,8 @@ void watchdog_server::watchdog()
     g_sigchld_connection.reset(new sigchld_connection(instance()));
     g_communicator->add_connection(g_sigchld_connection);
 
+    server_loop_ready();
+
     // now start the run() loop
     //
     g_communicator->run();

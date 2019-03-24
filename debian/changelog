@@ -30,6 +30,11 @@ snapwebsites (1.7.4.0~xenial) xenial; urgency=high
   * Made the type found by find_type_with() available through another call.
   * Fixed the default watchdog plugins list, "package" was wrong, "s" missing.
   * SNAP-679: added a "temporary" fix to the fail2ban nice value.
+  * SNAP-492: implemented the support for a PID file for snapserver,
+    snabackend, snacommunicator, and snapwatchdog (so far.)
+  * SNAP-641: Started work on a fix to not leak messages to the wrong user.
+  * Applied a fix to the message box, it adds a scrollbar when many messages
+    appear in the list.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Tue, 05 Mar 2019 10:49:22 -0700

@@ -224,6 +224,22 @@ public:
         SNAP_CHILD_STATUS_RUNNING
     };
 
+    enum class user_status_t
+    {
+        // WARNING: the order is very important, we use a '<' operation
+        //          to know whether a user has enough permission to see
+        //          a certain message (see details in:
+        //          snapserver-core-plugins/src/output/output.cpp)
+        //
+        USER_STATUS_UNKNOWN,
+        USER_STATUS_LOGGED_OUT,
+        USER_STATUS_WEAKLY_LOGGED_IN,
+        USER_STATUS_LOGGED_IN,
+        USER_STATUS_ADMINISTRATIVE_LOGGED_IN
+    };
+
+    typedef int64_t                 user_identifier_t;
+
     typedef std::weak_ptr<server>   server_pointer_t;
     typedef QMap<QString, QString>  environment_map_t;
 
@@ -338,6 +354,7 @@ public:
     virtual                     ~snap_child();
 
     bool                        process(tcp_client_server::bio_client::pointer_t client);
+    std::shared_ptr<server>     get_server() const;
     pid_t                       get_child_pid() const;
     void                        kill();
     status_t                    check_status();
@@ -360,6 +377,7 @@ public:
     void                        reset_sites_table();
     libdbproxy::value           get_site_parameter(QString const & name);
     void                        set_site_parameter(QString const & name, libdbproxy::value const & value);
+    void                        user_status(user_status_t status, user_identifier_t id);
     void                        improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag);
     QString                     error_body(http_code_t err_code, QString const & err_name, QString const & err_description);
     libdbproxy::libdbproxy::pointer_t

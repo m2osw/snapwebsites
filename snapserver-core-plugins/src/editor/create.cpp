@@ -85,7 +85,7 @@ void create_page_t::set_locale(QString const & locale)
 
 void create_page_t::set_global_field(QString const & field_name, libdbproxy::value const & value)
 {
-    f_branch_fields[field_name] = value;
+    f_global_fields[field_name] = value;
 }
 
 

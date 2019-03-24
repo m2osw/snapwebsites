@@ -1393,51 +1393,51 @@ users::login_status_t users::load_login_session(
  *
  * Note that the function returns with one of the following states:
  *
- * \li User is not logged in, the function returns false and there
- *     is no user key to speak of... the user can still be tracked
- *     with the cookie, but the data cannot be attached to an account
+ * - User is not logged in, the function returns false and there
+ *   is no user key to speak of... the user can still be tracked
+ *   with the cookie, but the data cannot be attached to an account
  *
  *       . f_user_info.is_user() -- false
  *       . f_user_logged_in -- false
  *       . f_administrative_logged_in -- false
  *
- * \li User is "logged in", the function returns true; the login
- *     status is one of following statuses:
+ * - User is "logged in", the function returns true; the login
+ *   status is one of following statuses:
  *
- * \li User is strongly logged in, meaning that he has administrative
- *     rights at this time; by default this is true for 3h after an
- *     active log in; the administrative rights are dropped after 3h
- *     and you need to re-login to gain the administrative rights
- *     again. This type of session is NOT extended by default. That
- *     means it lasts 3h then times out, whether or not the user is
- *     accessing/using the website administratively or otherwise.
- *     This can be changed to function like the soft login though
- *     each access by the user can extend the current timeout to
- *     "now + 3h". If you choose to do that, you probably want to
- *     reduce the time to something much shorter like 15 or 30 min.
+ * -- User is strongly logged in, meaning that he has administrative
+ *    rights at this time; by default this is true for 3h after an
+ *    active log in; the administrative rights are dropped after 3h
+ *    and you need to re-login to gain the administrative rights
+ *    again. This type of session is NOT extended by default. That
+ *    means it lasts 3h then times out, whether or not the user is
+ *    accessing/using the website administratively or otherwise.
+ *    This can be changed to function like the soft login though
+ *    each access by the user can extend the current timeout to
+ *    "now + 3h". If you choose to do that, you probably want to
+ *    reduce the time to something much shorter like 15 or 30 min.
  *
  *       . f_user_info.is_user() -- true
  *       . f_user_logged_in -- true
  *       . f_administrative_logged_in -- true
  *
- * \li User is softly logged in, meaning that he has read/write access
- *     to everything except administrative tasks; when the user tries
- *     to access an administrative task, he is sent to the login screen
- *     in an attempt to see whether we can grant the user such rights...
- *     The soft login time limit gets extended each time the user hits
- *     the website. So the duration can be very long assuming the user
- *     comes to the website at least once a day or so.
+ * -- User is softly logged in, meaning that he has read/write access
+ *    to everything except administrative tasks; when the user tries
+ *    to access an administrative task, he is sent to the login screen
+ *    in an attempt to see whether we can grant the user such rights...
+ *    The soft login time limit gets extended each time the user hits
+ *    the website. So the duration can be very long assuming the user
+ *    comes to the website at least once a day or so.
  *
  *       . f_user_info.is_user() -- true
  *       . f_user_logged_in -- true
  *       . f_administrative_logged_in -- false
  *
- * \li User is weakly logged in, meaning that he was logged in on the
- *     website in the past, although the logging session still exists,
- *     it does not grant much write access at all (if any, it is
- *     really very safe tasks...); the user is asked to log back in
- *     to edit content. Note that this is called Long Session, it is
- *     turned on by default, but it can be turned off.
+ * -- User is weakly logged in, meaning that he was logged in on the
+ *    website in the past, although the logging session still exists,
+ *    it does not grant much write access at all (if any, it is
+ *    really very safe tasks...); the user is asked to log back in
+ *    to edit content. Note that this is called Long Session, it is
+ *    turned on by default, but it can be turned off.
  *
  *       . f_user_info.is_user() -- true
  *       . f_user_logged_in -- false
@@ -1569,9 +1569,12 @@ bool users::authenticated_user(identifier_t const id, sessions::sessions::sessio
         {
             *f_info = *info;
         }
+
+        user_status_changed();
         return true;
     }
 
+    user_status_changed();
     return false;
 }
 
@@ -1611,6 +1614,8 @@ void users::user_logout()
         // just in case, make sure the flag is false
         //
         f_user_logged_in = false;
+
+        user_status_changed();
         return;
     }
 
@@ -1658,6 +1663,8 @@ void users::user_logout()
 
     f_user_info.reset();
     f_user_logged_in = false;
+
+    user_status_changed();
 }
 
 
@@ -2781,6 +2788,8 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
     // user out if something is awry)
     //
     f_user_logged_in = true;
+
+    user_status_changed();
 }
 
 
@@ -3997,6 +4006,7 @@ void users::on_attach_to_session()
 
     // the messages handling is here because the messages plugin cannot have
     // a dependency on the users plugin
+    //
     messages::messages * messages_plugin(messages::messages::instance());
     if(messages_plugin->get_message_count() > 0)
     {
@@ -4437,6 +4447,42 @@ bool users::user_is_a_spammer()
         }
     }
     return false;
+}
+
+
+/** \brief Inform other plugins that the status of the user changed.
+ *
+ * This function sends a message to all the other module, using a server
+ * message. That way we can make it available to lower level plugins
+ * such as the messages plugin. Actually, plugins that can access the
+ * users module directly should probably do so instead of relying on
+ * the message.
+ */
+void users::user_status_changed()
+{
+    snap_child::user_status_t status(snap_child::user_status_t::USER_STATUS_UNKNOWN);
+
+    identifier_t id(IDENTIFIER_ANONYMOUS);
+    if(f_administrative_logged_in)
+    {
+        status = snap_child::user_status_t::USER_STATUS_ADMINISTRATIVE_LOGGED_IN;
+    }
+    else if(f_user_logged_in)
+    {
+        status = snap_child::user_status_t::USER_STATUS_LOGGED_IN;
+        id = f_user_info.get_identifier();
+    }
+    else if(f_user_info.is_user())
+    {
+        status = snap_child::user_status_t::USER_STATUS_WEAKLY_LOGGED_IN;
+        id = f_user_info.get_identifier();
+    }
+    else
+    {
+        status = snap_child::user_status_t::USER_STATUS_LOGGED_OUT;
+    }
+
+    f_snap->user_status(status, id);
 }
 
 

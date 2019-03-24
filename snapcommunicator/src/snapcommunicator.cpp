@@ -5516,6 +5516,7 @@ int main(int argc, char * argv[])
         {
             snap_communicator_server::pointer_t communicator( new snap_communicator_server( s ) );
             communicator->init();
+            s->server_loop_ready();
             communicator->run();
         }
 

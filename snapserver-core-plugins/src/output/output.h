@@ -99,6 +99,9 @@ public:
     // layout::layout_boxes implementation
     virtual void        on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes) override;
 
+    // server signals
+    void                on_user_status(snap_child::user_status_t status, snap_child::user_identifier_t id);
+
     // layout signals
     void                on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);
 
@@ -122,6 +125,8 @@ private:
 
     snap_child *                    f_snap = nullptr;
     compression_extensions_map_t    f_compression_extensions = compression_extensions_map_t();
+    snap_child::user_status_t       f_user_status = snap_child::user_status_t::USER_STATUS_UNKNOWN;
+    snap_child::user_identifier_t   f_user_id = 0; // we do not have access to users::IDENTIFIER_ANONYMOUS
 };
 
 

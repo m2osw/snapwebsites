@@ -167,7 +167,7 @@ int64_t output::do_update(int64_t last_updated)
 {
     SNAP_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2018, 8, 30, 20, 44, 35, content_update);
+    SNAP_PLUGIN_UPDATE(2019, 3, 23, 21, 1, 51, content_update);
 
     SNAP_PLUGIN_UPDATE_EXIT();
 }
@@ -202,6 +202,7 @@ void output::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
+    SNAP_LISTEN(output, "user_status", server, user_status, _1, _2);
     SNAP_LISTEN(output, "layout", layout::layout, generate_page_content, _1, _2, _3);
     SNAP_LISTEN(output, "filter", filter::filter, replace_token, _1, _2, _3);
     SNAP_LISTEN(output, "filter", filter::filter, token_help, _1);
@@ -455,6 +456,24 @@ void output::on_generate_boxes_content(content::path_info_t & page_cpath, conten
 }
 
 
+/** \brief Save the user status.
+ *
+ * Whenever the user plugin determines that the current user is logged in
+ * or logged out, this event is sent. We save that status so that way
+ * we can avoid displaying messages to logged out users when they should
+ * have been sent to logged in users only (i.e. a certain error could leak
+ * information that we do not want a \em random user to see.)
+ *
+ * \param[in] status  The new user status.
+ * \param[in] id  The new user identifier or IDENTIFIER_ANONYMOUS (0).
+ */
+void output::on_user_status(snap_child::user_status_t status, snap_child::user_identifier_t id)
+{
+    f_user_status = status;
+    f_user_id = id;
+}
+
+
 /** \brief Generate the page common content.
  *
  * This function generates some content that is expected in a page
@@ -601,74 +620,141 @@ void output::on_generate_page_content(content::path_info_t & ipath, QDomElement 
     // IMPORTANT NOTE: we handle the output of the messages in the output
     //                 plugin because the messages cannot depend on the
     //                 layout plugin (circular dependencies)
+    //
     QDomDocument doc(page.ownerDocument());
     messages::messages * messages_plugin(messages::messages::instance());
     int const max_messages(messages_plugin->get_message_count());
     if(max_messages > 0)
     {
         QDomElement messages_tag(doc.createElement("messages"));
-        int const errcnt(messages_plugin->get_error_count());
-        messages_tag.setAttribute("error-count", errcnt);
-        messages_tag.setAttribute("warning-count", messages_plugin->get_warning_count());
-        body.appendChild(messages_tag);
 
+        // TODO: verify that user A can't see user B's messages even if they
+        //       use the exact same browser on the exact same computer
+        //       (i.e. they will be sharing the same cookie until they log in)
+        //       at this time I think that I got it wrong because I do not
+        //       really attach a message to a specific user yet (SNAP-641)
+
+        // go through the loop once to count the total number of messages,
+        // errors, and warnings we're going to send to the client
+        //
+        int errcnt(0);
+        int wrncnt(0);
+        std::vector<int> indexes;
         for(int i(0); i < max_messages; ++i)
         {
-            QString type;
             messages::messages::message const & msg(messages_plugin->get_message(i));
-            switch(msg.get_type())
+            snap_child::user_status_t user_status(msg.get_user_status());
+            if(user_status == snap_child::user_status_t::USER_STATUS_UNKNOWN)
             {
-            case messages::messages::message::message_type_t::MESSAGE_TYPE_ERROR:
-                type = "error";
-                break;
-
-            case messages::messages::message::message_type_t::MESSAGE_TYPE_WARNING:
-                type = "warning";
-                break;
-
-            case messages::messages::message::message_type_t::MESSAGE_TYPE_INFO:
-                type = "info";
-                break;
-
-            case messages::messages::message::message_type_t::MESSAGE_TYPE_DEBUG:
-                type = "debug";
-                break;
-
-            // no default, compiler knows if one missing
+                user_status = snap_child::user_status_t::USER_STATUS_LOGGED_OUT;
             }
+            if(user_status >= f_user_status
+            && (user_status <= snap_child::user_status_t::USER_STATUS_LOGGED_OUT
+                    || msg.get_user_id() == f_user_id))
             {
-                // create the message tag with its type
-                QDomElement msg_tag(doc.createElement("message"));
-                msg_tag.setAttribute("id", QString("messages_message_%1").arg(msg.get_id()));
-                msg_tag.setAttribute("type", type);
-                messages_tag.appendChild(msg_tag);
-
-                // there is always a title
+                // enough permissons to handle this message, count it in
+                //
+                indexes.push_back(i);
+                switch(msg.get_type())
                 {
-                    QDomDocument message_doc("snap");
-                    message_doc.setContent("<title><span class=\"message-title\">" + msg.get_title() + "</span></title>");
-                    QDomNode message_title(doc.importNode(message_doc.documentElement(), true));
-                    msg_tag.appendChild(message_title);
-                }
+                case messages::messages::message::message_type_t::MESSAGE_TYPE_ERROR:
+                    ++errcnt;
+                    break;
 
-                // do not create the body if empty
-                if(!msg.get_body().isEmpty())
-                {
-                    QDomDocument message_doc("snap");
-                    message_doc.setContent("<body><span class=\"message-body\">" + msg.get_body() + "</span></body>");
-                    QDomNode message_body(doc.importNode(message_doc.documentElement(), true));
-                    msg_tag.appendChild(message_body);
+                case messages::messages::message::message_type_t::MESSAGE_TYPE_WARNING:
+                    ++wrncnt;
+                    break;
+
+                default:
+                    break;
+
                 }
             }
         }
-        messages_plugin->clear_messages();
 
-        if(errcnt != 0)
+        // if all the messages are specific to a logged in user, then the
+        // indexes vector may end up empty here
+        //
+        if(!indexes.empty())
         {
-            // on errors generate a warning in the header
-            f_snap->set_header(messages::get_name(messages::name_t::SNAP_NAME_MESSAGES_WARNING_HEADER),
-                    QString("This page generated %1 error%2")
-                            .arg(errcnt).arg(errcnt == 1 ? "" : "s"));
+            messages_tag.setAttribute("error-count", errcnt);
+            messages_tag.setAttribute("warning-count", wrncnt);
+            body.appendChild(messages_tag);
+
+            for(size_t j(0); j < indexes.size(); ++j)
+            {
+                int const i(indexes[j]);
+
+                QString type;
+                messages::messages::message const & msg(messages_plugin->get_message(i));
+                switch(msg.get_type())
+                {
+                case messages::messages::message::message_type_t::MESSAGE_TYPE_ERROR:
+                    type = "error";
+                    break;
+
+                case messages::messages::message::message_type_t::MESSAGE_TYPE_WARNING:
+                    type = "warning";
+                    break;
+
+                case messages::messages::message::message_type_t::MESSAGE_TYPE_INFO:
+                    type = "info";
+                    break;
+
+                case messages::messages::message::message_type_t::MESSAGE_TYPE_DEBUG:
+                    type = "debug";
+                    break;
+
+                // no default, compiler knows if one missing
+                }
+                {
+                    // create the message tag with its type
+                    QDomElement msg_tag(doc.createElement("message"));
+                    msg_tag.setAttribute("id", QString("messages_message_%1").arg(msg.get_id()));
+                    msg_tag.setAttribute("type", type);
+                    messages_tag.appendChild(msg_tag);
+
+                    // there is always a title
+                    {
+                        QDomDocument message_doc("snap");
+                        message_doc.setContent("<title><span class=\"message-title\">" + msg.get_title() + "</span></title>");
+                        QDomNode message_title(doc.importNode(message_doc.documentElement(), true));
+                        msg_tag.appendChild(message_title);
+                    }
+
+                    // do not create the body if empty
+                    if(!msg.get_body().isEmpty())
+                    {
+                        QDomDocument message_doc("snap");
+                        message_doc.setContent("<body><span class=\"message-body\">" + msg.get_body() + "</span></body>");
+                        QDomNode message_body(doc.importNode(message_doc.documentElement(), true));
+                        msg_tag.appendChild(message_body);
+                    }
+                }
+            }
+
+            // go in reverse since we have to delete the messages from
+            // indexes, we need to delete those with the largest index
+            // first to not message the order
+            //
+            // IMPORTANT: we know that the indexes vector is sorted in
+            //            increasing order
+            //
+            for(size_t j(indexes.size()); j > 0; )
+            {
+                --j;
+                int const i(indexes[j]);
+                messages_plugin->remove_message(i);
+            }
+
+            if(errcnt != 0)
+            {
+                // on errors generate a warning in the HTTP header
+                //
+                f_snap->set_header(messages::get_name(messages::name_t::SNAP_NAME_MESSAGES_WARNING_HEADER),
+                        QString("This page generated %1 error%2")
+                                .arg(errcnt).arg(errcnt == 1 ? "" : "s"));
+            }
         }
 
         content::content::instance()->add_javascript(page.ownerDocument(), "output");

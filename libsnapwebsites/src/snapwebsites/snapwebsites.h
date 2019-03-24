@@ -27,6 +27,7 @@
 #include "snapwebsites/snap_communicator.h"
 #include "snapwebsites/snap_config.h"
 #include "snapwebsites/snap_expr.h"
+#include "snapwebsites/snap_pid.h"
 #include "snapwebsites/version.h"
 
 // advgetopt lib
@@ -146,12 +147,12 @@ public:
     explicit snapwebsites_exception_invalid_parameters(QString const &     whatmsg) : snapwebsites_exception(whatmsg) {}
 };
 
-class snapwebsites_exception_parameter_no_available : public snapwebsites_exception
+class snapwebsites_exception_parameter_not_available : public snapwebsites_exception
 {
 public:
-    explicit snapwebsites_exception_parameter_no_available(char const *        whatmsg) : snapwebsites_exception(whatmsg) {}
-    explicit snapwebsites_exception_parameter_no_available(std::string const & whatmsg) : snapwebsites_exception(whatmsg) {}
-    explicit snapwebsites_exception_parameter_no_available(QString const &     whatmsg) : snapwebsites_exception(whatmsg) {}
+    explicit snapwebsites_exception_parameter_not_available(char const *        whatmsg) : snapwebsites_exception(whatmsg) {}
+    explicit snapwebsites_exception_parameter_not_available(std::string const & whatmsg) : snapwebsites_exception(whatmsg) {}
+    explicit snapwebsites_exception_parameter_not_available(QString const &     whatmsg) : snapwebsites_exception(whatmsg) {}
 };
 
 class snapwebsites_exception_io_error : public snapwebsites_exception
@@ -306,6 +307,7 @@ public:
     void                create_messenger_instance( bool const use_thread = false );
 
     void                detach();
+    void                server_loop_ready();
     void                listen();
     void                backend();
     int                 snapdbproxy_port() const { return f_snapdbproxy_port; }
@@ -316,6 +318,8 @@ public:
     unsigned long       connections_count();
 
     std::string         servername() const;
+    void                set_service_name(std::string const & service_name);
+    std::string const & get_service_name() const;
 
     void                configure_messenger_logging( snap_communicator::snap_tcp_client_permanent_message_connection::pointer_t ptr );
 
@@ -334,6 +338,7 @@ public:
     SNAP_SIGNAL_WITH_MODE(process_cookies, (), (), NEITHER);
     SNAP_SIGNAL_WITH_MODE(attach_to_session, (), (), NEITHER);
     SNAP_SIGNAL_WITH_MODE(detach_from_session, (), (), NEITHER);
+    SNAP_SIGNAL_WITH_MODE(user_status, (snap_child::user_status_t status, snap_child::user_identifier_t id), (status, id), NEITHER);
     SNAP_SIGNAL_WITH_MODE(define_locales, (http_strings::WeightedHttpString & locales), (locales), NEITHER);
     SNAP_SIGNAL_WITH_MODE(process_post, (QString const & url), (url), NEITHER);
     SNAP_SIGNAL_WITH_MODE(execute, (QString const & url), (url), NEITHER);
@@ -381,13 +386,15 @@ private:
     QByteArray                  f_translation_xml = QByteArray();
 
     std::string                 f_servername = std::string();
+    std::string                 f_service_name = std::string();
+    snap_pid::pointer_t         f_pid_file = snap_pid::pointer_t();
     bool                        f_debug = false;
     bool                        f_foreground = false;
     bool                        f_backend = false;
     bool                        f_force_restart = false;
     bool                        f_firewall_is_active = false;
     bool                        f_firewall_up = false;
-    QMap<QString, bool>         f_created_table = QMap<QString, bool>();
+    //QMap<QString, bool>         f_created_table = QMap<QString, bool>();
 
     uint64_t                    f_connections_count = 0;
     snap_child_vector_t         f_children_running = snap_child_vector_t();

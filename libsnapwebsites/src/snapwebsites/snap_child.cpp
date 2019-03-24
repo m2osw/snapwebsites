@@ -2838,14 +2838,10 @@ void snap_child::messenger_runner::run()
  */
 pid_t snap_child::fork_child()
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("snap_child::fork_child(): server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
 
 #ifdef SNAP_NO_FORK
-    if( server->nofork() )
+    if(server->nofork())
     {
         // simulate a working fork, we return as the child
         return 0;
@@ -2943,6 +2939,7 @@ pid_t snap_child::fork_child()
             // the snap_logic_exception is not a snap_exception
             // and other libraries may generate other exceptions
             // (i.e. libtld, C++ cassandra driver...)
+            //
             SNAP_LOG_FATAL("snap_child::fork_child(): std::exception caught: ")(std_except.what());
             exit(1);
             NOTREACHED();
@@ -3163,6 +3160,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         // the snap_logic_exception is not a snap_exception
         // and other libraries may generate other exceptions
         // (i.e. libtld, C++ cassandra driver...)
+        //
         SNAP_LOG_FATAL("snap_child::process(): std::exception caught: ")(std_except.what());
     }
     catch( ... )
@@ -3175,6 +3173,27 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
 
     // compiler expects a return
     return false;
+}
+
+
+/** \brief Get a shared pointer copy of the server.
+ *
+ * This function returns a shared pointer of the server.
+ *
+ * The children only have a weak pointer back to the server. This function
+ * attempts a lock. If the lock fails, then the function throws.
+ *
+ * \return The pointer to the server.
+ */
+server::pointer_t snap_child::get_server() const
+{
+    server::pointer_t server(f_server.lock());
+    if(!server)
+    {
+        throw snap_logic_exception("could not lock server pointer in snap_child::get_server()");
+    }
+
+    return server;
 }
 
 
@@ -4122,11 +4141,7 @@ void snap_child::snap_info()
  */
 void snap_child::snap_statistics()
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
 
     QString s;
 
@@ -4374,11 +4389,7 @@ snap_uri const & snap_child::get_uri() const
  */
 QString snap_child::get_action() const
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     return f_uri.query_option(server->get_parameter("qs_action"));
 }
 
@@ -4396,11 +4407,7 @@ QString snap_child::get_action() const
  */
 void snap_child::set_action(QString const& action)
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     f_uri.set_query_option(server->get_parameter("qs_action"), action);
 }
 
@@ -5320,11 +5327,7 @@ void snap_child::canonicalize_options()
         }
     }
 
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     QString const qs_lang(server->get_parameter("qs_language"));
     QString lang(f_uri.query_option(qs_lang));
     QString country;
@@ -5959,12 +5962,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
         }
     }
 
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
-    server->attach_to_session();
+    attach_to_session();
 
     // redirect the user to the specified path
     QString http_name;
@@ -5974,6 +5972,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
                     .arg(static_cast<int>(http_code))
                     .arg(http_name), HEADER_MODE_REDIRECT);
 
+    server::pointer_t server(get_server());
     snap_string_list const show_redirects(server->get_parameter("show_redirects").split(","));
 
     if(!show_redirects.contains("refresh-only"))
@@ -6078,11 +6077,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
  */
 void snap_child::attach_to_session()
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     server->attach_to_session();
 }
 
@@ -6100,11 +6095,7 @@ void snap_child::attach_to_session()
  */
 bool snap_child::load_file(post_file_t & file)
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     bool found(false);
     server->load_file(file, found);
     return found;
@@ -6354,11 +6345,7 @@ void snap_child::exit(int code)
  */
 bool snap_child::is_debug() const
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     return server->is_debug();
 }
 
@@ -6463,11 +6450,7 @@ QString snap_child::get_server_parameter(QString const & name)
         throw snap_logic_exception("get_server_parameter() called with an empty string as the name of the parameter to be retrieved");
     }
 #endif
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     return server->get_parameter(name);
 }
 
@@ -6491,11 +6474,7 @@ QString snap_child::get_data_path()
 {
     // get the data_path variable from the configuration file
     //
-    server::pointer_t server(f_server.lock());
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     QString path(server->get_parameter(get_name(name_t::SNAP_NAME_CORE_DATA_PATH)));
 
     // if not defined by end user, return the default value
@@ -6540,6 +6519,21 @@ QString snap_child::get_list_data_path()
 }
 
 
+/** \brief Change the status of the user.
+ *
+ * This message is used to send a copy of the user status whenever it
+ * changes.
+ *
+ * \param[in] status  The new user status.
+ * \param[in] id  The user identifier.
+ */
+void snap_child::user_status(user_status_t status, user_identifier_t id)
+{
+    server::pointer_t server(get_server());
+    return server->user_status(status, id);
+}
+
+
 /** \brief Improve signature to place at the bottom of a page.
  *
  * This signal can be used to generate a signature to place at the bottom
@@ -6553,11 +6547,7 @@ QString snap_child::get_list_data_path()
  */
 void snap_child::improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag)
 {
-    server::pointer_t server(f_server.lock());
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     return server->improve_signature(path, doc, signature_tag);
 }
 
@@ -6887,12 +6877,7 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
             //
             if(f_cassandra)
             {
-                server::pointer_t server( f_server.lock() );
-                if(!server)
-                {
-                    throw snap_logic_exception("server pointer is nullptr");
-                }
-                server->attach_to_session();
+                attach_to_session();
             }
 
             // content type is HTML, we reset this header because it could have
@@ -7671,12 +7656,7 @@ void snap_child::output_cookies()
  */
 QString snap_child::get_unique_number()
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
-
+    server::pointer_t server(get_server());
     QString const data_path(get_data_path());
 
     quint64 c(0);
@@ -7725,11 +7705,7 @@ QString snap_child::get_unique_number()
  */
 snap_string_list snap_child::init_plugins(bool const add_defaults, QString const & introducer)
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
 
     // load the plugins for this website
     //
@@ -8105,11 +8081,7 @@ void snap_child::finish_update()
     if(f_new_content)
     {
         f_new_content = false;
-        server::pointer_t server( f_server.lock() );
-        if(!server)
-        {
-            throw snap_logic_exception("server pointer is nullptr");
-        }
+        server::pointer_t server(get_server());
         trace("Save content in database.\n");
         server->save_content();
         trace("Initialization content now saved in database.\n");
@@ -8346,11 +8318,7 @@ void snap_child::execute()
     // give a chance to the system to use cookies such as the
     // cookie used to mark a user as logged in to kick in early
     //
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     server->process_cookies();
 
     // the cookie handling may generate an immediate response in which case
@@ -8457,11 +8425,7 @@ void snap_child::execute()
 void snap_child::output_result(header_mode_t modes, QByteArray output_data)
 {
     // give plugins a chance to tweak the output one more time
-    server::pointer_t server(f_server.lock());
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     server->output_result(f_uri.path(), output_data);
 
     // Handling the compression has to be done before defining the
@@ -8593,11 +8557,7 @@ void snap_child::process_post()
 {
     if(f_has_post)
     {
-        server::pointer_t server( f_server.lock() );
-        if(!server)
-        {
-            throw snap_logic_exception("server pointer is nullptr");
-        }
+        server::pointer_t server(get_server());
         server->process_post(f_uri.path());
     }
 }
@@ -8883,11 +8843,7 @@ snap_child::locale_info_vector_t const& snap_child::get_plugins_locales()
         // we expect a string of locales defined as weighted HTTP strings
         // remember that without a proper weight the algorithm uses 1.0
         //
-        server::pointer_t server( f_server.lock() );
-        if(!server)
-        {
-            throw snap_logic_exception("server pointer is nullptr");
-        }
+        server::pointer_t server(get_server());
         http_strings::WeightedHttpString locales;
         server->define_locales(locales);
 
@@ -9738,11 +9694,7 @@ snap_child::country_name_t const * snap_child::get_countries()
  */
 void snap_child::backend_process()
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
     server->backend_process();
 }
 
@@ -9794,11 +9746,8 @@ void snap_child::backend_process()
  */
 void snap_child::udp_ping(char const * service_name)
 {
-    server::pointer_t server( f_server.lock() );
-    if(!server)
-    {
-        throw snap_logic_exception("server pointer is nullptr");
-    }
+    server::pointer_t server(get_server());
+
     // the URI to be used with PING is the website URI, not the full page
     // URI (otherwise it does not work as expected)
     //

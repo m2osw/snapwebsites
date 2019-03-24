@@ -23,17 +23,24 @@
 
 int main( int argc, char * argv[] )
 {
-    int exitval( 1 );
+    int exitval(1);
     try
     {
         // create a server object
         //
-        snap::server::pointer_t s( snap::server::instance() );
+        snap::server::pointer_t s(snap::server::instance());
         s->setup_as_backend();
 
         // parse the command line arguments (this also brings in the .conf params)
         //
-        s->config( argc, argv );
+        s->config(argc, argv);
+
+        QString action(s->get_parameter("action"));
+        if(!action.isEmpty())
+        {
+            action.replace('_', ':');
+            s->set_service_name(action.toUtf8().data());
+        }
 
         // if possible, detach the server
         //

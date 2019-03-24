@@ -1453,7 +1453,7 @@ void index::on_modified_content(content::path_info_t & ipath)
  * This function goes through the list of pages that were created and/or
  * updated to make sure that the index is properly maintained.
  *
- * At that point we assume that the page is modified and its \em final
+ * At that point we assume that the page is modified and in its \em final
  * state for a while.
  *
  * \todo

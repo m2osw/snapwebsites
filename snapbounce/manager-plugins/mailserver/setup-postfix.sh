@@ -10,7 +10,7 @@ ARG_DOMAIN=$1
 
 if ! [ -d "/etc/postfix" ]
 then
-  echo "postfix is not installed!"
+  echo "error: postfix is not installed!"
   exit 1
 fi
 
@@ -205,7 +205,7 @@ fi
 #
 for i in opendkim opendmarc postfix bind9
 do
-  echo "(Re)start service $1..."
+  echo "(Re)start service $i..."
   systemctl enable  $i
   systemctl restart $i
 done

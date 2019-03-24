@@ -1050,76 +1050,76 @@ void snap_backend::run_backend()
 
 void snap_backend::process_action()
 {
+    auto p_server = f_server.lock();
+    if(!p_server)
     {
-        auto p_server = f_server.lock();
-        if(!p_server)
-        {
-            throw snap_child_exception_no_server("snap_backend::process_action(): The p_server weak pointer could not be locked");
-        }
+        throw snap_child_exception_no_server("snap_backend::process_action(): The p_server weak pointer could not be locked");
+    }
 
-        init_start_date();
+    init_start_date();
 
-        // somewhat fake being a child (we are not here)
-        f_is_child = true;
-        f_child_pid = getpid();
-        f_client.reset();
+    // somewhat fake being a child (we are not here)
+    f_is_child = true;
+    f_child_pid = getpid();
+    f_client.reset();
 
-        // define a User-Agent for all backends
-        //
-        // TBD: should that be a parameter in the .conf file?
-        //
-        f_env[snap::get_name(name_t::SNAP_NAME_CORE_HTTP_USER_AGENT)] = "Snap! Backend (" SNAPWEBSITES_VERSION_STRING ")";
+    // define a User-Agent for all backends
+    //
+    // TBD: should that be a parameter in the .conf file?
+    //
+    f_env[snap::get_name(name_t::SNAP_NAME_CORE_HTTP_USER_AGENT)] = "Snap! Backend (" SNAPWEBSITES_VERSION_STRING ")";
 
-        // define the action and whether it is a CRON action
-        //
-        f_action = p_server->get_parameter("__BACKEND_ACTION");
+    // define the action and whether it is a CRON action
+    //
+    f_action = p_server->get_parameter("__BACKEND_ACTION");
+    if(f_action.isEmpty())
+    {
+        f_action = p_server->get_parameter("__BACKEND_CRON_ACTION");
         if(f_action.isEmpty())
         {
-            f_action = p_server->get_parameter("__BACKEND_CRON_ACTION");
-            if(f_action.isEmpty())
-            {
-                // the default action is "snapbackend", which is not a CRON
-                // action and runs the backend_process() signal
-                // (see plugins/content/backend.cpp where we do the call)
-                // It is part of the content plugin to avoid having to
-                // carry a special case all around
-                //
-                f_action = QString("content::%1").arg(get_name(name_t::SNAP_NAME_CORE_SNAPBACKEND));
-            }
-            else
-            {
-                f_cron_action = true;
-            }
+            // the default action is "snapbackend", which is not a CRON
+            // action and runs the backend_process() signal
+            // (see plugins/content/backend.cpp where we do the call)
+            // It is part of the content plugin to avoid having to
+            // carry a special case all around
+            //
+            f_action = QString("content::%1").arg(get_name(name_t::SNAP_NAME_CORE_SNAPBACKEND));
         }
-
-        // get the URI, since it does not change over time within one
-        // run, we save it in a variable member
-        //
-        f_website = p_server->get_parameter("__BACKEND_URI");
-
-        // check whether this action should use a global lock when running
-        // (this is for those actions that cannot be run simultaneously
-        // against more than one website at a time; i.e. the sendmail
-        // backend is website agnostic, for example.)
-        //
-        f_global_lock = !p_server->get_parameter("GLOBAL_LOCK").isEmpty();
-
-        // get the snap_communicator singleton
-        //
-        g_communicator = snap_communicator::instance();
-
-        // create a TCP messenger connected to the Snap! Communicator server
-        //
+        else
         {
-            QString tcp_addr("127.0.0.1");
-            int tcp_port(4040);
-            snap_config parameters("snapcommunicator");
-            tcp_client_server::get_addr_port(QString(parameters["local_listen"]), tcp_addr, tcp_port, "tcp");
-            g_messenger.reset(new messenger(this, f_action, tcp_addr.toUtf8().data(), tcp_port));
-            g_communicator->add_connection(g_messenger);
-
-            p_server->configure_messenger_logging( g_messenger );
+            f_cron_action = true;
         }
+    }
+
+    // get the URI, since it does not change over time within one
+    // run, we save it in a variable member
+    //
+    f_website = p_server->get_parameter("__BACKEND_URI");
+
+    // check whether this action should use a global lock when running
+    // (this is for those actions that cannot be run simultaneously
+    // against more than one website at a time; i.e. the sendmail
+    // backend is website agnostic, for example.)
+    //
+    f_global_lock = !p_server->get_parameter("GLOBAL_LOCK").isEmpty();
+
+    // get the snap_communicator singleton
+    //
+    g_communicator = snap_communicator::instance();
+
+    // create a TCP messenger connected to the Snap! Communicator server
+    //
+    {
+        QString tcp_addr("127.0.0.1");
+        int tcp_port(4040);
+        snap_config parameters("snapcommunicator");
+        tcp_client_server::get_addr_port(QString(parameters["local_listen"]), tcp_addr, tcp_port, "tcp");
+        g_messenger.reset(new messenger(this, f_action, tcp_addr.toUtf8().data(), tcp_port));
+        g_communicator->add_connection(g_messenger);
+
+        snap::snap_lock::initialize_snapcommunicator(tcp_addr.toUtf8().data(), tcp_port);
+
+        p_server->configure_messenger_logging( g_messenger );
     }
 
     g_interrupt.reset(new backend_interrupt(this));
@@ -1172,6 +1172,8 @@ void snap_backend::process_action()
     }
 
     SNAP_LOG_INFO("------------------------------------ CRON backend ")(f_action)(" started.");
+
+    p_server->server_loop_ready();
 
     // start our event loop
     //

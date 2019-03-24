@@ -188,8 +188,10 @@ public:
     static int64_t const            NEW_RANDOM_INTERVAL = 5LL * 60LL * 1000000LL; // 5 min. in microseconds
 
     // the login status, returned by load_login_session(), is a set of flags
+    //
     typedef int                     login_status_t;
-    typedef int64_t                 identifier_t;
+    typedef snap_child::user_identifier_t
+                                    identifier_t;
 
     static identifier_t const       IDENTIFIER_INVALID   = -1;
     static identifier_t const       IDENTIFIER_ANONYMOUS =  0;
@@ -499,6 +501,7 @@ private:
     void                    content_update         (int64_t variables_timestamp);
     void                    user_identifier_update (int64_t variables_timestamp);
     QString                 referrer_identifier(user_info_t const & user_info);
+    void                    user_status_changed();
 
     void                    token_user_count(filter::filter::token_info_t & token);
 
