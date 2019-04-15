@@ -26,6 +26,7 @@
 //
 #include "snapwebsites/log.h"
 //#include "snapwebsites/not_used.h"
+#include "snapwebsites/snapwebsites.h"
 
 //// C++ lib
 ////
@@ -91,7 +92,10 @@ snap_pid::snap_pid(std::string const & service_name)
     : f_service_name(service_name)
 {
     generate_filename(service_name);
-    pipe2(f_pipes, O_CLOEXEC);
+    if(pipe2(f_pipes, O_CLOEXEC) != 0)
+    {
+        throw snapwebsites_exception_io_error("error trying to open pipe() to inform parent that the child PID file was created.");
+    }
 }
 
 
@@ -279,7 +283,10 @@ void snap_pid::close_pipes()
 void snap_pid::send_signal(bool result)
 {
     char c[1] = { static_cast<char>(result) };
-    write(f_pipes[1], c, 1);
+    if(write(f_pipes[1], c, 1) != 1)
+    {
+        throw snapwebsites_exception_io_error("error while writing to the pipe between parent and child, letting parent know that the PID file is ready.");
+    }
     close_pipes();
 }
 
@@ -303,7 +310,11 @@ bool snap_pid::wait_signal()
 {
     if(f_pipes[0] != -1)
     {
-        read(f_pipes[0], &f_result, 1);
+        if(read(f_pipes[0], &f_result, 1) != 1)
+        {
+            throw snapwebsites_exception_io_error("error while reading from the pipe between parent and child, parent will never know whether the PID file is ready.");
+        }
+
         close_pipes();
     }
 
