@@ -105,7 +105,7 @@ char const * get_name(name_t name)
         return "reindex";
 
     case name_t::SNAP_NAME_INDEX_TABLE:
-        return "index";
+        return "indexes";       // plural because "INDEX" is a CQL keyword
 
     case name_t::SNAP_NAME_INDEX_THEME: // filter function
         return "index::theme";
@@ -124,7 +124,31 @@ char const * get_name(name_t name)
 
 
 
+namespace
+{
 
+/** \brief List of indexes that were deleted.
+ *
+ * When re-indexing, we need to delete old indexes, otherwise we would not
+ * do a very good job.
+ *
+ * We could delete everything and then rebuild one list at a time. That is
+ * fast, but that also means that the website is in a semi-broken state until
+ * the rebuild is done.
+ *
+ * Another way is to delete only the entries we are working on. This way
+ * only the pages that correspond to this specific indexing will be broken
+ * for a little while. On a large site with many indexes, this can be
+ * quite important.
+ *
+ * Later versions may be able to better handle the situation, but right
+ * now we just create new entries, we do not remove old ones.
+ *
+ * \sa index::reindex()
+ */
+snap_string_list * g_deleted_entries = nullptr;
+
+}
 
 
 
@@ -163,7 +187,7 @@ paging_t::paging_t(snap_child * snap, content::path_info_t & ipath, QString cons
 
 /** \brief Read the current page of this index.
  *
- * This function calls the index read_index() function with the parameters
+ * This function calls the index::read_index() function with the parameters
  * as defined in this paging object.
  *
  * \return The index of records as read using the index plugin.
@@ -174,11 +198,17 @@ paging_t::paging_t(snap_child * snap, content::path_info_t & ipath, QString cons
 index_record_vector_t paging_t::read_index()
 {
     int count(get_page_size());
-    if(f_maximum_number_of_records > 0 && count > f_maximum_number_of_records)
+    if(f_maximum_number_of_records > 0
+    && count > f_maximum_number_of_records)
     {
         count = f_maximum_number_of_records;
     }
-    return index::index::instance()->read_index(f_ipath, get_index_name(), get_start_offset() - 1, count);
+    return index::index::instance()->read_index(
+              f_ipath
+            , get_index_name()
+            , get_start_offset() - 1
+            , count
+            , f_start_key);
 }
 
 
@@ -373,6 +403,61 @@ int32_t paging_t::get_start_offset() const
 {
     int const offset(f_start_offset < 1 ? 1 : static_cast<int>(f_start_offset));
     return offset + (f_page - 1) * get_page_size();
+}
+
+
+/** \brief Define the start key to used against column1.
+ *
+ * This function defines a start key that needs to be matched for the
+ * data to be considered as being part of this index.
+ *
+ * The paging_t object will limit the pages it selects to those that have
+ * their index key starting with this string. The index key is the one you
+ * defined with your "k=..." key.
+ *
+ * The end key will be set to your start key plus one (only the last character
+ * is increased by 1.)
+ *
+ * By setting the `start_key` value to an empty string, you remove this
+ * search constrain and end up with all the keys for this index.
+ *
+ * \param[in] start_key  Only select entries which key start with this string.
+ *
+ * \sa get_start_key()
+ */
+void paging_t::set_start_key(QString const & start_key)
+{
+    f_start_key = start_key;
+}
+
+
+/** \brief Return the start of the key.
+ *
+ * In many cases, the index key starts with a specific string representing
+ * a specific list. (Contrary to lists that have a distinct definition for
+ * each list.)
+ *
+ * This string represents that part of the key which distinguish one list
+ * from another. For example, if you create elements that are attached
+ * to a form of \em parent element, then the \em parent URL or number
+ * (once we have a tree it should be a number) could be how you start your
+ * key.
+ *
+ * Say you use a URL and a namespace separator to the other parts of your
+ * key. You could have a key which starts this way:
+ *
+ *     "https://www.example.com/this/page/here::..."
+ *
+ * The system automatically generates the end key by adding one to the last
+ * character of the start key.
+ *
+ * \return The start key as it stands.
+ *
+ * \sa set_start_key()
+ */
+QString const & paging_t::get_start_key() const
+{
+    return f_start_key;
 }
 
 
@@ -1105,7 +1190,7 @@ int32_t paging_t::get_page_size() const
  *
  * Important Note: We do not have a double link. However, the value column
  * of the index table has a Cassandra secondary index so we can search with
- * an CQL order
+ * a CQL order
  *
  * \code
  *     SELECT ... WHERE value = '<page URI>'
@@ -1276,7 +1361,7 @@ void index::bootstrap(snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN0(index, "server", server, attach_to_session);
-    SNAP_LISTEN (index, "server", server, register_backend_cron, _1);
+    //SNAP_LISTEN (index, "server", server, register_backend_cron, _1);
     SNAP_LISTEN (index, "server", server, register_backend_action, _1);
     SNAP_LISTEN (index, "content", content::content, create_content, _1, _2, _3);
     SNAP_LISTEN (index, "content", content::content, modified_content, _1);
@@ -1439,7 +1524,7 @@ void index::on_modified_content(content::path_info_t & ipath)
     // there are times when you may want to debug your code to know which
     // pages are marked as modified; this debug log will help with that
     //
-    SNAP_LOG_DEBUG("index detected that page \"")(ipath.get_key())("\" got modified.");
+    SNAP_LOG_DEBUG("index detected that page \"")(ipath.get_key())("\" was modified.");
 
     // save the page URL to a list of pages to manage once down with this
     // access; the 
@@ -1503,19 +1588,19 @@ void index::on_attach_to_session()
  * have different `ORDER BY` when the number of pages is likely to
  * grow over 1,000.
  *
- * The script script is expected to be a set of \em variables separated
- * by a newline character (`\n`). Each variable names the script for what
- * it does. We current support two of them:
+ * The index definition is expected to be an array of JSON objects.
+ * The object fields define how the corresponding index is generated.
+ * We currently support the following:
  *
- * \li `c` -- the check script
- * \li `k` -- the key script
- * \li `n` -- the name of this index
+ * \li `"c"` -- the check script
+ * \li `"k"` -- the key script
+ * \li `"n"` -- the name of this index
  *
  * The name is used to define the key of the index entry. The key entry
  * is the URL to the type of the page so if you want multiple indexes
  * (different `ORDER BY`) you need to be able to distinguish those
  * indexes and this is done with the name. The name is used after a
- * hash character (https://example.com/types/taxonomy/.../#\<name>).
+ * hash character (`https://example.com/types/taxonomy/...#\<name>`).
  * The name is reused whenever you want to read the index.
  *
  * These are the same as the list, except they appear together in the
@@ -1550,7 +1635,9 @@ void index::on_attach_to_session()
  *      // 3. remove an index
  *      //
  *      //    (if name was not defined, then it was viewed as "default"
- *      //    so you can use `"n": "default"`)
+ *      //    so you can use `"n": "default"` as something is required
+ *      //    or the corresponding entries in the index table will remain
+ *      //    there forever...)
  *      //
  *      [
  *          {
@@ -1568,7 +1655,9 @@ void index::on_attach_to_session()
  *
  * \todo
  * Have a function to reset an index. Especially, if an index script is
- * modified, then we need to regenerate that entire index.
+ * modified, then we need to regenerate that entire index. (At this time
+ * we have a reindex() which we can run from the command line with
+ * "index::reindex")
  *
  * \param[in] page_ipath  The path to the page being indexed.
  * \param[in] type_ipath  The path to the page representing the index.
@@ -1601,7 +1690,8 @@ void index::index_pages(
     //
     if(!scripts_json_value)
     {
-        // TBD: should we not just delete our data and start over?
+        // TBD: should we just delete our data and start over?
+        //
         SNAP_LOG_ERROR("invalid JSON for the index_pages() list of scripts \"")
                       (scripts)
                       ("\".");
@@ -1646,6 +1736,43 @@ void index::index_one_page(
     {
         index_key += "#";
         index_key += vars.at("n");
+    }
+
+    if(g_deleted_entries != nullptr
+    && !g_deleted_entries->contains(index_key))
+    {
+        *g_deleted_entries << index_key;
+
+        libdbproxy::libdbproxy::pointer_t cassandra(f_snap->get_cassandra());
+        libdbproxy::context::pointer_t context(f_snap->get_context());
+        libdbproxy::proxy::pointer_t dbproxy(cassandra->getProxy());
+
+        // DELETE FROM snap_websites.index
+        //       WHERE key = '<website>';
+        //
+        libdbproxy::order delete_index;
+        delete_index.setCql(QString("DELETE FROM %1.%2 WHERE key=?")
+                                .arg(context->contextName())
+                                .arg(get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                          , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_ROWS);
+        delete_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);
+
+        delete_index.addParameter(index_key.toUtf8());
+
+        libdbproxy::order_result const delete_index_result(dbproxy->sendOrder(delete_index));
+
+        // report error, but continue since we're just trying to delete
+        //
+        if(!delete_index_result.succeeded())
+        {
+            SNAP_LOG_ERROR("Error deleting indexes for website \"")
+                          (page_ipath.get_key())
+                          ("\" from table \"")
+                          (context->contextName())
+                          (".")
+                          (get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                          ("\"");
+        }
     }
 
     QString key;
@@ -1799,7 +1926,7 @@ QString index::get_key_of_index_page(
             //
             // TODO: generate an error message to admin
             //
-            SNAP_LOG_ERROR("Error compiling check script: \"")
+            SNAP_LOG_ERROR("Error compiling key script: \"")
                           (vars.at("k"))
                           ("\".");
             return QString();
@@ -1968,6 +2095,7 @@ QString index::get_key_of_index_page(
  * \param[in] index_name  The name of the index to read.
  * \param[in] start  The first record to be returned (must be 0 or larger).
  * \param[in] count  The number of records to return (-1 for the maximum allowed).
+ * \param[in] start_key  How the key must or the empty string.
  *
  * \return The index of records
  */
@@ -1975,7 +2103,8 @@ index_record_vector_t index::read_index(
               content::path_info_t & ipath
             , QString const & index_name
             , int start
-            , int count)
+            , int count
+            , QString const & start_key)
 {
     index_record_vector_t result;
 
@@ -1985,8 +2114,10 @@ index_record_vector_t index::read_index(
     }
     if(start < 0 || count <= 0)
     {
-        throw snap_logic_exception(QString("index::read_index(ipath, %1, %2) called with invalid start and/or count values...")
-                    .arg(start).arg(count));
+        throw snap_logic_exception(QString("index::read_index(\"%1\", %2, %3) called with invalid start and/or count values...")
+                    .arg(ipath.get_key())
+                    .arg(start)
+                    .arg(count));
     }
 
     libdbproxy::table::pointer_t index_table(get_index_table());
@@ -2002,9 +2133,28 @@ index_record_vector_t index::read_index(
     libdbproxy::row::pointer_t index_row(index_table->getRow(index_key));
     index_row->clearCache();
 
+    QString end_key(start_key);
+    if(!end_key.isEmpty())
+    {
+        // the key is not empty, increment the last character by one
+        //
+        ushort const l(end_key[end_key.length() - 1].unicode());
+        if(l == 0xFFFF)
+        {
+            QChar const c('\0');
+            end_key += c;
+        }
+        else
+        {
+            end_key[end_key.length() - 1] = l + 1;
+        }
+    }
+
     auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
     column_predicate->setCount(std::min(100, count)); // optimize the number of cells transferred
     column_predicate->setIndex(); // behave like an index
+    column_predicate->setStartCellKey(start_key); // limit the loading to user defined range
+    column_predicate->setEndCellKey(end_key);
     for(;;)
     {
         // clear the cache before reading the next load
@@ -2044,24 +2194,24 @@ index_record_vector_t index::read_index(
 }
 
 
-/** \brief Register the CRON actions supported by the index plugin.
- *
- * This function registers this plugin CRON actions as defined below:
- *
- * \li reindex
- *
- * The "reindex" is used by the backend to go through all the pages of
- * all the existing indexes and reindex them _from scratch_ (it won't delete
- * all and rebuild all, but it will go through the entire set of indexes and
- * make sure that we do not have any missing items and extra items.)
- *
- * \param[in,out] actions  The vector of supported actions where we add
- *                         our own actions.
- */
-void index::on_register_backend_cron(server::backend_action_set & actions)
-{
-    actions.add_action(get_name(name_t::SNAP_NAME_INDEX_REINDEX), this);
-}
+///** \brief Register the CRON actions supported by the index plugin.
+// *
+// * This function registers this plugin CRON actions as defined below:
+// *
+// * \li reindex
+// *
+// * The "reindex" is used by the backend to go through all the pages of
+// * all the existing indexes and reindex them _from scratch_ (it won't delete
+// * all and rebuild all, but it will go through the entire set of indexes and
+// * make sure that we do not have any missing items and extra items.)
+// *
+// * \param[in,out] actions  The vector of supported actions where we add
+// *                         our own actions.
+// */
+//void index::on_register_backend_cron(server::backend_action_set & actions)
+//{
+//    //actions.add_action(get_name(name_t::SNAP_NAME_INDEX_REINDEX), this);
+//}
 
 
 /** \brief Register the various index actions.
@@ -2069,44 +2219,24 @@ void index::on_register_backend_cron(server::backend_action_set & actions)
  * This function registers this plugin as supporting the following
  * one time actions:
  *
- * \li index::processallindexes
- * \li index::processindex
- * \li index::resetindexes
+ * \li index::reindex
  *
- * The "processallindex" adds all the pages of a website to the 'index'
- * table. This will force the system to re-check every single page.
- * In this case, the pages are give a really low priority which means
- * pretty much all other requests will be worked on first. This is
- * similar to running "index::resetindexes" except that it does not
- * recompute indexes in one go.
+ * The "index::reindex" goes through the list of index definitions and
+ * reindex each list as required.
  *
  * \code
- * snapbackend http://example.com/ --action index::processallindexes
+ * snapbackend https://example.com/ \
+ *          --action index::reindex
  * \endcode
  *
- * The "processindex" expects a URL parameter set to the page to be
- * checked, in other words, the URL of a page for which we want to
- * simulate a change to. This is useful to get the system to re-build
- * indexes that may include that page as soon as possible. That being said,
- * it appends it to the existing index of pages to be processed and that
- * index could be (very) long so it may still take a moment before it
- * gets processed. That being said, it will get processed way sooner than
- * without doing such. The URL may just include the path.
+ * The system automatically searches all the .../content-types/... definitions
+ * for index declarations. The process first deletes the existing indexes
+ * and then regenerates them. This allows for editing your indexes and
+ * getting the correct table again. The delete happens one entry at a time
+ * so that way other entries are still functional while the one being worked
+ * on gets rebuilt in full.
  *
- * \code
- * snapbackend http://example.com/ --action index::processindex -p URL=journal/201508
- * \endcode
- *
- * The "index::resetindexes" goes through the pages marked as indexes and delete
- * the existing index scripts (but not the content of the indexes.) This
- * will force the index process to recalculate the entire index instead
- * of just a few changes.
- *
- * \code
- * snapbackend http://example.com/ --action index::resetindexes
- * \endcode
- *
- * \param[in,out] actions  The index of supported actions where we add ourselves.
+ * \param[in,out] actions  The set of actions where we add ourselves.
  */
 void index::on_register_backend_action(server::backend_action_set & actions)
 {
@@ -2159,16 +2289,18 @@ void index::reindex()
     //libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
 
     QString const site_key(f_snap->get_site_key_with_slash());
-    QString const root_key(site_key + content::get_name(content::name_t::SNAP_NAME_CONTENT_CONTENT_TYPES_NAME));
+    QString const root_key(site_key + "types/taxonomy/system/content-types");
 
     snap_string_list paths;
     paths << root_key;
 
     QString const children_name(content::get_name(content::name_t::SNAP_NAME_CONTENT_CHILDREN));
-    QString const page_type_name(content::get_name(content::name_t::SNAP_NAME_CONTENT_PAGE_TYPE));
+    QString const page_name(content::get_name(content::name_t::SNAP_NAME_CONTENT_PAGE));
     QString const original_scripts_name(get_name(name_t::SNAP_NAME_INDEX_ORIGINAL_SCRIPTS));
 
-    while(!paths.isEmpty())
+    g_deleted_entries = new snap_string_list;
+
+    for(; !paths.isEmpty(); paths.removeAt(0))
     {
         content::path_info_t type_ipath;
         type_ipath.set_path(paths[0]);
@@ -2183,18 +2315,74 @@ void index::reindex()
                 libdbproxy::row::pointer_t row(content_table->getRow(type_ipath.get_key()));
                 libdbproxy::value const index_scripts(row->getCell(original_scripts_name)->getValue());
                 QString const scripts(index_scripts.stringValue());
-                links::link_info info(page_type_name
-                                    , false
-                                    , type_ipath.get_key()
-                                    , type_ipath.get_branch());
-                QSharedPointer<links::link_context> link_ctxt(links::links::instance()->new_link_context(info));
-                links::link_info page_info;
-                while(link_ctxt->next_link(page_info))
+                if(!scripts.isEmpty())
                 {
-                    content::path_info_t page_ipath;
-                    page_ipath.set_path(page_info.key());
-                    index_pages(page_ipath, type_ipath, scripts);
+                    links::link_info info(page_name
+                                        , false
+                                        , type_ipath.get_key()
+                                        , type_ipath.get_branch());
+                    QSharedPointer<links::link_context> link_ctxt(links::links::instance()->new_link_context(info));
+                    links::link_info page_info;
+                    while(link_ctxt->next_link(page_info))
+                    {
+                        content::path_info_t page_ipath;
+                        page_ipath.set_path(page_info.key());
+                        index_pages(page_ipath, type_ipath, scripts);
+                    }
                 }
+#if 0
+                else
+                {
+                    // TODO: run a DELETE if there are no scripts
+                    //       only we do not have the index name so
+                    //       I'm not too sure how to do it at this
+                    //       time, maybe with a ALLOW FILTERING,
+                    //       but we can't filter on the key anyway...
+                    //
+                    //       next this is going to be a rather slow
+                    //       process so it should be optional
+                    //
+                    libdbproxy::libdbproxy::pointer_t cassandra(f_snap->get_cassandra());
+                    libdbproxy::context::pointer_t context(f_snap->get_context());
+                    libdbproxy::proxy::pointer_t dbproxy(cassandra->getProxy());
+
+                    // DELETE FROM snap_websites.index
+                    //       WHERE key = '<website>';
+                    //
+                    libdbproxy::order delete_index;
+                    delete_index.setCql(QString("DELETE FROM %1.%2 WHERE key=?")
+                                            .arg(context->contextName())
+                                            .arg(get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                                      , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_ROWS);
+                    delete_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);
+
+                    QString index_key = type_ipath.get_key().toUtf8();
+                    // the name is required, but it's gone?!
+                    //if(vars.find("n") != vars.end()
+                    //&& vars.at("n") != get_name(name_t::SNAP_NAME_INDEX_DEFAULT_INDEX))
+                    //{
+                    //    index_key += "#";
+                    //    index_key += vars.at("n");
+                    //}
+
+                    delete_index.addParameter(index_key.toUtf8());
+
+                    libdbproxy::order_result const delete_index_result(dbproxy->sendOrder(delete_index));
+
+                    // report error, but continue since we're just trying to delete
+                    //
+                    if(!delete_index_result.succeeded())
+                    {
+                        SNAP_LOG_ERROR("Error deleting indexes for website \"")
+                                      (page_ipath.get_key())
+                                      ("\" from table \"")
+                                      (context->contextName())
+                                      (".")
+                                      (get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                                      ("\"");
+                    }
+                }
+#endif
             }
 
             // read the next level (children)
@@ -2217,11 +2405,14 @@ void index::reindex()
                             (type_ipath.get_key())
                             ("\".");
         }
-
-        // remove the path we just handled
-        //
-        paths.removeAt(0);
     }
+
+    // Note: if the delete doesn't happen, it's not a big deal, the reindex
+    //       is just a one time backend run so we would leak the memory and
+    //       then exit right after anyway...
+    //
+    delete g_deleted_entries;
+    g_deleted_entries = nullptr;
 }
 
 
@@ -2434,11 +2625,18 @@ void index::on_token_help(filter::filter::token_help_t & help)
  * \param[in,out] index_ipath  The index object from which the index is created.
  * \param[in] start  The start element.
  * \param[in] count  The number of records to display.
+ * \param[in] start_key  How the key must or the empty string.
  * \param[in] theme  The theme used to generate the output.
  *
  * \return The resulting HTML of the index or an empty string.
  */
-QString index::generate_index(content::path_info_t & ipath, content::path_info_t & index_ipath, int start, int count, QString const & theme)
+QString index::generate_index(
+              content::path_info_t & ipath
+            , content::path_info_t & index_ipath
+            , int start
+            , int count
+            , QString const & start_key
+            , QString const & theme)
 {
     QString const index_cpath(index_ipath.get_cpath());
     if(index_cpath == "admin"
@@ -2482,6 +2680,7 @@ QString index::generate_index(content::path_info_t & ipath, content::path_info_t
         paging.set_start_offset(start + 1);
         paging.set_maximum_number_of_records(count);
         paging.process_query_string_info();
+        paging.set_start_key(start_key);
         index_record_vector_t records(paging.read_index());
         snap_child::post_file_t f;
 

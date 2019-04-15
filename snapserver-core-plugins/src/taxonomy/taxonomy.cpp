@@ -17,6 +17,7 @@
 
 #include "taxonomy.h"
 
+#include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
 #include <snapwebsites/not_used.h>
 
@@ -323,7 +324,7 @@ libdbproxy::value taxonomy::find_type_with(
         // check for the key, if it exists we found what the user is
         // looking for!
         //
-        libdbproxy::value result(row->getCell(col_name)->getValue());
+        libdbproxy::value const result(row->getCell(col_name)->getValue());
         if(!result.nullValue())
         {
             return result;

@@ -23,12 +23,12 @@
 //
 #include "snapwebsites/log.h"
 #include "snapwebsites/not_reached.h"
+#include "snapwebsites/qlockfile.h"
 #include "snapwebsites/snap_thread.h"
 
 // Qt lib
 //
 #include <QDateTime>
-#include <QFile>
 
 // boost lib
 //
@@ -551,7 +551,7 @@ bool snap_config_file::actual_write_config_file(std::string const & filename)
 {
     // write to the configuration file now
     //
-    QFile c(QString::fromUtf8(filename.c_str()));
+    QLockFile c(QString::fromUtf8(filename.c_str()));
     if(!c.open(QIODevice::WriteOnly))
     {
         // could not write here, it may be an EPERM

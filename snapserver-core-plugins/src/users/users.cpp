@@ -2633,7 +2633,7 @@ void users::make_cookie_secure(http_cookie & cookie)
                         , "secure-cookie"
                         , "website \""
                             + site
-                            + "\" is marked as being secure, but it was successfully access with the HTTP protocol;"
+                            + "\" is marked as being secure, but it was successfully accessed with the HTTP protocol;"
                               " NOT MARKING COOKIE AS SECURE UNTIL THIS GETS FIXED"));
             flag->set_priority(98);
             flag->set_manual_down(true); // use manual as it is a bit costly to mark a flag DOWN on each run!

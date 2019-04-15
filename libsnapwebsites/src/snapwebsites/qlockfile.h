@@ -27,7 +27,8 @@
 #include <QFile>
 #include <sys/file.h>
 
-class QLockFile: public QFile
+class QLockFile
+    : public QFile
 {
 public:
     /** \brief Initialize the locked file.
@@ -57,7 +58,8 @@ public:
      *
      * The function blocks until the file is locked.
      *
-     * When the file is closed the lock will automatically be released.
+     * When the file is closed the lock is automatically released. The
+     * lock can't be removed untile your close the file.
      *
      * \param[in] iomode  The I/O mode to use on the file.
      *
@@ -70,8 +72,8 @@ public:
             return false;
         }
         // we want to ignore the text and unbuffered flags
-        OpenMode m(iomode & ~(QIODevice::Text | QIODevice::Unbuffered));
-        int op(m == QIODevice::ReadOnly ? LOCK_SH : LOCK_EX);
+        OpenMode const m(iomode & ~(QIODevice::Text | QIODevice::Unbuffered));
+        int const op(m == QIODevice::ReadOnly ? LOCK_SH : LOCK_EX);
         // note: on close() the flock() is automatically released
         if(flock(handle(), op) != 0)
         {

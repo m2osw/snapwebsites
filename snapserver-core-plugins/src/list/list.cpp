@@ -2162,7 +2162,7 @@ void list::on_modified_content(content::path_info_t & ipath)
     // there are times when you may want to debug your code to know which
     // pages are marked as modified; this debug log will help with that
     //
-    SNAP_LOG_DEBUG("list detected that page \"")(ipath.get_key())("\" got modified.");
+    SNAP_LOG_DEBUG("list detected that page \"")(ipath.get_key())("\" was modified.");
 
     // if the same page is modified multiple times then we overwrite the
     // same entry multiple times

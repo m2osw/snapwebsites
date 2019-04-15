@@ -111,6 +111,9 @@ public:
     void                set_start_offset(int32_t start_offset);
     int32_t             get_start_offset() const;
 
+    void                set_start_key(QString const & start_key);
+    QString const &     get_start_key() const;
+
     void                process_query_string_info();
     QString             generate_query_string_info(int32_t page_offset) const;
     QString             generate_query_string_info_for_first_page() const;
@@ -141,6 +144,7 @@ private:
     content::path_info_t &          f_ipath;                        // path to the index
     mutable bool                    f_retrieved_index_name = false;
     mutable QString                 f_index_name = QString();       // name used in query string
+    QString                         f_start_key = QString();        // start of what your "k=..." script generates
     int32_t                         f_maximum_number_of_records = -1; // maximum number of records
     mutable int32_t                 f_number_of_records = -1;       // total number of records
     int32_t                         f_start_offset = -1;            // if -1, ignore
@@ -226,11 +230,13 @@ public:
                         read_index(content::path_info_t & ipath
                                  , QString const & name
                                  , int start
-                                 , int count);
+                                 , int count
+                                 , QString const & start_key = QString());
     QString             generate_index(content::path_info_t & ipath
                                      , content::path_info_t & index_ipath
                                      , int start = 0
                                      , int count = -1
+                                     , QString const & start_key = QString()
                                      , QString const & theme = "qrc:/xsl/index/default");
 
     // index plugin signals

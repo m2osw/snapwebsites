@@ -1,5 +1,17 @@
 snapwebsites (1.7.4.0~xenial) xenial; urgency=high
 
+  * SNAP-413 and SNAP-421 and SNAP-454: Moved the snapcreatecontext
+    functionality to snapdbproxy.
+  * SNAP-413: Moved the snapcreatetables functionality to snapdbproxy.
+  * SNAP-413: Fixed the NEWTABLE implementation.
+  * SNAP-267: Added an XSD to verify tables.xml files and updated the
+    CMakeLists.txt.
+  * SNAP-478: implemented the index plugin to have instant "lists".
+  * SNAP-478: added a link() function in snap_expr, useful for indexes.
+  * SNAP-679: added a "temporary" fix to the fail2ban nice value.
+  * SNAP-492: implemented the support for a PID file for snapserver,
+    snabackend, snacommunicator, and snapwatchdog (so far.)
+  * SNAP-641: Started work on a fix to not leak messages to the wrong user.
   * Changed the sendmail algorithm to allow for ignoring the fact that the
     user's email address failed with a bounce before if the user is an admin.
   * When marking a session as used up, save the date when the event happened.
@@ -19,22 +31,15 @@ snapwebsites (1.7.4.0~xenial) xenial; urgency=high
   * Applied a fix to the snapstop making the `--service` parameter optional.
     (The `--service "$MAINPID"` becomes `--service` when $MAINPID is empty.)
   * Added /etc/vim/vimrc.local so we get our search, line numbers, etc.
-  * SNAP-413 and SNAP-421 and SNAP-454: Moved the snapcreatecontext
-    functionality to snapdbproxy.
-  * SNAP-413: Moved the snapcreatetables functionality to snapdbproxy.
-  * SNAP-413: Fixed the NEWTABLE implementation.
   * Made the attach/detach session RAII so it at least happens on exceptions.
-  * SNAP-267: Added an XSD to verify tables.xml files and updated the
-    CMakeLists.txt.
+  * Added function to create a complete page in one call. (editor create_page)
   * Fixed the f_cassandra_connect_timer_index calculation.
   * Made the type found by find_type_with() available through another call.
   * Fixed the default watchdog plugins list, "package" was wrong, "s" missing.
-  * SNAP-679: added a "temporary" fix to the fail2ban nice value.
-  * SNAP-492: implemented the support for a PID file for snapserver,
-    snabackend, snacommunicator, and snapwatchdog (so far.)
-  * SNAP-641: Started work on a fix to not leak messages to the wrong user.
   * Applied a fix to the message box, it adds a scrollbar when many messages
     appear in the list.
+  * Fixed HUGE bug in content::modified_content_impl() where I would return
+    false if the snap_child object was ready. That test was inverted!
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Tue, 05 Mar 2019 10:49:22 -0700

@@ -2375,8 +2375,9 @@ bool content::load_attachment(QString const & key, attachment_file & file, bool 
  */
 bool content::modified_content_impl(path_info_t & ipath)
 {
-    if(f_snap->is_ready())
+    if(!f_snap->is_ready())
     {
+        SNAP_LOG_WARNING("Page \"")(ipath.get_key())("\" was allegedly modified but the snap child is not ready.");
         return false;
     }
 

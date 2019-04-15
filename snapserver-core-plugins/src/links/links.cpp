@@ -2423,6 +2423,40 @@ namespace details
 
 // TBD maybe this should be a taxonomy function and not directly a links option?
 //     (it would remove some additional dependencies on the content plugin!)
+void call_link(snap_expr::variable_t & result, snap_expr::variable_t::variable_vector_t const & sub_results)
+{
+    if(sub_results.size() != 2)
+    {
+        throw snap_expr::snap_expr_exception_invalid_number_of_parameters("invalid number of parameters to call link() expected 2 parameters");
+    }
+    QString const link_name(sub_results[0].get_string("linked_to(1)"));
+    QString const page(sub_results[1].get_string("linked_to(2)"));
+    if(link_name.isEmpty()
+    || page.isEmpty())
+    {
+        throw snap_expr::snap_expr_exception_invalid_parameter_value("invalid parameters to call link(), the first 2 parameters cannot be empty strings");
+    }
+
+    content::path_info_t ipath;
+    ipath.set_path(page);
+    link_info link_context_info(link_name, true, ipath.get_key(), ipath.get_branch());
+    QSharedPointer<link_context> link_ctxt(links::instance()->new_link_context(link_context_info));
+    link_info result_info;
+    if(link_ctxt->next_link(result_info))
+    {
+        // the link exists, return it
+        //
+        result.set_value(result_info.key());
+    }
+    else
+    {
+        result.set_value(QString());
+    }
+}
+
+
+// TBD maybe this should be a taxonomy function and not directly a links option?
+//     (it would remove some additional dependencies on the content plugin!)
 void call_linked_to(snap_expr::variable_t & result, snap_expr::variable_t::variable_vector_t const & sub_results)
 {
     if(sub_results.size() != 3
@@ -2494,6 +2528,10 @@ void call_linked_to(snap_expr::variable_t & result, snap_expr::variable_t::varia
 
 snap_expr::functions_t::function_call_table_t const links_functions[] =
 {
+    {
+        "link",
+        call_link
+    },
     { // check whether a page is linked to a type
         "linked_to",
         call_linked_to
