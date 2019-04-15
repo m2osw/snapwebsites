@@ -398,7 +398,14 @@ public:
             break;
 
         case connection_t::UDP:
-            snap::snap_communicator::snap_udp_server_message_connection::send_message(f_addr.toUtf8().data(), f_port, msg);
+            {
+                snap::snap_config const config("snapcommunicator");
+                snap::snap_communicator::snap_udp_server_message_connection::send_message(
+                              f_addr.toUtf8().data()
+                            , f_port
+                            , msg
+                            , config.get_parameter("signal_secret"));
+            }
             break;
 
         }

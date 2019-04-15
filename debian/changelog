@@ -12,6 +12,8 @@ snapwebsites (1.7.4.0~xenial) xenial; urgency=high
   * SNAP-492: implemented the support for a PID file for snapserver,
     snabackend, snacommunicator, and snapwatchdog (so far.)
   * SNAP-641: Started work on a fix to not leak messages to the wrong user.
+  * SNAP-526: added the ability to add a secret code in a UDP message to
+    make them a little more secure.
   * Changed the sendmail algorithm to allow for ignoring the fact that the
     user's email address failed with a bounce before if the user is an admin.
   * When marking a session as used up, save the date when the event happened.

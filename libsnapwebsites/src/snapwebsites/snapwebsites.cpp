@@ -1826,7 +1826,11 @@ void server::udp_ping_server( QString const & service, QString const & uri )
     QString const communicator_addr_port( f_parameters(QString("snapcommunicator"), "signal") );
     tcp_client_server::get_addr_port(communicator_addr_port, addr, port, "udp");
 
-    snap_communicator::snap_udp_server_message_connection::send_message(addr.toUtf8().data(), port, ping);
+    snap_communicator::snap_udp_server_message_connection::send_message(
+                  addr.toUtf8().data()
+                , port
+                , ping
+                , f_parameters(QString("snapcommunicator"), "signal_secret").toUtf8().data());
 }
 
 
@@ -1886,7 +1890,11 @@ void server::udp_rusage(QString const & process_name)
     QString const communicator_addr_port( f_parameters(QString("snapcommunicator"), "signal") );
     tcp_client_server::get_addr_port(communicator_addr_port, addr, port, "udp");
 
-    snap_communicator::snap_udp_server_message_connection::send_message(addr.toUtf8().data(), port, rusage_message);
+    snap_communicator::snap_udp_server_message_connection::send_message(
+                      addr.toUtf8().data()
+                    , port
+                    , rusage_message
+                    , f_parameters(QString("snapcommunicator"), "signal_secret").toUtf8().data());
 }
 
 
@@ -1960,7 +1968,11 @@ void server::block_ip( QString const & uri, QString const & period, QString cons
 
     // send the message using a UDP signal
     //
-    snap::snap_communicator::snap_udp_server_message_connection::send_message(addr.toUtf8().data(), port, message);
+    snap::snap_communicator::snap_udp_server_message_connection::send_message(
+                      addr.toUtf8().data()
+                    , port
+                    , message
+                    , config["signal_secret"]);
 }
 
 

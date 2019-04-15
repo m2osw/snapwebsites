@@ -7525,19 +7525,6 @@ snap_communicator::snap_udp_server_connection::snap_udp_server_connection(std::s
 }
 
 
-/** \brief Retrieve the socket of this server connection.
- *
- * This function retrieves the socket this server connection. In this case
- * the socket is defined in the udp_server class.
- *
- * \return The socket of this client connection.
- */
-int snap_communicator::snap_udp_server_connection::get_socket() const
-{
-    return udp_server::get_socket();
-}
-
-
 /** \brief Check to know whether this UDP connection is a reader.
  *
  * This function returns true to say that this UDP connection is
@@ -7551,6 +7538,73 @@ bool snap_communicator::snap_udp_server_connection::is_reader() const
 {
     return true;
 }
+
+
+/** \brief Retrieve the socket of this server connection.
+ *
+ * This function retrieves the socket this server connection. In this case
+ * the socket is defined in the udp_server class.
+ *
+ * \return The socket of this client connection.
+ */
+int snap_communicator::snap_udp_server_connection::get_socket() const
+{
+    return udp_server::get_socket();
+}
+
+
+/** \brief Define a secret code.
+ *
+ * When receiving a message through this UDP socket, this secret code must
+ * be included in the message. If not present, then the message gets
+ * discarded.
+ *
+ * By default this parameter is an empty string. This means no secret
+ * code is required and UDP communication can be done without it.
+ *
+ * \note
+ * Secret codes are expected to be used only on connections between
+ * computers. If the IP address is 127.0.0.1, you probably don't need
+ * to have a secret code.
+ *
+ * \warning
+ * Remember that UDP messages are limited in size. If too long, the
+ * send_message() function throws an error. So your secret code should
+ * remain relatively small.
+ *
+ * \todo
+ * The secret_code string must be a valid UTF-8 string. At this point
+ * this is not enforced.
+ *
+ * \param[in] secret_code  The secret code that has to be included in the
+ * incoming messages for those to be accepted.
+ */
+void snap_communicator::snap_udp_server_connection::set_secret_code(std::string const & secret_code)
+{
+    f_secret_code = secret_code;
+}
+
+
+/** \brief Retrieve the server secret code.
+ *
+ * This function returns the server secret code as defined with the
+ * set_secret_code() function. By default this parameter is set to
+ * the empty string.
+ *
+ * Whenever a message is received, this code is checked. If defined
+ * in the server and not equal to the code in the message, then the
+ * message is discarded (hackers?)
+ *
+ * The message is also used when sending a message. It gets added
+ * to the message if it is not the empty string.
+ *
+ * \return The secret code.
+ */
+std::string const & snap_communicator::snap_udp_server_connection::get_secret_code() const
+{
+    return f_secret_code;
+}
+
 
 
 
@@ -7596,10 +7650,15 @@ snap_communicator::snap_udp_server_message_connection::snap_udp_server_message_c
  * \param[in] addr  The destination address for the message.
  * \param[in] port  The destination port for the message.
  * \param[in] message  The message to send to the destination.
+ * \param[in] secret_code  The secret code to send along the message.
  *
  * \return true when the message was sent, false otherwise.
  */
-bool snap_communicator::snap_udp_server_message_connection::send_message(std::string const & addr, int port, snap_communicator_message const & message)
+bool snap_communicator::snap_udp_server_message_connection::send_message(
+                  std::string const & addr
+                , int port
+                , snap_communicator_message const & message
+                , std::string const & secret_code)
 {
     // Note: contrary to the TCP version, a UDP message does not
     //       need to include the '\n' character since it is sent
@@ -7607,11 +7666,17 @@ bool snap_communicator::snap_udp_server_message_connection::send_message(std::st
     //       limit which we enforce here.
     //
     udp_client_server::udp_client client(addr, port);
-    QString const msg(message.to_message());
+    snap_communicator_message m(message);
+    if(!secret_code.empty())
+    {
+        m.add_parameter("udp_secret", QString::fromUtf8(secret_code.c_str()));
+    }
+    QString const msg(m.to_message());
     QByteArray const utf8(msg.toUtf8());
     if(static_cast<size_t>(utf8.size()) > DATAGRAM_MAX_SIZE)
     {
         // packet too large for our buffers
+        //
         throw snap_communicator_invalid_message("message too large for a UDP server");
     }
     if(client.send(utf8.data(), utf8.size()) != utf8.size()) // we do not send the '\0'
@@ -7650,7 +7715,37 @@ void snap_communicator::snap_udp_server_message_connection::process_read()
         snap::snap_communicator_message message;
         if(message.from_message(udp_message))
         {
+            QString const expected(QString::fromUtf8(get_secret_code().c_str()));
+            if(message.has_parameter("udp_secret"))
+            {
+                QString const secret(message.get_parameter("udp_secret"));
+                if(secret != expected)
+                {
+                    if(!expected.isEmpty())
+                    {
+                        // our secret code and the message secret code do not match
+                        //
+                        SNAP_LOG_ERROR("the incoming message has an unexpected udp_secret code, message ignored");
+                        return;
+                    }
+
+                    // the sender included a UDP secret code but we don't
+                    // require it so we emit a warning but still accept
+                    // the message
+                    //
+                    SNAP_LOG_WARNING("no udp_secret=... parameter was expected (missing secret_code=... settings for this application?)");
+                }
+            }
+            else if(!expected.isEmpty())
+            {
+                // secret code is missing from incoming message
+                //
+                SNAP_LOG_ERROR("the incoming message was expected to have udp_secret code, message ignored");
+                return;
+            }
+
             // we received a valid message, process it
+            //
             dispatch_message(message);
         }
         else

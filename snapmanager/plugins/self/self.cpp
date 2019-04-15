@@ -651,7 +651,8 @@ bool self::apply_setting(QString const & button_name
             //
             snap::snap_communicator::snap_udp_server_message_connection::send_message(f_snap->get_signal_address()
                                                                                     , f_snap->get_signal_port()
-                                                                                    , resend);
+                                                                                    , resend
+                                                                                    , f_snap->get_server_parameter("signal_secret").toUtf8().data());
         }
         {
             snap::snap_communicator_message cgistatus;
@@ -662,7 +663,8 @@ bool self::apply_setting(QString const & button_name
             //
             snap::snap_communicator::snap_udp_server_message_connection::send_message(f_snap->get_signal_address()
                                                                                     , f_snap->get_signal_port()
-                                                                                    , cgistatus);
+                                                                                    , cgistatus
+                                                                                    , f_snap->get_server_parameter("signal_secret").toUtf8().data());
         }
         {
             snap::snap_communicator_message backendstatus;
@@ -673,7 +675,8 @@ bool self::apply_setting(QString const & button_name
             //
             snap::snap_communicator::snap_udp_server_message_connection::send_message(f_snap->get_signal_address()
                                                                                     , f_snap->get_signal_port()
-                                                                                    , backendstatus);
+                                                                                    , backendstatus
+                                                                                    , f_snap->get_server_parameter("signal_secret").toUtf8().data());
         }
 
         // messages sent...

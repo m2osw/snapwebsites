@@ -856,6 +856,12 @@ public:
         // snap_connection implementation
         virtual bool                is_reader() const override;
         virtual int                 get_socket() const override;
+
+        void                        set_secret_code(std::string const & secret_code);
+        std::string const &         get_secret_code() const;
+
+    private:
+        std::string                 f_secret_code = std::string();
     };
 
     class snap_udp_server_message_connection
@@ -869,7 +875,10 @@ public:
 
                                     snap_udp_server_message_connection(std::string const & addr, int port);
 
-        static bool                 send_message(std::string const & addr, int port, snap_communicator_message const & message);
+        static bool                 send_message(std::string const & addr
+                                               , int port
+                                               , snap_communicator_message const & message
+                                               , std::string const & secret_code = std::string());
 
         // snap_connection implementation
         virtual void                process_read() override;

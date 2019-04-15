@@ -369,7 +369,9 @@ public:
     void                        run();
 
     // one place where all messages get processed
-    void                        process_message(snap::snap_communicator::snap_connection::pointer_t connection, snap::snap_communicator_message const & message, bool udp);
+    void                        process_message(snap::snap_communicator::snap_connection::pointer_t connection
+                                              , snap::snap_communicator_message const & message
+                                              , bool udp);
 
     void                        send_status(snap::snap_communicator::snap_connection::pointer_t connection, snap::snap_communicator::snap_connection::pointer_t * reply_connection = nullptr);
     QString                     get_local_services() const;
@@ -1947,6 +1949,8 @@ class ping_impl
     : public snap::snap_communicator::snap_udp_server_message_connection
 {
 public:
+    typedef std::shared_ptr<ping_impl>  pointer_t;
+
     /** \brief The messenger initialization.
      *
      * The messenger receives UDP messages from various sources (mainly
@@ -2233,8 +2237,10 @@ void snap_communicator_server::init()
         int port(4041);
         tcp_client_server::get_addr_port(f_server->get_parameter("signal"), addr, port, "tcp");
 
-        f_ping.reset(new ping_impl(shared_from_this(), addr.toUtf8().data(), port));
-        f_ping->set_name("snap communicator messenger (UDP)");
+        ping_impl::pointer_t ping(new ping_impl(shared_from_this(), addr.toUtf8().data(), port));
+        ping->set_secret_code(f_server->get_parameter("signal_secret").toUtf8().data());
+        ping->set_name("snap communicator messenger (UDP)");
+        f_ping = ping;
         f_communicator->add_connection(f_ping);
     }
 
