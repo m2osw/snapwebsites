@@ -108,6 +108,9 @@ char const * get_name(name_t name)
     case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_NEIGHBORS:
         return "neighbors";
 
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_SIGNAL_SECRET:
+        return "signal_secret";
+
     case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_REQUIRE:
         return "require";
 
@@ -263,6 +266,13 @@ void communicator::on_retrieve_status(snap_manager::server_status & server_statu
                     , get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_FORGET_NEIGHBOR)
                     , "");
         server_status.set_field(forget_neighbor);
+
+        snap_manager::status_t const signal_secret(
+                      snap_manager::status_t::state_t::STATUS_STATE_INFO
+                    , get_plugin_name()
+                    , get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_SIGNAL_SECRET)
+                    , snap_communicator_conf[get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_SIGNAL_SECRET)]);
+        server_status.set_field(signal_secret);
     }
 
     // when the user installed VPN (client or server) then we want to
@@ -534,6 +544,32 @@ bool communicator::display_value(QDomElement parent, snap_manager::status_t cons
         return true;
     }
 
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_SIGNAL_SECRET))
+    {
+        snap_manager::form f(
+                  get_plugin_name()
+                , s.get_field_name()
+                , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
+                );
+
+        snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
+                          "Signal Secret"
+                        , s.get_field_name()
+                        , s.get_value()
+                        , "A secret code that must be included in a message"
+                         " sent to the snapcommunicator whenever a UDP message"
+                         " is received. If empty, no secret is required and all"
+                         " UDP messages will be accepted no matter what. This"
+                         " is especially useful when UDP messages may travel"
+                         " between computers which is not the case by default."
+                        ));
+        f.add_widget(field);
+
+        f.generate(parent, uri);
+
+        return true;
+    }
+
     return false;
 }
 
@@ -644,6 +680,17 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         p.set_command("systemctl");
         p.add_argument("daemon-reload"); // python script sends output to STDERR
         NOTUSED(p.run());
+        return true;
+    }
+
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPCOMMUNICATOR_SIGNAL_SECRET))
+    {
+        // force snapcommunicator to reload the value, some other servers
+        // probably need to be restarted too
+        //
+        affected_services.insert("snapcommunicator");
+
+        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
         return true;
     }
 

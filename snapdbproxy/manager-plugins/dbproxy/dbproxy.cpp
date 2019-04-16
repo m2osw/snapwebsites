@@ -402,11 +402,13 @@ bool dbproxy::display_value(QDomElement parent, snap_manager::status_t const & s
                           "Database Status"
                         , s.get_field_name()
                         , s.get_value()
-                        , "This entry shows the current status of the Cassandra cluster."
-                         " If it shows as an error, the setup is currently not acceptable and not connection can be obtained."
-                         " If it shows as a warning, we are not able to connect to the database."
-                         " If it does not show an error or a warning, we can connect to the database."
-                         " Note: this test does not check anything within the database, only that it is accessible."
+                        , "<p>This entry shows the current status of the Cassandra cluster.</p>"
+                         "<ul>"
+                             "<li>If it shows as an error, the setup is currently not acceptable and no connection can be obtained.</li>"
+                             "<li>If it shows as a warning, we are not able to connect to the database.</li>"
+                             "<li>If it does not show an error or a warning, we can connect to the database.</li>"
+                         "</ul>"
+                         "<p><b>Note:</b> this test does not check anything within the database, only that it is accessible.</p>"
                     ));
         f.add_widget(field);
 
