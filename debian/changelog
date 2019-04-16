@@ -1,6 +1,7 @@
 snapwebsites (1.7.5.0~xenial) xenial; urgency=high
 
   * SNAP-526: added a field in snapmanager to edit the `signal_secret` field.
+  * SNAP-478: added the index plugin to the packages.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 15 Apr 2019 21:56:32 -0700
 
