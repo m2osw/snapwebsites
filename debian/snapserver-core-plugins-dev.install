@@ -22,6 +22,7 @@ debian/tmp/usr/include/snapwebsites/plugins/form/*                      usr/incl
 debian/tmp/usr/include/snapwebsites/plugins/hashtag/*                   usr/include/snapwebsites/plugins/hashtag/
 debian/tmp/usr/include/snapwebsites/plugins/header/*                    usr/include/snapwebsites/plugins/header/
 debian/tmp/usr/include/snapwebsites/plugins/images/*                    usr/include/snapwebsites/plugins/images/
+debian/tmp/usr/include/snapwebsites/plugins/index/*                     usr/include/snapwebsites/plugins/index/
 debian/tmp/usr/include/snapwebsites/plugins/info/*                      usr/include/snapwebsites/plugins/info/
 debian/tmp/usr/include/snapwebsites/plugins/javascript/*                usr/include/snapwebsites/plugins/javascript/
 debian/tmp/usr/include/snapwebsites/plugins/layout/*                    usr/include/snapwebsites/plugins/layout/
