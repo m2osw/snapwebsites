@@ -1,3 +1,9 @@
+snapwebsites (1.7.6.0~xenial) xenial; urgency=high
+
+  * SNAP-181: added a field to edit the "whitelist" variable from iplock.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 17 Apr 2019 00:00:20 -0700
+
 snapwebsites (1.7.5.0~xenial) xenial; urgency=high
 
   * SNAP-526: added a field in snapmanager to edit the `signal_secret` field.
