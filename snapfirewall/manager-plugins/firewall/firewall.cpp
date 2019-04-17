@@ -26,6 +26,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/file_content.h>
+#include <snapwebsites/glob_dir.h>
 #include <snapwebsites/join_strings.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
@@ -59,15 +60,8 @@ namespace
 char const *    g_conf_filename   = "/etc/network/firewall.conf";
 char const *    g_firewall_script = "/etc/network/firewall";
 
-
-//void file_descriptor_deleter(int * fd)
-//{
-//    if(close(*fd) != 0)
-//    {
-//        int const e(errno);
-//        SNAP_LOG_WARNING("closing file descriptor failed (errno: ")(e)(", ")(strerror(e))(")");
-//    }
-//}
+char const *    g_conf_iplock_filename = "/etc/iplock/schemes/schemes.d/all.conf";
+char const *    g_conf_iplock_glob = "/etc/iplock/schemes/*.conf";
 
 
 } // no name namespace
@@ -87,8 +81,29 @@ char const * get_name(name_t name)
 {
     switch(name)
     {
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_ADMIN_IPS:
+        return "admin_ips";
+
     case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_NAME:
         return "name";
+
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_INTERFACE:
+        return "private_interface";
+
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_IP:
+        return "private_ip";
+
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_INTERFACE:
+        return "public_interface";
+
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_IP:
+        return "public_ip";
+
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS:
+        return "service_status";
+
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST:
+        return "whitelist";
 
     default:
         // invalid index
@@ -232,8 +247,31 @@ void firewall::on_retrieve_status(snap_manager::server_status & server_status)
                                         ? snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
                                         : snap_manager::status_t::state_t::STATUS_STATE_INFO,
                         get_plugin_name(),
-                        "service_status",
+                        get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS),
                         status_string);
+        server_status.set_field(status_widget);
+    }
+
+    {
+        // load the iplock configuration file named all.conf
+        // we want the "whitelist" paramter
+        //
+        snap_config iplock_config(g_conf_iplock_filename);
+        std::string whitelist;
+        if(iplock_config.configuration_file_exists())
+        {
+            whitelist = iplock_config[get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST)];
+        }
+
+        // create status widget
+        //
+        // TBD: shall we allow for the editing of each file separately?
+        //
+        snap_manager::status_t const status_widget(
+                        snap_manager::status_t::state_t::STATUS_STATE_INFO,
+                        get_plugin_name(),
+                        get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST),
+                        QString::fromUtf8(whitelist.c_str()));
         server_status.set_field(status_widget);
     }
 
@@ -263,6 +301,7 @@ void firewall::retrieve_settings_field(snap_manager::server_status & server_stat
             {
                 // very quick and dirty since these are variable names
                 // in a shell script...
+                //
                 return c >= 'A' && c <= 'Z' ? c | 0x20 : c;
             });
     QString const qfield_name(QString::fromUtf8(field_name.c_str()));
@@ -349,7 +388,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
 {
     QDomDocument doc(parent.ownerDocument());
 
-    if(s.get_field_name() == "service_status")
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS))
     {
         // The current status of the snapfirewall service
         //
@@ -418,7 +457,39 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == "public_ip")
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST))
+    {
+        snap_manager::form f(
+                  get_plugin_name()
+                , s.get_field_name()
+                , snap_manager::form::FORM_BUTTON_RESET | snap_manager::form::FORM_BUTTON_SAVE | snap_manager::form::FORM_BUTTON_SAVE_EVERYWHERE
+                );
+
+        snap_manager::widget_input::pointer_t field(std::make_shared<snap_manager::widget_input>(
+                          "White listed comma separated IP addresses"
+                        , s.get_field_name()
+                        , s.get_value()
+                        , "<p>Enter one or more IP addresses with an optional mask."
+                         " For example, 10.4.32.0/24 will allow 256 IPs (10.4.32.0"
+                         " to 10.4.32.255).</p>"
+                         "<p>In general this feature is used to (1) whitelist your"
+                         " own static IP address and (2) whitelist IP addresses of"
+                         " computers performing PCI Compliance.</p>"
+                         "<p><strong>WARNING:</strong> the field only shows the"
+                         " IP addresses defined in the <code>all.conf</code> file."
+                         " If you made manual changes to other files, do not use"
+                         " this feature here. This save will replace the"
+                         " \"whitelist\" parameter in all the .conf files found"
+                         " under <code>/etc/iplock/schemes/schemes.d/</code>.</p>"
+                        ));
+        f.add_widget(field);
+
+        f.generate(parent, uri);
+
+        return true;
+    }
+
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_IP))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -439,7 +510,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == "public_interface")
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_INTERFACE))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -460,7 +531,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == "private_ip")
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_IP))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -481,7 +552,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == "private_interface")
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_INTERFACE))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -502,7 +573,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == "admin_ips")
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_ADMIN_IPS))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -593,14 +664,45 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
     NOTUSED(old_or_installation_value);
     NOTUSED(button_name);
 
-    if(field_name == "service_status")
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS))
     {
         snap_manager::service_status_t const status(snap_manager::manager::string_to_service_status(new_value.toUtf8().data()));
         f_snap->service_apply_status("snapfirewall", status);
         return true;
     }
 
-    if(field_name == "public_ip")
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST))
+    {
+        // go throught the list of .conf files in the scheme directory
+        // and update the corresponding file in the schemes.d directory
+        // (would the config do it automatically? since it's not under
+        // /etc/snapwebsites, I'm not sure it does at the moment)
+        //
+        glob_dir iplock_conf(g_conf_iplock_glob, GLOB_NOSORT, true);
+        iplock_conf.enumerate_glob([&](std::string filename)
+            {
+                // add the /schemes.d/ segment
+                //
+                std::string::size_type const pos(filename.rfind('/'));
+                if(pos == std::string::npos)
+                {
+                    return;
+                }
+                std::string const path(filename.substr(0, pos));
+                std::string const basename(filename.substr(pos + 1));
+
+                std::string const conf_filename(path + "/schemes.d/" + basename);
+
+                NOTUSED(f_snap->replace_configuration_value(
+                              QString::fromUtf8(conf_filename.c_str())
+                            , field_name
+                            , new_value
+                            , snap_manager::REPLACE_CONFIGURATION_VALUE_CREATE_BACKUP));
+            });
+        return true;
+    }
+
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_IP))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -611,7 +713,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == "public_interface")
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_INTERFACE))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -622,7 +724,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == "private_ip")
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_IP))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -633,7 +735,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == "private_interface")
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_INTERFACE))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -644,7 +746,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == "admin_ips")
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_ADMIN_IPS))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(

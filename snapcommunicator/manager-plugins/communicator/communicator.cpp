@@ -561,7 +561,7 @@ bool communicator::display_value(QDomElement parent, snap_manager::status_t cons
                          " is received. If empty, no secret is required and all"
                          " UDP messages will be accepted no matter what. This"
                          " is especially useful when UDP messages may travel"
-                         " between computers which is not the case by default."
+                         " between computers, which is not the case by default."
                         ));
         f.add_widget(field);
 
