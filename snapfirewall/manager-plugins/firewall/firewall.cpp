@@ -673,7 +673,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
 
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST))
     {
-        // go throught the list of .conf files in the scheme directory
+        // go through the list of .conf files in the schemes directory
         // and update the corresponding file in the schemes.d directory
         // (would the config do it automatically? since it's not under
         // /etc/snapwebsites, I'm not sure it does at the moment)
@@ -699,6 +699,10 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
                             , new_value
                             , snap_manager::REPLACE_CONFIGURATION_VALUE_CREATE_BACKUP));
             });
+
+        snap_config iplock_config(g_conf_iplock_filename);
+        iplock_config[field_name] = new_value;
+
         return true;
     }
 

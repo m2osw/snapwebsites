@@ -1,3 +1,10 @@
+snapwebsites (1.7.7.0~xenial) xenial; urgency=high
+
+  * SNAP-181: Applied a fix as the whitelist would not update automatically,
+    we have to save the value in the config (because it's static memory.)
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 17 Apr 2019 18:24:07 -0700
+
 snapwebsites (1.7.6.0~xenial) xenial; urgency=high
 
   * SNAP-181: added a field to edit the "whitelist" variable from iplock.
