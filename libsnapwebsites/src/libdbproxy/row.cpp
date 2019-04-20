@@ -350,7 +350,7 @@ uint32_t row::readCells( cell_predicate::pointer_t column_predicate )
         row_predicate->appendQuery( query_string, bind_count );
 
         // WARNING: the row_predicate we create right here, when the
-        //          allow filtering flag can only be set by the caller
+        //          ALLOW FILTERING flag can only be set by the caller
         //          in the column_predicate
         //
         if(column_predicate->allowFiltering())
@@ -399,7 +399,7 @@ uint32_t row::readCells( cell_predicate::pointer_t column_predicate )
 #ifdef _DEBUG
     if((max_results - idx) % 2 != 0)
     {
-        // the number of results must be a multiple of 3, although on
+        // the number of results must be a multiple of 2, although on
         // the SELECT (first time in) we expect one additional result
         // which represents the cursor index
         throw logic_exception("the number of results must be an exact multipled of 2!");

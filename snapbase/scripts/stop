@@ -10,6 +10,7 @@
 #
 if test -f tmp/snapmanagerdaemon.pid
 then
+	echo "snapsignal snapmanagerdaemon/STOP"
 	BUILD/snapwebsites/snapcommunicator/src/snapsignal "snapmanagerdaemon/STOP"
 	rm -f tmp/snapmanagerdaemon.pid
 fi

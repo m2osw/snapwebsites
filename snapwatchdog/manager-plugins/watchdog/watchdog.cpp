@@ -976,8 +976,10 @@ void watchdog::on_generate_content(QDomDocument doc, QDomElement output, QDomEle
 
     QString const host(uri.query_option("host"));
 
-    // add an option to the menu so one can access that page from there
+    if(!host.isEmpty())
     {
+        // add an option to the menu so one can access that page from there
+        //
         QDomElement item(doc.createElement("item"));
         item.setAttribute("href"
                         , QString("?host=%1&function=watchdog&position=latest")

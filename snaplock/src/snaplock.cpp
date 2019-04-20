@@ -4191,7 +4191,7 @@ void snaplock::tool_message(snap::snap_communicator_message const & message)
             // (many are considered to be internal commands... users
             // should look at the LOCK and UNLOCK messages only)
             //
-            reply.add_parameter("list", "HELP,QUITTING,READY,STOP,TICKETLIST,UNKNOWN");
+            reply.add_parameter("list", "CLUSTERDOWN,CLUSTERUP,HELP,QUITTING,READY,STOP,TICKETLIST,UNKNOWN");
 
             send_message(reply);
             return;

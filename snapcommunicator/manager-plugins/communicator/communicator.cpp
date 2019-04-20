@@ -691,6 +691,10 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         affected_services.insert("snapcommunicator");
 
         NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+
+        snap_config snap_communicator_conf(g_configuration_filename);
+        snap_communicator_conf[field_name] = new_value;
+
         return true;
     }
 

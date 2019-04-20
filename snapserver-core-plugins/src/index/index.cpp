@@ -1754,7 +1754,7 @@ void index::index_one_page(
         delete_index.setCql(QString("DELETE FROM %1.%2 WHERE key=?")
                                 .arg(context->contextName())
                                 .arg(get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                          , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_ROWS);
+                          , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_SUCCESS);
         delete_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);
 
         delete_index.addParameter(index_key.toUtf8());
@@ -1782,9 +1782,10 @@ void index::index_one_page(
         key = get_key_of_index_page(page_ipath, type_ipath, vars);
     }
 
-    if(key.isEmpty())
     {
-        // no key, make sure it's not in any index
+        // when no key: make sure it's not in any index
+        // when there is a key: make sure other keys for the same value get
+        //                      deleted before we do a new insert
         //
         libdbproxy::libdbproxy::pointer_t cassandra(f_snap->get_cassandra());
         libdbproxy::context::pointer_t context(f_snap->get_context());
@@ -1792,27 +1793,47 @@ void index::index_one_page(
 
         // DELETE FROM snap_websites.index
         //       WHERE key = '<website>'
-        //         AND value = '<ipath.get_key()>';
+        //         AND value = '<ipath.get_key()>'
+        //         AND column1 <> '<key>';  // <- only when updating
         //
-        // this works because we have a second index on the `value` column
+        // however, cassandra does not allow a DELETE FROM with such a
+        // complicated WHERE on any other column than the `key` column,
+        // so we instead have to do a SELECT:
         //
-        libdbproxy::order delete_index;
-        delete_index.setCql(QString("DELETE FROM %1.%2 WHERE key=?,value=?")
+        // SELECT column1 FROM snapwebsites.index
+        //               WHERE key = '<website>'
+        //                 AND value = '<ipath.get_key()>';
+        //
+        // From the results of the SELECT send one
+        // DELETE per entry found. The DELETE ends up looking like this:
+        //
+        // DELETE FROM snap_websites.index
+        //       WHERE key = '<website>'
+        //         AND column1 = '<key>';
+        //
+        // this DELETE works because we have a second index on the `value`
+        // column. Our loop will skip the DELETE when `key` equal `column1`.
+        // (to replicate the effect of the `column` <> '<key>'` above.)
+        // We can always compare since key will be empty when all entries
+        // have to be deleted.
+        //
+        // Note: the SELECT is unconventional for us so we have to use the
+        //       low level interface and emit a CQL command directly
+        //
+        libdbproxy::order select_index;
+        select_index.setCql(QString("SELECT column1 FROM %1.%2 WHERE key=? AND value=?")
                                 .arg(context->contextName())
                                 .arg(get_name(name_t::SNAP_NAME_INDEX_TABLE))
                           , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_ROWS);
-        delete_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);
+        select_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_QUORUM);
 
-        delete_index.addParameter(index_key.toUtf8());
-        delete_index.addParameter(page_ipath.get_key().toUtf8());
+        select_index.addParameter(index_key.toUtf8());
+        select_index.addParameter(page_ipath.get_key().toUtf8());
 
-        libdbproxy::order_result const delete_index_result(dbproxy->sendOrder(delete_index));
-
-        // report error, but continue since we're just trying to delete
-        //
-        if(!delete_index_result.succeeded())
+        libdbproxy::order_result const select_index_result(dbproxy->sendOrder(select_index));
+        if(!select_index_result.succeeded())
         {
-            SNAP_LOG_ERROR("Error deleting indexes pointing to page \"")
+            SNAP_LOG_ERROR("Error selecting indexes for deletion; page \"")
                           (index_key)
                           ("\" for website \"")
                           (page_ipath.get_key())
@@ -1820,10 +1841,52 @@ void index::index_one_page(
                           (context->contextName())
                           (".")
                           (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                          ("\"");
+                          ("\".");
+        }
+
+        QByteArray key_value(key.toUtf8());
+
+        // count should be 0 or 1 in this case
+        // although we allow for more, just in case something went wrong
+        // at some point (a DELETE failed?!)
+        //
+        size_t const max_results(select_index_result.resultCount());
+        for(size_t idx(0); idx < max_results; ++idx)
+        {
+            QByteArray const column1(select_index_result.result(idx));
+            if(column1 != key_value)    // avoid deleting the key we're about to update (the effect is the same, it's one less CQL order, though)
+            {
+                libdbproxy::order delete_index;
+                delete_index.setCql(QString("DELETE FROM %1.%2 WHERE key=? AND column1=?")
+                                        .arg(context->contextName())
+                                        .arg(get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                                  , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_SUCCESS);
+                delete_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);
+
+                delete_index.addParameter(index_key.toUtf8());
+                delete_index.addParameter(column1);
+
+                libdbproxy::order_result const delete_index_result(dbproxy->sendOrder(delete_index));
+
+                // report error, but continue since we're just trying to delete
+                //
+                if(!delete_index_result.succeeded())
+                {
+                    SNAP_LOG_ERROR("Error deleting indexes pointing to page \"")
+                                  (index_key)
+                                  ("\" for website \"")
+                                  (page_ipath.get_key())
+                                  ("\" from table \"")
+                                  (context->contextName())
+                                  (".")
+                                  (get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                                  ("\".");
+                }
+            }
         }
     }
-    else
+
+    if(!key.isEmpty())
     {
         // we got a valid key, add this page to the index
         //
@@ -2353,7 +2416,7 @@ void index::reindex()
                     delete_index.setCql(QString("DELETE FROM %1.%2 WHERE key=?")
                                             .arg(context->contextName())
                                             .arg(get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                                      , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_ROWS);
+                                      , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_SUCCESS);
                     delete_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);
 
                     QString index_key = type_ipath.get_key().toUtf8();
