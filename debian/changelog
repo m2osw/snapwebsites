@@ -6,6 +6,9 @@ snapwebsites (1.7.8.0~xenial) xenial; urgency=high
     most current status.
   * SNAP-684: Fixed a bug in a one computer environment the cluster status
     was not set until we receive a very first CLUSTERSTATUS message.
+  * In the snapmanagercgi output, fixed the page title so it includes the
+    host name.
+  * Fixed the double "(Select Host)" message from the status.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sun, 21 Apr 2019 00:14:19 -0700
 
