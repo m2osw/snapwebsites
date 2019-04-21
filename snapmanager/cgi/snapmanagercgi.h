@@ -83,8 +83,11 @@ public:
     int                         process();
     snap::snap_uri const &      get_uri() const;
 
-    //void                        generate_content(QDomDocument doc, QDomElement root, QDomElement menu); -- old function
-    SNAP_SIGNAL_WITH_MODE(generate_content, (QDomDocument doc, QDomElement output, QDomElement menu, snap::snap_uri const & uri), (doc, output, menu, uri), START_AND_DONE);
+    SNAP_SIGNAL_WITH_MODE(
+                  generate_content
+                , (QDomDocument doc, QDomElement root, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
+                , (doc, root, output, menu, uri)
+                , START_AND_DONE);
 
 private:
     typedef std::map<std::string, std::string>      post_variables_t;

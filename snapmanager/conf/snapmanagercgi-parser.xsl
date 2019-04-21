@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
     <html>
       <head>
         <meta charset="utf-8"/>
-        <title>Snap! Manager</title>
+        <title><xsl:copy-of select="title/node()"/></title>
         <meta name="generator" content="Snap! Manager CGI"/>
         <link rel="bookmark" type="text/html" title="Generator" href="https://snapwebsites.org/project/snap-manager"/>
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>

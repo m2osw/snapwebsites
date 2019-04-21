@@ -92,7 +92,7 @@ public:
     void                    on_retrieve_status(snap_manager::server_status & server_status);
 
     // snapmanager_cgi signal
-    void                    on_generate_content(QDomDocument doc, QDomElement output, QDomElement menu, snap::snap_uri const & uri);
+    void                    on_generate_content(QDomDocument doc, QDomElement root, QDomElement output, QDomElement menu, snap::snap_uri const & uri);
 
 private:
     void                    retrieve_bundles_status(snap_manager::server_status & server_status);

@@ -224,7 +224,7 @@ void watchdog::bootstrap(snap_child * snap)
     std::string const type(f_snap->server_type());
     if(type == "manager_cgi")
     {
-        SNAP_LISTEN(watchdog, "server", snap_manager::manager_cgi, generate_content, _1, _2, _3, _4);
+        SNAP_LISTEN(watchdog, "server", snap_manager::manager_cgi, generate_content, _1, _2, _3, _4, _5);
     }
 }
 
@@ -969,9 +969,10 @@ void watchdog::get_plugin_names(QString plugin_filename, snap_string_list * avai
  * \param[in] output  The output where we put the data in case we generate it.
  * \param[in] menu  Menu entries.
  */
-void watchdog::on_generate_content(QDomDocument doc, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
+void watchdog::on_generate_content(QDomDocument doc, QDomElement root, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
 {
     snap::NOTUSED(doc);
+    snap::NOTUSED(root);
     snap::NOTUSED(output);
 
     QString const host(uri.query_option("host"));
