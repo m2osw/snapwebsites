@@ -1,3 +1,14 @@
+snapwebsites (1.7.8.0~xenial) xenial; urgency=high
+
+  * SNAP-684: Added the snapclusterstatus command line tool.
+  * SNAP-684: Included a man.1 page for snapclusterstatus.
+  * SNAP-684: Made snapcommunicator save the snap-cluster.txt file with its
+    most current status.
+  * SNAP-684: Fixed a bug in a one computer environment the cluster status
+    was not set until we receive a very first CLUSTERSTATUS message.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 21 Apr 2019 00:14:19 -0700
+
 snapwebsites (1.7.7.0~xenial) xenial; urgency=high
 
   * SNAP-181: Applied a fix as the whitelist would not update automatically,

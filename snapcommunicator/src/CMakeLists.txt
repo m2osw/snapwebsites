@@ -147,4 +147,30 @@ install(
 )
 
 
+#################################################################################
+## Get snapcommunicator cluster status (UP/DOWN and/or COMPLETE/INCOMPLETE)
+##
+project(snapclusterstatus)
+
+add_executable(${PROJECT_NAME}
+    snapclusterstatus.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+    snapwebsites
+    libdbproxy
+    ${LIBTLD_LIBRARIES}
+    ${LOG4CPLUS_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${QTSERIALIZATION_LIBRARIES}
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+    RUNTIME DESTINATION
+        bin
+)
+
+
 # vim: ts=4 sw=4 et

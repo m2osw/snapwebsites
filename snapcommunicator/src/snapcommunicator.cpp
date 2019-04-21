@@ -138,6 +138,9 @@ namespace
 typedef QMap<QString, bool>                 sorted_list_of_strings_t;
 
 
+char const *        g_status_filename = "/var/lib/snapwebsites/cluster-status.txt";
+
+
 /** \brief The sequence number of a message being broadcast.
  *
  * Each instance of snapcommunicator may broadcast a message to other
@@ -2304,6 +2307,12 @@ void snap_communicator_server::init()
     }
     f_explicit_neighbors = canonicalize_neighbors(f_server->get_parameter("neighbors"));
     add_neighbors(f_explicit_neighbors);
+
+    // if we are in a one computer environment this call would never happens
+    // unless someone sends us a CLUSTERSTATUS, but that does not have the
+    // exact same effect
+    //
+    cluster_status(nullptr);
 }
 
 
@@ -4514,6 +4523,7 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
     //
     size_t const total_count(f_all_neighbors.size());
     size_t const quorum(total_count / 2 + 1);
+    bool modified = false;
 
     QString const new_status(count >= quorum ? "CLUSTERUP" : "CLUSTERDOWN");
     if(new_status != f_cluster_status
@@ -4523,6 +4533,7 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
         if(reply_connection == nullptr)
         {
             f_cluster_status = new_status;
+            modified = true;
         }
 
         // send the results to either the requesting connection or broadcast
@@ -4556,6 +4567,7 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
         if(reply_connection == nullptr)
         {
             f_cluster_complete = new_complete;
+            modified = true;
         }
 
         // send the results to either the requesting connection or broadcast
@@ -4564,7 +4576,7 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
         snap::snap_communicator_message cluster_complete_msg;
         cluster_complete_msg.set_command(new_complete);
         cluster_complete_msg.set_service(".");
-        cluster_complete_msg.add_parameter("neighbors_count", QString("%1").arg(total_count));
+        cluster_complete_msg.add_parameter("neighbors_count", total_count);
         if(reply_connection != nullptr)
         {
             // reply to a direct CLUSTERSTATUS
@@ -4584,6 +4596,17 @@ void snap_communicator_server::cluster_status(snap::snap_communicator::snap_conn
     if(reply_connection == nullptr)
     {
         f_total_count_sent = total_count;
+    }
+
+    if(modified)
+    {
+        std::ofstream status_file;
+        status_file.open(g_status_filename);
+        if(status_file.is_open())
+        {
+            status_file << f_cluster_status << std::endl
+                        << f_cluster_complete << std::endl;
+        }
     }
 
     SNAP_LOG_INFO("cluster status is \"")

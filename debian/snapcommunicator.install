@@ -1,3 +1,4 @@
+debian/tmp/usr/bin/snapclusterstatus                                 usr/bin/
 debian/tmp/usr/bin/snapstop                                          usr/bin/
 debian/tmp/usr/bin/snapsignal                                        usr/bin/
 debian/tmp/usr/sbin/snapcommunicator                                 usr/sbin/
