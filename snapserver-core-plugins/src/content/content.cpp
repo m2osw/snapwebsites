@@ -2434,7 +2434,7 @@ bool content::modified_content_impl(path_info_t & ipath)
  *
  * \note
  * The path should be canonicalized before the call although we call
- * the remove_slashes() function on it cleanup starting and ending
+ * the remove_slashes() function on it to cleanup starting and ending
  * slashes (because the URI object returns paths such as "/login" and
  * the get_content_parameter() requires just "login" to work right.)
  *

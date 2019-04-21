@@ -6246,7 +6246,7 @@ bool snap_child::postfile_exists(QString const & name) const
  *
  * \sa postfile_exists()
  */
-const snap_child::post_file_t& snap_child::postfile(QString const & name) const
+snap_child::post_file_t const & snap_child::postfile(QString const & name) const
 {
     // the QMap only returns a reference if this is not constant
     return const_cast<snap_child *>(this)->f_files[name];

@@ -2368,13 +2368,17 @@ QString editor::clean_post_value(QString const & widget_type, QString value)
  * \param[in,out] info  The session information, for the validation, just in case.
  * \param[in,out] server_access_plugin  The plugin used to build the output data for the AJAX request.
  */
-void editor::editor_save_attachment(content::path_info_t & ipath, sessions::sessions::session_info & info, server_access::server_access * server_access_plugin)
+void editor::editor_save_attachment(
+              content::path_info_t & ipath
+            , sessions::sessions::session_info & info
+            , server_access::server_access * server_access_plugin)
 {
     NOTUSED(info);
 
     mimetype::mimetype * mimetype_plugin(mimetype::mimetype::instance());
 
     // get the editor widgets and save them in a map
+    //
     typedef std::map<QString, QDomElement> widget_map_t;
     widget_map_t widgets_by_name;
     QDomDocument editor_widgets(get_editor_widgets(ipath));
@@ -2392,6 +2396,7 @@ void editor::editor_save_attachment(content::path_info_t & ipath, sessions::sess
     }
 
     // by default let the attachment plugin handle attachments
+    //
     QString const default_attachment_owner(attachment::attachment::instance()->get_plugin_name());
 
     QString const widget_names(f_snap->postenv("_editor_widget_names"));
@@ -2455,7 +2460,9 @@ void editor::editor_save_attachment(content::path_info_t & ipath, sessions::sess
         // make sure the filename is all proper for our system
         //
         QString ext(mimetype_plugin->mimetype_to_extension(mime_type));
-        QString filename(force_filename.isEmpty() ? the_attachment.get_file().get_filename() : force_filename);
+        QString filename(force_filename.isEmpty()
+                        ? the_attachment.get_file().get_filename()
+                        : force_filename);
         if(!filter::filter::filter_filename(filename, ext))
         {
             // user supplied filename is not considered valid, use a default name
@@ -3159,20 +3166,22 @@ bool editor::validate_editor_post_for_widget_impl(
                     if(widget_type == "dropped-file"
                     || widget_type == "dropped-file-with-preview")
                     {
-                        content::path_info_t file_ipath;
-                        file_ipath.set_path(f_snap->postenv(widget_name));
-                        content::path_info_t attachment_ipath;
-                        file_ipath.get_parent(attachment_ipath);
-                        //if(!f_snap->postfile_exists(widget_name)) // the field is just a string (path) -- the editor sends files at the time they get dropped
+                        // if the field "exists" (is defined), we're good
+                        // if empty, it could be that the data was sent
+                        // earlier using AJAX so we need to verify that
+                        // the data was indeed received
+                        //
+                        if(!f_snap->postfile_exists(widget_name))
                         {
                             QString const name(QString("%1::%2::%3")
                                     .arg(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT))
                                     .arg(widget_name)
                                     .arg(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT_PATH_END)));
-                            libdbproxy::value cassandra_value(content::content::instance()->get_content_parameter(attachment_ipath, name, content::content::param_revision_t::PARAM_REVISION_GLOBAL));
+                            libdbproxy::value cassandra_value(content::content::instance()->get_content_parameter(ipath, name, content::content::param_revision_t::PARAM_REVISION_GLOBAL));
 //SNAP_LOG_WARNING("widget_name -- [")(widget_name)
 //                ("] -> [")(f_snap->postenv(widget_name))
 //                ("] for [")(attachment_ipath.get_key())
+//                ("] from ipath? [")(ipath.get_key())
 //                ("] / name = [")(name)
 //                ("] and result [")(cassandra_value.stringValue())
 //                ("]");
@@ -3197,6 +3206,7 @@ bool editor::validate_editor_post_for_widget_impl(
                          || widget_type == "dropped-any-with-preview")
                     {
                         // here whether has_minimum is set does not matter
+                        //
                         if(!f_snap->postfile_exists(widget_name)) // TBD <- this test is not logical if widget_type cannot be a FILE type...
                         {
                             if(value.isEmpty())
@@ -3213,9 +3223,11 @@ bool editor::validate_editor_post_for_widget_impl(
                     }
                     else
                     {
-                        // not an additional error if the minimum error was
+                        // void an additional error if the minimum error was
                         // already generated
-                        if(!has_minimum && value.isEmpty())
+                        //
+                        if(!has_minimum
+                        && value.isEmpty())
                         {
                             messages->set_error(
                                     "Value is Invalid",
