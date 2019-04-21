@@ -133,7 +133,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
               <div class="button upload"><u>U</u>pload</div>
             </xsl:if>
             <div><xsl:attribute name="class">button download<xsl:if test="not($uri != '')"> disabled</xsl:if></xsl:attribute><u>D</u>ownload</div>
-            <xsl:if test="$action = 'edit'"><div class="button reset"><u>R</u>eset</div></xsl:if>
+            <xsl:if test="$action = 'edit' and reset-button"><div class="button reset"><u>R</u>eset</div></xsl:if>
           </div>
         </div>
         <div class="end-dropped-file"/>
