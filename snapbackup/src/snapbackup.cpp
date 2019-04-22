@@ -89,9 +89,6 @@ void snapbackup::setSqliteDbFile( QString const & sqlDbFile )
 
 void snapbackup::connectToCassandra()
 {
-    f_session->setLowWaterMark  ( f_opt->get_long("low-watermark")  );
-    f_session->setHighWaterMark ( f_opt->get_long("high-watermark") );
-
     f_session->connect
             ( f_opt->get_string("host").c_str()
             , f_opt->get_long("port")
