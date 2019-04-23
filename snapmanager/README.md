@@ -19,8 +19,8 @@ Then enter the following
     # Cassandra Driver (2.x)
     deb [trusted=yes] http://apt.dooglio.net/xenial ./
 
-**Note:** `libsnapwebsites` depends on `libqtcassandra`, which depends on
-`cassandra-cpp-driver`. So you need this dependency to get started.
+**Note:** `libsnapwebsites` depends on `libdbproxy`, which depends on
+`cassandra-cpp-driver-snap`. So you need this dependency to get started.
 We certainly will add this dependency along the other packages.
 
 
