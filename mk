@@ -13,7 +13,7 @@ case "$1" in
 "-l"|"--less")
     # Rebuild and use less to ease search within long errors (C++...)
     #
-    make -C ../../BUILD/snapwebsites install 2>&1 | less
+    make -C ../../BUILD/snapwebsites install 2>&1 | less -R
     ;;
 
 "-p"|"--packages")

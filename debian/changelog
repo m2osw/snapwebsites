@@ -1,3 +1,9 @@
+snapwebsites (1.7.9.0~xenial) xenial; urgency=high
+
+  * Added support for a pool of threads and workers.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 23 Apr 2019 23:36:44 -0700
+
 snapwebsites (1.7.8.1~xenial) xenial; urgency=high
 
   * Bump version to run a build against the new cassandra library.

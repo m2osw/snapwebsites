@@ -20,6 +20,7 @@
 #include "snapwebsites/log.h"
 
 #include <signal.h>
+#include <sys/sysinfo.h>
 
 #include "snapwebsites/poison.h"
 
@@ -748,6 +749,16 @@ snap_thread * snap_thread::snap_runner::get_thread() const
 
 
 
+
+
+
+
+
+
+
+
+
+
 /** \class snap_thread
  * \brief A thread object that ensures proper usage of system threads.
  *
@@ -1011,6 +1022,7 @@ bool snap_thread::start()
     f_running = true;
     f_started = false;
     f_stopping = false; // make sure it is reset
+    f_exception = std::exception_ptr();
 
     int const err(pthread_create(&f_thread_id, &f_thread_attr, &func_internal_start, this));
     if(err != 0)
@@ -1123,6 +1135,78 @@ bool snap_thread::kill(int sig)
     }
 
     return false;
+}
+
+
+/** \brief Retrieve the number of processors available on this system.
+ *
+ * This function returns the number of processors available on this system.
+ *
+ * \important
+ * Note that the OS may not be using all of the available processors. This
+ * function returns the total number, including processors that are not
+ * currently usable by your application. Most often, you probably want to
+ * call get_number_of_available_processors() instead.
+ *
+ * \return The total number of processors on this system.
+ *
+ * \sa get_number_of_available_processors()
+ */
+int snap_thread::get_total_number_of_processors()
+{
+    return get_nprocs_conf();
+}
+
+
+/** \brief Retrieve the number of processors currently usable.
+ *
+ * This function returns the number of processors that are currently
+ * running on this system. This is usually what you want to know about
+ * to determine how many threads to run in parallel.
+ *
+ * This function is going to be equal or less than what the
+ * get_total_number_of_processors() returns. For example, on some systems
+ * a processors can be made offline. This is useful to save energy when
+ * the total load decreases under a given threshold.
+ *
+ * \note
+ * What is the right number of threads needed in a thread pool? If you
+ * have worker threads that do a fairly small amount of work, then
+ * having a number of threads equal to two times the number of
+ * available thread is still sensible:
+ *
+ * \code
+ *     pool_size = get_number_of_available_processors() * 2;
+ * \endcode
+ *
+ * \par
+ * This is particularly true when threads perform I/O with high latency
+ * (i.e. read/write from a hard drive or a socket.)
+ *
+ * \par
+ * If your thread does really intesive work for a while (i.e. one thread
+ * working on one 4Mb image,) then the pool size should be limited to
+ * one worker per CPU:
+ *
+ * \code
+ *     pool_size = get_number_of_available_processors();
+ * \endcode
+ *
+ * \par
+ * Also, if you know that you will never get more than `n` objects at
+ * a time in your input, then the maximum number of threads needed is
+ * going to be `n`. In most cases `n` is going to be larger than the
+ * number of processors although now that we can have machines with
+ * over 100 CPUs, make sure to clamp your `pool_size` parameter to
+ * `n` if known ahead of time.
+ *
+ * \return The number of processors currently available for your threads.
+ *
+ * \sa get_total_number_of_processors()
+ */
+int snap_thread::get_number_of_available_processors()
+{
+    return get_nprocs();
 }
 
 } // namespace snap
