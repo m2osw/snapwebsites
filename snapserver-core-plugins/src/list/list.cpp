@@ -2096,15 +2096,86 @@ void list::on_modified_link(links::link_info const & link, bool const created)
 {
     NOTUSED(created);
 
-    // no need to record the fact that we added a link in a list
-    // (that is, at this point a list script cannot depend on the
-    // links of another list...)
-    //
-    if(!f_list_link)
+    if(!created
+    && link.is_unique()
+    && link.name() == get_name(name_t::SNAP_NAME_LIST_TYPE))
     {
+        // the list::type was already removed by this point
+        // however, the backend could be working against this very list
+        // right now, so the DELETE is not going to work 100% of the time
+        //
+        // TODO: fix the discrepancy between the front and back end
+        //
+        // DELETE FROM snap_websites.branch
+        //       WHERE key = '<website>'
+        //         AND column1 >= 'list::'
+        //         AND column1 <= 'list:;';
+        //
+        libdbproxy::libdbproxy::pointer_t cassandra(f_snap->get_cassandra());
+        libdbproxy::context::pointer_t context(f_snap->get_context());
+        libdbproxy::proxy::pointer_t dbproxy(cassandra->getProxy());
+        libdbproxy::order delete_list;
+        delete_list.setCql(QString("DELETE FROM %1.%2 WHERE key=? AND column1>=0x6c6973743a3a AND column1<=0x6c6973743a3b")
+                                .arg(context->contextName())
+                                .arg(content::get_name(content::name_t::SNAP_NAME_CONTENT_BRANCH_TABLE))
+                          , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_SUCCESS);
+        delete_list.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);
+
         content::path_info_t ipath;
         ipath.set_path(link.key());
-        on_modified_content(ipath); // same as on_modified_content()
+
+        delete_list.addParameter(ipath.get_branch_key().toUtf8());
+
+        libdbproxy::order_result const delete_list_result(dbproxy->sendOrder(delete_list));
+
+        if(!delete_list_result.succeeded())
+        {
+            SNAP_LOG_ERROR("Error deleting list for website \"")
+                          (link.key())
+                          ("\" from table \"")
+                          (context->contextName())
+                          (".")
+                          (content::get_name(content::name_t::SNAP_NAME_CONTENT_BRANCH_TABLE))
+                          ("\"");
+        }
+
+        QString const list_item_link_name(get_name(name_t::SNAP_NAME_LIST_LINK));
+
+        links::link_info list_item_link_info(list_item_link_name
+                                           , false
+                                           , ipath.get_key()
+                                           , ipath.get_branch());
+        links::links * links_plugin(links::links::instance());
+        QSharedPointer<links::link_context> link_ctxt(links_plugin->new_link_context(list_item_link_info));
+        links::link_info link_child_info;
+        while(link_ctxt->next_link(link_child_info))
+        {
+            content::path_info_t page_ipath;
+            page_ipath.set_path(link_child_info.key());
+
+            links::link_info list_source(list_item_link_name
+                                  , false
+                                  , ipath.get_key()
+                                  , ipath.get_branch());
+            links::link_info list_destination(list_item_link_name
+                                       , false
+                                       , page_ipath.get_key()
+                                       , page_ipath.get_branch());
+            links::links::instance()->delete_this_link(list_source, list_destination);
+        }
+    }
+    else
+    {
+        // no need to record the fact that we added a link in a list
+        // (that is, at this point a list script cannot depend on the
+        // links of another list...)
+        //
+        if(!f_list_link)
+        {
+            content::path_info_t ipath;
+            ipath.set_path(link.key());
+            on_modified_content(ipath); // same as on_modified_content()
+        }
     }
 }
 
@@ -2600,7 +2671,7 @@ void list::on_register_backend_cron(server::backend_action_set & actions)
  *
  * The "processalllist" adds all the pages of a website to the 'list'
  * table. This will force the system to re-check every single page.
- * In this case, the pages are give a really low priority which means
+ * In this case, the pages are given a really low priority which means
  * pretty much all other requests will be worked on first. This is
  * similar to running "list::resetlists" except that it does not
  * recompute lists in one go.

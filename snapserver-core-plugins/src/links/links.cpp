@@ -1480,6 +1480,7 @@ int64_t links::do_update(int64_t last_updated)
 libdbproxy::table::pointer_t links::get_links_table()
 {
     // retrieve links index table if not there yet
+    //
     if(!f_links_table)
     {
         f_links_table = f_snap->get_table(get_name(name_t::SNAP_NAME_LINKS_TABLE));
@@ -1496,12 +1497,15 @@ libdbproxy::table::pointer_t links::get_links_table()
 void links::init_tables()
 {
     // retrieve links index table if not there yet
+    //
     get_links_table();
 
     // retrieve content table if not there yet
+    //
     if(!f_branch_table)
     {
         // TODO: remove this circular dependency on content plugin
+        //
         f_branch_table = content::content::instance()->get_branch_table();
     }
 }
@@ -2046,7 +2050,7 @@ void links::delete_link(link_info const & info, int const delete_record_count)
                                     (" / ")
                                     (key_with_branch)
                                     ("\" (cell missing in \"links\" table).");
-                    return;
+                    continue;
                 }
                 // note that this is a multi-link, but in a (1:*) there is only
                 // one destination that correspond to the (1:...) and thus only
@@ -2192,6 +2196,7 @@ void links::delete_link(link_info const & info, int const delete_record_count)
 
         // finally, tell that the source changed after all the drops
         // happened in the source;
+        //
         if(modified)
         {
             modified_link(info, false);
@@ -2242,6 +2247,7 @@ void links::delete_this_link(link_info const & source, link_info const & destina
     init_tables();
 
     // drop the source info
+    //
     libdbproxy::row::pointer_t src_row(f_links_table->getRow(source.link_key()));
     QString const destination_key_with_branch(destination.key_with_branch());
     if(src_row->exists(destination_key_with_branch)) // should always be true
@@ -2254,6 +2260,7 @@ void links::delete_this_link(link_info const & source, link_info const & destina
     }
 
     // drop the destination info
+    //
     libdbproxy::row::pointer_t dst_row(f_links_table->getRow(destination.link_key()));
     QString const source_key_with_branch(source.key_with_branch());
     if(dst_row->exists(source_key_with_branch)) // should always be true

@@ -1,3 +1,12 @@
+snapwebsites (1.7.10.0~xenial) xenial; urgency=high
+
+  * When removing the `list::type` link from a page, the list plugin
+    automatically deletes all the list related fields, including the
+    ordered list.
+  * Changed a `return` in a `continue` in the `links::delete_link()` function.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun,  5 May 2019 02:48:17 -0700
+
 snapwebsites (1.7.9.0~xenial) xenial; urgency=high
 
   * Added support for a pool of threads and workers.

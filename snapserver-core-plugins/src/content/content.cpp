@@ -2914,6 +2914,7 @@ void content::add_xml_document(QDomDocument & dom, QString const & plugin_name)
             {
                 // just like a link, only we will end up removing that link
                 // instead of adding it
+                //
                 QString link_name(element.attribute("name"));
                 if(link_name.isEmpty())
                 {
@@ -2926,6 +2927,7 @@ void content::add_xml_document(QDomDocument & dom, QString const & plugin_name)
                 if(!link_name.contains("::"))
                 {
                     // force the owner in the link name
+                    //
                     link_name = QString("%1::%2").arg(plugin_name).arg(link_name);
                 }
                 if(link_name == get_name(name_t::SNAP_NAME_CONTENT_PAGE_TYPE))
@@ -2944,6 +2946,7 @@ void content::add_xml_document(QDomDocument & dom, QString const & plugin_name)
                 if(!link_to.contains("::"))
                 {
                     // force the owner in the link name
+                    //
                     link_to = QString("%1::%2").arg(plugin_name).arg(link_to);
                 }
                 bool source_unique(true);
@@ -3015,6 +3018,7 @@ void content::add_xml_document(QDomDocument & dom, QString const & plugin_name)
                     }
                 }
                 // the destination URL is defined in the <link> content
+                //
                 QString destination_path(element.text());
                 f_snap->canonicalize_path(destination_path);
                 QString const destination_key(f_snap->get_site_key_with_slash() + destination_path);
@@ -3367,10 +3371,10 @@ void content::set_param_type(QString const& path, QString const& name, param_typ
 }
 
 
-/** \brief Add a link to the specified content.
+/** \brief Add (or remove) a link to the specified content.
  *
  * This function links the specified content (defined by path) to the
- * specified destination.
+ * specified destination (the same function is also used to remove a link.)
  *
  * The source parameter defines the name of the link, the path (has to
  * be the same as path) and whether the link is unique.
@@ -3383,13 +3387,13 @@ void content::set_param_type(QString const& path, QString const& name, param_typ
  * database.
  *
  * \warning
- * This function does NOT save the data immediately (if called after the
- * update, then it is saved after the execute() call returns!) Instead
- * the function prepares the data so it can be saved later. This is useful
- * if you expect many changes and dependencies may not all be available at
- * the time you add the content but will be at a later time. If you already
- * have all the data, you may otherwise directly call the
- * links::create_link() function.
+ * This function does NOT save the data to the database immediately (if
+ * called after the update, then it is saved after the execute() call
+ * returns!) Instead the function prepares the data so it can be saved
+ * later. This is useful if you expect many changes and dependencies may
+ * not all be available at the time you add the content but will be at a
+ * later time. If you already have all the data, you may otherwise directly
+ * call the links::create_link() function.
  *
  * \exception content_exception_parameter_not_defined
  * The add_content() function was not called prior to this call.
@@ -4080,6 +4084,7 @@ void content::on_save_links(content_block_links_offset_t list, bool const create
     {
         // f_blocks use QMap so we need to use (*d) to be able to
         // use the C++ offset
+        //
         for(content_links_t::iterator l(((*d).*list).begin());
                 l != ((*d).*list).end(); ++l)
         {
@@ -4093,6 +4098,7 @@ void content::on_save_links(content_block_links_offset_t list, bool const create
                 start_source = snap_version::SPECIAL_VERSION_MIN;
 
                 // get the end from the database
+                //
                 path_info_t ipath;
                 ipath.set_path(l->f_source.key());
                 end_source = content_table->getRow(ipath.get_key())->getCell(last_branch_key)->getValue().safeUInt32Value();
@@ -4103,6 +4109,7 @@ void content::on_save_links(content_block_links_offset_t list, bool const create
                 start_destination = snap_version::SPECIAL_VERSION_MIN;
 
                 // get the end from the database
+                //
                 path_info_t ipath;
                 ipath.set_path(l->f_destination.key());
                 end_destination = content_table->getRow(ipath.get_key())->getCell(last_branch_key)->getValue().safeUInt32Value();

@@ -916,7 +916,6 @@ void snapdbproxy::process_timeout()
  */
 void snapdbproxy::set_status(status_t status)
 {
-std::cerr << "set_status() called!? " << static_cast<int>(status) << "\n";
     {
         snap::snap_thread::snap_lock lock(f_mutex);
         f_status = status;
