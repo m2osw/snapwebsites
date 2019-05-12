@@ -449,6 +449,56 @@ complex indexes like Snap! requires. We'd want our `snapdatabase` to
 be capable of that feat directly within the cluster.
 
 
+# Tracking Delay of loading a binary under Linux
+
+A very interesting trick is to learn how to get statistics when loading
+a binary under Linux.
+
+    LD_DEBBUG=statistics <path to binary>
+
+The results of the statistics are written in your console so you have
+to capture that output.
+
+First an example of a binary started **cold** (when it is expected that
+many of the libraries were not yet loaded):
+
+    $ LD_DEBUG=statistics ../../BUILD/snapwebsites/snapcgi/src/snap.cgi
+        24351:
+        24351:  runtime linker statistics:
+        24351:    total startup time in dynamic loader: 1970618235 cycles
+        24351:              time needed for relocation: 1961465023 cycles (99.5%)
+        24351:                   number of relocations: 12024
+        24351:        number of relocations from cache: 16995
+        24351:          number of relative relocations: 63446
+        24351:             time needed to load objects: 8439663 cycles (.4%)
+        24351:
+        24351:  runtime linker statistics:
+        24351:             final number of relocations: 14731
+        24351:  final number of relocations from cache: 16995
+
+Second is the same binary, but this time as a **warm** start. We can see
+that it starts about 43 times faster (45.6M cycles instead of 1.97B.)
+
+    $ LD_DEBUG=statistics ../../BUILD/snapwebsites/snapcgi/src/snap.cgi
+        24428:
+        24428:  runtime linker statistics:
+        24428:    total startup time in dynamic loader: 45679278 cycles
+        24428:              time needed for relocation: 35356048 cycles (77.4%)
+        24428:                   number of relocations: 12024
+        24428:        number of relocations from cache: 16995
+        24428:          number of relative relocations: 63446
+        24428:             time needed to load objects: 9565275 cycles (20.9%)
+        24428:
+        24428:  runtime linker statistics:
+        24428:             final number of relocations: 14731
+        24428:  final number of relocations from cache: 16995
+
+As we increase the number of libraries, these numbers may increase. What
+we want to look into in some cases is to either switch to a static link
+(only for low level contribs, though) or to place the item in a separate
+plugin which does not always get loaded.
+
+
 # Bugs
 
 Submit bug reports and patches on

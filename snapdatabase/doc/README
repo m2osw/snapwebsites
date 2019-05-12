@@ -75,6 +75,10 @@ Important parts of Cassandra that we are using:
    we want the sorting to be automatically updated whenever a write
    occurs.
 
+   Ideas about sorting algorithms which could be useful to us?
+
+      https://github.com/Morwenn/cpp-sort
+
    * Presence of data is checked using a Bloom filter; which is to keep a
      set of bits representing the result of a set of hash calculations.
 
