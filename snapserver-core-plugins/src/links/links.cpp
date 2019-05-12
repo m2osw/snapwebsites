@@ -2425,6 +2425,67 @@ void links::fix_branch_copy_link(libdbproxy::cell::pointer_t source_cell, libdbp
 }
 
 
+
+/** \brief Enumarate the children of a given page.
+ *
+ * This function is used to list all the children of a given page. The
+ * \p callback function gets called with an \p ipath to that page.
+ *
+ * The \p callback may return `true` or `false`.
+ *
+ * When the \p callback function returns `true`, this function continues
+ * processing the \p ipath children.
+ *
+ * When the \p callback function returns `false`, this function stops
+ * immediately and it returns `false`.
+ *
+ * \param[in] parent_ipath  The path_info_t object you want to list the children of.
+ * \param[in] callback  The function to call with each child path_info_t.
+ * \param[in] all_statuses  Whether to send all children (true) or only the
+ *                          `NORMAL` children.
+ *
+ * \return `true` if all the calls to \p callback returned `true`, `false` if
+ *         a call to \p callback returns `false`.
+ */
+bool links::enumerate_children(content::path_info_t & parent_ipath
+                             , callback_func_t callback
+                             , bool all_status)
+{
+    link_info info(content::get_name(content::name_t::SNAP_NAME_CONTENT_CHILDREN)
+                        , false
+                        , parent_ipath.get_key()
+                        , parent_ipath.get_branch());
+    QSharedPointer<link_context> link_ctxt(new_link_context(info));
+    link_info child_info;
+    while(link_ctxt->next_link(child_info))
+    {
+        content::path_info_t ipath;
+        ipath.set_path(child_info.key());
+
+        if(!all_status)
+        {
+            // make sure page is a normal state
+            //
+            content::path_info_t::status_t const status(ipath.get_status());
+            if(status.get_state() != content::path_info_t::status_t::state_t::NORMAL)
+            {
+                continue;
+            }
+        }
+
+        if(!callback(ipath))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+
+
+
 namespace details
 {
 

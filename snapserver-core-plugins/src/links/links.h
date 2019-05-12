@@ -27,6 +27,18 @@
 
 namespace snap
 {
+
+// TODO: remove dependency to content
+//       (or as mentioned in SNAP-9 which is to move the content, links,
+//       attachments, and probably one or two other things to the
+//       libsnapwebsites instead of having them as plugins...)
+//
+namespace content
+{
+class path_info_t;
+}
+
+
 namespace links
 {
 
@@ -276,6 +288,8 @@ class links
     , public server::backend_action
 {
 public:
+    typedef std::function<bool (content::path_info_t & ipath)> callback_func_t;
+
     static int const                READ_RECORD_COUNT = 1000;
     static int const                DELETE_RECORD_COUNT = 1000;
 
@@ -318,6 +332,9 @@ public:
     void                            fix_branch_copy_link(libdbproxy::cell::pointer_t source_cell
                                                        , libdbproxy::row::pointer_t destination_row
                                                        , snap_version::version_number_t const destination_branch_number);
+    bool                            enumerate_children(content::path_info_t & parent_ipath
+                                                     , callback_func_t callback
+                                                     , bool all_status = false);
 
     // links test suite
     SNAP_TEST_PLUGIN_SUITE_SIGNALS()
