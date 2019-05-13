@@ -17,12 +17,18 @@
 
 #include "version.h"
 
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_used.h>
 #include <snapwebsites/snap_initialize_website.h>
 #include <snapwebsites/snapwebsites.h>
 #include <snapwebsites/snap_config.h>
 #include <snapwebsites/snap_cassandra.h>
+
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
 
 
 namespace
