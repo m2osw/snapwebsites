@@ -61,7 +61,6 @@ class snapdb
 public:
     snapdb(int argc, char * argv[]);
 
-    void usage(advgetopt::getopt::status_t status);
     void info();
     void exec();
 

@@ -61,10 +61,16 @@
 //
 #include "test_multi_snaplocks.h"
 
+#include "version.h"
+
 // snapwebsites lib
 //
 #include <snapwebsites/mkdir_p.h>
 #include <snapwebsites/qstring_stream.h>
+
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
 
 // Qt lib
 //
@@ -73,6 +79,10 @@
 // C++ lib
 //
 #include <iostream>
+
+// boost lib
+//
+#include <boost/preprocessor/stringize.hpp>
 
 // C lib
 //
@@ -90,93 +100,88 @@ namespace snap_test
 
 QString g_log_conf = QString("/etc/snapwebsites/logger/test_multi_snaplocks.properties");
 
-const std::vector<std::string> g_configuration_files; // Empty
 
-advgetopt::getopt::option const g_options[] =
+advgetopt::option const g_options[] =
 {
     {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "Usage: %p [-<opt>]",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "where -<opt> is one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
         'c',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "config",
         nullptr,
         "Path to configuration files.",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         'n',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "count",
         "20",
         "Number of instances to play with, must be between 1 and 1000, default is 20.",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "help",
-        nullptr,
-        "show this help output",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "port",
         "9000",
         "define the starting port (default: 9000)",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED,
         "seed",
         nullptr,
         "define the seed to use for this run, otherwise a \"random\" one is assigned for you",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "snaplock",
         "snaplock",
         "path to the snaplock you want to run (should probably be a full path)",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "version",
-        nullptr,
-        "show the version of %p and exit",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        0,
+        advgetopt::GETOPT_FLAG_END,
         nullptr,
         nullptr,
         nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        nullptr
     }
 };
 
 
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPLOCK_TEST_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPLOCK_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
 
 
 
@@ -1631,7 +1636,7 @@ void death_timer::process_timeout()
 
 
 test_multi_snaplocks::test_multi_snaplocks(int argc, char ** argv)
-    : f_opt(argc, argv, g_options, g_configuration_files, nullptr)
+    : f_opt(g_options_environment, argc, argv)
 {
     f_count = f_opt.get_long("count", 0, 1, 1000);
     f_port = f_opt.get_long("port", 0, 1, 65535);
@@ -2117,6 +2122,10 @@ int main(int argc, char *argv[])
         snap_test::test_multi_snaplocks::pointer_t test(new snap_test::test_multi_snaplocks(argc, argv));
 
         test->run();
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

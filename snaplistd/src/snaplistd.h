@@ -138,7 +138,6 @@ private:
                                 snaplistd( snaplistd const & ) = delete;
     snaplistd &                  operator = ( snaplistd const & ) = delete;
 
-    void                        usage(advgetopt::getopt::status_t status);
     void                        list_data(snap::snap_communicator_message const & message);
     void                        no_mysql();
 

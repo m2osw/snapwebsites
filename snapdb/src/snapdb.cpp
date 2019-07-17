@@ -67,202 +67,200 @@ using namespace casswrapper::schema;
 
 namespace
 {
-    const std::vector<std::string> g_configuration_files; // Empty
 
-    const advgetopt::getopt::option g_snapdb_options[] =
+
+
+const advgetopt::option g_options[] =
+{
     {
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "Usage: %p [-<opt>] [table [row [cell [value]]]]",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "where -<opt> is one or more of:",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            'h',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "help",
-            nullptr,
-            "show this help output",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "config",
-            nullptr,
-            "Configuration file to initialize snapdb.",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            0,
-            "context",
-            nullptr,
-            "name of the context from which to read",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            0,
-            "count",
-            nullptr,
-            "specify the number of rows to display",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            0,
-            "create-row",
-            nullptr,
-            "allows the creation of a row when writing a value",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            "drop-cell",
-            nullptr,
-            "drop the specified cell (specify table, row, and cell)",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            "drop-row",
-            nullptr,
-            "drop the specified row (specify table and row)",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            "drop-table",
-            nullptr,
-            "drop the specified table (specify table)",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            "full-cell",
-            nullptr,
-            "show all the data from that cell, by default large binary cells get truncated for display",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            "yes-i-know-what-im-doing",
-            nullptr,
-            "Force the dropping of tables, without warning and stdin prompt. Only use this if you know what you're doing!",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "host",
-            nullptr,
-            "host IP address or name (defaults to localhost)",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "port",
-            nullptr,
-            "port on the host to connect to (defaults to 9042)",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "info",
-            nullptr,
-            "print out the cluster name and protocol version",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "no-types",
-            nullptr,
-            "supress the output of the column type",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "use-ssl",
-            nullptr,
-            "Force the use of SSL, only if the keys are present.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            "timeout",
-            nullptr,
-            "Define the timeout in milliseconds (i.e. 60000 represents 1 minute).",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            '\0',
-            0,
-            "save-cell",
-            nullptr,
-            "save the contents of the specified cell to a file named <arg> (specify table, row, and cell)",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "version",
-            nullptr,
-            "show the version of %p and exit",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "[table [row] [cell] [value]]",
-            advgetopt::getopt::argument_mode_t::default_multiple_argument
-        },
-        {
-            '\0',
-            0,
-            nullptr,
-            nullptr,
-            nullptr,
-            advgetopt::getopt::argument_mode_t::end_of_options
-        }
-    };
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "config",
+        nullptr,
+        "Configuration file to initialize snapdb.",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "context",
+        nullptr,
+        "name of the context from which to read",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "count",
+        nullptr,
+        "specify the number of rows to display",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
+        "create-row",
+        nullptr,
+        "allows the creation of a row when writing a value",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
+        "drop-cell",
+        nullptr,
+        "drop the specified cell (specify table, row, and cell)",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
+        "drop-row",
+        nullptr,
+        "drop the specified row (specify table and row)",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
+        "drop-table",
+        nullptr,
+        "drop the specified table (specify table)",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
+        "full-cell",
+        nullptr,
+        "show all the data from that cell, by default large binary cells get truncated for display",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
+        "yes-i-know-what-im-doing",
+        nullptr,
+        "Force the dropping of tables, without warning and stdin prompt. Only use this if you know what you're doing!",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "host",
+        nullptr,
+        "host IP address or name (defaults to localhost)",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "port",
+        nullptr,
+        "port on the host to connect to (defaults to 9042)",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "info",
+        nullptr,
+        "print out the cluster name and protocol version",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "no-types",
+        nullptr,
+        "supress the output of the column type",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "use-ssl",
+        nullptr,
+        "Force the use of SSL, only if the keys are present.",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "timeout",
+        nullptr,
+        "Define the timeout in milliseconds (i.e. 60000 represents 1 minute).",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "save-cell",
+        nullptr,
+        "save the contents of the specified cell to a file named <arg> (specify table, row, and cell)",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_MULTIPLE | advgetopt::GETOPT_FLAG_DEFAULT_OPTION | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "--",
+        nullptr,
+        "[table [row [cell [value]]]]",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_END,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr
+    }
+};
+
+
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPDB_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] [table [row [cell [value]]]]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2012-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
+
+
 }
 // no name namespace
 
 
 snapdb::snapdb(int argc, char * argv[])
     : f_session( casswrapper::Session::create() )
-    , f_opt( new advgetopt::getopt( argc, argv, g_snapdb_options, g_configuration_files, nullptr ) )
+    , f_opt( new advgetopt::getopt( g_options_environment, argc, argv ) )
     , f_config( "snapdb" )
 {
-    if(f_opt->is_defined("version"))
-    {
-        std::cout << SNAPDB_VERSION_STRING << std::endl;
-        exit(0);
-    }
-
     // Set up configuration file
     //
     if( f_opt->is_defined("config") )
@@ -325,12 +323,6 @@ snapdb::snapdb(int argc, char * argv[])
     }
 
     // then check commands
-    if( f_opt->is_defined( "help" ) )
-    {
-        usage(advgetopt::getopt::status_t::no_error);
-        snap::NOTREACHED();
-    }
-
     try
     {
         if( f_opt->is_defined( "info" ) )
@@ -367,7 +359,8 @@ snapdb::snapdb(int argc, char * argv[])
         if( arg_count > 4 )
         {
             std::cerr << "error: only four parameters (table, row, cell and value) can be specified on the command line." << std::endl;
-            usage(advgetopt::getopt::status_t::error);
+            std::cerr << f_opt->usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
+            exit(1);
         }
         for( int idx = 0; idx < arg_count; ++idx )
         {
@@ -391,11 +384,6 @@ snapdb::snapdb(int argc, char * argv[])
     }
 }
 
-void snapdb::usage(advgetopt::getopt::status_t status)
-{
-    f_opt->usage( status, "snapdb" );
-    exit(1);
-}
 
 void snapdb::info()
 {

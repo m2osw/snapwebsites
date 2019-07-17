@@ -1,4 +1,4 @@
-// Snap Websites Server -- test email.cpp/h
+// Snap Websites Server -- test_email.cpp/h
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/

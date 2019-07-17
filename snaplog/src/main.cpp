@@ -31,12 +31,18 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// self
+//
 #include "snaplog.h"
 #include "version.h"
 
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
+
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
 
 
 /** \brief Define whether the standard output stream is a TTY.
@@ -71,6 +77,10 @@ int main(int argc, char * argv[])
         // connection with the Snap! Communicator service.)
         //
         return 0;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch( snap::snap_exception const & e )
     {

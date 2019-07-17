@@ -1,6 +1,15 @@
 snapwebsites (1.7.12.0~xenial) xenial; urgency=high
 
-  * Updated the snapinstallwebsites to compile against the new advgetopt.
+  * Updated the command line tools to compile against the new advgetopt.
+  * Added in=C++ to the MAPPING_EXTENSION to all doxy files.
+  * Added the PROJECT_BRIEF description in some doxy files.
+  * Updated all doxy files to 1.8.11.
+  * Added options to the debian/source to avoid including tmp & .git in the
+    source package.
+  * Make use of the UTC_BUILD_YEAR for our copyright notices.
+  * Added a README.md for the library mb tests.
+  * Added a test to verify whether the snap_thread FIFO should be implemented
+    with a vector or a queue. The queue wins big time.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 13 May 2019 11:52:19 -0700
 

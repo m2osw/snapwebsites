@@ -80,104 +80,99 @@ namespace
 manager::pointer_t g_instance;
 
 
-/** \brief List of configuration files one can create to define parameters.
- *
- * This feature is not used because the getopt does not yet give us a way
- * to specify a configuration file (i.e. --config \<path>/\<file>.conf).
- *
- * At this point, we load the configuration file using the snapwebsites
- * library.
- */
-std::vector<std::string> const g_configuration_files
-{
-    //"@snapwebsites@",  // project name
-    //"/etc/snapwebsites/snapmanager.conf" -- we use the snap f_config variable instead
-};
+///** \brief List of configuration files one can create to define parameters.
+// *
+// * This feature is not used because the getopt does not yet give us a way
+// * to specify a configuration file (i.e. --config \<path>/\<file>.conf).
+// *
+// * At this point, we load the configuration file using the snapwebsites
+// * library.
+// */
+//std::vector<std::string> const g_configuration_files
+//{
+//    //"@snapwebsites@",  // project name
+//    //"/etc/snapwebsites/snapmanager.conf" -- we use the snap f_config variable instead
+//};
 
-advgetopt::getopt::option const g_manager_options[] =
+advgetopt::option const g_manager_options[] =
 {
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "Usage: %p [-<opt>]",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "where -<opt> is one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_REQUIRED,
         "config",
         nullptr,
         "Path and filename of the snapmanager.cgi and snapmanagerdaemon configuration file.",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_REQUIRED,
         "data-path",
         "/var/lib/snapwebsites/cluster-status",
         "Path to this process data directory to save the cluster status.",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_FLAG,
         "debug",
         nullptr,
         "Start in debug mode.",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "log-config",
         "/etc/snapwebsites/logger/snapmanagerdaemon.properties",
         "Full path of log configuration file.",
-        advgetopt::getopt::argument_mode_t::optional_argument
-    },
-    {
-        'h',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "help",
-        nullptr,
-        "Show this help screen.",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_REQUIRED,
         "stylesheet",
         "/etc/snapwebsites/snapmanagercgi-parser.xsl",
         "The stylesheet to use to transform the data before sending it to the client as HTML.",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "version",
-        nullptr,
-        "Show the version of %p and exit.",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        0,
+        advgetopt::GETOPT_FLAG_END,
         nullptr,
         nullptr,
         nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        nullptr
     }
 };
 
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_manager_options_environment =
+{
+    .f_project_name = "snapmanager",
+    .f_options = g_manager_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPMANAGER_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPMANAGER_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
 
 
 
@@ -258,23 +253,7 @@ void manager::init(int argc, char * argv[])
 
     // parse the arguments
     //
-    f_opt.reset(new advgetopt::getopt(argc, argv, g_manager_options, g_configuration_files, "SNAPMANAGER_OPTIONS"));
-
-    // --help
-    //
-    if(f_opt->is_defined("help"))
-    {
-        f_opt->usage(advgetopt::getopt::status_t::no_error, "Usage: %s -<arg> ...\n", argv[0]);
-        exit(1);
-    }
-
-    // --version
-    //
-    if(f_opt->is_defined("version"))
-    {
-        std::cout << SNAPMANAGER_VERSION_STRING << std::endl;
-        exit(0);
-    }
+    f_opt.reset(new advgetopt::getopt(g_manager_options_environment, argc, argv));
 
     // read the configuration file
     //
@@ -319,8 +298,8 @@ void manager::init(int argc, char * argv[])
     if( f_opt->is_defined( "--" ) )
     {
         std::cerr << "fatal error: unexpected parameter found on daemon command line." << std::endl;
-        f_opt->usage(advgetopt::getopt::status_t::error, "Usage: %s -<arg> ...\n", argv[0]);
-        snap::NOTREACHED();
+        std::cerr << f_opt->usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
+        exit(1);
     }
 
     // get the data path, we will be saving the status of each computer

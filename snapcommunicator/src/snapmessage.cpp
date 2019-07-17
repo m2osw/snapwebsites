@@ -15,7 +15,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// snapwebsites library
+// snapwebsites lib
 //
 #include <snapwebsites/log.h>
 #include <snapwebsites/not_reached.h>
@@ -24,19 +24,20 @@
 #include <snapwebsites/snap_console.h>
 #include <snapwebsites/snapwebsites.h>
 
-// advgetopt library
+// advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
+#include <advgetopt/exception.h>
 
-// C++ library
+// C++ lib
 //
 #include <atomic>
 
-// ncurses
+// ncurses lib
 //
 #include <ncurses.h>
 
-// readline library
+// readline lib
 //
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -82,127 +83,134 @@
 
 namespace
 {
-    char const * history_file = "~/.snapmessage_history";
 
-    const std::vector<std::string> g_configuration_files
-    {
-    };
 
-    const advgetopt::getopt::option g_command_line_options[] =
+
+char const * history_file = "~/.snapmessage_history";
+
+
+const advgetopt::option g_command_line_options[] =
+{
     {
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "Usage: %p [-<opt>] [message]",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "where -<opt> is one or more of:",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            'a',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
-            "address",
-            nullptr,
-            "the address and port to connect to (i.e. \"127.0.0.1:4040\")",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
-            "cui",
-            nullptr,
-            "start in interactive mode in your console",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_CONFIGURATION_FILE,
-            "gui",
-            nullptr,
-            "open a graphical window with a input and an output console",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'h',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "help",
-            nullptr,
-            "show this help output",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "ssl",
-            nullptr,
-            "if specified, make a secure connection (with encryption)",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "tcp",
-            nullptr,
-            "send a TCP message; use --wait to also wait for a reply and display it in your console",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "udp",
-            nullptr,
-            "send a UDP message and quit",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'v',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "verbose",
-            nullptr,
-            "make the output verbose",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "version",
-            nullptr,
-            "show the version of %p and exit",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "wait",
-            nullptr,
-            "in case you used --tcp, this tells sendmessage to wait for a reply before quiting",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            "message",
-            nullptr,
-            nullptr, // hidden argument in --help screen
-            advgetopt::getopt::argument_mode_t::default_multiple_argument
-        },
-        {
-            '\0',
-            0,
-            nullptr,
-            nullptr,
-            nullptr,
-            advgetopt::getopt::argument_mode_t::end_of_options
-        }
-    };
+        'a',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "address",
+        nullptr,
+        "the address and port to connect to (i.e. \"127.0.0.1:4040\")",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_FLAG,
+        "cui",
+        nullptr,
+        "start in interactive mode in your console",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_FLAG,
+        "gui",
+        nullptr,
+        "open a graphical window with an input and an output console",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
+        "ssl",
+        nullptr,
+        "if specified, make a secure connection (with encryption)",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
+        "tcp",
+        nullptr,
+        "send a TCP message; use --wait to also wait for a reply and display it in your console",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
+        "udp",
+        nullptr,
+        "send a UDP message and quit",
+        nullptr
+    },
+    {
+        'v',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
+        "verbose",
+        nullptr,
+        "make the output verbose",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
+        "wait",
+        nullptr,
+        "in case you used --tcp, this tells sendmessage to wait for a reply before quiting",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_MULTIPLE | advgetopt::GETOPT_FLAG_DEFAULT_OPTION,
+        "message",
+        nullptr,
+        nullptr, // hidden argument in --help screen
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_END,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr
+    }
+};
+
+
+char const * const g_configuration_directories[] =
+{
+    "/etc/snapwebsites",
+    nullptr
+};
+
+
+// until we have C++20, remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_command_line_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_command_line_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPMESSAGE",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = "snapmessage.conf",
+    .f_configuration_directories = g_configuration_directories,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] [<message> ...]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
+
+
 }
 //namespace
 
@@ -761,24 +769,8 @@ class snapmessage
 {
 public:
     snapmessage(int argc, char * argv[])
-        : f_opt(argc, argv, g_command_line_options, g_configuration_files, "")
+        : f_opt(g_command_line_options_environment, argc, argv)
     {
-        // --version?
-        if(f_opt.is_defined("version"))
-        {
-            std::cout << SNAPWEBSITES_VERSION_STRING << std::endl;
-            exit(0);
-            snap::NOTREACHED();
-        }
-
-        // --help?
-        if(f_opt.is_defined("help"))
-        {
-            f_opt.usage(advgetopt::getopt::status_t::no_error, "snapmessage");
-            exit(1);
-            snap::NOTREACHED();
-        }
-
         f_gui = f_opt.is_defined("gui");
 
         f_cui = f_opt.is_defined("cui")
@@ -909,6 +901,10 @@ int main(int argc, char *argv[])
         snapmessage sm(argc, argv);
 
         return sm.run();
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

@@ -37,59 +37,68 @@ namespace
 {
 
 
-std::vector<std::string> const g_configuration_files; // Empty
-
-advgetopt::getopt::option const g_snapresetfail2ban_options[] =
+advgetopt::option const g_options[] =
 {
     {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "Usage: %p [-<opt>]",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "where -<opt> is one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
         'c',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "config",
         "/etc/fail2ban",
         "Path to the fail2ban.conf configuration file where 'dbfile' is defined.",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         'h',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "help",
         nullptr,
         "Show usage and exit.",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "version",
         nullptr,
         "Show the version of %p and exit.",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         '\0',
-        0,
+        advgetopt::GETOPT_FLAG_END,
         nullptr,
         nullptr,
         nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        nullptr
     }
 };
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPRESETFAIL2BAN_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = 0,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = nullptr,
+    .f_version = SNAPFIREWALL_VERSION_STRING,
+    .f_license = nullptr,
+    .f_copyright = nullptr,
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
 
 
 
@@ -108,12 +117,13 @@ private:
 
 
 snap_resetfail2ban::snap_resetfail2ban(int argc, char * argv[])
-    : f_opt(argc, argv, g_snapresetfail2ban_options, g_configuration_files, "SNAPRESETFAIL2BAN_OPTIONS")
+    : f_opt(g_options_environment, argc, argv)
     , f_config("fail2ban")
 {
     if(f_opt.is_defined("help"))
     {
-        f_opt.usage( advgetopt::getopt::status_t::no_error, "snapresetfail2ban" );
+        std::cerr << f_opt.usage();
+        exit(1);
         snap::NOTREACHED();
     }
 

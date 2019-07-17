@@ -588,7 +588,7 @@ bool snap_config_file::actual_write_config_file(std::string const & filename)
             QByteArray value(p.second.c_str());
             value.replace("\n", "\\n");
             data += value;
-            data += '\n';  // our actual new line, do not reaplce this one
+            data += '\n';  // our actual new line, do not replace this one
             c.write(data);
         }
         //else -- ignore parameters with invalid names

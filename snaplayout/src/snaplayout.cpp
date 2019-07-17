@@ -39,8 +39,13 @@
 #include <snapwebsites/snap_image.h>
 #include <snapwebsites/snapwebsites.h>
 
+// advgetopt lib
+//
 #include <advgetopt/advgetopt.h>
+#include <advgetopt/exception.h>
 
+// libdbproxy lib
+//
 #include <libdbproxy/value.h>
 
 #include <casswrapper/schema.h>
@@ -71,12 +76,6 @@ using namespace libdbproxy;
 namespace
 {
 
-/** \brief A vector of string is required for f_opt
- *
- * The vector is kept empty. It is required to parse the command line
- * options but snaplayout does not make use of configuration files.
- */
-const std::vector<std::string> g_configuration_files; // Empty
 
 
 /** \brief The options of the snaplayout command line tool.
@@ -84,121 +83,121 @@ const std::vector<std::string> g_configuration_files; // Empty
  * This table represents all the options available on the snaplayout
  * command line.
  */
-advgetopt::getopt::option const g_snaplayout_options[] =
+advgetopt::option const g_options[] =
 {
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        NULL,
-        NULL,
-        "Usage: %p [<options>] <layout filename(s)>",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        NULL,
-        NULL,
-        "where options are one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '?',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "help",
-        nullptr,
-        "show this help output",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "context",
         "snap_websites",
         "Specify the context (keyspace) to connect to.",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         'x',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "extract",
         nullptr,
         "extract a file from the specified layout and filename",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'h',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "host",
         "localhost",
-        "host IP address or name [default=localhost]",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        "host IP address or name",
+        nullptr
     },
     {
         'p',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "port",
         "9042",
-        "port on the host to which to connect [default=9042]",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        "port on the host to which to connect",
+        nullptr
     },
     {
         '\0',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "remove-theme",
         nullptr,
         "remove the specified theme; this remove the entire row and can allow you to reinstall a theme that \"lost\" files",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "no-ssl",
         nullptr,
         "Supress the use of SSL even if the keys are present.",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
-    { // at least until we have a way to edit the theme from the website
+    { // at least until we have a way to edit the theme from the website (expect 3 params as filenames)
         't',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "set-theme",
         nullptr,
         "usage: --set-theme URL [theme|layout] ['\"layout name\";']'",
-        advgetopt::getopt::argument_mode_t::no_argument // expect 3 params as filenames
+        nullptr
     },
     {
         'v',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "verbose",
         nullptr,
         "show what snaplayout is doing",
-        advgetopt::getopt::argument_mode_t::no_argument // expect 3 params as filenames
+        nullptr
     },
     {
         '\0',
-        0,
-        "version",
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_MULTIPLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_DEFAULT_OPTION,
+        "--",
         nullptr,
-        "show the version of %p and exit",
-        advgetopt::getopt::argument_mode_t::no_argument
+        "<layout-file1> <layout-file2> ... <layout-fileN> or <layout.zip>",
+        nullptr
     },
     {
         '\0',
-        0,
-        nullptr,
-        nullptr,
-        "layout-file1.xsl layout-file2.xsl ... layout-fileN.xsl or layout.zip",
-        advgetopt::getopt::argument_mode_t::default_multiple_argument
-    },
-    {
-        '\0',
-        0,
+        advgetopt::GETOPT_FLAG_END,
         nullptr,
         nullptr,
         nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        nullptr
     }
 };
+
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPLAYOUT_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] <layout filename> ...\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPLAYOUT_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
 
 
 /** \brief Load the data of a stream in a QByteArray.
@@ -241,7 +240,6 @@ class snap_layout
 public:
     snap_layout(int argc, char *argv[]);
 
-    void usage();
     void run();
     void add_files();
     bool load_xml_info(QDomDocument& doc, QString const & filename, QString & layout_name, time_t & layout_modified);
@@ -296,12 +294,13 @@ private:
 
 snap_layout::snap_layout(int argc, char * argv[])
     : f_session( Session::create() )
-    , f_opt( new advgetopt::getopt( argc, argv, g_snaplayout_options, g_configuration_files, "SNAPSERVER_OPTIONS" ) )
+    , f_opt( new advgetopt::getopt( g_options_environment, argc, argv ) )
     , f_verbose(f_opt->is_defined("verbose"))
 {
     if( f_opt->is_defined( "help" ) )
     {
-        usage();
+        std::cerr << f_opt->usage();
+        exit(1);
     }
     if( f_opt->is_defined( "version" ) )
     {
@@ -314,7 +313,7 @@ snap_layout::snap_layout(int argc, char * argv[])
     {
         if( f_opt->is_defined( "set-theme" ) )
         {
-            std::cerr << "usage: snaplayout --set-theme URL [theme|layout] ['\"layout_name\";']'" << std::endl;
+            std::cerr << "usage: snaplayout --set-theme URL theme|layout ['\"layout_name\";']'" << std::endl;
             std::cerr << "note: if layout_name is not specified, the theme/layout is deleted from the database." << std::endl;
             exit(1);
             snap::NOTREACHED();
@@ -332,7 +331,8 @@ snap_layout::snap_layout(int argc, char * argv[])
             snap::NOTREACHED();
         }
         std::cerr << "one or more layout files are required!" << std::endl;
-        usage();
+        std::cerr << f_opt->usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
+        exit(1);
         snap::NOTREACHED();
     }
     if(!f_opt->is_defined("set-theme")
@@ -425,14 +425,6 @@ snap_layout::snap_layout(int argc, char * argv[])
             }
         }
     }
-}
-
-
-void snap_layout::usage()
-{
-    f_opt->usage( advgetopt::getopt::status_t::no_error, "snaplayout" );
-    exit(1);
-    snap::NOTREACHED();
 }
 
 
@@ -1385,6 +1377,10 @@ int main(int argc, char * argv[])
         snap_layout s(argc, argv);
         s.run();
         return 0;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

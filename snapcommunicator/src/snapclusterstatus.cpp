@@ -27,6 +27,10 @@
 #include <snapwebsites/snap_config.h>
 #include <snapwebsites/not_reached.h>
 
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
+
 
 
 namespace
@@ -89,7 +93,6 @@ public:
     virtual void                stop(bool quitting) override; // no "msg_" because that's in connection_with_send_message
 
 private:
-    void                        usage(advgetopt::getopt::status_t status);
     void                        done(snap::snap_communicator_message & message);
 
     // messages handled by the dispatcher
@@ -142,70 +145,72 @@ snap::dispatcher<snapcluster>::dispatcher_match::vector_t const snapcluster::g_s
 };
 
 
-const std::vector<std::string> g_configuration_files; // Empty
 
-advgetopt::getopt::option const g_snapcluster_options[] =
+advgetopt::option const g_options[] =
 {
     {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "Usage: %p [-<opt>]",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "where -<opt> is one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
         'c',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "config",
         nullptr,
         "path to the snapcommunicator configuration file",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "help",
-        nullptr,
-        "show this help output",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "version",
-        nullptr,
-        "show the version of %p and exit",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        0,
+        advgetopt::GETOPT_FLAG_END,
         nullptr,
         nullptr,
         nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        nullptr
     }
 };
 
 
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = nullptr,
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPCOMMUNICATOR_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) "
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
+
+
+
+
 snapcluster::snapcluster(int argc, char * argv[])
     : dispatcher(this, g_snapcluster_service_messages)
-    , f_opt(argc, argv, g_snapcluster_options, g_configuration_files, nullptr)
+    , f_opt(g_options_environment, argc, argv)
     , f_config("snapcommunicator")
 {
     // --help
     if(f_opt.is_defined("help"))
     {
-        usage(advgetopt::getopt::status_t::no_error);
+        f_opt.usage();
+        exit(1);
         snap::NOTREACHED();
     }
 
@@ -287,13 +292,6 @@ void snapcluster::stop(bool quitting)
 }
 
 
-void snapcluster::usage(advgetopt::getopt::status_t status)
-{
-    f_opt.usage(status, "snapcluster");
-    exit(1);
-}
-
-
 void snapcluster::msg_cluster_status(snap::snap_communicator_message & message)
 {
     f_cluster_status = message.get_command();
@@ -342,9 +340,13 @@ int main(int argc, char * argv[])
 {
     try
     {
-        snapcluster::pointer_t cluster = std::make_shared<snapcluster>(argc, argv);
+        snapcluster::pointer_t cluster(std::make_shared<snapcluster>(argc, argv));
         cluster->run();
         return 0;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

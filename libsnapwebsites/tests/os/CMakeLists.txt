@@ -72,4 +72,14 @@ add_executable( ${PROJECT_NAME}
 )
 
 
+##
+## Test speed of vector, queue, deque for out FIFO.
+##
+project(fifo_speed)
+
+add_executable(${PROJECT_NAME}
+    fifo_speed.cpp
+)
+
+
 # vim: ts=4 sw=4 et

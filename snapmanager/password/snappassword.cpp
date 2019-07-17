@@ -24,9 +24,14 @@
 #include <snapwebsites/hexadecimal_string.h>
 #include <snapwebsites/password.h>
 
-// advgetopt
+// advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
+#include <advgetopt/exception.h>
+
+// boost lib
+//
+#include <boost/preprocessor/stringize.hpp>
 
 // C++ lib
 //
@@ -45,107 +50,105 @@
 
 namespace
 {
-    const std::vector<std::string> g_configuration_files;
 
-    const advgetopt::getopt::option g_snappassword_options[] =
+
+const advgetopt::option g_snappassword_options[] =
+{
     {
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "Usage: %p [-<opt>]",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "where -<opt> is one or more of:",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            'a',
-            0,
-            "add",
-            nullptr,
-            "add a user.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'c',
-            0,
-            "check",
-            nullptr,
-            "check a user's password.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'd',
-            0,
-            "delete",
-            nullptr,
-            "delete a user.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'f',
-            0,
-            "filename",
-            "/etc/snapwebsites/passwords/snapmanagercgi.pwd",
-            "password filename and path.",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            'h',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "help",
-            nullptr,
-            "Show this help screen.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'l',
-            0,
-            "list",
-            nullptr,
-            "list existing users.",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            'u',
-            0,
-            "username",
-            nullptr,
-            "specify the name of user.",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            'p',
-            0,
-            "password",
-            nullptr,
-            "specify the password of user.",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "version",
-            nullptr,
-            "show the version of %p and exit.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            nullptr,
-            nullptr,
-            nullptr,
-            advgetopt::getopt::argument_mode_t::end_of_options
-        }
-    };
+        'a',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
+        "add",
+        nullptr,
+        "add a user.",
+        nullptr
+    },
+    {
+        'c',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
+        "check",
+        nullptr,
+        "check a user's password.",
+        nullptr
+    },
+    {
+        'd',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
+        "delete",
+        nullptr,
+        "delete a user.",
+        nullptr
+    },
+    {
+        'f',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "filename",
+        "/etc/snapwebsites/passwords/snapmanagercgi.pwd",
+        "password filename and path.",
+        nullptr
+    },
+    {
+        'l',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE,
+        "list",
+        nullptr,
+        "list existing users.",
+        nullptr
+    },
+    {
+        'u',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "username",
+        nullptr,
+        "specify the name of user.",
+        nullptr
+    },
+    {
+        'p',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "password",
+        nullptr,
+        "specify the password of user.",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_END,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr
+    }
+};
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_snappassword_options_environment =
+{
+    .f_project_name = "snappassword",
+    .f_options = g_snappassword_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = nullptr,
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] ...\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPMANAGER_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
 }
 // no name namespace
 
@@ -171,7 +174,7 @@ private:
 
 
 snappassword::snappassword(int argc, char * argv[])
-    : f_opt(argc, argv, g_snappassword_options, g_configuration_files, nullptr)
+    : f_opt(g_snappassword_options_environment, argc, argv)
 {
     if(f_opt.is_defined("version"))
     {
@@ -180,7 +183,7 @@ snappassword::snappassword(int argc, char * argv[])
     }
     if(f_opt.is_defined("help"))
     {
-        f_opt.usage(advgetopt::getopt::status_t::no_error, "Usage: %s -<arg> ...\n", argv[0]);
+        std::cerr << f_opt.usage();
         exit(1);
     }
 }
@@ -407,6 +410,10 @@ int main(int argc, char * argv[])
         snappassword sp(argc, argv);
 
         return sp.run();
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::runtime_error const & e)
     {

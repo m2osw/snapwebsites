@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapserver/src/snapexpr.cpp
+ *      libsnapwebsites/tools/snapexpr.cpp
  *
  * Description:
  *      Process a C-like expression. This tool is mainly a test to check
@@ -32,6 +32,7 @@
 #include <snapwebsites/snapwebsites.h>
 
 #include <advgetopt/advgetopt.h>
+#include <advgetopt/exception.h>
 
 #include <libdbproxy/libdbproxy.h>
 #include <libdbproxy/context.h>
@@ -44,104 +45,109 @@
 #include <snapwebsites/poison.h>
 
 
-advgetopt::getopt::option const g_options[] =
+advgetopt::option const g_options[] =
 {
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        NULL,
-        NULL,
-        "Usage: %p -<opt> ...",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        NULL,
-        NULL,
-        "where -<opt> is one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        'h',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "help",
-        NULL,
-        "Show usage and exit.",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "host",
         "localhost",
         "Specify the IP address to the Cassandra node.",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "no-cassandra",
-        NULL,
+        nullptr,
         "Prevent Cassandra's initialization. This allows for testing Cassandra related functions in the event the database was not setup.",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'p',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "port",
         "4042",
         "Define the port used by the Cassandra node.",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         'q',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "quiet",
-        NULL,
+        nullptr,
         "Print out the result quietly (without introducer)",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         's',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "serialize",
-        NULL,
+        nullptr,
         "compile and then serialize the expressions and print out the result",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'v',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "verbose",
-        NULL,
+        nullptr,
         "information about the task being performed",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'e',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_MULTIPLE | advgetopt::GETOPT_FLAG_DEFAULT_OPTION,
         "expression",
-        NULL,
+        nullptr,
         "one or more C-like expressions to compile and execute",
-        advgetopt::getopt::argument_mode_t::default_multiple_argument
+        nullptr
     },
     {
         '\0',
-        0,
-        NULL,
-        NULL,
-        NULL,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        advgetopt::GETOPT_FLAG_END,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr
     }
 };
-advgetopt::getopt *g_opt = NULL;
 
-int g_errcnt = 0;
-bool g_verbose = 0;
 
-libdbproxy::libdbproxy::pointer_t          g_cassandra;
-libdbproxy::context::pointer_t   g_context;
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = nullptr,
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] <expression> ...\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
+advgetopt::getopt *                 g_opt = nullptr;
+int                                 g_errcnt = 0;
+bool                                g_verbose = false;
+libdbproxy::libdbproxy::pointer_t   g_cassandra = libdbproxy::libdbproxy::pointer_t();
+libdbproxy::context::pointer_t      g_context = libdbproxy::context::pointer_t();
 
 
 void connect_cassandra()
@@ -357,13 +363,8 @@ int main(int argc, char * argv[])
 {
     try
     {
-        std::vector<std::string> const no_config;
-        g_opt = new advgetopt::getopt(argc, argv, g_options, no_config, NULL);
-        if(g_opt->is_defined("help"))
-        {
-            g_opt->usage(advgetopt::getopt::status_t::no_error, "Usage: %s [--<opts>] <expressions> ...\n", argv[0]);
-            exit(1);
-        }
+        g_opt = new advgetopt::getopt(g_options_environment, argc, argv);
+
         g_verbose = g_opt->is_defined("verbose");
 
         if(!g_opt->is_defined("no-cassandra"))
@@ -384,6 +385,10 @@ int main(int argc, char * argv[])
         }
 
         return g_errcnt == 0 ? 0 : 1;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

@@ -464,7 +464,6 @@ private:
     snapdbproxy &               operator = ( snapdbproxy const & ) = delete;
 
     bool                        use_ssl() const;
-    void                        usage(advgetopt::getopt::status_t status);
     void                        setup_dbproxy();
     void                        next_wakeup();
 

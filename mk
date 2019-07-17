@@ -2,12 +2,14 @@
 #
 # Run make with proper parameters for me...
 
+PROCESSORS=4
+
 case "$1" in
 "-a"|"--all")
     # Rebuild all
     #
     shift
-    make -C ../../BUILD $*
+    make -j${PROCESSORS} -C ../../BUILD $*
     ;;
 
 "-l"|"--less")
@@ -31,13 +33,13 @@ case "$1" in
 "-r"|"--release")
     # Rebuild the release version
     #
-    make -C ../../RELEASE/snapwebsites install
+    make -j${PROCESSORS} -C ../../RELEASE/snapwebsites install
     ;;
 
 "")
     # Default, just rebuild snapwebsites
     #
-    make -C ../../BUILD/snapwebsites install | grep -v " Up-to-date: "
+    make -j${PROCESSORS} -C ../../BUILD/snapwebsites install | grep -v " Up-to-date: "
 
     # The following is a bit better as it does not print out all the
     # installation stuff, but it does the first part twice which is

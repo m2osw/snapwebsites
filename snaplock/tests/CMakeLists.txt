@@ -80,6 +80,7 @@ if(CATCH_FOUND)
         ${QT_LIBRARIES}
         dl
     )
+    include_directories( ${CMAKE_CURRENT_BINARY_DIR}/../src ) # for version.h
     add_test(
         NAME
             ${PROJECT_NAME}

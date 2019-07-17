@@ -403,7 +403,8 @@ void snapbackup::storeTables( const int count, const QString& context_name )
     QStringList tables_to_dump;
     if( f_opt->is_defined("tables") )
     {
-        for( int idx = 0; idx < f_opt->size("tables"); ++idx )
+        size_t const max(f_opt->size("tables"));
+        for( size_t idx = 0; idx < max; ++idx )
         {
             tables_to_dump << QString(f_opt->get_string( "tables", idx ).c_str());
         }
@@ -501,7 +502,8 @@ void snapbackup::restoreTables( QString const & context_name )
     QStringList tables_to_restore;
     if( f_opt->is_defined("tables") )
     {
-        for( int idx = 0; idx < f_opt->size("tables"); ++idx )
+        size_t const max(f_opt->size("tables"));
+        for( size_t idx = 0; idx < max; ++idx )
         {
             tables_to_restore << QString(f_opt->get_string( "tables", idx ).c_str());
         }

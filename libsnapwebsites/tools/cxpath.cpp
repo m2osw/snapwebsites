@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapserver/src/cxpath.cpp
+ *      libsnapwebsites/tools/cxpath.cpp
  *
  * Description:
  *      Compile an XPath to binary byte code.
@@ -31,6 +31,7 @@
 #include <snapwebsites/qdomxpath.h>
 
 #include <advgetopt/advgetopt.h>
+#include <advgetopt/exception.h>
 
 #include <iostream>
 
@@ -44,139 +45,122 @@
 namespace
 {
 
-const std::vector<std::string> g_configuration_files; // Empty
 
-advgetopt::getopt::option const g_cxpath_options[] =
+advgetopt::option const g_command_line_options[] =
 {
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "Usage: %p --<command> [--<opt>] ['<xpath>'] [<filename>.xml] ...",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
     // COMMANDS
-    {
-        '\0',
-        0,
-        nullptr,
-        nullptr,
-        "commands:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        'c',
-        0,
-        "compile",
-        nullptr,
-        "compile the specified XPath and save it to a .xpath file and optionally print out the compiled code",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        'd',
-        0,
-        "disassemble",
-        nullptr,
-        "disassemble the specified .xpath file (if used with the -c, disassemble as we compile)",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        'h',
-        0,
-        "help",
-        nullptr,
-        "display this help screen",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        'x',
-        0,
-        "execute",
-        nullptr,
-        "execute an xpath (.xpath file or parsed on the fly XPath) against one or more .xml files",
-        advgetopt::getopt::argument_mode_t::required_argument
-    },
+    advgetopt::define_option(
+          advgetopt::Name("compile")
+        , advgetopt::ShortName('c')
+        , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
+        , advgetopt::Help("compile the specified XPath and save it to a .xpath file and optionally print out the compiled code.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("disassemble")
+        , advgetopt::ShortName('d')
+        , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
+        , advgetopt::Help("disassemble the specified .xpath file (if used with the -c, disassemble as we compile.)")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("execute")
+        , advgetopt::ShortName('x')
+        , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_GROUP_COMMANDS>())
+        , advgetopt::Help("execute an xpath (.xpath file or parsed on the fly XPath) against one or more .xml files.")
+    ),
     // OPTIONS
-    {
-        '\0',
-        0,
-        nullptr,
-        nullptr,
-        "options:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        'n',
-        0,
-        "namespace",
-        nullptr,
-        "if specified, the namespaces are taken in account, otherwise the DOM ignores them",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        'o',
-        0,
-        "output",
-        nullptr,
-        "name of the output file (the .xpath filename)",
-        advgetopt::getopt::argument_mode_t::required_argument
-    },
-    {
-        'p',
-        0,
-        "xpath",
-        nullptr,
-        "an XPath",
-        advgetopt::getopt::argument_mode_t::required_argument
-    },
-    {
-        'r',
-        0,
-        "results",
-        nullptr,
-        "display the results of executing the XPath",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        'v',
-        0,
-        "verbose",
-        nullptr,
-        "make the process verbose",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        0,
-        "version",
-        nullptr,
-        "print out the version",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        0,
-        "filename",
-        nullptr,
-        nullptr, // hidden argument in --help screen
-        advgetopt::getopt::argument_mode_t::default_multiple_argument
-    },
-    {
-        '\0',
-        0,
-        nullptr,
-        nullptr,
-        nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
-    }
+    advgetopt::define_option(
+          advgetopt::Name("namespace")
+        , advgetopt::ShortName('n')
+        , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+        , advgetopt::Help("if specified, the namespaces are taken in account, otherwise the DOM ignores them.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("output")
+        , advgetopt::ShortName('o')
+        , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_GROUP_OPTIONS
+                                                  , advgetopt::GETOPT_FLAG_REQUIRED>())
+        , advgetopt::Help("name of the output file (the .xpath filename.)")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("xpath")
+        , advgetopt::ShortName('p')
+        , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_GROUP_OPTIONS
+                                                  , advgetopt::GETOPT_FLAG_REQUIRED>())
+        , advgetopt::Help("an XPath to work on.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("results")
+        , advgetopt::ShortName('r')
+        , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+        , advgetopt::Help("display the results of executing the XPath.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("verbose")
+        , advgetopt::ShortName('v')
+        , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
+        , advgetopt::Help("make the process verbose.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("filename")
+        , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_GROUP_NONE
+                                                  , advgetopt::GETOPT_FLAG_MULTIPLE
+                                                  , advgetopt::GETOPT_FLAG_DEFAULT_OPTION>())
+    ),
+    advgetopt::end_options()
 };
 
 
 
-advgetopt::getopt * g_opt;
-bool                g_verbose;
-bool                g_results;
+advgetopt::group_description const g_group_descriptions[] =
+{
+    advgetopt::define_group(
+          advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_COMMANDS)
+        , advgetopt::GroupName("command")
+        , advgetopt::GroupDescription("Commands:")
+    ),
+    advgetopt::define_group(
+          advgetopt::GroupNumber(advgetopt::GETOPT_FLAG_GROUP_OPTIONS)
+        , advgetopt::GroupName("option")
+        , advgetopt::GroupDescription("Options:")
+    ),
+    advgetopt::end_groups()
+};
+
+
+
+
+// until we have C++20, remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_command_line_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = nullptr,
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p  [--<opt>] [-p '<xpath>'] | [-x <filename>.xpath <filename>.xml ...]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    .f_build_date = __DATE__,
+    .f_build_time = __TIME__,
+    .f_groups = g_group_descriptions
+};
+#pragma GCC diagnostic pop
+
+
+
+advgetopt::getopt * g_opt = nullptr;
+bool                g_verbose = false;
+bool                g_results = false;
 
 
 
@@ -362,17 +346,8 @@ int main(int argc, char *argv[])
 {
     try
     {
-        g_opt = new advgetopt::getopt(argc, argv, g_cxpath_options, g_configuration_files, nullptr);
-        if(g_opt->is_defined("version"))
-        {
-            std::cerr << SNAPWEBSITES_VERSION_STRING << std::endl;
-            exit(1);
-        }
-        if(g_opt->is_defined("help"))
-        {
-            g_opt->usage(advgetopt::getopt::status_t::no_error, "Usage: cxpath [--<opt>] [-p '<xpath>'] | [-x <filename>.xpath <filename>.xml ...]");
-            snap::NOTREACHED();
-        }
+        g_opt = new advgetopt::getopt(g_options_environment, argc, argv);
+
         g_verbose = g_opt->is_defined("verbose");
         g_results = g_opt->is_defined("results");
 
@@ -390,6 +365,10 @@ int main(int argc, char *argv[])
         }
 
         return 0;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const& e)
     {

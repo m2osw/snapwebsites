@@ -36,6 +36,7 @@
 // contrib lib
 //
 #include <advgetopt/advgetopt.h>
+#include <advgetopt/exception.h>
 #include <libdbproxy/context.h>
 #include <libdbproxy/table.h>
 
@@ -68,96 +69,91 @@
 
 namespace
 {
-    /** \brief List of configuration files.
-     *
-     * This variable is used as a list of configuration files. It may be
-     * empty.
-     */
-    std::vector<std::string> const g_configuration_files;
-    //{
-    //    "@snapwebsites@",       // project name
-    //    "/etc/snapwebsites/snapbounce.conf"
-    //};
 
-    /** \brief Command line options.
-     *
-     * This table includes all the options supported by the server.
-     */
-    advgetopt::getopt::option const g_snapbounce_options[] =
+
+
+/** \brief Command line options.
+ *
+ * This table includes all the options supported by the server.
+ */
+advgetopt::option const g_snapbounce_options[] =
+{
     {
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            NULL,
-            NULL,
-            "Usage: %p [-<opt>] <start|restart|stop>",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            NULL,
-            NULL,
-            "where -<opt> is one or more of:",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            'h',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "help",
-            nullptr,
-            "[optional] Show usage and exit.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'n',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "nolog",
-            nullptr,
-            "[optional] Only output to the console, not the syslog.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'c',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "config",
-            nullptr,
-            "[optional] Configuration file from which to get cassandra server details.",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            'v',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "version",
-            nullptr,
-            "[optional] show the version of %p and exit",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            's',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "sender",
-            nullptr,
-            "[required] Sender of the email.",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            'r',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "recipient",
-            nullptr,
-            "[required] Intended recipient of the email.",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            '\0',
-            0,
-            nullptr,
-            nullptr,
-            nullptr,
-            advgetopt::getopt::argument_mode_t::end_of_options
-        }
-    };
+        'n',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
+        "nolog",
+        nullptr,
+        "Only output to the console, not the syslog.",
+        nullptr
+    },
+    {
+        'c',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "config",
+        nullptr,
+        "Configuration file from which to get cassandra server details.",
+        nullptr
+    },
+    {
+        's',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "sender",
+        nullptr,
+        "Sender of the email [required].",
+        nullptr
+    },
+    {
+        'r',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "recipient",
+        nullptr,
+        "Intended recipient of the email [required].",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_END,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr
+    }
+};
+
+
+
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_snapbounce_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_snapbounce_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPBOUNCE_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
+
 }
 //namespace
 
@@ -178,8 +174,6 @@ public:
 private:
                             snap_bounce( int argc, char *argv[] );
 
-    void                    usage();
-
     static pointer_t        g_instance;
 
     advgetopt::getopt       f_opt;
@@ -194,18 +188,13 @@ snap_bounce::pointer_t snap_bounce::g_instance;
 
 
 snap_bounce::snap_bounce( int argc, char * argv[] )
-    : f_opt(argc, argv, g_snapbounce_options, g_configuration_files, "SNAPBOUNCE_OPTIONS")
+    : f_opt(g_snapbounce_options_environment, argc, argv)
     , f_config( "snapserver" ) // right now snapbounce does not really use any .conf data, it's just a filter, so we specify snapserver as a "fallback"
 {
-    if(f_opt.is_defined("version"))
+    if( !f_opt.is_defined( "sender" ) || !f_opt.is_defined( "recipient" ) )
     {
-        std::cerr << SNAPBOUNCE_VERSION_STRING << std::endl;
-        exit(0);
-    }
-
-    if( f_opt.is_defined( "help" ) || !f_opt.is_defined( "sender" ) || !f_opt.is_defined( "recipient" ) )
-    {
-        usage();
+        std::cerr << "error: the --sender and --recipient command line arguments are required." << std::endl;
+        std::cerr << f_opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
         exit(1);
     }
 
@@ -250,11 +239,6 @@ snap_bounce::pointer_t snap_bounce::instance()
 }
 
 
-void snap_bounce::usage()
-{
-    f_opt.usage( advgetopt::getopt::status_t::no_error, "snapbounce" );
-    //throw std::invalid_argument( "usage" );
-}
 
 
 void snap_bounce::read_stdin()
@@ -341,6 +325,10 @@ int main(int argc, char *argv[])
         snap_bounce::pointer_t bounce( snap_bounce::instance() );
         bounce->read_stdin();
         bounce->store_email();
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch( snap::snap_exception const & except )
     {

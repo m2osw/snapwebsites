@@ -31,6 +31,10 @@
 //
 #include "snapmanagercgi.h"
 
+// advgetopt
+//
+#include <advgetopt/exception.h>
+
 // Qt lib
 //
 #include <QCoreApplication>
@@ -118,6 +122,10 @@ int main(int argc, char * argv[])
         {
             return cgi->error("503 Service Unavailable", nullptr, "The Snap! C++ CGI script caught an unknown exception.");
         }
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

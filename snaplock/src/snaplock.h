@@ -424,7 +424,6 @@ private:
         snap::snap_communicator_message     f_message = snap::snap_communicator_message();
     };
 
-    void                        usage(advgetopt::getopt::status_t status);
     void                        get_parameters(snap::snap_communicator_message const & message, QString * object_name, pid_t * client_pid, time_t * timeout, QString * key, QString * source);
     void                        activate_first_lock(QString const & object_name);
     void                        ticket_list(snap::snap_communicator_message const & message);

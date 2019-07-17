@@ -74,8 +74,6 @@ private:
                                 snaplog( snaplog const & ) = delete;
     snaplog &                   operator = ( snaplog const & ) = delete;
 
-    void                        usage(advgetopt::getopt::status_t status);
-
     void                        add_message_to_db( snap::snap_communicator_message const & message );
     void                        mysql_ready();
     void                        no_mysql();

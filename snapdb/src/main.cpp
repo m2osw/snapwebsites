@@ -38,14 +38,26 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// self
+//
 #include "snapdb.h"
+
+// advgetopt library
+//
+#include <advgetopt/exception.h>
+
+
 
 int main(int argc, char *argv[])
 {
     try
     {
-        snapdb  s(argc, argv);
+        snapdb s(argc, argv);
         s.exec();
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const& e)
     {

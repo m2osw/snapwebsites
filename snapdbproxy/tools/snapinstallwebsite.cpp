@@ -33,151 +33,159 @@
 
 namespace
 {
-    const std::vector<std::string> g_configuration_files; // Empty
 
-    const advgetopt::getopt::option g_snapinstallwebsite_options[] =
+
+
+const advgetopt::option g_options[] =
+{
     {
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "Usage: %p [-<opt>]",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "where -<opt> is one or more of:",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            'c',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "config",
-            nullptr,
-            "Configuration file to initialize snapdbproxy.",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "domain",
-            nullptr,
-            "The domain and sub-domain for which a site is to be created (i.e. install.snap.website)."
+        'c',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "config",
+        nullptr,
+        "Configuration file to initialize snapdbproxy.",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "domain",
+        nullptr,
+        "The domain and sub-domain for which a site is to be created (i.e. install.snap.website)."
             " You may also include parameters after a '?'. At this time we understand the 'install-latyouts'."
             " For example, you could use --domain install.snap.website?install-layouts=beautiful."
             " Note that if the domain and/or website were not yet described in the database, default"
             " definitions get added automatically.",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "help",
-            nullptr,
-            "Show this help output.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "port",
-            nullptr,
-            "The port used to access this website (usually 80 or 443.)",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "protocol",
-            nullptr,
-            "The protocol used to access this website (HTTP or HTTPS),"
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "port",
+        nullptr,
+        "The port used to access this website (usually 80 or 443.)",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "protocol",
+        nullptr,
+        "The protocol used to access this website (HTTP or HTTPS),"
             " defaults to HTTP if port is 80 and to HTTPS if port is 443,"
             " required for any other port.",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "version",
-            nullptr,
-            "Show the version of %p and exit.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            nullptr,
-            nullptr,
-            nullptr,
-            advgetopt::getopt::argument_mode_t::end_of_options
-        }
-    };
-
-
-    void create_domain_and_website( QString const & orig_domain, QString const & protocol, int const port )
+        nullptr
+    },
     {
-        QString const domains_table_name      ( snap::get_name( snap::name_t::SNAP_NAME_DOMAINS));
-        QString const websites_table_name     ( snap::get_name( snap::name_t::SNAP_NAME_WEBSITES));
-        QString const core_rules_name         ( snap::get_name( snap::name_t::SNAP_NAME_CORE_RULES));
-        QString const core_original_rules_name( snap::get_name( snap::name_t::SNAP_NAME_CORE_ORIGINAL_RULES));
-
-        snap::snap_cassandra sc;
-        sc.connect();
-
-        snap::snap_uri uri( QString("%1://%2").arg(protocol.toLower()).arg(orig_domain) );
-        QString const domain     ( uri.domain() + uri.top_level_domain() );
-        QString const full_domain( uri.full_domain() );
-
-        auto domains_table( sc.get_table(domains_table_name) );
-        if( !domains_table->exists(domain) )
-        {
-            SNAP_LOG_INFO("Domain does not exist in domains table. Creating");
-            QString const rules(
-                QString( "main {\n"
-                         "  required host = \"%1\\.\";\n"
-                         "};\n"
-                       ).arg(uri.sub_domains())
-                );
-            snap::snap_uri_rules domain_rules;
-            QByteArray compiled_rules;
-            if(!domain_rules.parse_domain_rules(rules, compiled_rules))
-            {
-                throw snap::snap_exception( QString("An error was detected in your domain rules: %1").arg(domain_rules.errmsg()) );
-            }
-
-            auto domain_row( domains_table->getRow(domain) );
-            domain_row->getCell(core_original_rules_name)->setValue(rules.toUtf8());
-            domain_row->getCell(core_rules_name)->setValue(compiled_rules);
-        }
-
-        auto websites_table( sc.get_table(websites_table_name) );
-        if( !websites_table->exists(full_domain) )
-        {
-            SNAP_LOG_INFO("Website does not exist in websites table. Creating");
-            QString const rules(
-                QString( "main {\n"
-                         "  protocol = \"%1\";\n"
-                         "  port = \"%2\";\n"
-                         "};\n")
-                .arg(protocol.toLower())
-                .arg(port)
-                );
-            snap::snap_uri_rules website_rules;
-            QByteArray compiled_rules;
-            if(!website_rules.parse_website_rules(rules, compiled_rules))
-            {
-                throw snap::snap_exception( QString("An error was detected in your website rules: %1").arg(website_rules.errmsg()) );
-            }
-
-            auto website_row( websites_table->getRow(full_domain) );
-            website_row->getCell(core_original_rules_name)->setValue(rules.toUtf8());
-            website_row->getCell(core_rules_name)->setValue(compiled_rules);
-        }
+        '\0',
+        advgetopt::GETOPT_FLAG_END,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr
     }
+};
+
+
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPINSTALLWEBSITE_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    //.f_version = SNAPDBPROXY_VERSION_STRING,
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
+
+
+
+
+
+void create_domain_and_website( QString const & orig_domain, QString const & protocol, int const port )
+{
+    QString const domains_table_name      ( snap::get_name( snap::name_t::SNAP_NAME_DOMAINS));
+    QString const websites_table_name     ( snap::get_name( snap::name_t::SNAP_NAME_WEBSITES));
+    QString const core_rules_name         ( snap::get_name( snap::name_t::SNAP_NAME_CORE_RULES));
+    QString const core_original_rules_name( snap::get_name( snap::name_t::SNAP_NAME_CORE_ORIGINAL_RULES));
+
+    snap::snap_cassandra sc;
+    sc.connect();
+
+    snap::snap_uri uri( QString("%1://%2").arg(protocol.toLower()).arg(orig_domain) );
+    QString const domain     ( uri.domain() + uri.top_level_domain() );
+    QString const full_domain( uri.full_domain() );
+
+    auto domains_table( sc.get_table(domains_table_name) );
+    if( !domains_table->exists(domain) )
+    {
+        SNAP_LOG_INFO("Domain does not exist in domains table. Creating");
+        QString const rules(
+            QString( "main {\n"
+                     "  required host = \"%1\\.\";\n"
+                     "};\n"
+                   ).arg(uri.sub_domains())
+            );
+        snap::snap_uri_rules domain_rules;
+        QByteArray compiled_rules;
+        if(!domain_rules.parse_domain_rules(rules, compiled_rules))
+        {
+            throw snap::snap_exception( QString("An error was detected in your domain rules: %1").arg(domain_rules.errmsg()) );
+        }
+
+        auto domain_row( domains_table->getRow(domain) );
+        domain_row->getCell(core_original_rules_name)->setValue(rules.toUtf8());
+        domain_row->getCell(core_rules_name)->setValue(compiled_rules);
+    }
+
+    auto websites_table( sc.get_table(websites_table_name) );
+    if( !websites_table->exists(full_domain) )
+    {
+        SNAP_LOG_INFO("Website does not exist in websites table. Creating");
+        QString const rules(
+            QString( "main {\n"
+                     "  protocol = \"%1\";\n"
+                     "  port = \"%2\";\n"
+                     "};\n")
+            .arg(protocol.toLower())
+            .arg(port)
+            );
+        snap::snap_uri_rules website_rules;
+        QByteArray compiled_rules;
+        if(!website_rules.parse_website_rules(rules, compiled_rules))
+        {
+            throw snap::snap_exception( QString("An error was detected in your website rules: %1").arg(website_rules.errmsg()) );
+        }
+
+        auto website_row( websites_table->getRow(full_domain) );
+        website_row->getCell(core_original_rules_name)->setValue(rules.toUtf8());
+        website_row->getCell(core_rules_name)->setValue(compiled_rules);
+    }
+}
+
+
 
 }
 //namespace
@@ -188,14 +196,14 @@ int main(int argc, char * argv[])
 {
     try
     {
-        advgetopt::getopt opt(argc, argv, g_snapinstallwebsite_options, g_configuration_files, "SNAPINSTALLWEBSITE_OPTIONS");
+        advgetopt::getopt opt(g_options_environment, argc, argv);
 
         snap::logging::set_progname(opt.get_program_name());
         snap::logging::configure_console();
 
         if(opt.is_defined("help"))
         {
-            opt.usage(advgetopt::getopt::status_t::no_error, "snapdbproxy");
+            std::cout << opt.usage();
             exit(0);
             snap::NOTREACHED();
         }
@@ -211,7 +219,7 @@ int main(int argc, char * argv[])
         || !opt.is_defined("port"))
         {
             std::cerr << "error: --domain and --port are both required." << std::endl;
-            opt.usage(advgetopt::getopt::status_t::error, "snapdbproxy");
+            std::cerr << opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
             exit(1);
             snap::NOTREACHED();
         }
@@ -334,6 +342,10 @@ int main(int argc, char * argv[])
         }
 
         return 0;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(advgetopt::getopt_exception const & e)
     {

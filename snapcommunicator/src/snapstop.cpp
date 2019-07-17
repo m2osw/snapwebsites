@@ -25,75 +25,79 @@
 #include <snapwebsites/snap_config.h>
 #include <snapwebsites/not_reached.h>
 
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
+
 
 
 namespace
 {
-    const std::vector<std::string> g_configuration_files; // Empty
 
-    advgetopt::getopt::option const g_snapstop_options[] =
+
+
+advgetopt::option const g_snapstop_options[] =
+{
+    { // `--service` is not required because systemd removes the parameter altogether when $MAINPID is empty (even with the quotes)
+        's',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "service",
+        nullptr,
+        "PID (only digits) or name of the service to stop.",
+        nullptr
+    },
     {
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "Usage: %p [-<opt>]",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "where -<opt> is one or more of:",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            'h',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "help",
-            nullptr,
-            "display this help screen.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            's',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "service",
-            nullptr,
-            "PID (only digits) or name of the service to stop.",
-            advgetopt::getopt::argument_mode_t::optional_argument       // not required because systemd removes the parameter when $MAINPID is empty (even with the quotes)
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "timeout",
-            "60",
-            "number of seconds to wait for the process to die, default is 60 seconds.",
-            advgetopt::getopt::argument_mode_t::required_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "version",
-            nullptr,
-            "show the version of %p and exit.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            nullptr,
-            nullptr,
-            nullptr,
-            advgetopt::getopt::argument_mode_t::end_of_options
-        }
-    };
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "timeout",
+        "60",
+        "number of seconds to wait for the process to die, default is 60 seconds.",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_END,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr
+    }
+};
+
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_snapstop_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_snapstop_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPSTOP_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2011-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
 
 
 }
-//namespace
+// no name namespace
 
 
 
@@ -102,19 +106,7 @@ int main(int argc, char *argv[])
 {
     try
     {
-        advgetopt::getopt opt(argc, argv, g_snapstop_options, g_configuration_files, nullptr);
-
-        if(opt.is_defined("help"))
-        {
-            opt.usage(advgetopt::getopt::status_t::no_error, "snapstop");
-            exit(1);
-        }
-
-        if(opt.is_defined("version"))
-        {
-            std::cout << SNAPCOMMUNICATOR_VERSION_STRING << std::endl;
-            exit(0);
-        }
+        advgetopt::getopt opt(g_snapstop_options_environment, argc, argv);
 
         // make sure it is defined
         //
@@ -295,6 +287,10 @@ int main(int argc, char *argv[])
         //
         std::cerr << "snapstop: kill() had no effect within the timeout period." << std::endl;
         return 0;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

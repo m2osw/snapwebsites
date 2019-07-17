@@ -1,6 +1,6 @@
 /*
  * Text:
- *      snapserver/src/snapconfig.cpp
+ *      snapmanager/snapconfig/snapconfig.cpp
  *
  * Description:
  *      Retrieve a parameter from a snap configuration file, allow for the
@@ -44,6 +44,7 @@
 // advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
+#include <advgetopt/exception.h>
 
 // C++ lib
 //
@@ -55,59 +56,57 @@
 #include <snapwebsites/poison.h>
 
 
-const std::vector<std::string> g_configuration_files; // Empty
 
-advgetopt::getopt::option const g_options[] =
+advgetopt::option const g_options[] =
 {
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "Usage: %p -<opt> <configuration filename> <field name> [<new value>]",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "where -<opt> is one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        'h',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "help",
-        nullptr,
-        "Show usage and exit.",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        0,
-        "version",
-        nullptr,
-        "the version of this tool",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        0,
-        nullptr,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_MULTIPLE | advgetopt::GETOPT_FLAG_DEFAULT_OPTION,
+        "--",
         nullptr,
         "<configuration name> <field name> [<new value>]",
-        advgetopt::getopt::argument_mode_t::default_multiple_argument
+        nullptr
     },
     {
         '\0',
-        0,
+        advgetopt::GETOPT_FLAG_END,
         nullptr,
         nullptr,
         nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        nullptr
     }
 };
+
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapconfig",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = nullptr,
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] <configuration filename> <field name> [<new value>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPMANAGER_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
 
 
 
@@ -133,16 +132,16 @@ private:
  * \param[in] argv  The array of arguments found on the command line.
  */
 snapconfig::snapconfig(int argc, char * argv[])
-    : f_opt(argc, argv, g_options, g_configuration_files, "")
+    : f_opt(g_options_environment, argc, argv)
 {
     if(f_opt.is_defined("version"))
     {
-        std::cout << SNAPWEBSITES_VERSION_STRING << std::endl;
+        std::cout << SNAPMANAGER_VERSION_STRING << std::endl;
         exit(1);
     }
     if(f_opt.is_defined("help"))
     {
-        f_opt.usage(advgetopt::getopt::status_t::no_error, "Usage: %s -<opt> <configuration filename> <field name> [<new value>]\n", argv[0]);
+        std::cerr << f_opt.usage();
         exit(1);
     }
 
@@ -236,6 +235,10 @@ int main(int argc, char * argv[])
         snapconfig s(argc, argv);
         s.run();
         return 0;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

@@ -32,6 +32,10 @@
 #include <libaddr/addr_exceptions.h>
 #include <libaddr/addr_parser.h>
 
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
+
 // Qt lib
 //
 #include <QDir>
@@ -324,7 +328,6 @@ private:
                                 snap_firewall( snap_firewall const & ) = delete;
     snap_firewall &             operator = ( snap_firewall const & ) = delete;
 
-    void                        usage();
     void                        setup_firewall();
     void                        next_wakeup();
     void                        block_ip(snap::snap_communicator_message const & message);
@@ -1274,94 +1277,87 @@ bool snap_firewall::block_info_t::iplock(QString const & cmd)
 
 
 
-/** \brief List of configuration files.
- *
- * This variable is used as a list of configuration files. It is
- * empty here because the configuration file may include parameters
- * that are not otherwise defined as command line options.
- */
-std::vector<std::string> const g_configuration_files; // Empty
-
-
 /** \brief Command line options.
  *
  * This table includes all the options supported by the server.
  */
-advgetopt::getopt::option const g_snapfirewall_options[] =
+advgetopt::option const g_options[] =
 {
     {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "Usage: %p [-<opt>]",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "where -<opt> is one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
         'c',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "config",
         nullptr,
         "Configuration file to initialize snapfirewall.",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
         "debug",
         nullptr,
         "Start the snapfirewall in debug mode.",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        'h',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "help",
-        nullptr,
-        "Show usage and exit.",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'l',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED,
         "logfile",
         nullptr,
         "Full path to the snapfirewall logfile.",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         'n',
-        advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
         "nolog",
         nullptr,
         "Only output to the console, not a log file.",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "version",
-        nullptr,
-        "show the version of %p and exit.",
-        advgetopt::getopt::argument_mode_t::no_argument
-    },
-    {
-        '\0',
-        0,
+        advgetopt::GETOPT_FLAG_END,
         nullptr,
         nullptr,
         nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        nullptr
     }
 };
+
+
+
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPFIREWALL_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPFIREWALL_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2011-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
 
 
 
@@ -1379,22 +1375,9 @@ advgetopt::getopt::option const g_snapfirewall_options[] =
  * \param[in] argv  The command line argv parameter.
  */
 snap_firewall::snap_firewall( int argc, char * argv[] )
-    : f_opt(argc, argv, g_snapfirewall_options, g_configuration_files, "SNAPFIREWALL_OPTIONS")
+    : f_opt(g_options_environment, argc, argv)
     , f_config("snapfirewall")
 {
-    if(f_opt.is_defined("help"))
-    {
-        usage();
-        snap::NOTREACHED();
-    }
-
-    if(f_opt.is_defined("version"))
-    {
-        std::cout << SNAPFIREWALL_VERSION_STRING << std::endl;
-        exit(0);
-        snap::NOTREACHED();
-    }
-
     f_debug = f_opt.is_defined("debug");
 
     // read the configuration file
@@ -1449,19 +1432,6 @@ snap_firewall::~snap_firewall()
 }
 
 
-/** \brief Print out the usage information for snapfirewall.
- *
- * This function returns the snapfirewall usage information to the
- * user whenever an invalid command line option is used or
- * --help is used explicitly.
- *
- * The function does not return.
- */
-void snap_firewall::usage()
-{
-    f_opt.usage( advgetopt::getopt::status_t::no_error, "snapfirewall" );
-    snap::NOTREACHED();
-}
 
 
 
@@ -2500,6 +2470,10 @@ int main(int argc, char * argv[])
         // connection with the Snap! Communicator service.)
         //
         return 0;
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch( snap::snap_exception const & e )
     {

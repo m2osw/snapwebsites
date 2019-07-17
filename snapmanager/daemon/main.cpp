@@ -28,6 +28,10 @@
 
 #include "snapmanagerdaemon.h"
 
+// advgetopt
+//
+#include <advgetopt/exception.h>
+
 // Qt lib
 //
 #include <QtCore>
@@ -86,6 +90,10 @@ int main(int argc, char * argv[])
         daemon->init(argc, argv);
 
         return daemon->run();
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(snap::snap_exception const & e)
     {

@@ -38,175 +38,212 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// self
+//
 #include "snapbackup.h"
 #include "snap_table_list.h"
 
+// libsnapwebsites lib
+//
+#include <libdbproxy/qstring_stream.h>
+#include <snapwebsites/version.h>
+
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
+
+// boost lib
+//
+#include <boost/preprocessor/stringize.hpp>
+
+// Qt lib
+//
 #include <QCoreApplication>
 
-#include <libdbproxy/qstring_stream.h>
-
+// C++ lib
+//
 #include <exception>
 #include <iostream>
 
+
+
 namespace
 {
-const std::vector<std::string> g_configuration_files; // Empty
 
-const advgetopt::getopt::option g_snapbackup_options[] =
+const advgetopt::option g_snapbackup_options[] =
 {
     {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "Usage: %p [-<opt>]",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
-        '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        nullptr,
-        nullptr,
-        "where -<opt> is one or more of:",
-        advgetopt::getopt::argument_mode_t::help_argument
-    },
-    {
         '?',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "help",
         nullptr,
         "show this help output",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'n',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
         "context-name",
         "snap_websites",
         "name of the context (or keyspace) to dump/restore (defaults to 'snap_websites')",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         'd',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "dump-context",
         nullptr,
         "dump the snapwebsites context to SQLite database",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         'T',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_MULTIPLE,
         "tables",
         nullptr,
         "specify the list of tables to dump to SQLite database, or restore from SQLite to Cassandra",
-        advgetopt::getopt::argument_mode_t::required_multiple_argument
+        nullptr
     },
     {
         'r',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "restore-context",
         nullptr,
         "restore the snapwebsites context from SQLite database (requires confirmation)",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         '\0',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "drop-context",
         nullptr,
         "drop the snap_websites keyspace",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'c',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
         "count",
         "100",
         "specify the page size in rows (default 100)",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         'l',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
         "low-watermark",
         "0",
         "specify the low water mark bytes (default 0)",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         'm',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
         "high-watermark",
         "65536",
         "specify the high water mark bytes (default 0)",
-        advgetopt::getopt::argument_mode_t::required_argument
+        nullptr
     },
     {
         '\0',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "yes-i-know-what-im-doing",
         nullptr,
         "Force the dropping of context and overwriting of database, without warning and stdin prompt. Only use this if you know what you're doing!",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'f',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "force-schema-creation",
         nullptr,
         "Force the creation of the context even if it already exists (default ignore)",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'h',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
         "host",
         "localhost",
         "host IP address or name (defaults to localhost)",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         'p',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_REQUIRED,
         "port",
         "9042",
         "port on the host to connect to (defaults to 9042)",
-        advgetopt::getopt::argument_mode_t::optional_argument
+        nullptr
     },
     {
         's',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "use-ssl",
         nullptr,
         "communicate with the Cassandra server using SSL encryption (defaults to false).",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'v',
-        0,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG,
         "verbose",
         nullptr,
         "print out various message to console",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         'V',
-        advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_FLAG | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
         "version",
         nullptr,
         "show the version of %p and exit",
-        advgetopt::getopt::argument_mode_t::no_argument
+        nullptr
     },
     {
         '\0',
-        0,
+        advgetopt::GETOPT_FLAG_END,
         nullptr,
         nullptr,
         nullptr,
-        advgetopt::getopt::argument_mode_t::end_of_options
+        nullptr
     }
 };
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_snapbackup_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_snapbackup_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = nullptr,
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] ...\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2012-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
+
+
+
+
+
 
 bool confirm_drop_check( const QString& msg )
 {
@@ -245,24 +282,13 @@ int main(int argc, char *argv[])
 
     QCoreApplication app(argc, argv);
     app.setApplicationName   ( "snapbackup"              );
-    app.setApplicationVersion( SNAPBACKUP_VERSION_STRING );
+    app.setApplicationVersion( SNAPWEBSITES_VERSION_STRING );
     app.setOrganizationDomain( "snapwebsites.org"        );
     app.setOrganizationName  ( "M2OSW"                   );
 
     try
     {
-        getopt_ptr_t opt( new advgetopt::getopt( argc, argv, g_snapbackup_options, g_configuration_files, nullptr ) );
-
-        if( opt->is_defined("help") )
-        {
-            opt->usage( advgetopt::getopt::status_t::error, "snapbackup" );
-            //snap::NOTREACHED();
-        }
-        else if( opt->is_defined("version") )
-        {
-            std::cerr << SNAPBACKUP_VERSION_STRING << std::endl;
-            exit(0);
-        }
+        getopt_ptr_t opt( new advgetopt::getopt( g_snapbackup_options_environment, argc, argv ) );
 
         snapTableList::initList();
 
@@ -293,6 +319,10 @@ int main(int argc, char *argv[])
         {
             throw std::runtime_error("You must specify one of --drop-context, --dump-context, or --restore-context!");
         }
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::exception const & e)
     {

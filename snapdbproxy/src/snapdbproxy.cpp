@@ -65,83 +65,82 @@
 namespace
 {
 
-    const std::vector<std::string> g_configuration_files; // Empty
 
-    const advgetopt::getopt::option g_snapdbproxy_options[] =
+const advgetopt::option g_options[] =
+{
     {
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "Usage: %p [-<opt>]",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            nullptr,
-            nullptr,
-            "where -<opt> is one or more of:",
-            advgetopt::getopt::argument_mode_t::help_argument
-        },
-        {
-            'c',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "config",
-            nullptr,
-            "Configuration file to initialize snapdbproxy.",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "debug",
-            nullptr,
-            "Start the snapdbproxy in debug mode.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "help",
-            nullptr,
-            "show this help output",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            'l',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "logfile",
-            nullptr,
-            "Full path to the snapdbproxy logfile.",
-            advgetopt::getopt::argument_mode_t::optional_argument
-        },
-        {
-            'n',
-            advgetopt::getopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE,
-            "nolog",
-            nullptr,
-            "Only output to the console, not a log file.",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            advgetopt::getopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-            "version",
-            nullptr,
-            "show the version of %p and exit",
-            advgetopt::getopt::argument_mode_t::no_argument
-        },
-        {
-            '\0',
-            0,
-            nullptr,
-            nullptr,
-            nullptr,
-            advgetopt::getopt::argument_mode_t::end_of_options
-        }
-    };
+        'c',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+        "config",
+        nullptr,
+        "Configuration file to initialize snapdbproxy.",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
+        "debug",
+        nullptr,
+        "Start the snapdbproxy in debug mode.",
+        nullptr
+    },
+    {
+        'l',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_REQUIRED,
+        "logfile",
+        nullptr,
+        "Full path to the snapdbproxy logfile.",
+        nullptr
+    },
+    {
+        'n',
+        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_FLAG,
+        "nolog",
+        nullptr,
+        "Only output to the console, not a log file or server.",
+        nullptr
+    },
+    {
+        '\0',
+        advgetopt::GETOPT_FLAG_END,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr
+    }
+};
+
+
+
+
+
+// until we have C++20 remove warnings this way
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPDBPROXY_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] <expression> ...\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "%c",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "GNU GPL v2",
+    .f_copyright = "Copyright (c) 2013-"
+                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+                   " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
+#pragma GCC diagnostic pop
+
+
 
 
 }
@@ -189,25 +188,10 @@ snapdbproxy::pointer_t                    snapdbproxy::g_instance;
  * \param[in] argv  The array of argument strings.
  */
 snapdbproxy::snapdbproxy(int argc, char * argv[])
-    : f_opt(argc, argv, g_snapdbproxy_options, g_configuration_files, nullptr)
+    : f_opt(g_options_environment, argc, argv)
     , f_config( "snapdbproxy" )
     , f_session( casswrapper::Session::create() )
 {
-    // --help
-    if( f_opt.is_defined( "help" ) )
-    {
-        usage(advgetopt::getopt::status_t::no_error);
-        snap::NOTREACHED();
-    }
-
-    // --version
-    if(f_opt.is_defined("version"))
-    {
-        std::cerr << SNAPDBPROXY_VERSION_STRING << std::endl;
-        exit(0);
-        snap::NOTREACHED();
-    }
-
     // read the configuration file
     //
     if(f_opt.is_defined( "config"))
@@ -313,7 +297,8 @@ snapdbproxy::snapdbproxy(int argc, char * argv[])
     if( f_opt.is_defined( "--" ) )
     {
         std::cerr << "error: unexpected parameter found on daemon command line." << std::endl;
-        usage(advgetopt::getopt::status_t::error);
+        std::cerr << f_opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
+        exit(1);
         snap::NOTREACHED();
     }
 }
@@ -326,18 +311,6 @@ snapdbproxy::snapdbproxy(int argc, char * argv[])
  */
 snapdbproxy::~snapdbproxy()
 {
-}
-
-
-/** \brief Print out this server usage and exit.
- *
- * This function calls the advanced option library to have it print
- * out the list of acceptable command line options.
- */
-void snapdbproxy::usage(advgetopt::getopt::status_t status)
-{
-    f_opt.usage( status, "snapdbproxy" );
-    exit(1);
 }
 
 

@@ -19,6 +19,10 @@
 //
 #include "snapmanager/manager.h"
 
+// advgetopt lib
+//
+#include <advgetopt/exception.h>
+
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
@@ -197,6 +201,10 @@ int main(int argc, char * argv[])
         {
             SNAP_LOG_ERROR("snapupgrader could not lock the upgrading.lock file.");
         }
+    }
+    catch( advgetopt::getopt_exception_exit const & except )
+    {
+        return except.code();
     }
     catch(std::runtime_error const & e)
     {
