@@ -795,7 +795,7 @@ messages::message const & messages::get_message(int idx) const
  *
  * This function remove exactly one message at index \p idx.
  *
- * \important
+ * \attention
  * Keep in mind that removing message \p idx moves all the messages with
  * a higher index down by 1. So the message that was defined at (idx + 3)
  * will then be at (idx + 2) after this call.

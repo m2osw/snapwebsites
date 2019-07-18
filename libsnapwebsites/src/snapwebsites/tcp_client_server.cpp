@@ -1479,7 +1479,7 @@ std::string const & bio_client::options::get_ssl_certificate_path() const
  * You may turn this off if you are creating a socket for a very short
  * period of time, such as to send a fast REST command to a server.
  *
- * \important
+ * \attention
  * As per the TCP RFC, you should only use keepalive on a server, not a
  * client. (The client can quit any time and if it tries to access the
  * server and it fails, it can either quit or reconnect then.) That being

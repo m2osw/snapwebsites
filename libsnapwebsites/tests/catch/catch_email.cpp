@@ -35,7 +35,7 @@
  * This file implements tests to verify that the email
  * class functions as expected.
  *
- * \important
+ * \attention
  * Note that this test only runs unit tests. It creates emails with
  * attachments and verifies that it works as expected, but it does
  * not call the send() function. For the send() function tests,

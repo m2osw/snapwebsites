@@ -403,7 +403,7 @@ QDomElement get_element(QDomDocument & doc, QString const & name, bool must_exis
  * multiple tags with the same name at any level, only the first one is
  * used.
  *
- * \important
+ * \attention
  * Again, the function gets the FIRST of each tag it finds. If you want
  * to get all the children, use the QDomXPath instead.
  *
@@ -464,7 +464,7 @@ QDomElement get_child_element(QDomNode parent, QString const& path)
  * have to add many tags at different locations and you do not know whether
  * there is already a tag there.
  *
- * \important
+ * \attention
  * The function gets the FIRST of each tag it finds. So if you want to
  * create a child named \<foo\> and there are 3 tags named that way
  * under \p parent, then the first one will be used.

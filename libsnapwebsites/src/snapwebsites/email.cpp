@@ -327,7 +327,7 @@ QString email::attachment::get_header(QString const & name) const
  *      sendmail::instance()->post_email(e);
  * \endcode
  *
- * \important
+ * \attention
  * The \p filename parameter can include a full path although only the
  * basename including all extensions are saved in the header. The path
  * is not useful on the destination computer and can even possibly be

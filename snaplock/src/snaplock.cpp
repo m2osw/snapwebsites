@@ -2342,7 +2342,7 @@ void snaplock::msg_absolutely(snap::snap_communicator_message & message)
  * administrator may want to add a new host on the system. In that case,
  * the list of host changes and it has to be detected here.
  *
- * \important
+ * \attention
  * The function accepts a "serial" parameter in the message. This is only
  * used internally when a leader is lost and a new one is assigned a lock
  * which would otherwise fail.

@@ -73,7 +73,7 @@
  * cluster has a "snap_websites" context and all the tables as defined
  * in the "*-tables.xml" files.
  *
- * \important
+ * \attention
  * We use our a separate session because we change the timeout and in
  * a multi-threaded environment it would not otherwise be safe
  * (i.e. all the session setTimeout() + connect() calls would need to

@@ -136,7 +136,7 @@ bool content::page_cloned_impl(cloned_tree_t const& tree)
  * It is preferable that you call another function such as the move_page()
  * and trash_page() functions.
  *
- * \important
+ * \attention
  * A clone is a copy which becomes its very own version of the page. In
  * other words it is a page in its own right and it does not behave like
  * a hard or soft link (i.e. if you edit the original, the copy is not

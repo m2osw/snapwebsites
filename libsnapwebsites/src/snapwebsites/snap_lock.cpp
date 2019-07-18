@@ -774,7 +774,7 @@ void lock_connection::msg_lockfailed(snap::snap_communicator_message & message)
  * release of your lock by sending the UNLOCK message (see unlock()
  * for more details.)
  *
- * \important
+ * \attention
  * In the second case (lock timed out) the lock will still be in place
  * until your send the UNLOCK message or the amount of time specified
  * in the unlock duration parameter. By default (which is also the minimum,)
@@ -1312,7 +1312,7 @@ bool snap_lock::lock_timedout() const
  *    // here the pervious timeout was restored
  * \endcode
  *
- * \important
+ * \attention
  * The new timeout is ignored if smaller than the current timeout.
  *
  * \todo
@@ -1365,7 +1365,7 @@ raii_lock_duration_timeout::~raii_lock_duration_timeout()
  *    // here the pervious timeout was restored
  * \endcode
  *
- * \important
+ * \attention
  * The new timeout is ignored if smaller than the current timeout.
  *
  * \todo

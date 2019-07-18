@@ -234,7 +234,7 @@ void snap_pid::generate_filename(std::string const & service_name)
  * This function removes the PID file from disk. This has the side effect
  * of unlocking the file too.
  *
- * \important
+ * \attention
  * Only the child process is allowed to delete the PID file. This function
  * will do nothing if called by the parent process (which happens in the
  * destructor.)

@@ -126,7 +126,7 @@ public:
          * Whenever you define dispatcher_match objects, you want to
          * use the C++11 syntax to create a vector.
          *
-         * \important
+         * \attention
          * We are NOT using a match because the matching may make use
          * of complex functions that support things such as complex as
          * regular expressions. In other words, the name of the message

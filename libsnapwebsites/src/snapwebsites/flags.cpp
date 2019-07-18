@@ -753,7 +753,7 @@ std::string const & snap_flag::get_version() const
  * they are just handled automatically by the code that generates this
  * data.
  *
- * \important
+ * \attention
  * Your implementation of the flags must make sure to use the
  * SNAP_FLAG_UP() when an error is detected and use
  * the SNAP_FLAG_DOWN() when the error is not detected

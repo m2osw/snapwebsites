@@ -2033,7 +2033,7 @@ bool filter::body_to_teaser(QDomElement body, filter_teaser_info_t const & info)
  * the purpose of this change, a filename that ends with a period (.) is
  * considered as having an empty extension.
  *
- * \important
+ * \attention
  * Futher the function checks some other things that must be considered
  * valid such as whether the filename starts with a period. Such bad things
  * will result in the function returning an empty filename.

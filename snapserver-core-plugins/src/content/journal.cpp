@@ -26,7 +26,7 @@
  *
  * This file contains the journal_list class implementation.
  *
- * \important
+ * \attention
  * This journal has nothing to do with the "list" plugin (i.e. the plugin
  * that creates lists of pages.)
  *

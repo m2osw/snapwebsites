@@ -676,7 +676,7 @@ int dns_options::load_file()
  * This function saves the f_data buffer back to file. It is expected that
  * the f_data was modified before re-saving.
  *
- * \important
+ * \attention
  * This tool is not responsible to create backups. You may want to write
  * a script that does that first:
  *

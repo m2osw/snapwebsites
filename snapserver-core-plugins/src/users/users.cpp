@@ -922,7 +922,7 @@ QString users::get_user_cookie_name()
  * logged in and defines the user identifier if so. Otherwise the
  * session can be used for things such as saving messages between redirects.
  *
- * \important
+ * \attention
  * This function cannot be called more than once. It would not properly
  * reset variables if called again.
  */
@@ -3187,7 +3187,7 @@ QString users::referrer_identifier(user_info_t const & user_info)
  * user will be considered fully registered in that case. The password
  * can be generated using the create_password() function.
  *
- * \important
+ * \attention
  * The \p email parameter is expected to be the email exactly the way
  * the user typed it. This can be important in the event the user
  * mail system expects the case of the username to match one to one.

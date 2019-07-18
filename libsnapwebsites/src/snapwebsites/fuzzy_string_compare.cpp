@@ -37,7 +37,7 @@ namespace snap
  * This algorithm comes from Wikipedia:
  * https://en.wikipedia.org/wiki/Levenshtein_distance
  *
- * \important
+ * \attention
  * The function does not change the case of the string. If you want
  * to compare case insensitive, make sure to convert the string to
  * lowercase first. You may also want to simplify the string (i.e.
