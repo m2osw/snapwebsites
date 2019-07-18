@@ -16,6 +16,17 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+/** \file
+ * \brief Thread Runner and Managers.
+ *
+ * This file includes the declaration and implementation (For templates)
+ * of classes used to manage threads the easy way. Especially, our
+ * implementation is aware of object destructors so a thread manager
+ * (snap_thread) can be destroyed. It will automatically and properly
+ * wait for its runner (the actual system pthread) to exit before
+ * finishing up its and its runner clean up.
+ */
+
 // our lib
 //
 #include "snapwebsites/not_reached.h"
@@ -40,7 +51,6 @@ class snap_thread_exception : public snap_exception
 public:
     explicit snap_thread_exception(char const *        whatmsg) : snap_exception("snap_thread", whatmsg) {}
     explicit snap_thread_exception(std::string const & whatmsg) : snap_exception("snap_thread", whatmsg) {}
-    explicit snap_thread_exception(QString const &     whatmsg) : snap_exception("snap_thread", whatmsg) {}
 };
 
 class snap_thread_exception_not_started : public snap_thread_exception
@@ -48,7 +58,6 @@ class snap_thread_exception_not_started : public snap_thread_exception
 public:
     explicit snap_thread_exception_not_started(char const *        whatmsg) : snap_thread_exception(whatmsg) {}
     explicit snap_thread_exception_not_started(std::string const & whatmsg) : snap_thread_exception(whatmsg) {}
-    explicit snap_thread_exception_not_started(QString const &     whatmsg) : snap_thread_exception(whatmsg) {}
 };
 
 class snap_thread_exception_in_use_error : public snap_thread_exception
@@ -56,7 +65,6 @@ class snap_thread_exception_in_use_error : public snap_thread_exception
 public:
     explicit snap_thread_exception_in_use_error(char const *        whatmsg) : snap_thread_exception(whatmsg) {}
     explicit snap_thread_exception_in_use_error(std::string const & whatmsg) : snap_thread_exception(whatmsg) {}
-    explicit snap_thread_exception_in_use_error(QString const &     whatmsg) : snap_thread_exception(whatmsg) {}
 };
 
 class snap_thread_exception_not_locked_error : public snap_thread_exception
@@ -64,7 +72,6 @@ class snap_thread_exception_not_locked_error : public snap_thread_exception
 public:
     explicit snap_thread_exception_not_locked_error(char const *        whatmsg) : snap_thread_exception(whatmsg) {}
     explicit snap_thread_exception_not_locked_error(std::string const & whatmsg) : snap_thread_exception(whatmsg) {}
-    explicit snap_thread_exception_not_locked_error(QString const &     whatmsg) : snap_thread_exception(whatmsg) {}
 };
 
 class snap_thread_exception_not_locked_once_error : public snap_thread_exception
@@ -72,7 +79,6 @@ class snap_thread_exception_not_locked_once_error : public snap_thread_exception
 public:
     explicit snap_thread_exception_not_locked_once_error(char const *        whatmsg) : snap_thread_exception(whatmsg) {}
     explicit snap_thread_exception_not_locked_once_error(std::string const & whatmsg) : snap_thread_exception(whatmsg) {}
-    explicit snap_thread_exception_not_locked_once_error(QString const &     whatmsg) : snap_thread_exception(whatmsg) {}
 };
 
 class snap_thread_exception_mutex_failed_error : public snap_thread_exception
@@ -80,7 +86,6 @@ class snap_thread_exception_mutex_failed_error : public snap_thread_exception
 public:
     explicit snap_thread_exception_mutex_failed_error(char const *        whatmsg) : snap_thread_exception(whatmsg) {}
     explicit snap_thread_exception_mutex_failed_error(std::string const & whatmsg) : snap_thread_exception(whatmsg) {}
-    explicit snap_thread_exception_mutex_failed_error(QString const &     whatmsg) : snap_thread_exception(whatmsg) {}
 };
 
 class snap_thread_exception_invalid_error : public snap_thread_exception
@@ -88,7 +93,6 @@ class snap_thread_exception_invalid_error : public snap_thread_exception
 public:
     explicit snap_thread_exception_invalid_error(char const *        whatmsg) : snap_thread_exception(whatmsg) {}
     explicit snap_thread_exception_invalid_error(std::string const & whatmsg) : snap_thread_exception(whatmsg) {}
-    explicit snap_thread_exception_invalid_error(QString const &     whatmsg) : snap_thread_exception(whatmsg) {}
 };
 
 class snap_thread_exception_system_error : public snap_thread_exception
@@ -96,7 +100,6 @@ class snap_thread_exception_system_error : public snap_thread_exception
 public:
     explicit snap_thread_exception_system_error(char const *        whatmsg) : snap_thread_exception(whatmsg) {}
     explicit snap_thread_exception_system_error(std::string const & whatmsg) : snap_thread_exception(whatmsg) {}
-    explicit snap_thread_exception_system_error(QString const &     whatmsg) : snap_thread_exception(whatmsg) {}
 };
 
 
@@ -159,16 +162,18 @@ public:
         typedef std::shared_ptr<snap_runner>    pointer_t;
         typedef std::vector<pointer_t>          vector_t;
 
-                            snap_runner(QString const & name);
+                            snap_runner(std::string const & name);
                             snap_runner(snap_runner const & rhs) = delete;
         virtual             ~snap_runner();
 
         snap_runner &       operator = (snap_runner const & rhs) = delete;
 
+        std::string const & get_name() const;
         virtual bool        is_ready() const;
         virtual bool        continue_running() const;
         virtual void        run() = 0;
         snap_thread *       get_thread() const;
+        pid_t               gettid() const;
 
     protected:
         mutable snap_mutex  f_mutex = snap_mutex();
@@ -177,99 +182,33 @@ public:
         friend class snap_thread;
 
         snap_thread *       f_thread = nullptr;
-        QString const       f_name = QString();
+        std::string const   f_name = std::string();
     };
 
 
-    /** \brief Create a thread safe FIFO.
-     *
-     * This template defines a thread safe FIFO which is also a mutex.
-     * You should use this snap_fifo object to lock your thread and
-     * send messages/data across various threads. The FIFO itself is
-     * a mutex so you can use it to lock the threads as with a normal
-     * mutex:
-     *
-     * \code
-     *  {
-     *      snap_thread::snap_lock lock(f_messages);
-     *      ...
-     *  }
-     * \endcode
-     *
-     * \param T  the type of data that the FIFO will handle.
-     */
     template<class T>
     class snap_fifo : public snap_mutex
     {
+    private:
+        typedef std::queue<T>   items_t;
+
     public:
-        /** \brief Push data on this FIFO.
-         *
-         * This function appends data on the FIFO queue. The function
-         * has the side effect to wake up another thread if such is
-         * currently waiting for data on the same FIFO.
-         *
-         * \note
-         * You can also wake up the other thread by calling the signal()
-         * function directly. This is especially useful after you marked
-         * the queue as done to make sure that all the worker threads
-         * wake up and exit cleanly.
-         *
-         * \important
-         * Remember that if a thread is not currently waiting on the
-         * signal, calling signal is not likely to do anything except
-         * for the one next thread that waits on that signal.
-         *
-         * \exception snap_thread_exception_invalid_error
-         * Do not call this function after calling done(), it will raise
-         * this exception if you do so.
-         *
-         * \param[in] v  The value to be pushed on the FIFO queue.
-         *
-         * \sa done()
-         */
-        void push_back(T const & v)
+        typedef T                               value_type;
+        typedef snap_fifo<value_type>           fifo_type;
+        typedef std::shared_ptr<fifo_type>      pointer_t;
+
+        bool push_back(T const & v)
         {
             snap_lock lock_mutex(*this);
             if(f_done)
             {
-                throw snap_thread_exception_invalid_error("you cannot push additional messages to your snap_fifo after you called done()");
+                return false;
             }
             f_queue.push(v);
             signal();
+            return true;
         }
 
-
-        /** \brief Retrieve one value from the FIFO.
-         *
-         * This function retrieves one value from the thread FIFO.
-         * If necessary, the function can wait for a value to be
-         * received. The wait works as defined in the semaphore
-         * wait() function:
-         *
-         * \li -1 -- wait forever (use with caution as this prevents
-         *           the STOP event from working.)
-         * \li 0 -- do not wait if there is no data, return immediately
-         * \li +1 and more -- wait that many microseconds
-         *
-         * If the function works (returns true,) then \p v is set
-         * to the value being popped. Otherwise v is not modified
-         * and the function returns false.
-         *
-         * \note
-         * Because of the way the pthread conditions are implemented
-         * it is possible that the condition was already raised
-         * when you call this function. This means the wait, even if
-         * you used a value of -1 or 1 or more, will not happen.
-         *
-         * \note
-         * If the function returns false, \p v is not set to anything
-         * so it still has the value it had when calling the function.
-         *
-         * \param[out] v  The value read.
-         * \param[in] usecs  The number of microseconds to wait.
-         *
-         * \return true if a value was popped, false otherwise.
-         */
         bool pop_front(T & v, int64_t const usecs)
         {
             snap_lock lock_mutex(*this);
@@ -305,66 +244,25 @@ public:
             return result;
         }
 
-
-        /** \brief Clear the current queue.
-         *
-         * This function can be used to clear the queue. Right after this
-         * call the queue will be empty. All the objects that were stacked
-         * in it will be removed. It is your responsibility to ensure they
-         * get cleaned up appropriately.
-         *
-         * \sa done()
-         */
         void clear()
         {
             snap_lock lock_mutex(*this);
-            f_queue.clear();
+            items_t empty;
+            f_queue.swap(empty);
         }
 
-
-        /** \brief Test whether the FIFO is empty.
-         *
-         * This function checks whether the FIFO is empty and if so
-         * returns true, otherwise it returns false.
-         *
-         * The function does not check the semaphore. Instead it
-         * checks the size of the FIFO itself.
-         *
-         * \return true if the FIFO is empty.
-         */
         bool empty() const
         {
             snap_lock lock_mutex(const_cast<snap_fifo &>(*this));
             return f_queue.empty();
         }
 
-
-        /** \brief Return the number of items in the stack.
-         *
-         * This function returns the number of items currently added to
-         * the stack. This can be used by the caller to avoid flooding
-         * the stack, if at all possible.
-         *
-         * \return the number of items.
-         */
         size_t size() const
         {
             snap_lock lock_mutex(const_cast<snap_fifo &>(*this));
             return f_queue.size();
         }
 
-
-        /** \brief Return the total size of the stack.
-         *
-         * This function returns the sum of each element size() function.
-         *
-         * \note
-         * Note that this does not include the amount of bytes used by
-         * the stack itself. It only includes the size of the elements,
-         * which in most cases is what you want anyway.
-         *
-         * \return the byte size of the stack.
-         */
         size_t byte_size() const
         {
             snap_lock lock_mutex(const_cast<snap_fifo &>(*this));
@@ -378,32 +276,14 @@ public:
                         });
         }
 
-
-        /** \brief Mark the queue as done.
-         *
-         * By default the queue is not done. Once you are finished with it
-         * and will never push any more data to it, call this function.
-         * This flag is used by worker threads to know whether they should
-         * wait for more data or just exit.
-         *
-         * This is rarely used with regular threads. It is more of a feature
-         * for worker threads.
-         *
-         * \note
-         * If the queue is empty, this function also broadcasts a signal
-         * to all the worker threads so that way they can exit.
-         *
-         * \param[in] clear  Whether the function should also call clear()
-         *
-         * \sa clear()
-         */
         void done(bool clear)
         {
             snap_lock lock_mutex(*this);
             f_done = true;
             if(clear)
             {
-                f_queue.clear();
+                items_t empty;
+                f_queue.swap(empty);
             }
             if(f_queue.empty())
             {
@@ -412,40 +292,14 @@ public:
             }
         }
 
-
-        /** \brief Check whether the queue was marked as done.
-         *
-         * When a child process calls pop_front() and the function returns
-         * false, it means the queue is empty. On return, the thread may
-         * then check whether is_done() is true. If so, then the thread
-         * is expected to exit.
-         *
-         * \return true if the thread is expected to exit, false while still
-         *         running.
-         */
         bool is_done() const
         {
             snap_lock lock_mutex(const_cast<snap_fifo &>(*this));
             return f_done;
         }
 
-
     private:
-        /** \brief The type of the FIFO.
-         *
-         * This typedef declaration defines the type of items in this
-         * FIFO object.
-         */
-        typedef std::queue<T>   items_t;
-
-
-        /** \brief The actual FIFO.
-         *
-         * This variable member holds the actual data in this FIFO
-         * object.
-         */
         items_t                 f_queue = items_t();
-
         bool                    f_done = false;
         bool                    f_broadcast = false;
     };
@@ -494,8 +348,12 @@ public:
          * \param[in] in  The input FIFO.
          * \param[in] out  The output FIFO.
          */
-        snap_worker<T>(QString const & name, size_t position, snap_fifo<T> & in, snap_fifo<T> & out)
-            : f_in(in)
+        snap_worker<T>(std::string const & name
+                     , size_t position
+                     , typename snap_fifo<T>::pointer_t in
+                     , typename snap_fifo<T>::pointer_t out)
+            : snap_runner(name)
+            , f_in(in)
             , f_out(out)
             , f_position(position)
         {
@@ -580,9 +438,15 @@ public:
          */
         virtual void run()
         {
+            // on a re-run, f_working could be true
+            {
+                snap_lock lock(f_mutex);
+                f_working = false;
+            }
+
             while(continue_running())
             {
-                if(f_in.pop_front(f_work_load, -1))
+                if(f_in->pop_front(f_workload, -1))
                 {
                     if(continue_running())
                     {
@@ -595,9 +459,10 @@ public:
                         // note: if do_work() throws, then f_working remains
                         //       set to 'true' which should not matter
                         //
-                        do_work();
-
-                        f_out.push_back(f_work_load);
+                        if(do_work())
+                        {
+                            f_out->push_back(f_workload);
+                        }
 
                         {
                             snap_lock lock(f_mutex);
@@ -610,7 +475,7 @@ public:
                     // if the FIFO is empty and it is marked as done, we
                     // want to exit immediately
                     //
-                    if(f_in.is_done())
+                    if(f_in->is_done())
                     {
                         break;
                     }
@@ -624,23 +489,22 @@ public:
          * against the work load automatically retrieved in the run()
          * function.
          *
-         * Your load is available in the f_work_load variable member.
+         * Your load is available in the f_workload variable member.
          * You are free to modify it. The snap_worker object ignores
          * its content. It retrieved it from the input fifo (f_in)
          * and will save it in the output fifo once done (f_out).
          */
-        virtual void do_work() = 0;
+        virtual bool do_work() = 0;
 
     protected:
-        T                   f_work_load = T();
+        T                       f_workload = T();
+        typename snap_fifo<T>::pointer_t f_in;
+        typename snap_fifo<T>::pointer_t f_out;
 
     private:
-        snap_fifo<T> &      f_in;
-        snap_fifo<T> &      f_out;
-        size_t const        f_position;
-
-        bool                f_working = false;
-        size_t              f_runs = 0;
+        size_t const            f_position;
+        bool                    f_working = false;
+        size_t                  f_runs = 0;
     };
 
     /** \brief Manage a pool of worker threads.
@@ -666,13 +530,13 @@ public:
      *      {
      *          void do_work()
      *          {
-     *              if(f_work_load.f_func == "counter")
+     *              if(f_workload.f_func == "counter")
      *              {
-     *                  ++f_work_load.f_counter;
+     *                  ++f_workload.f_counter;
      *              }
-     *              else if(f_work_load.f_func == "odd-even")
+     *              else if(f_workload.f_func == "odd-even")
      *              {
-     *                  f_work_load.f_counter ^= 1;
+     *                  f_workload.f_counter ^= 1;
      *              }
      *              // ...etc...
      *          }
@@ -702,12 +566,13 @@ public:
      * You must make sure that each individual chunk of data you pass in
      * the push_front() function can be processed in any order.
      */
-    template<class W>
+    template<class W, class ...A>
     class snap_thread_pool
     {
     public:
-        typedef typename W::work_load_type  work_load_type;
-
+        typedef std::shared_ptr<snap_thread_pool<W, A...>>  pointer_t;
+        typedef typename W::work_load_type                  work_load_type;
+        typedef snap_fifo<work_load_type>                   worker_fifo_t;
 
     private:
         /** \brief Class used to manage the worker and worker thread.
@@ -727,21 +592,32 @@ public:
         {
         public:
             typedef std::shared_ptr<worker_thread_t>    pointer_t;
-            typedef std::shared_ptr<pointer_t>          vector_t;
+            typedef std::vector<pointer_t>              vector_t;
 
             worker_thread_t(std::string const & name
                           , size_t i
-                          , snap_fifo<work_load_type> const in
-                          , snap_fifo<work_load_type> const out)
+                          , typename worker_fifo_t::pointer_t in
+                          , typename worker_fifo_t::pointer_t out
+                          , A... args)
                 : f_worker(name + " (worker #" + std::to_string(i) + ")"
                          , i
                          , in
-                         , out)
-                , f_thread(std::make_shared<snap_thread>(&f_worker))
+                         , out
+                         , args...)
+                , f_thread(std::make_shared<snap_thread>(name, &f_worker))
             {
                 f_thread->start();
             }
 
+            W & get_worker()
+            {
+                return f_worker;
+            }
+
+            W const & get_worker() const
+            {
+                return f_worker;
+            }
 
         private:
             W                       f_worker;   // runner before thread; this is safe
@@ -770,9 +646,18 @@ public:
          *
          * \param[in] name  The name of the pool.
          * \param[in] pool_size  The number of threads to create.
+         * \param[in] in  The input FIFO (where workers receive workload.)
+         * \param[in] out The output FIFO (where finished work is sent.)
+         * \param[in] args  Extra arguments to initialize the workers.
          */
-        snap_thread_pool<W>(std::string const & name, size_t pool_size)
+        snap_thread_pool<W, A...>(std::string const & name
+                             , size_t pool_size
+                             , typename worker_fifo_t::pointer_t in
+                             , typename worker_fifo_t::pointer_t out
+                             , A... args)
             : f_name(name)
+            , f_in(in)
+            , f_out(out)
         {
             if(pool_size == 0)
             {
@@ -788,7 +673,8 @@ public:
                               f_name
                             , i
                             , f_in
-                            , f_out));
+                            , f_out
+                            , args...));
             }
         }
 
@@ -806,10 +692,68 @@ public:
          *
          * You are safe to run that stop process in your own destructor.
          */
-        ~snap_thread_pool<W>()
+        ~snap_thread_pool<W, A...>()
         {
-            stop();
+            stop(false);
             wait();
+        }
+
+
+        /** \brief Retrieve the number of workers.
+         *
+         * This function returns the number of workers this thread pool
+         * is handling. The number is at least 1 as a thread pool can't
+         * currently be empty.
+         *
+         * \return The number of workers in this thread pool.
+         */
+        size_t size() const
+        {
+            return f_workers.size();
+        }
+
+
+        /** \brief Get worker at index `i`.
+         *
+         * This function returns a reference to the worker at index `i`.
+         *
+         * \exception std::range_error
+         * If the index is out of range (negative or larger or equal to
+         * the number of workers) then this exception is raised.
+         *
+         * \param[in] i  The index of the worker to retrieve.
+         *
+         * \return A reference to worker `i`.
+         */
+        W & get_worker(int i)
+        {
+            if(static_cast<size_t>(i) >= f_workers.size())
+            {
+                throw std::range_error("snap::snap_thread::snap_thread_pool::get_worker() called with an index out of bounds.");
+            }
+            return f_workers[i]->get_worker();
+        }
+
+
+        /** \brief Get worker at index `i` (constant version).
+         *
+         * This function returns a reference to the worker at index `i`.
+         *
+         * \exception std::range_error
+         * If the index is out of range (negative or larger or equal to
+         * the number of workers) then this exception is raised.
+         *
+         * \param[in] i  The index of the worker to retrieve.
+         *
+         * \return A reference to worker `i`.
+         */
+        W const & get_worker(int i) const
+        {
+            if(static_cast<size_t>(i) >= f_workers.size())
+            {
+                throw std::range_error("snap::snap_thread::snap_thread_pool::get_worker() called with an index out of bounds.");
+            }
+            return f_workers[i]->get_worker();
         }
 
 
@@ -895,9 +839,9 @@ public:
          */
         void stop(bool immediate)
         {
-            if(!f_in.is_done())
+            if(!f_in->is_done())
             {
-                f_in.done(immediate);
+                f_in->done(immediate);
             }
         }
 
@@ -959,6 +903,9 @@ public:
          * The function can be called any number of times. After the first
          * time, though, the vector of worker threads is empty so really
          * nothing happens.
+         *
+         * \attention
+         * This function can't be called from one of the workers.
          */
         void wait()
         {
@@ -969,10 +916,10 @@ public:
     private:
         typedef typename worker_thread_t::vector_t  workers_t;
 
-        std::string const           f_name;
-        snap_fifo<work_load_type>   f_in = snap_fifo<work_load_type>();
-        snap_fifo<work_load_type>   f_out = snap_fifo<work_load_type>();
-        workers_t                   f_workers = workers_t();
+        std::string const                   f_name;
+        typename worker_fifo_t::pointer_t   f_in;
+        typename worker_fifo_t::pointer_t   f_out;
+        workers_t                           f_workers = workers_t();
     };
 
     class snap_thread_life
@@ -999,7 +946,7 @@ public:
          *
          * \param[in] thread  The thread which life is to be controlled.
          */
-        snap_thread_life( snap_thread * const thread )
+        snap_thread_life(snap_thread * const thread)
             : f_thread(thread)
         {
             if(f_thread == nullptr)
@@ -1047,32 +994,37 @@ public:
         snap_thread *           f_thread = nullptr;
     };
 
-                                snap_thread(QString const & name, snap_runner * runner);
+                                snap_thread(std::string const & name, snap_runner * runner);
                                 ~snap_thread();
                                 snap_thread(snap_thread const & rhs) = delete;
                                 snap_thread & operator = (snap_thread const & rhs) = delete;
 
-    QString const &             get_name() const;
+    std::string const &         get_name() const;
+    snap_runner *               get_runner() const;
     bool                        is_running() const;
     bool                        is_stopping() const;
     bool                        start();
     void                        stop();
     bool                        kill(int sig);
+    pid_t                       get_thread_tid() const;
+    snap_mutex &                get_thread_mutex() const;
 
     static int                  get_total_number_of_processors();
     static int                  get_number_of_available_processors();
+    static pid_t                gettid();
 
 private:
     // internal function to start the runner
     friend void *               func_internal_start(void * thread);
     void                        internal_run();
 
-    QString const               f_name = QString();
+    std::string const           f_name = std::string();
     snap_runner *               f_runner = nullptr;
     mutable snap_mutex          f_mutex = snap_mutex();
     bool                        f_running = false;
     bool                        f_started = false;
     bool                        f_stopping = false;
+    pid_t                       f_tid = -1;
     pthread_t                   f_thread_id = -1;
     pthread_attr_t              f_thread_attr = pthread_attr_t();
     std::exception_ptr          f_exception = std::exception_ptr();
