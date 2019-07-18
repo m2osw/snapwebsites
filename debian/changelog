@@ -1,3 +1,9 @@
+snapwebsites (1.7.13.0~xenial) xenial; urgency=high
+
+  * Added snapdev dependency for build to work.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 18 Jul 2019 02:14:58 -0700
+
 snapwebsites (1.7.12.0~xenial) xenial; urgency=high
 
   * Updated the command line tools to compile against the new advgetopt.

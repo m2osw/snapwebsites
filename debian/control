@@ -38,6 +38,7 @@ Build-Depends: catch (>= 1.0),
     qtbase5-dev,
     qtscript5-dev,
     snapcmakemodules (>= 1.0.35.3~xenial),
+    snapdev (>= 1.1.2.0~xenial),
     uuid-dev,
     zip
 Standards-Version: 3.9.4
