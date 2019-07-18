@@ -85,7 +85,7 @@ advgetopt::option const g_options[] =
 #pragma GCC diagnostic ignored "-Wpedantic"
 advgetopt::options_environment const g_options_environment =
 {
-    .f_project_name = "snapconfig",
+    .f_project_name = "snapwebsites",
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = nullptr,

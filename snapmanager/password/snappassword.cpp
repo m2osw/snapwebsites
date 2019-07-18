@@ -127,7 +127,7 @@ const advgetopt::option g_snappassword_options[] =
 #pragma GCC diagnostic ignored "-Wpedantic"
 advgetopt::options_environment const g_snappassword_options_environment =
 {
-    .f_project_name = "snappassword",
+    .f_project_name = "snapwebsites",
     .f_options = g_snappassword_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = nullptr,

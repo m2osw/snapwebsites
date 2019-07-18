@@ -100,7 +100,7 @@ advgetopt::option const g_command_line_options[] =
 #pragma GCC diagnostic ignored "-Wpedantic"
 advgetopt::options_environment const g_command_line_options_environment =
 {
-    .f_project_name = "find_process",
+    .f_project_name = "snapwebsites",
     .f_options = g_command_line_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = nullptr,

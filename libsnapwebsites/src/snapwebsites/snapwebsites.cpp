@@ -479,7 +479,7 @@ namespace
 #pragma GCC diagnostic ignored "-Wpedantic"
     advgetopt::options_environment g_snapserver_options_environment =
     {
-        .f_project_name = "snapwebsites",
+        .f_project_name = "snapwebsites",       // this does NOT vary depending on your program, all writable files are under snapwebsites.d/...
         .f_options = g_snapserver_options,
         .f_options_files_directory = nullptr,
         .f_environment_variable_name = "SNAPSERVER_OPTIONS",
@@ -852,11 +852,9 @@ void server::exit( int const code )
  */
 void server::usage()
 {
-    // get the name of the binary, or default to "snapserver" if still undefined
+    // TODO: switch to the config. from advgetopt and then we can just
+    //       use a %<flag> such as %f, %*g, etc.
     //
-    std::string const server_name(f_servername.empty() ? "snapserver" : f_servername);
-    g_snapserver_options_environment.f_project_name = server_name.c_str();
-
     std::stringstream ss_footer;
     ss_footer << "Configuration File: \""
               << f_parameters.get_configuration_path()
@@ -867,9 +865,8 @@ void server::usage()
     std::string footer(ss_footer.str());
     g_snapserver_options_environment.f_help_footer = footer.c_str();
 
-    std::cerr << f_opt->usage();
+    std::cout << f_opt->usage();
 
-    g_snapserver_options_environment.f_project_name = nullptr;
     g_snapserver_options_environment.f_help_footer = nullptr;
 
     exit(1);
