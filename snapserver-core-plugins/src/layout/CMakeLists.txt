@@ -55,6 +55,8 @@ snap_validate_xml( layout-tables.xml               tables.xsd            )
 snap_validate_css( layout/style.css                                      )
 
 
+# TODO: remove those since we now provide them in the main cmake module which
+#       sets up the flags (see the UTC_BUILD_<name> macros)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUTC_YEAR=\"`date -u +%Y`\" -DUTC_MONTH=\"`date -u +%-m`\" -DUTC_DAY=\"`date -u +%-d`\" -DUTC_HOUR=\"`date -u +%-H`\" -DUTC_MINUTE=\"`date -u +%-M`\" -DUTC_SECOND=\"`date -u +%-S`\"")
 
 add_library(layout SHARED

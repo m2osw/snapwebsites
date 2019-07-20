@@ -18,9 +18,11 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
 // self
 //
 #include "index.h"
+
 
 // other plugins
 //
@@ -29,35 +31,45 @@
 #include "../output/output.h"
 #include "../taxonomy/taxonomy.h"
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/chownnm.h>
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_backend.h>
 #include <snapwebsites/snap_expr.h>
 #include <snapwebsites/snap_lock.h>
-#include <snapwebsites/tokenize_string.h>
+
+
+// snapdev
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+#include <snapdev/tokenize_string.h>
+
 
 // as2js lib
 //
 #include <as2js/json.h>
 
+
 // csspp lib
 //
 #include <csspp/csspp.h>
+
 
 // Qt lib
 //
 #include <QtCore>
 #include <QtSql>
 
+
 // C++ lib
 //
 #include <iostream>
+
 
 // C lib
 //
@@ -65,9 +77,11 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(index, 1, 0)

@@ -169,11 +169,22 @@
  * \sa journal_list::done()
  */
 
+
+// self
+//
 #include "content.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 
 SNAP_PLUGIN_EXTENSION_START(content)

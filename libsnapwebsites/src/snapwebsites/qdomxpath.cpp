@@ -15,15 +15,22 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
 // self
 //
 #include "snapwebsites/qdomxpath.h"
 
+
 // snapwebsites lib
 //
 #include "snapwebsites/floats.h"
-#include "snapwebsites/not_used.h"
 #include "snapwebsites/qstring_stream.h"
+
+
+// snapdev lib
+//
+#include "snapdev/not_used.h"
+
 
 // C++ lib
 //
@@ -31,9 +38,10 @@
 #include <iomanip>
 #include <limits>
 
+
 // last include
 //
-#include "snapwebsites/poison.h"
+#include "snapdev/poison.h"
 
 
 

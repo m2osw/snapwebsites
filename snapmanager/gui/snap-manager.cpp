@@ -15,23 +15,42 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "snap-manager.h"
 #include "snap-manager-about.h"
 #include "snap-manager-help.h"
 #include "snap-manager-decode-utf8.h"
 #include "get_child.h"
 
+
+// casswrapper lib
+//
 #include <casswrapper/schema.h>
 #include <casswrapper/version.h>
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/dbutils.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/snap_uri.h>
 #include <snapwebsites/snapwebsites.h>
 #include <snapwebsites/tcp_client_server.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+
+// libtld lib
+//
 #include <libtld/tld.h>
 
+
+// Qt lib
+//
 #include <QHostAddress>
 #include <QApplication>
 #include <QCloseEvent>
@@ -39,7 +58,18 @@
 #include <QSettings>
 #include <QTimer>
 
+
+// C lib
 #include <stdio.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
+
 
 using namespace casswrapper;
 using namespace casswrapper::schema;

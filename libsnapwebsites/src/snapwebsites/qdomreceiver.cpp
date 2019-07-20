@@ -15,9 +15,19 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "snapwebsites/qdomreceiver.h"
 
-#include "snapwebsites/poison.h"
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
+
 
 
 QDomReceiver::QDomReceiver(QXmlNamePool namepool, QDomDocument doc)

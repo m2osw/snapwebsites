@@ -18,27 +18,50 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "sitemapxml.h"
 
+
+// other plugins
+//
 #include "../permissions/permissions.h"
 #include "../shorturl/shorturl.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomnodemodel.h>
 #include <snapwebsites/qxmlmessagehandler.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// C++ lib
+//
 #include <iostream>
 
+
+// Qt lib
+//
 #include <QDateTime>
 #include <QDomDocument>
 #include <QDomProcessingInstruction>
 #include <QFile>
 #include <QXmlQuery>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 /** \file

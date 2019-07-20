@@ -15,27 +15,38 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// ourselves
+
+// self
 //
 #include "cpu.h"
+
 
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
 
 // Qt lib
 //
 #include <QFile>
 
+
 // C lib
 //
 #include <proc/sysinfo.h>
 
+
 // last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
+
 
 
 SNAP_PLUGIN_START(cpu, 1, 0)

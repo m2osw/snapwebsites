@@ -15,29 +15,54 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "users.h"
 
+
+// other plugins
+//
 #include "../output/output.h"
 #include "../list/list.h"
 #include "../locale/snap_locale.h"
 #include "../messages/messages.h"
 #include "../server_access/server_access.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_lock.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// C++ lib
+//
 #include <iostream>
 
+
+// Qt lib
+//
 #include <QFile>
 
+
+// OpenSSL lib
+//
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
 
 
 SNAP_PLUGIN_EXTENSION_START(users)

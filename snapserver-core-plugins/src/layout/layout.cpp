@@ -18,15 +18,18 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
 // self
 //
 #include "layout.h"
+
 
 // other plugins
 //
 #include "../filter/filter.h"
 #include "../taxonomy/taxonomy.h"
 #include "../path/path.h"
+
 
 // snapwebsites lib
 //
@@ -39,14 +42,20 @@
 #include <snapwebsites/qdomxpath.h>
 //#include <snapwebsites/qdomnodemodel.h> -- at this point the DOM Node Model seems bogus.
 #include <snapwebsites/snap_expr.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/xslt.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
 
 // C++ lib
 //
 #include <iostream>
 #include <fstream>
+
 
 // Qt lib
 //
@@ -55,7 +64,7 @@
 
 // last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 

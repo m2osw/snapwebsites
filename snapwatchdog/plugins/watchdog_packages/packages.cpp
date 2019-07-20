@@ -15,27 +15,36 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// ourselves
+
+// self
 //
 #include "packages.h"
+
 
 // snapwebsites lib
 //
 #include <snapwebsites/file_content.h>
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/process.h>
 #include <snapwebsites/qdomhelpers.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
 
 // Qt lib
 //
 #include <QFile>
 #include <QRegExp>
 
+
 // boost lib
 //
 #include <boost/algorithm/string.hpp>
+
 
 // C++ lib
 //
@@ -44,7 +53,9 @@
 
 // last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
+
 
 
 /** \file

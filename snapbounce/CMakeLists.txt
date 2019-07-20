@@ -40,16 +40,17 @@ set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fwrapv" )
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(
-    ${libsnapwebsites_project_SOURCE_DIR}/src
-    ${libsnapwebsites_project_BINARY_DIR}/src
-)
-include_directories( SYSTEM
-    ${Qt5Core_INCLUDE_DIRS}
-    ${Qt5Xml_INCLUDE_DIRS}
+    SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Xml_INCLUDE_DIRS}
 )
 set( QT_LIBRARIES
     Qt5::Core
     Qt5::Xml
+)
+include_directories(
+    ${libsnapwebsites_project_SOURCE_DIR}/src
+    ${libsnapwebsites_project_BINARY_DIR}/src
 )
 
 # This can't use the debian version one directory up

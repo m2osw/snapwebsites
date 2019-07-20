@@ -26,23 +26,31 @@
 // THE SOFTWARE.
 //
 
-// ourselves
+// self
 //
 #include "snapmanager/status.h"
 
-// our lib
+
+// snapmanager lib
 //
 #include "snapmanager/manager.h"
+
 
 // snapwebsites
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/string_replace.h>
 
-// last entry
+
+// snapdev lib
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/not_reached.h>
+#include <snapdev/string_replace_many.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 namespace snap_manager

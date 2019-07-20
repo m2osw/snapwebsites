@@ -157,22 +157,48 @@
  *   to check a value from a session, but keep it for later.
  */
 
+
+// self
+//
 #include "sessions.h"
 
+
+// other plugins
+//
 #include "../output/output.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/plugins.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// libdbproxy lib
+//
 #include <libdbproxy/value.h>
 
+
+// C++ lib
+//
 #include <iostream>
 
+
+// OpenSSL lib
+//
 #include <openssl/rand.h>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(sessions, 1, 1)

@@ -17,23 +17,47 @@
 
 //#define SHOW_RIGHTS
 
+
+// self
+//
 #include "permissions.h"
 
+
+// other plugins
+//
 #include "../output/output.h"
 #include "../users/users.h"
 #include "../messages/messages.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/plugins.h>
 #include <snapwebsites/qstring_stream.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// libdbproxy lib
+//
 #include <libdbproxy/value.h>
 
+
+// OpenSSL lib
+//
 #include <openssl/rand.h>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 SNAP_PLUGIN_START(permissions, 1, 0)
 

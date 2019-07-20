@@ -2,7 +2,7 @@
 #
 # Run make with proper parameters for me...
 
-PROCESSORS=4
+PROCESSORS=2
 
 case "$1" in
 "-a"|"--all")

@@ -36,19 +36,36 @@
  * of the "users" plugin itself and not the "users_ui".
  */
 
+
+// self
+//
 #include "users_ui.h"
 
+
+// other plugins
+//
 #include "../editor/editor.h"
 #include "../output/output.h"
 #include "../messages/messages.h"
 #include "../sendmail/sendmail.h"
 #include "../password/password.h"
 
-#include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 
-#include <snapwebsites/poison.h>
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(users_ui, 1, 0)

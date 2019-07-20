@@ -15,8 +15,13 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "favicon.h"
 
+
+// other plugins
+//
 #include "../attachment/attachment.h"
 #include "../messages/messages.h"
 #include "../permissions/permissions.h"
@@ -24,15 +29,29 @@
 #include "../server_access/server_access.h"
 #include "../users/users.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_image.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// Qt lib
+//
 #include <QFile>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(favicon, 1, 0)

@@ -35,16 +35,34 @@
  * https://tools.ietf.org/html/rfc6749
  */
 
+
+// self
+//
 #include "oauth2.h"
 
+
+// other plugins
+//
 #include "../users/users.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/http_strings.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 
-#include <snapwebsites/poison.h>
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 
 SNAP_PLUGIN_START(oauth2, 1, 0)

@@ -18,20 +18,28 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// ourselves
+
+// self
 //
 #include "./log_definitions.h"
+
 
 // snapwebsites lib
 //
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/not_used.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
 
 // Qt lib
 //
 #include <QFile>
+
 
 // C lib
 //
@@ -39,9 +47,9 @@
 #include <pwd.h>
 
 
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 

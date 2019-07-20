@@ -24,11 +24,23 @@
 //
 // Also unfortunate, Qt does not provide such a class.
 
+
+// self
+//
 #include "snapwebsites/qhtmlserializer.h"
 
+
+// C++ lib
+//
 #include <stdexcept>
 
-#include "snapwebsites/poison.h"
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
 
 
 QHtmlSerializer::QHtmlSerializer(QXmlNamePool namepool, QBuffer *output, bool const is_html)

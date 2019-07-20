@@ -31,23 +31,36 @@
 //
 #include <snapwebsites/email.h>
 #include <snapwebsites/file_content.h>
-#include <snapwebsites/hexadecimal_string.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snapwebsites.h>
+
+
+// snapdev lib
+//
+#include <snapdev/hexadecimal_string.h>
+#include <snapdev/not_reached.h>
+
 
 // Qt Lib
 //
 #include <QFile>
 
+
 // C++ lib
 //
 #include <functional>
 
+
 // C lib
 //
 #include <unistd.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 

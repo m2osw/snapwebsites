@@ -26,19 +26,27 @@
 // THE SOFTWARE.
 //
 
-// ourselves
+
+// self
 //
 #include "snapmanager/server_status.h"
 
-// our lib
+
+// snapmanager lib
 //
 #include "snapmanager/manager.h"
+
 
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 #include <snapwebsites/snap_string_list.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
 
 // C lib
 //
@@ -48,9 +56,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
+
 
 namespace snap_manager
 {

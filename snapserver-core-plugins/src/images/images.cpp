@@ -15,21 +15,42 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "images.h"
 
+
+// other plugins
+//
 #include "../listener/listener.h"
 #include "../messages/messages.h"
 #include "../users/users.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/snap_image.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+
+// C++ lib
+//
 #include <iostream>
 #include <algorithm>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 
 SNAP_PLUGIN_START(images, 1, 0)

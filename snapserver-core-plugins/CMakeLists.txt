@@ -46,21 +46,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Automatically run the moc compiler on qt files
 set( CMAKE_AUTOMOC TRUE )
 
-include_directories(
-    SYSTEM
-        ${Qt5Core_INCLUDE_DIRS}
-        ${Qt5Network_INCLUDE_DIRS}
-        ${Qt5Script_INCLUDE_DIRS}
-        ${Qt5Sql_INCLUDE_DIRS}
-        ${Qt5Widgets_INCLUDE_DIRS}
-        ${Qt5Xml_INCLUDE_DIRS}
-        ${Qt5XmlPatterns_INCLUDE_DIRS}
-)
-include_directories(
-    ${snapwebsites_src_SOURCE_DIR}
-    ${snapwebsites_src_BINARY_DIR}
-    ${snapwatchdog_lib_SOURCE_DIR}
-)
 set( QT_LIBRARIES
     Qt5::Core
     Qt5::Network
@@ -88,17 +73,31 @@ if( "${XMLLINT_EXECUTABLE}" STREQUAL "XMLLINT_EXECUTABLE-NOTFOUND" )
     message( FATAL_ERROR "xmllint was not found, you need to install libxml2-utils" )
 endif()
 
-# A few extra warnings specifically for snapwebsites libraries and tools
-# You can also play with -Weffc++ although we are definitively not compliant
-# (especially we do not define all the auto-initialized variables!)
+# A few extra warnings:
+#
 # -Wconversion -- would be nice, a few things are still not cooperating with that one
 # -DUNISTR_FROM_STRING_EXPLICIT=explicit is for the Unicode library, to make sure it does not copy strings arounds automatically
 # -DMAGICKCORE_QUANTUM_DEPTH=16 is the default depth, newer versions of ImageMagick require that definition from you (no internal default)
 # -DMAGICKCORE_HDRI_ENABLE=0 is also the default for ImageMagick; I'm not too sure what HDRI stands for though...
+#
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wnoexcept -DUNISTR_FROM_STRING_EXPLICIT=explicit -DMAGICKCORE_QUANTUM_DEPTH=16 -DMAGICKCORE_HDRI_ENABLE=0" )
 set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fwrapv" )
 
 include_directories(
+    SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Network_INCLUDE_DIRS}
+        ${Qt5Script_INCLUDE_DIRS}
+        ${Qt5Sql_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
+        ${Qt5Xml_INCLUDE_DIRS}
+        ${Qt5XmlPatterns_INCLUDE_DIRS}
+)
+
+include_directories(
+    ${snapwebsites_src_SOURCE_DIR}
+    ${snapwebsites_src_BINARY_DIR}
+    ${snapwatchdog_lib_SOURCE_DIR}
     ${ADVGETOPT_INCLUDE_DIRS}
     ${QTCASSANDRA_INCLUDE_DIRS}
     ${QTSERIALIZATION_INCLUDE_DIRS}

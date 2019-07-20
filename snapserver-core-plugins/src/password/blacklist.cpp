@@ -23,11 +23,22 @@
  * or sending an email to him.
  */
 
+
+// self
+//
 #include "password.h"
 
+
+// Qt lib
+//
 #include <QRegExp>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 
 SNAP_PLUGIN_EXTENSION_START(password)

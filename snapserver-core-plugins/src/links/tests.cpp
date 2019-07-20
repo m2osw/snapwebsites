@@ -15,18 +15,38 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self test
+//
 #include "links.h"
 
+
+// other plugins
+//
 // TODO: remove dependency on content (because content includes links...)
 //       it may be that content and links should be merged (yuck!) TBD
 #include "../content/content.h"
 
-#include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
+
+// C++ lib
+//
 #include <iostream>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_EXTENSION_START(links)

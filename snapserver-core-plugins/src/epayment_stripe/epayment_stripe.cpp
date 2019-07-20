@@ -15,27 +15,52 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "epayment_stripe.h"
 
+
+// other plugins
+//
 #include "../editor/editor.h"
 #include "../messages/messages.h"
 #include "../output/output.h"
 #include "../permissions/permissions.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/tcp_client_server.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
 
 // as2js lib
 //
 #include <as2js/json.h>
 
+
+// C++ lib
+//
 #include <iostream>
+
+
+// OpenSSL lib
+//
 #include <openssl/rand.h>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(epayment_stripe, 1, 0)

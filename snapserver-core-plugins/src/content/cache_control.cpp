@@ -23,12 +23,25 @@
  * control functions of the content plugin.
  */
 
+// self
+//
 #include "content.h"
 
-#include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 
-#include <snapwebsites/poison.h>
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_EXTENSION_START(content)

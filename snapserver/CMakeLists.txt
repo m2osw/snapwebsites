@@ -64,31 +64,6 @@ endif()
 ##
 set( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH} )
 
-include_directories( SYSTEM
-    ${Qt5Core_INCLUDE_DIRS}
-    ${Qt5Network_INCLUDE_DIRS}
-    ${Qt5Script_INCLUDE_DIRS}
-    ${Qt5Sql_INCLUDE_DIRS}
-    ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5Xml_INCLUDE_DIRS}
-    ${Qt5XmlPatterns_INCLUDE_DIRS}
-)
-set( QT_LIBRARIES
-    Qt5::Core
-    Qt5::Network
-    Qt5::Script
-    Qt5::Sql
-    Qt5::Xml
-    Qt5::XmlPatterns
-)
-
-include_directories(
-    ${libsnapwebsites_project_SOURCE_DIR}/src
-    ${libsnapwebsites_project_BINARY_DIR}/src
-    ${snapmanagercgi_project_BINARY_DIR}/lib
-    ${snapmanagercgi_project_SOURCE_DIR}/lib
-    ${QTSERIALIZATION_INCLUDE_DIRS}
-)
 
 find_library( UUID uuid )
 if( ${UUID} STREQUAL "UUID-NOTFOUND" )
@@ -113,11 +88,32 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wnoexcept -DUNISTR_FR
 set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fwrapv" )
 
 include_directories(
+    SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Network_INCLUDE_DIRS}
+        ${Qt5Script_INCLUDE_DIRS}
+        ${Qt5Sql_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
+        ${Qt5Xml_INCLUDE_DIRS}
+        ${Qt5XmlPatterns_INCLUDE_DIRS}
+)
+set( QT_LIBRARIES
+    Qt5::Core
+    Qt5::Network
+    Qt5::Script
+    Qt5::Sql
+    Qt5::Xml
+    Qt5::XmlPatterns
+)
+
+include_directories(
     ${libsnapwebsites_project_SOURCE_DIR}/src
     ${libsnapwebsites_project_BINARY_DIR}/src
+    ${snapmanagercgi_project_BINARY_DIR}/lib
+    ${snapmanagercgi_project_SOURCE_DIR}/lib
+    ${QTSERIALIZATION_INCLUDE_DIRS}
     ${ADVGETOPT_INCLUDE_DIRS}
     ${QTCASSANDRA_INCLUDE_DIRS}
-    ${QTSERIALIZATION_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${LIBTLD_INCLUDE_DIRS}
 )

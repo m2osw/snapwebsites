@@ -15,41 +15,31 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// ourselves
+// self
 //
 #include "snapwebsites/mail_exchanger.h"
 
 // libsnapwebsites library
 //
-//#include "snapwebsites/compression.h"
-//#include "snapwebsites/http_strings.h"
 #include "snapwebsites/log.h"
 #include "snapwebsites/process.h"
-//#include "snapwebsites/not_used.h"
-//#include "snapwebsites/qdomhelpers.h"
-//#include "snapwebsites/qlockfile.h"
-//#include "snapwebsites/snap_image.h"
-//#include "snapwebsites/snap_utf8.h"
-//#include "snapwebsites/snapwebsites.h"
-//#include "snapwebsites/snap_lock.h"
-#include "snapwebsites/tokenize_string.h"
+
+
+// snapdev lib
+//
+#include "snapdev/tokenize_string.h"
+
 
 // libtld library
 //
 #include <libtld/tld.h>
 
-//#include <sstream>
-//
-//#include <errno.h>
-//#include <signal.h>
-//#include <stdio.h>
-//#include <wait.h>
-//#include <sys/prctl.h>
-//#include <sys/syscall.h>
-//
-//#include <QDirIterator>
 
-#include "snapwebsites/poison.h"
+// last include
+//
+#include "snapdev/poison.h"
+
+
 
 
 namespace snap

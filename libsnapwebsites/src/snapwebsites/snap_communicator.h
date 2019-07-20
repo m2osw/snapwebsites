@@ -17,19 +17,28 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// self
+//
 #include "snapwebsites/snap_exception.h"
 #include "snapwebsites/snap_thread.h"
 #include "snapwebsites/tcp_client_server.h"
 #include "snapwebsites/udp_client_server.h"
-#include "snapwebsites/not_used.h"
 //#include "snapwebsites/log.h" -- not sensible here at this time because log.h includes snap_communicator.h -- See Jira SNAP-623
 #include "snapwebsites/snap_string_list.h"
 
+// snapdev lib
+//
+#include "snapdev/not_used.h"
+
+// Qt lib
+//
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
 #include <QMap>
 #pragma GCC diagnostic pop
 
+// C lib
+//
 #include <signal.h>
 #include <sys/signalfd.h>
 

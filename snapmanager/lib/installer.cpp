@@ -32,33 +32,43 @@
  */
 
 
-// ourselves
+// self
 //
 #include "snapmanager/manager.h"
+
 
 // snapwebsites lib
 //
 #include <snapwebsites/file_content.h>
 #include <snapwebsites/glob_dir.h>
-#include <snapwebsites/lockfile.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkdir_p.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/process.h>
-#include <snapwebsites/tokenize_string.h>
+
+
+// snapdev lib
+//
+#include <snapdev/lockfile.h>
+#include <snapdev/not_used.h>
+#include <snapdev/tokenize_string.h>
+
 
 // Qt lib
 //
 #include <QFile>
+
 
 // C lib
 //
 #include <fcntl.h>
 #include <sys/wait.h>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
+
 
 namespace snap_manager
 {

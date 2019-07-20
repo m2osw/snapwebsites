@@ -20,21 +20,28 @@
 //
 #include "snapwebsites/flags.h"
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_exception.h>
 #include <snapwebsites/snap_child.h>
-#include <snapwebsites/tokenize_string.h>
 #include <snapwebsites/version.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/tokenize_string.h>
+
 
 // advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
 #include <advgetopt/exception.h>
 
+
 // boost lib
 //
 #include <boost/algorithm/string.hpp>
+
 
 // Qt lib
 //
@@ -42,15 +49,18 @@
 #include <QDomElement>
 #include <QDomText>
 
+
 // C++ lib
 //
 #include <iomanip>
 #include <regex>
 
 
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
+
 
 namespace
 {

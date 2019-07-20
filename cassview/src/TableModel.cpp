@@ -19,28 +19,40 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //===============================================================================
 
-// ourselves
+
+// self
 //
 #include "TableModel.h"
+
 
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
 
 // Qt lib
 //
 #include <QSettings>
 #include <QVariant>
 
+
 // C++ lib
 //
 #include <iostream>
 #include <exception>
 
-// included last
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
+
+
 
 using namespace casswrapper;
 

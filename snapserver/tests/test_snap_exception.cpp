@@ -22,14 +22,36 @@
 // as expected.
 //
 
+
+// self lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_exception.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
+
+// C++ lib
+//
 #include <iostream>
 
+
+// Qt lib
+//
 #include <QDir>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
+
 
 
 int main(int /*argc*/, char * /*argv*/[])

@@ -19,6 +19,9 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //===============================================================================
 
+
+// self
+//
 #include "MainWindow.h"
 
 #include "AboutDialog.h"
@@ -26,12 +29,34 @@
 #include "InputDialog.h"
 #include "SettingsDialog.h"
 
-#include <snapwebsites/not_used.h>
+
+// snapwebsites lib
+//
 #include <snapwebsites/dbutils.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+
+// Qt lib
+//
 #include <QMessageBox>
 
+
+// C++ lib
+//
 #include <iostream>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
+
 
 using namespace casswrapper;
 

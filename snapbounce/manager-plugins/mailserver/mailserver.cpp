@@ -15,28 +15,38 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
 // mailserver
 //
 #include "mailserver.h"
+
 
 // snapmanager lib
 //
 #include <snapmanager/form.h>
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
 
 // Qt lib
 //
 #include <QFile>
 #include <QProcess>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(mailserver, 1, 0)

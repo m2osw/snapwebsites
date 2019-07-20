@@ -32,7 +32,8 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// ourselves
+
+// self
 //
 #include "snaplistd.h"
 
@@ -44,14 +45,17 @@
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_string_list.h>
 
+
 // advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
+
 
 // Qt lib
 //
 #include <QtCore>
 #include <QtSql>
+
 
 // C++ lib
 //
@@ -59,9 +63,13 @@
 #include <iostream>
 #include <sstream>
 
+
 // included last
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
+
+
 
 /** \file
  * \brief Implementation of the snaplistd daemon.

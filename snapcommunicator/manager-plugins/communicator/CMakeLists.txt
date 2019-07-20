@@ -37,7 +37,7 @@ find_package( Qt5Xml  REQUIRED )
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${snapwebsites_top_dir_SOURCE_DIR}
+    #${snapwebsites_top_dir_SOURCE_DIR}
 )
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC

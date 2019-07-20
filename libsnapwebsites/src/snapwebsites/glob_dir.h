@@ -22,8 +22,11 @@
 
 // snapwebsites lib
 //
-#include <snapwebsites/raii_generic_deleter.h>
-#include <snapwebsites/snap_exception.h>
+#include "snapwebsites/snap_exception.h"
+
+// snapdev lib
+//
+#include <snapdev/raii_generic_deleter.h>
 
 // Qt lib
 //

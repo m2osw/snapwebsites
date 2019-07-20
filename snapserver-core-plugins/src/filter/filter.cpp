@@ -15,35 +15,46 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// ourselves
+
+// self
 //
 #include "filter.h"
+
 
 // other plugins
 //
 #include "../locale/snap_locale.h"
 #include "../messages/messages.h"
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomxpath.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qstring_stream.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
 
 // C++ lib
 //
 #include <iostream>
 #include <cctype>
 
+
 // Qt lib
 //
 #include <QTextStream>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(filter, 1, 0)

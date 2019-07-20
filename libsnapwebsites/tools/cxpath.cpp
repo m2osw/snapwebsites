@@ -26,21 +26,42 @@
  *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/snapwebsites.h>
-#include <snapwebsites/not_reached.h>
 #include <snapwebsites/qdomxpath.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
+
+// advgetopt lib
+//
 #include <advgetopt/advgetopt.h>
 #include <advgetopt/exception.h>
 
+
+// C++ lib
+//
 #include <iostream>
 
+
+// Qt lib
+//
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <QFile>
 #pragma GCC diagnostic pop
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 namespace
 {
@@ -146,7 +167,7 @@ advgetopt::options_environment const g_options_environment =
                      "where -<opt> is one or more of:",
     .f_help_footer = "%c",
     .f_version = SNAPWEBSITES_VERSION_STRING,
-    .f_license = "GPL v2",
+    .f_license = "GNU GPL v2",
     .f_copyright = "Copyright (c) 2013-"
                    BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
                    " by Made to Order Software Corporation -- All Rights Reserved",

@@ -15,27 +15,47 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "feed.h"
 
+
+// other plugins
+//
 #include "../attachment/attachment.h"
 #include "../filter/filter.h"
 #include "../list/list.h"
 #include "../locale/snap_locale.h"
 #include "../path/path.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomxpath.h>
 #include <snapwebsites/qhtmlserializer.h>
 #include <snapwebsites/qxmlmessagehandler.h>
 #include <snapwebsites/xslt.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// Qt lib
+//
 #include <QFile>
 #include <QTextStream>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(feed, 1, 0)

@@ -15,19 +15,32 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// self
+//
 #include "snapwebsites/compression.h"
 
+// self lib
+//
 #include "snapwebsites/log.h"
-#include "snapwebsites/not_used.h"
 
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+// Qt lib
+//
 #include <QMap>
 
+// C lib
+//
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <zlib.h>
 #pragma GCC diagnostic pop
 
-#include "snapwebsites/poison.h"
+// last include
+//
+#include <snapdev/poison.h>
 
 
 namespace snap

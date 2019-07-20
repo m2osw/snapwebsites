@@ -36,18 +36,24 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
+// self
+//
 #include "snapdb.h"
 
 #include "version.h"
+
 
 // snapwebsites library
 //
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/qstring_stream.h>
 
+
 // casswrapper library
 //
 #include <casswrapper/query.h>
+
 
 // C++ lib
 //
@@ -58,9 +64,13 @@
 #include <iostream>
 #include <sstream>
 
+
 // last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
+
+
 
 using namespace casswrapper;
 using namespace casswrapper::schema;

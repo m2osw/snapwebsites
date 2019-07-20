@@ -39,9 +39,14 @@ set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fwrapv" )
 
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
-include_directories( SYSTEM
-    ${Qt5Core_INCLUDE_DIRS}
-    ${Qt5Xml_INCLUDE_DIRS}
+include_directories(
+    SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Xml_INCLUDE_DIRS}
+)
+set( QT_LIBRARIES
+    Qt5::Core
+    Qt5::Xml
 )
 include_directories(
     ${libsnapwebsites_project_SOURCE_DIR}/src
@@ -49,10 +54,6 @@ include_directories(
     ${snapmanagercgi_project_BINARY_DIR}/lib
     ${snapmanagercgi_project_SOURCE_DIR}/lib
     ${QTSERIALIZATION_INCLUDE_DIRS}
-)
-set( QT_LIBRARIES
-    Qt5::Core
-    Qt5::Xml
 )
 
 #SnapGetVersion( SNAPCOMMUNICATOR ${CMAKE_CURRENT_SOURCE_DIR} )

@@ -35,23 +35,43 @@
  * https://snapwebsites.org/implementation/feature-requirements/pad-and-snsd-files-feature/snap-software-description
  */
 
+
+// self
+//
 #include "snap_software_description.h"
 
+
+// other plugins
+//
 #include "../attachment/attachment.h"
 #include "../filter/filter.h"
 #include "../list/list.h"
 #include "../shorturl/shorturl.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/http_strings.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomxpath.h>
 #include <snapwebsites/xslt.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+
+// Qt lib
+//
 #include <QFile>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(snap_software_description, 1, 0)

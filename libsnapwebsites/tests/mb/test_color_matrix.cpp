@@ -27,27 +27,26 @@
 // client won't be able to connect.
 //
 
+
+// TODO: move this test to the snapdev project where matrix.h is defined
+//
+
 // snapwebsites lib
 //
-#include <snapwebsites/matrix.h>
-//#include <snapwebsites/file_content.h>
-//#include <snapwebsites/hexadecimal_string.h>
 #include <snapwebsites/log.h>
-//#include <snapwebsites/not_reached.h>
-//#include <snapwebsites/qstring_stream.h>
-//#include <snapwebsites/snapwebsites.h>
 
-// Qt Lib
-//
-//#include <QFile>
 
-// C++ lib
+// snapdev lib
 //
-//#include <functional>
+#include <snapdev/matrix.h>
 
-// C lib
+
+// last include
 //
-//#include <unistd.h>
+#include <snapdev/poison.h>
+
+
+
 
 
 

@@ -15,36 +15,47 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
 // snapserver_manager
 //
 #include "snapserver_manager.h"
+
 
 // our lib
 //
 #include <snapmanager/form.h>
 
+
 // snapwebsites lib
 //
-#include <snapwebsites/join_strings.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/string_pathinfo.h>
-#include <snapwebsites/tokenize_string.h>
+
+
+// snapdev lib
+//
+#include <snapdev/join_strings.h>
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+#include <snapdev/string_pathinfo.h>
+#include <snapdev/tokenize_string.h>
+
 
 // Qt lib
 //
 #include <QFile>
 
+
 // C lib
 //
 #include <sys/file.h>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(snapserver_manager, 1, 0)

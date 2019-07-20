@@ -15,27 +15,49 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#include <snapwebsites/not_reached.h>
+
+// snapwebsites lib
+//
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/xslt.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
+
+// C++ lib
+//
 #include <map>
 #include <string>
 
+
+// C lib
+//
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+
+// Qt lib
+//
 #include <QString>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 
 void usage()
 {
-    fprintf(stderr, "Usage: test_entity_filter [-opt] URL\n");
-    fprintf(stderr, "  where -opt is one of (each flag must appear separately):\n");
-    fprintf(stderr, "    -h                   Print out this help screen\n");
+    std::cerr << "Usage: test_entity_filter [-opt] URL\n";
+    std::cerr << "  where -opt is one of (each flag must appear separately):\n";
+    std::cerr << "    -h                   Print out this help screen\n";
     exit(1);
 }
 
@@ -57,7 +79,7 @@ int main(int argc, char * argv[])
                 snap::NOTREACHED();
 
             default:
-                fprintf(stderr, "error: unknown option '%c'.\n", argv[i][1]);
+                std::cerr << "error: unknown option '" << argv[i][1] << "'.\n";
                 help = true;
                 break;
 

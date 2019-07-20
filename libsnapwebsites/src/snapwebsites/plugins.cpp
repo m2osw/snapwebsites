@@ -18,16 +18,23 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// ourselves
+
+// self
 //
 #include "snapwebsites/plugins.h"
+
 
 // snapwebsites lib
 //
 #include "snapwebsites/log.h"
-#include "snapwebsites/not_used.h"
 #include "snapwebsites/snapwebsites.h"
 #include "snapwebsites/qstring_stream.h"
+
+
+// snapdev lib
+//
+#include "snapdev/not_used.h"
+
 
 // Qt lib
 //
@@ -35,18 +42,24 @@
 #include <QMap>
 #include <QFileInfo>
 
+
+// C++ lib
+//
+#include <sstream>
+
+
 // C lib
 //
 #include <dlfcn.h>
 #include <link.h>
 #include <sys/stat.h>
 
-// C++ lib
-#include <sstream>
 
-// included last
+// last include
 //
-#include "snapwebsites/poison.h"
+#include "snapdev/poison.h"
+
+
 
 
 namespace snap

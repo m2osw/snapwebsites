@@ -15,36 +15,47 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
 // snapmanager lib
 //
 #include <snapmanager/version.h>
 
+
 // snapwebsites lib
 //
-#include <snapwebsites/hexadecimal_string.h>
 #include <snapwebsites/password.h>
+
+
+// snapdev lib
+//
+#include <snapdev/hexadecimal_string.h>
+
 
 // advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
 #include <advgetopt/exception.h>
 
+
 // boost lib
 //
 #include <boost/preprocessor/stringize.hpp>
 
+
 // C++ lib
 //
 #include <iostream>
+
 
 // C lib
 //
 #include <fnmatch.h>
 #include <unistd.h>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 

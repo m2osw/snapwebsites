@@ -15,23 +15,32 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// our lib
+
+// snapmanager lib
 //
 #include "snapmanager/manager.h"
+
 
 // advgetopt lib
 //
 #include <advgetopt/exception.h>
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/lockfile.h>
 #include <snapwebsites/process.h>
 
-// last entry
+
+// snapdev lib
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/lockfile.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 namespace snap

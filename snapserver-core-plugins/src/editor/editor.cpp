@@ -19,6 +19,7 @@
 //
 #include "editor.h"
 
+
 // other plugins
 //
 #include "../output/output.h"
@@ -28,14 +29,13 @@
 #include "../mimetype/mimetype.h"
 #include "../permissions/permissions.h"
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkgmtime.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomreceiver.h>
 #include <snapwebsites/qdomxpath.h>
@@ -44,9 +44,17 @@
 #include <snapwebsites/snap_lock.h>
 #include <snapwebsites/xslt.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
 // libtld lib
 //
 #include <libtld/tld.h>
+
 
 // Qt lib
 //
@@ -54,15 +62,16 @@
 #include <QFile>
 #include <QFileInfo>
 
+
 // C++ lib
 //
 #include <iostream>
 #include <cmath>
 
 
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 

@@ -23,15 +23,32 @@
  * functions of the attachment plugin.
  */
 
+
+// self
+//
 #include "attachment.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/plugins.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
+
+// Qt lib
+//
 #include <QFile>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_EXTENSION_START(attachment)

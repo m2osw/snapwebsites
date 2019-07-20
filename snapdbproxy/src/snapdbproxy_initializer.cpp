@@ -34,28 +34,24 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// ourselves
+// self
 //
 #include "snapdbproxy.h"
 
+
 // our lib
 //
-// #include <snapwebsites/dbutils.h>
 #include <snapwebsites/log.h>
-// #include <snapwebsites/not_used.h>
-// #include <snapwebsites/qstring_stream.h>
-
-// // libdbproxy lib
-// //
-// //#include <libdbproxy/libdbproxy.h>
-// #include <casswrapper/schema.h>
-// #include <casswrapper/session.h>
 
 // C++ lib
 //
-// #include <algorithm>
 #include <iostream>
-// #include <sstream>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 

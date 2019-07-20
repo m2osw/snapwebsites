@@ -16,9 +16,9 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// snapwebsites lib
+// snapdev lib
 //
-#include <snapwebsites/raii_generic_deleter.h>
+#include <snapdev/raii_generic_deleter.h>
 
 // C++ lib
 //

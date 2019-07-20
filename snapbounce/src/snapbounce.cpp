@@ -23,27 +23,39 @@
 
 #include "version.h"
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_cassandra.h>
 #include <snapwebsites/snap_config.h>
 #include <snapwebsites/snap_exception.h>
 #include <snapwebsites/snapwebsites.h>
 
-// contrib lib
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
+
+// advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
 #include <advgetopt/exception.h>
+
+
+// libdbproxy lib
+//
 #include <libdbproxy/context.h>
 #include <libdbproxy/table.h>
+
 
 // Qt lib
 //
 #include <QFile>
 #include <QTime>
+
 
 // C lib
 //
@@ -51,6 +63,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <uuid/uuid.h>
+
 
 // C++ lib
 //
@@ -61,9 +74,10 @@
 #include <fstream>
 #include <algorithm>
 
-// included last
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 

@@ -155,6 +155,7 @@ include_directories(
 )
 target_link_libraries( ${PROJECT_NAME}
     ${SNAPWEBSITES_LIBRARIES}
+    ${LIBEXCEPT_LIBRARIES}
     Qt5::Core
 )
 # TODO: only install in the development version? (do we have such a component?)

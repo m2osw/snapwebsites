@@ -15,24 +15,50 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "sortable.h"
 
+
+// other plugins
+//
 #include "../output/output.h"
 #include "../messages/messages.h"
 #include "../permissions/permissions.h"
 
-#include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// C++ lib
+//
 #include <algorithm>
 #include <iostream>
 
+
+// OpenSSL lib
+//
 #include <openssl/rand.h>
 
+
+// Qt lib
+//
 #include <QChar>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 /** \file

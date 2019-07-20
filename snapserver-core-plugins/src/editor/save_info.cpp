@@ -25,9 +25,16 @@
  * and saves the data.
  */
 
+// self
+//
 #include "editor.h"
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 
 SNAP_PLUGIN_EXTENSION_START(editor)

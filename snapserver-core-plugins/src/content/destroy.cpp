@@ -26,14 +26,28 @@
  *   the trashcan (so this is a move page too!)
  */
 
+
+// self
+//
 #include "content.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/log.h>
 
+
+// C++ lib
+//
 #include <iostream>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 
 SNAP_PLUGIN_EXTENSION_START(content)

@@ -36,12 +36,12 @@ find_package( Qt5Core REQUIRED )
 find_package( Qt5Xml  REQUIRED )
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-include_directories(
     SYSTEM
         ${Qt5Core_INCLUDE_DIRS}
         ${Qt5Xml_INCLUDE_DIRS}
+)
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC

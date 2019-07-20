@@ -15,16 +15,35 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "snapwebsites/qdomhelpers.h"
 
+
+// snapwebsites
+//
 #include "snapwebsites/qstring_stream.h"
 #include "snapwebsites/snap_string_list.h"
 
-#include <iostream>
 
+// Qt lib
+//
 #include <QTextStream>
 
-#include "snapwebsites/poison.h"
+
+// C++ lib
+//
+#include <iostream>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
+
 
 
 namespace snap

@@ -15,22 +15,30 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// cassandra
+
+// self
 //
 #include "cassandra.h"
 
-// our lib
+
+// snapmanager lib
 //
 #include "snapmanager/form.h"
+
 
 // snapwebsites lib
 //
 #include <snapwebsites/chownnm.h>
 #include <snapwebsites/file_content.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/process.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
 
 // Qt lib
 //
@@ -39,9 +47,11 @@
 #include <QFile>
 #include <QTextStream>
 
+
 // casswrapper
 //
 #include <casswrapper/query.h>
+
 
 // C++ lib
 //
@@ -49,13 +59,16 @@
 #include <vector>
 #include <sys/stat.h>
 
+
 // YAML-CPP
 //
 #include <yaml-cpp/yaml.h>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(cassandra, 1, 0)

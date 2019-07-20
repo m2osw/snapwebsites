@@ -32,24 +32,35 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// ourselves
+
+// self
 //
 #include "snaplock.h"
 
+
+// snapmanager lib
+//
 #include "version.h"
 
-// our lib
+
+// snapwebsites lib
 //
 #include <snapwebsites/log.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/process.h>
 #include <snapwebsites/snap_string_list.h>
-#include <snapwebsites/tokenize_string.h>
+
+
+// snapdev lib
+//
+#include <snapdev/tokenize_string.h>
+
 
 // advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
+
 
 // C++ lib
 //
@@ -57,15 +68,16 @@
 #include <iostream>
 #include <sstream>
 
+
 // openssl lib
 //
 #include <openssl/rand.h>
 
 
-
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 /** \file

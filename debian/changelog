@@ -1,3 +1,11 @@
+snapwebsites (1.7.14.0~xenial) xenial; urgency=high
+
+  * Removed the headers I moved to snapdev earlier.
+  * Clean up some comments that were just old code.
+  * Removed a few fprintf() we still had left in a couple of tests.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 18 Jul 2019 02:14:58 -0700
+
 snapwebsites (1.7.13.0~xenial) xenial; urgency=high
 
   * Added snapdev dependency for build to work.

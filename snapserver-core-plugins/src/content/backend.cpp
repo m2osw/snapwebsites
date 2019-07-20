@@ -23,20 +23,37 @@
  * functions of the content plugin.
  */
 
+
+// self
+//
 #include "content.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/compression.h>
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/log.h>
 
+
+// csspp lib
+//
 #include <csspp/assembler.h>
 #include <csspp/compiler.h>
 #include <csspp/exceptions.h>
 #include <csspp/parser.h>
 
+
+// C++ lib
+//
 #include <iostream>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 
 SNAP_PLUGIN_EXTENSION_START(content)

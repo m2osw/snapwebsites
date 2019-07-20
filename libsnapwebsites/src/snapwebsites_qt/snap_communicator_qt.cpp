@@ -23,9 +23,13 @@
 // snapwebsites lib
 //
 #include "snapwebsites/log.h"
-#include "snapwebsites/not_reached.h"
-#include "snapwebsites/not_used.h"
 #include "snapwebsites/qstring_stream.h"
+
+
+// snapdev lib
+//
+#include "snapdev/not_reached.h"
+#include "snapdev/not_used.h"
 
 
 // Qt lib
@@ -47,7 +51,7 @@
 
 // last include
 //
-#include "snapwebsites/poison.h"
+#include <snapdev/poison.h>
 
 
 

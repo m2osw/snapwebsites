@@ -36,26 +36,39 @@
  *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// ourselves
+
+// self
 //
 #include "snapdbproxy.h"
 
-// our lib
+
+// snapwebsites lib
 //
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/dbutils.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
 
 // advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
 
+
 // libdbproxy lib
 //
 #include <libdbproxy/libdbproxy.h>
+
+
+// casswrapper lib
+//
 #include <casswrapper/schema.h>
 #include <casswrapper/session.h>
+
 
 // C++ lib
 //
@@ -63,11 +76,19 @@
 #include <iostream>
 #include <sstream>
 
+
 // C lib
 //
 #include <poll.h>
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 
 // a mutex to manage data common to all connections

@@ -27,21 +27,38 @@
 // read and/or write to a file. It has access to the database though, with
 // limits.
 
+
+// self
+//
 #include "javascript.h"
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/plugins.h>
 #include <snapwebsites/snap_version.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/log.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// Qt lib
+//
 #include <QScriptEngine>
 #include <QScriptProgram>
 #include <QScriptClass>
 #include <QScriptClassPropertyIterator>
 #include <QSharedPointer>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(javascript, 1, 0)

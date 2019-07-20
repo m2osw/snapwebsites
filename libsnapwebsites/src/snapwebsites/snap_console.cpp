@@ -15,17 +15,27 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "snapwebsites/snap_console.h"
 
-// our lib
+
+// snapwebsites lib
 //
 #include "snapwebsites/log.h"
-#include "snapwebsites/not_used.h"
+
+
+// snapdev lib
+//
+#include "snapdev/not_used.h"
+
 
 // C++ lib
 //
 #include <deque>
 #include <iostream>
+
 
 // C lib
 //
@@ -34,6 +44,12 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <unistd.h>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 namespace snap

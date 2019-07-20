@@ -22,9 +22,14 @@
 
 // snapwebsites lib
 //
-#include "snapwebsites/qcaseinsensitivestring.h"
 #include "snapwebsites/snap_exception.h"
 #include "snapwebsites/quoted_printable.h"
+
+
+// snapdev lib
+//
+#include "snapdev/qcaseinsensitivestring.h"
+
 
 // qt serialization lib
 //

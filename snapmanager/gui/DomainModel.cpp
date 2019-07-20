@@ -14,16 +14,37 @@
 // COMPLETENESS OR PERFORMANCE.
 //===============================================================================
 
+
+// self
+//
 #include "DomainModel.h"
+
+
+// snapwebsites lib
+//
 #include <snapwebsites/snapwebsites.h>
 
+
+// Qt lib
+//
 #include <QSettings>
 #include <QVariant>
 
+
+// C++ lib
+//
 #include <iostream>
 #include <exception>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
+
+
 
 using namespace casswrapper;
 

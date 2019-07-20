@@ -19,21 +19,29 @@
 //
 #include "snapwebsites/log.h"
 
+
 // snapwebsite lib
 //
-#include "snapwebsites/not_reached.h"
-#include "snapwebsites/not_used.h"
 #include "snapwebsites/qstring_stream.h"
 #include "snapwebsites/snap_exception.h"
 #include "snapwebsites/snapwebsites.h"
+
+
+// snapdev lib
+//
+#include "snapdev/not_reached.h"
+#include "snapdev/not_used.h"
+
 
 // boost lib
 //
 #include <boost/algorithm/string/replace.hpp>
 
+
 // Qt lib
 //
 #include <QFileInfo>
+
 
 // log4cplus lib
 //
@@ -54,6 +62,7 @@
 #include <log4cplus/syslogappender.h>
 #pragma GCC diagnostic pop
 
+
 // C lib
 //
 #include <syslog.h>
@@ -62,7 +71,7 @@
 
 // last include
 //
-#include "snapwebsites/poison.h"
+#include <snapdev/poison.h>
 
 
 

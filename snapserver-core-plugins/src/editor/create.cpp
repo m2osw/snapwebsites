@@ -31,15 +31,21 @@
  * just be in the content plugin.
  */
 
+
+// self
+//
 #include "editor.h"
 
-//#include "../layout/layout.h"
+
+// other plugins
+//
 #include "../list/list.h"
 #include "../permissions/permissions.h"
 
-//#include <snapwebsites/log.h>
 
-#include <snapwebsites/poison.h>
+// last include
+//
+#include <snapdev/poison.h>
 
 
 

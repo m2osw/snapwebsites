@@ -26,21 +26,25 @@
 // THE SOFTWARE.
 //
 
+
+// self
+//
 #include "snapmanagerdaemon.h"
+
 
 // advgetopt
 //
 #include <advgetopt/exception.h>
+
 
 // Qt lib
 //
 #include <QtCore>
 
 
-
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 

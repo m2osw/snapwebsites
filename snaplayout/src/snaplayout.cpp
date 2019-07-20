@@ -33,34 +33,58 @@
 
 #include "version.h"
 
-#include <snapwebsites/not_reached.h>
+
+// snapwebsites lib
+//
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_version.h>
 #include <snapwebsites/snap_image.h>
 #include <snapwebsites/snapwebsites.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
 
 // advgetopt lib
 //
 #include <advgetopt/advgetopt.h>
 #include <advgetopt/exception.h>
 
+
 // libdbproxy lib
 //
 #include <libdbproxy/value.h>
 
+
+// casswrapper lib
+//
 #include <casswrapper/schema.h>
 #include <casswrapper/session.h>
 #include <casswrapper/query.h>
 
+
+// zipios lib
+//
 #include <zipios/zipfile.hpp>
 
+
+// C++ lib
+//
 #include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
+
+// C lib
+//
 #include <sys/stat.h>
 
+
+// Qt lib
+//
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDateTime>
@@ -68,7 +92,12 @@
 #include <QTextStream>
 #include <QXmlInputSource>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
 
 using namespace casswrapper;
 using namespace libdbproxy;

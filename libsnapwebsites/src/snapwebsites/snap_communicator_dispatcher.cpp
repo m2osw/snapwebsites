@@ -20,9 +20,18 @@
 #define _GNU_SOURCE
 #endif
 
+
+// self
+//
 #include "snapwebsites/snap_communicator.h"
 
-#include "snapwebsites/poison.h"
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
 
 
 /** \file

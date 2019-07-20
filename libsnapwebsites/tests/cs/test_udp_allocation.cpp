@@ -24,18 +24,29 @@
 // client won't be able to connect.
 //
 
+
+// snapwebsites lib
+//
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
 #include <snapwebsites/qstring_stream.h>
 #include <snapwebsites/snap_communicator.h>
 #include <snapwebsites/udp_client_server.h>
 
-//#include <fcntl.h>
-//#include <netinet/tcp.h>
-//#include <sys/ioctl.h>
-//#include <unistd.h>
 
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
+
+// C++ lib
+//
 #include <iostream>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 

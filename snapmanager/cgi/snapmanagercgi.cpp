@@ -27,56 +27,70 @@
 // THE SOFTWARE.
 //
 
-// ourselves
+
+// self
 //
 #include "snapmanagercgi.h"
+
 
 // our lib
 //
 #include "snapmanager/plugin_base.h"
 #include "snapmanager/server_status.h"
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/chownnm.h>
 #include <snapwebsites/file_content.h>
 #include <snapwebsites/glob_dir.h>
-#include <snapwebsites/hexadecimal_string.h>
 #include <snapwebsites/mkdir_p.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_communicator.h>
 #include <snapwebsites/snap_uri.h>
-#include <snapwebsites/tokenize_string.h>
+
+
+// snapdev lib
+//
+#include <snapdev/hexadecimal_string.h>
+#include <snapdev/not_used.h>
+#include <snapdev/tokenize_string.h>
+
 
 // addr lib
 #include <libaddr/addr_parser.h>
 
+
 // Qt lib
 //
 #include <QFile>
+
 
 // boost lib
 //
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/lexical_cast.hpp>
 
+
 // C++ lib
 //
 #include <fstream>
+
 
 // C lib
 //
 #include <fcntl.h>
 #include <sys/file.h>
 
+
 // OpenSLL lib
 //
 #include <openssl/rand.h>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 namespace snap_manager

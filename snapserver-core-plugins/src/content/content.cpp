@@ -37,11 +37,13 @@
  * plugin to kick in and fix the corresponding list.)
  */
 
+
 // self
 //
 #include "content.h"
 
 //#include "../messages/messages.h" -- we now have 2 levels (messages and output) so we could include messages.h there
+
 
 // snapwebsites lib
 //
@@ -49,31 +51,38 @@
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_magic.h>
 #include <snapwebsites/snap_image.h>
 #include <snapwebsites/snap_lock.h>
 #include <snapwebsites/snap_version.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
 // Qt lib
 //
 #include <QFile>
 #include <QTextStream>
 
+
 // C++ lib
 //
 #include <iostream>
+
 
 // OpenSSL lib
 //
 #include <openssl/md5.h>
 
 
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 

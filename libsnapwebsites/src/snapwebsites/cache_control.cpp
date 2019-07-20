@@ -23,7 +23,10 @@
 //
 #include "snapwebsites/http_strings.h"
 #include "snapwebsites/log.h"
-#include "snapwebsites/not_reached.h"
+
+// snapdev lib
+//
+#include "snapdev/not_reached.h"
 
 // boost lib
 //
@@ -32,7 +35,7 @@
 
 // last include
 //
-#include "snapwebsites/poison.h"
+#include <snapdev/poison.h>
 
 
 namespace snap

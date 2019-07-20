@@ -15,39 +15,50 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// ourselves
+
+// self
 //
 #include "snapmanager/manager.h"
+
 
 // snapwebsites lib
 //
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkdir_p.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/qstring_stream.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
 
 // addr lib
 //
 #include <libaddr/addr_parser.h>
 
+
 // Qt lib
 //
 #include <QFile>
 
+
 // C++ lib
 //
 #include <sstream>
+
 
 // C lib
 //
 #include <signal.h>
 
 
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 /** \file

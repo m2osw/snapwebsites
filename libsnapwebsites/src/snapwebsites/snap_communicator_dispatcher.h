@@ -16,8 +16,13 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+
+// snapwebsites lib
+//
 #include "snapwebsites/snap_communicator.h"
 #include "snapwebsites/log.h" // should be in the snap_communicator.h but can't at the moment
+
+
 
 namespace snap
 {

@@ -32,14 +32,12 @@
 //
 #include "snapmanager/manager.h"
 
+
 // snapwebsite lib
 //
 #include <snapwebsites/snap_config.h>
 #include <snapwebsites/version.h>
 
-//#include <snapwebsites/snap_expr.h>
-//#include <snapwebsites/qstring_stream.h>
-//#include <snapwebsites/snapwebsites.h>
 
 // advgetopt lib
 //
@@ -51,9 +49,9 @@
 #include <iostream>
 
 
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 

@@ -22,10 +22,16 @@
 //
 #include "snapwebsites/meminfo.h"
 
+
 // snapwebsites lib
 //
 #include "snapwebsites/log.h"
-#include "snapwebsites/tokenize_string.h"
+
+
+// snapdev lib
+//
+#include "snapdev/tokenize_string.h"
+
 
 // C++ lib
 //
@@ -33,6 +39,12 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 

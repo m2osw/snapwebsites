@@ -20,28 +20,37 @@
 #define _GNU_SOURCE
 #endif
 
+
 // self
 //
 #include "snapwebsites/snap_communicator.h"
 
+
 // snapwebsites lib
 //
 #include "snapwebsites/log.h"
-#include "snapwebsites/not_reached.h"
-#include "snapwebsites/not_used.h"
 #include "snapwebsites/qstring_stream.h"
 #include "snapwebsites/snap_communicator_dispatcher.h"
-#include "snapwebsites/string_replace.h"
 
-// addr lib
+
+// snapdev lib
+//
+#include "snapdev/not_reached.h"
+#include "snapdev/not_used.h"
+#include "snapdev/string_replace_many.h"
+
+
+// libaddr lib
 //
 #include "libaddr/addr_parser.h"
+
 
 // C++ lib
 //
 #include <sstream>
 #include <limits>
 #include <atomic>
+
 
 // C lib
 //
@@ -55,9 +64,11 @@
 #include <sys/syscall.h>
 #include <sys/time.h>
 
+
 // last include
 //
-#include "snapwebsites/poison.h"
+#include <snapdev/poison.h>
+
 
 
 /** \file

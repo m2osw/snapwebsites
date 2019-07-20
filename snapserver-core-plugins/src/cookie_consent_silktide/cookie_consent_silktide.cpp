@@ -18,19 +18,42 @@
 // Using 3rd party library from silktide:
 // https://silktide.com/tools/cookie-consent/
 
+
+// self
+//
 #include "cookie_consent_silktide.h"
 
+
+// other plugins
+//
 #include "../attachment/attachment.h"
 
-#include <snapwebsites/log.h>
-#include <snapwebsites/not_reached.h>
-#include <snapwebsites/not_used.h>
 
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+
+
+// as2js lib
+//
 #include <as2js/json.h>
 
+
+// C++ lib
+//
 #include <iostream>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(cookie_consent_silktide, 1, 0)

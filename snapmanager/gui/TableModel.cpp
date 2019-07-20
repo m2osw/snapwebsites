@@ -14,17 +14,40 @@
 // COMPLETENESS OR PERFORMANCE.
 //===============================================================================
 
-#include "TableModel.h"
-#include <snapwebsites/log.h>
-#include <snapwebsites/not_used.h>
 
+// self
+//
+#include "TableModel.h"
+
+
+// snapwebsites lib
+//
+#include <snapwebsites/log.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+
+// Qt lib
+//
 #include <QSettings>
 #include <QVariant>
 
+
+// C++ lib
+//
 #include <iostream>
 #include <exception>
 
-#include <snapwebsites/poison.h>
+
+// last include
+//
+#include <snapdev/poison.h>
+
+
+
 
 using namespace casswrapper;
 

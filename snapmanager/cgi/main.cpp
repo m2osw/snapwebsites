@@ -27,21 +27,25 @@
 // THE SOFTWARE.
 //
 
-// ourselves
+
+// self
 //
 #include "snapmanagercgi.h"
+
 
 // advgetopt
 //
 #include <advgetopt/exception.h>
 
+
 // Qt lib
 //
 #include <QCoreApplication>
 
-// last entry
+
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
 
 
 namespace snap

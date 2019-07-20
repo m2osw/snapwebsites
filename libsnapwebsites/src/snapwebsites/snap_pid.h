@@ -19,14 +19,16 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+
 // self
 //
-//#include "snapwebsites/http_strings.h"
-//#include "snapwebsites/snap_child.h"
-//#include "snapwebsites/snap_communicator.h"
-#include "snapwebsites/raii_generic_deleter.h"
 #include "snapwebsites/snap_exception.h"
-//#include "snapwebsites/version.h"
+
+
+// snapdev lib
+//
+#include <snapdev/raii_generic_deleter.h>
+
 
 
 /** \file
@@ -102,4 +104,3 @@ private:
 
 } // namespace snap
 // vim: ts=4 sw=4 et
-

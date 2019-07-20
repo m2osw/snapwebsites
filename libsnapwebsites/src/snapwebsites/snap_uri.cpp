@@ -18,21 +18,48 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "snapwebsites/snap_uri.h"
 
+
+// snapwebsites lib
+//
 #include "snapwebsites/qstring_stream.h"
 #include "snapwebsites/log.h"
-#include "snapwebsites/not_used.h"
 
+
+// snapdev lib
+//
+#include "snapdev/not_used.h"
+
+
+// QtSerialization lib
+//
 #include <QtSerialization/QSerializationComposite.h>
 #include <QtSerialization/QSerializationFieldBasicTypes.h>
 #include <QtSerialization/QSerializationFieldString.h>
 
-#include <libtld/tld.h>
-#include <netdb.h>
+
+// Qt lib
+//
 #include <QBuffer>
 
-#include "snapwebsites/poison.h"
+
+// libtld lib
+//
+#include <libtld/tld.h>
+
+
+// C lib
+//
+#include <netdb.h>
+
+
+// last include
+//
+#include "snapdev/poison.h"
 
 
 

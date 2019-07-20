@@ -18,9 +18,11 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
 // self
 //
 #include "sendmail.h"
+
 
 // plugins
 //
@@ -28,13 +30,13 @@
 #include "../output/output.h"
 #include "../users/users.h"
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/flags.h>
 #include <snapwebsites/http_strings.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkgmtime.h>
-#include <snapwebsites/not_used.h>
 #include <snapwebsites/process.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomxpath.h>
@@ -42,13 +44,21 @@
 #include <snapwebsites/snap_magic.h>
 #include <snapwebsites/snap_pipe.h>
 
+
+// snapdev lib
+//
+#include <snapdev/not_used.h>
+
+
 // libtld
 //
 #include <libtld/tld.h>
 
+
 // libdbproxy
 //
 #include <libdbproxy/value.h>
+
 
 // Qt Serialization library
 //
@@ -56,19 +66,22 @@
 #include <QtSerialization/QSerializationFieldString.h>
 #include <QtSerialization/QSerializationFieldTag.h>
 
+
 // C++
 //
 #include <fstream>
 #include <iostream>
+
 
 // Qt
 //
 #include <QFile>
 
 
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 SNAP_PLUGIN_START(sendmail, 1, 0)

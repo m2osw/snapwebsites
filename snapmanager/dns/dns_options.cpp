@@ -15,28 +15,38 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-// itself
+
+// self
 //
 //#include "dns_options.h"
+
 
 // snapmanager lib
 //
 #include <snapmanager/version.h>
+
 
 // advgetopt lib
 //
 #include "advgetopt/advgetopt.h"
 #include "advgetopt/exception.h"
 
+
 // snapwebsites lib
 //
 #include <snapwebsites/file_content.h>
-#include <snapwebsites/not_reached.h>
 #include <snapwebsites/version.h>
+
+
+// snapdev lib
+//
+#include <snapdev/not_reached.h>
+
 
 // boost lib
 //
 #include <boost/preprocessor/stringize.hpp>
+
 
 // C++ lib
 //
@@ -44,10 +54,10 @@
 #include <vector>
 
 
-
-// last entry
+// last include
 //
-#include <snapwebsites/poison.h>
+#include <snapdev/poison.h>
+
 
 
 namespace

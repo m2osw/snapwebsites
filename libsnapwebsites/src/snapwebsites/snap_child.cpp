@@ -18,7 +18,11 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+// self
+//
 #include "snapwebsites/snap_child.h"
+
 
 // snapwebsites lib
 //
@@ -28,7 +32,6 @@
 #include "snapwebsites/log.h"
 #include "snapwebsites/mail_exchanger.h"
 #include "snapwebsites/mkgmtime.h"
-#include "snapwebsites/not_used.h"
 #include "snapwebsites/process.h"
 #include "snapwebsites/qdomhelpers.h"
 #include "snapwebsites/qlockfile.h"
@@ -38,21 +41,31 @@
 #include "snapwebsites/snap_lock.h"
 #include "snapwebsites/snap_magic.h"
 
+
+// snapdev lib
+//
+#include "snapdev/not_used.h"
+
+
 // dbproxy lib
 //
 #include <libdbproxy/exception.h>
+
 
 // Qt Serialization lib
 //
 #include <QtSerialization/QSerialization.h>
 
+
 // tld lib
 //
 #include <libtld/tld.h>
 
+
 // C++ lib
 //
 #include <sstream>
+
 
 // C lib
 //
@@ -63,14 +76,17 @@
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 
+
 // Qt lib
 //
 #include <QDirIterator>
 
 
-// last entry
+// last include
 //
-#include "snapwebsites/poison.h"
+#include <snapdev/poison.h>
+
+
 
 
 namespace snap

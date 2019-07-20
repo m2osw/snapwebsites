@@ -21,22 +21,29 @@
  * This file includes the implementation used by the snap_thread environment.
  */
 
+
 // self
 //
 #include "snapwebsites/snap_thread.h"
+
 
 // snapwebsites lib
 //
 #include "snapwebsites/log.h"
 
+
 // C lib
+//
 #include <signal.h>
 #include <sys/syscall.h>
 #include <sys/sysinfo.h>
 
+
 // last include
 //
-#include "snapwebsites/poison.h"
+#include "snapdev/poison.h"
+
+
 
 
 namespace snap
