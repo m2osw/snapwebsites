@@ -7,7 +7,7 @@ snapwebsites (1.7.14.0~xenial) xenial; urgency=high
   * Fixed a BIO call as they removed one function in newer versions.
   * Added #include <vector> in various files.
   * Made the EVP interface work for both 16.04 and 19.04.
-  * Made many fallback C++17 compatible.
+  * Made many fallthrough C++17 compatible.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 18 Jul 2019 02:14:58 -0700
 
