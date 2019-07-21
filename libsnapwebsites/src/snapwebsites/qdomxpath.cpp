@@ -6308,7 +6308,9 @@ bool token_is_operator()
         {
             return false;
         }
-        /*FALLTHROUGH*/
+#if __cplusplus >= 201700
+        [[fallthrough]];
+#endif
     case token_t::tok_t::TOK_OPERATOR_AND:
     case token_t::tok_t::TOK_OPERATOR_OR:
     case token_t::tok_t::TOK_OPERATOR_MOD:
@@ -6451,7 +6453,9 @@ bool token_is_axis_name()
         {
             f_last_token.f_token = token_t::tok_t::TOK_AXIS_NAME_SELF;
         }
-        /*FALLTHROUGH*/
+#if __cplusplus >= 201700
+        [[fallthrough]];
+#endif
     case token_t::tok_t::TOK_AXIS_NAME_ANCESTOR:
     case token_t::tok_t::TOK_AXIS_NAME_ANCESTOR_OR_SELF:
     case token_t::tok_t::TOK_AXIS_NAME_ATTRIBUTE:
