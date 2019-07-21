@@ -1312,7 +1312,9 @@ bool filter::filter_text_impl(filter_text_t & txt_filt)
                             // remove the quotes from the parameters
                             //
                             param.f_value = param.f_value.mid(1, param.f_value.size() - 2);
-                            /*FALLTHROUGH*/
+#if __cplusplus >= 201700
+                            [[fallthrough]];
+#endif
                         case token_t::TOK_INTEGER:
                         case token_t::TOK_REAL:
                             t = get_token(tok);
