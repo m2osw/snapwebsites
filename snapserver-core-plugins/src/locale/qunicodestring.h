@@ -24,9 +24,9 @@
 //
 #include <unicode/unistr.h>
 
-// C++ lib
-//
-#include <string>
+
+
+
 
 
 /** \file
@@ -38,7 +38,8 @@
  */
 
 
-class QUnicodeString : public UnicodeString
+class QUnicodeString
+    : public U_NAMESPACE_QUALIFIER UnicodeString
 {
 public:
     QUnicodeString()
