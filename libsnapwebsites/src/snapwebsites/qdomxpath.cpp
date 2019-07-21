@@ -2361,6 +2361,9 @@ void func_calculate_sum_or_average(variant_vector_t& arguments, bool sum_only)
                 ++count;
                 break;
             }
+#if __cplusplus >= 201700
+            [[fallthrough]];
+#endif
         //case atomic_type_t::ATOMIC_TYPE_DECIMAL:
         case atomic_value_t::type_t::ATOMIC_TYPE_SINGLE:
         case atomic_value_t::type_t::ATOMIC_TYPE_DOUBLE:
@@ -2450,6 +2453,9 @@ void func_calculate_min_or_max(variant_vector_t& arguments, bool min)
                 dresult = static_cast<double>(iresult);
                 break;
             }
+#if __cplusplus >= 201700
+            [[fallthrough]];
+#endif
         //case atomic_type_t::ATOMIC_TYPE_DECIMAL:
         case atomic_value_t::type_t::ATOMIC_TYPE_SINGLE:
         case atomic_value_t::type_t::ATOMIC_TYPE_DOUBLE:
@@ -6152,6 +6158,9 @@ bool get_token()
             }
             f_last_token.f_string += QChar(c);
             f_last_token.f_real = static_cast<double>(f_last_token.f_integer);
+#if __cplusplus >= 201700
+            [[fallthrough]];
+#endif
         case '.':
             c = getc();
             if(f_last_token.f_string == ".")
@@ -6350,7 +6359,9 @@ bool token_is_node_type()
         {
             return false;
         }
-        /*FALLTHROUGH*/
+#if __cplusplus >= 201700
+        [[fallthrough]];
+#endif
     case token_t::tok_t::TOK_NODE_TYPE_COMMENT:
     case token_t::tok_t::TOK_NODE_TYPE_TEXT:
     case token_t::tok_t::TOK_NODE_TYPE_PROCESSING_INSTRUCTION:
@@ -7384,6 +7395,9 @@ void location_path()
         {
         case token_t::tok_t::TOK_DOUBLE_SLASH:
             double_slash = true;
+#if __cplusplus >= 201700
+            [[fallthrough]];
+#endif
         case token_t::tok_t::TOK_SLASH:
             if(first_round)
             {
