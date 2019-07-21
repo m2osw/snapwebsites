@@ -35,7 +35,7 @@ project(plugin_locale)
 
 # The ICU Find function changed and was added to the OS
 string(REGEX MATCH "Linux-4.4" OS_NAME_AND_VERSION ${CMAKE_SYSTEM})
-if(${OS_NAME_AND_VERSION} STREQUAL "Linux-4.4")
+if("${OS_NAME_AND_VERSION}" STREQUAL "Linux-4.4")
     find_package( ICU REQUIRED )
 else()
     find_package( ICU REQUIRED COMPONENTS uc i18n )
