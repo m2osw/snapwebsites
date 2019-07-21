@@ -6,6 +6,7 @@ snapwebsites (1.7.14.0~xenial) xenial; urgency=high
   * Applied a fix to get the ICU to work on 19.04.
   * Fixed a BIO call as they removed one function in newer versions.
   * Added #include <vector> in various files.
+  * Made the EVP interface work for both 16.04 and 19.04.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 18 Jul 2019 02:14:58 -0700
 
