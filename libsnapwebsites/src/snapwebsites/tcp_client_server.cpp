@@ -42,6 +42,7 @@
 //
 #include <netdb.h>
 #include <netinet/tcp.h>
+#include <poll.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -133,6 +134,10 @@ crypto_lock_t::vector_t *   g_locks = nullptr;
  */
 void pthreads_thread_id(CRYPTO_THREADID * tid)
 {
+    // on 19.04 the macro does not use tid
+    //
+    snap::NOTUSED(tid);
+
     CRYPTO_THREADID_set_numeric(tid, static_cast<unsigned long>(pthread_self()));
 }
 
@@ -232,7 +237,11 @@ void thread_cleanup()
  */
 void per_thread_cleanup()
 {
+#if __cplusplus < 201700
+    // this function is not necessary in newer versions of OpenSSL
+    //
     ERR_remove_thread_state(nullptr);
+#endif
 }
 
 
@@ -314,7 +323,12 @@ void bio_initialize()
  */
 void bio_cleanup()
 {
+#if __cplusplus < 201700
+    // this function is not necessary in newer versions of OpenSSL
+    //
     ERR_remove_state(0);
+#endif
+
     EVP_cleanup();
     CRYPTO_cleanup_all_ex_data();
     ERR_free_strings();
@@ -1058,18 +1072,24 @@ int tcp_server::accept( int const max_wait_ms )
 
     if( max_wait_ms > -1 )
     {
-        fd_set s;
-        //
-        FD_ZERO(&s);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-        FD_SET(f_socket, &s);
-#pragma GCC diagnostic pop
-        //
-        struct timeval timeout;
-        timeout.tv_sec = max_wait_ms / 1000;
-        timeout.tv_usec = (max_wait_ms % 1000) * 1000;
-        int const retval = select(f_socket + 1, &s, NULL, &s, &timeout);
+        struct pollfd fd;
+        fd.events = POLLIN | POLLPRI | POLLRDHUP;
+        fd.fd = f_socket;
+        int const retval(poll(&fd, 1, max_wait_ms));
+
+// on newer system each input of select() must be a distinct fd_set...
+//        fd_set s;
+//        //
+//        FD_ZERO(&s);
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wold-style-cast"
+//        FD_SET(f_socket, &s);
+//#pragma GCC diagnostic pop
+//        //
+//        struct timeval timeout;
+//        timeout.tv_sec = max_wait_ms / 1000;
+//        timeout.tv_usec = (max_wait_ms % 1000) * 1000;
+//        int const retval = select(f_socket + 1, &s, nullptr, &s, &timeout);
         //
         if( retval == -1 )
         {
@@ -1737,7 +1757,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
 
             // load root certificates (correct path for Ubuntu?)
             // TODO: allow client to set the path to certificates
-            if(SSL_CTX_load_verify_locations(ssl_ctx.get(), NULL, "/etc/ssl/certs") != 1)
+            if(SSL_CTX_load_verify_locations(ssl_ctx.get(), nullptr, "/etc/ssl/certs") != 1)
             {
                 bio_log_errors();
                 throw tcp_client_server_initialization_error("failed loading verification certificates in an SSL_CTX object");
@@ -1809,7 +1829,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
             BIO_set_conn_hostname(bio.get(), const_cast<char *>(addr.c_str()));
-            BIO_set_conn_int_port(bio.get(), &port);
+            BIO_set_conn_port(bio.get(), const_cast<char *>(std::to_string(port).c_str()));
 #pragma GCC diagnostic pop
 
             // connect to the server (open the socket)
@@ -1894,7 +1914,7 @@ bio_client::bio_client(std::string const & addr, int port, mode_t mode, options 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
             BIO_set_conn_hostname(bio.get(), const_cast<char *>(addr.c_str()));
-            BIO_set_conn_int_port(bio.get(), &port);
+            BIO_set_conn_port(bio.get(), const_cast<char *>(std::to_string(port).c_str()));
 #pragma GCC diagnostic pop
 
             // connect to the server (open the socket)
@@ -2049,7 +2069,7 @@ int bio_client::get_port() const
 {
     if(f_bio)
     {
-        return BIO_get_conn_int_port(f_bio.get());
+        return std::atoi(BIO_get_conn_port(f_bio.get()));
     }
 
     return -1;

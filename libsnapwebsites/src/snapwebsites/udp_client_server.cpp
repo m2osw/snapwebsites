@@ -39,14 +39,15 @@
 
 // C lib
 //
-#include <string.h>
-#include <unistd.h>
+#include <fcntl.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
+#include <poll.h>
+#include <string.h>
 #include <sys/ioctl.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 
 // last include
@@ -634,19 +635,24 @@ int udp_server::recv(char * msg, size_t max_size)
  */
 int udp_server::timed_recv(char * msg, size_t const max_size, int const max_wait_ms)
 {
-    fd_set s;
-    FD_ZERO(&s);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-    FD_SET(f_socket.get(), &s);
-#pragma GCC diagnostic pop
-    struct timeval timeout;
-    timeout.tv_sec = max_wait_ms / 1000;
-    timeout.tv_usec = (max_wait_ms % 1000) * 1000;
-    int const retval(select(f_socket.get() + 1, &s, nullptr, &s, &timeout));
+    struct pollfd fd;
+    fd.events = POLLIN | POLLPRI | POLLRDHUP;
+    fd.fd = f_socket.get();
+    int const retval(poll(&fd, 1, max_wait_ms));
+
+//    fd_set s;
+//    FD_ZERO(&s);
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wold-style-cast"
+//    FD_SET(f_socket.get(), &s);
+//#pragma GCC diagnostic pop
+//    struct timeval timeout;
+//    timeout.tv_sec = max_wait_ms / 1000;
+//    timeout.tv_usec = (max_wait_ms % 1000) * 1000;
+//    int const retval(select(f_socket.get() + 1, &s, nullptr, &s, &timeout));
     if(retval == -1)
     {
-        // select() set errno accordingly
+        // poll() sets errno accordingly
         return -1;
     }
     if(retval > 0)
