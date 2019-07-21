@@ -52,10 +52,11 @@ public:
 };
 
 
-class snap_string_list : public QStringList
+class snap_string_list
+    : public QStringList
 {
 public:
-    inline snap_string_list() : QStringList() { }
+    inline snap_string_list() noexcept : QStringList() { }
     inline explicit snap_string_list(const QString &i) : QStringList(i) { }
     inline snap_string_list(const QStringList &l) : QStringList(l) { }
     inline snap_string_list(const QList<QString> &l) : QStringList(l) { }
