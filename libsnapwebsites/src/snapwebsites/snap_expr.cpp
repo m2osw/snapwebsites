@@ -1910,7 +1910,9 @@ public:
                                 value = c + pad.repeated(align) + value.mid(1);
                                 break;
                             }
-                            /*FALLTHROUGH*/
+#if __cplusplus >= 201700
+                            [[fallthrough]];
+#endif
                         default:
                             value = pad.repeated(align) + value;
                             break;

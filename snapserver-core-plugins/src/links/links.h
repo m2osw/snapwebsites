@@ -109,7 +109,7 @@ class link_info
 public:
     typedef std::vector<link_info>      vector_t;
 
-    link_info()
+    link_info() noexcept
     {
     }
 

@@ -70,8 +70,7 @@ static basic_version_number_t const SPECIAL_VERSION_DEFAULT           = SPECIAL_
 class version_number_t
 {
 public:
-    version_number_t()
-        //: f_version(SPECIAL_VERSION_UNDEFINED) -- auto-init
+    version_number_t() noexcept
     {
     }
 
