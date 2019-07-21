@@ -1010,6 +1010,9 @@ restart:
         }
         // no octal support at this point, octal is not available in
         // JavaScript by default!
+#if __cplusplus >= 201700
+        [[fallthrough]];
+#endif
     case '1':
     case '2':
     case '3':
