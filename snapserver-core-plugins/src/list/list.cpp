@@ -3483,7 +3483,7 @@ int list::generate_all_lists(QString const & site_key)
             query.bindValue(":domain",          site_key                                );
             query.bindValue(":status_limit",    static_cast<qlonglong>(loop_start_time) );
             query.bindValue(":now",             static_cast<qlonglong>(start_date)      );
-            query.bindValue(":slow_priority",   LIST_PRIORITY_SLOW                      );
+            query.bindValue(":slow_priority",   static_cast<int>(LIST_PRIORITY_SLOW)    );
 
             if(!query.exec())
             {
