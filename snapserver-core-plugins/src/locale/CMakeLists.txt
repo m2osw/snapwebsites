@@ -33,7 +33,14 @@
 
 project(plugin_locale)
 
-find_package( ICU     REQUIRED )
+# The ICU Find function changed and was added to the OS
+string(REGEX MATCH "Linux-4.4" OS_NAME_AND_VERSION ${CMAKE_SYSTEM})
+if(${OS_NAME_AND_VERSION} STREQUAL "Linux-4.4")
+    find_package( ICU REQUIRED )
+else()
+    find_package( ICU REQUIRED COMPONENTS uc i18n )
+endif()
+
 find_package( Qt5Core REQUIRED )
 
 include_directories(
