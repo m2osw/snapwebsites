@@ -2476,7 +2476,7 @@ bool images::func_write(parameters_t & params)
         {
             params.f_image_stack.back().magick(ext.toUtf8().data());
         }
-        catch(Magick::Exception const e)
+        catch(Magick::Exception const & e)
         {
             // TODO: ignore the error...
             //       we may need to force a default format or report the
