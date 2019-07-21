@@ -439,7 +439,7 @@ void proxy::bio_get()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
         BIO_set_conn_hostname(bio.get(), const_cast<char *>(f_host.toUtf8().data()));
-        BIO_set_conn_int_port(bio.get(), const_cast<int *>(&f_port));
+        BIO_set_conn_port(bio.get(), const_cast<char *>(std::to_string(f_port).c_str()));
 #pragma GCC diagnostic pop
 
         // connect to the server (open the socket)
