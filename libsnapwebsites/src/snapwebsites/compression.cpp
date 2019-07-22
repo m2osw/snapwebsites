@@ -901,8 +901,7 @@ public:
         }
 
         // read the header
-        std::vector<char> header;
-        std::copy(f_archive.data() + f_pos, f_archive.data() + f_pos + 512, &header[0]);
+        std::vector<char> header(f_archive.data() + f_pos, f_archive.data() + f_pos + 512);
 
         // MAGIC
         if(header[257] != 'u' || header[258] != 's' || header[259] != 't' || header[260] != 'a'
