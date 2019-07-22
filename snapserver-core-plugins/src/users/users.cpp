@@ -135,6 +135,34 @@ const int COOKIE_NAME_SIZE = 12; // the real size is (COOKIE_NAME_SIZE / 3) * 4
 BOOST_STATIC_ASSERT((COOKIE_NAME_SIZE % 3) == 0);
 
 
+void evp_md_ctx_deleter(EVP_MD_CTX * mdctx)
+{
+    // clean up the context
+    // (note: the return value is not documented so we ignore it)
+#if __cplusplus >= 201700
+    EVP_MD_CTX_free(mdctx);
+#else
+    EVP_MD_CTX_cleanup(mdctx);
+    delete mdctx;
+#endif
+}
+
+
+EVP_MD_CTX * evp_md_ctx_allocate()
+{
+    EVP_MD_CTX * mdctx(nullptr);
+#if __cplusplus >= 201700
+    mdctx = EVP_MD_CTX_new();
+#else
+    mdctx = new EVP_MD_CTX;
+    EVP_MD_CTX_init(mdctx);
+#endif
+    return mdctx;
+}
+
+
+
+
 } // no name namespace
 
 
@@ -4212,7 +4240,10 @@ void users::encrypt_password(QString const & digest, QString const & password, Q
     OpenSSL_add_all_digests();
 
     // retrieve the digest we want to use
+    // TODO: use the libsnapwebsites password.cpp/h class
+    //
     // (TODO: allows website owners to change this value)
+    //
     EVP_MD const * md(EVP_get_digestbyname(digest.toUtf8().data()));
     if(md == nullptr)
     {
@@ -4220,15 +4251,14 @@ void users::encrypt_password(QString const & digest, QString const & password, Q
     }
 
     // initialize the digest context
-    EVP_MD_CTX mdctx;
-    EVP_MD_CTX_init(&mdctx);
-    if(EVP_DigestInit_ex(&mdctx, md, nullptr) != 1)
+    std::unique_ptr<EVP_MD_CTX, decltype(&evp_md_ctx_deleter)> mdctx(evp_md_ctx_allocate(), evp_md_ctx_deleter);
+    if(EVP_DigestInit_ex(mdctx.get(), md, nullptr) != 1)
     {
         throw users_exception_encryption_failed("EVP_DigestInit_ex() failed digest initialization");
     }
 
     // add first salt
-    if(EVP_DigestUpdate(&mdctx, buf, SALT_SIZE / 2) != 1)
+    if(EVP_DigestUpdate(mdctx.get(), buf, SALT_SIZE / 2) != 1)
     {
         throw users_exception_encryption_failed("EVP_DigestUpdate() failed digest update (salt1)");
     }
@@ -4237,13 +4267,13 @@ void users::encrypt_password(QString const & digest, QString const & password, Q
     //
     QByteArray const pwd_utf8(password.toUtf8());
     char const * pwd(pwd_utf8.data());
-    if(EVP_DigestUpdate(&mdctx, pwd, strlen(pwd)) != 1)
+    if(EVP_DigestUpdate(mdctx.get(), pwd, strlen(pwd)) != 1)
     {
         throw users_exception_encryption_failed("EVP_DigestUpdate() failed digest update (password)");
     }
 
     // add second salt
-    if(EVP_DigestUpdate(&mdctx, buf + SALT_SIZE / 2, SALT_SIZE / 2) != 1)
+    if(EVP_DigestUpdate(mdctx.get(), buf + SALT_SIZE / 2, SALT_SIZE / 2) != 1)
     {
         throw users_exception_encryption_failed("EVP_DigestUpdate() failed digest update (salt2)");
     }
@@ -4251,15 +4281,11 @@ void users::encrypt_password(QString const & digest, QString const & password, Q
     // retrieve the result of the hash
     unsigned char md_value[EVP_MAX_MD_SIZE];
     unsigned int md_len(EVP_MAX_MD_SIZE);
-    if(EVP_DigestFinal_ex(&mdctx, md_value, &md_len) != 1)
+    if(EVP_DigestFinal_ex(mdctx.get(), md_value, &md_len) != 1)
     {
         throw users_exception_encryption_failed("EVP_DigestFinal_ex() digest finalization failed");
     }
     hash.append(reinterpret_cast<char *>(md_value), md_len);
-
-    // clean up the context
-    // (note: the return value is not documented so we ignore it)
-    EVP_MD_CTX_cleanup(&mdctx);
 }
 
 
