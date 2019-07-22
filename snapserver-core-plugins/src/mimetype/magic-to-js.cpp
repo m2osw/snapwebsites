@@ -2470,6 +2470,8 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
         void output_if(size_t pos)
         {
             typedef void (recursive_output::*output_func_t)(size_t pos);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
             static output_func_t const output_by_type[] =
             {
                 [static_cast<int>(entry_t::type_t::ENTRY_TYPE_UNKNOWN)] = &recursive_output::output_unknown,
@@ -2541,6 +2543,7 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
                 [static_cast<int>(entry_t::type_t::ENTRY_TYPE_NAME)] = &recursive_output::output_name,
                 [static_cast<int>(entry_t::type_t::ENTRY_TYPE_USE)] = &recursive_output::output_use
             };
+#pragma GCC diagnostic pop
 
             std::cout << "if(";
             (this->*output_by_type[static_cast<int>(f_entries[pos]->get_type())])(pos);
