@@ -174,7 +174,7 @@ bool RowModel::setData( const QModelIndex & index, const QVariant & new_col_vari
                 QString str_val( f_dbutils->get_column_value( f_rows[index.row()], value ) );
                 f_dbutils->set_column_value( new_col_key, new_value, str_val );
             }
-            catch( snap::snap_exception )
+            catch( snap::snap_exception const & )
             {
                 // It must have not liked the conversion...
                 //
@@ -224,7 +224,7 @@ bool RowModel::setData( const QModelIndex & index, const QVariant & new_col_vari
 
         return true;
     }
-    catch( const std::exception& except )
+    catch( std::exception& except const & )
     {
         displayError( except, tr("Cannot write data to database.") );
         return false;
@@ -261,7 +261,7 @@ bool RowModel::insertRows ( int row, int count, const QModelIndex & parent_index
         }
         endInsertRows();
     }
-    catch( const std::exception& except )
+    catch( std::exception& except const & )
     {
         displayError( except, tr("Cannot insert new rows!") );
         return false;
@@ -308,7 +308,7 @@ bool RowModel::removeRows( int row, int count, const QModelIndex & )
         f_rows.erase( f_rows.begin()+row, f_rows.begin()+row+count );
         endRemoveRows();
     }
-    catch( const std::exception& except )
+    catch( std::exception& except const & )
     {
         displayError( except, tr("Cannot write data to database.") );
         return false;
