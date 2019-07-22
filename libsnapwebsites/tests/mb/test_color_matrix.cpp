@@ -41,6 +41,11 @@
 #include <snapdev/matrix.h>
 
 
+// Qt lib
+//
+#include <QImage>
+
+
 // last include
 //
 #include <snapdev/poison.h>
