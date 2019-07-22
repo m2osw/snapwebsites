@@ -64,40 +64,40 @@ namespace
 
 
 
-TEST_CASE("matrix_init", "[matrix]")
+CATCH_TEST_CASE("matrix_init", "[matrix]")
 {
     // constructor/copy
     // and
     // zero/identity
     //
-    GIVEN("constructor")
+    CATCH_GIVEN("constructor")
     {
-        SECTION("empty")
+        CATCH_SECTION("empty")
         {
             snap::matrix<double> empty;
 
-            REQUIRE(empty.rows() == 0);
-            REQUIRE(empty.columns() == 0);
+            CATCH_REQUIRE(empty.rows() == 0);
+            CATCH_REQUIRE(empty.columns() == 0);
 
             snap::matrix<double> copy(empty);
 
-            REQUIRE(empty.rows() == 0);
-            REQUIRE(empty.columns() == 0);
+            CATCH_REQUIRE(empty.rows() == 0);
+            CATCH_REQUIRE(empty.columns() == 0);
         }
 
-        SECTION("2x2")
+        CATCH_SECTION("2x2")
         {
             snap::matrix<double> m(2, 2);
 
-            REQUIRE(m.rows() == 2);
-            REQUIRE(m.columns() == 2);
+            CATCH_REQUIRE(m.rows() == 2);
+            CATCH_REQUIRE(m.columns() == 2);
 
             // by default we get an identity
             //
-            REQUIRE(m[0][0] == 1.0);
-            REQUIRE(m[0][1] == 0.0);
-            REQUIRE(m[1][0] == 0.0);
-            REQUIRE(m[1][1] == 1.0);
+            CATCH_REQUIRE(m[0][0] == 1.0);
+            CATCH_REQUIRE(m[0][1] == 0.0);
+            CATCH_REQUIRE(m[1][0] == 0.0);
+            CATCH_REQUIRE(m[1][1] == 1.0);
 
             double const r00(frand());
             double const r01(frand());
@@ -109,74 +109,74 @@ TEST_CASE("matrix_init", "[matrix]")
             m[1][0] = r10;
             m[1][1] = r11;
 
-            REQUIRE(m[0][0] == r00);
-            REQUIRE(m[0][1] == r01);
-            REQUIRE(m[1][0] == r10);
-            REQUIRE(m[1][1] == r11);
+            CATCH_REQUIRE(m[0][0] == r00);
+            CATCH_REQUIRE(m[0][1] == r01);
+            CATCH_REQUIRE(m[1][0] == r10);
+            CATCH_REQUIRE(m[1][1] == r11);
 
             snap::matrix<double> copy(m);
             snap::matrix<double> c2;
 
-            REQUIRE(copy[0][0] == r00);
-            REQUIRE(copy[0][1] == r01);
-            REQUIRE(copy[1][0] == r10);
-            REQUIRE(copy[1][1] == r11);
+            CATCH_REQUIRE(copy[0][0] == r00);
+            CATCH_REQUIRE(copy[0][1] == r01);
+            CATCH_REQUIRE(copy[1][0] == r10);
+            CATCH_REQUIRE(copy[1][1] == r11);
 
             m.clear();
 
-            REQUIRE(m[0][0] == 0.0);
-            REQUIRE(m[0][1] == 0.0);
-            REQUIRE(m[1][0] == 0.0);
-            REQUIRE(m[1][1] == 0.0);
+            CATCH_REQUIRE(m[0][0] == 0.0);
+            CATCH_REQUIRE(m[0][1] == 0.0);
+            CATCH_REQUIRE(m[1][0] == 0.0);
+            CATCH_REQUIRE(m[1][1] == 0.0);
 
             // copy is still intact
             //
-            REQUIRE(copy[0][0] == r00);
-            REQUIRE(copy[0][1] == r01);
-            REQUIRE(copy[1][0] == r10);
-            REQUIRE(copy[1][1] == r11);
+            CATCH_REQUIRE(copy[0][0] == r00);
+            CATCH_REQUIRE(copy[0][1] == r01);
+            CATCH_REQUIRE(copy[1][0] == r10);
+            CATCH_REQUIRE(copy[1][1] == r11);
 
-            REQUIRE(c2.rows() == 0);
-            REQUIRE(c2.columns() == 0);
+            CATCH_REQUIRE(c2.rows() == 0);
+            CATCH_REQUIRE(c2.columns() == 0);
 
             c2 = copy;
 
-            REQUIRE(c2[0][0] == r00);
-            REQUIRE(c2[0][1] == r01);
-            REQUIRE(c2[1][0] == r10);
-            REQUIRE(c2[1][1] == r11);
+            CATCH_REQUIRE(c2[0][0] == r00);
+            CATCH_REQUIRE(c2[0][1] == r01);
+            CATCH_REQUIRE(c2[1][0] == r10);
+            CATCH_REQUIRE(c2[1][1] == r11);
 
             c2.swap(m);
 
-            REQUIRE(m[0][0] == r00);
-            REQUIRE(m[0][1] == r01);
-            REQUIRE(m[1][0] == r10);
-            REQUIRE(m[1][1] == r11);
+            CATCH_REQUIRE(m[0][0] == r00);
+            CATCH_REQUIRE(m[0][1] == r01);
+            CATCH_REQUIRE(m[1][0] == r10);
+            CATCH_REQUIRE(m[1][1] == r11);
 
-            REQUIRE(c2[0][0] == 0.0);
-            REQUIRE(c2[0][1] == 0.0);
-            REQUIRE(c2[1][0] == 0.0);
-            REQUIRE(c2[1][1] == 0.0);
+            CATCH_REQUIRE(c2[0][0] == 0.0);
+            CATCH_REQUIRE(c2[0][1] == 0.0);
+            CATCH_REQUIRE(c2[1][0] == 0.0);
+            CATCH_REQUIRE(c2[1][1] == 0.0);
         }
 
-        SECTION("3x3")
+        CATCH_SECTION("3x3")
         {
             snap::matrix<double> m(3, 3);
 
-            REQUIRE(m.rows() == 3);
-            REQUIRE(m.columns() == 3);
+            CATCH_REQUIRE(m.rows() == 3);
+            CATCH_REQUIRE(m.columns() == 3);
 
             // by default we get an identity
             //
-            REQUIRE(m[0][0] == 1.0);
-            REQUIRE(m[0][1] == 0.0);
-            REQUIRE(m[0][2] == 0.0);
-            REQUIRE(m[1][0] == 0.0);
-            REQUIRE(m[1][1] == 1.0);
-            REQUIRE(m[1][2] == 0.0);
-            REQUIRE(m[2][0] == 0.0);
-            REQUIRE(m[2][1] == 0.0);
-            REQUIRE(m[2][2] == 1.0);
+            CATCH_REQUIRE(m[0][0] == 1.0);
+            CATCH_REQUIRE(m[0][1] == 0.0);
+            CATCH_REQUIRE(m[0][2] == 0.0);
+            CATCH_REQUIRE(m[1][0] == 0.0);
+            CATCH_REQUIRE(m[1][1] == 1.0);
+            CATCH_REQUIRE(m[1][2] == 0.0);
+            CATCH_REQUIRE(m[2][0] == 0.0);
+            CATCH_REQUIRE(m[2][1] == 0.0);
+            CATCH_REQUIRE(m[2][2] == 1.0);
 
             double const r00(frand());
             double const r01(frand());
@@ -198,116 +198,116 @@ TEST_CASE("matrix_init", "[matrix]")
             m[2][1] = r21;
             m[2][2] = r22;
 
-            REQUIRE(m[0][0] == r00);
-            REQUIRE(m[0][1] == r01);
-            REQUIRE(m[0][2] == r02);
-            REQUIRE(m[1][0] == r10);
-            REQUIRE(m[1][1] == r11);
-            REQUIRE(m[1][2] == r12);
-            REQUIRE(m[2][0] == r20);
-            REQUIRE(m[2][1] == r21);
-            REQUIRE(m[2][2] == r22);
+            CATCH_REQUIRE(m[0][0] == r00);
+            CATCH_REQUIRE(m[0][1] == r01);
+            CATCH_REQUIRE(m[0][2] == r02);
+            CATCH_REQUIRE(m[1][0] == r10);
+            CATCH_REQUIRE(m[1][1] == r11);
+            CATCH_REQUIRE(m[1][2] == r12);
+            CATCH_REQUIRE(m[2][0] == r20);
+            CATCH_REQUIRE(m[2][1] == r21);
+            CATCH_REQUIRE(m[2][2] == r22);
 
             snap::matrix<double> copy(m);
             snap::matrix<double> c2;
 
-            REQUIRE(copy[0][0] == r00);
-            REQUIRE(copy[0][1] == r01);
-            REQUIRE(copy[0][2] == r02);
-            REQUIRE(copy[1][0] == r10);
-            REQUIRE(copy[1][1] == r11);
-            REQUIRE(copy[1][2] == r12);
-            REQUIRE(copy[2][0] == r20);
-            REQUIRE(copy[2][1] == r21);
-            REQUIRE(copy[2][2] == r22);
+            CATCH_REQUIRE(copy[0][0] == r00);
+            CATCH_REQUIRE(copy[0][1] == r01);
+            CATCH_REQUIRE(copy[0][2] == r02);
+            CATCH_REQUIRE(copy[1][0] == r10);
+            CATCH_REQUIRE(copy[1][1] == r11);
+            CATCH_REQUIRE(copy[1][2] == r12);
+            CATCH_REQUIRE(copy[2][0] == r20);
+            CATCH_REQUIRE(copy[2][1] == r21);
+            CATCH_REQUIRE(copy[2][2] == r22);
 
             m.clear();
 
-            REQUIRE(m[0][0] == 0.0);
-            REQUIRE(m[0][1] == 0.0);
-            REQUIRE(m[0][2] == 0.0);
-            REQUIRE(m[1][0] == 0.0);
-            REQUIRE(m[1][1] == 0.0);
-            REQUIRE(m[1][2] == 0.0);
-            REQUIRE(m[2][0] == 0.0);
-            REQUIRE(m[2][1] == 0.0);
-            REQUIRE(m[2][2] == 0.0);
+            CATCH_REQUIRE(m[0][0] == 0.0);
+            CATCH_REQUIRE(m[0][1] == 0.0);
+            CATCH_REQUIRE(m[0][2] == 0.0);
+            CATCH_REQUIRE(m[1][0] == 0.0);
+            CATCH_REQUIRE(m[1][1] == 0.0);
+            CATCH_REQUIRE(m[1][2] == 0.0);
+            CATCH_REQUIRE(m[2][0] == 0.0);
+            CATCH_REQUIRE(m[2][1] == 0.0);
+            CATCH_REQUIRE(m[2][2] == 0.0);
 
             // copy is still intact
             //
-            REQUIRE(copy[0][0] == r00);
-            REQUIRE(copy[0][1] == r01);
-            REQUIRE(copy[0][2] == r02);
-            REQUIRE(copy[1][0] == r10);
-            REQUIRE(copy[1][1] == r11);
-            REQUIRE(copy[1][2] == r12);
-            REQUIRE(copy[2][0] == r20);
-            REQUIRE(copy[2][1] == r21);
-            REQUIRE(copy[2][2] == r22);
+            CATCH_REQUIRE(copy[0][0] == r00);
+            CATCH_REQUIRE(copy[0][1] == r01);
+            CATCH_REQUIRE(copy[0][2] == r02);
+            CATCH_REQUIRE(copy[1][0] == r10);
+            CATCH_REQUIRE(copy[1][1] == r11);
+            CATCH_REQUIRE(copy[1][2] == r12);
+            CATCH_REQUIRE(copy[2][0] == r20);
+            CATCH_REQUIRE(copy[2][1] == r21);
+            CATCH_REQUIRE(copy[2][2] == r22);
 
-            REQUIRE(c2.rows() == 0);
-            REQUIRE(c2.columns() == 0);
+            CATCH_REQUIRE(c2.rows() == 0);
+            CATCH_REQUIRE(c2.columns() == 0);
 
             c2 = copy;
 
-            REQUIRE(c2[0][0] == r00);
-            REQUIRE(c2[0][1] == r01);
-            REQUIRE(c2[0][2] == r02);
-            REQUIRE(c2[1][0] == r10);
-            REQUIRE(c2[1][1] == r11);
-            REQUIRE(c2[1][2] == r12);
-            REQUIRE(c2[2][0] == r20);
-            REQUIRE(c2[2][1] == r21);
-            REQUIRE(c2[2][2] == r22);
+            CATCH_REQUIRE(c2[0][0] == r00);
+            CATCH_REQUIRE(c2[0][1] == r01);
+            CATCH_REQUIRE(c2[0][2] == r02);
+            CATCH_REQUIRE(c2[1][0] == r10);
+            CATCH_REQUIRE(c2[1][1] == r11);
+            CATCH_REQUIRE(c2[1][2] == r12);
+            CATCH_REQUIRE(c2[2][0] == r20);
+            CATCH_REQUIRE(c2[2][1] == r21);
+            CATCH_REQUIRE(c2[2][2] == r22);
 
             c2.swap(m);
 
-            REQUIRE(m[0][0] == r00);
-            REQUIRE(m[0][1] == r01);
-            REQUIRE(m[0][2] == r02);
-            REQUIRE(m[1][0] == r10);
-            REQUIRE(m[1][1] == r11);
-            REQUIRE(m[1][2] == r12);
-            REQUIRE(m[2][0] == r20);
-            REQUIRE(m[2][1] == r21);
-            REQUIRE(m[2][2] == r22);
+            CATCH_REQUIRE(m[0][0] == r00);
+            CATCH_REQUIRE(m[0][1] == r01);
+            CATCH_REQUIRE(m[0][2] == r02);
+            CATCH_REQUIRE(m[1][0] == r10);
+            CATCH_REQUIRE(m[1][1] == r11);
+            CATCH_REQUIRE(m[1][2] == r12);
+            CATCH_REQUIRE(m[2][0] == r20);
+            CATCH_REQUIRE(m[2][1] == r21);
+            CATCH_REQUIRE(m[2][2] == r22);
 
-            REQUIRE(c2[0][0] == 0.0);
-            REQUIRE(c2[0][1] == 0.0);
-            REQUIRE(c2[0][2] == 0.0);
-            REQUIRE(c2[1][0] == 0.0);
-            REQUIRE(c2[1][1] == 0.0);
-            REQUIRE(c2[1][2] == 0.0);
-            REQUIRE(c2[2][0] == 0.0);
-            REQUIRE(c2[2][1] == 0.0);
-            REQUIRE(c2[2][2] == 0.0);
+            CATCH_REQUIRE(c2[0][0] == 0.0);
+            CATCH_REQUIRE(c2[0][1] == 0.0);
+            CATCH_REQUIRE(c2[0][2] == 0.0);
+            CATCH_REQUIRE(c2[1][0] == 0.0);
+            CATCH_REQUIRE(c2[1][1] == 0.0);
+            CATCH_REQUIRE(c2[1][2] == 0.0);
+            CATCH_REQUIRE(c2[2][0] == 0.0);
+            CATCH_REQUIRE(c2[2][1] == 0.0);
+            CATCH_REQUIRE(c2[2][2] == 0.0);
         }
 
-        SECTION("4x4")
+        CATCH_SECTION("4x4")
         {
             snap::matrix<double> m(4, 4);
 
-            REQUIRE(m.rows() == 4);
-            REQUIRE(m.columns() == 4);
+            CATCH_REQUIRE(m.rows() == 4);
+            CATCH_REQUIRE(m.columns() == 4);
 
             // by default we get an identity
             //
-            REQUIRE(m[0][0] == 1.0);
-            REQUIRE(m[0][1] == 0.0);
-            REQUIRE(m[0][2] == 0.0);
-            REQUIRE(m[0][3] == 0.0);
-            REQUIRE(m[1][0] == 0.0);
-            REQUIRE(m[1][1] == 1.0);
-            REQUIRE(m[1][2] == 0.0);
-            REQUIRE(m[1][3] == 0.0);
-            REQUIRE(m[2][0] == 0.0);
-            REQUIRE(m[2][1] == 0.0);
-            REQUIRE(m[2][2] == 1.0);
-            REQUIRE(m[2][3] == 0.0);
-            REQUIRE(m[3][0] == 0.0);
-            REQUIRE(m[3][1] == 0.0);
-            REQUIRE(m[3][2] == 0.0);
-            REQUIRE(m[3][3] == 1.0);
+            CATCH_REQUIRE(m[0][0] == 1.0);
+            CATCH_REQUIRE(m[0][1] == 0.0);
+            CATCH_REQUIRE(m[0][2] == 0.0);
+            CATCH_REQUIRE(m[0][3] == 0.0);
+            CATCH_REQUIRE(m[1][0] == 0.0);
+            CATCH_REQUIRE(m[1][1] == 1.0);
+            CATCH_REQUIRE(m[1][2] == 0.0);
+            CATCH_REQUIRE(m[1][3] == 0.0);
+            CATCH_REQUIRE(m[2][0] == 0.0);
+            CATCH_REQUIRE(m[2][1] == 0.0);
+            CATCH_REQUIRE(m[2][2] == 1.0);
+            CATCH_REQUIRE(m[2][3] == 0.0);
+            CATCH_REQUIRE(m[3][0] == 0.0);
+            CATCH_REQUIRE(m[3][1] == 0.0);
+            CATCH_REQUIRE(m[3][2] == 0.0);
+            CATCH_REQUIRE(m[3][3] == 1.0);
 
             double const r00(frand());
             double const r01(frand());
@@ -343,151 +343,151 @@ TEST_CASE("matrix_init", "[matrix]")
             m[3][2] = r32;
             m[3][3] = r33;
 
-            REQUIRE(m[0][0] == r00);
-            REQUIRE(m[0][1] == r01);
-            REQUIRE(m[0][2] == r02);
-            REQUIRE(m[0][3] == r03);
-            REQUIRE(m[1][0] == r10);
-            REQUIRE(m[1][1] == r11);
-            REQUIRE(m[1][2] == r12);
-            REQUIRE(m[1][3] == r13);
-            REQUIRE(m[2][0] == r20);
-            REQUIRE(m[2][1] == r21);
-            REQUIRE(m[2][2] == r22);
-            REQUIRE(m[2][3] == r23);
-            REQUIRE(m[3][0] == r30);
-            REQUIRE(m[3][1] == r31);
-            REQUIRE(m[3][2] == r32);
-            REQUIRE(m[3][3] == r33);
+            CATCH_REQUIRE(m[0][0] == r00);
+            CATCH_REQUIRE(m[0][1] == r01);
+            CATCH_REQUIRE(m[0][2] == r02);
+            CATCH_REQUIRE(m[0][3] == r03);
+            CATCH_REQUIRE(m[1][0] == r10);
+            CATCH_REQUIRE(m[1][1] == r11);
+            CATCH_REQUIRE(m[1][2] == r12);
+            CATCH_REQUIRE(m[1][3] == r13);
+            CATCH_REQUIRE(m[2][0] == r20);
+            CATCH_REQUIRE(m[2][1] == r21);
+            CATCH_REQUIRE(m[2][2] == r22);
+            CATCH_REQUIRE(m[2][3] == r23);
+            CATCH_REQUIRE(m[3][0] == r30);
+            CATCH_REQUIRE(m[3][1] == r31);
+            CATCH_REQUIRE(m[3][2] == r32);
+            CATCH_REQUIRE(m[3][3] == r33);
 
             snap::matrix<double> copy(m);
             snap::matrix<double> c2;
 
-            REQUIRE(copy[0][0] == r00);
-            REQUIRE(copy[0][1] == r01);
-            REQUIRE(copy[0][2] == r02);
-            REQUIRE(copy[0][3] == r03);
-            REQUIRE(copy[1][0] == r10);
-            REQUIRE(copy[1][1] == r11);
-            REQUIRE(copy[1][2] == r12);
-            REQUIRE(copy[1][3] == r13);
-            REQUIRE(copy[2][0] == r20);
-            REQUIRE(copy[2][1] == r21);
-            REQUIRE(copy[2][2] == r22);
-            REQUIRE(copy[2][3] == r23);
-            REQUIRE(copy[3][0] == r30);
-            REQUIRE(copy[3][1] == r31);
-            REQUIRE(copy[3][2] == r32);
-            REQUIRE(copy[3][3] == r33);
+            CATCH_REQUIRE(copy[0][0] == r00);
+            CATCH_REQUIRE(copy[0][1] == r01);
+            CATCH_REQUIRE(copy[0][2] == r02);
+            CATCH_REQUIRE(copy[0][3] == r03);
+            CATCH_REQUIRE(copy[1][0] == r10);
+            CATCH_REQUIRE(copy[1][1] == r11);
+            CATCH_REQUIRE(copy[1][2] == r12);
+            CATCH_REQUIRE(copy[1][3] == r13);
+            CATCH_REQUIRE(copy[2][0] == r20);
+            CATCH_REQUIRE(copy[2][1] == r21);
+            CATCH_REQUIRE(copy[2][2] == r22);
+            CATCH_REQUIRE(copy[2][3] == r23);
+            CATCH_REQUIRE(copy[3][0] == r30);
+            CATCH_REQUIRE(copy[3][1] == r31);
+            CATCH_REQUIRE(copy[3][2] == r32);
+            CATCH_REQUIRE(copy[3][3] == r33);
 
             m.clear();
 
-            REQUIRE(m[0][0] == 0.0);
-            REQUIRE(m[0][1] == 0.0);
-            REQUIRE(m[0][2] == 0.0);
-            REQUIRE(m[0][3] == 0.0);
-            REQUIRE(m[1][0] == 0.0);
-            REQUIRE(m[1][1] == 0.0);
-            REQUIRE(m[1][2] == 0.0);
-            REQUIRE(m[1][3] == 0.0);
-            REQUIRE(m[2][0] == 0.0);
-            REQUIRE(m[2][1] == 0.0);
-            REQUIRE(m[2][2] == 0.0);
-            REQUIRE(m[2][3] == 0.0);
+            CATCH_REQUIRE(m[0][0] == 0.0);
+            CATCH_REQUIRE(m[0][1] == 0.0);
+            CATCH_REQUIRE(m[0][2] == 0.0);
+            CATCH_REQUIRE(m[0][3] == 0.0);
+            CATCH_REQUIRE(m[1][0] == 0.0);
+            CATCH_REQUIRE(m[1][1] == 0.0);
+            CATCH_REQUIRE(m[1][2] == 0.0);
+            CATCH_REQUIRE(m[1][3] == 0.0);
+            CATCH_REQUIRE(m[2][0] == 0.0);
+            CATCH_REQUIRE(m[2][1] == 0.0);
+            CATCH_REQUIRE(m[2][2] == 0.0);
+            CATCH_REQUIRE(m[2][3] == 0.0);
 
             // copy is still intact
             //
-            REQUIRE(copy[0][0] == r00);
-            REQUIRE(copy[0][1] == r01);
-            REQUIRE(copy[0][2] == r02);
-            REQUIRE(copy[0][3] == r03);
-            REQUIRE(copy[1][0] == r10);
-            REQUIRE(copy[1][1] == r11);
-            REQUIRE(copy[1][2] == r12);
-            REQUIRE(copy[1][3] == r13);
-            REQUIRE(copy[2][0] == r20);
-            REQUIRE(copy[2][1] == r21);
-            REQUIRE(copy[2][2] == r22);
-            REQUIRE(copy[2][3] == r23);
-            REQUIRE(copy[3][0] == r30);
-            REQUIRE(copy[3][1] == r31);
-            REQUIRE(copy[3][2] == r32);
-            REQUIRE(copy[3][3] == r33);
+            CATCH_REQUIRE(copy[0][0] == r00);
+            CATCH_REQUIRE(copy[0][1] == r01);
+            CATCH_REQUIRE(copy[0][2] == r02);
+            CATCH_REQUIRE(copy[0][3] == r03);
+            CATCH_REQUIRE(copy[1][0] == r10);
+            CATCH_REQUIRE(copy[1][1] == r11);
+            CATCH_REQUIRE(copy[1][2] == r12);
+            CATCH_REQUIRE(copy[1][3] == r13);
+            CATCH_REQUIRE(copy[2][0] == r20);
+            CATCH_REQUIRE(copy[2][1] == r21);
+            CATCH_REQUIRE(copy[2][2] == r22);
+            CATCH_REQUIRE(copy[2][3] == r23);
+            CATCH_REQUIRE(copy[3][0] == r30);
+            CATCH_REQUIRE(copy[3][1] == r31);
+            CATCH_REQUIRE(copy[3][2] == r32);
+            CATCH_REQUIRE(copy[3][3] == r33);
 
-            REQUIRE(c2.rows() == 0);
-            REQUIRE(c2.columns() == 0);
+            CATCH_REQUIRE(c2.rows() == 0);
+            CATCH_REQUIRE(c2.columns() == 0);
 
             c2 = copy;
 
-            REQUIRE(c2[0][0] == r00);
-            REQUIRE(c2[0][1] == r01);
-            REQUIRE(c2[0][2] == r02);
-            REQUIRE(c2[0][3] == r03);
-            REQUIRE(c2[1][0] == r10);
-            REQUIRE(c2[1][1] == r11);
-            REQUIRE(c2[1][2] == r12);
-            REQUIRE(c2[1][3] == r13);
-            REQUIRE(c2[2][0] == r20);
-            REQUIRE(c2[2][1] == r21);
-            REQUIRE(c2[2][2] == r22);
-            REQUIRE(c2[2][3] == r23);
-            REQUIRE(c2[3][0] == r30);
-            REQUIRE(c2[3][1] == r31);
-            REQUIRE(c2[3][2] == r32);
-            REQUIRE(c2[3][3] == r33);
+            CATCH_REQUIRE(c2[0][0] == r00);
+            CATCH_REQUIRE(c2[0][1] == r01);
+            CATCH_REQUIRE(c2[0][2] == r02);
+            CATCH_REQUIRE(c2[0][3] == r03);
+            CATCH_REQUIRE(c2[1][0] == r10);
+            CATCH_REQUIRE(c2[1][1] == r11);
+            CATCH_REQUIRE(c2[1][2] == r12);
+            CATCH_REQUIRE(c2[1][3] == r13);
+            CATCH_REQUIRE(c2[2][0] == r20);
+            CATCH_REQUIRE(c2[2][1] == r21);
+            CATCH_REQUIRE(c2[2][2] == r22);
+            CATCH_REQUIRE(c2[2][3] == r23);
+            CATCH_REQUIRE(c2[3][0] == r30);
+            CATCH_REQUIRE(c2[3][1] == r31);
+            CATCH_REQUIRE(c2[3][2] == r32);
+            CATCH_REQUIRE(c2[3][3] == r33);
 
             //std::cout << c2 << std::endl;
 
             c2.swap(m);
 
-            REQUIRE(m[0][0] == r00);
-            REQUIRE(m[0][1] == r01);
-            REQUIRE(m[0][2] == r02);
-            REQUIRE(m[0][3] == r03);
-            REQUIRE(m[1][0] == r10);
-            REQUIRE(m[1][1] == r11);
-            REQUIRE(m[1][2] == r12);
-            REQUIRE(m[1][3] == r13);
-            REQUIRE(m[2][0] == r20);
-            REQUIRE(m[2][1] == r21);
-            REQUIRE(m[2][2] == r22);
-            REQUIRE(m[2][3] == r23);
-            REQUIRE(m[3][0] == r30);
-            REQUIRE(m[3][1] == r31);
-            REQUIRE(m[3][2] == r32);
-            REQUIRE(m[3][3] == r33);
+            CATCH_REQUIRE(m[0][0] == r00);
+            CATCH_REQUIRE(m[0][1] == r01);
+            CATCH_REQUIRE(m[0][2] == r02);
+            CATCH_REQUIRE(m[0][3] == r03);
+            CATCH_REQUIRE(m[1][0] == r10);
+            CATCH_REQUIRE(m[1][1] == r11);
+            CATCH_REQUIRE(m[1][2] == r12);
+            CATCH_REQUIRE(m[1][3] == r13);
+            CATCH_REQUIRE(m[2][0] == r20);
+            CATCH_REQUIRE(m[2][1] == r21);
+            CATCH_REQUIRE(m[2][2] == r22);
+            CATCH_REQUIRE(m[2][3] == r23);
+            CATCH_REQUIRE(m[3][0] == r30);
+            CATCH_REQUIRE(m[3][1] == r31);
+            CATCH_REQUIRE(m[3][2] == r32);
+            CATCH_REQUIRE(m[3][3] == r33);
 
-            REQUIRE(c2[0][0] == 0.0);
-            REQUIRE(c2[0][1] == 0.0);
-            REQUIRE(c2[0][2] == 0.0);
-            REQUIRE(c2[0][3] == 0.0);
-            REQUIRE(c2[1][0] == 0.0);
-            REQUIRE(c2[1][1] == 0.0);
-            REQUIRE(c2[1][2] == 0.0);
-            REQUIRE(c2[1][3] == 0.0);
-            REQUIRE(c2[2][0] == 0.0);
-            REQUIRE(c2[2][1] == 0.0);
-            REQUIRE(c2[2][2] == 0.0);
-            REQUIRE(c2[2][3] == 0.0);
+            CATCH_REQUIRE(c2[0][0] == 0.0);
+            CATCH_REQUIRE(c2[0][1] == 0.0);
+            CATCH_REQUIRE(c2[0][2] == 0.0);
+            CATCH_REQUIRE(c2[0][3] == 0.0);
+            CATCH_REQUIRE(c2[1][0] == 0.0);
+            CATCH_REQUIRE(c2[1][1] == 0.0);
+            CATCH_REQUIRE(c2[1][2] == 0.0);
+            CATCH_REQUIRE(c2[1][3] == 0.0);
+            CATCH_REQUIRE(c2[2][0] == 0.0);
+            CATCH_REQUIRE(c2[2][1] == 0.0);
+            CATCH_REQUIRE(c2[2][2] == 0.0);
+            CATCH_REQUIRE(c2[2][3] == 0.0);
         }
     }
 }
 
 
-TEST_CASE("matrix_additive", "[matrix]")
+CATCH_TEST_CASE("matrix_additive", "[matrix]")
 {
     // create two random 4x4 matrices and make sure the add works
     //
-    GIVEN("add")
+    CATCH_GIVEN("add")
     {
-        SECTION("a+=<scalar>")
+        CATCH_SECTION("a+=<scalar>")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -523,22 +523,22 @@ TEST_CASE("matrix_additive", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // create a scalar for our test
             //
@@ -554,49 +554,49 @@ TEST_CASE("matrix_additive", "[matrix]")
 
             // this can't fail because we ensure scalar != 0
             //
-            REQUIRE_FALSE(a[0][0] == a00);
-            REQUIRE_FALSE(a[0][1] == a01);
-            REQUIRE_FALSE(a[0][2] == a02);
-            REQUIRE_FALSE(a[0][3] == a03);
-            REQUIRE_FALSE(a[1][0] == a10);
-            REQUIRE_FALSE(a[1][1] == a11);
-            REQUIRE_FALSE(a[1][2] == a12);
-            REQUIRE_FALSE(a[1][3] == a13);
-            REQUIRE_FALSE(a[2][0] == a20);
-            REQUIRE_FALSE(a[2][1] == a21);
-            REQUIRE_FALSE(a[2][2] == a22);
-            REQUIRE_FALSE(a[2][3] == a23);
-            REQUIRE_FALSE(a[3][0] == a30);
-            REQUIRE_FALSE(a[3][1] == a31);
-            REQUIRE_FALSE(a[3][2] == a32);
-            REQUIRE_FALSE(a[3][3] == a33);
+            CATCH_REQUIRE_FALSE(a[0][0] == a00);
+            CATCH_REQUIRE_FALSE(a[0][1] == a01);
+            CATCH_REQUIRE_FALSE(a[0][2] == a02);
+            CATCH_REQUIRE_FALSE(a[0][3] == a03);
+            CATCH_REQUIRE_FALSE(a[1][0] == a10);
+            CATCH_REQUIRE_FALSE(a[1][1] == a11);
+            CATCH_REQUIRE_FALSE(a[1][2] == a12);
+            CATCH_REQUIRE_FALSE(a[1][3] == a13);
+            CATCH_REQUIRE_FALSE(a[2][0] == a20);
+            CATCH_REQUIRE_FALSE(a[2][1] == a21);
+            CATCH_REQUIRE_FALSE(a[2][2] == a22);
+            CATCH_REQUIRE_FALSE(a[2][3] == a23);
+            CATCH_REQUIRE_FALSE(a[3][0] == a30);
+            CATCH_REQUIRE_FALSE(a[3][1] == a31);
+            CATCH_REQUIRE_FALSE(a[3][2] == a32);
+            CATCH_REQUIRE_FALSE(a[3][3] == a33);
 
-            REQUIRE(a[0][0] == a00 + scalar);
-            REQUIRE(a[0][1] == a01 + scalar);
-            REQUIRE(a[0][2] == a02 + scalar);
-            REQUIRE(a[0][3] == a03 + scalar);
-            REQUIRE(a[1][0] == a10 + scalar);
-            REQUIRE(a[1][1] == a11 + scalar);
-            REQUIRE(a[1][2] == a12 + scalar);
-            REQUIRE(a[1][3] == a13 + scalar);
-            REQUIRE(a[2][0] == a20 + scalar);
-            REQUIRE(a[2][1] == a21 + scalar);
-            REQUIRE(a[2][2] == a22 + scalar);
-            REQUIRE(a[2][3] == a23 + scalar);
-            REQUIRE(a[3][0] == a30 + scalar);
-            REQUIRE(a[3][1] == a31 + scalar);
-            REQUIRE(a[3][2] == a32 + scalar);
-            REQUIRE(a[3][3] == a33 + scalar);
+            CATCH_REQUIRE(a[0][0] == a00 + scalar);
+            CATCH_REQUIRE(a[0][1] == a01 + scalar);
+            CATCH_REQUIRE(a[0][2] == a02 + scalar);
+            CATCH_REQUIRE(a[0][3] == a03 + scalar);
+            CATCH_REQUIRE(a[1][0] == a10 + scalar);
+            CATCH_REQUIRE(a[1][1] == a11 + scalar);
+            CATCH_REQUIRE(a[1][2] == a12 + scalar);
+            CATCH_REQUIRE(a[1][3] == a13 + scalar);
+            CATCH_REQUIRE(a[2][0] == a20 + scalar);
+            CATCH_REQUIRE(a[2][1] == a21 + scalar);
+            CATCH_REQUIRE(a[2][2] == a22 + scalar);
+            CATCH_REQUIRE(a[2][3] == a23 + scalar);
+            CATCH_REQUIRE(a[3][0] == a30 + scalar);
+            CATCH_REQUIRE(a[3][1] == a31 + scalar);
+            CATCH_REQUIRE(a[3][2] == a32 + scalar);
+            CATCH_REQUIRE(a[3][3] == a33 + scalar);
         }
 
-        SECTION("b=a+<scalar>")
+        CATCH_SECTION("b=a+<scalar>")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -632,29 +632,29 @@ TEST_CASE("matrix_additive", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -690,22 +690,22 @@ TEST_CASE("matrix_additive", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // create a scalar for our test
             //
@@ -719,68 +719,68 @@ TEST_CASE("matrix_additive", "[matrix]")
             //
             b = a + scalar;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // this can't fail because we ensure scalar != 0
             //
-            REQUIRE_FALSE(b[0][0] == b00);
-            REQUIRE_FALSE(b[0][1] == b01);
-            REQUIRE_FALSE(b[0][2] == b02);
-            REQUIRE_FALSE(b[0][3] == b03);
-            REQUIRE_FALSE(b[1][0] == b10);
-            REQUIRE_FALSE(b[1][1] == b11);
-            REQUIRE_FALSE(b[1][2] == b12);
-            REQUIRE_FALSE(b[1][3] == b13);
-            REQUIRE_FALSE(b[2][0] == b20);
-            REQUIRE_FALSE(b[2][1] == b21);
-            REQUIRE_FALSE(b[2][2] == b22);
-            REQUIRE_FALSE(b[2][3] == b23);
-            REQUIRE_FALSE(b[3][0] == b30);
-            REQUIRE_FALSE(b[3][1] == b31);
-            REQUIRE_FALSE(b[3][2] == b32);
-            REQUIRE_FALSE(b[3][3] == b33);
+            CATCH_REQUIRE_FALSE(b[0][0] == b00);
+            CATCH_REQUIRE_FALSE(b[0][1] == b01);
+            CATCH_REQUIRE_FALSE(b[0][2] == b02);
+            CATCH_REQUIRE_FALSE(b[0][3] == b03);
+            CATCH_REQUIRE_FALSE(b[1][0] == b10);
+            CATCH_REQUIRE_FALSE(b[1][1] == b11);
+            CATCH_REQUIRE_FALSE(b[1][2] == b12);
+            CATCH_REQUIRE_FALSE(b[1][3] == b13);
+            CATCH_REQUIRE_FALSE(b[2][0] == b20);
+            CATCH_REQUIRE_FALSE(b[2][1] == b21);
+            CATCH_REQUIRE_FALSE(b[2][2] == b22);
+            CATCH_REQUIRE_FALSE(b[2][3] == b23);
+            CATCH_REQUIRE_FALSE(b[3][0] == b30);
+            CATCH_REQUIRE_FALSE(b[3][1] == b31);
+            CATCH_REQUIRE_FALSE(b[3][2] == b32);
+            CATCH_REQUIRE_FALSE(b[3][3] == b33);
 
-            REQUIRE(b[0][0] == a00 + scalar);
-            REQUIRE(b[0][1] == a01 + scalar);
-            REQUIRE(b[0][2] == a02 + scalar);
-            REQUIRE(b[0][3] == a03 + scalar);
-            REQUIRE(b[1][0] == a10 + scalar);
-            REQUIRE(b[1][1] == a11 + scalar);
-            REQUIRE(b[1][2] == a12 + scalar);
-            REQUIRE(b[1][3] == a13 + scalar);
-            REQUIRE(b[2][0] == a20 + scalar);
-            REQUIRE(b[2][1] == a21 + scalar);
-            REQUIRE(b[2][2] == a22 + scalar);
-            REQUIRE(b[2][3] == a23 + scalar);
-            REQUIRE(b[3][0] == a30 + scalar);
-            REQUIRE(b[3][1] == a31 + scalar);
-            REQUIRE(b[3][2] == a32 + scalar);
-            REQUIRE(b[3][3] == a33 + scalar);
+            CATCH_REQUIRE(b[0][0] == a00 + scalar);
+            CATCH_REQUIRE(b[0][1] == a01 + scalar);
+            CATCH_REQUIRE(b[0][2] == a02 + scalar);
+            CATCH_REQUIRE(b[0][3] == a03 + scalar);
+            CATCH_REQUIRE(b[1][0] == a10 + scalar);
+            CATCH_REQUIRE(b[1][1] == a11 + scalar);
+            CATCH_REQUIRE(b[1][2] == a12 + scalar);
+            CATCH_REQUIRE(b[1][3] == a13 + scalar);
+            CATCH_REQUIRE(b[2][0] == a20 + scalar);
+            CATCH_REQUIRE(b[2][1] == a21 + scalar);
+            CATCH_REQUIRE(b[2][2] == a22 + scalar);
+            CATCH_REQUIRE(b[2][3] == a23 + scalar);
+            CATCH_REQUIRE(b[3][0] == a30 + scalar);
+            CATCH_REQUIRE(b[3][1] == a31 + scalar);
+            CATCH_REQUIRE(b[3][2] == a32 + scalar);
+            CATCH_REQUIRE(b[3][3] == a33 + scalar);
         }
 
-        SECTION("c=a+b")
+        CATCH_SECTION("c=a+b")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -816,29 +816,29 @@ TEST_CASE("matrix_additive", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -874,29 +874,29 @@ TEST_CASE("matrix_additive", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // setup C
             //
             snap::matrix<double> c(4, 4);
 
-            REQUIRE(c.rows() == 4);
-            REQUIRE(c.columns() == 4);
+            CATCH_REQUIRE(c.rows() == 4);
+            CATCH_REQUIRE(c.columns() == 4);
 
             double const c00(frand());
             double const c01(frand());
@@ -932,105 +932,105 @@ TEST_CASE("matrix_additive", "[matrix]")
             c[3][2] = c32;
             c[3][3] = c33;
 
-            REQUIRE(c[0][0] == c00);
-            REQUIRE(c[0][1] == c01);
-            REQUIRE(c[0][2] == c02);
-            REQUIRE(c[0][3] == c03);
-            REQUIRE(c[1][0] == c10);
-            REQUIRE(c[1][1] == c11);
-            REQUIRE(c[1][2] == c12);
-            REQUIRE(c[1][3] == c13);
-            REQUIRE(c[2][0] == c20);
-            REQUIRE(c[2][1] == c21);
-            REQUIRE(c[2][2] == c22);
-            REQUIRE(c[2][3] == c23);
-            REQUIRE(c[3][0] == c30);
-            REQUIRE(c[3][1] == c31);
-            REQUIRE(c[3][2] == c32);
-            REQUIRE(c[3][3] == c33);
+            CATCH_REQUIRE(c[0][0] == c00);
+            CATCH_REQUIRE(c[0][1] == c01);
+            CATCH_REQUIRE(c[0][2] == c02);
+            CATCH_REQUIRE(c[0][3] == c03);
+            CATCH_REQUIRE(c[1][0] == c10);
+            CATCH_REQUIRE(c[1][1] == c11);
+            CATCH_REQUIRE(c[1][2] == c12);
+            CATCH_REQUIRE(c[1][3] == c13);
+            CATCH_REQUIRE(c[2][0] == c20);
+            CATCH_REQUIRE(c[2][1] == c21);
+            CATCH_REQUIRE(c[2][2] == c22);
+            CATCH_REQUIRE(c[2][3] == c23);
+            CATCH_REQUIRE(c[3][0] == c30);
+            CATCH_REQUIRE(c[3][1] == c31);
+            CATCH_REQUIRE(c[3][2] == c32);
+            CATCH_REQUIRE(c[3][3] == c33);
 
             // run operation C = A + B
             //
             c = a + b;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // this could fail
-            //REQUIRE_FALSE(c[0][0] == c00);
-            //REQUIRE_FALSE(c[0][1] == c01);
-            //REQUIRE_FALSE(c[0][2] == c02);
-            //REQUIRE_FALSE(c[0][3] == c03);
-            //REQUIRE_FALSE(c[1][0] == c10);
-            //REQUIRE_FALSE(c[1][1] == c11);
-            //REQUIRE_FALSE(c[1][2] == c12);
-            //REQUIRE_FALSE(c[1][3] == c13);
-            //REQUIRE_FALSE(c[2][0] == c20);
-            //REQUIRE_FALSE(c[2][1] == c21);
-            //REQUIRE_FALSE(c[2][2] == c22);
-            //REQUIRE_FALSE(c[2][3] == c23);
-            //REQUIRE_FALSE(c[3][0] == c30);
-            //REQUIRE_FALSE(c[3][1] == c31);
-            //REQUIRE_FALSE(c[3][2] == c32);
-            //REQUIRE_FALSE(c[3][3] == c33);
+            //CATCH_REQUIRE_FALSE(c[0][0] == c00);
+            //CATCH_REQUIRE_FALSE(c[0][1] == c01);
+            //CATCH_REQUIRE_FALSE(c[0][2] == c02);
+            //CATCH_REQUIRE_FALSE(c[0][3] == c03);
+            //CATCH_REQUIRE_FALSE(c[1][0] == c10);
+            //CATCH_REQUIRE_FALSE(c[1][1] == c11);
+            //CATCH_REQUIRE_FALSE(c[1][2] == c12);
+            //CATCH_REQUIRE_FALSE(c[1][3] == c13);
+            //CATCH_REQUIRE_FALSE(c[2][0] == c20);
+            //CATCH_REQUIRE_FALSE(c[2][1] == c21);
+            //CATCH_REQUIRE_FALSE(c[2][2] == c22);
+            //CATCH_REQUIRE_FALSE(c[2][3] == c23);
+            //CATCH_REQUIRE_FALSE(c[3][0] == c30);
+            //CATCH_REQUIRE_FALSE(c[3][1] == c31);
+            //CATCH_REQUIRE_FALSE(c[3][2] == c32);
+            //CATCH_REQUIRE_FALSE(c[3][3] == c33);
 
-            REQUIRE(c[0][0] == a00 + b00);
-            REQUIRE(c[0][1] == a01 + b01);
-            REQUIRE(c[0][2] == a02 + b02);
-            REQUIRE(c[0][3] == a03 + b03);
-            REQUIRE(c[1][0] == a10 + b10);
-            REQUIRE(c[1][1] == a11 + b11);
-            REQUIRE(c[1][2] == a12 + b12);
-            REQUIRE(c[1][3] == a13 + b13);
-            REQUIRE(c[2][0] == a20 + b20);
-            REQUIRE(c[2][1] == a21 + b21);
-            REQUIRE(c[2][2] == a22 + b22);
-            REQUIRE(c[2][3] == a23 + b23);
-            REQUIRE(c[3][0] == a30 + b30);
-            REQUIRE(c[3][1] == a31 + b31);
-            REQUIRE(c[3][2] == a32 + b32);
-            REQUIRE(c[3][3] == a33 + b33);
+            CATCH_REQUIRE(c[0][0] == a00 + b00);
+            CATCH_REQUIRE(c[0][1] == a01 + b01);
+            CATCH_REQUIRE(c[0][2] == a02 + b02);
+            CATCH_REQUIRE(c[0][3] == a03 + b03);
+            CATCH_REQUIRE(c[1][0] == a10 + b10);
+            CATCH_REQUIRE(c[1][1] == a11 + b11);
+            CATCH_REQUIRE(c[1][2] == a12 + b12);
+            CATCH_REQUIRE(c[1][3] == a13 + b13);
+            CATCH_REQUIRE(c[2][0] == a20 + b20);
+            CATCH_REQUIRE(c[2][1] == a21 + b21);
+            CATCH_REQUIRE(c[2][2] == a22 + b22);
+            CATCH_REQUIRE(c[2][3] == a23 + b23);
+            CATCH_REQUIRE(c[3][0] == a30 + b30);
+            CATCH_REQUIRE(c[3][1] == a31 + b31);
+            CATCH_REQUIRE(c[3][2] == a32 + b32);
+            CATCH_REQUIRE(c[3][3] == a33 + b33);
         }
 
-        SECTION("a+=b")
+        CATCH_SECTION("a+=b")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -1066,29 +1066,29 @@ TEST_CASE("matrix_additive", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -1124,22 +1124,22 @@ TEST_CASE("matrix_additive", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // run operation A += B
             //
@@ -1147,71 +1147,71 @@ TEST_CASE("matrix_additive", "[matrix]")
 
             // this could fail if any bXX is 0.0
             //
-            //REQUIRE_FALSE(a[0][0] == a00);
-            //REQUIRE_FALSE(a[0][1] == a01);
-            //REQUIRE_FALSE(a[0][2] == a02);
-            //REQUIRE_FALSE(a[0][3] == a03);
-            //REQUIRE_FALSE(a[1][0] == a10);
-            //REQUIRE_FALSE(a[1][1] == a11);
-            //REQUIRE_FALSE(a[1][2] == a12);
-            //REQUIRE_FALSE(a[1][3] == a13);
-            //REQUIRE_FALSE(a[2][0] == a20);
-            //REQUIRE_FALSE(a[2][1] == a21);
-            //REQUIRE_FALSE(a[2][2] == a22);
-            //REQUIRE_FALSE(a[2][3] == a23);
-            //REQUIRE_FALSE(a[3][0] == a30);
-            //REQUIRE_FALSE(a[3][1] == a31);
-            //REQUIRE_FALSE(a[3][2] == a32);
-            //REQUIRE_FALSE(a[3][3] == a33);
+            //CATCH_REQUIRE_FALSE(a[0][0] == a00);
+            //CATCH_REQUIRE_FALSE(a[0][1] == a01);
+            //CATCH_REQUIRE_FALSE(a[0][2] == a02);
+            //CATCH_REQUIRE_FALSE(a[0][3] == a03);
+            //CATCH_REQUIRE_FALSE(a[1][0] == a10);
+            //CATCH_REQUIRE_FALSE(a[1][1] == a11);
+            //CATCH_REQUIRE_FALSE(a[1][2] == a12);
+            //CATCH_REQUIRE_FALSE(a[1][3] == a13);
+            //CATCH_REQUIRE_FALSE(a[2][0] == a20);
+            //CATCH_REQUIRE_FALSE(a[2][1] == a21);
+            //CATCH_REQUIRE_FALSE(a[2][2] == a22);
+            //CATCH_REQUIRE_FALSE(a[2][3] == a23);
+            //CATCH_REQUIRE_FALSE(a[3][0] == a30);
+            //CATCH_REQUIRE_FALSE(a[3][1] == a31);
+            //CATCH_REQUIRE_FALSE(a[3][2] == a32);
+            //CATCH_REQUIRE_FALSE(a[3][3] == a33);
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
-            REQUIRE(a[0][0] == a00 + b00);
-            REQUIRE(a[0][1] == a01 + b01);
-            REQUIRE(a[0][2] == a02 + b02);
-            REQUIRE(a[0][3] == a03 + b03);
-            REQUIRE(a[1][0] == a10 + b10);
-            REQUIRE(a[1][1] == a11 + b11);
-            REQUIRE(a[1][2] == a12 + b12);
-            REQUIRE(a[1][3] == a13 + b13);
-            REQUIRE(a[2][0] == a20 + b20);
-            REQUIRE(a[2][1] == a21 + b21);
-            REQUIRE(a[2][2] == a22 + b22);
-            REQUIRE(a[2][3] == a23 + b23);
-            REQUIRE(a[3][0] == a30 + b30);
-            REQUIRE(a[3][1] == a31 + b31);
-            REQUIRE(a[3][2] == a32 + b32);
-            REQUIRE(a[3][3] == a33 + b33);
+            CATCH_REQUIRE(a[0][0] == a00 + b00);
+            CATCH_REQUIRE(a[0][1] == a01 + b01);
+            CATCH_REQUIRE(a[0][2] == a02 + b02);
+            CATCH_REQUIRE(a[0][3] == a03 + b03);
+            CATCH_REQUIRE(a[1][0] == a10 + b10);
+            CATCH_REQUIRE(a[1][1] == a11 + b11);
+            CATCH_REQUIRE(a[1][2] == a12 + b12);
+            CATCH_REQUIRE(a[1][3] == a13 + b13);
+            CATCH_REQUIRE(a[2][0] == a20 + b20);
+            CATCH_REQUIRE(a[2][1] == a21 + b21);
+            CATCH_REQUIRE(a[2][2] == a22 + b22);
+            CATCH_REQUIRE(a[2][3] == a23 + b23);
+            CATCH_REQUIRE(a[3][0] == a30 + b30);
+            CATCH_REQUIRE(a[3][1] == a31 + b31);
+            CATCH_REQUIRE(a[3][2] == a32 + b32);
+            CATCH_REQUIRE(a[3][3] == a33 + b33);
         }
     }
 
     // create two random 4x4 matrices and make sure the add works
     //
-    GIVEN("sub")
+    CATCH_GIVEN("sub")
     {
-        SECTION("b=a-<scalar>")
+        CATCH_SECTION("b=a-<scalar>")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -1247,29 +1247,29 @@ TEST_CASE("matrix_additive", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -1305,22 +1305,22 @@ TEST_CASE("matrix_additive", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // create a scalar for our test
             //
@@ -1334,68 +1334,68 @@ TEST_CASE("matrix_additive", "[matrix]")
             //
             b = a - scalar;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // this can't fail because we ensure scalar != 0
             //
-            REQUIRE_FALSE(b[0][0] == b00);
-            REQUIRE_FALSE(b[0][1] == b01);
-            REQUIRE_FALSE(b[0][2] == b02);
-            REQUIRE_FALSE(b[0][3] == b03);
-            REQUIRE_FALSE(b[1][0] == b10);
-            REQUIRE_FALSE(b[1][1] == b11);
-            REQUIRE_FALSE(b[1][2] == b12);
-            REQUIRE_FALSE(b[1][3] == b13);
-            REQUIRE_FALSE(b[2][0] == b20);
-            REQUIRE_FALSE(b[2][1] == b21);
-            REQUIRE_FALSE(b[2][2] == b22);
-            REQUIRE_FALSE(b[2][3] == b23);
-            REQUIRE_FALSE(b[3][0] == b30);
-            REQUIRE_FALSE(b[3][1] == b31);
-            REQUIRE_FALSE(b[3][2] == b32);
-            REQUIRE_FALSE(b[3][3] == b33);
+            CATCH_REQUIRE_FALSE(b[0][0] == b00);
+            CATCH_REQUIRE_FALSE(b[0][1] == b01);
+            CATCH_REQUIRE_FALSE(b[0][2] == b02);
+            CATCH_REQUIRE_FALSE(b[0][3] == b03);
+            CATCH_REQUIRE_FALSE(b[1][0] == b10);
+            CATCH_REQUIRE_FALSE(b[1][1] == b11);
+            CATCH_REQUIRE_FALSE(b[1][2] == b12);
+            CATCH_REQUIRE_FALSE(b[1][3] == b13);
+            CATCH_REQUIRE_FALSE(b[2][0] == b20);
+            CATCH_REQUIRE_FALSE(b[2][1] == b21);
+            CATCH_REQUIRE_FALSE(b[2][2] == b22);
+            CATCH_REQUIRE_FALSE(b[2][3] == b23);
+            CATCH_REQUIRE_FALSE(b[3][0] == b30);
+            CATCH_REQUIRE_FALSE(b[3][1] == b31);
+            CATCH_REQUIRE_FALSE(b[3][2] == b32);
+            CATCH_REQUIRE_FALSE(b[3][3] == b33);
 
-            REQUIRE(b[0][0] == a00 - scalar);
-            REQUIRE(b[0][1] == a01 - scalar);
-            REQUIRE(b[0][2] == a02 - scalar);
-            REQUIRE(b[0][3] == a03 - scalar);
-            REQUIRE(b[1][0] == a10 - scalar);
-            REQUIRE(b[1][1] == a11 - scalar);
-            REQUIRE(b[1][2] == a12 - scalar);
-            REQUIRE(b[1][3] == a13 - scalar);
-            REQUIRE(b[2][0] == a20 - scalar);
-            REQUIRE(b[2][1] == a21 - scalar);
-            REQUIRE(b[2][2] == a22 - scalar);
-            REQUIRE(b[2][3] == a23 - scalar);
-            REQUIRE(b[3][0] == a30 - scalar);
-            REQUIRE(b[3][1] == a31 - scalar);
-            REQUIRE(b[3][2] == a32 - scalar);
-            REQUIRE(b[3][3] == a33 - scalar);
+            CATCH_REQUIRE(b[0][0] == a00 - scalar);
+            CATCH_REQUIRE(b[0][1] == a01 - scalar);
+            CATCH_REQUIRE(b[0][2] == a02 - scalar);
+            CATCH_REQUIRE(b[0][3] == a03 - scalar);
+            CATCH_REQUIRE(b[1][0] == a10 - scalar);
+            CATCH_REQUIRE(b[1][1] == a11 - scalar);
+            CATCH_REQUIRE(b[1][2] == a12 - scalar);
+            CATCH_REQUIRE(b[1][3] == a13 - scalar);
+            CATCH_REQUIRE(b[2][0] == a20 - scalar);
+            CATCH_REQUIRE(b[2][1] == a21 - scalar);
+            CATCH_REQUIRE(b[2][2] == a22 - scalar);
+            CATCH_REQUIRE(b[2][3] == a23 - scalar);
+            CATCH_REQUIRE(b[3][0] == a30 - scalar);
+            CATCH_REQUIRE(b[3][1] == a31 - scalar);
+            CATCH_REQUIRE(b[3][2] == a32 - scalar);
+            CATCH_REQUIRE(b[3][3] == a33 - scalar);
         }
 
-        SECTION("a-=<scalar>")
+        CATCH_SECTION("a-=<scalar>")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -1431,22 +1431,22 @@ TEST_CASE("matrix_additive", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // create a scalar for our test
             //
@@ -1462,49 +1462,49 @@ TEST_CASE("matrix_additive", "[matrix]")
 
             // this can't fail because we ensure scalar != 0
             //
-            REQUIRE_FALSE(a[0][0] == a00);
-            REQUIRE_FALSE(a[0][1] == a01);
-            REQUIRE_FALSE(a[0][2] == a02);
-            REQUIRE_FALSE(a[0][3] == a03);
-            REQUIRE_FALSE(a[1][0] == a10);
-            REQUIRE_FALSE(a[1][1] == a11);
-            REQUIRE_FALSE(a[1][2] == a12);
-            REQUIRE_FALSE(a[1][3] == a13);
-            REQUIRE_FALSE(a[2][0] == a20);
-            REQUIRE_FALSE(a[2][1] == a21);
-            REQUIRE_FALSE(a[2][2] == a22);
-            REQUIRE_FALSE(a[2][3] == a23);
-            REQUIRE_FALSE(a[3][0] == a30);
-            REQUIRE_FALSE(a[3][1] == a31);
-            REQUIRE_FALSE(a[3][2] == a32);
-            REQUIRE_FALSE(a[3][3] == a33);
+            CATCH_REQUIRE_FALSE(a[0][0] == a00);
+            CATCH_REQUIRE_FALSE(a[0][1] == a01);
+            CATCH_REQUIRE_FALSE(a[0][2] == a02);
+            CATCH_REQUIRE_FALSE(a[0][3] == a03);
+            CATCH_REQUIRE_FALSE(a[1][0] == a10);
+            CATCH_REQUIRE_FALSE(a[1][1] == a11);
+            CATCH_REQUIRE_FALSE(a[1][2] == a12);
+            CATCH_REQUIRE_FALSE(a[1][3] == a13);
+            CATCH_REQUIRE_FALSE(a[2][0] == a20);
+            CATCH_REQUIRE_FALSE(a[2][1] == a21);
+            CATCH_REQUIRE_FALSE(a[2][2] == a22);
+            CATCH_REQUIRE_FALSE(a[2][3] == a23);
+            CATCH_REQUIRE_FALSE(a[3][0] == a30);
+            CATCH_REQUIRE_FALSE(a[3][1] == a31);
+            CATCH_REQUIRE_FALSE(a[3][2] == a32);
+            CATCH_REQUIRE_FALSE(a[3][3] == a33);
 
-            REQUIRE(a[0][0] == a00 - scalar);
-            REQUIRE(a[0][1] == a01 - scalar);
-            REQUIRE(a[0][2] == a02 - scalar);
-            REQUIRE(a[0][3] == a03 - scalar);
-            REQUIRE(a[1][0] == a10 - scalar);
-            REQUIRE(a[1][1] == a11 - scalar);
-            REQUIRE(a[1][2] == a12 - scalar);
-            REQUIRE(a[1][3] == a13 - scalar);
-            REQUIRE(a[2][0] == a20 - scalar);
-            REQUIRE(a[2][1] == a21 - scalar);
-            REQUIRE(a[2][2] == a22 - scalar);
-            REQUIRE(a[2][3] == a23 - scalar);
-            REQUIRE(a[3][0] == a30 - scalar);
-            REQUIRE(a[3][1] == a31 - scalar);
-            REQUIRE(a[3][2] == a32 - scalar);
-            REQUIRE(a[3][3] == a33 - scalar);
+            CATCH_REQUIRE(a[0][0] == a00 - scalar);
+            CATCH_REQUIRE(a[0][1] == a01 - scalar);
+            CATCH_REQUIRE(a[0][2] == a02 - scalar);
+            CATCH_REQUIRE(a[0][3] == a03 - scalar);
+            CATCH_REQUIRE(a[1][0] == a10 - scalar);
+            CATCH_REQUIRE(a[1][1] == a11 - scalar);
+            CATCH_REQUIRE(a[1][2] == a12 - scalar);
+            CATCH_REQUIRE(a[1][3] == a13 - scalar);
+            CATCH_REQUIRE(a[2][0] == a20 - scalar);
+            CATCH_REQUIRE(a[2][1] == a21 - scalar);
+            CATCH_REQUIRE(a[2][2] == a22 - scalar);
+            CATCH_REQUIRE(a[2][3] == a23 - scalar);
+            CATCH_REQUIRE(a[3][0] == a30 - scalar);
+            CATCH_REQUIRE(a[3][1] == a31 - scalar);
+            CATCH_REQUIRE(a[3][2] == a32 - scalar);
+            CATCH_REQUIRE(a[3][3] == a33 - scalar);
         }
 
-        SECTION("c=a-b")
+        CATCH_SECTION("c=a-b")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -1540,29 +1540,29 @@ TEST_CASE("matrix_additive", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -1598,29 +1598,29 @@ TEST_CASE("matrix_additive", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // setup C
             //
             snap::matrix<double> c(4, 4);
 
-            REQUIRE(c.rows() == 4);
-            REQUIRE(c.columns() == 4);
+            CATCH_REQUIRE(c.rows() == 4);
+            CATCH_REQUIRE(c.columns() == 4);
 
             double const c00(frand());
             double const c01(frand());
@@ -1656,105 +1656,105 @@ TEST_CASE("matrix_additive", "[matrix]")
             c[3][2] = c32;
             c[3][3] = c33;
 
-            REQUIRE(c[0][0] == c00);
-            REQUIRE(c[0][1] == c01);
-            REQUIRE(c[0][2] == c02);
-            REQUIRE(c[0][3] == c03);
-            REQUIRE(c[1][0] == c10);
-            REQUIRE(c[1][1] == c11);
-            REQUIRE(c[1][2] == c12);
-            REQUIRE(c[1][3] == c13);
-            REQUIRE(c[2][0] == c20);
-            REQUIRE(c[2][1] == c21);
-            REQUIRE(c[2][2] == c22);
-            REQUIRE(c[2][3] == c23);
-            REQUIRE(c[3][0] == c30);
-            REQUIRE(c[3][1] == c31);
-            REQUIRE(c[3][2] == c32);
-            REQUIRE(c[3][3] == c33);
+            CATCH_REQUIRE(c[0][0] == c00);
+            CATCH_REQUIRE(c[0][1] == c01);
+            CATCH_REQUIRE(c[0][2] == c02);
+            CATCH_REQUIRE(c[0][3] == c03);
+            CATCH_REQUIRE(c[1][0] == c10);
+            CATCH_REQUIRE(c[1][1] == c11);
+            CATCH_REQUIRE(c[1][2] == c12);
+            CATCH_REQUIRE(c[1][3] == c13);
+            CATCH_REQUIRE(c[2][0] == c20);
+            CATCH_REQUIRE(c[2][1] == c21);
+            CATCH_REQUIRE(c[2][2] == c22);
+            CATCH_REQUIRE(c[2][3] == c23);
+            CATCH_REQUIRE(c[3][0] == c30);
+            CATCH_REQUIRE(c[3][1] == c31);
+            CATCH_REQUIRE(c[3][2] == c32);
+            CATCH_REQUIRE(c[3][3] == c33);
 
             // run operation C = A - B
             //
             c = a - b;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // this could fail
-            //REQUIRE_FALSE(c[0][0] == c00);
-            //REQUIRE_FALSE(c[0][1] == c01);
-            //REQUIRE_FALSE(c[0][2] == c02);
-            //REQUIRE_FALSE(c[0][3] == c03);
-            //REQUIRE_FALSE(c[1][0] == c10);
-            //REQUIRE_FALSE(c[1][1] == c11);
-            //REQUIRE_FALSE(c[1][2] == c12);
-            //REQUIRE_FALSE(c[1][3] == c13);
-            //REQUIRE_FALSE(c[2][0] == c20);
-            //REQUIRE_FALSE(c[2][1] == c21);
-            //REQUIRE_FALSE(c[2][2] == c22);
-            //REQUIRE_FALSE(c[2][3] == c23);
-            //REQUIRE_FALSE(c[3][0] == c30);
-            //REQUIRE_FALSE(c[3][1] == c31);
-            //REQUIRE_FALSE(c[3][2] == c32);
-            //REQUIRE_FALSE(c[3][3] == c33);
+            //CATCH_REQUIRE_FALSE(c[0][0] == c00);
+            //CATCH_REQUIRE_FALSE(c[0][1] == c01);
+            //CATCH_REQUIRE_FALSE(c[0][2] == c02);
+            //CATCH_REQUIRE_FALSE(c[0][3] == c03);
+            //CATCH_REQUIRE_FALSE(c[1][0] == c10);
+            //CATCH_REQUIRE_FALSE(c[1][1] == c11);
+            //CATCH_REQUIRE_FALSE(c[1][2] == c12);
+            //CATCH_REQUIRE_FALSE(c[1][3] == c13);
+            //CATCH_REQUIRE_FALSE(c[2][0] == c20);
+            //CATCH_REQUIRE_FALSE(c[2][1] == c21);
+            //CATCH_REQUIRE_FALSE(c[2][2] == c22);
+            //CATCH_REQUIRE_FALSE(c[2][3] == c23);
+            //CATCH_REQUIRE_FALSE(c[3][0] == c30);
+            //CATCH_REQUIRE_FALSE(c[3][1] == c31);
+            //CATCH_REQUIRE_FALSE(c[3][2] == c32);
+            //CATCH_REQUIRE_FALSE(c[3][3] == c33);
 
-            REQUIRE(c[0][0] == a00 - b00);
-            REQUIRE(c[0][1] == a01 - b01);
-            REQUIRE(c[0][2] == a02 - b02);
-            REQUIRE(c[0][3] == a03 - b03);
-            REQUIRE(c[1][0] == a10 - b10);
-            REQUIRE(c[1][1] == a11 - b11);
-            REQUIRE(c[1][2] == a12 - b12);
-            REQUIRE(c[1][3] == a13 - b13);
-            REQUIRE(c[2][0] == a20 - b20);
-            REQUIRE(c[2][1] == a21 - b21);
-            REQUIRE(c[2][2] == a22 - b22);
-            REQUIRE(c[2][3] == a23 - b23);
-            REQUIRE(c[3][0] == a30 - b30);
-            REQUIRE(c[3][1] == a31 - b31);
-            REQUIRE(c[3][2] == a32 - b32);
-            REQUIRE(c[3][3] == a33 - b33);
+            CATCH_REQUIRE(c[0][0] == a00 - b00);
+            CATCH_REQUIRE(c[0][1] == a01 - b01);
+            CATCH_REQUIRE(c[0][2] == a02 - b02);
+            CATCH_REQUIRE(c[0][3] == a03 - b03);
+            CATCH_REQUIRE(c[1][0] == a10 - b10);
+            CATCH_REQUIRE(c[1][1] == a11 - b11);
+            CATCH_REQUIRE(c[1][2] == a12 - b12);
+            CATCH_REQUIRE(c[1][3] == a13 - b13);
+            CATCH_REQUIRE(c[2][0] == a20 - b20);
+            CATCH_REQUIRE(c[2][1] == a21 - b21);
+            CATCH_REQUIRE(c[2][2] == a22 - b22);
+            CATCH_REQUIRE(c[2][3] == a23 - b23);
+            CATCH_REQUIRE(c[3][0] == a30 - b30);
+            CATCH_REQUIRE(c[3][1] == a31 - b31);
+            CATCH_REQUIRE(c[3][2] == a32 - b32);
+            CATCH_REQUIRE(c[3][3] == a33 - b33);
         }
 
-        SECTION("a-=b")
+        CATCH_SECTION("a-=b")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -1790,29 +1790,29 @@ TEST_CASE("matrix_additive", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -1848,22 +1848,22 @@ TEST_CASE("matrix_additive", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // run operation A -= B
             //
@@ -1871,75 +1871,75 @@ TEST_CASE("matrix_additive", "[matrix]")
 
             // this could fail if one of bXX is 0.0
             //
-            //REQUIRE(a[0][0] == a00);
-            //REQUIRE(a[0][1] == a01);
-            //REQUIRE(a[0][2] == a02);
-            //REQUIRE(a[0][3] == a03);
-            //REQUIRE(a[1][0] == a10);
-            //REQUIRE(a[1][1] == a11);
-            //REQUIRE(a[1][2] == a12);
-            //REQUIRE(a[1][3] == a13);
-            //REQUIRE(a[2][0] == a20);
-            //REQUIRE(a[2][1] == a21);
-            //REQUIRE(a[2][2] == a22);
-            //REQUIRE(a[2][3] == a23);
-            //REQUIRE(a[3][0] == a30);
-            //REQUIRE(a[3][1] == a31);
-            //REQUIRE(a[3][2] == a32);
-            //REQUIRE(a[3][3] == a33);
+            //CATCH_REQUIRE(a[0][0] == a00);
+            //CATCH_REQUIRE(a[0][1] == a01);
+            //CATCH_REQUIRE(a[0][2] == a02);
+            //CATCH_REQUIRE(a[0][3] == a03);
+            //CATCH_REQUIRE(a[1][0] == a10);
+            //CATCH_REQUIRE(a[1][1] == a11);
+            //CATCH_REQUIRE(a[1][2] == a12);
+            //CATCH_REQUIRE(a[1][3] == a13);
+            //CATCH_REQUIRE(a[2][0] == a20);
+            //CATCH_REQUIRE(a[2][1] == a21);
+            //CATCH_REQUIRE(a[2][2] == a22);
+            //CATCH_REQUIRE(a[2][3] == a23);
+            //CATCH_REQUIRE(a[3][0] == a30);
+            //CATCH_REQUIRE(a[3][1] == a31);
+            //CATCH_REQUIRE(a[3][2] == a32);
+            //CATCH_REQUIRE(a[3][3] == a33);
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
-            REQUIRE(a[0][0] == a00 - b00);
-            REQUIRE(a[0][1] == a01 - b01);
-            REQUIRE(a[0][2] == a02 - b02);
-            REQUIRE(a[0][3] == a03 - b03);
-            REQUIRE(a[1][0] == a10 - b10);
-            REQUIRE(a[1][1] == a11 - b11);
-            REQUIRE(a[1][2] == a12 - b12);
-            REQUIRE(a[1][3] == a13 - b13);
-            REQUIRE(a[2][0] == a20 - b20);
-            REQUIRE(a[2][1] == a21 - b21);
-            REQUIRE(a[2][2] == a22 - b22);
-            REQUIRE(a[2][3] == a23 - b23);
-            REQUIRE(a[3][0] == a30 - b30);
-            REQUIRE(a[3][1] == a31 - b31);
-            REQUIRE(a[3][2] == a32 - b32);
-            REQUIRE(a[3][3] == a33 - b33);
+            CATCH_REQUIRE(a[0][0] == a00 - b00);
+            CATCH_REQUIRE(a[0][1] == a01 - b01);
+            CATCH_REQUIRE(a[0][2] == a02 - b02);
+            CATCH_REQUIRE(a[0][3] == a03 - b03);
+            CATCH_REQUIRE(a[1][0] == a10 - b10);
+            CATCH_REQUIRE(a[1][1] == a11 - b11);
+            CATCH_REQUIRE(a[1][2] == a12 - b12);
+            CATCH_REQUIRE(a[1][3] == a13 - b13);
+            CATCH_REQUIRE(a[2][0] == a20 - b20);
+            CATCH_REQUIRE(a[2][1] == a21 - b21);
+            CATCH_REQUIRE(a[2][2] == a22 - b22);
+            CATCH_REQUIRE(a[2][3] == a23 - b23);
+            CATCH_REQUIRE(a[3][0] == a30 - b30);
+            CATCH_REQUIRE(a[3][1] == a31 - b31);
+            CATCH_REQUIRE(a[3][2] == a32 - b32);
+            CATCH_REQUIRE(a[3][3] == a33 - b33);
         }
     }
 }
 
 
-TEST_CASE("matrix_util", "[matrix]")
+CATCH_TEST_CASE("matrix_util", "[matrix]")
 {
     // various ways to change the data order, minor, enlarge
     //
-    GIVEN("move data")
+    CATCH_GIVEN("move data")
     {
-        SECTION("minor")
+        CATCH_SECTION("minor")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -1975,117 +1975,117 @@ TEST_CASE("matrix_util", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             {
                 snap::matrix<double> p = a.minor_matrix(0, 0);
 
-                REQUIRE(p.rows() == 3);
-                REQUIRE(p.columns() == 3);
+                CATCH_REQUIRE(p.rows() == 3);
+                CATCH_REQUIRE(p.columns() == 3);
 
-                REQUIRE(p[0][0] == a11);
-                REQUIRE(p[0][1] == a12);
-                REQUIRE(p[0][2] == a13);
-                REQUIRE(p[1][0] == a21);
-                REQUIRE(p[1][1] == a22);
-                REQUIRE(p[1][2] == a23);
-                REQUIRE(p[2][0] == a31);
-                REQUIRE(p[2][1] == a32);
-                REQUIRE(p[2][2] == a33);
+                CATCH_REQUIRE(p[0][0] == a11);
+                CATCH_REQUIRE(p[0][1] == a12);
+                CATCH_REQUIRE(p[0][2] == a13);
+                CATCH_REQUIRE(p[1][0] == a21);
+                CATCH_REQUIRE(p[1][1] == a22);
+                CATCH_REQUIRE(p[1][2] == a23);
+                CATCH_REQUIRE(p[2][0] == a31);
+                CATCH_REQUIRE(p[2][1] == a32);
+                CATCH_REQUIRE(p[2][2] == a33);
             }
 
             {
                 snap::matrix<double> p = a.minor_matrix(0, 1);
 
-                REQUIRE(p.rows() == 3);
-                REQUIRE(p.columns() == 3);
+                CATCH_REQUIRE(p.rows() == 3);
+                CATCH_REQUIRE(p.columns() == 3);
 
-                REQUIRE(p[0][0] == a10);
-                REQUIRE(p[0][1] == a12);
-                REQUIRE(p[0][2] == a13);
-                REQUIRE(p[1][0] == a20);
-                REQUIRE(p[1][1] == a22);
-                REQUIRE(p[1][2] == a23);
-                REQUIRE(p[2][0] == a30);
-                REQUIRE(p[2][1] == a32);
-                REQUIRE(p[2][2] == a33);
+                CATCH_REQUIRE(p[0][0] == a10);
+                CATCH_REQUIRE(p[0][1] == a12);
+                CATCH_REQUIRE(p[0][2] == a13);
+                CATCH_REQUIRE(p[1][0] == a20);
+                CATCH_REQUIRE(p[1][1] == a22);
+                CATCH_REQUIRE(p[1][2] == a23);
+                CATCH_REQUIRE(p[2][0] == a30);
+                CATCH_REQUIRE(p[2][1] == a32);
+                CATCH_REQUIRE(p[2][2] == a33);
             }
 
             {
                 snap::matrix<double> p = a.minor_matrix(0, 2);
 
-                REQUIRE(p.rows() == 3);
-                REQUIRE(p.columns() == 3);
+                CATCH_REQUIRE(p.rows() == 3);
+                CATCH_REQUIRE(p.columns() == 3);
 
-                REQUIRE(p[0][0] == a10);
-                REQUIRE(p[0][1] == a11);
-                REQUIRE(p[0][2] == a13);
-                REQUIRE(p[1][0] == a20);
-                REQUIRE(p[1][1] == a21);
-                REQUIRE(p[1][2] == a23);
-                REQUIRE(p[2][0] == a30);
-                REQUIRE(p[2][1] == a31);
-                REQUIRE(p[2][2] == a33);
+                CATCH_REQUIRE(p[0][0] == a10);
+                CATCH_REQUIRE(p[0][1] == a11);
+                CATCH_REQUIRE(p[0][2] == a13);
+                CATCH_REQUIRE(p[1][0] == a20);
+                CATCH_REQUIRE(p[1][1] == a21);
+                CATCH_REQUIRE(p[1][2] == a23);
+                CATCH_REQUIRE(p[2][0] == a30);
+                CATCH_REQUIRE(p[2][1] == a31);
+                CATCH_REQUIRE(p[2][2] == a33);
             }
 
             {
                 snap::matrix<double> p = a.minor_matrix(0, 3);
 
-                REQUIRE(p.rows() == 3);
-                REQUIRE(p.columns() == 3);
+                CATCH_REQUIRE(p.rows() == 3);
+                CATCH_REQUIRE(p.columns() == 3);
 
-                REQUIRE(p[0][0] == a10);
-                REQUIRE(p[0][1] == a11);
-                REQUIRE(p[0][2] == a12);
-                REQUIRE(p[1][0] == a20);
-                REQUIRE(p[1][1] == a21);
-                REQUIRE(p[1][2] == a22);
-                REQUIRE(p[2][0] == a30);
-                REQUIRE(p[2][1] == a31);
-                REQUIRE(p[2][2] == a32);
+                CATCH_REQUIRE(p[0][0] == a10);
+                CATCH_REQUIRE(p[0][1] == a11);
+                CATCH_REQUIRE(p[0][2] == a12);
+                CATCH_REQUIRE(p[1][0] == a20);
+                CATCH_REQUIRE(p[1][1] == a21);
+                CATCH_REQUIRE(p[1][2] == a22);
+                CATCH_REQUIRE(p[2][0] == a30);
+                CATCH_REQUIRE(p[2][1] == a31);
+                CATCH_REQUIRE(p[2][2] == a32);
             }
 
             {
                 snap::matrix<double> p = a.minor_matrix(2, 1);
 
-                REQUIRE(p.rows() == 3);
-                REQUIRE(p.columns() == 3);
+                CATCH_REQUIRE(p.rows() == 3);
+                CATCH_REQUIRE(p.columns() == 3);
 
-                REQUIRE(p[0][0] == a00);
-                REQUIRE(p[0][1] == a02);
-                REQUIRE(p[0][2] == a03);
-                REQUIRE(p[1][0] == a10);
-                REQUIRE(p[1][1] == a12);
-                REQUIRE(p[1][2] == a13);
-                REQUIRE(p[2][0] == a30);
-                REQUIRE(p[2][1] == a32);
-                REQUIRE(p[2][2] == a33);
+                CATCH_REQUIRE(p[0][0] == a00);
+                CATCH_REQUIRE(p[0][1] == a02);
+                CATCH_REQUIRE(p[0][2] == a03);
+                CATCH_REQUIRE(p[1][0] == a10);
+                CATCH_REQUIRE(p[1][1] == a12);
+                CATCH_REQUIRE(p[1][2] == a13);
+                CATCH_REQUIRE(p[2][0] == a30);
+                CATCH_REQUIRE(p[2][1] == a32);
+                CATCH_REQUIRE(p[2][2] == a33);
             }
         }
 
-        SECTION("transpose 4x4")
+        CATCH_SECTION("transpose 4x4")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -2121,54 +2121,54 @@ TEST_CASE("matrix_util", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             snap::matrix<double> t = a.transpose();
 
-            REQUIRE(t.rows() == 4);
-            REQUIRE(t.columns() == 4);
+            CATCH_REQUIRE(t.rows() == 4);
+            CATCH_REQUIRE(t.columns() == 4);
 
-            REQUIRE(t[0][0] == a00);
-            REQUIRE(t[0][1] == a10);
-            REQUIRE(t[0][2] == a20);
-            REQUIRE(t[0][3] == a30);
-            REQUIRE(t[1][0] == a01);
-            REQUIRE(t[1][1] == a11);
-            REQUIRE(t[1][2] == a21);
-            REQUIRE(t[1][3] == a31);
-            REQUIRE(t[2][0] == a02);
-            REQUIRE(t[2][1] == a12);
-            REQUIRE(t[2][2] == a22);
-            REQUIRE(t[2][3] == a32);
-            REQUIRE(t[3][0] == a03);
-            REQUIRE(t[3][1] == a13);
-            REQUIRE(t[3][2] == a23);
-            REQUIRE(t[3][3] == a33);
+            CATCH_REQUIRE(t[0][0] == a00);
+            CATCH_REQUIRE(t[0][1] == a10);
+            CATCH_REQUIRE(t[0][2] == a20);
+            CATCH_REQUIRE(t[0][3] == a30);
+            CATCH_REQUIRE(t[1][0] == a01);
+            CATCH_REQUIRE(t[1][1] == a11);
+            CATCH_REQUIRE(t[1][2] == a21);
+            CATCH_REQUIRE(t[1][3] == a31);
+            CATCH_REQUIRE(t[2][0] == a02);
+            CATCH_REQUIRE(t[2][1] == a12);
+            CATCH_REQUIRE(t[2][2] == a22);
+            CATCH_REQUIRE(t[2][3] == a32);
+            CATCH_REQUIRE(t[3][0] == a03);
+            CATCH_REQUIRE(t[3][1] == a13);
+            CATCH_REQUIRE(t[3][2] == a23);
+            CATCH_REQUIRE(t[3][3] == a33);
         }
 
-        SECTION("transpose 6x2")
+        CATCH_SECTION("transpose 6x2")
         {
             // setup A
             //
             snap::matrix<double> a(6, 2);
 
-            REQUIRE(a.rows() == 6);
-            REQUIRE(a.columns() == 2);
+            CATCH_REQUIRE(a.rows() == 6);
+            CATCH_REQUIRE(a.columns() == 2);
 
             double const a00(frand());
             double const a01(frand());
@@ -2196,23 +2196,23 @@ TEST_CASE("matrix_util", "[matrix]")
             a[5][0] = a50;
             a[5][1] = a51;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[4][0] == a40);
-            REQUIRE(a[4][1] == a41);
-            REQUIRE(a[5][0] == a50);
-            REQUIRE(a[5][1] == a51);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[4][0] == a40);
+            CATCH_REQUIRE(a[4][1] == a41);
+            CATCH_REQUIRE(a[5][0] == a50);
+            CATCH_REQUIRE(a[5][1] == a51);
 
             snap::matrix<double> t = a.transpose();
 
-            REQUIRE(t.rows() == 2);
-            REQUIRE(t.columns() == 6);
+            CATCH_REQUIRE(t.rows() == 2);
+            CATCH_REQUIRE(t.columns() == 6);
 
             // original
             // a00 a01
@@ -2227,28 +2227,28 @@ TEST_CASE("matrix_util", "[matrix]")
             // a01 a11 a21 a31 a41 a51
             //
 
-            REQUIRE(t[0][0] == a00);
-            REQUIRE(t[0][1] == a10);
-            REQUIRE(t[0][2] == a20);
-            REQUIRE(t[0][3] == a30);
-            REQUIRE(t[0][4] == a40);
-            REQUIRE(t[0][5] == a50);
-            REQUIRE(t[1][0] == a01);
-            REQUIRE(t[1][1] == a11);
-            REQUIRE(t[1][2] == a21);
-            REQUIRE(t[1][3] == a31);
-            REQUIRE(t[1][4] == a41);
-            REQUIRE(t[1][5] == a51);
+            CATCH_REQUIRE(t[0][0] == a00);
+            CATCH_REQUIRE(t[0][1] == a10);
+            CATCH_REQUIRE(t[0][2] == a20);
+            CATCH_REQUIRE(t[0][3] == a30);
+            CATCH_REQUIRE(t[0][4] == a40);
+            CATCH_REQUIRE(t[0][5] == a50);
+            CATCH_REQUIRE(t[1][0] == a01);
+            CATCH_REQUIRE(t[1][1] == a11);
+            CATCH_REQUIRE(t[1][2] == a21);
+            CATCH_REQUIRE(t[1][3] == a31);
+            CATCH_REQUIRE(t[1][4] == a41);
+            CATCH_REQUIRE(t[1][5] == a51);
         }
 
-        SECTION("adjugate 2x2")
+        CATCH_SECTION("adjugate 2x2")
         {
             // setup A
             //
             snap::matrix<double> a(2, 2);
 
-            REQUIRE(a.rows() == 2);
-            REQUIRE(a.columns() == 2);
+            CATCH_REQUIRE(a.rows() == 2);
+            CATCH_REQUIRE(a.columns() == 2);
 
             double const a00(frand());
             double const a01(frand());
@@ -2260,30 +2260,30 @@ TEST_CASE("matrix_util", "[matrix]")
             a[1][0] = a10;
             a[1][1] = a11;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
 
             snap::matrix<double> m = a.adjugate();
 
-            REQUIRE(m.rows() == 2);
-            REQUIRE(m.columns() == 2);
+            CATCH_REQUIRE(m.rows() == 2);
+            CATCH_REQUIRE(m.columns() == 2);
 
-            REQUIRE(m[0][0] ==  a11);
-            REQUIRE(m[0][1] == -a01);
-            REQUIRE(m[1][0] == -a10);
-            REQUIRE(m[1][1] ==  a00);
+            CATCH_REQUIRE(m[0][0] ==  a11);
+            CATCH_REQUIRE(m[0][1] == -a01);
+            CATCH_REQUIRE(m[1][0] == -a10);
+            CATCH_REQUIRE(m[1][1] ==  a00);
         }
 
-        SECTION("adjugate 3x3")
+        CATCH_SECTION("adjugate 3x3")
         {
             // setup A
             //
             snap::matrix<double> a(3, 3);
 
-            REQUIRE(a.rows() == 3);
-            REQUIRE(a.columns() == 3);
+            CATCH_REQUIRE(a.rows() == 3);
+            CATCH_REQUIRE(a.columns() == 3);
 
             double const a00(frand());
             double const a01(frand());
@@ -2305,89 +2305,89 @@ TEST_CASE("matrix_util", "[matrix]")
             a[2][1] = a21;
             a[2][2] = a22;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
 
             snap::matrix<double> m = a.adjugate();
 
-            REQUIRE(m.rows() == 3);
-            REQUIRE(m.columns() == 3);
+            CATCH_REQUIRE(m.rows() == 3);
+            CATCH_REQUIRE(m.columns() == 3);
 
             {
                 snap::matrix<double> p(a.minor_matrix(0, 0));
                 double const e(m[0][0] - p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
 
             {
                 snap::matrix<double> p(a.minor_matrix(0, 1));
                 double const e(m[1][0] + p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
 
             {
                 snap::matrix<double> p(a.minor_matrix(0, 2));
                 double const e(m[2][0] - p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
 
             {
                 snap::matrix<double> p(a.minor_matrix(1, 0));
                 double const e(m[0][1] + p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
 
             {
                 snap::matrix<double> p(a.minor_matrix(1, 1));
                 double const e(m[1][1] - p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
 
             {
                 snap::matrix<double> p(a.minor_matrix(1, 2));
                 double const e(m[2][1] + p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
 
             {
                 snap::matrix<double> p(a.minor_matrix(2, 0));
                 double const e(m[0][2] - p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
 
             {
                 snap::matrix<double> p(a.minor_matrix(2, 1));
                 double const e(m[1][2] + p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
 
             {
                 snap::matrix<double> p(a.minor_matrix(2, 2));
                 double const e(m[2][2] - p.determinant());
-                REQUIRE(fabs(e) < 0.0001);
+                CATCH_REQUIRE(fabs(e) < 0.0001);
             }
         }
     }
 
     // calculations such as the determinant
     //
-    GIVEN("calculations")
+    CATCH_GIVEN("calculations")
     {
-        SECTION("2x2 determinant")
+        CATCH_SECTION("2x2 determinant")
         {
             // setup A
             //
             snap::matrix<double> a(2, 2);
 
-            REQUIRE(a.rows() == 2);
-            REQUIRE(a.columns() == 2);
+            CATCH_REQUIRE(a.rows() == 2);
+            CATCH_REQUIRE(a.columns() == 2);
 
             double const a00(frand());
             double const a01(frand());
@@ -2399,10 +2399,10 @@ TEST_CASE("matrix_util", "[matrix]")
             a[1][0] = a10;
             a[1][1] = a11;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
 
             double d(a.determinant());
 
@@ -2410,17 +2410,17 @@ TEST_CASE("matrix_util", "[matrix]")
             //     - f_vector[1 + 0 * 2] * f_vector[0 + 1 * 2];
             double e = a00 * a11 - a10 * a01;
 
-            REQUIRE(fabs(d - e) < 0.0001);
+            CATCH_REQUIRE(fabs(d - e) < 0.0001);
         }
 
-        SECTION("3x3 determinant with specific data")
+        CATCH_SECTION("3x3 determinant with specific data")
         {
             // setup A
             //
             snap::matrix<double> a(3, 3);
 
-            REQUIRE(a.rows() == 3);
-            REQUIRE(a.columns() == 3);
+            CATCH_REQUIRE(a.rows() == 3);
+            CATCH_REQUIRE(a.columns() == 3);
 
             a[0][0] =  5.0;
             a[0][1] = -2.0;
@@ -2436,10 +2436,10 @@ TEST_CASE("matrix_util", "[matrix]")
 
             // we know that the exact answer for this one is 103
             //
-            REQUIRE(fabs(d - 103.0) < 0.0001);
+            CATCH_REQUIRE(fabs(d - 103.0) < 0.0001);
         }
 
-        SECTION("3x3 determinant with random data")
+        CATCH_SECTION("3x3 determinant with random data")
         {
             // verify 10 times (with different values)
             //
@@ -2449,8 +2449,8 @@ TEST_CASE("matrix_util", "[matrix]")
                 //
                 snap::matrix<double> a(3, 3);
 
-                REQUIRE(a.rows() == 3);
-                REQUIRE(a.columns() == 3);
+                CATCH_REQUIRE(a.rows() == 3);
+                CATCH_REQUIRE(a.columns() == 3);
 
                 double const a00(frand());
                 double const a01(frand());
@@ -2472,15 +2472,15 @@ TEST_CASE("matrix_util", "[matrix]")
                 a[2][1] = a21;
                 a[2][2] = a22;
 
-                REQUIRE(a[0][0] == a00);
-                REQUIRE(a[0][1] == a01);
-                REQUIRE(a[0][2] == a02);
-                REQUIRE(a[1][0] == a10);
-                REQUIRE(a[1][1] == a11);
-                REQUIRE(a[1][2] == a12);
-                REQUIRE(a[2][0] == a20);
-                REQUIRE(a[2][1] == a21);
-                REQUIRE(a[2][2] == a22);
+                CATCH_REQUIRE(a[0][0] == a00);
+                CATCH_REQUIRE(a[0][1] == a01);
+                CATCH_REQUIRE(a[0][2] == a02);
+                CATCH_REQUIRE(a[1][0] == a10);
+                CATCH_REQUIRE(a[1][1] == a11);
+                CATCH_REQUIRE(a[1][2] == a12);
+                CATCH_REQUIRE(a[2][0] == a20);
+                CATCH_REQUIRE(a[2][1] == a21);
+                CATCH_REQUIRE(a[2][2] == a22);
 
                 double d(a.determinant());
 
@@ -2489,27 +2489,27 @@ TEST_CASE("matrix_util", "[matrix]")
                 double e = a00 * a11 * a22 + a01 * a12 * a20 + a02 * a10 * a21
                          - a00 * a12 * a21 - a01 * a10 * a22 - a02 * a11 * a20;
 
-                REQUIRE(fabs(d - e) < 0.0001);
+                CATCH_REQUIRE(fabs(d - e) < 0.0001);
             }
         }
     }
 }
 
 
-TEST_CASE("matrix_multiplicative", "[matrix]")
+CATCH_TEST_CASE("matrix_multiplicative", "[matrix]")
 {
     // create two random 4x4 matrices and make sure the add works
     //
-    GIVEN("mul")
+    CATCH_GIVEN("mul")
     {
-        SECTION("b=a*<scalar>")
+        CATCH_SECTION("b=a*<scalar>")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -2545,29 +2545,29 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -2603,22 +2603,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // create a scalar for our test
             //
@@ -2632,68 +2632,68 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             //
             b = a * scalar;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // this can't fail because we ensure scalar != 0 or 1
             //
-            REQUIRE_FALSE(b[0][0] == b00);
-            REQUIRE_FALSE(b[0][1] == b01);
-            REQUIRE_FALSE(b[0][2] == b02);
-            REQUIRE_FALSE(b[0][3] == b03);
-            REQUIRE_FALSE(b[1][0] == b10);
-            REQUIRE_FALSE(b[1][1] == b11);
-            REQUIRE_FALSE(b[1][2] == b12);
-            REQUIRE_FALSE(b[1][3] == b13);
-            REQUIRE_FALSE(b[2][0] == b20);
-            REQUIRE_FALSE(b[2][1] == b21);
-            REQUIRE_FALSE(b[2][2] == b22);
-            REQUIRE_FALSE(b[2][3] == b23);
-            REQUIRE_FALSE(b[3][0] == b30);
-            REQUIRE_FALSE(b[3][1] == b31);
-            REQUIRE_FALSE(b[3][2] == b32);
-            REQUIRE_FALSE(b[3][3] == b33);
+            CATCH_REQUIRE_FALSE(b[0][0] == b00);
+            CATCH_REQUIRE_FALSE(b[0][1] == b01);
+            CATCH_REQUIRE_FALSE(b[0][2] == b02);
+            CATCH_REQUIRE_FALSE(b[0][3] == b03);
+            CATCH_REQUIRE_FALSE(b[1][0] == b10);
+            CATCH_REQUIRE_FALSE(b[1][1] == b11);
+            CATCH_REQUIRE_FALSE(b[1][2] == b12);
+            CATCH_REQUIRE_FALSE(b[1][3] == b13);
+            CATCH_REQUIRE_FALSE(b[2][0] == b20);
+            CATCH_REQUIRE_FALSE(b[2][1] == b21);
+            CATCH_REQUIRE_FALSE(b[2][2] == b22);
+            CATCH_REQUIRE_FALSE(b[2][3] == b23);
+            CATCH_REQUIRE_FALSE(b[3][0] == b30);
+            CATCH_REQUIRE_FALSE(b[3][1] == b31);
+            CATCH_REQUIRE_FALSE(b[3][2] == b32);
+            CATCH_REQUIRE_FALSE(b[3][3] == b33);
 
-            REQUIRE(b[0][0] == a00 * scalar);
-            REQUIRE(b[0][1] == a01 * scalar);
-            REQUIRE(b[0][2] == a02 * scalar);
-            REQUIRE(b[0][3] == a03 * scalar);
-            REQUIRE(b[1][0] == a10 * scalar);
-            REQUIRE(b[1][1] == a11 * scalar);
-            REQUIRE(b[1][2] == a12 * scalar);
-            REQUIRE(b[1][3] == a13 * scalar);
-            REQUIRE(b[2][0] == a20 * scalar);
-            REQUIRE(b[2][1] == a21 * scalar);
-            REQUIRE(b[2][2] == a22 * scalar);
-            REQUIRE(b[2][3] == a23 * scalar);
-            REQUIRE(b[3][0] == a30 * scalar);
-            REQUIRE(b[3][1] == a31 * scalar);
-            REQUIRE(b[3][2] == a32 * scalar);
-            REQUIRE(b[3][3] == a33 * scalar);
+            CATCH_REQUIRE(b[0][0] == a00 * scalar);
+            CATCH_REQUIRE(b[0][1] == a01 * scalar);
+            CATCH_REQUIRE(b[0][2] == a02 * scalar);
+            CATCH_REQUIRE(b[0][3] == a03 * scalar);
+            CATCH_REQUIRE(b[1][0] == a10 * scalar);
+            CATCH_REQUIRE(b[1][1] == a11 * scalar);
+            CATCH_REQUIRE(b[1][2] == a12 * scalar);
+            CATCH_REQUIRE(b[1][3] == a13 * scalar);
+            CATCH_REQUIRE(b[2][0] == a20 * scalar);
+            CATCH_REQUIRE(b[2][1] == a21 * scalar);
+            CATCH_REQUIRE(b[2][2] == a22 * scalar);
+            CATCH_REQUIRE(b[2][3] == a23 * scalar);
+            CATCH_REQUIRE(b[3][0] == a30 * scalar);
+            CATCH_REQUIRE(b[3][1] == a31 * scalar);
+            CATCH_REQUIRE(b[3][2] == a32 * scalar);
+            CATCH_REQUIRE(b[3][3] == a33 * scalar);
         }
 
-        SECTION("a*=<scalar>")
+        CATCH_SECTION("a*=<scalar>")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -2729,22 +2729,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // create a scalar for our test
             //
@@ -2760,49 +2760,49 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
 
             // this can't fail because we ensure scalar != 0 or 1
             //
-            REQUIRE_FALSE(a[0][0] == a00);
-            REQUIRE_FALSE(a[0][1] == a01);
-            REQUIRE_FALSE(a[0][2] == a02);
-            REQUIRE_FALSE(a[0][3] == a03);
-            REQUIRE_FALSE(a[1][0] == a10);
-            REQUIRE_FALSE(a[1][1] == a11);
-            REQUIRE_FALSE(a[1][2] == a12);
-            REQUIRE_FALSE(a[1][3] == a13);
-            REQUIRE_FALSE(a[2][0] == a20);
-            REQUIRE_FALSE(a[2][1] == a21);
-            REQUIRE_FALSE(a[2][2] == a22);
-            REQUIRE_FALSE(a[2][3] == a23);
-            REQUIRE_FALSE(a[3][0] == a30);
-            REQUIRE_FALSE(a[3][1] == a31);
-            REQUIRE_FALSE(a[3][2] == a32);
-            REQUIRE_FALSE(a[3][3] == a33);
+            CATCH_REQUIRE_FALSE(a[0][0] == a00);
+            CATCH_REQUIRE_FALSE(a[0][1] == a01);
+            CATCH_REQUIRE_FALSE(a[0][2] == a02);
+            CATCH_REQUIRE_FALSE(a[0][3] == a03);
+            CATCH_REQUIRE_FALSE(a[1][0] == a10);
+            CATCH_REQUIRE_FALSE(a[1][1] == a11);
+            CATCH_REQUIRE_FALSE(a[1][2] == a12);
+            CATCH_REQUIRE_FALSE(a[1][3] == a13);
+            CATCH_REQUIRE_FALSE(a[2][0] == a20);
+            CATCH_REQUIRE_FALSE(a[2][1] == a21);
+            CATCH_REQUIRE_FALSE(a[2][2] == a22);
+            CATCH_REQUIRE_FALSE(a[2][3] == a23);
+            CATCH_REQUIRE_FALSE(a[3][0] == a30);
+            CATCH_REQUIRE_FALSE(a[3][1] == a31);
+            CATCH_REQUIRE_FALSE(a[3][2] == a32);
+            CATCH_REQUIRE_FALSE(a[3][3] == a33);
 
-            REQUIRE(a[0][0] == a00 * scalar);
-            REQUIRE(a[0][1] == a01 * scalar);
-            REQUIRE(a[0][2] == a02 * scalar);
-            REQUIRE(a[0][3] == a03 * scalar);
-            REQUIRE(a[1][0] == a10 * scalar);
-            REQUIRE(a[1][1] == a11 * scalar);
-            REQUIRE(a[1][2] == a12 * scalar);
-            REQUIRE(a[1][3] == a13 * scalar);
-            REQUIRE(a[2][0] == a20 * scalar);
-            REQUIRE(a[2][1] == a21 * scalar);
-            REQUIRE(a[2][2] == a22 * scalar);
-            REQUIRE(a[2][3] == a23 * scalar);
-            REQUIRE(a[3][0] == a30 * scalar);
-            REQUIRE(a[3][1] == a31 * scalar);
-            REQUIRE(a[3][2] == a32 * scalar);
-            REQUIRE(a[3][3] == a33 * scalar);
+            CATCH_REQUIRE(a[0][0] == a00 * scalar);
+            CATCH_REQUIRE(a[0][1] == a01 * scalar);
+            CATCH_REQUIRE(a[0][2] == a02 * scalar);
+            CATCH_REQUIRE(a[0][3] == a03 * scalar);
+            CATCH_REQUIRE(a[1][0] == a10 * scalar);
+            CATCH_REQUIRE(a[1][1] == a11 * scalar);
+            CATCH_REQUIRE(a[1][2] == a12 * scalar);
+            CATCH_REQUIRE(a[1][3] == a13 * scalar);
+            CATCH_REQUIRE(a[2][0] == a20 * scalar);
+            CATCH_REQUIRE(a[2][1] == a21 * scalar);
+            CATCH_REQUIRE(a[2][2] == a22 * scalar);
+            CATCH_REQUIRE(a[2][3] == a23 * scalar);
+            CATCH_REQUIRE(a[3][0] == a30 * scalar);
+            CATCH_REQUIRE(a[3][1] == a31 * scalar);
+            CATCH_REQUIRE(a[3][2] == a32 * scalar);
+            CATCH_REQUIRE(a[3][3] == a33 * scalar);
         }
 
-        SECTION("c=a*b")
+        CATCH_SECTION("c=a*b")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -2838,29 +2838,29 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -2896,29 +2896,29 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // setup C
             //
             snap::matrix<double> c(4, 4);
 
-            REQUIRE(c.rows() == 4);
-            REQUIRE(c.columns() == 4);
+            CATCH_REQUIRE(c.rows() == 4);
+            CATCH_REQUIRE(c.columns() == 4);
 
             double const c00(frand());
             double const c01(frand());
@@ -2954,133 +2954,133 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             c[3][2] = c32;
             c[3][3] = c33;
 
-            REQUIRE(c[0][0] == c00);
-            REQUIRE(c[0][1] == c01);
-            REQUIRE(c[0][2] == c02);
-            REQUIRE(c[0][3] == c03);
-            REQUIRE(c[1][0] == c10);
-            REQUIRE(c[1][1] == c11);
-            REQUIRE(c[1][2] == c12);
-            REQUIRE(c[1][3] == c13);
-            REQUIRE(c[2][0] == c20);
-            REQUIRE(c[2][1] == c21);
-            REQUIRE(c[2][2] == c22);
-            REQUIRE(c[2][3] == c23);
-            REQUIRE(c[3][0] == c30);
-            REQUIRE(c[3][1] == c31);
-            REQUIRE(c[3][2] == c32);
-            REQUIRE(c[3][3] == c33);
+            CATCH_REQUIRE(c[0][0] == c00);
+            CATCH_REQUIRE(c[0][1] == c01);
+            CATCH_REQUIRE(c[0][2] == c02);
+            CATCH_REQUIRE(c[0][3] == c03);
+            CATCH_REQUIRE(c[1][0] == c10);
+            CATCH_REQUIRE(c[1][1] == c11);
+            CATCH_REQUIRE(c[1][2] == c12);
+            CATCH_REQUIRE(c[1][3] == c13);
+            CATCH_REQUIRE(c[2][0] == c20);
+            CATCH_REQUIRE(c[2][1] == c21);
+            CATCH_REQUIRE(c[2][2] == c22);
+            CATCH_REQUIRE(c[2][3] == c23);
+            CATCH_REQUIRE(c[3][0] == c30);
+            CATCH_REQUIRE(c[3][1] == c31);
+            CATCH_REQUIRE(c[3][2] == c32);
+            CATCH_REQUIRE(c[3][3] == c33);
 
             // run operation C = A * B
             //
             c = a * b;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // this could fail (albeit rather unlikely)
-            //REQUIRE_FALSE(c[0][0] == c00);
-            //REQUIRE_FALSE(c[0][1] == c01);
-            //REQUIRE_FALSE(c[0][2] == c02);
-            //REQUIRE_FALSE(c[0][3] == c03);
-            //REQUIRE_FALSE(c[1][0] == c10);
-            //REQUIRE_FALSE(c[1][1] == c11);
-            //REQUIRE_FALSE(c[1][2] == c12);
-            //REQUIRE_FALSE(c[1][3] == c13);
-            //REQUIRE_FALSE(c[2][0] == c20);
-            //REQUIRE_FALSE(c[2][1] == c21);
-            //REQUIRE_FALSE(c[2][2] == c22);
-            //REQUIRE_FALSE(c[2][3] == c23);
-            //REQUIRE_FALSE(c[3][0] == c30);
-            //REQUIRE_FALSE(c[3][1] == c31);
-            //REQUIRE_FALSE(c[3][2] == c32);
-            //REQUIRE_FALSE(c[3][3] == c33);
+            //CATCH_REQUIRE_FALSE(c[0][0] == c00);
+            //CATCH_REQUIRE_FALSE(c[0][1] == c01);
+            //CATCH_REQUIRE_FALSE(c[0][2] == c02);
+            //CATCH_REQUIRE_FALSE(c[0][3] == c03);
+            //CATCH_REQUIRE_FALSE(c[1][0] == c10);
+            //CATCH_REQUIRE_FALSE(c[1][1] == c11);
+            //CATCH_REQUIRE_FALSE(c[1][2] == c12);
+            //CATCH_REQUIRE_FALSE(c[1][3] == c13);
+            //CATCH_REQUIRE_FALSE(c[2][0] == c20);
+            //CATCH_REQUIRE_FALSE(c[2][1] == c21);
+            //CATCH_REQUIRE_FALSE(c[2][2] == c22);
+            //CATCH_REQUIRE_FALSE(c[2][3] == c23);
+            //CATCH_REQUIRE_FALSE(c[3][0] == c30);
+            //CATCH_REQUIRE_FALSE(c[3][1] == c31);
+            //CATCH_REQUIRE_FALSE(c[3][2] == c32);
+            //CATCH_REQUIRE_FALSE(c[3][3] == c33);
 
 //std::cout << "A = " << a << std::endl;
 //std::cout << "B = " << b << std::endl;
 //std::cout << "C = " << c << std::endl;
 
-            REQUIRE(c[0][0] == a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30);
-            REQUIRE(c[0][1] == a00 * b01 + a01 * b11 + a02 * b21 + a03 * b31);
-            REQUIRE(c[0][2] == a00 * b02 + a01 * b12 + a02 * b22 + a03 * b32);
-            REQUIRE(c[0][3] == a00 * b03 + a01 * b13 + a02 * b23 + a03 * b33);
+            CATCH_REQUIRE(c[0][0] == a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30);
+            CATCH_REQUIRE(c[0][1] == a00 * b01 + a01 * b11 + a02 * b21 + a03 * b31);
+            CATCH_REQUIRE(c[0][2] == a00 * b02 + a01 * b12 + a02 * b22 + a03 * b32);
+            CATCH_REQUIRE(c[0][3] == a00 * b03 + a01 * b13 + a02 * b23 + a03 * b33);
 
-            REQUIRE(c[1][0] == a10 * b00 + a11 * b10 + a12 * b20 + a13 * b30);
-            REQUIRE(c[1][1] == a10 * b01 + a11 * b11 + a12 * b21 + a13 * b31);
-            REQUIRE(c[1][2] == a10 * b02 + a11 * b12 + a12 * b22 + a13 * b32);
-            REQUIRE(c[1][3] == a10 * b03 + a11 * b13 + a12 * b23 + a13 * b33);
+            CATCH_REQUIRE(c[1][0] == a10 * b00 + a11 * b10 + a12 * b20 + a13 * b30);
+            CATCH_REQUIRE(c[1][1] == a10 * b01 + a11 * b11 + a12 * b21 + a13 * b31);
+            CATCH_REQUIRE(c[1][2] == a10 * b02 + a11 * b12 + a12 * b22 + a13 * b32);
+            CATCH_REQUIRE(c[1][3] == a10 * b03 + a11 * b13 + a12 * b23 + a13 * b33);
 
-            REQUIRE(c[2][0] == a20 * b00 + a21 * b10 + a22 * b20 + a23 * b30);
-            REQUIRE(c[2][1] == a20 * b01 + a21 * b11 + a22 * b21 + a23 * b31);
-            REQUIRE(c[2][2] == a20 * b02 + a21 * b12 + a22 * b22 + a23 * b32);
-            REQUIRE(c[2][3] == a20 * b03 + a21 * b13 + a22 * b23 + a23 * b33);
+            CATCH_REQUIRE(c[2][0] == a20 * b00 + a21 * b10 + a22 * b20 + a23 * b30);
+            CATCH_REQUIRE(c[2][1] == a20 * b01 + a21 * b11 + a22 * b21 + a23 * b31);
+            CATCH_REQUIRE(c[2][2] == a20 * b02 + a21 * b12 + a22 * b22 + a23 * b32);
+            CATCH_REQUIRE(c[2][3] == a20 * b03 + a21 * b13 + a22 * b23 + a23 * b33);
 
-            REQUIRE(c[3][0] == a30 * b00 + a31 * b10 + a32 * b20 + a33 * b30);
-            REQUIRE(c[3][1] == a30 * b01 + a31 * b11 + a32 * b21 + a33 * b31);
-            REQUIRE(c[3][2] == a30 * b02 + a31 * b12 + a32 * b22 + a33 * b32);
-            REQUIRE(c[3][3] == a30 * b03 + a31 * b13 + a32 * b23 + a33 * b33);
+            CATCH_REQUIRE(c[3][0] == a30 * b00 + a31 * b10 + a32 * b20 + a33 * b30);
+            CATCH_REQUIRE(c[3][1] == a30 * b01 + a31 * b11 + a32 * b21 + a33 * b31);
+            CATCH_REQUIRE(c[3][2] == a30 * b02 + a31 * b12 + a32 * b22 + a33 * b32);
+            CATCH_REQUIRE(c[3][3] == a30 * b03 + a31 * b13 + a32 * b23 + a33 * b33);
 
             // if swapped it would equal this instead
-            //REQUIRE(c[0][0] == a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03);
-            //REQUIRE(c[0][1] == a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03);
-            //REQUIRE(c[0][2] == a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03);
-            //REQUIRE(c[0][3] == a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03);
+            //CATCH_REQUIRE(c[0][0] == a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03);
+            //CATCH_REQUIRE(c[0][1] == a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03);
+            //CATCH_REQUIRE(c[0][2] == a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03);
+            //CATCH_REQUIRE(c[0][3] == a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03);
 
-            //REQUIRE(c[1][0] == a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13);
-            //REQUIRE(c[1][1] == a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13);
-            //REQUIRE(c[1][2] == a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13);
-            //REQUIRE(c[1][3] == a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13);
+            //CATCH_REQUIRE(c[1][0] == a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13);
+            //CATCH_REQUIRE(c[1][1] == a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13);
+            //CATCH_REQUIRE(c[1][2] == a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13);
+            //CATCH_REQUIRE(c[1][3] == a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13);
 
-            //REQUIRE(c[2][0] == a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23);
-            //REQUIRE(c[2][1] == a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23);
-            //REQUIRE(c[2][2] == a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23);
-            //REQUIRE(c[2][3] == a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23);
+            //CATCH_REQUIRE(c[2][0] == a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23);
+            //CATCH_REQUIRE(c[2][1] == a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23);
+            //CATCH_REQUIRE(c[2][2] == a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23);
+            //CATCH_REQUIRE(c[2][3] == a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23);
 
-            //REQUIRE(c[3][0] == a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33);
-            //REQUIRE(c[3][1] == a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33);
-            //REQUIRE(c[3][2] == a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33);
-            //REQUIRE(c[3][3] == a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33);
+            //CATCH_REQUIRE(c[3][0] == a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33);
+            //CATCH_REQUIRE(c[3][1] == a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33);
+            //CATCH_REQUIRE(c[3][2] == a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33);
+            //CATCH_REQUIRE(c[3][3] == a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33);
         }
 
-        SECTION("a*=b")
+        CATCH_SECTION("a*=b")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -3116,29 +3116,29 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -3174,22 +3174,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // run operation A *= B
             //
@@ -3197,94 +3197,94 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
 
             // this could fail
             //
-            //REQUIRE_FALSE(a[0][0] == a00);
-            //REQUIRE_FALSE(a[0][1] == a01);
-            //REQUIRE_FALSE(a[0][2] == a02);
-            //REQUIRE_FALSE(a[0][3] == a03);
-            //REQUIRE_FALSE(a[1][0] == a10);
-            //REQUIRE_FALSE(a[1][1] == a11);
-            //REQUIRE_FALSE(a[1][2] == a12);
-            //REQUIRE_FALSE(a[1][3] == a13);
-            //REQUIRE_FALSE(a[2][0] == a20);
-            //REQUIRE_FALSE(a[2][1] == a21);
-            //REQUIRE_FALSE(a[2][2] == a22);
-            //REQUIRE_FALSE(a[2][3] == a23);
-            //REQUIRE_FALSE(a[3][0] == a30);
-            //REQUIRE_FALSE(a[3][1] == a31);
-            //REQUIRE_FALSE(a[3][2] == a32);
-            //REQUIRE_FALSE(a[3][3] == a33);
+            //CATCH_REQUIRE_FALSE(a[0][0] == a00);
+            //CATCH_REQUIRE_FALSE(a[0][1] == a01);
+            //CATCH_REQUIRE_FALSE(a[0][2] == a02);
+            //CATCH_REQUIRE_FALSE(a[0][3] == a03);
+            //CATCH_REQUIRE_FALSE(a[1][0] == a10);
+            //CATCH_REQUIRE_FALSE(a[1][1] == a11);
+            //CATCH_REQUIRE_FALSE(a[1][2] == a12);
+            //CATCH_REQUIRE_FALSE(a[1][3] == a13);
+            //CATCH_REQUIRE_FALSE(a[2][0] == a20);
+            //CATCH_REQUIRE_FALSE(a[2][1] == a21);
+            //CATCH_REQUIRE_FALSE(a[2][2] == a22);
+            //CATCH_REQUIRE_FALSE(a[2][3] == a23);
+            //CATCH_REQUIRE_FALSE(a[3][0] == a30);
+            //CATCH_REQUIRE_FALSE(a[3][1] == a31);
+            //CATCH_REQUIRE_FALSE(a[3][2] == a32);
+            //CATCH_REQUIRE_FALSE(a[3][3] == a33);
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
-            REQUIRE(a[0][0] == a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30);
-            REQUIRE(a[0][1] == a00 * b01 + a01 * b11 + a02 * b21 + a03 * b31);
-            REQUIRE(a[0][2] == a00 * b02 + a01 * b12 + a02 * b22 + a03 * b32);
-            REQUIRE(a[0][3] == a00 * b03 + a01 * b13 + a02 * b23 + a03 * b33);
+            CATCH_REQUIRE(a[0][0] == a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30);
+            CATCH_REQUIRE(a[0][1] == a00 * b01 + a01 * b11 + a02 * b21 + a03 * b31);
+            CATCH_REQUIRE(a[0][2] == a00 * b02 + a01 * b12 + a02 * b22 + a03 * b32);
+            CATCH_REQUIRE(a[0][3] == a00 * b03 + a01 * b13 + a02 * b23 + a03 * b33);
 
-            REQUIRE(a[1][0] == a10 * b00 + a11 * b10 + a12 * b20 + a13 * b30);
-            REQUIRE(a[1][1] == a10 * b01 + a11 * b11 + a12 * b21 + a13 * b31);
-            REQUIRE(a[1][2] == a10 * b02 + a11 * b12 + a12 * b22 + a13 * b32);
-            REQUIRE(a[1][3] == a10 * b03 + a11 * b13 + a12 * b23 + a13 * b33);
+            CATCH_REQUIRE(a[1][0] == a10 * b00 + a11 * b10 + a12 * b20 + a13 * b30);
+            CATCH_REQUIRE(a[1][1] == a10 * b01 + a11 * b11 + a12 * b21 + a13 * b31);
+            CATCH_REQUIRE(a[1][2] == a10 * b02 + a11 * b12 + a12 * b22 + a13 * b32);
+            CATCH_REQUIRE(a[1][3] == a10 * b03 + a11 * b13 + a12 * b23 + a13 * b33);
 
-            REQUIRE(a[2][0] == a20 * b00 + a21 * b10 + a22 * b20 + a23 * b30);
-            REQUIRE(a[2][1] == a20 * b01 + a21 * b11 + a22 * b21 + a23 * b31);
-            REQUIRE(a[2][2] == a20 * b02 + a21 * b12 + a22 * b22 + a23 * b32);
-            REQUIRE(a[2][3] == a20 * b03 + a21 * b13 + a22 * b23 + a23 * b33);
+            CATCH_REQUIRE(a[2][0] == a20 * b00 + a21 * b10 + a22 * b20 + a23 * b30);
+            CATCH_REQUIRE(a[2][1] == a20 * b01 + a21 * b11 + a22 * b21 + a23 * b31);
+            CATCH_REQUIRE(a[2][2] == a20 * b02 + a21 * b12 + a22 * b22 + a23 * b32);
+            CATCH_REQUIRE(a[2][3] == a20 * b03 + a21 * b13 + a22 * b23 + a23 * b33);
 
-            REQUIRE(a[3][0] == a30 * b00 + a31 * b10 + a32 * b20 + a33 * b30);
-            REQUIRE(a[3][1] == a30 * b01 + a31 * b11 + a32 * b21 + a33 * b31);
-            REQUIRE(a[3][2] == a30 * b02 + a31 * b12 + a32 * b22 + a33 * b32);
-            REQUIRE(a[3][3] == a30 * b03 + a31 * b13 + a32 * b23 + a33 * b33);
+            CATCH_REQUIRE(a[3][0] == a30 * b00 + a31 * b10 + a32 * b20 + a33 * b30);
+            CATCH_REQUIRE(a[3][1] == a30 * b01 + a31 * b11 + a32 * b21 + a33 * b31);
+            CATCH_REQUIRE(a[3][2] == a30 * b02 + a31 * b12 + a32 * b22 + a33 * b32);
+            CATCH_REQUIRE(a[3][3] == a30 * b03 + a31 * b13 + a32 * b23 + a33 * b33);
 
-            //REQUIRE(a[0][0] == a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03);
-            //REQUIRE(a[0][1] == a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03);
-            //REQUIRE(a[0][2] == a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03);
-            //REQUIRE(a[0][3] == a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03);
+            //CATCH_REQUIRE(a[0][0] == a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03);
+            //CATCH_REQUIRE(a[0][1] == a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03);
+            //CATCH_REQUIRE(a[0][2] == a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03);
+            //CATCH_REQUIRE(a[0][3] == a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03);
 
-            //REQUIRE(a[1][0] == a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13);
-            //REQUIRE(a[1][1] == a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13);
-            //REQUIRE(a[1][2] == a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13);
-            //REQUIRE(a[1][3] == a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13);
+            //CATCH_REQUIRE(a[1][0] == a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13);
+            //CATCH_REQUIRE(a[1][1] == a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13);
+            //CATCH_REQUIRE(a[1][2] == a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13);
+            //CATCH_REQUIRE(a[1][3] == a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13);
 
-            //REQUIRE(a[2][0] == a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23);
-            //REQUIRE(a[2][1] == a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23);
-            //REQUIRE(a[2][2] == a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23);
-            //REQUIRE(a[2][3] == a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23);
+            //CATCH_REQUIRE(a[2][0] == a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23);
+            //CATCH_REQUIRE(a[2][1] == a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23);
+            //CATCH_REQUIRE(a[2][2] == a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23);
+            //CATCH_REQUIRE(a[2][3] == a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23);
 
-            //REQUIRE(a[3][0] == a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33);
-            //REQUIRE(a[3][1] == a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33);
-            //REQUIRE(a[3][2] == a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33);
-            //REQUIRE(a[3][3] == a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33);
+            //CATCH_REQUIRE(a[3][0] == a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33);
+            //CATCH_REQUIRE(a[3][1] == a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33);
+            //CATCH_REQUIRE(a[3][2] == a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33);
+            //CATCH_REQUIRE(a[3][3] == a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33);
         }
     }
 
     // create two random 4x4 matrices and make sure the add works
     //
-    GIVEN("div")
+    CATCH_GIVEN("div")
     {
-        SECTION("b=a/<scalar>")
+        CATCH_SECTION("b=a/<scalar>")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -3320,29 +3320,29 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -3378,22 +3378,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // create a scalar for our test
             //
@@ -3407,68 +3407,68 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             //
             b = a / scalar;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // this can't fail because we ensure scalar != 0 or 1
             //
-            REQUIRE_FALSE(b[0][0] == b00);
-            REQUIRE_FALSE(b[0][1] == b01);
-            REQUIRE_FALSE(b[0][2] == b02);
-            REQUIRE_FALSE(b[0][3] == b03);
-            REQUIRE_FALSE(b[1][0] == b10);
-            REQUIRE_FALSE(b[1][1] == b11);
-            REQUIRE_FALSE(b[1][2] == b12);
-            REQUIRE_FALSE(b[1][3] == b13);
-            REQUIRE_FALSE(b[2][0] == b20);
-            REQUIRE_FALSE(b[2][1] == b21);
-            REQUIRE_FALSE(b[2][2] == b22);
-            REQUIRE_FALSE(b[2][3] == b23);
-            REQUIRE_FALSE(b[3][0] == b30);
-            REQUIRE_FALSE(b[3][1] == b31);
-            REQUIRE_FALSE(b[3][2] == b32);
-            REQUIRE_FALSE(b[3][3] == b33);
+            CATCH_REQUIRE_FALSE(b[0][0] == b00);
+            CATCH_REQUIRE_FALSE(b[0][1] == b01);
+            CATCH_REQUIRE_FALSE(b[0][2] == b02);
+            CATCH_REQUIRE_FALSE(b[0][3] == b03);
+            CATCH_REQUIRE_FALSE(b[1][0] == b10);
+            CATCH_REQUIRE_FALSE(b[1][1] == b11);
+            CATCH_REQUIRE_FALSE(b[1][2] == b12);
+            CATCH_REQUIRE_FALSE(b[1][3] == b13);
+            CATCH_REQUIRE_FALSE(b[2][0] == b20);
+            CATCH_REQUIRE_FALSE(b[2][1] == b21);
+            CATCH_REQUIRE_FALSE(b[2][2] == b22);
+            CATCH_REQUIRE_FALSE(b[2][3] == b23);
+            CATCH_REQUIRE_FALSE(b[3][0] == b30);
+            CATCH_REQUIRE_FALSE(b[3][1] == b31);
+            CATCH_REQUIRE_FALSE(b[3][2] == b32);
+            CATCH_REQUIRE_FALSE(b[3][3] == b33);
 
-            REQUIRE(b[0][0] == a00 / scalar);
-            REQUIRE(b[0][1] == a01 / scalar);
-            REQUIRE(b[0][2] == a02 / scalar);
-            REQUIRE(b[0][3] == a03 / scalar);
-            REQUIRE(b[1][0] == a10 / scalar);
-            REQUIRE(b[1][1] == a11 / scalar);
-            REQUIRE(b[1][2] == a12 / scalar);
-            REQUIRE(b[1][3] == a13 / scalar);
-            REQUIRE(b[2][0] == a20 / scalar);
-            REQUIRE(b[2][1] == a21 / scalar);
-            REQUIRE(b[2][2] == a22 / scalar);
-            REQUIRE(b[2][3] == a23 / scalar);
-            REQUIRE(b[3][0] == a30 / scalar);
-            REQUIRE(b[3][1] == a31 / scalar);
-            REQUIRE(b[3][2] == a32 / scalar);
-            REQUIRE(b[3][3] == a33 / scalar);
+            CATCH_REQUIRE(b[0][0] == a00 / scalar);
+            CATCH_REQUIRE(b[0][1] == a01 / scalar);
+            CATCH_REQUIRE(b[0][2] == a02 / scalar);
+            CATCH_REQUIRE(b[0][3] == a03 / scalar);
+            CATCH_REQUIRE(b[1][0] == a10 / scalar);
+            CATCH_REQUIRE(b[1][1] == a11 / scalar);
+            CATCH_REQUIRE(b[1][2] == a12 / scalar);
+            CATCH_REQUIRE(b[1][3] == a13 / scalar);
+            CATCH_REQUIRE(b[2][0] == a20 / scalar);
+            CATCH_REQUIRE(b[2][1] == a21 / scalar);
+            CATCH_REQUIRE(b[2][2] == a22 / scalar);
+            CATCH_REQUIRE(b[2][3] == a23 / scalar);
+            CATCH_REQUIRE(b[3][0] == a30 / scalar);
+            CATCH_REQUIRE(b[3][1] == a31 / scalar);
+            CATCH_REQUIRE(b[3][2] == a32 / scalar);
+            CATCH_REQUIRE(b[3][3] == a33 / scalar);
         }
 
-        SECTION("a/=<scalar>")
+        CATCH_SECTION("a/=<scalar>")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -3504,22 +3504,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // create a scalar for our test
             //
@@ -3535,49 +3535,49 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
 
             // this can't fail because we ensure scalar != 0 or 1
             //
-            REQUIRE_FALSE(a[0][0] == a00);
-            REQUIRE_FALSE(a[0][1] == a01);
-            REQUIRE_FALSE(a[0][2] == a02);
-            REQUIRE_FALSE(a[0][3] == a03);
-            REQUIRE_FALSE(a[1][0] == a10);
-            REQUIRE_FALSE(a[1][1] == a11);
-            REQUIRE_FALSE(a[1][2] == a12);
-            REQUIRE_FALSE(a[1][3] == a13);
-            REQUIRE_FALSE(a[2][0] == a20);
-            REQUIRE_FALSE(a[2][1] == a21);
-            REQUIRE_FALSE(a[2][2] == a22);
-            REQUIRE_FALSE(a[2][3] == a23);
-            REQUIRE_FALSE(a[3][0] == a30);
-            REQUIRE_FALSE(a[3][1] == a31);
-            REQUIRE_FALSE(a[3][2] == a32);
-            REQUIRE_FALSE(a[3][3] == a33);
+            CATCH_REQUIRE_FALSE(a[0][0] == a00);
+            CATCH_REQUIRE_FALSE(a[0][1] == a01);
+            CATCH_REQUIRE_FALSE(a[0][2] == a02);
+            CATCH_REQUIRE_FALSE(a[0][3] == a03);
+            CATCH_REQUIRE_FALSE(a[1][0] == a10);
+            CATCH_REQUIRE_FALSE(a[1][1] == a11);
+            CATCH_REQUIRE_FALSE(a[1][2] == a12);
+            CATCH_REQUIRE_FALSE(a[1][3] == a13);
+            CATCH_REQUIRE_FALSE(a[2][0] == a20);
+            CATCH_REQUIRE_FALSE(a[2][1] == a21);
+            CATCH_REQUIRE_FALSE(a[2][2] == a22);
+            CATCH_REQUIRE_FALSE(a[2][3] == a23);
+            CATCH_REQUIRE_FALSE(a[3][0] == a30);
+            CATCH_REQUIRE_FALSE(a[3][1] == a31);
+            CATCH_REQUIRE_FALSE(a[3][2] == a32);
+            CATCH_REQUIRE_FALSE(a[3][3] == a33);
 
-            REQUIRE(a[0][0] == a00 / scalar);
-            REQUIRE(a[0][1] == a01 / scalar);
-            REQUIRE(a[0][2] == a02 / scalar);
-            REQUIRE(a[0][3] == a03 / scalar);
-            REQUIRE(a[1][0] == a10 / scalar);
-            REQUIRE(a[1][1] == a11 / scalar);
-            REQUIRE(a[1][2] == a12 / scalar);
-            REQUIRE(a[1][3] == a13 / scalar);
-            REQUIRE(a[2][0] == a20 / scalar);
-            REQUIRE(a[2][1] == a21 / scalar);
-            REQUIRE(a[2][2] == a22 / scalar);
-            REQUIRE(a[2][3] == a23 / scalar);
-            REQUIRE(a[3][0] == a30 / scalar);
-            REQUIRE(a[3][1] == a31 / scalar);
-            REQUIRE(a[3][2] == a32 / scalar);
-            REQUIRE(a[3][3] == a33 / scalar);
+            CATCH_REQUIRE(a[0][0] == a00 / scalar);
+            CATCH_REQUIRE(a[0][1] == a01 / scalar);
+            CATCH_REQUIRE(a[0][2] == a02 / scalar);
+            CATCH_REQUIRE(a[0][3] == a03 / scalar);
+            CATCH_REQUIRE(a[1][0] == a10 / scalar);
+            CATCH_REQUIRE(a[1][1] == a11 / scalar);
+            CATCH_REQUIRE(a[1][2] == a12 / scalar);
+            CATCH_REQUIRE(a[1][3] == a13 / scalar);
+            CATCH_REQUIRE(a[2][0] == a20 / scalar);
+            CATCH_REQUIRE(a[2][1] == a21 / scalar);
+            CATCH_REQUIRE(a[2][2] == a22 / scalar);
+            CATCH_REQUIRE(a[2][3] == a23 / scalar);
+            CATCH_REQUIRE(a[3][0] == a30 / scalar);
+            CATCH_REQUIRE(a[3][1] == a31 / scalar);
+            CATCH_REQUIRE(a[3][2] == a32 / scalar);
+            CATCH_REQUIRE(a[3][3] == a33 / scalar);
         }
 
-        SECTION("c=a/b")
+        CATCH_SECTION("c=a/b")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -3613,29 +3613,29 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double b00;
             double b01;
@@ -3692,22 +3692,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
                 b[3][2] = b32;
                 b[3][3] = b33;
 
-                REQUIRE(b[0][0] == b00);
-                REQUIRE(b[0][1] == b01);
-                REQUIRE(b[0][2] == b02);
-                REQUIRE(b[0][3] == b03);
-                REQUIRE(b[1][0] == b10);
-                REQUIRE(b[1][1] == b11);
-                REQUIRE(b[1][2] == b12);
-                REQUIRE(b[1][3] == b13);
-                REQUIRE(b[2][0] == b20);
-                REQUIRE(b[2][1] == b21);
-                REQUIRE(b[2][2] == b22);
-                REQUIRE(b[2][3] == b23);
-                REQUIRE(b[3][0] == b30);
-                REQUIRE(b[3][1] == b31);
-                REQUIRE(b[3][2] == b32);
-                REQUIRE(b[3][3] == b33);
+                CATCH_REQUIRE(b[0][0] == b00);
+                CATCH_REQUIRE(b[0][1] == b01);
+                CATCH_REQUIRE(b[0][2] == b02);
+                CATCH_REQUIRE(b[0][3] == b03);
+                CATCH_REQUIRE(b[1][0] == b10);
+                CATCH_REQUIRE(b[1][1] == b11);
+                CATCH_REQUIRE(b[1][2] == b12);
+                CATCH_REQUIRE(b[1][3] == b13);
+                CATCH_REQUIRE(b[2][0] == b20);
+                CATCH_REQUIRE(b[2][1] == b21);
+                CATCH_REQUIRE(b[2][2] == b22);
+                CATCH_REQUIRE(b[2][3] == b23);
+                CATCH_REQUIRE(b[3][0] == b30);
+                CATCH_REQUIRE(b[3][1] == b31);
+                CATCH_REQUIRE(b[3][2] == b32);
+                CATCH_REQUIRE(b[3][3] == b33);
 
                 t = b;
             }
@@ -3717,8 +3717,8 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             //
             snap::matrix<double> c(4, 4);
 
-            REQUIRE(c.rows() == 4);
-            REQUIRE(c.columns() == 4);
+            CATCH_REQUIRE(c.rows() == 4);
+            CATCH_REQUIRE(c.columns() == 4);
 
             double const c00(frand());
             double const c01(frand());
@@ -3754,78 +3754,78 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             c[3][2] = c32;
             c[3][3] = c33;
 
-            REQUIRE(c[0][0] == c00);
-            REQUIRE(c[0][1] == c01);
-            REQUIRE(c[0][2] == c02);
-            REQUIRE(c[0][3] == c03);
-            REQUIRE(c[1][0] == c10);
-            REQUIRE(c[1][1] == c11);
-            REQUIRE(c[1][2] == c12);
-            REQUIRE(c[1][3] == c13);
-            REQUIRE(c[2][0] == c20);
-            REQUIRE(c[2][1] == c21);
-            REQUIRE(c[2][2] == c22);
-            REQUIRE(c[2][3] == c23);
-            REQUIRE(c[3][0] == c30);
-            REQUIRE(c[3][1] == c31);
-            REQUIRE(c[3][2] == c32);
-            REQUIRE(c[3][3] == c33);
+            CATCH_REQUIRE(c[0][0] == c00);
+            CATCH_REQUIRE(c[0][1] == c01);
+            CATCH_REQUIRE(c[0][2] == c02);
+            CATCH_REQUIRE(c[0][3] == c03);
+            CATCH_REQUIRE(c[1][0] == c10);
+            CATCH_REQUIRE(c[1][1] == c11);
+            CATCH_REQUIRE(c[1][2] == c12);
+            CATCH_REQUIRE(c[1][3] == c13);
+            CATCH_REQUIRE(c[2][0] == c20);
+            CATCH_REQUIRE(c[2][1] == c21);
+            CATCH_REQUIRE(c[2][2] == c22);
+            CATCH_REQUIRE(c[2][3] == c23);
+            CATCH_REQUIRE(c[3][0] == c30);
+            CATCH_REQUIRE(c[3][1] == c31);
+            CATCH_REQUIRE(c[3][2] == c32);
+            CATCH_REQUIRE(c[3][3] == c33);
 
             // run operation C = A / B
             //
             c = a / b;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             // this could fail
-            //REQUIRE_FALSE(c[0][0] == c00);
-            //REQUIRE_FALSE(c[0][1] == c01);
-            //REQUIRE_FALSE(c[0][2] == c02);
-            //REQUIRE_FALSE(c[0][3] == c03);
-            //REQUIRE_FALSE(c[1][0] == c10);
-            //REQUIRE_FALSE(c[1][1] == c11);
-            //REQUIRE_FALSE(c[1][2] == c12);
-            //REQUIRE_FALSE(c[1][3] == c13);
-            //REQUIRE_FALSE(c[2][0] == c20);
-            //REQUIRE_FALSE(c[2][1] == c21);
-            //REQUIRE_FALSE(c[2][2] == c22);
-            //REQUIRE_FALSE(c[2][3] == c23);
-            //REQUIRE_FALSE(c[3][0] == c30);
-            //REQUIRE_FALSE(c[3][1] == c31);
-            //REQUIRE_FALSE(c[3][2] == c32);
-            //REQUIRE_FALSE(c[3][3] == c33);
+            //CATCH_REQUIRE_FALSE(c[0][0] == c00);
+            //CATCH_REQUIRE_FALSE(c[0][1] == c01);
+            //CATCH_REQUIRE_FALSE(c[0][2] == c02);
+            //CATCH_REQUIRE_FALSE(c[0][3] == c03);
+            //CATCH_REQUIRE_FALSE(c[1][0] == c10);
+            //CATCH_REQUIRE_FALSE(c[1][1] == c11);
+            //CATCH_REQUIRE_FALSE(c[1][2] == c12);
+            //CATCH_REQUIRE_FALSE(c[1][3] == c13);
+            //CATCH_REQUIRE_FALSE(c[2][0] == c20);
+            //CATCH_REQUIRE_FALSE(c[2][1] == c21);
+            //CATCH_REQUIRE_FALSE(c[2][2] == c22);
+            //CATCH_REQUIRE_FALSE(c[2][3] == c23);
+            //CATCH_REQUIRE_FALSE(c[3][0] == c30);
+            //CATCH_REQUIRE_FALSE(c[3][1] == c31);
+            //CATCH_REQUIRE_FALSE(c[3][2] == c32);
+            //CATCH_REQUIRE_FALSE(c[3][3] == c33);
 
             // first level verification, which is exactly what the
             // division function does, it does not mean that the
@@ -3834,22 +3834,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             snap::matrix<double> r(4, 4);
             r = a * t;
 
-            REQUIRE(c[0][0] == r[0][0]);
-            REQUIRE(c[0][1] == r[0][1]);
-            REQUIRE(c[0][2] == r[0][2]);
-            REQUIRE(c[0][3] == r[0][3]);
-            REQUIRE(c[1][0] == r[1][0]);
-            REQUIRE(c[1][1] == r[1][1]);
-            REQUIRE(c[1][2] == r[1][2]);
-            REQUIRE(c[1][3] == r[1][3]);
-            REQUIRE(c[2][0] == r[2][0]);
-            REQUIRE(c[2][1] == r[2][1]);
-            REQUIRE(c[2][2] == r[2][2]);
-            REQUIRE(c[2][3] == r[2][3]);
-            REQUIRE(c[3][0] == r[3][0]);
-            REQUIRE(c[3][1] == r[3][1]);
-            REQUIRE(c[3][2] == r[3][2]);
-            REQUIRE(c[3][3] == r[3][3]);
+            CATCH_REQUIRE(c[0][0] == r[0][0]);
+            CATCH_REQUIRE(c[0][1] == r[0][1]);
+            CATCH_REQUIRE(c[0][2] == r[0][2]);
+            CATCH_REQUIRE(c[0][3] == r[0][3]);
+            CATCH_REQUIRE(c[1][0] == r[1][0]);
+            CATCH_REQUIRE(c[1][1] == r[1][1]);
+            CATCH_REQUIRE(c[1][2] == r[1][2]);
+            CATCH_REQUIRE(c[1][3] == r[1][3]);
+            CATCH_REQUIRE(c[2][0] == r[2][0]);
+            CATCH_REQUIRE(c[2][1] == r[2][1]);
+            CATCH_REQUIRE(c[2][2] == r[2][2]);
+            CATCH_REQUIRE(c[2][3] == r[2][3]);
+            CATCH_REQUIRE(c[3][0] == r[3][0]);
+            CATCH_REQUIRE(c[3][1] == r[3][1]);
+            CATCH_REQUIRE(c[3][2] == r[3][2]);
+            CATCH_REQUIRE(c[3][3] == r[3][3]);
 
             double const determinant(b.determinant());
             snap::matrix<double> adjugate(b.adjugate());
@@ -3857,32 +3857,32 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             snap::matrix<double> inv(adjugate * (1.0 / determinant));
             snap::matrix<double> div(a * inv);
 
-            REQUIRE(fabs(c[0][0] - div[0][0]) < 0.0001);
-            REQUIRE(fabs(c[0][1] - div[0][1]) < 0.0001);
-            REQUIRE(fabs(c[0][2] - div[0][2]) < 0.0001);
-            REQUIRE(fabs(c[0][3] - div[0][3]) < 0.0001);
-            REQUIRE(fabs(c[1][0] - div[1][0]) < 0.0001);
-            REQUIRE(fabs(c[1][1] - div[1][1]) < 0.0001);
-            REQUIRE(fabs(c[1][2] - div[1][2]) < 0.0001);
-            REQUIRE(fabs(c[1][3] - div[1][3]) < 0.0001);
-            REQUIRE(fabs(c[2][0] - div[2][0]) < 0.0001);
-            REQUIRE(fabs(c[2][1] - div[2][1]) < 0.0001);
-            REQUIRE(fabs(c[2][2] - div[2][2]) < 0.0001);
-            REQUIRE(fabs(c[2][3] - div[2][3]) < 0.0001);
-            REQUIRE(fabs(c[3][0] - div[3][0]) < 0.0001);
-            REQUIRE(fabs(c[3][1] - div[3][1]) < 0.0001);
-            REQUIRE(fabs(c[3][2] - div[3][2]) < 0.0001);
-            REQUIRE(fabs(c[3][3] - div[3][3]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[0][0] - div[0][0]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[0][1] - div[0][1]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[0][2] - div[0][2]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[0][3] - div[0][3]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[1][0] - div[1][0]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[1][1] - div[1][1]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[1][2] - div[1][2]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[1][3] - div[1][3]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[2][0] - div[2][0]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[2][1] - div[2][1]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[2][2] - div[2][2]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[2][3] - div[2][3]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[3][0] - div[3][0]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[3][1] - div[3][1]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[3][2] - div[3][2]) < 0.0001);
+            CATCH_REQUIRE(fabs(c[3][3] - div[3][3]) < 0.0001);
         }
 
-        SECTION("a/=b")
+        CATCH_SECTION("a/=b")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             double const a00(frand());
             double const a01(frand());
@@ -3918,29 +3918,29 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             a[3][2] = a32;
             a[3][3] = a33;
 
-            REQUIRE(a[0][0] == a00);
-            REQUIRE(a[0][1] == a01);
-            REQUIRE(a[0][2] == a02);
-            REQUIRE(a[0][3] == a03);
-            REQUIRE(a[1][0] == a10);
-            REQUIRE(a[1][1] == a11);
-            REQUIRE(a[1][2] == a12);
-            REQUIRE(a[1][3] == a13);
-            REQUIRE(a[2][0] == a20);
-            REQUIRE(a[2][1] == a21);
-            REQUIRE(a[2][2] == a22);
-            REQUIRE(a[2][3] == a23);
-            REQUIRE(a[3][0] == a30);
-            REQUIRE(a[3][1] == a31);
-            REQUIRE(a[3][2] == a32);
-            REQUIRE(a[3][3] == a33);
+            CATCH_REQUIRE(a[0][0] == a00);
+            CATCH_REQUIRE(a[0][1] == a01);
+            CATCH_REQUIRE(a[0][2] == a02);
+            CATCH_REQUIRE(a[0][3] == a03);
+            CATCH_REQUIRE(a[1][0] == a10);
+            CATCH_REQUIRE(a[1][1] == a11);
+            CATCH_REQUIRE(a[1][2] == a12);
+            CATCH_REQUIRE(a[1][3] == a13);
+            CATCH_REQUIRE(a[2][0] == a20);
+            CATCH_REQUIRE(a[2][1] == a21);
+            CATCH_REQUIRE(a[2][2] == a22);
+            CATCH_REQUIRE(a[2][3] == a23);
+            CATCH_REQUIRE(a[3][0] == a30);
+            CATCH_REQUIRE(a[3][1] == a31);
+            CATCH_REQUIRE(a[3][2] == a32);
+            CATCH_REQUIRE(a[3][3] == a33);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double const b00(frand());
             double const b01(frand());
@@ -3976,22 +3976,22 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
             b[3][2] = b32;
             b[3][3] = b33;
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
             double const determinant(b.determinant());
             snap::matrix<double> adjugate(b.adjugate());
@@ -4005,104 +4005,104 @@ TEST_CASE("matrix_multiplicative", "[matrix]")
 
             // this could fail if one of bXX is 0.0
             //
-            //REQUIRE(a[0][0] == a00);
-            //REQUIRE(a[0][1] == a01);
-            //REQUIRE(a[0][2] == a02);
-            //REQUIRE(a[0][3] == a03);
-            //REQUIRE(a[1][0] == a10);
-            //REQUIRE(a[1][1] == a11);
-            //REQUIRE(a[1][2] == a12);
-            //REQUIRE(a[1][3] == a13);
-            //REQUIRE(a[2][0] == a20);
-            //REQUIRE(a[2][1] == a21);
-            //REQUIRE(a[2][2] == a22);
-            //REQUIRE(a[2][3] == a23);
-            //REQUIRE(a[3][0] == a30);
-            //REQUIRE(a[3][1] == a31);
-            //REQUIRE(a[3][2] == a32);
-            //REQUIRE(a[3][3] == a33);
+            //CATCH_REQUIRE(a[0][0] == a00);
+            //CATCH_REQUIRE(a[0][1] == a01);
+            //CATCH_REQUIRE(a[0][2] == a02);
+            //CATCH_REQUIRE(a[0][3] == a03);
+            //CATCH_REQUIRE(a[1][0] == a10);
+            //CATCH_REQUIRE(a[1][1] == a11);
+            //CATCH_REQUIRE(a[1][2] == a12);
+            //CATCH_REQUIRE(a[1][3] == a13);
+            //CATCH_REQUIRE(a[2][0] == a20);
+            //CATCH_REQUIRE(a[2][1] == a21);
+            //CATCH_REQUIRE(a[2][2] == a22);
+            //CATCH_REQUIRE(a[2][3] == a23);
+            //CATCH_REQUIRE(a[3][0] == a30);
+            //CATCH_REQUIRE(a[3][1] == a31);
+            //CATCH_REQUIRE(a[3][2] == a32);
+            //CATCH_REQUIRE(a[3][3] == a33);
 
-            REQUIRE(b[0][0] == b00);
-            REQUIRE(b[0][1] == b01);
-            REQUIRE(b[0][2] == b02);
-            REQUIRE(b[0][3] == b03);
-            REQUIRE(b[1][0] == b10);
-            REQUIRE(b[1][1] == b11);
-            REQUIRE(b[1][2] == b12);
-            REQUIRE(b[1][3] == b13);
-            REQUIRE(b[2][0] == b20);
-            REQUIRE(b[2][1] == b21);
-            REQUIRE(b[2][2] == b22);
-            REQUIRE(b[2][3] == b23);
-            REQUIRE(b[3][0] == b30);
-            REQUIRE(b[3][1] == b31);
-            REQUIRE(b[3][2] == b32);
-            REQUIRE(b[3][3] == b33);
+            CATCH_REQUIRE(b[0][0] == b00);
+            CATCH_REQUIRE(b[0][1] == b01);
+            CATCH_REQUIRE(b[0][2] == b02);
+            CATCH_REQUIRE(b[0][3] == b03);
+            CATCH_REQUIRE(b[1][0] == b10);
+            CATCH_REQUIRE(b[1][1] == b11);
+            CATCH_REQUIRE(b[1][2] == b12);
+            CATCH_REQUIRE(b[1][3] == b13);
+            CATCH_REQUIRE(b[2][0] == b20);
+            CATCH_REQUIRE(b[2][1] == b21);
+            CATCH_REQUIRE(b[2][2] == b22);
+            CATCH_REQUIRE(b[2][3] == b23);
+            CATCH_REQUIRE(b[3][0] == b30);
+            CATCH_REQUIRE(b[3][1] == b31);
+            CATCH_REQUIRE(b[3][2] == b32);
+            CATCH_REQUIRE(b[3][3] == b33);
 
-            REQUIRE(fabs(a[0][0] - div[0][0]) < 0.0001);
-            REQUIRE(fabs(a[0][1] - div[0][1]) < 0.0001);
-            REQUIRE(fabs(a[0][2] - div[0][2]) < 0.0001);
-            REQUIRE(fabs(a[0][3] - div[0][3]) < 0.0001);
-            REQUIRE(fabs(a[1][0] - div[1][0]) < 0.0001);
-            REQUIRE(fabs(a[1][1] - div[1][1]) < 0.0001);
-            REQUIRE(fabs(a[1][2] - div[1][2]) < 0.0001);
-            REQUIRE(fabs(a[1][3] - div[1][3]) < 0.0001);
-            REQUIRE(fabs(a[2][0] - div[2][0]) < 0.0001);
-            REQUIRE(fabs(a[2][1] - div[2][1]) < 0.0001);
-            REQUIRE(fabs(a[2][2] - div[2][2]) < 0.0001);
-            REQUIRE(fabs(a[2][3] - div[2][3]) < 0.0001);
-            REQUIRE(fabs(a[3][0] - div[3][0]) < 0.0001);
-            REQUIRE(fabs(a[3][1] - div[3][1]) < 0.0001);
-            REQUIRE(fabs(a[3][2] - div[3][2]) < 0.0001);
-            REQUIRE(fabs(a[3][3] - div[3][3]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[0][0] - div[0][0]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[0][1] - div[0][1]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[0][2] - div[0][2]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[0][3] - div[0][3]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[1][0] - div[1][0]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[1][1] - div[1][1]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[1][2] - div[1][2]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[1][3] - div[1][3]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[2][0] - div[2][0]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[2][1] - div[2][1]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[2][2] - div[2][2]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[2][3] - div[2][3]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[3][0] - div[3][0]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[3][1] - div[3][1]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[3][2] - div[3][2]) < 0.0001);
+            CATCH_REQUIRE(fabs(a[3][3] - div[3][3]) < 0.0001);
         }
     }
 }
 
 
-TEST_CASE("matrix_color", "[matrix]")
+CATCH_TEST_CASE("matrix_color", "[matrix]")
 {
     // generate a few brightness matrices
     //
-    GIVEN("brightness")
+    CATCH_GIVEN("brightness")
     {
-        SECTION("b=a*<brightness> (a is identity)")
+        CATCH_SECTION("b=a*<brightness> (a is identity)")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             for(int idx(0); idx < 1000; ++idx)
             {
                 double const brightness(static_cast<double>(idx) / 1000.0);
                 b = a.brightness(brightness);
 
-                REQUIRE(fabs(b[0][0] - brightness) < 0.0001);
-                REQUIRE(fabs(b[0][1] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[0][2] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[0][3] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[1][0] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[1][1] - brightness) < 0.0001);
-                REQUIRE(fabs(b[1][2] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[1][3] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[2][0] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[2][1] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[2][2] - brightness) < 0.0001);
-                REQUIRE(fabs(b[2][3] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[3][0] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[3][1] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[3][2] - 0.0) < 0.0001);
-                REQUIRE(fabs(b[3][3] - 1.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[0][0] - brightness) < 0.0001);
+                CATCH_REQUIRE(fabs(b[0][1] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[0][2] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[0][3] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[1][0] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[1][1] - brightness) < 0.0001);
+                CATCH_REQUIRE(fabs(b[1][2] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[1][3] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[2][0] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[2][1] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[2][2] - brightness) < 0.0001);
+                CATCH_REQUIRE(fabs(b[2][3] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[3][0] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[3][1] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[3][2] - 0.0) < 0.0001);
+                CATCH_REQUIRE(fabs(b[3][3] - 1.0) < 0.0001);
 
 //     *       brightness_r & 0 & 0 & 0
 //     *    \\ 0 & brightness_g & 0 & 0
@@ -4115,23 +4115,23 @@ TEST_CASE("matrix_color", "[matrix]")
 
     // generate a few saturation matrices
     //
-    GIVEN("saturation")
+    CATCH_GIVEN("saturation")
     {
-        SECTION("b=a*<saturation> (a is identity)")
+        CATCH_SECTION("b=a*<saturation> (a is identity)")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double luma[6][3];
 
@@ -4170,22 +4170,22 @@ TEST_CASE("matrix_color", "[matrix]")
                     double const s(static_cast<double>(idx) / 1000.0);
                     b = a.saturation(s);
 
-                    REQUIRE(fabs(b[0][0] - (luma[l][0] * (1.0 - s) + s)) < 0.0001);
-                    REQUIRE(fabs(b[0][1] - (luma[l][0] * (1.0 - s))) < 0.0001);
-                    REQUIRE(fabs(b[0][2] - (luma[l][0] * (1.0 - s))) < 0.0001);
-                    REQUIRE(fabs(b[0][3] - (0.0)) < 0.0001);
-                    REQUIRE(fabs(b[1][0] - (luma[l][1] * (1.0 - s))) < 0.0001);
-                    REQUIRE(fabs(b[1][1] - (luma[l][1] * (1.0 - s) + s)) < 0.0001);
-                    REQUIRE(fabs(b[1][2] - (luma[l][1] * (1.0 - s))) < 0.0001);
-                    REQUIRE(fabs(b[1][3] - (0.0)) < 0.0001);
-                    REQUIRE(fabs(b[2][0] - (luma[l][2] * (1.0 - s))) < 0.0001);
-                    REQUIRE(fabs(b[2][1] - (luma[l][2] * (1.0 - s))) < 0.0001);
-                    REQUIRE(fabs(b[2][2] - (luma[l][2] * (1.0 - s) + s)) < 0.0001);
-                    REQUIRE(fabs(b[2][3] - (0.0)) < 0.0001);
-                    REQUIRE(fabs(b[3][0] - (0.0)) < 0.0001);
-                    REQUIRE(fabs(b[3][1] - (0.0)) < 0.0001);
-                    REQUIRE(fabs(b[3][2] - (0.0)) < 0.0001);
-                    REQUIRE(fabs(b[3][3] - (1.0)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[0][0] - (luma[l][0] * (1.0 - s) + s)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[0][1] - (luma[l][0] * (1.0 - s))) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[0][2] - (luma[l][0] * (1.0 - s))) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[0][3] - (0.0)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[1][0] - (luma[l][1] * (1.0 - s))) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[1][1] - (luma[l][1] * (1.0 - s) + s)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[1][2] - (luma[l][1] * (1.0 - s))) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[1][3] - (0.0)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[2][0] - (luma[l][2] * (1.0 - s))) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[2][1] - (luma[l][2] * (1.0 - s))) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[2][2] - (luma[l][2] * (1.0 - s) + s)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[2][3] - (0.0)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[3][0] - (0.0)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[3][1] - (0.0)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[3][2] - (0.0)) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[3][3] - (1.0)) < 0.0001);
                 }
             }
         }
@@ -4193,23 +4193,23 @@ TEST_CASE("matrix_color", "[matrix]")
 
     // generate a few brightness matrices
     //
-    GIVEN("hue")
+    CATCH_GIVEN("hue")
     {
-        SECTION("b=a*<hue> (a is identity)")
+        CATCH_SECTION("b=a*<hue> (a is identity)")
         {
             // setup A
             //
             snap::matrix<double> a(4, 4);
 
-            REQUIRE(a.rows() == 4);
-            REQUIRE(a.columns() == 4);
+            CATCH_REQUIRE(a.rows() == 4);
+            CATCH_REQUIRE(a.columns() == 4);
 
             // setup B
             //
             snap::matrix<double> b(4, 4);
 
-            REQUIRE(b.rows() == 4);
-            REQUIRE(b.columns() == 4);
+            CATCH_REQUIRE(b.rows() == 4);
+            CATCH_REQUIRE(b.columns() == 4);
 
             double luma[6][3];
 
@@ -4261,7 +4261,7 @@ TEST_CASE("matrix_color", "[matrix]")
                     b = a.hue(hue);
 
 #ifdef _DEBUG
-                    REQUIRE(a.get_last_hue_matrix() == last_hue_matrix[l]);
+                    CATCH_REQUIRE(a.get_last_hue_matrix() == last_hue_matrix[l]);
 #endif
 
                     // this one requires us to work!
@@ -4329,22 +4329,22 @@ TEST_CASE("matrix_color", "[matrix]")
 //std::cout << "Got b = " << b << "\n";
 //std::cout << "Got our hue matrix = " << hue_matrix << "\n";
 
-                    REQUIRE(fabs(b[0][0] - hue_matrix[0][0]) < 0.0001);
-                    REQUIRE(fabs(b[0][1] - hue_matrix[0][1]) < 0.0001);
-                    REQUIRE(fabs(b[0][2] - hue_matrix[0][2]) < 0.0001);
-                    REQUIRE(fabs(b[0][3] - hue_matrix[0][3]) < 0.0001);
-                    REQUIRE(fabs(b[1][0] - hue_matrix[1][0]) < 0.0001);
-                    REQUIRE(fabs(b[1][1] - hue_matrix[1][1]) < 0.0001);
-                    REQUIRE(fabs(b[1][2] - hue_matrix[1][2]) < 0.0001);
-                    REQUIRE(fabs(b[1][3] - hue_matrix[1][3]) < 0.0001);
-                    REQUIRE(fabs(b[2][0] - hue_matrix[2][0]) < 0.0001);
-                    REQUIRE(fabs(b[2][1] - hue_matrix[2][1]) < 0.0001);
-                    REQUIRE(fabs(b[2][2] - hue_matrix[2][2]) < 0.0001);
-                    REQUIRE(fabs(b[2][3] - hue_matrix[2][3]) < 0.0001);
-                    REQUIRE(fabs(b[3][0] - hue_matrix[3][0]) < 0.0001);
-                    REQUIRE(fabs(b[3][1] - hue_matrix[3][1]) < 0.0001);
-                    REQUIRE(fabs(b[3][2] - hue_matrix[3][2]) < 0.0001);
-                    REQUIRE(fabs(b[3][3] - hue_matrix[3][3]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[0][0] - hue_matrix[0][0]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[0][1] - hue_matrix[0][1]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[0][2] - hue_matrix[0][2]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[0][3] - hue_matrix[0][3]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[1][0] - hue_matrix[1][0]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[1][1] - hue_matrix[1][1]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[1][2] - hue_matrix[1][2]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[1][3] - hue_matrix[1][3]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[2][0] - hue_matrix[2][0]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[2][1] - hue_matrix[2][1]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[2][2] - hue_matrix[2][2]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[2][3] - hue_matrix[2][3]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[3][0] - hue_matrix[3][0]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[3][1] - hue_matrix[3][1]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[3][2] - hue_matrix[3][2]) < 0.0001);
+                    CATCH_REQUIRE(fabs(b[3][3] - hue_matrix[3][3]) < 0.0001);
 
 //     * $$
 //     * R_r =
