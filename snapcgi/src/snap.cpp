@@ -1633,7 +1633,9 @@ void snap_cgi::cache_data(char const * data, size_t size)
             f_cache_fields[f_cache_field_name] = f_cache_field_data;
             f_cache_field_name.clear();
             f_cache_field_data.clear();
-            /*FALLTHROUGH*/
+#if __cplusplus >= 201700
+            [[fallthrough]];
+#endif
         case cache_state_t::CACHE_STATE_FIELD_NAME:
             switch(c)
             {
@@ -1731,7 +1733,9 @@ void snap_cgi::cache_data(char const * data, size_t size)
                 break;
             }
             f_cache_state = cache_state_t::CACHE_STATE_FIELD_DATA;
-            /*FALLTHROUGH*/
+#if __cplusplus >= 201700
+            [[fallthrough]];
+#endif
         case cache_state_t::CACHE_STATE_FIELD_DATA:
             if(c == '\n')
             {
