@@ -51,114 +51,114 @@
 #include "snapwebsites/email.h"
 
 
-TEST_CASE( "email", "[email]" )
+CATCH_TEST_CASE( "email", "[email]" )
 {
     // "normal" (canonicalized) URI
-    GIVEN("basics")
+    CATCH_GIVEN("basics")
     {
         time_t now(time(nullptr));
         snap::email e;
 
-        SECTION("serialization version")
+        CATCH_SECTION("serialization version")
         {
             // if the serialization version changes then we probably will
             // need to change the test
             //
-            REQUIRE(snap::email::EMAIL_MAJOR_VERSION == 1);
-            REQUIRE(snap::email::EMAIL_MINOR_VERSION == 0);
+            CATCH_REQUIRE(snap::email::EMAIL_MAJOR_VERSION == 1);
+            CATCH_REQUIRE(snap::email::EMAIL_MINOR_VERSION == 0);
         }
 
-        SECTION("branding flag")
+        CATCH_SECTION("branding flag")
         {
             // default branding is ON
             //
-            REQUIRE(e.get_branding());
+            CATCH_REQUIRE(e.get_branding());
 
             // default set keeps branding ON
             //
             e.set_branding();
-            REQUIRE(e.get_branding());
+            CATCH_REQUIRE(e.get_branding());
 
             // explicit set branding to ON
             //
             e.set_branding(true);
-            REQUIRE(e.get_branding());
+            CATCH_REQUIRE(e.get_branding());
 
             // explicit set branding to OFF
             //
             e.set_branding(false);
-            REQUIRE_FALSE(e.get_branding());
+            CATCH_REQUIRE_FALSE(e.get_branding());
         }
 
-        SECTION("cumulative string")
+        CATCH_SECTION("cumulative string")
         {
             // default is empty
             //
-            REQUIRE(e.get_cumulative() == "");
+            CATCH_REQUIRE(e.get_cumulative() == "");
 
             // change the value
             //
             e.set_cumulative("testing");
-            REQUIRE(e.get_cumulative() == "testing");
+            CATCH_REQUIRE(e.get_cumulative() == "testing");
 
             // reset the value
             //
             e.set_cumulative("");
-            REQUIRE(e.get_cumulative() == "");
+            CATCH_REQUIRE(e.get_cumulative() == "");
         }
 
-        SECTION("site key")
+        CATCH_SECTION("site key")
         {
             // default is empty
             //
-            REQUIRE(e.get_site_key() == "");
+            CATCH_REQUIRE(e.get_site_key() == "");
 
             // change the value
             //
             e.set_site_key("testing");
-            REQUIRE(e.get_site_key() == "testing");
+            CATCH_REQUIRE(e.get_site_key() == "testing");
 
             // reset the value
             //
             e.set_site_key("");
-            REQUIRE(e.get_site_key() == "");
+            CATCH_REQUIRE(e.get_site_key() == "");
         }
 
-        SECTION("email path")
+        CATCH_SECTION("email path")
         {
             // default is empty
             //
-            REQUIRE(e.get_email_path() == "");
+            CATCH_REQUIRE(e.get_email_path() == "");
 
             // change the value
             //
             e.set_email_path("/path/to/email/in/database");
-            REQUIRE(e.get_email_path() == "/path/to/email/in/database");
+            CATCH_REQUIRE(e.get_email_path() == "/path/to/email/in/database");
 
             // reset the value
             //
             e.set_email_path("");
-            REQUIRE(e.get_email_path() == "");
+            CATCH_REQUIRE(e.get_email_path() == "");
         }
 
-        SECTION("email key")
+        CATCH_SECTION("email key")
         {
             // default is empty
             //
-            REQUIRE(e.get_email_key() == "");
+            CATCH_REQUIRE(e.get_email_key() == "");
 
             // change the value
             //
             e.set_email_key("a-key-is-just-a-number-usually");
-            REQUIRE(e.get_email_key() == "a-key-is-just-a-number-usually");
+            CATCH_REQUIRE(e.get_email_key() == "a-key-is-just-a-number-usually");
 
             // reset the value
             //
             e.set_email_key("");
-            REQUIRE(e.get_email_key() == "");
+            CATCH_REQUIRE(e.get_email_key() == "");
         }
 
-        SECTION("creation time")
+        CATCH_SECTION("creation time")
         {
             // verify that the time is as expected around the time the
             // email object was created
@@ -166,19 +166,19 @@ TEST_CASE( "email", "[email]" )
             // (we allow up to nearly 4 second which could happen on a
             // process switch or worst a memory swap at the wrong time.)
             //
-            REQUIRE(e.get_time() - now <= 3);
+            CATCH_REQUIRE(e.get_time() - now <= 3);
         }
 
-        SECTION("no headers by default")
+        CATCH_SECTION("no headers by default")
         {
             // we have default headers, but they get set when we call
             // the send() function in case the user did not set them
             // yet by the time get called to send the email
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
         }
 
-        SECTION("set From: header")
+        CATCH_SECTION("set From: header")
         {
             // we have default headers, but they get set when we call
             // the send() function in case the user did not set them
@@ -197,32 +197,32 @@ TEST_CASE( "email", "[email]" )
                 from[3] = i & 0b1000 ? 'M' : 'm';
                 from[4] = '\0';
 
-                REQUIRE(e.has_header(from));
+                CATCH_REQUIRE(e.has_header(from));
 
-                REQUIRE(e.get_header(from) == "valid@example.com");
+                CATCH_REQUIRE(e.get_header(from) == "valid@example.com");
             }
 
 
             snap::email::header_map_t const & h(e.get_all_headers());
-            REQUIRE(h.size() == 1);
+            CATCH_REQUIRE(h.size() == 1);
 
-            REQUIRE(h.begin()->first == "From");
-            REQUIRE(h.begin()->second == "valid@example.com");
+            CATCH_REQUIRE(h.begin()->first == "From");
+            CATCH_REQUIRE(h.begin()->second == "valid@example.com");
 
-            REQUIRE(++h.begin() == h.end());
+            CATCH_REQUIRE(++h.begin() == h.end());
 
             // reset the list of headers
             //
             e.remove_header("From");
-            REQUIRE(h.size() == 0);
-            REQUIRE(h.begin() == h.end());
+            CATCH_REQUIRE(h.size() == 0);
+            CATCH_REQUIRE(h.begin() == h.end());
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
         }
 
-        SECTION("set To: header")
+        CATCH_SECTION("set To: header")
         {
             // we have default headers, but they get set when we call
             // the send() function in case the user did not set them
@@ -232,211 +232,211 @@ TEST_CASE( "email", "[email]" )
 
             // case does not matter
             //
-            REQUIRE(e.has_header("To"));
-            REQUIRE(e.has_header("to"));
-            REQUIRE(e.has_header("tO"));
-            REQUIRE(e.has_header("TO"));
+            CATCH_REQUIRE(e.has_header("To"));
+            CATCH_REQUIRE(e.has_header("to"));
+            CATCH_REQUIRE(e.has_header("tO"));
+            CATCH_REQUIRE(e.has_header("TO"));
 
-            REQUIRE(e.get_header("To") == "valid@example.com");
-            REQUIRE(e.get_header("to") == "valid@example.com");
-            REQUIRE(e.get_header("tO") == "valid@example.com");
-            REQUIRE(e.get_header("TO") == "valid@example.com");
+            CATCH_REQUIRE(e.get_header("To") == "valid@example.com");
+            CATCH_REQUIRE(e.get_header("to") == "valid@example.com");
+            CATCH_REQUIRE(e.get_header("tO") == "valid@example.com");
+            CATCH_REQUIRE(e.get_header("TO") == "valid@example.com");
 
             snap::email::header_map_t const & h(e.get_all_headers());
-            REQUIRE(h.size() == 1);
+            CATCH_REQUIRE(h.size() == 1);
 
-            REQUIRE(h.begin()->first == "To");
-            REQUIRE(h.begin()->second == "valid@example.com");
+            CATCH_REQUIRE(h.begin()->first == "To");
+            CATCH_REQUIRE(h.begin()->second == "valid@example.com");
 
-            REQUIRE(++h.begin() == h.end());
+            CATCH_REQUIRE(++h.begin() == h.end());
 
             // reset the list of headers
             //
             e.remove_header("To");
-            REQUIRE(h.size() == 0);
-            REQUIRE(h.begin() == h.end());
+            CATCH_REQUIRE(h.size() == 0);
+            CATCH_REQUIRE(h.begin() == h.end());
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
         }
 
-        SECTION("set priority")
+        CATCH_SECTION("set priority")
         {
             // by default there is no priority defined
             //
-            REQUIRE_FALSE(e.has_header("X-Priority"));
+            CATCH_REQUIRE_FALSE(e.has_header("X-Priority"));
 
             // test setting the default priority
             //
             e.set_priority();
-            REQUIRE(e.has_header("X-Priority"));
-            REQUIRE(e.has_header("X-MSMail-Priority"));
-            REQUIRE(e.has_header("Importance"));
-            REQUIRE(e.has_header("Precedence"));
-            REQUIRE(e.get_header("X-Priority") == "3 (Normal)");
-            REQUIRE(e.get_header("X-MSMail-Priority") == "Normal");
-            REQUIRE(e.get_header("Importance") == "Normal");
-            REQUIRE(e.get_header("Precedence") == "Normal");
+            CATCH_REQUIRE(e.has_header("X-Priority"));
+            CATCH_REQUIRE(e.has_header("X-MSMail-Priority"));
+            CATCH_REQUIRE(e.has_header("Importance"));
+            CATCH_REQUIRE(e.has_header("Precedence"));
+            CATCH_REQUIRE(e.get_header("X-Priority") == "3 (Normal)");
+            CATCH_REQUIRE(e.get_header("X-MSMail-Priority") == "Normal");
+            CATCH_REQUIRE(e.get_header("Importance") == "Normal");
+            CATCH_REQUIRE(e.get_header("Precedence") == "Normal");
 
             // remove and make sure it is gone
             // (test that case has no effect)
             //
             e.remove_header("x-priority");
-            REQUIRE_FALSE(e.has_header("X-PRIORITY"));
+            CATCH_REQUIRE_FALSE(e.has_header("X-PRIORITY"));
             e.remove_header("x-msmail-priority");
-            REQUIRE_FALSE(e.has_header("X-MSMAIL-PRIORITY"));
+            CATCH_REQUIRE_FALSE(e.has_header("X-MSMAIL-PRIORITY"));
             e.remove_header("importance");
-            REQUIRE_FALSE(e.has_header("IMPORTANCE"));
+            CATCH_REQUIRE_FALSE(e.has_header("IMPORTANCE"));
             e.remove_header("precedence");
-            REQUIRE_FALSE(e.has_header("PRECEDENCE"));
+            CATCH_REQUIRE_FALSE(e.has_header("PRECEDENCE"));
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
 
             // explicitly setting the default priority
             //
             e.set_priority(snap::email::priority_t::EMAIL_PRIORITY_NORMAL);
-            REQUIRE(e.has_header("X-Priority"));
-            REQUIRE(e.has_header("X-MSMail-Priority"));
-            REQUIRE(e.has_header("Importance"));
-            REQUIRE(e.has_header("Precedence"));
-            REQUIRE(e.get_header("X-Priority") == "3 (Normal)");
-            REQUIRE(e.get_header("X-MSMail-Priority") == "Normal");
-            REQUIRE(e.get_header("Importance") == "Normal");
-            REQUIRE(e.get_header("Precedence") == "Normal");
+            CATCH_REQUIRE(e.has_header("X-Priority"));
+            CATCH_REQUIRE(e.has_header("X-MSMail-Priority"));
+            CATCH_REQUIRE(e.has_header("Importance"));
+            CATCH_REQUIRE(e.has_header("Precedence"));
+            CATCH_REQUIRE(e.get_header("X-Priority") == "3 (Normal)");
+            CATCH_REQUIRE(e.get_header("X-MSMail-Priority") == "Normal");
+            CATCH_REQUIRE(e.get_header("Importance") == "Normal");
+            CATCH_REQUIRE(e.get_header("Precedence") == "Normal");
 
             // remove and make sure it is gone
             // (test that case has no effect)
             //
             e.remove_header("X-PRIORITY");
-            REQUIRE_FALSE(e.has_header("x-priority"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-priority"));
             e.remove_header("X-MSMAIL-PRIORITY");
-            REQUIRE_FALSE(e.has_header("x-msmail-priority"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-msmail-priority"));
             e.remove_header("IMPORTANCE");
-            REQUIRE_FALSE(e.has_header("importance"));
+            CATCH_REQUIRE_FALSE(e.has_header("importance"));
             e.remove_header("PRECEDENCE");
-            REQUIRE_FALSE(e.has_header("precedence"));
+            CATCH_REQUIRE_FALSE(e.has_header("precedence"));
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
 
             // setting the BULK priority
             //
             e.set_priority(snap::email::priority_t::EMAIL_PRIORITY_BULK);
-            REQUIRE(e.has_header("X-Priority"));
-            REQUIRE(e.has_header("X-MSMail-Priority"));
-            REQUIRE(e.has_header("Importance"));
-            REQUIRE(e.has_header("Precedence"));
-            REQUIRE(e.get_header("X-Priority") == "1 (Bulk)");
-            REQUIRE(e.get_header("X-MSMail-Priority") == "Bulk");
-            REQUIRE(e.get_header("Importance") == "Bulk");
-            REQUIRE(e.get_header("Precedence") == "Bulk");
+            CATCH_REQUIRE(e.has_header("X-Priority"));
+            CATCH_REQUIRE(e.has_header("X-MSMail-Priority"));
+            CATCH_REQUIRE(e.has_header("Importance"));
+            CATCH_REQUIRE(e.has_header("Precedence"));
+            CATCH_REQUIRE(e.get_header("X-Priority") == "1 (Bulk)");
+            CATCH_REQUIRE(e.get_header("X-MSMail-Priority") == "Bulk");
+            CATCH_REQUIRE(e.get_header("Importance") == "Bulk");
+            CATCH_REQUIRE(e.get_header("Precedence") == "Bulk");
 
             // remove and make sure it is gone
             // (test that case has no effect)
             //
             e.remove_header("X-PrioritY");
-            REQUIRE_FALSE(e.has_header("x-pRIORITy"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-pRIORITy"));
             e.remove_header("X-MSMail-PrioritY");
-            REQUIRE_FALSE(e.has_header("x-msmail-pRIORITy"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-msmail-pRIORITy"));
             e.remove_header("ImportancE");
-            REQUIRE_FALSE(e.has_header("iMPORTANCe"));
+            CATCH_REQUIRE_FALSE(e.has_header("iMPORTANCe"));
             e.remove_header("PrecedencE");
-            REQUIRE_FALSE(e.has_header("pRECEDENCe"));
+            CATCH_REQUIRE_FALSE(e.has_header("pRECEDENCe"));
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
 
             // setting the LOW priority
             //
             e.set_priority(snap::email::priority_t::EMAIL_PRIORITY_LOW);
-            REQUIRE(e.has_header("X-Priority"));
-            REQUIRE(e.has_header("X-MSMail-Priority"));
-            REQUIRE(e.has_header("Importance"));
-            REQUIRE(e.has_header("Precedence"));
-            REQUIRE(e.get_header("X-Priority") == "2 (Low)");
-            REQUIRE(e.get_header("X-MSMail-Priority") == "Low");
-            REQUIRE(e.get_header("Importance") == "Low");
-            REQUIRE(e.get_header("Precedence") == "Low");
+            CATCH_REQUIRE(e.has_header("X-Priority"));
+            CATCH_REQUIRE(e.has_header("X-MSMail-Priority"));
+            CATCH_REQUIRE(e.has_header("Importance"));
+            CATCH_REQUIRE(e.has_header("Precedence"));
+            CATCH_REQUIRE(e.get_header("X-Priority") == "2 (Low)");
+            CATCH_REQUIRE(e.get_header("X-MSMail-Priority") == "Low");
+            CATCH_REQUIRE(e.get_header("Importance") == "Low");
+            CATCH_REQUIRE(e.get_header("Precedence") == "Low");
 
             // remove and make sure it is gone
             // (test that case has no effect)
             //
             e.remove_header("X-PrIoRiTy");
-            REQUIRE_FALSE(e.has_header("x-pRiOrItY"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-pRiOrItY"));
             e.remove_header("X-MsMaIl-PrIoRiTy");
-            REQUIRE_FALSE(e.has_header("x-mSmAiL-pRiOrItY"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-mSmAiL-pRiOrItY"));
             e.remove_header("ImPoRtAnCe");
-            REQUIRE_FALSE(e.has_header("iMpOrTaNcE"));
+            CATCH_REQUIRE_FALSE(e.has_header("iMpOrTaNcE"));
             e.remove_header("PrEcEdEnCe");
-            REQUIRE_FALSE(e.has_header("pReCeDeNcE"));
+            CATCH_REQUIRE_FALSE(e.has_header("pReCeDeNcE"));
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
 
             // setting the HIGH priority
             //
             e.set_priority(snap::email::priority_t::EMAIL_PRIORITY_HIGH);
-            REQUIRE(e.has_header("X-Priority"));
-            REQUIRE(e.has_header("X-MSMail-Priority"));
-            REQUIRE(e.has_header("Importance"));
-            REQUIRE(e.has_header("Precedence"));
-            REQUIRE(e.get_header("X-Priority") == "4 (High)");
-            REQUIRE(e.get_header("X-MSMail-Priority") == "High");
-            REQUIRE(e.get_header("Importance") == "High");
-            REQUIRE(e.get_header("Precedence") == "High");
+            CATCH_REQUIRE(e.has_header("X-Priority"));
+            CATCH_REQUIRE(e.has_header("X-MSMail-Priority"));
+            CATCH_REQUIRE(e.has_header("Importance"));
+            CATCH_REQUIRE(e.has_header("Precedence"));
+            CATCH_REQUIRE(e.get_header("X-Priority") == "4 (High)");
+            CATCH_REQUIRE(e.get_header("X-MSMail-Priority") == "High");
+            CATCH_REQUIRE(e.get_header("Importance") == "High");
+            CATCH_REQUIRE(e.get_header("Precedence") == "High");
 
             // remove and make sure it is gone
             // (test that case has no effect)
             //
             e.remove_header("X-PRIOrity");
-            REQUIRE_FALSE(e.has_header("x-prioRITY"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-prioRITY"));
             e.remove_header("X-msmAIL-PRIOrity");
-            REQUIRE_FALSE(e.has_header("x-MSmail-prioRITY"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-MSmail-prioRITY"));
             e.remove_header("imporTANCE");
-            REQUIRE_FALSE(e.has_header("imporTANCE"));
+            CATCH_REQUIRE_FALSE(e.has_header("imporTANCE"));
             e.remove_header("preceDENCE");
-            REQUIRE_FALSE(e.has_header("preceDENCE"));
+            CATCH_REQUIRE_FALSE(e.has_header("preceDENCE"));
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
 
             // setting the URGENT priority
             //
             e.set_priority(snap::email::priority_t::EMAIL_PRIORITY_URGENT);
-            REQUIRE(e.has_header("X-Priority"));
-            REQUIRE(e.has_header("X-MSMail-Priority"));
-            REQUIRE(e.has_header("Importance"));
-            REQUIRE(e.has_header("Precedence"));
-            REQUIRE(e.get_header("X-Priority") == "5 (Urgent)");
-            REQUIRE(e.get_header("X-MSMail-Priority") == "Urgent");
-            REQUIRE(e.get_header("Importance") == "Urgent");
-            REQUIRE(e.get_header("Precedence") == "Urgent");
+            CATCH_REQUIRE(e.has_header("X-Priority"));
+            CATCH_REQUIRE(e.has_header("X-MSMail-Priority"));
+            CATCH_REQUIRE(e.has_header("Importance"));
+            CATCH_REQUIRE(e.has_header("Precedence"));
+            CATCH_REQUIRE(e.get_header("X-Priority") == "5 (Urgent)");
+            CATCH_REQUIRE(e.get_header("X-MSMail-Priority") == "Urgent");
+            CATCH_REQUIRE(e.get_header("Importance") == "Urgent");
+            CATCH_REQUIRE(e.get_header("Precedence") == "Urgent");
 
             // remove and make sure it is gone
             // (test that case has no effect)
             //
             e.remove_header("X-PRioRIty");
-            REQUIRE_FALSE(e.has_header("x-prIOriTY"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-prIOriTY"));
             e.remove_header("x-MSmaiL-PriORitY");
-            REQUIRE_FALSE(e.has_header("x-msMAIl-pRIorITy"));
+            CATCH_REQUIRE_FALSE(e.has_header("x-msMAIl-pRIorITy"));
             e.remove_header("imPOrtANce");
-            REQUIRE_FALSE(e.has_header("IMpoRTanCE"));
+            CATCH_REQUIRE_FALSE(e.has_header("IMpoRTanCE"));
             e.remove_header("prECedENce");
-            REQUIRE_FALSE(e.has_header("PRecEDEncE"));
+            CATCH_REQUIRE_FALSE(e.has_header("PRecEDEncE"));
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
         }
 
-        SECTION("set Subject: header")
+        CATCH_SECTION("set Subject: header")
         {
             // test the set_subject() function
             //
@@ -449,36 +449,36 @@ TEST_CASE( "email", "[email]" )
 
             // case does not matter
             //
-            REQUIRE(e.has_header("subject"));
-            REQUIRE(e.has_header("SUBJECT"));
-            REQUIRE(e.has_header("subJECT"));
-            REQUIRE(e.has_header("SUBject"));
+            CATCH_REQUIRE(e.has_header("subject"));
+            CATCH_REQUIRE(e.has_header("SUBJECT"));
+            CATCH_REQUIRE(e.has_header("subJECT"));
+            CATCH_REQUIRE(e.has_header("SUBject"));
 
-            REQUIRE(e.get_header("subject") == subject);
-            REQUIRE(e.get_header("SUBJECT") == subject);
-            REQUIRE(e.get_header("subJECT") == subject);
-            REQUIRE(e.get_header("SUBject") == subject);
+            CATCH_REQUIRE(e.get_header("subject") == subject);
+            CATCH_REQUIRE(e.get_header("SUBJECT") == subject);
+            CATCH_REQUIRE(e.get_header("subJECT") == subject);
+            CATCH_REQUIRE(e.get_header("SUBject") == subject);
 
             snap::email::header_map_t const & h(e.get_all_headers());
-            REQUIRE(h.size() == 1);
+            CATCH_REQUIRE(h.size() == 1);
 
-            REQUIRE(h.begin()->first == "Subject");
-            REQUIRE(h.begin()->second == subject);
+            CATCH_REQUIRE(h.begin()->first == "Subject");
+            CATCH_REQUIRE(h.begin()->second == subject);
 
-            REQUIRE(++h.begin() == h.end());
+            CATCH_REQUIRE(++h.begin() == h.end());
 
             // reset the list of headers
             //
             e.remove_header("Subject");
-            REQUIRE(h.size() == 0);
-            REQUIRE(h.begin() == h.end());
+            CATCH_REQUIRE(h.size() == 0);
+            CATCH_REQUIRE(h.begin() == h.end());
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(e.get_all_headers().size() == 0);
+            CATCH_REQUIRE(e.get_all_headers().size() == 0);
         }
 
-        SECTION("set other headers")
+        CATCH_SECTION("set other headers")
         {
             // test the add_header() function with a few headers
             //
@@ -493,7 +493,7 @@ TEST_CASE( "email", "[email]" )
             {
                 // not yet defined
                 //
-                REQUIRE_FALSE(e.has_header(headers[idx]));
+                CATCH_REQUIRE_FALSE(e.has_header(headers[idx]));
 
                 // add header
                 //
@@ -502,104 +502,103 @@ TEST_CASE( "email", "[email]" )
                 // verify using the map
                 //
                 snap::email::header_map_t const & h(e.get_all_headers());
-                REQUIRE(h.size() == 1);
-                REQUIRE(h.begin()->first == headers[idx]);
-                REQUIRE(h.begin()->second == headers[idx + 1]);
-                REQUIRE(++h.begin() == h.end());
+                CATCH_REQUIRE(h.size() == 1);
+                CATCH_REQUIRE(h.begin()->first == headers[idx]);
+                CATCH_REQUIRE(h.begin()->second == headers[idx + 1]);
+                CATCH_REQUIRE(++h.begin() == h.end());
 
                 // verify as is
                 //
-                REQUIRE(e.has_header(headers[idx]));
-                REQUIRE(e.get_header(headers[idx]) == headers[idx + 1]);
+                CATCH_REQUIRE(e.has_header(headers[idx]));
+                CATCH_REQUIRE(e.get_header(headers[idx]) == headers[idx + 1]);
 
                 // reset the list of headers
                 //
                 e.remove_header(headers[idx]);
-                REQUIRE(h.size() == 0);
-                REQUIRE(h.begin() == h.end());
-                REQUIRE_FALSE(e.has_header(headers[idx]));
+                CATCH_REQUIRE(h.size() == 0);
+                CATCH_REQUIRE(h.begin() == h.end());
+                CATCH_REQUIRE_FALSE(e.has_header(headers[idx]));
 
                 // verify that the set+remove cleaned up the headers 100%
                 //
-                REQUIRE(e.get_all_headers().size() == 0);
+                CATCH_REQUIRE(e.get_all_headers().size() == 0);
             }
         }
     }
 
-    GIVEN("invalid calls")
+    CATCH_GIVEN("invalid calls")
     {
         snap::email e;
 
         // invalid email address
         //
-        REQUIRE_THROWS_AS(e.set_from("with@an@invalid@email@address"), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.set_from("with@an@invalid@email@address"), snap::snap_exception_invalid_parameter);
 
         // invalid email address (empty)
         //
         // although these work as expected (they fail with an exception)
         // they do not make use of the exception in case the size() < 1
         //
-        REQUIRE_THROWS_AS(e.set_from("(this is a comment)"), snap::snap_exception_invalid_parameter);
-        REQUIRE_THROWS_AS(e.set_from(""), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.set_from("(this is a comment)"), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.set_from(""), snap::snap_exception_invalid_parameter);
 
         // invalid email address
         //
-        REQUIRE_THROWS_AS(e.set_to("with@an@invalid@email@address"), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.set_to("with@an@invalid@email@address"), snap::snap_exception_invalid_parameter);
 
         // invalid email address (empty)
         //
         // although these work as expected (they fail with an exception)
         // they do not make use of the exception in case the size() < 1
         //
-        REQUIRE_THROWS_AS(e.set_to("(this is a comment)"), snap::snap_exception_invalid_parameter);
-        REQUIRE_THROWS_AS(e.set_to(""), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.set_to("(this is a comment)"), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.set_to(""), snap::snap_exception_invalid_parameter);
 
         // invalid field name (includes invalid characters
         //
-        REQUIRE_THROWS_AS(e.set_priority(static_cast<snap::email::priority_t>(-10)), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.set_priority(static_cast<snap::email::priority_t>(-10)), snap::snap_exception_invalid_parameter);
 
         // invalid field name (includes invalid characters
         //
-        REQUIRE_THROWS_AS(e.add_header("Invalid Name", "ignored"), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.add_header("Invalid Name", "ignored"), snap::snap_exception_invalid_parameter);
 
         // invalid field name (includes invalid characters
         //
-        REQUIRE_THROWS_AS(e.add_header("From", "with@an@invalid@email@address"), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.add_header("From", "with@an@invalid@email@address"), snap::snap_exception_invalid_parameter);
 
         // only one email address for this field
         //
-        REQUIRE_THROWS_AS(e.add_header("Sender", "valid@example.com, invalid@example.com"), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.add_header("Sender", "valid@example.com, invalid@example.com"), snap::snap_exception_invalid_parameter);
 
         // empty name not valid
         //
-        REQUIRE_THROWS_AS(e.has_header(QString()), snap::snap_exception_invalid_parameter);
-        REQUIRE_THROWS_AS(e.get_header(QString()), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.has_header(QString()), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.get_header(QString()), snap::snap_exception_invalid_parameter);
 
         // no attachment, index will be out of bound
         //
-        REQUIRE_THROWS_AS(e.get_attachment(1), std::out_of_range);
+        CATCH_REQUIRE_THROWS_AS(e.get_attachment(1), std::out_of_range);
 
         // empty name not valid
         //
-        REQUIRE_THROWS_AS(e.add_parameter(QString(), "ignored"), snap::snap_exception_invalid_parameter);
-        REQUIRE_THROWS_AS(e.get_parameter(QString()), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.add_parameter(QString(), "ignored"), snap::snap_exception_invalid_parameter);
+        CATCH_REQUIRE_THROWS_AS(e.get_parameter(QString()), snap::snap_exception_invalid_parameter);
     }
 }
 
 
-TEST_CASE( "email_attachments", "[email]" )
+CATCH_TEST_CASE( "email_attachments", "[email]" )
 {
     // "normal" (canonicalized) URI
-    GIVEN("basics")
+    CATCH_GIVEN("basics")
     {
-        time_t now(time(nullptr));
         snap::email::attachment a;
 
-        SECTION("data")
+        CATCH_SECTION("data")
         {
             // default is empty
             //
-            REQUIRE(a.get_data().size() == 0);
+            CATCH_REQUIRE(a.get_data().size() == 0);
 
             // change the value
             //
@@ -622,21 +621,21 @@ TEST_CASE( "email_attachments", "[email]" )
 
                 QByteArray const buf(a.get_data());
 
-                REQUIRE(data.size() == buf.size());
-                REQUIRE(data == buf);
+                CATCH_REQUIRE(data.size() == buf.size());
+                CATCH_REQUIRE(data == buf);
             }
         }
 
-        SECTION("no headers by default")
+        CATCH_SECTION("no headers by default")
         {
             // we have default headers, but they get set when we call
             // the send() function in case the user did not set them
             // yet by the time get called to send the email
             //
-            REQUIRE(a.get_all_headers().size() == 0);
+            CATCH_REQUIRE(a.get_all_headers().size() == 0);
         }
 
-        SECTION("set Content-Disposition: header")
+        CATCH_SECTION("set Content-Disposition: header")
         {
             // Set the content disposition, this generates the correct
             // header so we don't have to guess how to correctly generate
@@ -677,33 +676,33 @@ TEST_CASE( "email_attachments", "[email]" )
                 content_disposition[18] = i & 0b1000000000000000000 ? 'N' : 'n';
                 content_disposition[19] = '\0';
 
-                REQUIRE(a.has_header(content_disposition));
+                CATCH_REQUIRE(a.has_header(content_disposition));
 
-                REQUIRE(a.get_header(content_disposition) == content_disposition_value);
+                CATCH_REQUIRE(a.get_header(content_disposition) == content_disposition_value);
             }
 
             // very it is officially empty
             //
             snap::email::header_map_t const & h(a.get_all_headers());
-            REQUIRE(h.size() == 1);
+            CATCH_REQUIRE(h.size() == 1);
 
-            REQUIRE(h.begin()->first == "Content-Disposition");
-            REQUIRE(h.begin()->second == content_disposition_value);
+            CATCH_REQUIRE(h.begin()->first == "Content-Disposition");
+            CATCH_REQUIRE(h.begin()->second == content_disposition_value);
 
-            REQUIRE(++h.begin() == h.end());
+            CATCH_REQUIRE(++h.begin() == h.end());
 
             // reset the list of headers
             //
             a.remove_header("Content-Disposition");
-            REQUIRE(h.size() == 0);
-            REQUIRE(h.begin() == h.end());
+            CATCH_REQUIRE(h.size() == 0);
+            CATCH_REQUIRE(h.begin() == h.end());
 
             // verify that the set+remove cleaned up the headers 100%
             //
-            REQUIRE(a.get_all_headers().size() == 0);
+            CATCH_REQUIRE(a.get_all_headers().size() == 0);
         }
 
-        SECTION("set other headers")
+        CATCH_SECTION("set other headers")
         {
             // test the add_header() function with a few headers
             //
@@ -718,7 +717,7 @@ TEST_CASE( "email_attachments", "[email]" )
             {
                 // not yet defined
                 //
-                REQUIRE_FALSE(a.has_header(headers[idx]));
+                CATCH_REQUIRE_FALSE(a.has_header(headers[idx]));
 
                 // add header
                 //
@@ -727,33 +726,33 @@ TEST_CASE( "email_attachments", "[email]" )
                 // verify using the map
                 //
                 snap::email::header_map_t const & h(a.get_all_headers());
-                REQUIRE(h.size() == 1);
-                REQUIRE(h.begin()->first == headers[idx]);
-                REQUIRE(h.begin()->second == headers[idx + 1]);
-                REQUIRE(++h.begin() == h.end());
+                CATCH_REQUIRE(h.size() == 1);
+                CATCH_REQUIRE(h.begin()->first == headers[idx]);
+                CATCH_REQUIRE(h.begin()->second == headers[idx + 1]);
+                CATCH_REQUIRE(++h.begin() == h.end());
 
                 // verify as is
                 //
-                REQUIRE(a.has_header(headers[idx]));
-                REQUIRE(a.get_header(headers[idx]) == headers[idx + 1]);
+                CATCH_REQUIRE(a.has_header(headers[idx]));
+                CATCH_REQUIRE(a.get_header(headers[idx]) == headers[idx + 1]);
 
                 // reset the list of headers
                 //
                 a.remove_header(headers[idx]);
-                REQUIRE(h.size() == 0);
-                REQUIRE(h.begin() == h.end());
-                REQUIRE_FALSE(a.has_header(headers[idx]));
+                CATCH_REQUIRE(h.size() == 0);
+                CATCH_REQUIRE(h.begin() == h.end());
+                CATCH_REQUIRE_FALSE(a.has_header(headers[idx]));
 
                 // verify that the set+remove cleaned up the headers 100%
                 //
-                REQUIRE(a.get_all_headers().size() == 0);
+                CATCH_REQUIRE(a.get_all_headers().size() == 0);
             }
         }
     }
 
-    GIVEN("attachment")
+    CATCH_GIVEN("attachment")
     {
-        SECTION("add attachments")
+        CATCH_SECTION("add attachments")
         {
             snap::email e;
             snap::email::attachment a;
@@ -761,23 +760,23 @@ TEST_CASE( "email_attachments", "[email]" )
 
             // still empty
             //
-            REQUIRE(e.get_attachment_count() == 0);
+            CATCH_REQUIRE(e.get_attachment_count() == 0);
 
             // add the first attachment
             //
             e.add_attachment(a);
-            REQUIRE(e.get_attachment_count() == 1);
+            CATCH_REQUIRE(e.get_attachment_count() == 1);
 
             // add the second attachment
             //
             e.add_attachment(b);
-            REQUIRE(e.get_attachment_count() == 2);
+            CATCH_REQUIRE(e.get_attachment_count() == 2);
         }
     }
 
-    GIVEN("related")
+    CATCH_GIVEN("related")
     {
-        SECTION("add related attachments")
+        CATCH_SECTION("add related attachments")
         {
             snap::email e;
             snap::email::attachment a;
@@ -786,25 +785,25 @@ TEST_CASE( "email_attachments", "[email]" )
 
             // still empty
             //
-            REQUIRE(e.get_attachment_count() == 0);
+            CATCH_REQUIRE(e.get_attachment_count() == 0);
 
             // add a related attachment to the attachment
             // 
             a.add_related(r1);
-            REQUIRE(a.get_related_count() == 1);
+            CATCH_REQUIRE(a.get_related_count() == 1);
             a.add_related(r2);
-            REQUIRE(a.get_related_count() == 2);
+            CATCH_REQUIRE(a.get_related_count() == 2);
 
             // add the first attachment
             //
             e.add_attachment(a);
-            REQUIRE(e.get_attachment_count() == 1);
+            CATCH_REQUIRE(e.get_attachment_count() == 1);
         }
     }
 
-    GIVEN("invalid related")
+    CATCH_GIVEN("invalid related")
     {
-        SECTION("attachment with related can't be a related itself (case 1)")
+        CATCH_SECTION("attachment with related can't be a related itself (case 1)")
         {
             snap::email::attachment a;
             snap::email::attachment b;
@@ -816,10 +815,10 @@ TEST_CASE( "email_attachments", "[email]" )
 
             // now we cannot add b as a related attachment to a
             //
-            REQUIRE_THROWS_AS(a.add_related(b), snap::email_exception_too_many_levels);
+            CATCH_REQUIRE_THROWS_AS(a.add_related(b), snap::email_exception_too_many_levels);
         }
 
-        SECTION("attachment with related can't be a related itself (case 2)")
+        CATCH_SECTION("attachment with related can't be a related itself (case 2)")
         {
             snap::email::attachment a;
             snap::email::attachment b;
@@ -837,59 +836,59 @@ TEST_CASE( "email_attachments", "[email]" )
             // itself modified)
             //
             snap::email::attachment & d(a.get_related(0));
-            REQUIRE_THROWS_AS(d.add_related(c), snap::email_exception_too_many_levels);
+            CATCH_REQUIRE_THROWS_AS(d.add_related(c), snap::email_exception_too_many_levels);
 
             // this one fails too!
             //
-            REQUIRE_THROWS_AS(d.add_related(a), snap::email_exception_too_many_levels);
+            CATCH_REQUIRE_THROWS_AS(d.add_related(a), snap::email_exception_too_many_levels);
         }
     }
 
-    GIVEN("invalid calls")
+    CATCH_GIVEN("invalid calls")
     {
-        SECTION("verify exceptions")
+        CATCH_SECTION("verify exceptions")
         {
             snap::email::attachment a;
 
             // missing name for get_header()
             //
-            REQUIRE_THROWS_AS(a.get_header(QString()), snap::snap_exception_invalid_parameter);
+            CATCH_REQUIRE_THROWS_AS(a.get_header(QString()), snap::snap_exception_invalid_parameter);
 
             // missing attachment_type for set_content_disposition()
             //
-            REQUIRE_THROWS_AS(a.set_content_disposition("filename", -1, QString()), snap::snap_exception_invalid_parameter);
+            CATCH_REQUIRE_THROWS_AS(a.set_content_disposition("filename", -1, QString()), snap::snap_exception_invalid_parameter);
 
             // missing name for has_header()
             //
-            REQUIRE_THROWS_AS(a.has_header(QString()), snap::snap_exception_invalid_parameter);
+            CATCH_REQUIRE_THROWS_AS(a.has_header(QString()), snap::snap_exception_invalid_parameter);
 
             // missing name for add_header()
             //
-            REQUIRE_THROWS_AS(a.add_header(QString(), "ignored"), snap::snap_exception_invalid_parameter);
+            CATCH_REQUIRE_THROWS_AS(a.add_header(QString(), "ignored"), snap::snap_exception_invalid_parameter);
 
             // index out of range
             //
-            REQUIRE_THROWS_AS(a.get_related(1), std::out_of_range);
+            CATCH_REQUIRE_THROWS_AS(a.get_related(1), std::out_of_range);
         }
     }
 }
 
 
-TEST_CASE( "email_parameters", "[email]" )
+CATCH_TEST_CASE( "email_parameters", "[email]" )
 {
     // "normal" (canonicalized) URI
-    GIVEN("basics")
+    CATCH_GIVEN("basics")
     {
         snap::email e;
 
-        SECTION("no parameters by default")
+        CATCH_SECTION("no parameters by default")
         {
             // no default parameters
             //
-            REQUIRE(e.get_all_parameters().size() == 0);
+            CATCH_REQUIRE(e.get_all_parameters().size() == 0);
         }
 
-        SECTION("set path parameter")
+        CATCH_SECTION("set path parameter")
         {
             // set a path as a parameter
             //
@@ -897,8 +896,8 @@ TEST_CASE( "email_parameters", "[email]" )
 
             // make sure it worked
             //
-            //REQUIRE(e.has_parameter("path")); -- not implemented (yet)
-            REQUIRE(e.get_parameter("path") == "/this/path/here");
+            //CATCH_REQUIRE(e.has_parameter("path")); -- not implemented (yet)
+            CATCH_REQUIRE(e.get_parameter("path") == "/this/path/here");
 
             // test that we can access the parameter only in lowercase
             // (start at 1 prevents the special case of all lowercase)
@@ -912,33 +911,33 @@ TEST_CASE( "email_parameters", "[email]" )
                 path[3] = i & 0b1000 ? 'H' : 'h';
                 path[4] = '\0';
 
-                REQUIRE_FALSE(e.has_header(path));
-                REQUIRE_FALSE(e.get_header(path) == "/this/path/here");
+                CATCH_REQUIRE_FALSE(e.has_header(path));
+                CATCH_REQUIRE_FALSE(e.get_header(path) == "/this/path/here");
             }
 
 
             // test with the map directly
             //
             snap::email::parameter_map_t const & p(e.get_all_parameters());
-            REQUIRE(p.size() == 1);
+            CATCH_REQUIRE(p.size() == 1);
 
-            REQUIRE(p.begin()->first == "path");
-            REQUIRE(p.begin()->second == "/this/path/here");
+            CATCH_REQUIRE(p.begin()->first == "path");
+            CATCH_REQUIRE(p.begin()->second == "/this/path/here");
 
-            REQUIRE(++p.begin() == p.end());
+            CATCH_REQUIRE(++p.begin() == p.end());
 
-            REQUIRE(e.get_all_parameters().size() == 1);
+            CATCH_REQUIRE(e.get_all_parameters().size() == 1);
         }
     }
 }
 
 
-TEST_CASE( "email_serialization", "[email]" )
+CATCH_TEST_CASE( "email_serialization", "[email]" )
 {
     // "normal" (canonicalized) URI
-    GIVEN("loop")
+    CATCH_GIVEN("loop")
     {
-        SECTION("simple")
+        CATCH_SECTION("simple")
         {
             for(int cnt(0); cnt < 100; ++cnt)
             {
@@ -1110,9 +1109,9 @@ TEST_CASE( "email_serialization", "[email]" )
 //std::cout << "XML 1: " << xml        << std::endl;
 //std::cout << "XML 2: " << xml_verify << std::endl;
 
-                REQUIRE(xml == xml_verify);
+                CATCH_REQUIRE(xml == xml_verify);
 
-                REQUIRE(e == n);
+                CATCH_REQUIRE(e == n);
             }
         }
     }

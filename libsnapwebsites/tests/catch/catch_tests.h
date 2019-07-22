@@ -1,5 +1,3 @@
-#ifndef LIBSNAPWEBSITES_HTML_TESTS_H
-#define LIBSNAPWEBSITES_HTML_TESTS_H
 // libsnapwebsites html -- Test Suite
 // Copyright (c) 2015-2019  Made to Order Software Corp.  All Rights Reserved
 //
@@ -16,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#pragma once
 
 /** \file
  * \brief Common header for all our catch tests.
@@ -25,7 +24,7 @@
  * properly handled.
  */
 
-#include <catch.hpp>
+#include <catch2/snapcatch2.hpp>
 
 // include that most tests are likely to use
 //
@@ -33,10 +32,10 @@
 #include <iostream>
 
 
-namespace libsnapwebsites_test
+namespace SNAP_CATCH2_NAMESPACE
 {
 
-extern char * g_progname;
+
 
 /** \brief The default epsilon for the nearly_equal() test.
  *
@@ -93,8 +92,5 @@ bool nearly_equal(T const & lhs, T const & rhs, T epsilon = default_epsilon<T>()
 }
 
 
-} // libsnapwebsites_test namespace
-#endif
-// #ifndef LIBSNAPWEBSITES_HTML_TESTS_H
-
+} // SNAP_CATCH2_NAMESPACE namespace
 // vim: ts=4 sw=4 et

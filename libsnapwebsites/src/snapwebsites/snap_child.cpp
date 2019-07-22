@@ -36,7 +36,6 @@
 #include "snapwebsites/qdomhelpers.h"
 #include "snapwebsites/qlockfile.h"
 #include "snapwebsites/snap_image.h"
-#include "snapwebsites/snap_utf8.h"
 #include "snapwebsites/snapwebsites.h"
 #include "snapwebsites/snap_lock.h"
 #include "snapwebsites/snap_magic.h"
@@ -55,6 +54,11 @@
 // Qt Serialization lib
 //
 #include <QtSerialization/QSerialization.h>
+
+
+// libutf8 lib
+//
+#include <libutf8/libutf8.h>
 
 
 // tld lib
@@ -3626,7 +3630,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 // append a '\0' so we can call is_valid_utf8()
                 char const nul('\0');
                 f_post_content.append(nul);
-                if(!is_valid_utf8(f_post_content.data()))
+                if(!libutf8::is_valid_utf8(f_post_content.data())) // TODO: see whether controls should be forbidden (except tabs?)
                 {
                     f_snap->die(http_code_t::HTTP_CODE_BAD_REQUEST, "Invalid Form Content",
                         "Your form includes characters that are not compatible with the UTF-8 encoding. Try to avoid special characters and try again. If you are using Internet Explorer, know that older versions may not be compatible with international characters.",
@@ -3694,7 +3698,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 }
                 char const nul('\0');
                 f_post_line.append(nul);
-                if(!is_valid_ascii(f_post_line.data()))
+                if(!libutf8::is_valid_ascii(f_post_line.data())) // TODO: see whether controls should be forbidden (except tabs?)
                 {
                     f_snap->die(http_code_t::HTTP_CODE_BAD_REQUEST, "Invalid Form Content",
                         "Your multi-part form header includes characters that are not compatible with the ASCII encoding.",

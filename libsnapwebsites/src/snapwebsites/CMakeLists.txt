@@ -113,7 +113,6 @@ add_library( ${PROJECT_NAME} SHARED
     snap_tables.cpp                             # table schema/definitions
     snap_thread.cpp                             # a C++ thread implementation
     snap_uri.cpp                                # URI handling
-    snap_utf8.cpp                               # UTF-8 functions
     snap_version.cpp                            # extract name, version, browser info from a filename
     snapwebsites.cpp                            # server
     tcp_client_server.cpp                       # low level TCP/IP that works

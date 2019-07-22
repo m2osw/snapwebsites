@@ -45,50 +45,50 @@
 #include "snapwebsites/snap_uri.h"
 
 
-TEST_CASE( "snap_uri", "[domain]" )
+CATCH_TEST_CASE( "snap_uri", "[domain]" )
 {
     // "normal" (canonicalized) URI
-    GIVEN("domain \"http://snap.website/\"")
+    CATCH_GIVEN("domain \"http://snap.website/\"")
     {
         snap::snap_uri uri("http://snap.website/");
 
-        SECTION("verify object")
+        CATCH_SECTION("verify object")
         {
-            REQUIRE(uri.domain() == "snap");
-            REQUIRE(uri.top_level_domain() == ".website");
+            CATCH_REQUIRE(uri.domain() == "snap");
+            CATCH_REQUIRE(uri.top_level_domain() == ".website");
         }
     }
 
     // without a '/' after domain
-    GIVEN("domain \"http://snap.website\"")
+    CATCH_GIVEN("domain \"http://snap.website\"")
     {
         snap::snap_uri uri("http://snap.website");
 
-        SECTION("verify object")
+        CATCH_SECTION("verify object")
         {
-            REQUIRE(uri.domain() == "snap");
-            REQUIRE(uri.top_level_domain() == ".website");
+            CATCH_REQUIRE(uri.domain() == "snap");
+            CATCH_REQUIRE(uri.top_level_domain() == ".website");
         }
     }
-    GIVEN("domain \"http://snap.website//\"")
+    CATCH_GIVEN("domain \"http://snap.website//\"")
     {
         snap::snap_uri uri("http://snap.website//");
 
-        SECTION("verify object")
+        CATCH_SECTION("verify object")
         {
-            REQUIRE(uri.domain() == "snap");
-            REQUIRE(uri.top_level_domain() == ".website");
+            CATCH_REQUIRE(uri.domain() == "snap");
+            CATCH_REQUIRE(uri.top_level_domain() == ".website");
         }
     }
-    GIVEN("domain \"http://snap.website///and/a/path\"")
+    CATCH_GIVEN("domain \"http://snap.website///and/a/path\"")
     {
         snap::snap_uri uri("http://snap.website///and/a/path");
 
-        SECTION("verify object")
+        CATCH_SECTION("verify object")
         {
-            REQUIRE(uri.domain() == "snap");
-            REQUIRE(uri.top_level_domain() == ".website");
-            REQUIRE(uri.path() == "and/a/path");
+            CATCH_REQUIRE(uri.domain() == "snap");
+            CATCH_REQUIRE(uri.top_level_domain() == ".website");
+            CATCH_REQUIRE(uri.path() == "and/a/path");
         }
     }
 }

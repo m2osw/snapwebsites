@@ -30,7 +30,11 @@
 //
 #include <snapwebsites/log.h>
 #include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/snap_utf8.h>
+
+
+// libutf8 lib
+//
+#include <libutf8/libutf8.h>
 
 
 // snapdev lib
@@ -626,7 +630,7 @@ void server_access::ajax_append_data(QString const& name, QByteArray const& data
         return;
     }
 
-    if(is_valid_utf8(data.data()))
+    if(libutf8::is_valid_utf8(data.data()))
     {
         QDomElement snap_tag(f_ajax.documentElement());
         QDomElement data_tag(f_ajax.createElement("data"));

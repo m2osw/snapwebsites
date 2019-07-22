@@ -26,11 +26,15 @@
 #      Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-find_package( Catch )
+find_package( Catch2 )
 
-if(CATCH_FOUND)
+if(Catch2_FOUND)
 
     project( libsnapwebsites_tests )
+
+    add_definitions(
+        -DCATCH_CONFIG_PREFIX_ALL
+    )
 
     include_directories(
         ${CATCH_INCLUDE_DIR}
@@ -43,7 +47,6 @@ if(CATCH_FOUND)
 
         # actual tests
         catch_email.cpp
-        catch_matrix.cpp
         catch_snapuri.cpp
         catch_weightedhttpstrings.cpp
     )
@@ -68,14 +71,14 @@ if(CATCH_FOUND)
 
     # You can use the --success command line option to see all the tests
     # as they run; it is a LOT of output though, thus by default we don't
-    # use it
+    # use it (TODO: add support for --progress)
     add_test( libsnapwebsites_tests ${PROJECT_NAME} )
 
-else(CATCH_FOUND)
+else(Catch2_FOUND)
 
     # You may use 'apt-get install catch' under Ubuntu
     message("No catch test will be created because you do not seem to have catch.hpp installed...")
 
-endif(CATCH_FOUND)
+endif(Catch2_FOUND)
 
 # vim: ts=4 sw=4 et
