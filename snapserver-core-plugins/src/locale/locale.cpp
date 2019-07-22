@@ -270,7 +270,7 @@ locale::locale_list_t const & locale::get_locale_list()
         // the various objects offering a getAvailableLocales()
         // function... (TBD)
         int32_t count;
-        Locale const * l(DateFormat::getAvailableLocales(count));
+        icu::Locale const * l(icu::DateFormat::getAvailableLocales(count));
         for(int32_t i(0); i < count; ++i)
         {
             locale_info_t info;
@@ -348,7 +348,7 @@ locale::locale::timezone_list_t const & locale::get_timezone_list()
     // read the file only if empty
     if(f_timezone_list.empty())
     {
-        StringEnumeration * zone_list(TimeZone::createEnumeration());
+        icu::StringEnumeration * zone_list(icu::TimeZone::createEnumeration());
         if(zone_list != nullptr)
         {
             for(;;)
@@ -361,7 +361,7 @@ locale::locale::timezone_list_t const & locale::get_timezone_list()
                 {
                     if(U_FAILURE(err))
                     {
-                        ErrorCode err_code;
+                        icu::ErrorCode err_code;
                         err_code.set(err);
                     }
                     break;
@@ -739,9 +739,9 @@ SNAP_LOG_TRACE("*** Set locale_settings::timezone [")(f_current_timezone)("]");
 QString locale::format_date(time_t d)
 {
     QUnicodeString const timezone_id(f_current_timezone);
-    LocalPointer<TimeZone> tz(TimeZone::createTimeZone(timezone_id)); // TODO: verify that it took properly
-    Locale const l(f_current_locale.toUtf8().data()); // TODO: verify that it took properly
-    LocalPointer<DateFormat> dt(DateFormat::createDateInstance(DateFormat::kDefault, l));
+    icu::LocalPointer<icu::TimeZone> tz(icu::TimeZone::createTimeZone(timezone_id)); // TODO: verify that it took properly
+    icu::Locale const l(f_current_locale.toUtf8().data()); // TODO: verify that it took properly
+    icu::LocalPointer<icu::DateFormat> dt(icu::DateFormat::createDateInstance(icu::DateFormat::kDefault, l));
     dt->setTimeZone(*tz);
     UDate const udate(d * 1000LL);
     QUnicodeString u;
@@ -770,9 +770,9 @@ QString locale::format_date(time_t d)
 QString locale::format_time(time_t d)
 {
     QUnicodeString const timezone_id(f_current_timezone);
-    LocalPointer<TimeZone> tz(TimeZone::createTimeZone(timezone_id)); // TODO: verify that it took properly
-    Locale const l(f_current_locale.toUtf8().data()); // TODO: verify that it took properly
-    LocalPointer<DateFormat> dt(DateFormat::createTimeInstance(DateFormat::kDefault, l));
+    icu::LocalPointer<icu::TimeZone> tz(icu::TimeZone::createTimeZone(timezone_id)); // TODO: verify that it took properly
+    icu::Locale const l(f_current_locale.toUtf8().data()); // TODO: verify that it took properly
+    icu::LocalPointer<icu::DateFormat> dt(icu::DateFormat::createTimeInstance(icu::DateFormat::kDefault, l));
     dt->setTimeZone(*tz);
     UDate const udate(d * 1000LL);
     QUnicodeString u;
@@ -1240,14 +1240,14 @@ time_t locale::parse_date(QString const & date, parse_error_t & errcode)
     }
     else
     {
-        Locale const l(f_current_locale.toUtf8().data()); // TODO: verify that it took properly
-        LocalPointer<DateFormat> dt(DateFormat::createDateInstance(DateFormat::kDefault, l));
+        icu::Locale const l(f_current_locale.toUtf8().data()); // TODO: verify that it took properly
+        icu::LocalPointer<icu::DateFormat> dt(icu::DateFormat::createDateInstance(icu::DateFormat::kDefault, l));
 
-        LocalPointer<TimeZone> tz(TimeZone::createTimeZone(QUnicodeString(f_current_timezone))); // TODO: verify that it took properly
+        icu::LocalPointer<icu::TimeZone> tz(icu::TimeZone::createTimeZone(QUnicodeString(f_current_timezone))); // TODO: verify that it took properly
         dt->setTimeZone(*tz);
 
         QUnicodeString const date_format(date);
-        ParsePosition pos;
+        icu::ParsePosition pos;
         UDate const result(dt->parse(date_format, pos));
 
         if(pos.getIndex() != date_format.length())

@@ -39,7 +39,7 @@
 
 
 class QUnicodeString
-    : public U_NAMESPACE_QUALIFIER UnicodeString
+    : public icu::UnicodeString
 {
 public:
     QUnicodeString()

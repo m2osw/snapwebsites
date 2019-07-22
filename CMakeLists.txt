@@ -81,6 +81,8 @@ find_package( SnapDoxygen                     )
 
 SnapGetVersion( SNAPWEBSITES ${CMAKE_CURRENT_SOURCE_DIR} )
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DU_DISABLE_RENAMING=1")
+
 ###############################################################################
 ## Define the ${SNAP_COMMON_DIR} variable used to save common files within
 ## this project.
