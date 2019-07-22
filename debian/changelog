@@ -9,6 +9,7 @@ snapwebsites (1.7.14.0~xenial) xenial; urgency=high
   * Made many fallthrough C++17 compatible.
   * It looks like g++ 8.x wants explicit noexcept.
   * The ICU library requires a namespace in g++ 8.x.
+  * Removed the YAML_CPP_INCLUDE_DIR because for now it's wrong on 19.04.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 18 Jul 2019 02:14:58 -0700
 

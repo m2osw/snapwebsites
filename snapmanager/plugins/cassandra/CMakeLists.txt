@@ -38,7 +38,7 @@ find_package( YAML-CPP REQUIRED )
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${YAML_CPP_INCLUDE_DIR}
+    #${YAML_CPP_INCLUDE_DIR} -- this is currently wrong in 19.04 (one folder off) and we do not really need to add /usr/include so we're good
 )
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
