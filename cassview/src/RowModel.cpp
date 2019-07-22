@@ -224,7 +224,7 @@ bool RowModel::setData( const QModelIndex & index, const QVariant & new_col_vari
 
         return true;
     }
-    catch( std::exception& except const & )
+    catch( std::exception const & except )
     {
         displayError( except, tr("Cannot write data to database.") );
         return false;
@@ -261,7 +261,7 @@ bool RowModel::insertRows ( int row, int count, const QModelIndex & parent_index
         }
         endInsertRows();
     }
-    catch( std::exception& except const & )
+    catch( std::exception const & except )
     {
         displayError( except, tr("Cannot insert new rows!") );
         return false;
@@ -308,7 +308,7 @@ bool RowModel::removeRows( int row, int count, const QModelIndex & )
         f_rows.erase( f_rows.begin()+row, f_rows.begin()+row+count );
         endRemoveRows();
     }
-    catch( std::exception& except const & )
+    catch( std::exception const & except )
     {
         displayError( except, tr("Cannot write data to database.") );
         return false;
