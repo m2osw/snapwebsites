@@ -595,6 +595,9 @@ lexer::token_t lexer::get_normal_token(mode_t mode)
             {
                 ungetc(c);
             }
+#if __cplusplus >= 201700
+            [[fallthrough]];
+#endif
         case '\n':
             ++f_line;
             f_start_of_line = true; // next call we're at the start of the line
@@ -950,6 +953,9 @@ lexer::token_t lexer::get_string_token()
                     }
                     ungetc(d);
                 }
+#if __cplusplus >= 201700
+        [[fallthrough]];
+#endif
             case '1':
             case '2':
             case '3':
@@ -2098,7 +2104,9 @@ void parser::parse()
         case entry_t::type_t::ENTRY_TYPE_BEDOUBLE:
         case entry_t::type_t::ENTRY_TYPE_LEDOUBLE:
             is_float = true;
-            /*FLOWTHROUGH*/
+#if __cplusplus >= 201700
+        [[fallthrough]];
+#endif
         case entry_t::type_t::ENTRY_TYPE_BYTE:
         case entry_t::type_t::ENTRY_TYPE_UBYTE:
         case entry_t::type_t::ENTRY_TYPE_SHORT:
