@@ -179,9 +179,9 @@ advgetopt::options_environment const g_options_environment =
 
 
 
-advgetopt::getopt * g_opt = nullptr;
-bool                g_verbose = false;
-bool                g_results = false;
+advgetopt::getopt::pointer_t    g_opt = advgetopt::getopt::pointer_t();
+bool                            g_verbose = false;
+bool                            g_results = false;
 
 
 
@@ -367,7 +367,7 @@ int main(int argc, char *argv[])
 {
     try
     {
-        g_opt = new advgetopt::getopt(g_options_environment, argc, argv);
+        g_opt = std::make_shared<advgetopt::getopt>(g_options_environment, argc, argv);
 
         g_verbose = g_opt->is_defined("verbose");
         g_results = g_opt->is_defined("results");
@@ -384,6 +384,8 @@ int main(int argc, char *argv[])
         {
             cxpath_disassemble();
         }
+
+        g_opt->reset();
 
         return 0;
     }
