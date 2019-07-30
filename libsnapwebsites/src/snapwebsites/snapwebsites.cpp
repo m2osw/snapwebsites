@@ -416,6 +416,33 @@ namespace
                                                   , advgetopt::GETOPT_FLAG_REQUIRED>())
             , advgetopt::Help("Specify a server CRON action.")
         ),
+#ifdef SNAP_NO_FORK
+        advgetopt::define_option(
+              advgetopt::Name("nofork")
+            , advgetopt::ShortName('k')
+            , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                     , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
+            , advgetopt::Help("If set, this switch causes the server not to fork when a child is launched. This should never be use for a production server!")
+        ),
+#endif
+        advgetopt::define_option(
+              advgetopt::Name("param")
+            , advgetopt::ShortName('p')
+            , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                                  , advgetopt::GETOPT_FLAG_REQUIRED
+                                                  , advgetopt::GETOPT_FLAG_MULTIPLE>())
+            , advgetopt::Help("Define one or more server parameters on the command line (-p name=value).")
+        ),
+        advgetopt::define_option(
+              advgetopt::Name("filename")
+            , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_DEFAULT_OPTION
+                                                      , advgetopt::GETOPT_FLAG_REQUIRED
+                                                      , advgetopt::GETOPT_FLAG_MULTIPLE>())
+        ),
+
+        // LOG SPECIFIC (moving to snaplogger soon)
+        //
         advgetopt::define_option(
               advgetopt::Name("debug")
             , advgetopt::ShortName('d')
@@ -451,41 +478,7 @@ namespace
             , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE>())
             , advgetopt::Help("Turn off the automatic logging through snapcommunicator.")
         ),
-#ifdef SNAP_NO_FORK
-        advgetopt::define_option(
-              advgetopt::Name("nofork")
-            , advgetopt::ShortName('k')
-            , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                     , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
-            , advgetopt::Help("If set, this switch causes the server not to fork when a child is launched. This should never be use for a production server!")
-        ),
-#endif
-        advgetopt::define_option(
-              advgetopt::Name("help")
-            , advgetopt::ShortName('h')
-            , advgetopt::Flags(advgetopt::standalone_command_flags<advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
-            , advgetopt::Help("Show usage and exit.")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("param")
-            , advgetopt::ShortName('p')
-            , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                                  , advgetopt::GETOPT_FLAG_REQUIRED
-                                                  , advgetopt::GETOPT_FLAG_MULTIPLE>())
-            , advgetopt::Help("Define one or more server parameters on the command line (-p name=value).")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("version")
-            , advgetopt::Flags(advgetopt::standalone_command_flags<>())
-            , advgetopt::Help("Show the version of %p and exit.")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("filename")
-            , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_DEFAULT_OPTION
-                                                      , advgetopt::GETOPT_FLAG_REQUIRED
-                                                      , advgetopt::GETOPT_FLAG_MULTIPLE>())
-        ),
+
         advgetopt::end_flags()
     };
 
