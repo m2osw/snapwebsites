@@ -5276,6 +5276,7 @@ void snap_communicator_server::process_connected(snap::snap_communicator::snap_c
 {
     snap::snap_communicator_message connect;
     connect.set_command("CONNECT");
+    //connect.add_version_parameter("version", snap::snap_communicator::VERSION);
     connect.add_parameter("version", snap::snap_communicator::VERSION);
     connect.add_parameter("my_address", QString::fromUtf8(f_my_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT).c_str()));
     connect.add_parameter("server_name", f_server_name);
