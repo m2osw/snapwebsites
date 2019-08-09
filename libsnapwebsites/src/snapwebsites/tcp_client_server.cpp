@@ -27,9 +27,9 @@
 
 // snapdev lib
 //
-#include "snapdev/not_reached.h"
-#include "snapdev/not_used.h"
-#include "snapdev/raii_generic_deleter.h"
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+#include <snapdev/raii_generic_deleter.h>
 
 
 // C++
@@ -52,7 +52,7 @@
 
 // last include
 //
-#include "snapdev/poison.h"
+#include <snapdev/poison.h>
 
 
 

@@ -28,7 +28,7 @@
 
 // snapdev lib
 //
-#include "snapdev/qcaseinsensitivestring.h"
+#include <snapdev/qcaseinsensitivestring.h>
 
 
 // qt serialization lib

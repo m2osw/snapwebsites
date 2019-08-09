@@ -27,7 +27,7 @@
 
 // snapdev lib
 //
-#include "snapdev/tokenize_string.h"
+#include <snapdev/tokenize_string.h>
 
 
 // libtld library
@@ -37,8 +37,7 @@
 
 // last include
 //
-#include "snapdev/poison.h"
-
+#include <snapdev/poison.h>
 
 
 

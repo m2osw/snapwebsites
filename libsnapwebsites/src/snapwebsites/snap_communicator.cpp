@@ -35,14 +35,14 @@
 
 // snapdev lib
 //
-#include "snapdev/not_reached.h"
-#include "snapdev/not_used.h"
-#include "snapdev/string_replace_many.h"
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
+#include <snapdev/string_replace_many.h>
 
 
 // libaddr lib
 //
-#include "libaddr/addr_parser.h"
+#include <libaddr/addr_parser.h>
 
 
 // C++ lib

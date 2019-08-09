@@ -43,7 +43,7 @@
 
 // snapdev lib
 //
-#include "snapdev/not_used.h"
+#include <snapdev/not_used.h>
 
 
 // dbproxy lib

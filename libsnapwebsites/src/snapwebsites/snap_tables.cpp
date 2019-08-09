@@ -32,7 +32,7 @@
 
 // snapdev lib
 //
-#include "snapdev/not_used.h"
+#include <snapdev/not_used.h>
 
 
 // Qt lib
@@ -43,7 +43,7 @@
 
 // last include
 //
-#include "snapdev/poison.h"
+#include <snapdev/poison.h>
 
 
 

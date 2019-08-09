@@ -30,8 +30,8 @@
 
 // snapdev lib
 //
-#include "snapdev/not_reached.h"
-#include "snapdev/not_used.h"
+#include <snapdev/not_reached.h>
+#include <snapdev/not_used.h>
 
 
 // C++ lib
@@ -47,7 +47,7 @@
 
 // last include
 //
-#include "snapdev/poison.h"
+#include <snapdev/poison.h>
 
 
 
