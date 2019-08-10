@@ -1,3 +1,9 @@
+snapwebsites (1.7.15.0~xenial) xenial; urgency=high
+
+  * Added libutf8 as a new dependency.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 10 Jul 2019 00:39:16 -0700
+
 snapwebsites (1.7.14.0~xenial) xenial; urgency=high
 
   * Removed the headers I moved to snapdev earlier.
