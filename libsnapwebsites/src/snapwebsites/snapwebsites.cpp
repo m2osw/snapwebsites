@@ -379,159 +379,163 @@ extern QString g_next_register_filename;
  */
 namespace
 {
-    /** \brief Command line options.
-     *
-     * This table includes all the options supported by the server.
-     */
-    advgetopt::option const g_snapserver_options[] =
-    {
-        advgetopt::define_option(
-              advgetopt::Name("action")
-            , advgetopt::ShortName('a')
-            , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                                  , advgetopt::GETOPT_FLAG_REQUIRED>())
-            , advgetopt::Help("Specify a server action.")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("background")
-            , advgetopt::ShortName('b')
-            , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                     , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
-            , advgetopt::Help("Detaches the server to the background (default is stay in the foreground.)")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("config")
-            , advgetopt::ShortName('c')
-            , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                                  , advgetopt::GETOPT_FLAG_REQUIRED
-                                                  , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
-            , advgetopt::Help("Specify the configuration file to load at startup.")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("cron-action")
-            , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                                  , advgetopt::GETOPT_FLAG_REQUIRED>())
-            , advgetopt::Help("Specify a server CRON action.")
-        ),
+
+
+/** \brief Command line options.
+ *
+ * This table includes all the options supported by the server.
+ */
+advgetopt::option const g_snapserver_options[] =
+{
+    advgetopt::define_option(
+          advgetopt::Name("action")
+        , advgetopt::ShortName('a')
+        , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                              , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                              , advgetopt::GETOPT_FLAG_REQUIRED>())
+        , advgetopt::Help("Specify a server action.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("background")
+        , advgetopt::ShortName('b')
+        , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                 , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
+        , advgetopt::Help("Detaches the server to the background (default is stay in the foreground.)")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("config")
+        , advgetopt::ShortName('c')
+        , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                              , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                              , advgetopt::GETOPT_FLAG_REQUIRED
+                                              , advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR>())
+        , advgetopt::Help("Specify the configuration file to load at startup.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("cron-action")
+        , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                              , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                              , advgetopt::GETOPT_FLAG_REQUIRED>())
+        , advgetopt::Help("Specify a server CRON action.")
+    ),
 #ifdef SNAP_NO_FORK
-        advgetopt::define_option(
-              advgetopt::Name("nofork")
-            , advgetopt::ShortName('k')
-            , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                     , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
-            , advgetopt::Help("If set, this switch causes the server not to fork when a child is launched. This should never be use for a production server!")
-        ),
+    advgetopt::define_option(
+          advgetopt::Name("nofork")
+        , advgetopt::ShortName('k')
+        , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                 , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
+        , advgetopt::Help("If set, this switch causes the server not to fork when a child is launched. This should never be use for a production server!")
+    ),
 #endif
-        advgetopt::define_option(
-              advgetopt::Name("param")
-            , advgetopt::ShortName('p')
-            , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+    advgetopt::define_option(
+          advgetopt::Name("param")
+        , advgetopt::ShortName('p')
+        , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                              , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                              , advgetopt::GETOPT_FLAG_REQUIRED
+                                              , advgetopt::GETOPT_FLAG_MULTIPLE>())
+        , advgetopt::Help("Define one or more server parameters on the command line (-p name=value).")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("filename")
+        , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_DEFAULT_OPTION
                                                   , advgetopt::GETOPT_FLAG_REQUIRED
                                                   , advgetopt::GETOPT_FLAG_MULTIPLE>())
-            , advgetopt::Help("Define one or more server parameters on the command line (-p name=value).")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("filename")
-            , advgetopt::Flags(advgetopt::command_flags<advgetopt::GETOPT_FLAG_DEFAULT_OPTION
-                                                      , advgetopt::GETOPT_FLAG_REQUIRED
-                                                      , advgetopt::GETOPT_FLAG_MULTIPLE>())
-        ),
+    ),
 
-        // LOG SPECIFIC (moving to snaplogger soon)
-        //
-        advgetopt::define_option(
-              advgetopt::Name("debug")
-            , advgetopt::ShortName('d')
-            , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                     , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
-            , advgetopt::Help("Outputs debug logs. Perform additional checks in various places.")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("logfile")
-            , advgetopt::ShortName('f')
-            , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                                  , advgetopt::GETOPT_FLAG_REQUIRED>())
-            , advgetopt::Help("Output log file to write to. Overrides the setting in the configuration file.")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("logconf")
-            , advgetopt::ShortName('l')
-            , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                  , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
-                                                  , advgetopt::GETOPT_FLAG_REQUIRED>())
-            , advgetopt::Help("Log configuration file to read from. Overrides log_config in the configuration file.")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("no-log")
-            , advgetopt::ShortName('n')
-            , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
-                                                     , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
-            , advgetopt::Help("Don't create a logfile, just output to the console.")
-        ),
-        advgetopt::define_option(
-              advgetopt::Name("no-messenger-logging")
-            , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE>())
-            , advgetopt::Help("Turn off the automatic logging through snapcommunicator.")
-        ),
+    // LOG SPECIFIC (moving to snaplogger soon)
+    //
+    advgetopt::define_option(
+          advgetopt::Name("debug")
+        , advgetopt::ShortName('d')
+        , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                 , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
+        , advgetopt::Help("Outputs debug logs. Perform additional checks in various places.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("logfile")
+        , advgetopt::ShortName('f')
+        , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                              , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                              , advgetopt::GETOPT_FLAG_REQUIRED>())
+        , advgetopt::Help("Output log file to write to. Overrides the setting in the configuration file.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("logconf")
+        , advgetopt::ShortName('l')
+        , advgetopt::Flags(advgetopt::any_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                              , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE
+                                              , advgetopt::GETOPT_FLAG_REQUIRED>())
+        , advgetopt::Help("Log configuration file to read from. Overrides log_config in the configuration file.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("no-log")
+        , advgetopt::ShortName('n')
+        , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE
+                                                 , advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE>())
+        , advgetopt::Help("Don't create a logfile, just output to the console.")
+    ),
+    advgetopt::define_option(
+          advgetopt::Name("no-messenger-logging")
+        , advgetopt::Flags(advgetopt::option_flags<advgetopt::GETOPT_FLAG_COMMAND_LINE>())
+        , advgetopt::Help("Turn off the automatic logging through snapcommunicator.")
+    ),
 
-        advgetopt::end_flags()
-    };
+    advgetopt::end_options()
+};
 
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-    advgetopt::options_environment g_snapserver_options_environment =
-    {
-        .f_project_name = "snapwebsites",       // this does NOT vary depending on your program, all writable files are under snapwebsites.d/...
-        .f_options = g_snapserver_options,
-        .f_options_files_directory = nullptr,
-        .f_environment_variable_name = "SNAPSERVER_OPTIONS",
-        .f_configuration_files = nullptr,
-        .f_configuration_filename = nullptr,
-        .f_configuration_directories = nullptr,
-        .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS,
-        .f_help_header = "Usage: %p [-<opt>]\n"
-                         "where -<opt> is one or more of:",
-        .f_help_footer = "Configuration files:\n"       // TODO: fix the snapserver::usage() function so this works as expected
-                         "%*f\n"
-                         "Environment variable: %e\n"
-                         "%p v%v from %a\n"
-                         "Built on %t\n"
-                         "See also http://www.snapwebsites.org/project",
-        .f_version = SNAPWEBSITES_VERSION_STRING,
-        .f_license = "This software is licenced under the GPL v2 and LGPL v2",
-        .f_copyright = "Copyright (c) 2011-" BOOST_PP_STRINGIZE(UTC_BUILD_YEAR) " by Made to Order Software Corporation",
-        //.f_build_date = __DATE__,
-        //.f_build_time = __TIME__
-    };
+advgetopt::options_environment g_snapserver_options_environment =
+{
+    .f_project_name = "snapwebsites",       // this does NOT vary depending on your program, all writable files are under snapwebsites.d/...
+    .f_options = g_snapserver_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = "SNAPSERVER_OPTIONS",
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>]\n"
+                     "where -<opt> is one or more of:",
+    .f_help_footer = "Configuration files:\n"       // TODO: fix the snapserver::usage() function so this works as expected
+                     "%*f\n"
+                     "Environment variable: %e\n"
+                     "%p v%v from %a\n"
+                     "Built on %t\n"
+                     "See also http://www.snapwebsites.org/project",
+    .f_version = SNAPWEBSITES_VERSION_STRING,
+    .f_license = "This software is licenced under the GPL v2 and LGPL v2",
+    .f_copyright = "Copyright (c) 2011-" BOOST_PP_STRINGIZE(UTC_BUILD_YEAR) " by Made to Order Software Corporation",
+    //.f_build_date = __DATE__,
+    //.f_build_time = __TIME__
+};
 #pragma GCC diagnostic pop
 
-    struct connection_t
-    {
-        snap_communicator::pointer_t                    f_communicator = snap_communicator::pointer_t();
-        snap_communicator::snap_connection::pointer_t   f_interrupt = snap_communicator::snap_connection::pointer_t();
-        snap_communicator::snap_connection::pointer_t   f_listener = snap_communicator::snap_connection::pointer_t();
-        snap_communicator::snap_connection::pointer_t   f_child_death_listener = snap_communicator::snap_connection::pointer_t();
-        snap_communicator::snap_connection::pointer_t   f_messenger = snap_communicator::snap_connection::pointer_t();
-        snap_communicator::snap_connection::pointer_t   f_cassandra_check_timer = snap_communicator::snap_connection::pointer_t(); // timer in case an error occurs that will not generate a CASSANDRAREADY
-    };
+struct connection_t
+{
+    snap_communicator::pointer_t                    f_communicator = snap_communicator::pointer_t();
+    snap_communicator::snap_connection::pointer_t   f_interrupt = snap_communicator::snap_connection::pointer_t();
+    snap_communicator::snap_connection::pointer_t   f_listener = snap_communicator::snap_connection::pointer_t();
+    snap_communicator::snap_connection::pointer_t   f_child_death_listener = snap_communicator::snap_connection::pointer_t();
+    snap_communicator::snap_connection::pointer_t   f_messenger = snap_communicator::snap_connection::pointer_t();
+    snap_communicator::snap_connection::pointer_t   f_cassandra_check_timer = snap_communicator::snap_connection::pointer_t(); // timer in case an error occurs that will not generate a CASSANDRAREADY
+};
 
-    /** \brief The pointers to communicator elements.
-     *
-     * The communicator we use to run the server events.
-     *
-     * \todo
-     * At some point we need to look into whether it would be possible
-     * for us to use a shared pointer. At this point the g_connection
-     * gets allocated and never deleted (not a big deal since it is
-     * ONE instance for the entire time the process is running.)
-     */
-    connection_t *          g_connection = nullptr;
+/** \brief The pointers to communicator elements.
+ *
+ * The communicator we use to run the server events.
+ *
+ * \todo
+ * At some point we need to look into whether it would be possible
+ * for us to use a shared pointer. At this point the g_connection
+ * gets allocated and never deleted (not a big deal since it is
+ * ONE instance for the entire time the process is running.)
+ */
+connection_t *          g_connection = nullptr;
+
+
 }
 //namespace
 

@@ -1,3 +1,9 @@
+snapwebsites (1.7.16.0~xenial) xenial; urgency=high
+
+  * Fixed the end of the server option list.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 10 Jul 2019 17:09:24 -0700
+
 snapwebsites (1.7.15.0~xenial) xenial; urgency=high
 
   * Added libutf8 as a new dependency.
