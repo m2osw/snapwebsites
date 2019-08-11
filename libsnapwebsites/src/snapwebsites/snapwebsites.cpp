@@ -508,8 +508,8 @@ advgetopt::options_environment g_snapserver_options_environment =
     .f_version = SNAPWEBSITES_VERSION_STRING,
     .f_license = "This software is licenced under the GPL v2 and LGPL v2",
     .f_copyright = "Copyright (c) 2011-" BOOST_PP_STRINGIZE(UTC_BUILD_YEAR) " by Made to Order Software Corporation",
-    //.f_build_date = __DATE__,
-    //.f_build_time = __TIME__
+    //.f_build_date = UTC_BUILD_DATE,
+    //.f_build_time = UTC_BUILD_TIME
 };
 #pragma GCC diagnostic pop
 

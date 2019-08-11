@@ -1,3 +1,9 @@
+snapwebsites (1.7.16.1~xenial) xenial; urgency=high
+
+  * Changed the __TIME__ and __DATE__ with our UTC_BUILD_TIME/DATE vars.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 11 Jul 2019 03:38:20 -0700
+
 snapwebsites (1.7.16.0~xenial) xenial; urgency=high
 
   * Fixed the end of the server option list.

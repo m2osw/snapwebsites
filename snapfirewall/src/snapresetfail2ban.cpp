@@ -109,8 +109,8 @@ advgetopt::options_environment const g_options_environment =
     .f_version = SNAPFIREWALL_VERSION_STRING,
     .f_license = nullptr,
     .f_copyright = nullptr,
-    //.f_build_date = __DATE__,
-    //.f_build_time = __TIME__
+    //.f_build_date = UTC_BUILD_DATE,
+    //.f_build_time = UTC_BUILD_TIME
 };
 #pragma GCC diagnostic pop
 
