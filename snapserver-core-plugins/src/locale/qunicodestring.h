@@ -16,6 +16,17 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+#define U_USING_ICU_NAMESPACE 0
+#if __cplusplus >= 201700
+// This is still TBD, it may very well be that we still have a renaming
+// happening even in newer versions (to be tested)
+//
+#define U_DISABLE_RENAMING 1
+#else
+#define U_DISABLE_RENAMING 0
+#endif
+#define ICUNS U_NAMESPACE_QUALIFIER
+
 // Qt lib
 //
 #include <QString>
@@ -23,7 +34,6 @@
 // C lib
 //
 #include <unicode/unistr.h>
-
 
 
 
@@ -39,7 +49,7 @@
 
 
 class QUnicodeString
-    : public icu::UnicodeString
+    : public ICUNS UnicodeString
 {
 public:
     QUnicodeString()
@@ -48,6 +58,10 @@ public:
 
     QUnicodeString(QString const & qstr)
         : UnicodeString(qstr.utf16()) // both string formats use UTF-16 so we can copy as is
+    {
+    }
+
+    virtual ~QUnicodeString() override
     {
     }
 

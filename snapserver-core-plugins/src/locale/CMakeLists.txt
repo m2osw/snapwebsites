@@ -52,7 +52,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-qt5_add_resources( SNAP_MANAGER_RESOURCES_RCC
+qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     locale.qrc
 )
 
@@ -74,12 +74,22 @@ target_link_libraries( locale
 )
 
 install(
-    TARGETS locale LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+    TARGETS
+        locale
+
+    LIBRARY DESTINATION
+        ${PLUGIN_INSTALL_DIR}
 )
+
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/snapwebsites/plugins/locale
-    FILES_MATCHING PATTERN "*.h"
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+
+    DESTINATION
+        include/snapwebsites/plugins/locale
+
+    FILES_MATCHING
+        PATTERN "*.h"
 )
 
 # vim: ts=4 sw=4 et
