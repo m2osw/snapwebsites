@@ -1,8 +1,15 @@
+snapwebsites (1.7.18.0~xenial) xenial; urgency=high
+
+  * Use shred to delete secure logs and the snapmanager.conf files.
+  * Removed warning about non-locked log file, it is locked now.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 24 Aug 2019 02:56:17 -0700
+
 snapwebsites (1.7.17.0~xenial) xenial; urgency=high
 
   * Fixed the locale so it finds the libraries (i.e. correct namespace).
 
- -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Jul 2019 01:57:40 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 13 Aug 2019 01:57:40 -0700
 
 snapwebsites (1.7.16.1~xenial) xenial; urgency=high
 

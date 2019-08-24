@@ -13,7 +13,7 @@ then
     #
     #PACKAGENAME=snapserver
     #rm -f /var/log/snapwebsites/${PACKAGENAME}.log
-    #rm -f /var/log/snapwebsites/secure/${PACKAGENAME}.log
+    #shred -fu /var/log/snapwebsites/secure/${PACKAGENAME}.log
 
     # remove the "backends=..." parameter from the snapserver.conf
     # since the user purges this set of services

@@ -239,7 +239,7 @@ QByteArray const & order::parameter(int index) const
 {
     if(static_cast<size_t>(index) >= f_parameter.size())
     {
-        throw overflow_exception("QCassandraOrderOrder::parameter() called with an index too large.");
+        throw overflow_exception("order::parameter() called with an index too large.");
     }
     return f_parameter[index];
 }

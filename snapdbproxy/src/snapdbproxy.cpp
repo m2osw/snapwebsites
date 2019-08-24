@@ -189,14 +189,14 @@ snapdbproxy::pointer_t                    snapdbproxy::g_instance;
  */
 snapdbproxy::snapdbproxy(int argc, char * argv[])
     : f_opt(g_options_environment, argc, argv)
-    , f_config( "snapdbproxy" )
-    , f_session( casswrapper::Session::create() )
+    , f_config("snapdbproxy")
+    , f_session(casswrapper::Session::create())
 {
     // read the configuration file
     //
-    if(f_opt.is_defined( "config"))
+    if(f_opt.is_defined("config"))
     {
-        f_config.set_configuration_path( f_opt.get_string("config") );
+        f_config.set_configuration_path(f_opt.get_string("config"));
     }
 
     // --debug

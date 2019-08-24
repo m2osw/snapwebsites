@@ -5,6 +5,12 @@
 
 if [ "$1" = "purge" ]
 then
+    # make sure to shred the secure logs
+    #
+    find /var/log/snapwebsites/secure \
+        -type f \
+        -exec shred -fu {} \;
+
     # delete various data directories we use in Snap!
     #
     rm -rf /var/lib/snapwebsites
