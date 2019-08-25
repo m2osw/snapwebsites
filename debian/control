@@ -273,7 +273,7 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
 Package: snapbase
 Section: admin
 Architecture: any
-Depends: adduser, ntp, ${shlibs:Depends}, ${misc:Depends}
+Depends: adduser, ntp, snaplogger, ${shlibs:Depends}, ${misc:Depends}
 Suggests: snapbase-doc
 Description: Fast Websites: powerful CMS for Apache written in C++.
  Snap! C++ runs your CMS using binary code written in C and C++.

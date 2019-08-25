@@ -21,7 +21,7 @@ then
     # delete all logs
     #
     rm -f /var/log/snapwebsites/${PACKAGENAME}.log*
-    shred -fu /var/log/snapwebsites/secure/${PACKAGENAME}.log*
+    shredlog -fu /var/log/snapwebsites/secure/${PACKAGENAME}.log*
     rm -rf /var/log/snapwebsites/snapwatchdog-output
 
     # delete the user configuration file

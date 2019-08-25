@@ -5,16 +5,13 @@
 
 if [ "$1" = "purge" ]
 then
-    # make sure to shred the secure logs
+    # make sure to shred all the logs
     #
-    find /var/log/snapwebsites/secure \
-        -type f \
-        -exec shred -fu {} \;
+    shredlog --force --unlink --recursive /var/log/snapwebsites
 
     # delete various data directories we use in Snap!
     #
     rm -rf /var/lib/snapwebsites
-    rm -rf /var/log/snapwebsites
     rm -rf /var/cache/snapwebsites
     rm -rf /var/cache/www-snapwebsites
 

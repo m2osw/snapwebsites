@@ -93,11 +93,7 @@
     systemctl start cassandra
   </postinst>
   <postrm>
-    for d in /etc/cassandra /var/lib/cassandra /var/log/cassandra /var/lib/snapwebsites/keys
-    do
-      find $d -type f -exec shred --force --remove=wipesync {} \;
-    done
-    rm -rf /etc/cassandra /var/lib/cassandra /var/log/cassandra /var/lib/snapwebsites/keys
+    shredlog --force --recursive --unlink /etc/cassandra /var/lib/cassandra /var/log/cassandra /var/lib/snapwebsites/keys
   </postrm>
 </bundle>
 <!--

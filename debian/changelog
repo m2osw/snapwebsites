@@ -1,7 +1,9 @@
 snapwebsites (1.7.18.0~xenial) xenial; urgency=high
 
-  * Use shred to delete secure logs and the snapmanager.conf files.
+  * Use shredlog to delete secure logs and the snapmanager.conf files.
+  * Comment out the `shred` option in the logrotate, with SSD it's useless.
   * Removed warning about non-locked log file, it is locked now.
+  * Made snaplogger a dependency of snapbase (to have `shredlog`).
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 24 Aug 2019 02:56:17 -0700
 

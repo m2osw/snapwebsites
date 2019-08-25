@@ -9,7 +9,7 @@ then
     # delete the snapcgi logs if any
     #
     rm -f /var/log/snapwebsites/snapcgi.log*
-    shred -fu /var/log/snapwebsites/secure/snapcgi.log*
+    shredlog -fu /var/log/snapwebsites/secure/snapcgi.log*
 
     # delete the user configuration file
     #

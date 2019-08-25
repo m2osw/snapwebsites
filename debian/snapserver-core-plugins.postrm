@@ -10,7 +10,7 @@ then
     #
     ANTIVIRUSNAME=antivirus
     rm -f /var/log/snapwebsites/${ANTIVIRUSNAME}.log*
-    shred -fu /var/log/snapwebsites/secure/${ANTIVIRUSNAME}.log*
+    shredlog -fu /var/log/snapwebsites/secure/${ANTIVIRUSNAME}.log*
 fi
 
 

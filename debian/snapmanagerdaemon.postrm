@@ -22,13 +22,13 @@ then
     # delete the logs if any
     #
     rm -f /var/log/snapwebsites/${PACKAGENAME}.log*
-    shred -fu /var/log/snapwebsites/secure/${PACKAGENAME}.log*
-    shred -fu /var/log/snapwebsites/secure/snapmanager-bundle.log*
+    shredlog -fu /var/log/snapwebsites/secure/${PACKAGENAME}.log*
+    shredlog -fu /var/log/snapwebsites/secure/snapmanager-bundle.log*
 
     # shred the configs because they include your IP
     #
-    shred -fu /etc/snapwebsites/snapmanager.conf
-    shred -fu /etc/snapwebsites/snapwebsites.d/snapmanager.*
+    shredlog -fu /etc/snapwebsites/snapmanager.conf
+    shredlog -fu /etc/snapwebsites/snapwebsites.d/snapmanager.*
 fi
 
 #DEBHELPER#

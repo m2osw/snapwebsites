@@ -19,7 +19,7 @@ then
     #          these logs are common to snapserver and snapbackend
     #
     #rm -f /var/log/snapwebsites/${PACKAGENAME}.log
-    #shred -fu /var/log/snapwebsites/secure/${PACKAGENAME}.log
+    #shredlog -fu /var/log/snapwebsites/secure/${PACKAGENAME}.log
 
     # delete the snapserver SSL files
     #

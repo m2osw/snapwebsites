@@ -15,7 +15,7 @@
     compress
     delaycompress
     notifempty
-    shred
+    #shred
     nomail
     create 600 snapwebsites snapwebsites
 }
@@ -54,7 +54,7 @@
     compress
     delaycompress
     notifempty
-    shred
+    #shred
     nomail
     create 600 snapwebsites snapwebsites
 }

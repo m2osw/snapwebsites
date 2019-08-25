@@ -20,7 +20,7 @@
     compress
     delaycompress
     notifempty
-    shred
+    #shred
     nomail
     create 600 www-data www-data
 }
