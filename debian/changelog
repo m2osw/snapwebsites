@@ -1,3 +1,9 @@
+snapwebsites (1.7.19.0~xenial) xenial; urgency=high
+
+  * Updated a couple of files to work with the new addr exceptions.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue,  3 Sep 2019 02:18:56 -0700
+
 snapwebsites (1.7.18.0~xenial) xenial; urgency=high
 
   * Use shredlog to delete secure logs and the snapmanager.conf files.

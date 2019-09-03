@@ -36,7 +36,7 @@
 
 // libaddr lib
 //
-#include <libaddr/addr_exceptions.h>
+#include <libaddr/addr_exception.h>
 #include <libaddr/addr_parser.h>
 
 
@@ -878,7 +878,7 @@ void snap_firewall::block_info_t::set_ip(QString const & ip)
 
         }
     }
-    catch(addr::addr_invalid_argument_exception const & e)
+    catch(addr::addr_invalid_argument const & e)
     {
         SNAP_LOG_ERROR("BLOCK with an invalid IP address in \"")(ip)("\". BLOCK will be ignored.");
         return;
