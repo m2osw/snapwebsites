@@ -1,3 +1,9 @@
+snapwebsites (1.7.20.0~xenial) xenial; urgency=high
+
+  * Fixed the gathering of the signal_secret parameter in the self plugin.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  7 Sep 2019 11:24:58 -0700
+
 snapwebsites (1.7.19.0~xenial) xenial; urgency=high
 
   * Updated a couple of files to work with the new addr exceptions.

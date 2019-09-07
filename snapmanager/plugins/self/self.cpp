@@ -74,6 +74,7 @@ namespace
 
 
 char const * g_configuration_filename = "snapmanager";
+char const * g_configuration_communicator_filename = "snapcommunicator";
 
 
 void file_descriptor_deleter(int * fd)
@@ -651,6 +652,9 @@ bool self::apply_setting(QString const & button_name
     //
     if(button_name == "refresh")
     {
+        snap_config snap_communicator_conf(g_configuration_communicator_filename);
+        QString const signal_secret(snap_communicator_conf["signal_secret"]);
+
         {
             // setup the message to send to other snapmanagerdaemons
             //
@@ -664,7 +668,7 @@ bool self::apply_setting(QString const & button_name
             snap::snap_communicator::snap_udp_server_message_connection::send_message(f_snap->get_signal_address()
                                                                                     , f_snap->get_signal_port()
                                                                                     , resend
-                                                                                    , f_snap->get_server_parameter("signal_secret").toUtf8().data());
+                                                                                    , signal_secret.toUtf8().data());
         }
         {
             snap::snap_communicator_message cgistatus;
@@ -676,7 +680,7 @@ bool self::apply_setting(QString const & button_name
             snap::snap_communicator::snap_udp_server_message_connection::send_message(f_snap->get_signal_address()
                                                                                     , f_snap->get_signal_port()
                                                                                     , cgistatus
-                                                                                    , f_snap->get_server_parameter("signal_secret").toUtf8().data());
+                                                                                    , signal_secret.toUtf8().data());
         }
         {
             snap::snap_communicator_message backendstatus;
@@ -688,7 +692,7 @@ bool self::apply_setting(QString const & button_name
             snap::snap_communicator::snap_udp_server_message_connection::send_message(f_snap->get_signal_address()
                                                                                     , f_snap->get_signal_port()
                                                                                     , backendstatus
-                                                                                    , f_snap->get_server_parameter("signal_secret").toUtf8().data());
+                                                                                    , signal_secret.toUtf8().data());
         }
 
         // messages sent...

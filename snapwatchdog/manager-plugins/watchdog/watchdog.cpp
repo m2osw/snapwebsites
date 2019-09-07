@@ -832,7 +832,7 @@ bool watchdog::apply_setting(QString const & button_name, QString const & field_
             f_snap->replace_configuration_value(
                           g_test_mta_results
                         , "status"
-                        , "The from_email must bost be defined to test the MTA from the watchdog.");
+                        , "The `from_email` must be defined to test the MTA from the watchdog.");
         }
         else if(new_value.isEmpty())
         {
