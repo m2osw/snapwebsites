@@ -362,12 +362,6 @@ permissions::sets_t::sets_t(snap_child * snap, QString const & user_path, conten
     , f_ipath(ipath)
     , f_action(action)
     , f_login_status(login_status)
-    //, f_user_rights() -- auto-init
-    //, f_user_cache_key("") -- auto-init
-    //, f_plugin_permissions() -- auto-init
-    //, f_plugin_cache_key() -- auto-init
-    //, f_using_user_cache() -- auto-init
-    //, f_using_plugin_cache() -- auto-init
 {
 }
 
@@ -2847,7 +2841,7 @@ void permissions::recursive_add_plugin_permissions(QString const & plugin_name, 
  * function will generate an error.
  *
  * ** USER_EMAIL -- the email address of the user whom the permissions
- * are ot be checked;
+ * are to be checked;
  * ** PAGE_URI -- the URI to the page being checked for that user;
  * ** CHECK_ACTION -- the action being checked (view, administer, edit,
  * delete, etc.);
@@ -2861,13 +2855,18 @@ void permissions::recursive_add_plugin_permissions(QString const & plugin_name, 
  * statuses do not make sense for an anonymous (unregistered) visitor.
  *
  * \code
- * snapbackend http://www.example.com \
+ * snapbackend --no-log \
+ *          http://www.example.com/ \
  *          --action permissions::checkpermissions \
  *          --param USER_EMAIL=john@example.com \
  *                  PAGE_URI=http://www.example.com/journal/2015/08/13/beautiful-weather \
  *                  CHECK_ACTION=view \
  *                  LOGIN_STATUS=registered
  * \endcode
+ *
+ * The `--no-log` command line option allows you to see the logs in the
+ * console (i.e. you won't have to search for what happened in your logs.)
+ * At the same time, it means you won't get a copy of the logs anywhere else.
  *
  * \note
  * The login status names are the same as when you write a script
