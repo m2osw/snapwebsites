@@ -689,7 +689,7 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
                                  " The value can be followed by 'ms' for milliseconds,"
                                  " 's' for seconds, 'min' for minutes,"
                                  " combos work too: 5min 30s. For more, see"
-                                 " <a href=\"https://www.freedesktop.org/software/systemd/man/systemd.time.html\">sytemd.time</a>")
+                                 " <a href=\"https://www.freedesktop.org/software/systemd/man/systemd.time.html\">systemd.time</a>")
                                         .arg(service_name)
                         ));
         f.add_widget(field);
