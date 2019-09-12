@@ -496,7 +496,7 @@ void manager_daemon::process_message(snap::snap_communicator_message const & mes
     case 'U':
         if(command == "UNKNOWN")
         {
-            // we sent a command that Snap! Communicator did not understand
+            // we sent a command that the receiver did not understand
             //
             SNAP_LOG_ERROR("we sent unknown command \"")(message.get_parameter("command"))("\" and probably did not get the expected result.");
             return;
