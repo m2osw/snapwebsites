@@ -62,6 +62,9 @@ public:
     QString             rowName() const;
     const QByteArray&   rowKey() const;
 
+    int32_t             timeout() const;
+    void                setTimeout(int32_t const statement_timeout_ms);
+
     int                 cellCount(const cell_predicate::pointer_t column_predicate = cell_predicate::pointer_t());
     uint32_t            readCells();
     uint32_t            readCells(cell_predicate::pointer_t column_predicate);
@@ -109,6 +112,7 @@ private:
     QByteArray                f_key          = QByteArray();
     cells                     f_cells        = cells();
     int32_t                   f_cursor_index = -1;
+    int32_t                   f_timeout_ms   = 0;
 };
 #pragma GCC diagnostic pop
 

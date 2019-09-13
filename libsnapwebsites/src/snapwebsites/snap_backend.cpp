@@ -1415,6 +1415,7 @@ bool snap_backend::process_timeout()
             //
             libdbproxy::row::pointer_t row(f_backend_table->getRow(f_action));
             row->clearCache(); // just in case, make sure we do not have a query laying around
+            row->setTimeout(60LL * 1000LL);     // wait up to 1 min. to load the cells
             auto column_predicate(std::make_shared<libdbproxy::cell_range_predicate>());
             column_predicate->setCount(1); // read only the first row -- WARNING: if you increase that number you MUST add a sub-loop
             column_predicate->setIndex(); // behave like an index
