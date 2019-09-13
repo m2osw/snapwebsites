@@ -71,8 +71,6 @@
 
 
 
-using namespace casswrapper;
-using namespace casswrapper::schema;
 
 namespace
 {
@@ -134,7 +132,7 @@ snap_manager::snap_manager(QWidget * snap_parent)
 
     // Cassandra Info
     console = getChild<QListWidget>(this, "cassandraConsole");
-    console->addItem("libcasswrapper version: " + QString(LIBCASSWRAPPER_LIBRARY_VERSION_STRING));
+    console->addItem("libcasswrapper version: " + QString(casswrapper::LIBCASSWRAPPER_LIBRARY_VERSION_STRING));
     console->addItem("Not connected.");
 
     // get domain friends that are going to be used here and there
@@ -545,7 +543,7 @@ void snap_manager::on_f_cassandraConnectButton_clicked()
 
     if(!f_session)
     {
-        f_session = Session::create();
+        f_session = casswrapper::Session::create();
     }
 
     // save the old values
@@ -579,7 +577,7 @@ void snap_manager::on_f_cassandraConnectButton_clicked()
 
     QListWidget *console = getChild<QListWidget>(this, "cassandraConsole");
     console->clear();
-    console->addItem("libcasswrapper version: " + QString(LIBCASSWRAPPER_LIBRARY_VERSION_STRING));
+    console->addItem("libcasswrapper version: " + QString(casswrapper::LIBCASSWRAPPER_LIBRARY_VERSION_STRING));
     console->addItem("Host: " + f_cassandra_host);
     console->addItem("Port: " + QString::number(f_cassandra_port));
 
@@ -594,7 +592,7 @@ void snap_manager::on_f_cassandraConnectButton_clicked()
     {
         f_session->connect( f_cassandra_host, f_cassandra_port, useSSLCB->isChecked() );
     }
-    catch( const std::exception& ex )
+    catch( std::exception const & ex )
     {
         // did not work...
         console->addItem( QString("Not connected! Error=[%1]").arg(QString(ex.what())) );
@@ -614,16 +612,57 @@ void snap_manager::on_f_cassandraConnectButton_clicked()
         return;
     }
 
+    if(!f_session->isConnected())
+    {
+        // did not get an exception, but we're still not connected...
+        //
+        console->addItem( QString("Not connected! (No Error Reported)") );
+        QMessageBox msg
+            ( QMessageBox::Critical
+            , "Connection to Cassandra"
+            , "Snap! Manager was not able to connect to your Cassandra Cluster.\n"
+              "Please verify that it is up and running and accessible (no firewall) from this computer."
+            , QMessageBox::Ok
+            , this
+            );
+        msg.exec();
+
+        // give user a chance to try again with another IP or
+        // possibly to start the Cassandra server
+        on_f_cassandraDisconnectButton_clicked();
+        return;
+    }
+
     // read and display the Cassandra information
-    auto q = Query::create( f_session );
-    q->query( "SELECT cluster_name,native_protocol_version FROM system.local" );
+    auto q = casswrapper::Query::create( f_session );
+    q->query( "SELECT cluster_name,native_protocol_version FROM system.local", 0 );
     q->start();
+    if( !q->nextRow() )
+    {
+        q->end();
+
+        console->addItem( QString("Error Getting Cluster Details") );
+        QMessageBox msg
+            ( QMessageBox::Critical
+            , "Connection to Cassandra"
+            , "We were able to connect to Cassandra, but the query to retrieve your cluster information failed. Maybe a timeout?\n"
+              "Please verify that it is functioning properly."
+            , QMessageBox::Ok
+            , this
+            );
+        msg.exec();
+
+        // give user a chance to try again with another IP or
+        // possibly to start the Cassandra server
+        on_f_cassandraDisconnectButton_clicked();
+        return;
+    }
     console->addItem("Cluster Name: "     + q->getVariantColumn("cluster_name").toString());
     console->addItem("Protocol Version: " + q->getVariantColumn("native_protocol_version").toString());
     q->end();
 
     // read all the contexts so the findContext() works
-    SessionMeta::pointer_t meta( SessionMeta::create(f_session) );
+    casswrapper::schema::SessionMeta::pointer_t meta( casswrapper::schema::SessionMeta::create(f_session) );
     meta->loadSchema();
     //
     const auto& keyspace_list( meta->getKeyspaces() );
@@ -727,7 +766,7 @@ void snap_manager::cassandraDisconnectButton_clicked()
 
     QListWidget *console = getChild<QListWidget>(this, "cassandraConsole");
     console->clear();
-    console->addItem("libcasswrapper version: " + QString(LIBCASSWRAPPER_LIBRARY_VERSION_STRING));
+    console->addItem("libcasswrapper version: " + QString(casswrapper::LIBCASSWRAPPER_LIBRARY_VERSION_STRING));
     console->addItem("Not connected.");
 
     f_tabs->setTabEnabled(TAB_DOMAINS, false);
@@ -779,38 +818,38 @@ void snap_manager::cassandraDisconnectButton_clicked()
  * \param table_name    name of the table to substitute in %2
  * \param q_str         query to run
  */
-Query::pointer_t snap_manager::createQuery
+casswrapper::Query::pointer_t snap_manager::createQuery
     ( const QString& q_str
     )
 {
     QString const context_name(snap::get_name(snap::name_t::SNAP_NAME_CONTEXT));
-    auto query = Query::create(f_session);
+    auto query = casswrapper::Query::create(f_session);
     query->query( q_str
             .arg(context_name)
             , q_str.count('?')
             );
-    connect( query.data(), &Query::queryFinished, this, &snap_manager::onQueryFinished );
+    connect( query.data(), &casswrapper::Query::queryFinished, this, &snap_manager::onQueryFinished );
     return query;
 }
 
-Query::pointer_t snap_manager::createQuery
+casswrapper::Query::pointer_t snap_manager::createQuery
     ( const QString& table_name
     , const QString& q_str
     )
 {
     QString const context_name(snap::get_name(snap::name_t::SNAP_NAME_CONTEXT));
-    auto query = Query::create(f_session);
+    auto query = casswrapper::Query::create(f_session);
     query->query( q_str
             .arg(context_name)
             .arg(table_name)
             , q_str.count('?')
             );
-    connect( query.data(), &Query::queryFinished, this, &snap_manager::onQueryFinished );
+    connect( query.data(), &casswrapper::Query::queryFinished, this, &snap_manager::onQueryFinished );
     return query;
 }
 
 
-void snap_manager::addQuery( Query::pointer_t q )
+void snap_manager::addQuery( casswrapper::Query::pointer_t q )
 {
     f_queryQueue.push( q );
 }
@@ -835,7 +874,7 @@ void snap_manager::startQuery()
  * This method adds a line to the output area indicating that the query has completed.
  * If there was an error, it is logged and the user is notified by message box.
  */
-bool snap_manager::getQueryResult( Query::pointer_t /*q*/ )
+bool snap_manager::getQueryResult( casswrapper::Query::pointer_t /*q*/ )
 {
     try
     {
@@ -865,7 +904,7 @@ bool snap_manager::getQueryResult( Query::pointer_t /*q*/ )
  * logged to, then the bottom query, which just completed, is ended and popped.
  * Then the cycle is started again on the new bottom query.
  */
-void snap_manager::onQueryFinished( Query::pointer_t q )
+void snap_manager::onQueryFinished( casswrapper::Query::pointer_t q )
 {
     f_queryQueue.pop();
 
@@ -953,12 +992,12 @@ void snap_manager::create_context(int replication_factor, int strategy, snap::sn
     create_table(snap::get_name(snap::name_t::SNAP_NAME_WEBSITES), "List of website rules");
     create_table(snap::get_name(snap::name_t::SNAP_NAME_SITES),    "Various global settings for websites");
 
-    connect( f_queryQueue.back().data(), &Query::queryFinished, this, &snap_manager::onContextCreated );
+    connect( f_queryQueue.back().data(), &casswrapper::Query::queryFinished, this, &snap_manager::onContextCreated );
     startQuery();
 }
 
 
-void snap_manager::onContextCreated( Query::pointer_t /*q*/ )
+void snap_manager::onContextCreated( casswrapper::Query::pointer_t /*q*/ )
 {
     //getQueryResult(q);
     context_is_valid();
@@ -1370,7 +1409,7 @@ void snap_manager::saveDomain()
     query->bindByteArray( num++, name.toUtf8() );
     query->bindByteArray( num++, core_rules_name.toUtf8() );
     query->bindByteArray( num++, compiled_rules );
-    connect( query.data(), &Query::queryFinished, this, &snap_manager::onFinishedSaveDomain );
+    connect( query.data(), &casswrapper::Query::queryFinished, this, &snap_manager::onFinishedSaveDomain );
     addQuery(query);
 
     startQuery();
@@ -1382,7 +1421,7 @@ void snap_manager::saveDomain()
     f_domain_delete->setEnabled(false);
 }
 
-void snap_manager::onFinishedSaveDomain( Query::pointer_t /*q*/ )
+void snap_manager::onFinishedSaveDomain( casswrapper::Query::pointer_t /*q*/ )
 {
     QString const name(f_domain_name->text());
     QString const rules(f_domain_rules->toPlainText());
@@ -1540,7 +1579,7 @@ void snap_manager::on_domainDelete_clicked()
 }
 
 
-void snap_manager::onFinishedDeleteDomain( Query::pointer_t /*q*/ )
+void snap_manager::onFinishedDeleteDomain( casswrapper::Query::pointer_t /*q*/ )
 {
     f_domain_list->clearSelection();
     f_domain_model.init( f_session, "", "" );
@@ -1718,12 +1757,12 @@ void snap_manager::on_websiteSelectionChanged( const QModelIndex & /*selected*/,
     size_t num = 0;
     query->bindByteArray( num++, f_website_org_name.toUtf8() );
     query->bindByteArray( num++, core_original_rules_name.toUtf8() );
-    connect( query.data(), &Query::queryFinished, this, &snap_manager::onLoadWebsite );
+    connect( query.data(), &casswrapper::Query::queryFinished, this, &snap_manager::onLoadWebsite );
     addQuery(query);
     startQuery();
 }
 
-void snap_manager::onLoadWebsite( Query::pointer_t q )
+void snap_manager::onLoadWebsite( casswrapper::Query::pointer_t q )
 {
     if( !getQueryResult(q) )
     {
@@ -1867,7 +1906,7 @@ void snap_manager::on_websiteSave_clicked()
         query->bindByteArray( num++, name.toUtf8() );
         query->bindByteArray( num++, core_rules_name.toUtf8() );
         query->bindByteArray( num++, compiled_rules );
-        connect( query.data(), &Query::queryFinished, this, &snap_manager::onFinishedSaveWebsite );
+        connect( query.data(), &casswrapper::Query::queryFinished, this, &snap_manager::onFinishedSaveWebsite );
         addQuery(query);
 
         // all those are not valid anymore
@@ -1882,7 +1921,7 @@ void snap_manager::on_websiteSave_clicked()
 }
 
 
-void snap_manager::onFinishedSaveWebsite( Query::pointer_t /*q*/ )
+void snap_manager::onFinishedSaveWebsite( casswrapper::Query::pointer_t /*q*/ )
 {
     const QString name  ( f_website_name->text()         );
     const QString rules ( f_website_rules->toPlainText() );
@@ -1957,14 +1996,14 @@ void snap_manager::on_websiteDelete_clicked()
     query->setDescription( QString("Delete website") );
     size_t num = 0;
     query->bindByteArray( num++, name.toUtf8() );
-    connect( query.data(), &Query::queryFinished, this, &snap_manager::onDeleteWebsite );
+    connect( query.data(), &casswrapper::Query::queryFinished, this, &snap_manager::onDeleteWebsite );
     addQuery(query);
 
     startQuery();
 }
 
 
-void snap_manager::onDeleteWebsite( Query::pointer_t /*q*/ )
+void snap_manager::onDeleteWebsite( casswrapper::Query::pointer_t /*q*/ )
 {
     //delete f_website_list->currentItem();
     f_website_model.init( f_session, "", "" );
@@ -2215,7 +2254,7 @@ void snap_manager::onSitesApplyClicked( bool clicked )
     if( !f_queryQueue.empty() )
     {
         connect(f_queryQueue.back().data()
-              , &Query::queryFinished
+              , &casswrapper::Query::queryFinished
               , this
               , &snap_manager::onSitesParamSaveFinished);
     }
@@ -2243,7 +2282,7 @@ void snap_manager::onSitesRevertClicked( bool clicked )
 }
 
 
-void snap_manager::onSitesParamSaveFinished( Query::pointer_t q )
+void snap_manager::onSitesParamSaveFinished( casswrapper::Query::pointer_t q )
 {
     snap::NOTUSED(q);
     f_params_row_model.clearModified();
