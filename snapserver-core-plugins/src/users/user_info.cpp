@@ -503,7 +503,7 @@ users::user_info_t::cell_t users::user_info_t::get_cell( name_t const name ) con
  */
 users::user_info_t::value_t const & users::user_info_t::get_value( QString const & name ) const
 {
-    static value_t empty;
+    static value_t const empty;
 
     // only users have a value in the database
     //

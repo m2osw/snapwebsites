@@ -1,3 +1,10 @@
+snapwebsites (1.7.21.0~xenial) xenial; urgency=high
+
+  * Fixed the users token VERIFIED ON would improperly use LOCALES.
+  * Added support for users::username.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 15 Aug 2019 15:15:15 -0700
+
 snapwebsites (1.7.20.0~xenial) xenial; urgency=high
 
   * Fixed the gathering of the signal_secret parameter in the self plugin.

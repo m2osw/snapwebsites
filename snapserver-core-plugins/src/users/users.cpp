@@ -4332,7 +4332,7 @@ void users::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, f
 
     if(!f_user_info.is_user())
     {
-        // unknown used (it may be the anonymous used too)
+        // unknown user (it may be the anonymous user too)
         //
         return;
     }
@@ -4368,7 +4368,7 @@ void users::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, f
     }
 
     // anything else requires the user to be verified
-    libdbproxy::value const verified_on(f_user_info.get_value(name_t::SNAP_NAME_USERS_LOCALES));
+    libdbproxy::value const verified_on(f_user_info.get_value(name_t::SNAP_NAME_USERS_VERIFIED_ON));
     if(verified_on.nullValue())
     {
         // not verified yet
@@ -4387,6 +4387,15 @@ void users::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, f
                     .arg(f_snap->date_to_string(date, snap_child::date_format_t::DATE_FORMAT_SHORT))
                     .arg(f_snap->date_to_string(date, snap_child::date_format_t::DATE_FORMAT_TIME));
             // else use was not yet verified
+            return;
+        }
+        break;
+
+    case 'u':
+        if(token.is_token("users::username"))
+        {
+            libdbproxy::value const value(f_user_info.get_value( name_t::SNAP_NAME_USERS_USERNAME ));
+            token.f_replacement = value.stringValue();
             return;
         }
         break;
@@ -4416,6 +4425,10 @@ void users::on_token_help(filter::filter::token_help_t & help)
 
     help.add_token("users::since",
         "The date and time the user registered his account.");
+
+    help.add_token("users::username",
+        "The name of the user. Note that on many websites the user is not"
+        " forced to enter a username. Instead we use the email address.");
 }
 
 
