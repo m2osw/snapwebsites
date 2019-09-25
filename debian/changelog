@@ -1,3 +1,9 @@
+snapwebsites (1.7.22.0~xenial) xenial; urgency=high
+
+  * Changed the snapmanager-dpkg-update hook to ignore all errors.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 24 Sep 2019 17:34:53 -0700
+
 snapwebsites (1.7.21.0~xenial) xenial; urgency=high
 
   * Fixed the users token VERIFIED ON would improperly use LOCALES.

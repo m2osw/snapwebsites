@@ -1,1 +1,1 @@
-post-invoke=if test -x /usr/bin/snapsignal; then /usr/bin/snapsignal "snapmanagerdaemon/DPKGUPDATE hook_action=\"$DPKG_HOOK_ACTION\""; fi
+post-invoke=/usr/bin/snapsignal "snapmanagerdaemon/DPKGUPDATE hook_action=\"$DPKG_HOOK_ACTION\"" || :
