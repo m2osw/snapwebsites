@@ -1,3 +1,10 @@
+snapwebsites (1.7.23.0~xenial) xenial; urgency=high
+
+  * Also enable the snap-apache2-extra-options.
+  * Added default ServerName (http://127.0.0.1:80) to avoid the Apache warning.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 24 Sep 2019 23:23:29 -0700
+
 snapwebsites (1.7.22.0~xenial) xenial; urgency=high
 
   * Changed the snapmanager-dpkg-update hook to ignore all errors.

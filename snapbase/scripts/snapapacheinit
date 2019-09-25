@@ -35,6 +35,7 @@ case "$1" in
         a2enconf -qm snap-acceptfilter
         a2enconf -qm snap-httpoxy
         a2enconf -qm snap-apache2-ssl-log
+        a2enconf -qm snap-apache2-extra-options
 
         # enable / disable Modules
         #
