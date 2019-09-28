@@ -1,7 +1,8 @@
-snapwebsites (1.7.23.0~xenial) xenial; urgency=high
+snapwebsites (1.8.0.0~xenial) xenial; urgency=high
 
   * Also enable the snap-apache2-extra-options.
   * Added default ServerName (http://127.0.0.1:80) to avoid the Apache warning.
+  * Bump version to 1.8 just before doing an official release.
 
  -- Alexis Wilke <alexis@m2osw.com>  Tue, 24 Sep 2019 23:23:29 -0700
 
