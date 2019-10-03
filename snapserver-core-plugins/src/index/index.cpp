@@ -60,6 +60,11 @@
 #include <csspp/csspp.h>
 
 
+// boost lib
+//
+#include <boost/algorithm/string.hpp>
+
+
 // Qt lib
 //
 #include <QtCore>
@@ -161,6 +166,35 @@ namespace
  * \sa index::reindex()
  */
 snap_string_list * g_deleted_entries = nullptr;
+
+
+
+/** \brief The name of the file were we save the reindex of types.
+ *
+ * This file is a list of URL representing types to be processed.
+ *
+ * \warning
+ * At this time, this file is local to each computer. At this point this
+ * is incorrect since any backend computer could take this process over
+ * and it will likely end with duplicated work.
+ */
+constexpr char const * const g_reindex_type_cache_filename = "/var/lib/snapwebsites/snapbackend/reindex-types.db";
+
+
+/** \brief The name of the file where we save the reindex of pages.
+ *
+ * This file is a list of all the URL to process for a given type.
+ * We save all the pages in the file to limit the mount of memory
+ * it requires.
+ *
+ * \araning
+ * As the types, the reindex pages file is found on the local computer.
+ * This means the reindex process has to be bound to that one backend
+ * computer.
+ */
+constexpr char const * const g_reindex_page_cache_filename = "/var/lib/snapwebsites/snapbackend/reindex-pages.db";
+
+
 
 }
 
@@ -2338,6 +2372,12 @@ void index::on_backend_action(QString const & action)
 {
     if(action == get_name(name_t::SNAP_NAME_INDEX_REINDEX))
     {
+        f_backend = dynamic_cast<snap_backend *>(f_snap);
+        if(!f_backend)
+        {
+            throw index_exception_no_backend("index::on_backend_action(): could not determine the snap_backend pointer for the listjournal action");
+        }
+
         reindex();
     }
     else
@@ -2355,9 +2395,8 @@ void index::on_backend_action(QString const & action)
  * the existing indexes. It is useful to run this process once in a
  * while to make sure that your indexes do not get out of sync.
  *
- * This function is mainly a loop going through all the `content-types`
- * \em recursively (we use memory rather than the stack, but it is very
- * similar to using recursivity.)
+ * This function is a loop going through all the `content-types`
+ * recursively.
  */
 void index::reindex()
 {
@@ -2369,16 +2408,89 @@ void index::reindex()
     QString const root_key(site_key + "types/taxonomy/system/content-types");
 
     snap_string_list paths;
-    paths << root_key;
+
+    {
+        std::fstream reindex_type_cache;
+        reindex_type_cache.open(g_reindex_type_cache_filename, std::ios_base::in);
+        if(reindex_type_cache.is_open())
+        {
+            // if there is a file, read it and use those paths
+            //
+            std::string line;
+            while(getline(reindex_type_cache, line))
+            {
+                boost::algorithm::trim(line);
+                paths << QString::fromUtf8(line.c_str());
+            }
+        }
+    }
+
+    // if still empty, start over from the root
+    // (i.e. deleting the file is a way to start over)
+    //
+    if(paths.empty())
+    {
+        SNAP_LOG_INFO("Restarting processing from root (")(root_key)(")");
+        paths << root_key;
+    }
 
     QString const children_name(content::get_name(content::name_t::SNAP_NAME_CONTENT_CHILDREN));
     QString const page_name(content::get_name(content::name_t::SNAP_NAME_CONTENT_PAGE));
     QString const original_scripts_name(get_name(name_t::SNAP_NAME_INDEX_ORIGINAL_SCRIPTS));
 
-    g_deleted_entries = new snap_string_list;
-
-    for(; !paths.isEmpty(); paths.removeAt(0))
+    if(g_deleted_entries == nullptr)
     {
+        g_deleted_entries = new snap_string_list;
+    }
+
+    // the amount of time one process can take to process all its lists
+    //
+    auto get_timeout = [&](auto const & field_name, int64_t default_timeout)
+        {
+            QString const loop_timeout_str(f_snap->get_server_parameter(field_name));
+            if(!loop_timeout_str.isEmpty())
+            {
+                // time in seconds in .conf
+                //
+                bool ok(false);
+                int64_t const loop_timeout_sec(loop_timeout_str.toLongLong(&ok, 10) * 1000000LL);
+                if(ok && loop_timeout_sec >= 1000000LL) // valid and at least 1 second
+                {
+                    return loop_timeout_sec;
+                }
+                SNAP_LOG_WARNING("invalid number or timeout too small (under 1s) in ")(field_name);
+            }
+            return default_timeout;
+        };
+    int64_t const loop_timeout(get_timeout("index::reindex_timeout", 60LL * 60LL * 1000000LL));
+    int64_t const loop_start_time(f_snap->get_current_date());
+
+    auto get_number = [&](auto const & field_name, uint32_t default_number)
+        {
+            QString const number_str(f_snap->get_server_parameter(field_name));
+            if(!number_str.isEmpty())
+            {
+                // time in seconds in .conf
+                //
+                bool ok(false);
+                int64_t const number(number_str.toLongLong(&ok, 10));
+                if(ok && number >= 10) // valid and at least 1 second
+                {
+                    return static_cast<uint32_t>(number);
+                }
+                SNAP_LOG_WARNING("invalid number in ")(field_name)(" (")(number_str)(")");
+            }
+            return default_number;
+        };
+    uint32_t const max_count(get_number("index::reindex_max_count", 100));
+    f_count_processed = 0;
+
+    while(!paths.isEmpty())
+    {
+        SNAP_LOG_INFO("reindexing working on index \"")
+                     (paths[0])
+                     ("\".");
+
         content::path_info_t type_ipath;
         type_ipath.set_path(paths[0]);
 
@@ -2394,17 +2506,85 @@ void index::reindex()
                 QString const scripts(index_scripts.stringValue());
                 if(!scripts.isEmpty())
                 {
-                    links::link_info info(page_name
-                                        , false
-                                        , type_ipath.get_key()
-                                        , type_ipath.get_branch());
-                    QSharedPointer<links::link_context> link_ctxt(links::links::instance()->new_link_context(info));
-                    links::link_info page_info;
-                    while(link_ctxt->next_link(page_info))
+                    std::fstream reindex_page_cache;
+                    reindex_page_cache.open(g_reindex_page_cache_filename, std::ios_base::in);
+                    if(reindex_page_cache.is_open())
                     {
-                        content::path_info_t page_ipath;
-                        page_ipath.set_path(page_info.key());
-                        index_pages(page_ipath, type_ipath, scripts);
+                        reindex_page_cache.close();
+                    }
+                    else
+                    {
+                        reindex_page_cache.open(g_reindex_page_cache_filename, std::ios_base::out | std::ios_base::trunc);
+                        if(reindex_page_cache.is_open())
+                        {
+                            links::link_info info(page_name
+                                                , false
+                                                , type_ipath.get_key()
+                                                , type_ipath.get_branch());
+                            QSharedPointer<links::link_context> link_ctxt(links::links::instance()->new_link_context(info));
+                            links::link_info page_info;
+                            while(link_ctxt->next_link(page_info))
+                            {
+                                reindex_page_cache << page_info.key() << std::endl;
+                            }
+                            reindex_page_cache.close();
+                        }
+                    }
+
+                    reindex_page_cache.open(g_reindex_page_cache_filename, std::ios_base::in | std::ios_base::out);
+                    if(reindex_page_cache.is_open())
+                    {
+                        for(;;)
+                        {
+                            std::fstream::pos_type const start_pos(reindex_page_cache.tellg());
+                            std::string line;
+                            if(!getline(reindex_page_cache, line))
+                            {
+                                unlink(g_reindex_page_cache_filename);
+                                break;
+                            }
+                            boost::algorithm::trim(line);
+                            if(line.empty())
+                            {
+                                // skip empty lines
+                                //
+                                continue;
+                            }
+                            content::path_info_t page_ipath;
+                            page_ipath.set_path(QString::fromUtf8(line.c_str()));
+                            index_pages(page_ipath, type_ipath, scripts);
+
+                            // page was processed, remove it from the file
+                            // by overwriting it with spaces
+                            //
+                            std::fstream::pos_type const end_pos(reindex_page_cache.tellg());
+                            reindex_page_cache.seekp(start_pos);
+                            std::string const spaces(end_pos - start_pos - 1, ' ');
+                            reindex_page_cache.write(spaces.data(), spaces.length());
+                            reindex_page_cache.seekg(end_pos);
+
+                            ++f_count_processed;
+                            if(f_count_processed >= max_count)
+                            {
+                                SNAP_LOG_WARNING("Stopping the reindex processing after ")(max_count)(" pages were processed.");
+                                return;
+                            }
+
+                            if(f_backend->stop_received())
+                            {
+                                SNAP_LOG_WARNING("Stopping the reindex processing because the parent backend process asked us to.");
+                                return;
+                            }
+
+                            // limit the time we work
+                            //
+                            int64_t const loop_time_spent(f_snap->get_current_date() - loop_start_time);
+                            if(loop_time_spent > loop_timeout)
+                            {
+                                SNAP_LOG_WARNING("Stopping the reindex processing after ")(loop_timeout / 1000000LL)(" seconds.");
+                                return;
+                            }
+                        }
                     }
                 }
 #if 0
@@ -2482,7 +2662,28 @@ void index::reindex()
                             (type_ipath.get_key())
                             ("\".");
         }
+
+        paths.removeAt(0);
+
+        if(paths.empty())
+        {
+            unlink(g_reindex_type_cache_filename);
+        }
+        else
+        {
+            std::fstream reindex_cache;
+            reindex_cache.open(g_reindex_type_cache_filename, std::ios_base::out | std::ios_base::trunc);
+            if(reindex_cache.is_open())
+            {
+                for(p : paths)
+                {
+                    reindex_cache << p << std::endl;
+                }
+            }
+        }
     }
+
+    SNAP_LOG_INFO("reindexing complete.");
 
     // Note: if the delete doesn't happen, it's not a big deal, the reindex
     //       is just a one time backend run so we would leak the memory and

@@ -65,6 +65,14 @@ public:
     explicit index_exception_invalid_parameter_type(QString const &     what_msg) : index_exception(what_msg) {}
 };
 
+class index_exception_no_backend : public index_exception
+{
+public:
+    explicit index_exception_no_backend(char const *        what_msg) : index_exception(what_msg) {}
+    explicit index_exception_no_backend(std::string const & what_msg) : index_exception(what_msg) {}
+    explicit index_exception_no_backend(QString const &     what_msg) : index_exception(what_msg) {}
+};
+
 
 
 
@@ -263,10 +271,11 @@ private:
     //SNAP_TEST_PLUGIN_TEST_DECL(test_add_page_twice)
 
     snap_child *                            f_snap = nullptr;
+    snap_backend *                          f_backend = nullptr;
     snap_string_list                        f_page = snap_string_list();
     libdbproxy::table::pointer_t            f_index_table = libdbproxy::table::pointer_t();
+    uint32_t                                f_count_processed = 0;
 
-    //snap_backend *                          f_backend = nullptr;
     //snap_expr::expr::expr_map_t             f_check_expressions = snap_expr::expr::expr_map_t();
     //snap_expr::expr::expr_map_t             f_record_key_expressions = snap_expr::expr::expr_map_t();
     //bool                                    f_ping_backend = false;
