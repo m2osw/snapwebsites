@@ -24,7 +24,7 @@ namespace snap
 {
 
 class snap_backend
-        : public snap_child
+    : public snap_child
 {
 public:
     typedef std::string         message_t;

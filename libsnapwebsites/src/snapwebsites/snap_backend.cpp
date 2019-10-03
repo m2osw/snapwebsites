@@ -1334,8 +1334,8 @@ void snap_backend::process_tick()
                 //
                 libdbproxy::rows const rows(f_sites_table->getRows());
                 for(libdbproxy::rows::const_iterator it(rows.begin());
-                                                                it != rows.end();
-                                                                ++it)
+                                                     it != rows.end();
+                                                     ++it)
                 {
                     QString const key(QString::fromUtf8(it.key().data()));
                     if(!add_uri_for_processing(f_action, get_current_date(), key))
