@@ -54,9 +54,9 @@ Important parts of Cassandra that we are using:
      a different TTL... However, for a session, the entire row should
      be given a TTL and in many situations the TTL should be kept
      (i.e. a later INSERT without a USING TTL ### in Cassandra will
-     lose the prevent TTL since the new data is considered on its
+     lose the previous TTL since the new data is considered on its
      own; also Cassandra does not offer a TTL on a row, only on each
-     cell / value.)
+     cell / value.) So we want row and value TTLs that stick.
 
  * "Only columns are sorted." (rows are sorted, but using their MD5 sum
    so it is generally not viewed as a useful sort.) We created indexes
@@ -150,10 +150,10 @@ Important parts of Cassandra that we are using:
         in the first place?! not at this time]) -- in most cases we do
         not really need a specialized function, but for text sorted by
         a specific locale. We would need the user to define a "complex
-	type" that describes the index key so the database can break
-	it down as a set of items that can then be compared as expected.
-	(i.e. the client can be offered to create keys using a class
-	so each value added is properly typed, etc.)
+        type" that describes the index key so the database can break
+        it down as a set of items that can then be compared as expected.
+        (i.e. the client can be offered to create keys using a class
+        so each value added is properly typed, etc.)
 
      2. blob of X number of fields (something similar to what we do with
         the caching of some of our data, we transfer the whole set of fields
@@ -283,30 +283,45 @@ Important parts of Cassandra that we are using:
    This could be of interest: create a way to create lists from the
    actual server instead of a frontend computer.
 
- * Limitation of Cassandra: the main sorting capabilities are the partition
-   (i.e. the MD5 of row keys) and the columns. Both represent a key in a
-   map, just like we have:
+ * Limitations of Cassandra
 
-       table[row-key][column-key]
+   * the main sorting capabilities are the partition
+     (i.e. the mumur of row keys) and the columns. Both represent a key in
+     a map, just like we have:
 
-   Size of tables: max. size of one partition is limited to the amount of
-   disk space available on the Cassandra node.
+        table[row-key][column-key]
 
-   A column value (blob) is at most 2Gb. Although remember that streaming
-   that much data over the network is not going to be that fast.
+        Size of tables: max. size of one partition is limited to the amount of
+        disk space available on the Cassandra node.
 
-   Collection values (TBD--sounds like this is the row key) cannot be more
-   than 64Kb.
+        A column value (blob) is at most 2Gb. Although remember that streaming
+        that much data over the network is not going to be that fast.
 
-   Number of cells total in a partition is 2 billion (probably 2Gb). Here
-   Cassandra sees a cell as Rows x Columns. I'm not too sure why there is
-   a total limit instead of just 2Gb Rows x 2Gb Column.
+        Collection values (TBD--sounds like this is the row key) cannot be more
+        than 64Kb.
 
-   Counters are limited to a table, i.e. one table of just counter, or
-   one table without any counters. We do not use nor really want to
-   use counters at this point. If we are to do so, we should certainly
-   look into using a specific type of table (like we would have separate
-   table to create work queues...)
+        Number of cells total in a partition is 2 billion (probably 2Gb). Here
+        Cassandra sees a cell as Rows x Columns. I'm not too sure why there is
+        a total limit instead of just 2Gb Rows x 2Gb Column.
+
+        Counters are limited to a table, i.e. one table of just counter, or
+        one table without any counters. We do not use nor really want to
+        use counters at this point. If we are to do so, we should certainly
+        look into using a specific type of table (like we would have a separate
+        table to create work queues...)
+
+    * the fact that the data is type less (see types above)
+
+    * the fact that only one very specific type of tables is supported:
+      big data tables. On our end we want to support several types:
+
+        * "Big Data": few writes, many reads (nearly like immutable data)
+        * Data: _regular data_, data that gets updated all the time but is
+          still considered permanent
+        * Temporary: _ephemerous data_, data which is like permanent data
+          but will be deleted after a "small" while (i.e. data with a TTL)
+        * Journals: a way to add data that our backends have to work on
+
 
 
 What we use Cassandra for, but should not because these "activate"
@@ -439,14 +454,14 @@ Somethings not offered by Cassandra:
 
    Note: Cassandra uses compression on a per block manner; not only that
          they also use a checksum which is used mainly to make sure that
-	 if a read fails it gets detected and they avoid using that
-	 block entirely (the checksum is a simple CRC); I am wondering
-	 about this since (1) if data becomes invalid the XFS or whatever
-	 other file system should detect that and (2) per block means
-	 that we'd have data saved on a per block manner which we are
-	 not currently considering doing such; instead we are thinking
-	 to do it on a per row basis [although we could be hit if a
-	 table only has super small rows...]
+         if a read fails it gets detected and they avoid using that
+         block entirely (the checksum is a simple CRC); I am wondering
+         about this since (1) if data becomes invalid the XFS or whatever
+         other file system should detect that and (2) per block means
+         that we'd have data saved on a per block manner which we are
+         not currently considering doing such; instead we are thinking
+         to do it on a per row basis [although we could be hit if a
+         table only has super small rows...]
 
  * Query using regex against keys; right now we have to get ALL the data
    from the server and scan it ourselves; which can be really slow if the
@@ -474,9 +489,9 @@ Somethings not offered by Cassandra:
 
    Note: we may be able to palliate the loss of power with the use of
          QUORUM writes for important data (which we never did with
-	 Cassandra and have had no concerns so far) assuming that
-	 all the computers will not all lose power all at once...
-	 (which in one physical rack is definitely not a guarantee!)
+         Cassandra and have had no concerns so far) assuming that
+         all the computers will not all lose power all at once...
+         (which in one physical rack is definitely not a guarantee!)
 
  * According to some documentation that I saw about Cassandra, the
    nodes form a ring and all the communications go through that ring.
@@ -628,3 +643,6 @@ More or less, the concept of the file structure we want to use:
    - /var/lib/snapdb/<context>/<view>/_index-1.bin
 
      An index file (this is the actual view index.)
+
+
+vim: ts=4 sw=4 et
