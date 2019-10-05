@@ -1,5 +1,12 @@
 snapwebsites (1.8.1.0~xenial) xenial; urgency=high
 
+  * SNAP-698: Removing the DELETE since the incremental function does not
+    keep track of whether a certain table was cleaned up already or not.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  3 Oct 2019 03:23:07 -0700
+
+snapwebsites (1.8.1.0~xenial) xenial; urgency=high
+
   * SNAP-698: Applied a fix to the reindex so it runs incrementally and we
     can then finish the work on a large server.
   * Changed the RestartSec to 5 sec so it restart fast if needed.

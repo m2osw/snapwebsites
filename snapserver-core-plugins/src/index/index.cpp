@@ -2438,10 +2438,19 @@ void index::reindex()
     QString const page_name(content::get_name(content::name_t::SNAP_NAME_CONTENT_PAGE));
     QString const original_scripts_name(get_name(name_t::SNAP_NAME_INDEX_ORIGINAL_SCRIPTS));
 
-    if(g_deleted_entries == nullptr)
-    {
-        g_deleted_entries = new snap_string_list;
-    }
+    // BUG: This is not incremental and it deletes the previous work so we
+    //      really can't have it here at the moment. If you know you need
+    //      a DELETE, do it manually before running the reindex.
+    //
+    //      Also it should be a form of RAII because the pointer needs to be
+    //      deleted when we return from this function. Finally, that pointer
+    //      should only be used by the reindex() and none of the other
+    //      functions. It's wrong too in that sense.
+    //
+    //if(g_deleted_entries == nullptr)
+    //{
+    //    g_deleted_entries = new snap_string_list;
+    //}
 
     // the amount of time one process can take to process all its lists
     //
