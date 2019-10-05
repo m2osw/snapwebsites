@@ -1,9 +1,9 @@
-snapwebsites (1.8.1.0~xenial) xenial; urgency=high
+snapwebsites (1.8.2.0~xenial) xenial; urgency=high
 
   * SNAP-698: Removing the DELETE since the incremental function does not
     keep track of whether a certain table was cleaned up already or not.
 
- -- Alexis Wilke <alexis@m2osw.com>  Thu,  3 Oct 2019 03:23:07 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Fri,  4 Oct 2019 21:19:40 -0700
 
 snapwebsites (1.8.1.0~xenial) xenial; urgency=high
 
