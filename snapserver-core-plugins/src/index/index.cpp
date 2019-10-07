@@ -311,7 +311,7 @@ void paging_t::set_maximum_number_of_records(int32_t maximum_number_of_records)
 {
     if(maximum_number_of_records < 1)
     {
-        // make sure that turning this feature off is done using exactly -1
+        // make sure that turning the "Off" feature is done using exactly -1
         //
         f_maximum_number_of_records = -1;
     }
@@ -358,20 +358,70 @@ int32_t paging_t::get_maximum_number_of_records() const
  * function is clamped to the maximum number of records as defined
  * by set_maximum_number_of_records().
  *
+ * \todo
+ * Fix the caching of this number of records.
+ *
  * \return The number of records in the index.
  */
 int32_t paging_t::get_number_of_records() const
 {
     if(f_number_of_records < 0)
     {
+        // TODO: find a way to cache this number of records
+        //       my problem at the moment is that I'm not too
+        //       sure when to clear the cache
+        //       (the cache being that SNAP_NAME_INDEX_NUMBER_OF_RECORDS field)
+        //
         // if the number of records is not (yet) defined in the database
         // then it will be set to zero
         //
-        content::content * content_plugin(content::content::instance());
-        libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
-        f_number_of_records = branch_table->getRow(f_ipath.get_branch_key())
-                                          ->getCell(get_name(name_t::SNAP_NAME_INDEX_NUMBER_OF_RECORDS))
-                                          ->getValue().safeInt32Value();
+        //content::content * content_plugin(content::content::instance());
+        //libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
+        //f_number_of_records = branch_table->getRow(f_ipath.get_branch_key())
+        //                                  ->getCell(get_name(name_t::SNAP_NAME_INDEX_NUMBER_OF_RECORDS))
+        //                                  ->getValue().safeInt32Value();
+        libdbproxy::libdbproxy::pointer_t cassandra(f_snap->get_cassandra());
+        libdbproxy::context::pointer_t context(f_snap->get_context());
+        libdbproxy::proxy::pointer_t dbproxy(cassandra->getProxy());
+
+        libdbproxy::order count_index;
+        count_index.setCql(QString("SELECT COUNT(*) FROM %1.%2 WHERE key>=? AND key<?")
+                                .arg(context->contextName())
+                                .arg(get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                          , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_ROWS);
+        count_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);    // no need to do a QUORUM count, we should still get a very good approximation
+
+        count_index.addParameter(f_start_key.toUtf8());
+        QString up_to(f_start_key);
+        up_to[up_to.length() - 1] = up_to[up_to.length() - 1].unicode() + 1; // we expect a ':' at the end, change it into ';' (with the `++`, if another character was used, it will work too)
+        count_index.addParameter(up_to.toUtf8());
+
+        libdbproxy::order_result const count_index_result(dbproxy->sendOrder(count_index));
+        if(count_index_result.succeeded())
+        {
+            if(count_index_result.resultCount() == 1)
+            {
+                QByteArray const column1(count_index_result.result(0));
+                f_number_of_records = cassvalue::safeUInt32Value(column1);
+            }
+            else
+            {
+                SNAP_LOG_FATAL("The number of results for a COUNT(*) is not exactly 1?!");
+                // we continue, it's surprising and "wrong" but what can we do?
+            }
+        }
+        else
+        {
+            SNAP_LOG_WARNING("Error counting indexes for get_number_of_records(); page \"")
+                            (f_start_key)
+                            ("\" for website \"")
+                            (f_ipath.get_key())
+                            ("\" from table \"")
+                            (context->contextName())
+                            (".")
+                            (get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                            ("\".");
+        }
     }
 
     // the total count may have been limited by the programmer
@@ -1710,6 +1760,8 @@ void index::on_attach_to_session()
  * \param[in] page_ipath  The path to the page being indexed.
  * \param[in] type_ipath  The path to the page representing the index.
  * \param[in] scripts  The index scripts to execute.
+ *
+ * \return true if a delete and/or an insert happened.
  */
 void index::index_pages(
               content::path_info_t & page_ipath
@@ -1813,13 +1865,13 @@ void index::index_one_page(
         //
         if(!delete_index_result.succeeded())
         {
-            SNAP_LOG_ERROR("Error deleting indexes for website \"")
-                          (page_ipath.get_key())
-                          ("\" from table \"")
-                          (context->contextName())
-                          (".")
-                          (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                          ("\"");
+            SNAP_LOG_WARNING("Error deleting indexes for website \"")
+                            (page_ipath.get_key())
+                            ("\" from table \"")
+                            (context->contextName())
+                            (".")
+                            (get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                            ("\"");
         }
     }
 
@@ -1881,15 +1933,15 @@ void index::index_one_page(
         libdbproxy::order_result const select_index_result(dbproxy->sendOrder(select_index));
         if(!select_index_result.succeeded())
         {
-            SNAP_LOG_ERROR("Error selecting indexes for deletion; page \"")
-                          (index_key)
-                          ("\" for website \"")
-                          (page_ipath.get_key())
-                          ("\" from table \"")
-                          (context->contextName())
-                          (".")
-                          (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                          ("\".");
+            SNAP_LOG_WARNING("Error selecting indexes for deletion; page \"")
+                            (index_key)
+                            ("\" for website \"")
+                            (page_ipath.get_key())
+                            ("\" from table \"")
+                            (context->contextName())
+                            (".")
+                            (get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                            ("\".");
         }
 
         QByteArray key_value(key.toUtf8());
@@ -1920,15 +1972,15 @@ void index::index_one_page(
                 //
                 if(!delete_index_result.succeeded())
                 {
-                    SNAP_LOG_ERROR("Error deleting indexes pointing to page \"")
-                                  (index_key)
-                                  ("\" for website \"")
-                                  (page_ipath.get_key())
-                                  ("\" from table \"")
-                                  (context->contextName())
-                                  (".")
-                                  (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                                  ("\".");
+                    SNAP_LOG_WARNING("Error deleting indexes pointing to page \"")
+                                    (index_key)
+                                    ("\" for website \"")
+                                    (page_ipath.get_key())
+                                    ("\" from table \"")
+                                    (context->contextName())
+                                    (".")
+                                    (get_name(name_t::SNAP_NAME_INDEX_TABLE))
+                                    ("\".");
                 }
             }
         }

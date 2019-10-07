@@ -32,6 +32,13 @@ Retrieve the value specifying a key.
 
 Get rid of a given key.
 
+## `LOCK`
+
+Lock the specified cell, row, table, or context.
+
+Since we have a lock feature, we can offer such a locking mechanism in
+our database. After all, it makes sense to have a lock feature too.
+
 ## `PING`
 
 Make sure the connection is live.

@@ -1,4 +1,14 @@
 
+# Implementation Elements
+
+We want several parts to our system to avoid re-implementing the same
+thing multiple times and especially to avoid having to do any work
+(nearly) as a client.
+
+## Graph
+
+Here is a graph:
+
                                          +------+
                                     +--->| Node |<--+
                                     |    +------+   |
@@ -17,3 +27,163 @@
            |         |
            +---------+
 
+## Library
+
+The library has most of the code that allows us to do most of everything.
+That way it is available everywhere.
+
+### Journal Functionality
+
+Especially, we want to have a Journal capability on both sides. This way
+we do not have to duplicate the code.
+
+### Data (Blob)
+
+We want to be able to access the data from clients and the backend. The
+main idea is that we need to write the data in a blob to make it very
+efficient.
+
+The blob is created using the schema. So if you do something like:
+
+    blob->set("created_on", now);
+
+then the system knows that the name "created_on" corresponds to column
+number 5 and the data is timestamp of type "time_ms_t". That can be
+converted to the binary blob in these bytes:
+
+    0x05 0x00 0x05 0x94 0x33 0x8E 0x1C 0x10 0x00
+
+The library takes care of all the conversions between the `set()`/`get()`
+functions and the binary format of the blob. When in memory, the row
+remains in a _more usable_ format, those.
+
+Further the blob gets compressed when transferred.
+
+See the SCHEMA.md for other details about the Blob.
+
+### Network
+
+The library takes care of all data transfers between clients and the
+backend.
+
+The library opens TCP connections to the daemons on the backend servers and
+also uses UDP when sending data to be duplicated.
+
+The TCP connections are used to send control messages. We use the event
+dispatcher message for that. All the data is sent through UDP so that way
+we do not swamp the TCP and can use the TCP to send Out of Band signals
+as required. Especially, we could receive some messages because of a LISTEN
+at any moment while sending or receiving heavy amounts of data from a
+SELECT or INSERT.
+
+### Journals
+
+The library allows us to create a journal of the data we want to send
+over to the backend database servers. We can use three levels of journaling
+as a result.
+
+1. Client Journal
+
+    Whenever the client does a write operation (SET INSERT, UPDATE), the
+    data is _simply_ saved in a local journal.
+
+    The local journal is created and managed using the library. The location
+    is the same as the Service journals (well, assuming the ownership
+    is _friendly_ although we can ask the Service to create the file and
+    make it available for writing to us which is probably a better solution
+    long term, that way any user can get access to such a file.)
+
+    The Service can then listen on whether we have the file opened or not.
+    Once we close it, it becomes its responsibility. (inotify gives us
+    that ability!)
+
+    All those writes are also kept in memory. This is important since later
+    reads to that data must directly happen from that cache or we would get
+    the wrong data. For this reason we need some ways to clear our caches
+    and journals. But that should only be required in backend processes. The
+    front end should never have to reset any caches. 
+    
+    _Note: we had a problem with that in the libQtCassandra, we ought to
+    be able to correct it here? Although a full `SELECT *` is not going to
+    work right without us reading directly from the authoritative source
+    but that's assuming we did not make changes to this or that row. Ah.
+    When data comes back and it has a key equal to something in the cache
+    we replace that data with the cache data. Here we are._
+
+    WARNING: We must have a way to bypass all the intermediate caching
+    and journaling because in some cases, such as creating a new user,
+    we need to be able to make 100% sure that this new user has a unique
+    identifier.
+
+2. Service Journal
+
+    The local service has access to all the client journals. It creates them
+    and then listen for their use through the inotify interface.
+
+    The concept is very simple. The journal gets used to transmit the data
+    from the Client to the Service without the need to use the network at
+    all. This may not be any faster since it goes to the drive and a sync
+    can be expensive. But if we were to first send it to the local Service
+    then the local Service would first write it to disk with a sync before
+    acknowledging. So in effect it would pretty much take the same amount
+    of time.
+
+    Having a local journal means that the "database" is immediately available
+    for writing (not reading). The journal will hold all of that data.
+    For example, you could start a logger that writes log to a backend
+    database using this mechanism and it would be available even when we do
+    not yet have connections to any backends.
+
+3. Server Journal
+
+    On the server, we also have a journal. On that side, we have one journal
+    per table. This allows us to read the journal only once the table is
+    accessed if we are already too busy to do so earlier.
+
+    The journal on the server is also used in our best attempt at not losing
+    any data. The data is first very quickly saved in the journal with the
+    entire order information. That means we can later replay the journal
+    if we crash and the system goes down without waiting for the database to
+    be fully updated.
+
+    The journal is ready to be re-played. An entry is marked as ready to be
+    processed using a byte. If the byte is changed to 'D' then it was
+    processed. Once we processed all the entries of the journal,
+    we truncate the file so it does not grow forever. If the journal grows
+    over a certain size, we create a second file so we can reduce the size
+    at some point (i.e. once we are done with the first file, we can reduce
+    its size).
+
+    Note that it is very important to reload the entire set of journals on
+    startup and replay them in memory even if we do not have time to save
+    them in the database. It is important because that data needs to be in
+    the cache for whenever we receive SELECT-like requests. This should be
+    happening in a thread. We can run one thread per CPU on startup to
+    load all the journals. Once all the journals were reloaded, then we
+    can start the process of reducing them (i.e. saving the data to the
+    actual database tables.)
+
+
+## Service
+
+The _Service_ is a daemon running on our local computer and used to send
+data to back and forth between this computer and the backends.
+
+You access the service through the Library which offers all the necessary
+functions to handle everything. You never had to do anything more than
+create a blob and do a SET, or use a GET with a key (Well... pretty much).
+
+### Bottleneck
+
+We have a bottleneck here because we have a "single" connection to
+the backend through the local deamon.
+
+In truth we have one connection per backend, so we could use a round robbin
+on a GET. The SET can't use that because it has to send all the data to all
+the computers that are going to make a copy.
+
+Note that a GET with a consistency other than ONE requires multiple accesses
+but those are done on the backends.
+
+
+vim: ts=4 sw=4 et
