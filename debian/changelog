@@ -1,3 +1,9 @@
+snapwebsites (1.8.3.0~xenial) xenial; urgency=high
+
+  * SNAP-478: Fixed the count of indexes so the pagers wake up.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sub,  6 Oct 2019 20:53:23 -0700
+
 snapwebsites (1.8.2.0~xenial) xenial; urgency=high
 
   * SNAP-698: Removing the DELETE since the incremental function does not

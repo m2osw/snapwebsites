@@ -385,12 +385,20 @@ int32_t paging_t::get_number_of_records() const
         libdbproxy::proxy::pointer_t dbproxy(cassandra->getProxy());
 
         libdbproxy::order count_index;
-        count_index.setCql(QString("SELECT COUNT(*) FROM %1.%2 WHERE key>=? AND key<?")
+        count_index.setCql(QString("SELECT COUNT(*) FROM %1.%2 WHERE key=? AND column1>=? AND column1<?")
                                 .arg(context->contextName())
                                 .arg(get_name(name_t::SNAP_NAME_INDEX_TABLE))
                           , libdbproxy::order::type_of_result_t::TYPE_OF_RESULT_ROWS);
         count_index.setConsistencyLevel(libdbproxy::CONSISTENCY_LEVEL_ONE);    // no need to do a QUORUM count, we should still get a very good approximation
 
+        QString index_key(f_ipath.get_key());
+        if(f_index_name != get_name(name_t::SNAP_NAME_INDEX_DEFAULT_INDEX))
+        {
+            index_key += '#';
+            index_key += f_index_name;
+        }
+
+        count_index.addParameter(index_key.toUtf8());
         count_index.addParameter(f_start_key.toUtf8());
         QString up_to(f_start_key);
         up_to[up_to.length() - 1] = up_to[up_to.length() - 1].unicode() + 1; // we expect a ':' at the end, change it into ';' (with the `++`, if another character was used, it will work too)
@@ -402,7 +410,7 @@ int32_t paging_t::get_number_of_records() const
             if(count_index_result.resultCount() == 1)
             {
                 QByteArray const column1(count_index_result.result(0));
-                f_number_of_records = cassvalue::safeUInt32Value(column1);
+                f_number_of_records = cassvalue::safeUInt64Value(column1);
             }
             else
             {
@@ -416,6 +424,8 @@ int32_t paging_t::get_number_of_records() const
                             (f_start_key)
                             ("\" for website \"")
                             (f_ipath.get_key())
+                            ("#")
+                            (f_index_name)
                             ("\" from table \"")
                             (context->contextName())
                             (".")
@@ -1830,7 +1840,7 @@ void index::index_one_page(
             , content::path_info_t & type_ipath
             , variables_t const & vars)
 {
-    QString index_key = type_ipath.get_key().toUtf8();
+    QString index_key(type_ipath.get_key());
     if(vars.find("n") != vars.end()
     && vars.at("n") != get_name(name_t::SNAP_NAME_INDEX_DEFAULT_INDEX))
     {
