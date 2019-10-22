@@ -37,10 +37,6 @@ cmake_minimum_required(VERSION 3.5)
 ##
 project(snapfirewall_project)
 
-if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-    add_definitions( "-DMO_DEBUG" )
-endif()
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set( SNAP_TABLE_DESCRIPTION_PATH lib/snapwebsites/tables )

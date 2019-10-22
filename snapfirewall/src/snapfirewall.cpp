@@ -1731,7 +1731,7 @@ void snap_firewall::setup_firewall()
 
     f_firewall_up = true;
 
-#ifndef MO_DEBUG
+#ifndef _DEBUG
     // Only remove if we are not in debug mode
     //
     unlink( outfile.c_str() );

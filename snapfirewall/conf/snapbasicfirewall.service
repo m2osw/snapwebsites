@@ -1,0 +1,26 @@
+# Documentation available at:
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+# This service is used on 18.04 and newer systesm where the ifup/ifdown
+# interfaces file is not used anymore; it replaces our `pre-up ...` call
+
+[Unit]
+Description=Snap! Websites snapfirewall initialization on boot
+Wants=network-pre.target systemd-modules-load.service local-fs.target
+Before=network-pre.target
+After=systemd-modules-load.service local-fs.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=~
+ProtectHome=true
+RemainAfterExit=yes
+# We will change this path once we have a better script to setup the firewall
+ExecStart=/etc/network/firewall
+Restart=no
+
+[Install]
+#WantedBy=network.target
+WantedBy=multi-user.target
+
+# vim: syntax=dosini
