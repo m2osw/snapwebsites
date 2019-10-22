@@ -30,7 +30,7 @@
 
       There is the basic format:
 
-          <keyspace>
+          <context dependencies="...">
             <table name="..." model="..." row-key="..." drop="...">
               <description>...</description>
               <schema kind="...">
@@ -44,10 +44,12 @@
                   <validation>...</validation>
                 </column>
               </schema>
-              <secondary-index name="..." column="..."/>
+              <secondary-index name="...">
+                ...(list of column names)...
+              </secondary-index>
             </table>
             <complex-type name="...">
-              <type>type name</type>
+              <type name="...">type name</type>
               ...
             </complex-type>
             <table-extension name="..."> <!-- see SNAP-294 -->
@@ -58,7 +60,11 @@
               </schema>
             </table-extension>
             ...
-          </keyspace>
+          </context>
+
+      The <context> tag can be replaced with a <keyspace>. They are
+      considered equivalent. The current official tag, though, is
+      <context>.
 
       The <name> attribute defines the table name. This name is verified. It
       can only include letters 'a' to 'z', digits '0' to '9', and the
@@ -96,9 +102,8 @@
                       for journals, it would be a file where all the records
                       have exactly the same size
 
-      The <row-key> attribute defines what the key is. In most cases it certainly
-      is a string, but it can be a complex type including numbers and strings
-      (i.e. a dynamic C-like structure.)
+      The <row-key> attribute defines the list of columns used to build
+      the key.
 
       The <drop> attribute is used to mark a table that needs to be dropped.
       Whenever this attribute is defined, the named table gets deleted whenever
@@ -119,7 +124,7 @@
       and not something we should support long term.
 
       The <complex-type> tag let you define a complex type based on a list
-      of types. These can be used to define a <column> or a <row-key>
+      of types. These can be used to define a <column>
       type. The name must be a user defined name (i.e. you cannot replace
       a system type with a <complex-type> definition.) The order of the
       <type> tags within a <complex-type> is important.
@@ -347,7 +352,7 @@
   <xs:element name="secondary-index">
     <xs:complexType>
       <xs:attribute name="name" type="name"/>
-      <xs:attribute name="column" type="name" use="required"/>
+      <xs:attribute name="columns" type="name" use="required"/>
     </xs:complexType>
   </xs:element>
 

@@ -1,28 +1,27 @@
-/*
- * Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
- *
- * https://snapwebsites.org/project/snaplogger
- * contact@m2osw.com
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+// Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/snapdatabase
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 
 /** \file
- * \brief The version of the snaplogger at compile time.
+ * \brief The version of the snapdatabase library at compile time.
  *
- * This file records the snaplogger library version at compile time.
+ * This file records the library version at compile time.
  *
  * The `#define` give you the library version at the time you are compiling.
  * The functions allow you to retrieve the version of a dynamically linked
@@ -31,7 +30,7 @@
 
 // self
 //
-#include    "snaplogger/version.h"
+#include    "snapdatabase/version.h"
 
 
 // last include
@@ -40,7 +39,7 @@
 
 
 
-namespace snaplogger
+namespace snapdatabase
 {
 
 
@@ -104,5 +103,5 @@ char const * get_version_string()
 }
 
 
-} // snaplogger namespace
+} // namespace snapdatabase
 // vim: ts=4 sw=4 et

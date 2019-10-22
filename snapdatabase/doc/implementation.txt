@@ -186,4 +186,90 @@ Note that a GET with a consistency other than ONE requires multiple accesses
 but those are done on the backends.
 
 
+# C++ Organization
+
+
+    +-------------------+            +-------------------+            +-------------------+
+    | context           |            | schema column     |            | xml               |
+    +-------------------+            +-------------------+            +-------------------+
+    |                   |            |                   |            |                   |
+    |                   |            |                   +----------->|                   |
+    |                   |            |                   |            |                   |
+    |                   |            |                   |            |                   |
+    +--------+----------+            +-------------------+            +-------------------+
+             |                                 ^                               ^
+             |                                 |                               |
+             |                                 |                               |
+             v                                 |                               |
+    +-------------------+            +---------+---------+                     |
+    | table             |            | schema table      |                     |
+    +-------------------+            +-------------------+                     |
+    |                   |            |                   |                     |
+    |                   |            |                   +---------------------+
+    |                   +----------->|                   |
+    |                   |            | User defined sch. +---------------------+
+    |                   |            |                   |                     |
+    +--------+----------+            +-------------------+                     |
+             |                                                                 |
+             |                                                                 |
+             |                                                                 |
+             v                                                                 v
+    +-------------------+            +-------------------+            +-------------------+            +-------------------+
+    | block             |            | block_schema      |            | structure         |            | virtual_buffer    |
+    +-------------------+            +-------------------+            +-------------------+            +-------------------+
+    |                   |            |                   |            |                   |            |                   |
+    |                   +----------->|                   +----------->|                   +----------->|                   |
+    |                   |            | Block structures  |            |                   |            |                   |
+    |                   |            |                   |            |                   |            |                   |
+    +--------+----------+            +-------------------+            +-------------------+            +-------------------+
+             |
+             |
+             |
+             v
+    +-------------------+
+    | dbfile            |
+    +-------------------+
+    |                   |
+    |                   |
+    |                   |
+    |                   |
+    +-------------------+
+
+
+## Context
+
+The context of a Snap! Database is an equivalent to one DATABASE in an SQL
+cluster. We do not offer anything higher than that. If you want multiple
+databases, you have to create multiple contexts and each must use a
+different path to their data. That's it. So there is no point in us
+providing such a feature inside our system. It's too easy for you to
+set things up the way you want and having multiple contexts if you feel
+like it.
+
+One context is composed of one or more tables (well... you could have
+zero tables too, but then that's rather useless!) The schema of your
+tables must be defined in XML files that the `xml` object reads.
+The schema of a table is saved in vairous `blocks` of the `dbfile`
+for that table.
+
+## Table
+
+A `table` object is assigned a name and a path. This gives it access to a
+set of dbfiles used by the `block` objects which use `mmap()` to attach
+the file content to a memory block and passes that down to the
+`virtual_buffer` which the `structure` can access in a structured manner.
+
+To some extend, the `virtual_buffer` objects do not really need to know
+whether the buffer is from a file or not, although we have exceptions
+before we need to access the data in the block or in a buffer we manage
+locally (`f_block` vs `f_data`).
+
+## Virtual Buffer
+
+The virtual buffers are allocated by the table using various blocks and
+then passed down to the block & table schemata.
+
+
+
+
 vim: ts=4 sw=4 et

@@ -18,6 +18,10 @@ The Journal has this special feature that the user data is never going
 to change. That means a row once written will never have to move. Although
 it may be _replaced_ later and _deleted_.
 
+Here by _replaced_ we mean that we can get a new copy of the same payload
+with a different Start Processing Date. (So you could say that it in fact
+changes! But in reality it just doesn't really.)
+
 The table will allow for updates to these few columns:
 
 * Status
@@ -75,10 +79,24 @@ Each row in a journal includes the following columns:
     equal priority are sorted by Process Date.
 
     If your journal does not require a priority, use the same value for
-    all the insertion and the entries will automatically be sorted by
+    all the insertions and the entries will automatically be sorted by
     Process Date.
 
-* Process Date (Predefined, Type: `time_t`)
+    The items with the smallest Priority are worked on first.
+
+    Here are the existing priorities as defined in the specialized journal
+    implementation of the list plugin:
+
+        static priority_t const     LIST_PRIORITY_NOW         =   0;      // first page on the list
+        static priority_t const     LIST_PRIORITY_IMPORTANT   =  10;      // user / developer says this page is really important and should be worked on ASAP
+        static priority_t const     LIST_PRIORITY_NEW_PAGE    =  20;      // a new page that was just created
+        static priority_t const     LIST_PRIORITY_RESET       =  50;      // user asked for a manual reset of (many) pages
+        static priority_t const     LIST_PRIORITY_UPDATES     = 180;      // updates from content.xml files
+        static priority_t const     LIST_PRIORITY_SLOW        = 200;      // from this number up, do not process if any other pages were processed
+        static priority_t const     LIST_PRIORITY_REVIEW      = 230;      // once in a while, review all the pages, just in case we missed something
+        static priority_t const     LIST_PRIORITY_TIME_ALLOWS = 255;      // last page on the list
+
+* Process Date (Predefined, Type: `time_ms_t`)
 
     The date when the entry has to be processed. It can be set to _now_
     in which case it will be processed as soon as possible.
@@ -130,8 +148,28 @@ Each row in a journal includes the following columns:
 
     By default the column is not defined. The default value is 0.
 
-* User Data (Required, Type: User Defined, name can be anything and more
-  columns can also be added)
+* Key (Required, Type: User Defined)
+
+    Whenever the clinet adds an entry to the journal, we first search
+    using this key (see the Secondary Index: Key). When the key already
+    exists and the Status is still `WAITING` we replace that entry with
+    the new data as follow:
+
+    - Insertion Date -- do not modify
+    - Expiration Date -- keep largest
+    - Priority -- keep smallest
+    - Process Date -- keep the largest
+    - Status -- do not change, must be `WAITING` for an update to happen
+    - Start Processing Date -- do not modify (not from user, updated by
+      special cursor)
+    - Timeout Counter -- reset to 0
+    - Key -- equal since we searched using the key
+    - User Data -- replace
+
+    The reason for this is to avoid repeating work multiple times on the
+    exact same key.
+
+* User Data (Required, Type: User Defined)
 
     The `User Data` is the user payload for this journal. In most cases this
     is a key to the data that requires processing. The user can define
@@ -183,24 +221,73 @@ Here are several ideas on how to manage the file once empty:
 ## Indexing
 
 We want replication for the journals because a computer could go out of
-commission and we do not want to lose any data when tha happens.
+commission and we do not want to lose any data when that happens.
 
 However, since the data is always expected to be short lived and altered
-very quickly, we want the journal tables to spread between N node and
+very quickly, we want the journal tables to spread between N nodes and
 avoid partitioning for both, the data and the index. In other words,
 the journals are not expected to grow horizontally. However, each journal
 table can sit on a different set of N nodes. So if you have N=3, 20 journals,
 and 200 nodes, it is still horizontal because you only need 3 x 20 = 60
 computers to to handle all the journals independently (on separate computers).
 
+We need several indexes to allow for all the features to work as expected.
 
-## Sort Capability
+### Primary Key
 
-The journal needs to be sorted by Priority and Process date, at least.
+The journal Primary Key needs to be the Priority and Process Date.
+
+**WARNING:** Since it is a primary key, it also needs to be unique. One
+simple solution is to also add the User Data column to the Primary Key
+or at least a Murmur of that data.
+
+    <Priority>:<Process Date>:<User Data Murmur>
+
 We could include the status, but since the status is going to change
 much, it may be a waste of time since it would change the index _all
 the time_. That being said, that way we could easilly search for the
-next entry which is `WAITING`.
+next entry which is `WAITING` to be picked up.
+
+TBD: if the processing of all of our journals remains very slow altogether,
+we could also _merge_ all of our journals in one table. All we need to do
+is add a Journal Name column and use that in our Primary Key:
+
+    <Journal Name>:<Priority>:<Process Date>:<Key Murmur>
+
+I think that this would not add much overhead to this table in itself,
+however, it would not grow horizontally at all. So there is a trade off.
+That being said, with 3 dedicated servers, it would probably not be a
+big deal at all.
+
+### Secondary Index: Expiration Date
+
+This timestemp is used in an index so we can find rows that need to be
+deleted. Along with an Event Dispatcher timeout object, we can very easily
+wake up our process and emit the DELETE as required.
+
+Note that a GET needs to test the Expiration Date too. If the row has
+expired, then the GET has to ignore it.
+
+The FILE-FORMAT.md has information about this secondary index and it
+actually knows how to handle it already. The Journal and other tables
+do not have to replicate that work each and every time. Just the
+existance of an expiration date somewhere is enough for the index to
+automatically get generated.
+
+### Secondary Index: Key
+
+The Primary Key gives us access to the data by priority and processing date.
+However, when the user adds a new entry, it may overwrite an existing entry.
+We know that because the user has a Key in his User Data. There can be only
+one entry with that Key. This index can use a Murmur of the key so that way
+the length doesn't vary (16 bytes).
+
+So when the user updates the same Key again, the dates are all updated.
+In other words, the Processing Date is likely going to be pushed back a few
+seconds or minutes. This allows us to avoid processing the same piece of
+data twice in a row. (i.e. in most cases, it would be close to impossible
+or very costly to check whether the last processing needs to be redone
+without just redoing it directly.)
 
 
 ## Special Cursor Capability

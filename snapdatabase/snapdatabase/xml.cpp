@@ -1,0 +1,816 @@
+// Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/snapdatabase
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+/** \file
+ * \brief Database file implementation.
+ *
+ * Each table uses one or more files. Each file is handled by a dbfile
+ * object and a corresponding set of blocks.
+ */
+
+// self
+//
+#include    "snapdatabase/dbfile.h"
+
+
+// last include
+//
+#include    <snapdev/poison.h>
+
+
+
+namespace snapdatabase
+{
+
+
+
+namespace
+{
+
+
+bool is_alpha(char c)
+{
+    return (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
+        || c == '_';
+}
+
+
+bool is_digit(char c)
+{
+    return (c >= '0' && c <= '9')
+        || c == '-';
+}
+
+
+bool is_space(char c)
+{
+    return c == ' '
+        || c == '\t'
+        || c == '\v'
+        || c == '\f'
+        || c == '\n'
+        || c == '\r';
+}
+
+
+bool is_token(std::string const s)
+{
+    if(name.empty())
+    {
+        return false;
+    }
+
+    if(!is_alpha(name[0]))
+    {
+        return false;
+    }
+
+    std::string::size_type const max(name.length());
+    for(std::string::size_type idx(1); idx < max; ++idx)
+    {
+        char const c(name[idx]);
+        if(!is_alpah(c)
+        && !is_digit(c))
+        {
+            return false;
+        }
+    }
+    if(name[max - 1] == '-')
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
+
+enum token_t
+{
+    TOK_CLOSE_TAG,
+    TOK_EMPTY_TAG,
+    TOK_END_TAG,
+    TOK_EOF,
+    TOK_EQUAL,
+    TOK_IDENTIFIER,
+    TOK_OPEN_TAG,
+    TOK_PROCESSOR,
+    TOK_STRING,
+    TOK_TEXT
+};
+
+
+class xml_parser
+{
+public:
+                        xml_parser(std::string const & filename, node::pointer_t & root);
+
+private:
+    void                read_xml(node::pointer_t & root);
+    int                 getc();
+
+    std::ifstream       f_in;
+    int                 f_ungetc_pos = 0;
+    int                 f_ungetc[4] = { '\0' };
+    int                 f_line = 1;
+    std::string         f_value = std::string();
+};
+
+
+xml_parser::xml_parser(std::string const & filename, node::pointer_t & root)
+    : f_in(filename)
+{
+    if(!f_in.is_open())
+    {
+        int const e(errno);
+        throw file_not_found(std::string("Could not open XML table file \"")
+                           + filename
+                           + "\": " + strerror(e) + ".");
+    }
+
+    read_xml(root);
+}
+
+
+/** \brief
+ *
+ * This function reads the XML but it does not verify the Schema format.
+ * It does verify the XML syntax fairly strongly.
+ *
+ * \param[in] root  A reference to the root pointer where the results are saved.
+ */
+void xml_parser::read_xml(node::pointer_t & root)
+{
+    token_t tok(get_token(false));
+
+    auto skip_empty = [&]()
+    {
+        while(tok == token_t::TOK_TEXT)
+        {
+            boost::trim(f_value);
+            if(!f_value.empty())
+            {
+                throw unexpected_token(
+                          std::string("File \"")
+                        + filename
+                        + "\" cannot include text data before the root tag.");
+            }
+        }
+    };
+
+    auto read_tag_attributes = [&](node::pointer_t & tag)
+    {
+        for(;;)
+        {
+            tok = get_token(true);
+            if(tok == token_t::TOK_END_TAG
+            || tok == token_t::TOK_EMPTY_TAG)
+            {
+                return tok;
+            }
+            if(tok != token_t::TOK_IDENTIFIER)
+            {
+                throw invalid_xml("Expected the end of the tag (>) or an attribute name.");
+            }
+            std::string const name(tok);
+            tok = get_token(true);
+            if(tok != token_t::TOK_EQUAL)
+            {
+                throw invalid_xml("Expected the '=' character between the attribute name and value.");
+            }
+            tok = get_token(true);
+            if(tok != token_t::TOK_STRING)
+            {
+                throw invalid_xml("Expected a value of the attribute after the '=' sign.");
+            }
+            if(!tag->attribute(name).empty())
+            {
+                throw invalid_xml("Attribute \"" + name + "\" defined twice. We do not allow such.");
+            }
+            tag->set_attribute(name, f_value);
+        }
+    };
+
+    skip_empty();
+    if(tok == token_t::TOK_PROCESSOR)
+    {
+        tok = get_token(false);
+    }
+    skip_empty();
+
+    // now we have to have the root tag
+    if(tok != token_t::TOK_OPEN_TAG)
+    {
+        throw unexpected_token(
+                  std::string("File \"")
+                + filename
+                + "\" cannot include anything else than a processor tag and comments before the root tag.");
+    }
+    root.reset(new node(f_value))
+    if(read_tag_attributes(root) == token_t::TOK_EMPTY_TAG)
+    {
+        throw unexpected_token(
+                  std::string("File \"")
+                + filename
+                + "\" root tag cannot be an empty tag.");
+    }
+
+    node::pointer_t parent(root);
+    while(tok != token_t::TOK_EOF)
+    {
+        switch(tok)
+        {
+        case token_t::TOK_EOF:
+        case token_t::TOK_OPEN_TAG:
+            node::pointer_t child(new node(f_value));
+            parent->append_child(child);
+            if(read_tag_attributes(root) == token_t::TOK_END_TAG)
+            {
+                parent = child;
+            }
+            break;
+
+        case token_t::TOK_CLOSE_TAG:
+            if(parent->tag_name() != f_value)
+            {
+                throw unexpected_token(
+                          std::string("Unexpected token name \"")
+                        + f_value
+                        + "\" in this closing tag. Expected \""
+                        + parent->tag_name()
+                        + "\" instead.");
+            }
+            parent = parent->parent();
+            if(parent == nullptr)
+            {
+                do
+                {
+                    tok = get_token();
+                    skip_empty();
+                }
+                while(tok != token_t::TOK_EOF);
+
+                // it worked, we're done
+                //
+                return;
+            }
+            break;
+
+        case token_t::TOK_TEXT:
+            parent->append_text(f_value);
+            break;
+
+        case token_t::TOK_EMPTY_TAG:
+        case token_t::TOK_END_TAG:
+        case token_t::TOK_EQUAL:
+        case token_t::TOK_IDENTIFIER:
+        case token_t::TOK_PROCESSOR:
+        case token_t::TOK_STRING:
+            throw snapdatabase_logic_error("Received an unexpected token in the switch hanlder.");
+
+        }
+        tok = get_token();
+    }
+}
+
+
+token_t xml_parser::get_token(bool parsing_attributes)
+{
+    f_value.clear();
+
+    for(;;)
+    {
+        int c(getc());
+        switch(c)
+        {
+        case EOF:
+            return token_t::TOK_EOF;
+
+        case ' ':
+        case '\t':
+        case '\v':
+        case '\f':
+        case '\n':
+            if(parsing_attributes)
+            {
+                continue;
+            }
+            break;
+
+        case '<':
+            c = getc();
+            switch(c)
+            {
+            case '?':
+                // we do not parse the processor entry, we do not care about
+                // it at the moment
+                for(;;)
+                {
+                    c = getc();
+                    if(c == EOF)
+                    {
+                        throw unexpected_eof("Found an unexpected sequence of character in a processor (\"<?...?>\") sequence.");
+                    }
+                    while(c == '?')
+                    {
+                        c = getc();
+                        if(c == '>')
+                        {
+                            break;
+                        }
+                        f_value += '?';
+                    }
+                    f_value += static_cast<char>(c);
+                }
+                return token_t::TOK_PROCESSOR;
+
+            case '!':
+                c = getc();
+                if(is_alpha(c))
+                {
+                    throw invalid_xml("Found an element definition (\"<!ELEMENT...>\" sequence which is not supported.");
+                }
+                if(c == '[')
+                {
+                    // <![CDATA[ ... or throw
+                    //
+                    char const * expect = "CDATA[";
+                    for(int j(0); j < 6; ++j)
+                    {
+                        if(getc() != expected[j])
+                        {
+                            throw invalid_xml("Found an unexpected sequence of character in a \"<![CDATA[...\" sequence.");
+                        }
+                    }
+                    for(;;)
+                    {
+                        c = getc();
+                        if(c == EOF)
+                        {
+                            throw unexpected_eof("Found EOF while parsing a \"<![CDATA[...]]>\" sequence.");
+                        }
+                        if(c == ']')
+                        {
+                            c = getc();
+                            if(c == ']')
+                            {
+                                c = getc();
+                                while(c == ']')
+                                {
+                                    f_value += ']';
+                                    c = getc();
+                                }
+                                if(c == '>')
+                                {
+                                    return token_t::TOK_TEXT;
+                                }
+                                f_value += "]]";
+                                f_value += static_cast<char>(c);
+                            }
+                            else
+                            {
+                                f_value += ']';
+                                f_value += static_cast<char>(c);
+                            }
+                        }
+                        else
+                        {
+                            f_value += static_cast<char>(c);
+                        }
+                    }
+                }
+                if(c == '-')
+                {
+                    c = getc();
+                    if(c == '-')
+                    {
+                        bool found(false);
+                        while(!found)
+                        {
+                            c = getc();
+                            if(c == EOF)
+                            {
+                                throw unexpected_eof("Found EOF while parsing a comment (\"<!--...-->\") sequence.");
+                            }
+                            if(c == '-')
+                            {
+                                c = getc();
+                                while(c == '-')
+                                {
+                                    c = getc();
+                                    if(c == '>')
+                                    {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                throw invalid_token(
+                          std::string("Character '")
+                        + static_cast<char>(c)
+                        + "' was not expected after a \"<!\" sequence.");
+
+            case '/':
+                c = getc();
+                while(is_space(c))
+                {
+                    c = getc();
+                }
+                if(!is_alpha(c))
+                {
+                    if(c == EOF)
+                    {
+                        throw unexpected_eof("Expected a tag name after \"</\", not EOF.");
+                    }
+                    throw invalid_token(
+                              std::string("Character '")
+                            + static_cast<char>(c)
+                            + "' is not a valid for a tag name.");
+                }
+                for(;;)
+                {
+                    f_value += static_cast<char>(c);
+                    c = getc();
+                    if(!is_alpha(c)
+                    && !is_digit(c))
+                    {
+                        break;
+                    }
+                }
+                while(is_space(c))
+                {
+                    c = getc();
+                }
+                if(c != '>')
+                {
+                    if(c == EOF)
+                    {
+                        throw unexpected_eof("Expected '>', not EOF.");
+                    }
+                    throw invalid_xml(
+                              std::string("Found an unexpected '")
+                            + static_cast<char>(c)
+                            + "' in a closing tag, expected '>' instead.");
+                }
+                return token_t::TOK_CLOSE_TAG;
+
+            }
+
+            // in this case we need to read the name only, the attributes
+            // will be read by the parser instead of the lexer
+            //
+            while(is_space(c))
+            {
+                c = getc();
+            }
+            if(!is_alpha(c))
+            {
+                if(c == EOF)
+                {
+                    throw unexpected_eof("Expected a tag name after \"</\", not EOF.");
+                }
+                throw invalid_token(
+                          std::string("Character '")
+                        + static_cast<char>(c)
+                        + "' is not a valid for a tag name.");
+            }
+            for(;;)
+            {
+                f_value += static_cast<char>(c);
+                c = getc();
+                if(!is_alpha(c)
+                && !is_digit(c))
+                {
+                    break;
+                }
+            }
+            return token_t::TOK_OPEN_TAG;
+
+        case '>':
+            if(parsing_attributes)
+            {
+                return token_t::TOK_END_TAG;
+            }
+            break;
+
+        case '/':
+            if(parsing_attributes)
+            {
+                c = getc();
+                if(c == '>')
+                {
+                    return token_t::TOK_EMPTY_TAG;
+                }
+                ungetc(c);
+                c = '/';
+            }
+            break;
+
+        case '=':
+            if(parsing_attributes)
+            {
+                return token_t::TOK_EQUAL;
+            }
+            break;
+
+        case '"':
+        case '\'':
+            if(parsing_attributes)
+            {
+                int quote(c);
+                for(;;)
+                {
+                    c = getc();
+                    if(c == quote)
+                    {
+                        break;
+                    }
+                    if(c == '>')
+                    {
+                        throw invalid_token("Character '>' not expected inside a tag value. Please use \"&gt;\" instead.");
+                    }
+                    f_value += static_cast<char>(c);
+                }
+                return token_t::TOK_STRING;
+            }
+            break;
+
+        }
+
+        if(parsing_attributes
+        && is_alpha(c))
+        {
+            for(;;)
+            {
+                f_value += static_cast<c>;
+                c = getc();
+                if(!is_alpha(c)
+                && !is_digit(c))
+                {
+                    return token_t::TOK_IDENTIFIER;
+                }
+            }
+        }
+
+        for(;;)
+        {
+            f_value += static_cast<c>;
+            c = getc();
+            if(c == '<'
+            || c == EOF)
+            {
+                ungetc(c);
+                return token_t::TOK_TEXT;
+            }
+        }
+    }
+}
+
+
+int xml_parser::getc()
+{
+    if(f_ungetc_pos > 0)
+    {
+        --f_unget_pos;
+        return f_ungetc[f_ungetc_pos];
+    }
+
+    int c(f_in.getc());
+    if(c == '\r')
+    {
+        ++f_line;
+        c = f_in.getc();
+        if(c != '\n')
+        {
+            ungetc(c);
+            c = '\n';
+        }
+    }
+    else if(c == '\n')
+    {
+        ++f_line;
+    }
+
+    return c;
+}
+
+
+void xml_parser::ungetc(int c)
+{
+    if(c != EOF)
+    {
+        if(f_ungetc_pos > sizeof(f_ungetc) / sizeof(f_ungetc[0]))
+        {
+            throw snapdatabase_logic_error("Somehow the f_ungetc buffer was overflowed.");
+        }
+
+        f_ungetc[f_ungetc_pos] = c;
+        ++f_ungetc_pos;
+    }
+}
+
+
+
+} // empty namespace
+
+
+
+node::node(std::string const & name)
+    : f_name(name)
+{
+    if(!is_token(name))
+    {
+        throw invalid_token("\"" + name + "\" is not a valid token as a tag name.");
+    }
+}
+
+
+std::string const & node::tag_name() const
+{
+    return f_name;
+}
+
+
+std::string node::text() const
+{
+    return f_text;
+}
+
+
+void node::append_text(std::string const & text)
+{
+    f_text += text;
+}
+
+
+node::attribute_map_t node::all_attributes() const
+{
+    return f_attributes;
+}
+
+
+std::string node::attribute(std::string const & name) const
+{
+    auto const it(f_attributes.find(name));
+    if(it == f_attributes.end())
+    {
+        return std::string();
+    }
+    return it->second;
+}
+
+
+void node::set_attribute(std::string const & name, std::string const & value)
+{
+    if(!is_token(name))
+    {
+        throw invalid_token("\"" + name + "\" is not a valid token as an attribute name.");
+    }
+    f_attributes[name] = value;
+}
+
+
+void node::append_child(xml_node const & n)
+{
+    if(n->f_next != nullptr
+    || n->f_previous != nullptr)
+    {
+        throw node_already_in_tree("Somehow you are trying to add a child node of a node that was already added to a tree of nodes.");
+    }
+
+    auto l(last_child());
+    if(l == nullptr)
+    {
+        f_child = n;
+    }
+    else
+    {
+        l->f_next = n;
+        n->f_previous = l;
+    }
+}
+
+
+pointer_t node::parent() const
+{
+    auto result(f_parent.lock());
+    return result;
+}
+
+
+pointer_t node::first_child() const
+{
+    return f_child;
+}
+
+
+pointer_t node::last_child() const
+{
+    pointer_t l(f_child);
+    while(l.f_next != nullptr)
+    {
+        l = l.f_next;
+    }
+
+    return l;
+}
+
+
+pointer_t node::next() const
+{
+    return f_next;
+}
+
+
+pointer_t node::previous() const
+{
+    return f_previous.lock();
+}
+
+
+std::ostream & operator << (std::ostream & out, xml_node const & n)
+{
+    out << '<';
+    out << n.tag_name();
+    for(auto a : n.all_attributes())
+    {
+        out << a.first
+            << "=\""
+            << a.second
+            << '"';
+    }
+    auto child(n.first_child());
+    bool empty(child == nullptr);
+    if(empty)
+    {
+        out << '/';
+    }
+    out << '>';
+    if(!empty)
+    {
+        out << '\n';
+        while(child != nullptr)
+        {
+            out << child;       // recursive call
+            child = child->next();
+        }
+        out << '\n';
+    }
+    if(!n.text().empty())
+    {
+        out << n.text();
+        if(!empty)
+        {
+            out << '\n';
+        }
+    }
+    if(!empty)
+    {
+        out << "</"
+            << n.tag_name()
+            << '>';
+    }
+
+    return out;
+}
+
+
+
+
+xml::xml(std::string const & filename)
+{
+    xml_parser p(filename, f_root);
+}
+
+
+xml_node::pointer_t xml::root()
+{
+    return f_root;
+}
+
+
+
+} // namespace snapdatabase
+// vim: ts=4 sw=4 et

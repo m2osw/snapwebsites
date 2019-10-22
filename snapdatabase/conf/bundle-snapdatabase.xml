@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+  see /usr/share/snapwebsites/xsd/bundles.xsd for details
+  to verify your changes (change the == with two dashes):
+    xmllint ==noout ==schema /usr/share/snapwebsites/xsd/bundles.xsd /etc/snapwebsites/services.d/bundle-firewall.xml
+-->
+<bundle hide="hide">
+  <name>snapdatabase</name>
+  <description>
+    <p>The snapdatabase daemon is used to create a cluster of database
+    engines which handle the equivalent of NoSQL databases with strong
+    indexing, counters, locks, journaling, session capabilities.</p>
+
+    <p>The snapdatabase is expected to be installed on dedicated backends
+    used as the database for your website.</p>
+
+    <p><strong>NOTE:</strong> at the moment we only support journals. We
+    intend to grow our capabilities over time but the journal is a huge
+    killer as far as Cassandra is concerned.</p>
+  </description>
+  <expected/>
+  <fields>
+    <field name="private_ip" type="input">
+      <label>This Computer Private IP</label>
+      <description>Enter the private IP address of this computer, the one
+        used to communicate with your other private computers.</description>
+    </field>
+    <field name="another_snapdatabase_ip" type="input">
+      <label>The IP of another snapdatabase</label>
+      <description>Enter the IP address of one of your other snapdatabase
+        computers so the system can automatically create a
+        cluster.</description>
+    </field>
+  </fields>
+  <affected-services>snapdatabaseproxy</affected-services>
+  <packages>snapdatabase</packages>
+  <postinst>
+    # Setup the snapdatabase IPs
+    #
+    SNAPDATABASE=/etc/snapwebsites/snapwebsites.d/snapdatabase.conf
+
+    echo "# snapdatabase editable parameters" >$SNAPDATABASE
+    echo "listen=$BUNDLE_INSTALLATION_PRIVATE_IP" >>$SNAPDATABASE
+    echo "nodes=$BUNDLE_INSTALLATION_ANOTHER_SNAPDATABASE_IP" >>$SNAPDATABASE
+
+    # TBD: we should look in a way to pass the IPs early on so we don't
+    #      start with the wrong ones.
+    #
+    systemctl restart snapdatabase
+  </postinst>
+</bundle>
+<!--
+  vim: ts=2 sw=2 et
+-->

@@ -115,7 +115,7 @@ with the B+tree and basic key/data plus a pointer to the blob.
     Data. The advantage to use the Primary Index is to simplify the
     compaction quite a bit.
     
-    If we do not have secondary indexes, then we can do compaction anyway.
+    When we do not have secondary indexes, we can easily compact tables.
     
     If we have secondary indexes, pointing to the Primary Index is best.
 
@@ -232,12 +232,12 @@ get the data updated:
 
 We want to use several types of blocks to maintain the database:
 
-### Header (SDBT)
+### Header (`SDBT`)
 
 The header defines where the other blocks are and includes the bloom filter
 data.
 
-* Block Type (SDBT, `char[4]`)
+* Block Type (`SDBT`, `char[4]`)
 
     This block defines a Snap Database Table. Since it is at the very
     beginning, it is most often used as the Magic for the entire file.
@@ -320,6 +320,33 @@ data.
     is useful to avoid having to fix the data of millions of rows all at
     once when we can do it incrementally (or even not at all if the data
     is pretty much considered immutable).
+
+* Table Expiration Date (`time_t`)
+
+    A date when the table is to be dropped.
+
+    This is generally used by temporary tables. Say you need a table for
+    a few hours, you could set the expiration date to `now + 1 day`.
+    If somehow your code doesn't come around dropping the table properly
+    (i.e. it crashes along the way, your code is a tad bit flaky, etc.)
+    then even though the table is marked as being temporary, it would
+    stick around. This is because the cluster survives shutdowns (at
+    least it is expected to survive and run forever--no down time ever).
+
+    Just like the Expiration Date of a row or a cell, the table Expiration
+    Date is recorded and an Event Dispatcher Timer object will wake us up
+    when the table times out and gets deleted. Note that once a table
+    has expired, any access to that table fail with an error.
+
+    **TBD:** do we really want to support temporary tables? It's often used
+    in SQL, but here, maybe we could instead look into having a feature
+    to create memory tables instead. That way it can be made non-block
+    based. i.e. the whole set of the data can be kept in maps (one map
+    per index). Especially, we do not have a way to create a table
+    dynamically. Only tables which have an XML definition in the context
+    repository are created. So I'm not totally sure we want to support
+    such here. At the same time, having a `memory_cache` table could be
+    really cool too (possibly just on the front ends).
 
 * Indirect Index (`uint64_t`)
 
@@ -422,14 +449,25 @@ data.
     between 129 and 256, etc. That way we can directly go to a block with
     at least the amount of space we need for the row being written.
 
-* Timeout Index Block (`uint64_t`)
+* Expiration Index Block (`uint64_t`)
 
-    Pointer to the first B+tree index block with the rows having a
-    Timeout Date are sorted by that date. Note that we only allow
-    one entry per row. If a cell within a row has a timeout date
-    then we still add this as if the row had that timeout and when
-    it happens, we just remove the cell. That should be more than
+    Pointer to the first B+tree index block with the rows having an
+    Expiration Date are sorted by that date. Note that we only allow
+    one entry per row. If a cell within a row has an Expiration Date
+    then we still add this as if the row had that expiration and when
+    it expires, we just remove the cell. That should be more than
     fast enough.
+
+    If multiple cells and the row all have an Expiration Date, then we
+    use the smallest one to add this row to the Expiration Index.
+
+    _Note: In Cassandra, this feature uses a TTL. However, a TTL is
+    definitely annoying in this case since it can change depending on
+    the creation date and we do not want our threshold date to change
+    that way. Instead, if you want to extend the lifetime of a piece
+    of data, you have to update its Expiration Date. Plus this way you
+    are sure that all the data you want to expire at a given date
+    all expire simultaneously._
 
 * Secondary Index Blocks (`uint64_t`)
 
@@ -503,19 +541,124 @@ data.
     why we have a counter so we know when that happens.
 
 
-### Free Block (FREE)
+### Free Block (`FREE`)
 
 Whenever a block is added to the file, we mark it as a `FREE` block and
-add it to the linked list of `FREE` blocks. Whenever a block becomes
-available again we clear it, mark it as a `FREE` block and then add it
-to our linked list of `FREE` blocks.
+add it to the linked list of `FREE` blocks.
 
-We want to add 64Kb at a time so if your
-blocks are 4Kb each, this is 16 blocks at once),
+Whenever a block becomes available again we clear it, mark it as a `FREE`
+block and then add it to our linked list of `FREE` blocks.
 
-#### Sparse File
+_Note: the "clear the block" is not necessary unless the block has its
+"Secure" bit set. However, it should not make much of a difference if
+our blocks are all written at once by the OS anyway._
 
-### Free Space Block (FSPC)
+When adding new `FREE` blocks, we can allocate N at once. For example,
+if N=16 and our blocks are 4Kb, we would add 64Kb at once to our file
+(16 x 4Kb = 64Kb).
+
+#### Sparse Files
+
+Having a few characters at the start of the block will prevent the OS from
+creating a sparse file. Also, the only way to really create a sparse file
+is by using the `lseek()` function beyond the end of the file and writin
+eons later or using `truncate()` to enlarge the file (with `truncate()`
+you do not even need the write). Writing zeroes will also create the
+block because the OS doesn't check what you write, it only create sparse
+files if you seek (at least so far).
+
+So if we have the size of a block in the file, say 4Kb, and we are using
+larger blocks, we could end up with a sparse file. To avoid that, we have
+to write the block magic letters at the beginning of the block and then
+at least 1 zero on each of the following pages (i.e. if our blocks are
+64Kb, then we'd have to write at least an additional 15 zeroes to the file.
+
+
+### Schema Block (`SCHM`)
+
+A schema block allows us to have the definition of the schema which is
+the global settings of the table and the list of columns.
+
+The block is timestamped because rows created at a given time will
+follow the latest schema. This gives us an easy way to know which schema
+a row used when it was saved. This allows us to incrementally fix the
+rows to a newer schema.
+
+* Block Type (`SCHM`, Type: `char[4]`)
+
+    The magic word.
+
+* Next Block (`uint64_t`)
+
+    If the schema is larger than one block, this is the next part. Before
+    we transform the schema to C++ objects, we read all the parts.
+
+* Schema (Type: complex)
+
+    This block is a structure describing the table and the columns
+    as per the tables.xsd information. Only this is a binary version
+    so we do not have to parse the XML each time.
+
+    Parameters:
+
+    - `version` (`uint16_t`)
+    - `table_name` (`p8-string`)
+    - `flags` (`uint64_t`)
+        . temporary (bit 0)
+    - `model` (`uint8_t`)
+        . content
+        . data
+        . log
+        . queue (a.k.a. journal)
+        . session
+        . sequential
+        . tree (i.e. the parent/children tree as an index)
+    - `row_key`
+        . number of columns in row-key (`uint16_t`)
+        . `column_id` -- vector of references to columns (`uint16_t`)
+    - `secondary_indexes`
+        . number of secondary indexes (`uint16_t`)
+        . secondary index
+            + secondary index `name` (p8-string)
+            + secondary index `columns`
+                > number of columns used in secondary index (`uint16_t`)
+                > vector of references to columns (`uint16_t`)
+    - columns
+        . number of columns (`uint16_t`)
+        . column
+            + column name (`p8-string`)
+            + column type (`uint16_t`)
+            + column flags (`uint32_t`)
+                > limited (0x0001)
+                > required (0x0002)
+                > encrypt (0x0004)
+                > default (0x0008)
+                > bounds (0x0010)
+                > length limits (0x0020)
+                > validation (0x0040)
+            + encrypt key name (`p16-string`, optional, see flags)
+            + default value (see column type, optional, see flags)
+            + minimum value (see column type, optional, see flags)
+            + maximum value (see column type, optional, see flags)
+            + minimum length (`uint32_t`, optional, see flags)
+            + maximum length (`uint32_t`, optional, see flags)
+            + validation (`"compiled script"`, optional, see flags)
+
+All strings are P-Strings with a 16 bit size. The following data is 8 bytes
+aligned so we can access 64 bit numbers as is.
+
+The column identifier is the column index in the vector of columns. When a
+column gets removed, it stays in the vector and it gets marked as deleted.
+When a new column gets added later, it can reuse that slot. However, we first
+need to know whether that column was removed from all rows before we can
+reuse it, One way would be to have counters, but that starts to be really
+heavy (i.e. count all the columns added and removed over time so once the
+old column's counter goes to 0 we can reuse that slot.
+
+See also libsnapwebsites/src/snapwebsites/tables.xsd
+
+
+### Free Space Block (`FSPC`)
 
 Whenever a block of data gets used we write some data to it and the rest of
 the space is "free space". That "free space" is connected to a Free Space
@@ -539,88 +682,185 @@ next incoming blob of data.
     Assuming it is 16 bytes, the possible number of entries in a 4Kb
     block is 256 so this Free Space array is 256 `uint64_t` pointers.
     However, that would include the Block Type space, which is not
-    possible. The fact is that any block in the BLOB
+    possible. The fact is that any block of `DATA` will never have less
+    than 16 so we can eliminate the case with 0 bytes which gives us
+    enough space for the block magic.
 
 
-### Allocation Map Array (MAPA)
+### Top Direct Data Block (`TDIR`, for sequential data)
 
-DO NOT IMPLEMENT: I think that a list of empty blocks is going to be
-much more effective and for free space, we want a list of blocks with
-N bytes still available, since a row is at least 16 bytes, we can put
-all such entries in a single block making it easy to handle.
+This is probably very rare, but for the few tables we have where the data
+is sequential (all rows have exactly the same size) we can use the top
+direct data block.
 
-In order to quickly access any AMAP, we want to have an array of pointers
-to all the AMAP. This is similar to the Top Index. Here we have an array
-of pointers to AMAP blocks in order. So we can use very simple math to
-go accross the blocks and download the correct data.
+This type of block does not need to pinpoint each row one at a time.
+Instead, it just has to pinpoint blocks. The number of rows in one block
+is the size of a block minus its header divided by the size of one row.
 
-The block includes the following
+For example:
 
-* Block Type (MAPA, Type: `char[4]`)
+    (4Kb blocks - 64 bytes of headers) / 32 bytes rows = 126 rows/row
 
-    The magic for this block.
+That means one pointer to a `DATA` block found in a `TDIR` entry represents
+126 rows. If one `TDIR` supports 500 pointers, it indexes a total of
 
-* Level (Type: `uint8_t`)
+    500 x 126 = 63,000 rows
 
-    With the level we can calculate how many AMAP blocks (level 0) or
-    how many MAPA blocks (level 1 or more) this block points to.
+This is very similar to managing an array only each 126 rows can appear
+anywhere in the file. The `FREE` is handled _differently_ since only one
+size is going to be used we could instead directly point to a free block
+in the `SDBT` block and not have any `FREE` block.
 
-    Say one AMAP represents exactly 4000 blocks, that is the number of
-    entries at Level 0. Say the MAPA represents 500 block pointers,
-    then a full MAPA level 0 represents 500 x 4000 = 2,000,000 blocks
-    in your file. At 4Kb per block, this is about 8gb of data. With
-    yet another layer, you get a total of 1 billion blocks addressable
-    which represents total of 4Tb of data.
+* Block Type (`TDIR`, Type: `char[4]`)
 
-    _Note: our pointers are 64 bits so we are limited in size to 2^64.
-    (18,446,744,073,709,551,616 bytes, 18 exabyte in one table, however
-    your File System probably has a lower limit.) This is one table file
-    on one disk. If you have many nodes you can have much more data
-    total._
+    The magic word.
+
+* Block Level (`uint8_t`)
+
+    The level of this `TDIR`. If 0, then each pointer represents one block
+    of data. If 1, then we have two levels, one more `TDIR` level and then
+    the `DATA`. That means at level 1, we support the number of pointers
+    in one `TDIR` square. Etc.
+
+* Pointers
+
+    This is an array of pointers to `TDIR` or `DATA` tables.
+
+    Because of the way the level works, when level is zero, the pointers
+    point to a `DATA` block. When the level is larger than zero, the
+    pointers point to a `TDIR`.
 
 
-### Block Allocation Map (AMAP)
+### Top Indirect Data Block (`TIND`, for easy compaction)
 
-IDEA: We could also have one byte per allocated page which allows us to
-include data in the AMAP about the page such as its type on 4 bits and
-possibly 4 bits as flags representing a form of status. Now in most cases
-we do not need to check the type of a block because a pointer sending us
-there is enough to determine that. Yet, the indexes have 3 different
-types and we need to know what that is.
+When we have more rows in our database than one `INDR` can handle, we need
+yet another indirection to allow us to find the correct `INDR`. With
+time we may need even more levels of indirection. A `TIND` has to have a
+level so we know how many indirect pointers each entry represents.
 
-The blocks currently allocated are defined in block allocation maps.
-If many `DELETE` occur, some blocks may become free again and thus
-appear back in the table. A block which is full has its bit set to 1.
+Say one `INDR` supports 500 blocks. A `TIND` at level 0 supports 500 x 500
+= 250,000 rows. A `TIND` at level 1 supports one extra level so 500 ^ 3 =
+125,000,000 rows and so on.
 
-This block includes a small structure at the start with:
+* Block Type (`TIND`, Type: `char[4]`)
 
-* Block Type (AMAP, `char[4]`)
+    The magic word.
 
-    The magic for this block.
+* Block Level (`uint8_t`)
 
-* Previous Block of Allocation Map (`uint64_t`)
+    The level of this `TIND`. If 0, then each pointer represents one `INDR`
+    table. If 1, then we have two levels, one more `TIND` level and then
+    the `INDR`. That means at level 1, we support the number of pointers
+    in one `INDR` square. Etc.
 
-    These blocks are linked between each others.
+* Pointers
 
-* Next Block of Allocation Map (`uint64_t`)
+    This is an array of pointers to `TIND` or `INDR` tables.
 
-    These blocks are linked between each others.
+    Because of the way the level works, when level is zero, the pointers
+    point to an `INDR` block. When the level is larger than zero, the
+    pointers point to a `TIND`.
 
-* Next Block with Free Entries (`uint64_t`)
 
-    In case a map is completely taken, we can skip it. This pointer allows
-    us to directly go to a map with free data.
+### Indirect Data Rows (`INDR`, for easy compaction)
 
-* Free Space (`uint64_t`)
+The Data Rows are likely going to be a mess over time. One way to fix that
+problem is to compact them. This is done by rewriting the rows within each
+data block to avoid any gaps between rows. Gaps happen because we delete
+or at least overwrite a row entry. As a result the data includes gaps.
 
-    This represents the largest buffer we can allocate in this one block.
+Pointers and compaction are not compatible. To fix this problem we need
+to add one indirection. This is done by assigning each row an identifier.
+That identifier is used everywhere we want to reference that one row.
+Then we make use of another set of blocks to convert the row identifier
+in a pointer to the data. That way the compaction process can very easily
+happen.
 
-* Allocation Map
+This is why we offer a "no-compaction" feature for tables because that
+way we can complete eliminate that extra indirection. However, when a row
+gets updated and as a result moves in the database, the old data location
+must include a pointer to the new location. Anything pointing to the old
+location ends up having to handle one extra redirection.
 
-    The rest of the space is the allocation map. Each Block Allocation Map
-    has this many bits that represent one block that can be allocated.
-    When the bit is 0, there is still enough free space to consider checking
-    out that block. When the bit is 1, the block is considered to be full.
+The block is pretty simple:
+
+* Block Type (`INDR`, Type: `char[4]`)
+
+    The magic defining this block's content.
+
+* Block Size (Needed?)
+
+    The number of pointers.
+
+* Pointers (Type: `uint64_t`)
+
+    An array of pointers to the data.
+
+When the first `INDR` table is full, we need to create a tree of `INDR` where
+to top table points to additional `INDR`. So such an indirection may add
+multiple levels (i.e. required that many more blocks to be loaded to be
+able to access the data).
+
+#### Cassandra's Solution
+
+In Cassandra, the sstables are the data tables which are separate from the
+indexes. The sstables have a similar problem, but Cassandra saves additional
+meta data for each row allowing for the ability of only needing to read the
+sstable to extract all the data.
+
+Whenever a row is "deleted" (keep in mind that a delete happens when the user
+use INSERT or UPDATE or DELETE, because a new INSERT replaces the existing
+row by writing a new copy at the end of the table) the first byte becomes 'D'.
+This allows us to skip the row at once. It's called a tombstone. What happens
+when compacting a table is that tombstones are ignored on read, but
+overwritten on write. So the process goes something like this:
+
+    WHILE !EOF
+        pos_before_last_read = TELL
+        row = READ
+        IF row.deleted THEN
+            IF write_pos == -1 THEN
+                write_pos = pos_before_last_read
+            END IF
+        ELSE
+            IF write_pos != -1 THEN
+                SEEK write_pos
+                WRITE row
+                write_pos += row.size
+            END IF
+        END IF
+    END WHILE
+
+I'm not too sure how the handle the changes in the primary index, but I
+suspect that it works as in my Other Solution below. In other words, any
+secondary index includes the key of the row you found and then that key
+is used to find the data. In other words, the only place where we have
+a pointer to the data is the primary index and that's where a row that
+gets moved in the sstable has its pointer updated.
+
+#### Other Solution
+
+Note that there is one other solution, but it is much slower on secondary
+indexes.
+
+The idea is to have a pointer in the primary index only. Everywhere else
+you only include the key. This assumes that the key is a murmur key.
+
+Whenever you find an entry in a pointer, you find the key, not a direct
+pointer to the data.
+
+Similarly, the data itself includes the key so we can also find the
+primary index from there. This is useful when compacting since we are
+not searching the data, instead we directly access the row.
+
+So whenever a row changes and that change requires the row to be moved,
+the only location where the pointer to the data has to be updated is the
+primary index and we already have that in memory on a user UPDATE.
+
+This solution is possibly much slower when you handle a secondary index
+since we have to search the secondary index first, then the primary
+index. With an `INDR` block, we instead of "one" small impact on each
+access.
 
 
 ### Top Index Block (`TIDX`)
@@ -629,7 +869,7 @@ A Top index block represents a B+tree index.
 
 _Note: for the Key Index, the first B+tree level is actually a direct
 map using the first N bits of the Murmur code. So that way we can
-very quickly go to the second second level (avoid one binary search).
+very quickly go to the second level (avoid one binary search).
 This is likely to be parsed and limited since it's already cut down
 by partitioning those keys._
 
@@ -688,6 +928,7 @@ and see whether the level we're at could be removed (although if the
 level before that is nearly full, it may not be useful to waste the
 time to remove that extra level just yet).
 
+
 ### Secondary Index Block (`SIDX`)
 
 **WARNING:** Secondary Indexes are probably required in separate files
@@ -705,11 +946,14 @@ this table.
 
 * Header (`SIDX`, Type: `char[4]`)
 
+    The block magic.
+
 * Name (Type: `uint32_t`)
 
     This secondary index identifier. As we parse the XML data, we
     assign an identifier to each secondary index. This is that
-    identifier referencing the second index in the Table Schema.
+    identifier referencing the second index definition found in the
+    Table Schema.
 
 * Number of Rows (`uint64_t`)
 
@@ -723,7 +967,8 @@ this table.
 
     Pointer to the first B+tree index block with space available.
 
-These fields are repeated for each secondary index.
+Fields Name to First Secondary Index Block are repeated for each secondary
+index.
 
 Note: to support our new "indexes" table, we would instead need a
 special case where the `"start_key"` is used so we can have a
@@ -735,8 +980,8 @@ indexes, having the total on each separate partition is enough
 for us to get a proper total number of rows. (i.e. for one
 specific index, one partition would be on 3 computers [where the
 replication factor is 3], any other partition for that index
-would **never** share those 3 computers.) So if you have 9
-computers you could get:
+would **never** share data found on those 3 computers.) So if you
+have 9 computers you could get:
 
 - computer 1, 2, 3 -- partition I
 - computer 4, 5, 6 -- partition II
@@ -749,7 +994,8 @@ Note that each index shuffles the computers so when we have 7 or 8
 computers, computer 7 and 8 will still get used by some indexes
 which will not use some of the other computers (maybe 1 and 2).
 
-We want to at least have one partition and create others only if possible.
+We need to have at least have one partition and create others only if
+possible.
 
 
 ### Entry Index Block (`EIDX`)
@@ -791,13 +1037,73 @@ one row at a time...
     Again, we either stop once we found the first match or when we
     reached `LIMIT` rows.
 
-* Index
+* Index (Type: Complex, see below)
 
     This is the actual index which gives us a (more) complete key so we
     can be sure to read the correct data. Because of that, we may have an
     index of variable size. (TBD)
 
-    The index includes the key and a pointer to the actual data.
+    To the minimum, one index entry includes the key and a pointer to the
+    actual data.
+
+    - Flags/Size (`uint32_t`, 8 bits for the flags)
+      - Flag: Key is Complete (0x80); which means we do not have to compare
+        again once we access the data
+      - Flag: Index has Identifier (0x40)
+      - Size defines the size of the entire Index and thus the Key Data
+    - Pointer to `DATA` or `INDP` (Type: `uint64_t`)
+    - Index Identifier (optional, see flags, Type: `uint64_t`)
+    - Key Data
+
+    **WARNING:** A Secondary Index may need support for multiple pointers.
+    That is, one Index Key, to multiple Data Blocks. For example,
+    in the Journal table, if we were to only index by Priority, then we
+    would get a large number of Data Block that match the exact same
+    priority. Without any other data than the key to sort a list of items,
+    we do not have a choice. Although we could make the index fail in case
+    there are too many entries under one key, we probably want to just use
+    a block of pointers to extend this index when it goes over a certain number.
+
+
+### Index Pointers Block (`IDXP`)
+
+The Index Pointer block is an extension for secondary indexes that match
+many entries. One such block is used as an offload of the Index field of
+a Secondary Index.
+
+This block starts with a Block Type like other blocks:
+
+* Block Type (`IDXP`, Type `char[4]`)
+
+    The block is an Index Pointer Block.
+
+Since it is very likely that such blocks would just have one or two offloaded
+pointers for a given index, we manage vectors with these items:
+
+* Index Identifier (`uint64_t`)
+
+    A number that clearly defines which index entry this data is for.
+
+* Next Index Pointers Block (`uint64_t`)
+
+    A pointer to another Index Pointers Block in case this one was not enough
+    to manage all the pointers for this index.
+
+    Note that before using this feature the system should allocate a new
+    `INDP` and fill that block up with just this one Index offloaded pointers.
+    (i.e. avoid one block access if we can instead have the entire list
+    in a single block).
+
+* Pointer Size (`uint32_t`)
+
+    The number of pointers for this Specific Index Identifier.
+
+* Array of Pointers (`uint64_t[<Pointer Size>]`)
+
+    The actual offloaded pointers.
+
+This way the system can manage multiple arrays in the same block.
+
 
 ### Data Block (`DATA`)
 
@@ -913,159 +1219,7 @@ and yes, we'll need to stream the data from disk, but overall that's
 still a lot faster than losing a ton of data. A computer with 1Tb or
 similar amount of RAM would not suffer as much from such a large amount
 of memory being used, but in most cases clusters of databases like
-Cassandra use much smaller computers (i.e. between 16Gb and 64Gb).
-
-
-### Free Block (`FREE`)
-
-Whenever a block is not used at all for what it was allocated for, it
-can be marked as Free. This means it can be reused as any kind of block
-and thus appears in the AMAP.
-
-If the table is assigned the "Secure" bit, such blocks get cleared.
-
-
-### Schema Block (`SCHM`)
-
-A schema block allows us to have the definition of the schema which is
-the global settings of the table and the list of columns.
-
-The block is timestamped because rows created at a given time will
-follow the latest schema. This gives us an easy way to know which schema
-a row used when it was saved. This allows us to incrementally fix the
-rows to a newer schema.
-
-
-
-### Top Compacting Data Block (`TIND`)
-
-When we have more rows in our database than one `INDR` can handle, we need
-yet another indirection to allow use to find the correct `INDR`. With
-time we may need even more levels of indirection. A `TIND` has to have a
-level so we know how many indirect pointers each entry represents.
-
-Say one `INDR` supports 500 blocks. A `TIND` at level 0 supports 500 x 500
-= 250,000 rows. A `TIND` at level 1 supports one extra level so 500 ^ 3 =
-125,000,000 rows and so on.
-
-* Block Type (`TIND`, Type: `char[4]`)
-
-    The magic word.
-
-* Block Level (`uint8_t`)
-
-    The level of this `TIND`. If 0, then each pointer represents one `INDR`
-    table. If 1, then we have two levels, one more `TIND` level and then
-    the `INDR`. That means at level 1, we support the number of pointers
-    in one `INDR` square. Etc.
-
-* Pointers
-
-    This is an array of pointers to `INDR` or `TINDR` tables.
-
-    Because of the way the level works, when level is zero, the pointers
-    point to an `INDR`. When the level is larger than zero, the pointers
-    point to a `TIND`.
-
-### Compacting Data Rows (`INDR`)
-
-The Data Rows are likely going to be a mess over time. One way to fix that
-problem is to compact them. This is done by rewriting the rows within each
-data block to avoid any gaps between rows. Gaps happen because we delete
-or at least overwrite a row entry. As a result the data includes gaps.
-
-Pointers and compaction are not compatible. To fix this problem we need
-to add one indirection. This is done by assigning each row an identifier.
-That identifier is used everywhere we want to reference that one row.
-Then we make use of another set of blocks to convert the row identifier
-in a pointer to the data. That way the compaction process can very easily
-happen.
-
-This is why we offer a "no-compaction" feature for tables because that
-way we can complete eliminate that extra indirection. However, when a row
-gets updated and as a result moves in the database, the old data location
-must include a pointer to the new location. Anything pointing to the old
-location ends up having to handle one extra redirection.
-
-The block is pretty simple:
-
-* Block Type (`INDR`, Type: `char[4]`)
-
-    The magic defining this block's content.
-
-* Block Size (Needed?)
-
-    The number of pointers.
-
-* Pointers (Type: `uint64_t`)
-
-    An array of pointers to the data.
-
-When the first `INDR` table is full, we need to create a tree of `INDR` where
-to top table points to additional `INDR`. So such an indirection may add
-multiple levels (i.e. required that many more blocks to be loaded to be
-able to access the data).
-
-#### Cassandra Solution
-
-In Cassandra, the sstables are the data tables which are separate from the
-indexes. The sstables have a similar problem, but Cassandra saves additional
-meta data for each row allowing for the ability of only needing to read the
-sstable to extract all the data.
-
-Whenever a row is "deleted" (keep in mind that a delete happens when the user
-use INSERT or UPDATE or DELETE, because a new INSERT replaces the existing
-row by writing a new copy at the end of the table) the first byte becomes 'D'.
-This allows us to skip the row at once. It's called a tombstone. What happens
-when compacting a table is that tombstones are ignored on read, but
-overwritten on write. So the process goes something like this:
-
-    WHILE !EOF
-        pos_before_last_read = TELL
-        row = READ
-        IF row.deleted THEN
-            IF write_pos == -1 THEN
-                write_pos = pos_before_last_read
-            END IF
-        ELSE
-            IF write_pos != -1 THEN
-                SEEK write_pos
-                WRITE row
-                write_pos += row.size
-            END IF
-        END IF
-    END WHILE
-
-I'm not too sure how the handle the changes in the primary index, but I
-suspect that it works as in my Other Solution below. In other words, any
-secondary index includes the key of the row you found and then that key
-is used to find the data. In other words, the only place where we have
-a pointer to the data is the primary index and that's where a row that
-gets moved in the sstable has its pointer updated.
-
-#### Other Solution
-
-Note that there is one other solution, but it is much slower on secondary
-indexes.
-
-The idea is to have a pointer in the primary index only. Everywhere else
-you only include the key. This assumes that the key is a murmur key.
-
-Whenever you find an entry in a pointer, you find the key, not a direct
-pointer to the data.
-
-Similarly, the data itself includes the key so we can also find the
-primary index from there. This is useful when compacting since we are
-not searching the data, instead we directly access the row.
-
-So whenever a row changes and that change requires the row to be moved,
-the only location where the pointer to the data has to be updated is the
-primary index and we already have that in memory on a user UPDATE.
-
-This solution is possibly much slower when you handle a secondary index
-since we have to search the secondary index first, then the primary
-index. With an `INDR` block, we instead of "one" small impact on each
-access.
+Cassandra use much smaller computers (i.e. between 16Gb and 64Gb)._
 
 
 ### Shrinking Database
@@ -1090,6 +1244,42 @@ instruction. Also, we may be using multiple threads so we need to use
 locks to make sure that we do not walk on each others toes. However,
 there is no need to lock between computers since our files are specific
 to one computer (we assume people are not going to use NTFS!?)
+
+## Direct Access
+
+In order to make it fast we use `mmap()`. This assumes our tables are fine,
+of course, but well... you have to put your trust at some level.
+
+### Direct Access & Alignment
+
+One concern with using a `reinterpret_cast<name *>(ptr)` is the alignment
+of the data. If we need to access a 64 bit offset, then these 64 bits
+have to be aligned.
+
+One way to test this is to use and not use the `pack` keyword and compare
+the size of the structures in both cases. If any packing happens, then the
+packed structures will be smaller.
+
+    struct test
+    {
+        uint8_t         f_mode;
+        uint16_t        f_size;
+    };
+
+In this example, the comipler will insert one byte after `f_mode`. In packed
+mode, though, the structure will come out as being 3 bytes.
+
+Another method is to use our own functions which are forced compiled to
+an instruction which we know will work unaligned. AMD64, ARM, MIPS have
+native CPU instructions that work with unaligned pointers and load 16, 32,
+or 64 bits of data. With a small function such as:
+
+    uin32_t load(void * ptr)
+    {
+        TODO:
+        mov [ptr], eax      // correct once we have the code working (i.e. extend to 64 bits, the _asm(), etc.
+        return;
+    }
 
 ## Mapping vs Blocks
 
@@ -1170,6 +1360,90 @@ again until the whole lot works in one go. This may seems slow, but it
 will let reads happen properly. Remember that at first the data is written
 to a Journal so it won't matter too much if the write to the full database
 does not happen immediately. We still have the data accessible as expected.
+
+
+
+### Allocation Map Array (`MAPA`)
+
+DO NOT IMPLEMENT: I think that a list of empty blocks is going to be
+much more efficient and for free space, we want a list of blocks with
+N bytes still available, since a row is at least 16 bytes, we can put
+all such entries in a single block making it easy to handle.
+
+In order to quickly access any `AMAP`, we want to have an array of pointers
+to all the `AMAP`. This is similar to the Top Index. Here we have an array
+of pointers to AMAP blocks in order. So we can use very simple math to
+go accross the blocks and download the correct data.
+
+The block includes the following
+
+* Block Type (MAPA, Type: `char[4]`)
+
+    The magic for this block.
+
+* Level (Type: `uint8_t`)
+
+    With the level we can calculate how many AMAP blocks (level 0) or
+    how many MAPA blocks (level 1 or more) this block points to.
+
+    Say one AMAP represents exactly 4000 blocks, that is the number of
+    entries at Level 0. Say the MAPA represents 500 block pointers,
+    then a full MAPA level 0 represents 500 x 4000 = 2,000,000 blocks
+    in your file. At 4Kb per block, this is about 8gb of data. With
+    yet another layer, you get a total of 1 billion blocks addressable
+    which represents total of 4Tb of data.
+
+    _Note: our pointers are 64 bits so we are limited in size to 2^64.
+    (18,446,744,073,709,551,616 bytes, 18 exabyte in one table, however
+    your File System probably has a lower limit.) This is one table file
+    on one disk. If you have many nodes you can have much more data
+    total._
+
+
+### Block Allocation Map (AMAP)
+
+DO NOT IMPLEMENT: See MAPA, I do not think we need those two.
+
+IDEA: We could also have one byte per allocated page which allows us to
+include data in the AMAP about the page such as its type on 4 bits and
+possibly 4 bits as flags representing a form of status. Now in most cases
+we do not need to check the type of a block because a pointer sending us
+there is enough to determine that. Yet, the indexes have 3 different
+types and we need to know what that is.
+
+The blocks currently allocated are defined in block allocation maps.
+If many `DELETE` occur, some blocks may become free again and thus
+appear back in the table. A block which is full has its bit set to 1.
+
+This block includes a small structure at the start with:
+
+* Block Type (AMAP, `char[4]`)
+
+    The magic for this block.
+
+* Previous Block of Allocation Map (`uint64_t`)
+
+    These blocks are linked between each others.
+
+* Next Block of Allocation Map (`uint64_t`)
+
+    These blocks are linked between each others.
+
+* Next Block with Free Entries (`uint64_t`)
+
+    In case a map is completely taken, we can skip it. This pointer allows
+    us to directly go to a map with free data.
+
+* Free Space (`uint64_t`)
+
+    This represents the largest buffer we can allocate in this one block.
+
+* Allocation Map
+
+    The rest of the space is the allocation map. Each Block Allocation Map
+    has this many bits that represent one block that can be allocated.
+    When the bit is 0, there is still enough free space to consider checking
+    out that block. When the bit is 1, the block is considered to be full.
 
 
 
