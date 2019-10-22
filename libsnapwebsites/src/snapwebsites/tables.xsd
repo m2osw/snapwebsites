@@ -127,6 +127,12 @@
       The <type> tag defines a field within a complex type. A type with
       a variable size which is not specified, such as a plain string, can only
       be found last in the list of types.
+
+      The <table-extension> is to allow for extensions of an existing
+      table. This will not create a table on its own. It is not found
+      along a <table> tag (i.e. the XML either has <table> or
+      <table-extension>). This is used so a project or plugin can extend
+      another project or plugin table.
       ]]>
     </xs:documentation>
   </xs:annotation>
@@ -252,7 +258,7 @@
   <xs:simpleType name="required">
     <xs:annotation>
       <xs:documentation>
-        Columns marked with the "required" flag must be defined or the column
+        Columns marked with the "required" flag must be defined or the row
         cannot be saved. A column with a default cannot be required.
       </xs:documentation>
     </xs:annotation>
