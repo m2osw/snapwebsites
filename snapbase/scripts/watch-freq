@@ -1,0 +1,2 @@
+#!/bin/sh
+watch -n2 "grep '^[c]pu MHz' /proc/cpuinfo | column"

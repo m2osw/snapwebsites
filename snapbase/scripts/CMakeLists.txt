@@ -47,8 +47,8 @@ install(
 ##
 install(
     PROGRAMS
-        snapbootinit
         swap-usage
+        watch-freq
 
     DESTINATION
         bin

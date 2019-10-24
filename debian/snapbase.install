@@ -1,5 +1,6 @@
 debian/tmp/usr/sbin/snapbootinit                         usr/sbin/
 debian/tmp/usr/bin/swap-usage                            usr/bin/
+debian/tmp/usr/bin/watch-freq                            usr/bin/
 debian/tmp/usr/lib/snapwebsites/scripts/snapapacheinit   usr/lib/snapwebsites/scripts/
 debian/tmp/usr/share/snapwebsites/logger/log.properties  usr/share/snapwebsites/logger/
 snapbase/conf/log.properties                             etc/snapwebsites/logger/
