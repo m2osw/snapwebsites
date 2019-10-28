@@ -46,6 +46,7 @@ namespace snapdatabase
 
 enum class consistency_t : int8_t
 {
+    CONSISTENCY_DEFAULT = -2,       // use current default, on startup it is CONSISTENCY_QUORUM
     CONSISTENCY_INVALID = -1,
 
     CONSISTENCY_ZERO = 0,           // it works when only the client has a copy
@@ -58,7 +59,6 @@ enum class consistency_t : int8_t
     CONSISTENCY_EACH_QUORUM = 7,    // QUORUM in each data center
     CONSISTENCY_ANY = 8,            // any one database server available (may not be in the correct partition)
     CONSISTENCY_ALL = 9,            // all the servers in the partition have a copy
-    CONSISTENCY_DEFAULT = 10        // use current default, on startup it is QUORUM
 };
 
 
