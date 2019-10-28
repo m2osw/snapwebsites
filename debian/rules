@@ -28,6 +28,11 @@ override_dh_auto_configure:
 		-DCMAKE_BUILD_TYPE=Release    \
 		-DCMAKE_PREFIX_PATH:PATH=/usr
 
+# Files under /etc need special installation functions
+#
+override_dh_auto_install:
+	install -p -m 64 profile.d/* $(DESTDIR)/etc/profile.d
+
 # Remove the 'rwx' flags from the password directory so only root has access
 #
 # Add the 's' flag to the snappassword to make sure we can run as root with
