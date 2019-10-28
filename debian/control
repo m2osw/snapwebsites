@@ -635,8 +635,8 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
 Package: snapmanagerdaemon
 Section: admin
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator, snapdbproxy
-Suggests: snapfirewall, snapmanagercgi
+Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator, snapdbproxy,
+ snapmanagercgi
 Description: Apply administrative commands on any computer in a cluster.
  Snap! C++ runs your CMS using binary code written in C and C++.
  It works using many other software freely available under Linux.
@@ -651,7 +651,7 @@ Package: snapmanagergui
 Section: admin
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Suggests: snapserver, cassandra
+Suggests: snapserver
 Replaces: snapmanager
 Breaks: snapmanager
 Description: Fast Websites: powerful CMS for Apache written in C++.
@@ -674,8 +674,8 @@ Architecture: any
 # bundle for more details; we suggest it in case a programmer installs the
 # package on his machine without using bundles...
 Depends: ${shlibs:Depends}, ${misc:Depends}, html2text,
-    libqrencode3 (>= 3.4), snapbase, libqt5sql5, libqt5sql5-mysql
-Recommends: snapserver, snapwatchdog
+ libqrencode3 (>= 3.4), snapbase, libqt5sql5, libqt5sql5-mysql
+Recommends: snapserver
 Suggests: clamav
 Description: Fast Websites: powerful CMS for Apache written in C++.
  Snap! C++ runs your CMS using binary code written in C and C++.
