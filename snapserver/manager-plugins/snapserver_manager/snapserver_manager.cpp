@@ -301,8 +301,8 @@ bool snapserver_manager::display_value(QDomElement parent, snap_manager::status_
                          " If you move the Snap! Servers on a separate computer (not on the computer"
                          " with Apache2 and snap.cgi--i.e. the front end bundle,) then you will need to"
                          " change the IP address to your computer Private Network IP Address (if you use"
-                         " OpenVPN, it is likely the tun0 IP address. If you do not use OpenVPN, it is"
-                         " likely something like eth1 or enp0s8."
+                         " OpenVPN, it is likely the tun0 IP address. If you do not use OpenVPN, it is the"
+                         " address of something like eth1 or enp0s8.)"
                         ));
         f.add_widget(field);
 
