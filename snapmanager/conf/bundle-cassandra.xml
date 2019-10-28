@@ -18,24 +18,20 @@
     <field name="seeds" type="input">
       <label>Seeds</label>
       <description>Indicate Cassandra seed nodes IP addresses separated by
-        commas. If you are planning to test with a single node, keep this empty.</description>
+        commas. Enter this node IP address if it is a seed. If you are
+        planning to have a single node, enter this node IP address, it will
+        be <em>the seed</em>.</description>
     </field>
     <field name="listen_address" type="input">
       <label>Listen Address</label>
       <description>Indicate the private IP address of this node. Try ifconfig
-        (or search in the "Self" tab for if:&lt;name&gt;) and take the address
+        (or search in the "Self" tab for "if:&lt;name&gt;") and take the address
         for tun0, eth0, eth1, etc. Make sure to use the secured IP address if
         you are using OpenVPN. Private networks generally do not require the
         use of SSH or VPN.</description>
     </field>
   </fields>
   <preinst>
-    # Java on Launchpad from Oracle
-    # (It is assumed that we will get Oracle installed and not any other
-    # Java environment)
-    apt-add-repository -y ppa:webupd8team/java
-    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
-
     # Cassandra from Apache2
     echo "# Info from http://docs.datastax.com/en/cassandra/3.x/cassandra/install/installDeb.html" > /etc/apt/sources.list.d/cassandra.list
     echo "#deb http://debian.datastax.com/datastax-ddc 3.5 main" >> /etc/apt/sources.list.d/cassandra.list
@@ -52,7 +48,7 @@
     # at least once
     apt-get update
   </preinst>
-  <packages>oracle-java8-installer, cassandra</packages>
+  <packages>openjdk-8-jre, cassandra</packages>
   <postinst>
     # cassandra auto-starts with the "wrong" parameters (arrrrhhh)
     #
