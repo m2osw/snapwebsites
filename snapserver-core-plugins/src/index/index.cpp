@@ -2746,7 +2746,7 @@ void index::reindex()
             reindex_cache.open(g_reindex_type_cache_filename, std::ios_base::out | std::ios_base::trunc);
             if(reindex_cache.is_open())
             {
-                for(p : paths)
+                for(auto p : paths)
                 {
                     reindex_cache << p << std::endl;
                 }

@@ -78,7 +78,7 @@ int main(int argc, char * argv[])
         //
         return 0;
     }
-    catch( advgetopt::getopt_exception_exit const & except )
+    catch( advgetopt::getopt_exit const & except )
     {
         return except.code();
     }

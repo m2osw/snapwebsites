@@ -259,7 +259,7 @@ int main(int argc, char * argv[])
             std::cout << "find_process: failure. Could not find \"" << process_name << "\"." << std::endl;
         }
     }
-    catch( advgetopt::getopt_exception_exit const & except )
+    catch( advgetopt::getopt_exit const & except )
     {
         return except.code();
     }

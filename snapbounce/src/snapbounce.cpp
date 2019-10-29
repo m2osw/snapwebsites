@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
         bounce->read_stdin();
         bounce->store_email();
     }
-    catch( advgetopt::getopt_exception_exit const & except )
+    catch( advgetopt::getopt_exit const & except )
     {
         return except.code();
     }

@@ -1512,7 +1512,7 @@ void snaplock::election_status()
                     "you cannot have any computer turned OFF when you"
                     " have three or less computers total in your cluster."
                     " The elections cannot be completed in these"
-                    " circumstances.");
+                    " conditions.");
             return;
         }
     }

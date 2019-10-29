@@ -1,7 +1,14 @@
 snapwebsites (1.8.4.0~xenial) xenial; urgency=high
 
-  * Added the `watch-freq` script (using on newer processors).
+  * Added the `watch-freq` script (useful on newer processors).
   * Removed the `snapbootinit` script from `/usr/bin`.
+  * SNAP-714: Fixed the Cassandra bundle to use OpenSDK v8.
+  * Made snapmanagercgi a dependency of snapmanagerdaemon.
+  * SNAP-713: Add long history (see /etc/profile.d/snap-profile.sh).
+  * SNAP-706: Command prompt warns about entering /etc/snapwebsites.
+  * Updates to match the new advgetopt exceptions.
+  * Fixed a for() loop with a missing "auto".
+  * Various corrections (spelling, etc.).
 
  -- Alexis Wilke <alexis@m2osw.com>  Thu, 24 Oct 2019 09:14:46 -0700
 

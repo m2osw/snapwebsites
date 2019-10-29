@@ -127,7 +127,7 @@ int main(int argc, char * argv[])
             return cgi->error("503 Service Unavailable", nullptr, "The Snap! C++ CGI script caught an unknown exception.");
         }
     }
-    catch( advgetopt::getopt_exception_exit const & except )
+    catch( advgetopt::getopt_exit const & except )
     {
         return except.code();
     }
