@@ -16,13 +16,23 @@
 // You should have received a copy of the GNU General Public License along
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#pragma once
 
 
 /** \file
- * \brief Base block implementation.
+ * \brief This block is used to define secondary indexes.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * Our database model allows for any number of indexes to be defined on
+ * each table. This is quite practical because it is always going to be
+ * a lot faster to have the low level system to handle the sorting of
+ * your data.
+ *
+ * Secondary indexes are defined in the schema, but they require their
+ * own blocks to actually generate the indexes. The entries make use
+ * of your data as the index key. The key generation can make use of
+ * C-like computations (i.e. just like an SQL `WHERE` can make use
+ * of expressions to filter your data, although on our end we use this
+ * feature to also sort the data).
  */
 
 // self
@@ -30,9 +40,6 @@
 #include    "snapdatabase/block.h"
 
 
-// last include
-//
-#include    <snapdev/poison.h>
 
 
 
@@ -41,44 +48,18 @@ namespace snapdatabase
 
 
 
-block::pointer_t block::create_block(dbfile::pointer_t f, file_addr_t offset)
+class block_secondary_index
+    : public block
 {
-    return block::pointer_t(new block(f, offset));
-}
+public:
+    typedef std::shared_ptr<block_secondary_index>       pointer_t;
+
+                                block_secondary_index(dbfile::pointer_t f, file_addr_t offset);
 
 
-block::pointer_t block::create_block(dbfile::pointer_t f, dbtype_t type)
-{
-    pointer_t header(create_block(f, 0));
-
-    file_addr_t const offset(f->get_new_block(type));
-    return pointer_t(new block(f, offset));
-}
-
-
-block::block(dbfile::pointer_t f, file_addr_t offset)
-    : f_file(f)
-    , f_offset(offset)
-{
-}
-
-
-block::dbtype_t block::get_dbtype() const
-{
-    return f_type;
-}
-
-
-size_t block::size()
-{
-    return f_size;
-}
-
-
-virtual_buffer::pointer_t block::data()
-{
-    return f_data;
-}
+private:
+    structure                   f_structure = structure();
+};
 
 
 

@@ -31,7 +31,8 @@
       There is the basic format:
 
           <context dependencies="...">
-            <table name="..." model="..." row-key="..." drop="...">
+            <table name="..." model="..." row-key="..." drop="..." temporary="..." sparse="...">
+              <block-size>...</block-size>
               <description>...</description>
               <schema kind="...">
                 <column name="..." type="..." limited="..." encrypt="..." required="...">
@@ -105,9 +106,31 @@
       The <row-key> attribute defines the list of columns used to build
       the key.
 
-      The <drop> attribute is used to mark a table that needs to be dropped.
-      Whenever this attribute is defined, the named table gets deleted whenever
-      it still exists.
+      The <table drop="drop"> attribute is used to mark a table that needs to
+      be dropped. Whenever this attribute is defined, the named table gets
+      deleted if it still exists (note that just deleting a table definition
+      is not enough since the system will ignore directories it doesn't know
+      anything about).
+
+      The <table temporary="temporary"> attribute is not yet implemented.
+      We may offer support for temporary tables at some point. I'm just not
+      so sure it makes sense at this point but wanted to reserve a bit for
+      the potential feature.
+
+      The <table sparse="sparse"> attribute is used to ask for FREE blocks
+      to be allocated sparsely if possible (i.e. it works only if the size
+      of one block is larger than a system block). Keep in mind that a
+      sparse allocates disk space at the time it gets used. So the size
+      of your database grows as data is added and it may cause more I/O
+      issues if a write fails because your drive is full.
+
+      The <block-size> tag defines the size of one block in your file.
+      By default this is set to the system block size (in general, this
+      is 4Kb on Intel systems). The size is expected to be a multiple of
+      the system page size. If not, it will be increased to the next
+      multiple. Note that by increasing this size you gain the ability
+      to use sparse files. A size smaller than the system block size is
+      ignored and the system block size is used.
 
       The <description> tag is saved as the table comment. It can be any
       kind of sensible description of what the table is used for. This tag
@@ -312,6 +335,8 @@
     </xs:documentation>
   </xs:annotation>
 
+  <xs:element name="temporary" type="empty"/>
+  <xs:element name="block-size" type="xs:integer"/>
   <xs:element name="description" type="html"/>
   <xs:element name="default" type="html"/>
   <xs:element name="min-value" type="xs:integer"/>
@@ -359,6 +384,8 @@
   <xs:element name="table">
     <xs:complexType>
       <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="temporary"/>
+        <xs:element ref="block-size"/>
         <xs:element ref="description"/>
         <xs:element ref="schema"/>
         <xs:element ref="secondary-index"/>

@@ -28,12 +28,7 @@
 
 // self
 //
-//#include    "snapdatabase/block.h"
-
-
-// last include
-//
-#include    <snapdev/poison.h>
+#include    "snapdatabase/dbfile.h"
 
 
 
@@ -41,47 +36,32 @@ namespace snapdatabase
 {
 
 
-typedef uint64_t        file_addr_t;
-
 
 class block
 {
 public:
     typedef std::shared_ptr<block>      pointer_t;
 
-#define BLOCK_NAME(s)       ((snapdatabase::block::type_t)((s[0]<<24)|(s[1]<<16)|(s[2]<<8)|(s[3]<<0)))
-
-    enum class type_t
-    {
-        BLOCK_TYPE_BLOB                 = BLOCK_NAME("BLOB"),
-        BLOCK_TYPE_DATA                 = BLOCK_NAME("DATA"),
-        BLOCK_TYPE_ENTRY_INDEX          = BLOCK_NAME("EIDX"),
-        BLOCK_TYPE_FREE_BLOCK           = BLOCK_NAME("FREE"),
-        BLOCK_TYPE_FREE_SPACE           = BLOCK_NAME("FSPC"),
-        BLOCK_TYPE_INDEX_POINTERS       = BLOCK_NAME("IDXP"),
-        BLOCK_TYPE_INDIRECT_INDEX       = BLOCK_NAME("INDR"),
-        BLOCK_TYPE_SECONDARY_INDEX      = BLOCK_NAME("SIDX"),
-        BLOCK_TYPE_SCHEMA               = BLOCK_NAME("SCHM"),
-        BLOCK_TYPE_SNAP_DATABASE_TABLE  = BLOCK_NAME("SDBT"),
-        BLOCK_TYPE_TOP_INDEX            = BLOCK_NAME("TIDX"),
-    };
-
-                                block(dbfile::pointer_t f);
                                 block(block const & rhs) = delete;
-
     block &                     operator = (block const & rhs) = delete;
 
-    type_t                      get_type() const;
+    static pointer_t            create_block(dbfile::pointer_t f, file_addr_t offset);
+    static pointer_t            create_block(dbfile::pointer_t f, dbtype_t type);
+
+    dbtype_t                    get_dbtype() const;
     size_t                      size() const;
     virtual_buffer::pointer_t   data();
 
-private:
-    dbfile::pointer_t           f_file = dbfile::pointer_t();
+protected:
+                                block(dbfile::pointer_t f, file_addr_t offset);
 
-    type_t                      f_type = BLOCK_TYPE_FREE_BLOCK;
-    //size_t                      f_size = 0;
-    //uint8_t *                   f_data = nullptr;
-    virtual_buffer::pointer_t   f_buffer = virtual_buffer::pointer_t();
+    dbfile::pointer_t           f_file = dbfile::pointer_t();
+    file_addr_t                 f_offset = file_addr_t();
+
+    dbtype_t                    f_dbtype = BLOCK_TYPE_FREE_BLOCK;
+    size_t                      f_size = 0;
+    uint8_t *                   f_data = nullptr;
+    //virtual_buffer::pointer_t   f_buffer = virtual_buffer::pointer_t();
 };
 
 

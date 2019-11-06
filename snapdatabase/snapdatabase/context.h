@@ -30,12 +30,12 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
+#include    "snapdatabase/table.h"
 
 
-// last include
+// advgetopt lib
 //
-#include    <snapdev/poison.h>
+#include    <advgetopt/getopt.h>
 
 
 
@@ -65,6 +65,7 @@ public:
 
     table::pointer_t                        get_table(std::string const & name);
     table::map_t                            list_tables();
+    std::string                             get_path();
 
 private:
     std::unique_ptr<detail::context_impl>   f_impl;

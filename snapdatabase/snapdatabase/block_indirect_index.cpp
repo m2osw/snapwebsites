@@ -27,7 +27,7 @@
 
 // self
 //
-#include    "snapdatabase/block_schema.h"
+#include    "snapdatabase/block_indirect_index.h"
 
 
 // last include
@@ -41,60 +41,25 @@ namespace snapdatabase
 
 
 
-// 'SCHM'
-struct_description_t * g_block_schema =
+namespace detail
+{
+}
+
+
+
+// 'INDR'
+struct_description_t * g_header_description =
 {
     define_description(
-          FieldName("magic")    // dbtype_t = SCHM
+          FieldName("magic")    // dbtype_t = INDR
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-    ),
-    define_description(
-          FieldName("size")
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-    ),
-    define_description(
-          FieldName("next_schema_block")
-        , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
     end_descriptions()
 };
 
 
 
-block_schema::block_schema(dbfile::pointer_t f, file_addr_t offset)
-    : block(f, offset)
-    , f_structure(g_block_schema, data(), offset)
-{
-}
 
-
-uint32_t block_schema::get_size()
-{
-    return static_cast<uint32_t>(f_structure.get_uinteger("size"));
-}
-
-
-void block_schema::set_size(uint32_t size)
-{
-    f_structure.set_uinteger("size", size);
-}
-
-
-file_addr_t block_schema::get_next_schema_block()
-{
-    return static_cast<file_addr_t>(f_structure.get_uinteger("next_schema_block"));
-}
-
-
-void block_schema::set_next_schema_block(file_addr_t offset)
-{
-    f_structure.set_uinteger("next_schema_block", offset);
-}
-
-
-virtual_block_t block_schema::get_schema()
-{
-}
 
 
 } // namespace snapdatabase

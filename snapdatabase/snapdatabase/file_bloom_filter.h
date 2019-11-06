@@ -16,23 +16,28 @@
 // You should have received a copy of the GNU General Public License along
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#pragma once
 
 
 /** \file
- * \brief Base block implementation.
+ * \brief This file is used to generate a Bloom Filter.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * The Bloom Filter is an external file because it would otherwise require
+ * many linked blocks and that would not be efficient at all. Also this
+ * will simplify the code used to grow the size over time for tables
+ * that require it.
+ *
+ * The class defines how the data is organized in the file. The first
+ * 1Kb are used to define the table and the rest is the actual
+ * Bloom Filter. In most case, we will lazily load the file using
+ * mmap() against the entire file.
+ *
+ * A Bloom Filter
  */
 
 // self
 //
 #include    "snapdatabase/block.h"
-
-
-// last include
-//
-#include    <snapdev/poison.h>
 
 
 
@@ -41,44 +46,18 @@ namespace snapdatabase
 
 
 
-block::pointer_t block::create_block(dbfile::pointer_t f, file_addr_t offset)
+class file_bloom_filter
+    : public block
 {
-    return block::pointer_t(new block(f, offset));
-}
+public:
+    typedef std::shared_ptr<file_bloom_filter>       pointer_t;
+
+                                file_bloom_filter(dbfile::pointer_t f, file_addr_t offset);
 
 
-block::pointer_t block::create_block(dbfile::pointer_t f, dbtype_t type)
-{
-    pointer_t header(create_block(f, 0));
-
-    file_addr_t const offset(f->get_new_block(type));
-    return pointer_t(new block(f, offset));
-}
-
-
-block::block(dbfile::pointer_t f, file_addr_t offset)
-    : f_file(f)
-    , f_offset(offset)
-{
-}
-
-
-block::dbtype_t block::get_dbtype() const
-{
-    return f_type;
-}
-
-
-size_t block::size()
-{
-    return f_size;
-}
-
-
-virtual_buffer::pointer_t block::data()
-{
-    return f_data;
-}
+private:
+    structure                   f_structure = structure();
+};
 
 
 

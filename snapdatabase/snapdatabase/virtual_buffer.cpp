@@ -29,7 +29,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
+#include    "snapdatabase/virtual_buffer.h"
 
 
 // last include
@@ -40,19 +40,6 @@
 
 namespace snapdatabase
 {
-
-
-
-namespace
-{
-
-
-
-
-
-
-}
-// no name namespace
 
 
 

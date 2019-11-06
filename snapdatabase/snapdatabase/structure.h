@@ -20,7 +20,7 @@
 
 
 /** \file
- * \brief Handle a dynamic block structure.
+ * \brief Handle a block structure.
  *
  * Each block contains a structure. The very first four bytes are always the
  * magic characters which define the type of the block. The remained of the
@@ -36,12 +36,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
-
-
-// last include
-//
-#include    <snapdev/poison.h>
+//#include    "snapdatabase/block.h"
 
 
 
@@ -49,9 +44,9 @@ namespace snapdatabase
 {
 
 
-//typedef std::vector<uint16_t>           row_key_t;
-//typedef uint16_t                        column_id_t;
-//typedef uint16_t                        column_type_t;
+
+constexpr   uint16_t                    STRUCTURE_VERSION_MAJOR = 0;
+constexpr   uint16_t                    STRUCTURE_VERSION_MINOR = 1;
 
 
 typedef uint64_t                        flags_t;
@@ -76,12 +71,29 @@ struct version_t
                         }
                     }
 
+                    version_t(uint32_t v)
+                        : f_major(v >> 16)
+                        , f_minor(v)
+                    {
+                    }
+
+    uint32_t        to_binary() const
+                    {
+                        return (static_cast<uint32_t>(f_major) << 16) + static_cast<uint32_t>(f_minor);
+                    }
+
+    void            from_binary(uint32_t v)
+                    {
+                        f_major = v >> 16;
+                        f_minor = v;
+                    }
+
     bool            is_null() const             { return f_major == 0 && f_minor == 0; }
 
-    uint8_t         get_major() const           { return f_major; }
-    void            set_major(uint8_t major)    { f_major = major; }
-    uint8_t         get_minor() const           { return f_major; }
-    void            set_minor(uint8_t minor)    { f_minor = minor; }
+    uint16_t        get_major() const           { return f_major; }
+    void            set_major(uint16_t major)   { f_major = major; }
+    uint16_t        get_minor() const           { return f_major; }
+    void            set_minor(uint16_t minor)   { f_minor = minor; }
 
     bool            operator == (version_t const & rhs)
                     {
@@ -114,8 +126,8 @@ struct version_t
                             || (f_major == rhs.f_major && f_minor >= rhs.f_minor);
                     }
 
-    uint8_t         f_major = 0;
-    uint8_t         f_minor = 0;
+    uint16_t        f_major = 0;
+    uint16_t        f_minor = 0;
 };
 
 
@@ -270,7 +282,11 @@ enum class struct_type_t : uint16_t
     STRUCT_TYPE_FLOAT32,
     STRUCT_TYPE_FLOAT64,
 
-    STRUCT_TYPE_VERSION,            // UINT8:UINT8 (Major:Minor)
+    STRUCT_TYPE_VERSION,            // UINT16:UINT16 (Major:Minor)
+
+    STRUCT_TYPE_TIME,               // UINT64 equivalent to time_t (seconds)
+    STRUCT_TYPE_MSTIME,             // UINT64 time in milliseconds
+    STRUCT_TYPE_USTIME,             // UINT64 time in microseconds
 
     STRUCT_TYPE_CSTRING,            // string is null terminated
     STRUCT_TYPE_P8STRING,           // UINT8 for size
@@ -291,6 +307,7 @@ enum class struct_type_t : uint16_t
     STRUCT_TYPE_BUFFER32,           // UINT32 for count
 
     STRUCT_TYPE_REFERENCE,          // UINT64 to another location in the file (offset 0 is start of file)
+    STRUCT_TYPE_OID,                // UINT64 similar to a REFERENCE, but points to the TIND/INDR blocks (sizeof(OID) == sizeof(REFERENCE) must be true)
 
     STRUCT_TYPE_RENAMED             // there is no data attached to this one, the next description is the new name
 };
@@ -551,7 +568,8 @@ struct field_t
     typedef std::shared_ptr<field_t>        pointer_t;
     typedef std::map<std::string, pointer_t> map_t;
 
-    static constexpr uint32_t               FIELD_FLAG_ALLOCATED = 0x0001;
+    static constexpr uint32_t               FIELD_FLAG_ALLOCATED        = 0x0001;
+    static constexpr uint32_t               FIELD_FLAG_VARIABLE_SIZE    = 0x0002;
 
                                             ~field_t();
 
@@ -579,6 +597,8 @@ public:
                                                   struct_description_t const * description
                                                 , virtual_buffer & buffer
                                                 , uint64_t start_offset);
+
+    size_t                                  get_size() const;
 
     field_t &                               get_field(
                                                   std::string const & field_name

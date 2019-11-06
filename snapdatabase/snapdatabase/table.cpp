@@ -27,7 +27,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
+#include    "snapdatabase/table.h"
 
 
 // last include
@@ -49,7 +49,10 @@ namespace detail
 class table_impl
 {
 public:
-                                                table_impl(context::pointer_t c, xml_node::pointer_t x);
+                                                table_impl(
+                                                      context::pointer_t c
+                                                    , xml_node::pointer_t x
+                                                    , xml_node::map_t complex_types);
 
     void                                        load_extension(xml_node::pointer_t e);
 
@@ -64,77 +67,91 @@ public:
     std::string                                 description() const;
 
 private:
-    context::weak_pointer_t                     f_context;
-    schema_table::pointer_t                     f_schema;
+    context::weak_pointer_t                     f_context = context::weak_pointer_t();
+    dbfile::pointer_t                           f_dbfile = dbfile::pointer_t();
+    schema_table::pointer_t                     f_schema_table = schema_table::pointer_t();
+    xml_node::map_t                             f_complex_types = xml_node::map_t();
 };
 
 
-table_impl::table_impl(context::pointer_t c, xml_node::pointer_t x)
+table_impl::table_impl(
+          context::pointer_t c
+        , xml_node::pointer_t x
+        , xml_node::map_t complex_types)
     : f_context(c)
-    , f_schema(std::make_shared<schema_table>(x))
+    , f_dbfile(std::make_shared<dbfile>(c->get_path(), "data"))
+    , f_schema_table(std::make_shared<schema_table>(x))
+    , f_complex_types(complex_types)
 {
-    // the XML files are the authoritative ones
+    // open the file
     //
+    f_file
+
+    // the schema found in the XML file is the authoritative one
+    // load the one from the table and if different, apply the
+    // changes
+    //
+    auto current_schema(std::make_shared<schema_table>(file_schema));
 }
 
 
 void table_impl::load_extension(xml_node::pointer_t e)
 {
-    f_schema->load_extension(e);
+    f_schema_table->load_extension(e);
 }
 
 
 std::string table_impl::version() const
 {
-    return f_schema->version();
+    return f_schema_table->version();
 }
 
 
 std::string table_impl::name() const
 {
-    return f_schema->name();
+    return f_schema_table->name();
 }
 
 
 model_t table_impl::model() const
 {
-    return f_schema->model();
+    return f_schema_table->model();
 }
 
 
 column_ids_t table_impl::row_key() const
 {
-    return f_schema->row_key();
+    return f_schema_table->row_key();
 }
 
 
 schema_column_t::pointer_t table_impl::column(std::string const & name) const
 {
-    return f_schema->column(name);
+    return f_schema_table->column(name);
 }
 
 
 schema_column_t::pointer_t table_impl::column(column_id_t id) const
 {
-    return f_schema->column(id);
+    return f_schema_table->column(id);
 }
 
 
 map_by_id_t table_impl::columns_by_id() const
 {
-    return f_schema->columns_by_id();
+    return f_schema_table->columns_by_id();
 }
 
 
 map_by_name_t table_impl::columns_by_name() const
 {
-    return f_schema->columns_by_name();
+    return f_schema_table->columns_by_name();
 }
 
 
 std::string table_impl::description() const
 {
-    return f_schema->description();
+    return f_schema_table->description();
 }
 
 
@@ -143,8 +160,11 @@ std::string table_impl::description() const
 
 
 
-table::table(context::pointer_t c)
-    : f_impl(new table_impl(c))
+table::table(
+          context::pointer_t c
+        , xml_node::pointer_t x
+        , xml_node::map_t complex_types)
+    : f_impl(new table_impl(c, x, complex_types))
 {
 }
 

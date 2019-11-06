@@ -64,4 +64,6 @@ else( Catch2_FOUND )
 
 endif( Catch2_FOUND )
 
+add_subdirectory(bloomfilter)
+
 # vim: ts=4 sw=4 et

@@ -39,12 +39,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
-
-
-// last include
-//
-#include    <snapdev/poison.h>
+#include    "snapdatabase/block.h"
 
 
 

@@ -27,7 +27,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
+#include    "snapdatabase/schema.h"
 
 
 // last include
@@ -45,16 +45,9 @@ namespace
 {
 
 
-struct struct_description_t
-{
-    typedef std::map<std::string, struct_description_t *> map_t;
-
-    char const * const                      f_field_name = nullptr;
-    struct_type_t const                     f_type = struct_type_t::STRUCT_TYPE_VOID;
-    struct_description_t const * const      f_sub_description = nullptr;       // i.e. for an array, the type of the items
-};
 
 
+// SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
 constexpr uint32_t                      COLUMN_FLAG_LIMITED         = 0x0001;
 constexpr uint32_t                      COLUMN_FLAG_REQUIRED        = 0x0002;
 constexpr uint32_t                      COLUMN_FLAG_ENCRYPT         = 0x0004;
@@ -152,6 +145,9 @@ struct_description_t g_table_secondary_index[] =
 
 
 constexpr flag_t                        TABLE_FLAG_TEMPORARY    = 0x0001;
+constexpr flag_t                        TABLE_FLAG_SPARSE       = 0x0002;
+
+constexpr flag_t                        TABLE_FLAG_DROP         = 0x80000000;   // NEVER SAVED, used internally only
 
 struct_description_t g_table_description[] =
 {
@@ -164,8 +160,12 @@ struct_description_t g_table_description[] =
         , FieldType(struct_type_t::STRUCT_TYPE_P8STRING)
     ),
     define_description(
-          FieldName("flags=temporary")
+          FieldName("flags=temporary/sparse")
         , FieldType(struct_type_t::STRUCT_TYPE_BITS64)
+    ),
+    define_description(
+          FieldName("block_size")
+        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
     ),
     define_description(
           FieldName("model")
@@ -536,16 +536,6 @@ schema_table::schema_table(xml_node::pointer_t x)
                 + "\" is not acceptable.");
     }
 
-    bool drop(x->attribute("drop"));
-    if(drop)
-    {
-        f_flags |= TABLE_FLAG_DROP;
-        return;
-    }
-
-    xml_node::deque_t schemata;
-    xml_node::deque_t secondary_indexes;
-
     f_name = x->attribute("name");
     if(!validate_name(f_name))
     {
@@ -555,13 +545,40 @@ schema_table::schema_table(xml_node::pointer_t x)
                 + "\" is not a valid table name.");
     }
 
+    bool drop(x->attribute("drop"));
+    if(drop)
+    {
+        // do not ever save a table when the DROP flag is set (actually
+        // we want to delete the entire folder if it still exists!)
+        //
+        f_flags |= TABLE_FLAG_DROP;
+        return;
+    }
+
+    if(x->attribute("temporary"))
+    {
+        f_flags |= TABLE_FLAG_TEMPORARY;
+    }
+
+    if(x->attribute("sparse"))
+    {
+        f_flags |= TABLE_FLAG_SPARSE;
+    }
+
+    xml_node::deque_t schemata;
+    xml_node::deque_t secondary_indexes;
+
     f_model = name_to_model(x->attribute("model"));
 
     // 1. fully parse the complex types on the first iteration
     //
     for(auto child(x->first_child()); child != nullptr; child = child->next())
     {
-        if(child->tag_name() == "description")
+        if(child->tag_name() == "block-size")
+        {
+            f_block_size = convert_to_int(child->text());
+        }
+        else if(child->tag_name() == "description")
         {
             if(!f_description.empty())
             {
@@ -688,7 +705,7 @@ schema_table::schema_table(xml_node::pointer_t x)
 }
 
 
-schema_table::schema_table(buffer_t const & b)
+schema_table::schema_table(virtual_buffer_t const & b)
 {
     from_binary(b);
 }
@@ -746,9 +763,9 @@ void schema_table::load_extension(xml_node::pointer_t e)
 }
 
 
-void schema_table::from_binary(buffer_t const & b)
+void schema_table::from_binary(virtual_buffer_t & b)
 {
-    structure const s(g_table_description, b.data(), b.data() + b.size());
+    structure const s(g_table_description, b, 0);
 
     f_version = s.get_uinteger("version");
     f_name = s.get_string("name");
@@ -797,7 +814,7 @@ void schema_table::from_binary(buffer_t const & b)
 }
 
 
-buffer_t schema_table::to_binary() const
+virtual_buffer_t schema_table::to_binary() const
 {
     structure s(g_table_description);
 

@@ -20,22 +20,20 @@
 
 
 /** \file
- * \brief Context file header.
+ * \brief Consistency definitions.
  *
- * The context class manages a set of tables. This represents one _database_
- * in the SQL world. The context is pretty shallow otherwise. Most of our
- * settings are in the tables (i.e. replication, compression, compaction,
- * filters, indexes, etc. all of these things are part of the tables).
+ * Whenever accessing the data you can specify the type of consistency is
+ * important for you.
+ *
+ * By default, we use QUORUM which means we get an acknowledgement that
+ * the data was sent to at least (N / 2 + 1) nodes. With the QUORUM
+ * consistency, anything you write is then always available from any
+ * other server (assuming the writer and reader both use QUORUM).
  */
 
-// self
+// C++ lib
 //
-#include    "snapdatabase/dbfile.h"
-
-
-// last include
-//
-#include    <snapdev/poison.h>
+#include    <stdint>
 
 
 
@@ -44,7 +42,7 @@ namespace snapdatabase
 
 
 
-enum class consistency_t : int8_t
+enum class consistency_t : std::int8_t
 {
     CONSISTENCY_DEFAULT = -2,       // use current default, on startup it is CONSISTENCY_QUORUM
     CONSISTENCY_INVALID = -1,

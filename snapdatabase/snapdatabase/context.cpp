@@ -27,8 +27,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
-#include    "snapdatabase/table.h"
+#include    "snapdatabase/context.h"
 
 
 // last include
@@ -52,8 +51,9 @@ class context_impl
 public:
                                     context_impl(advgetopt::getopt::pointer_t opts);
 
-    table::pointer_t                get_table(std::string const & name);
-    table::map_t                    list_tables();
+    table::pointer_t                get_table(std::string const & name) const;
+    table::map_t                    list_tables() const;
+    std::string                     get_path() const;
 
 private:
     context::pointer_t              f_context = context::pointer_t();
@@ -68,7 +68,9 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
     : f_context(context)
     , f_opts(opts)
 {
-    std::deque<xml_node::pointer_t> table_extensions;
+    pointer_t me(shared_from_this());
+
+    xml_node::deque_t table_extensions;
 
     size_t const max(opts->size("table_schema_path"));
     for(size_t idx(0); idx < max; ++idx)
@@ -76,7 +78,7 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
         std::string const path(opts->get_string("table_schema_path", idx));
 
         snap::glob_to_list<std::deque> list;
-        if(list.read_path<
+        if(!list.read_path<
                   snap::glob_to_list_flag_t::GLOB_FLAG_ONLY_DIRECTORIES
                 , snap::glob_to_list_flag_t::GLOB_FLAG_TILDE>(path + "/*.xml"))
         {
@@ -109,18 +111,39 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
             if(root->tag_name() != "keyspaces"
             && root->tag_name() != "context")
             {
-                throw invalid_xml(
-                          "A table schema must be a \"keyspaces\" or \"context\". \""
-                        + root->tag_name()
-                        + "\" is not acceptable.");
+                SNAP_LOG_WARNING
+                    << "A table schema must be a \"keyspaces\" or \"context\". \""
+                    << root->tag_name()
+                    << "\" is not acceptable."
+                    << SNAP_LOG_END;
+                continue;
             }
 
+            xml_node::map_t complex_types;
             for(auto child(x->first_child()); child != nullptr; child = child->next())
             {
                 if(child->tag_name() == "complex-type")
                 {
-                    table::pointer_t t(std::make_shared<table>(shared_from_this(), child));
-                    f_tables[t->name()] = t;
+                    std::string const name(child->attribute("name"));
+                    if(name_to_struct_type(name) != INVALID_STRUCT_TYPE)
+                    {
+                        SNAP_LOG_WARNING
+                            << "The name of a complex type cannot be the name of a system type. \""
+                            << name
+                            << "\" is not acceptable."
+                            << SNAP_LOG_END;
+                        continue;
+                    }
+                    if(complex_types.find(name) != complex_types.end())
+                    {
+                        SNAP_LOG_WARNING
+                            << "The complex type named \""
+                            << name
+                            << "\" is defined twice. Only the very first intance is used."
+                            << SNAP_LOG_END;
+                        continue;
+                    }
+                    complex_types[name].push_back(child);
                 }
             }
 
@@ -128,7 +151,7 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
             {
                 if(child->tag_name() == "table")
                 {
-                    table::pointer_t t(std::make_shared<table>(shared_from_this(), child));
+                    table::pointer_t t(std::make_shared<table>(me, child, complex_types));
                     f_tables[t->name()] = t;
                 }
                 else if(child->tag_name() == "table-extension")
@@ -138,6 +161,10 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
                     // otherwise the table may still be missing
                     //
                     table_extensions.push_back(child);
+                }
+                else if(child->tag_name() == "complex-type")
+                {
+                    // already worked on; ignore in this loop
                 }
                 else
                 {
@@ -162,18 +189,16 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
             SNAP_LOG_WARNING
                 << "Unknown table \""
                 << child->tag_name()
-                << "\" within a <table-extension> tag ignored."
+                << "\" within a <table-extension>, tag ignored."
                 << SNAP_LOG_END;
+            continue;
         }
-        else
-        {
-            t->load_extension(e);
-        }
+        t->load_extension(e);
     }
 }
 
 
-table::pointer_t context_impl::get_table(std::string const & name)
+table::pointer_t context_impl::get_table(std::string const & name) const
 {
     auto it(f_tables.find(name));
     if(it == f_tables.end())
@@ -185,9 +210,15 @@ table::pointer_t context_impl::get_table(std::string const & name)
 }
 
 
-table::map_t context_impl::list_tables()
+table::map_t context_impl::list_tables() const
 {
     return f_tables;
+}
+
+
+std::string context_impl::get_path() const
+{
+    return f_path;
 }
 
 
@@ -201,15 +232,21 @@ context::context(advgetopt::getopt::pointer_t opts)
 }
 
 
-table::pointer_t context::get_table(std::string const & name)
+table::pointer_t context::get_table(std::string const & name) const
 {
     return f_impl->get_table(name);
 }
 
 
-table::map_t context::list_tables()
+table::map_t context::list_tables() const
 {
     return f_impl->list_tables();
+}
+
+
+std::string context::get_path() const
+{
+    return f_impl->get_path();
 }
 
 

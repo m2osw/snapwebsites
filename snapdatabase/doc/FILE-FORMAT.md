@@ -237,12 +237,12 @@ We want to use several types of blocks to maintain the database:
 The header defines where the other blocks are and includes the bloom filter
 data.
 
-* Block Type (`SDBT`, `char[4]`)
+* Magic (`SDBT`, Type: `dbtype_t`)
 
-    This block defines a Snap Database Table. Since it is at the very
-    beginning, it is most often used as the Magic for the entire file.
+    The magic word of the block and also the entire file since it
+    appears at the very beginning of the file.
 
-* Version (`uint32_t`)
+* Version (`uint16_t:uint16_t`)
 
     The version of this table
 
@@ -254,7 +254,7 @@ data.
     going to be inserted is a good idea, but there are trade offs too (i.e.
     we do not want 1Mb blocks for indexes, for example).
 
-* Table Definition (`uint64_t`)
+* Table Definition (`reference`)
 
     A pointer to the full schema definition which appears in another
     block. It is the parsed data from the XML file defining a table
@@ -321,7 +321,24 @@ data.
     once when we can do it incrementally (or even not at all if the data
     is pretty much considered immutable).
 
+* First Free Block (`reference`)
+
+    This field holds a reference to the first `FREE` block. This block
+    is available to be used as any block. If all free blocks were used
+    then this parameter is 0. For more details see the Free Block
+    definition.
+
 * Table Expiration Date (`time_t`)
+
+    **TBD:** do we really want to support temporary tables? It's often used
+    in SQL, but here, maybe we could instead look into having a feature
+    to create memory tables instead. That way it can be made non-block
+    based. i.e. the whole set of the data can be kept in maps (using a
+    boost multi-index map). Especially, **we do not have a way to create
+    a table dynamically**. Only tables which have an XML definition in the
+    context repository are created. So I'm not totally sure we want to
+    support such here. At the same time, having a `memory_cache` table
+    could be really cool too (possibly just on the front ends).
 
     A date when the table is to be dropped.
 
@@ -338,17 +355,7 @@ data.
     when the table times out and gets deleted. Note that once a table
     has expired, any access to that table fail with an error.
 
-    **TBD:** do we really want to support temporary tables? It's often used
-    in SQL, but here, maybe we could instead look into having a feature
-    to create memory tables instead. That way it can be made non-block
-    based. i.e. the whole set of the data can be kept in maps (one map
-    per index). Especially, we do not have a way to create a table
-    dynamically. Only tables which have an XML definition in the context
-    repository are created. So I'm not totally sure we want to support
-    such here. At the same time, having a `memory_cache` table could be
-    really cool too (possibly just on the front ends).
-
-* Indirect Index (`uint64_t`)
+* Indirect Index (`reference`)
 
     A pointer to an `INDR` block or, once the first `INDR` is full, to
     a `TIND` block.
@@ -358,7 +365,7 @@ data.
     not clustered and the table uses many writes and deletions, such as a
     session table.
 
-    These blocks add one indirection, though, but with about 500 pointers
+    These blocks add one indirection, but with about 500 pointers
     per block (with a 4Kb block) you get a 250,000 rows with just 2 levels
     and 125,000,000 with 3 levels. With much larger blocks (say 64Kb) we
     would get some 8,180 with just the first level and 66,912,400 with
@@ -378,7 +385,7 @@ data.
     first block in place of the pointer at that OID position. Thus creating
     a linked list. When allocating a new OID we first check whether the
     free list is empty or not. If not, use that OID, if it is empty allocate
-    a new OID. This means the rows OID get reused.
+    a new OID. This means the row OIDs get reused.
 
 * Last OID (`uint64_t`)
 
@@ -406,11 +413,11 @@ data.
     This feature doesn't get used if the file does not require an indirect
     index.
 
-* First Compactable Block (`uint64_t`)
+* First Compactable Block (`reference`)
 
     Whenever a DELETE happens in a block, we are likely to have the ability
-    to compact that block to save data. That block is therefore added here.
-    That way we know we can process this row at some point and we avoid
+    to _compact_ that block to save space. That block is therefore added here.
+    That way we know we can process this block at some point and we avoid
     wasting time attempting to update any one block (i.e. in most cases, on
     a very large table, it is very unlikely that so many blocks would require
     compaction).
@@ -418,40 +425,47 @@ data.
     Data blocks allocate data with a minimum of 8 bytes. This allows us to
     create a list of Compactable Block, so what we do is read the First
     Compactable Block. Load that block in memory. Read the first 8 bytes
-    which represent the poitner to another block which can be compacted.
+    which represent the pointer to another block which can be compacted.
     Save these 8 bytes in the First Compactable Block.
 
-    To have a double security about this, we should save the First
-    Compactable Block in another field, copy the next block in the
+    To have a double security about this, we save the First Compactable Block
+    in the Process Compactable Block field and copy the next block in the
     First Compactable Block field, then work on the block. Once the
-    work is done, set the other field to 0. When we start the process
-    over, we first look for that other field. If not 0, then work on
-    that block first. This is much more likely to work properly in
-    all cases even if we are killed before we are done.
+    work is done, set Process Compactable Block to 0. When we start the
+    process over, we first look at the Process Compactable Block field. If
+    not 0, then finish work on that block first. This is much more likely
+    to work properly in all cases even if we are killed before we are done.
 
     We still can have an audit process which verifies that a block is as
     expected and that could be one of the elements to verify.
 
-* Process Compactable Block (`uint64_t`)
+* Process Compactable Block (`reference`)
 
-    The block being processed by the compaction service.
+    The block being processed by the compaction service. As mentioned in
+    the First Compactable Block, it may take time for the process
+    compacting a block to finish up and we do not want to lose that
+    information if we quit (or worse, crash) which the compaction is
+    going on.
 
-* Top Key Index Block (`uint64_t`)
+* Top Key Index Block (`reference`)
 
     Pointer to the first B+tree Primary Index block.
 
-* First Key Index Block with Free Space (`uint64_t`)
+* First Block with Free Space (`reference`)
 
-    Pointer to the first B+tree Primary Index block with space available.
+    This reference points to a set of references arranged by the amount
+    of space available in a block (`FSPC`). This gives us the ability to
+    go directly to a block that can hold a new key being inserted (or
+    an old key being updated and that grew).
 
-    TODO: look into implementing a set of first key pointers depending on
-    the amount of space available. If under 64 bytes, between 65 and 128,
-    between 129 and 256, etc. That way we can directly go to a block with
-    at least the amount of space we need for the row being written.
+* Blobs with Free Space (`reference`)
 
-* Expiration Index Block (`uint64_t`)
+    This reference points to a block of references used to define blobs
+    with space still available (`FSPC`).
 
-    Pointer to the first B+tree index block with the rows having an
+* Expiration Index Block (`reference`)
+
+    Pointer to the first B+tree index block with rows having an
     Expiration Date are sorted by that date. Note that we only allow
     one entry per row. If a cell within a row has an Expiration Date
     then we still add this as if the row had that expiration and when
@@ -459,7 +473,7 @@ data.
     fast enough.
 
     If multiple cells and the row all have an Expiration Date, then we
-    use the smallest one to add this row to the Expiration Index.
+    use the smallest one as the key to add this row to the Expiration Index.
 
     _Note: In Cassandra, this feature uses a TTL. However, a TTL is
     definitely annoying in this case since it can change depending on
@@ -469,7 +483,7 @@ data.
     are sure that all the data you want to expire at a given date
     all expire simultaneously._
 
-* Secondary Index Blocks (`uint64_t`)
+* Secondary Index Blocks (`reference`)
 
     A pointer to a block representing a list of secondary indexes. These
     include the name of the indexes and a pointer to the actual index
@@ -487,13 +501,13 @@ data.
     Like with VIEWs, though, we could have calculated columns (these are
     often called virtual column). So query the `eman` column could run a
     function which returns `reverse(name)`. We already make use of such
-    a feature for indexes to inverse `time_ms_t` fields and sort these
+    a feature for indexes to inverse `time_us_t` fields and sort these
     columns in DESC order (i.e. `9223372036854775807 - created_on`).
     Actually, we have some "complex" computations that we repeat in many
     indexes when it could be one single virtual column in the Content
     table. This is exciting.
 
-* Tree Index (`uint64_t`)
+* Tree Index Block (`reference`)
 
     For the Tree table, we want to be able to select the direct children
     of a page. So we want to have a table with a specialized index where
@@ -509,7 +523,13 @@ data.
     with a path. Then we can simply remove one segment from the path to
     find the parent and save this new row OID/pointer as a child.
 
-* Deleted Rows (`uint32_t`)
+* Deleted Rows (`uint64_t`)
+
+    Note: by default we use a Counting Bloom Filter which means that
+    we can delete rows. However, if a counter reaches the maximum (which
+    at this point we plan to be 65535) then we will need to regenerate the
+    bloom filter after a while because proper deletion of any row in link
+    with that very entry will _fail_.
 
     The number of rows that have been deleted in this file so far.
     This is useful to know whether the Bloom Filter should be
@@ -521,30 +541,46 @@ data.
     filter to be done in one go. In that case we allocate another block
     to save the new filter and once done copy that data here.
 
-* New Bloom Filter (`uint64_t`)
+    Note that when all the rows get deleted (equivalent to a TRUNCATE),
+    we clear the bloom filter and copy this counter to the the Last 
+    Bloom Filter Regeneration Counter.
 
-    A pointer to the block holding the new bloom filter whenever it gets
-    regenerated. This block can be released once the new filter was
-    regenerated.
+* Bloom Filter Flags (`uint32_t`)
 
-* Bloom Filter Size (`uint32_t`)
+    This bloom filter flags define whether and how the bloom filter is
+    to be used. The flags are:
 
-    The Bloom Filter is at the end of this block. This indicates its size.
-    Large blocks can use larger bloom filters which decreases our chances
-    of false positive.
+    - algorithm: 4 bits defining the algorithm to use to generate the
+      bloom filter.
 
-    Some tables, such as Journals, do not require a bloom filter at
-    all. In this case this size is set to 0.
+    - renewing: if set, the bloom filter is being regenerated.
 
-    The one problem with the bloom filter algorithm is that it needs to
-    be regenerated once in a while if you do a lot of deletion. This is
-    why we have a counter so we know when that happens.
+    The currently defined algorithms are:
+
+    - none: the bloom filter is not used
+
+    - bits: just use bits; it makes the filter smaller; useful for
+      tables which do not delete very many rows over time; note that
+      replacing a row does not mean deleting because the key remains
+      the same
+
+    - counters: use one byte per entry which gets increased when a match
+      is found and decreases when we remove a row; useful for tables
+      where many rows get removed all the time
 
 
 ### Free Block (`FREE`)
 
 Whenever a block is added to the file, we mark it as a `FREE` block and
 add it to the linked list of `FREE` blocks.
+
+* Magic (`FREE`, Type: `dbtype_t`)
+
+    The magic word.
+
+* Next Free Block (`reference`)
+
+    A reference to the next free block or 0.
 
 Whenever a block becomes available again we clear it, mark it as a `FREE`
 block and then add it to our linked list of `FREE` blocks.
@@ -556,6 +592,7 @@ our blocks are all written at once by the OS anyway._
 When adding new `FREE` blocks, we can allocate N at once. For example,
 if N=16 and our blocks are 4Kb, we would add 64Kb at once to our file
 (16 x 4Kb = 64Kb).
+
 
 #### Sparse Files
 
@@ -584,16 +621,20 @@ follow the latest schema. This gives us an easy way to know which schema
 a row used when it was saved. This allows us to incrementally fix the
 rows to a newer schema.
 
-* Block Type (`SCHM`, Type: `char[4]`)
+* Magic (`SCHM`, Type: `dbtype_t`)
 
     The magic word.
 
-* Next Block (`uint64_t`)
+* Size (Type: `uint32_t`)
+
+    The size of this schema blob.
+
+* Next Block (`reference`)
 
     If the schema is larger than one block, this is the next part. Before
     we transform the schema to C++ objects, we read all the parts.
 
-* Schema (Type: complex)
+* Schema (Type: complex--a.k.a. blob)
 
     This block is a structure describing the table and the columns
     as per the tables.xsd information. Only this is a binary version
@@ -601,10 +642,12 @@ rows to a newer schema.
 
     Parameters:
 
-    - `version` (`uint16_t`)
+    - `version` (`uint16_t:uint16_t`)
     - `table_name` (`p8-string`)
     - `flags` (`uint64_t`)
         . temporary (bit 0)
+        . sparse (bit 1)
+    - `block_size` (`uint32_t`)
     - `model` (`uint8_t`)
         . content
         . data
@@ -619,7 +662,7 @@ rows to a newer schema.
     - `secondary_indexes`
         . number of secondary indexes (`uint16_t`)
         . secondary index
-            + secondary index `name` (p8-string)
+            + secondary index `name` (`p8-string`)
             + secondary index `columns`
                 > number of columns used in secondary index (`uint16_t`)
                 > vector of references to columns (`uint16_t`)
@@ -655,6 +698,14 @@ reuse it, One way would be to have counters, but that starts to be really
 heavy (i.e. count all the columns added and removed over time so once the
 old column's counter goes to 0 we can reuse that slot.
 
+When the sparse flag is set, we allow sparse files. Instead of writing
+full blocks when allocating the file we use lseek() which may end up
+generating a sparse file (if your blocks are larger than the size of
+one system block). This option is not recommended since it may generate
+problems at the time a `FREE` block is required and it was not yet
+allocated. (That being said, if the list of free blocks is empty, we
+have a similar situation...)
+
 See also libsnapwebsites/src/snapwebsites/tables.xsd
 
 
@@ -665,26 +716,39 @@ the space is "free space". That "free space" is connected to a Free Space
 Block so we can very quickly find the block with enough space to save the
 next incoming blob of data.
 
-* Block Type (`FSPC`, Type: `char[4]`)
+* Magic (`FSPC`, Type: `dbtype_t`)
 
-    The type of this block.
+    The magic word.
 
-* Free Space (Type: `uint64_t`)
+* PAD (TBD, Type: `uint32_t`)
 
-    This is an array of pointers to a first block with free space. That
-    block will include the next pointer (i.e. linked list).
+    This is a pad for now so the Free Space starts at _the correct position_.
+    (i.e. Entry 0 and 1 represent 0 and 8 bytes which are not possible since
+    we have a minimum size of 64 for any block.)
 
-    We always allocate a bare minimum of 16 bytes, although I will have
-    to look closer because I think it is much more likely to be larger
-    (64 bytes?) So this array is one pointer per possible size which is
-    a multiple of the minimum size we'd allocate for a row.
+* Free Space (Type: `reference`)
 
-    Assuming it is 16 bytes, the possible number of entries in a 4Kb
-    block is 256 so this Free Space array is 256 `uint64_t` pointers.
-    However, that would include the Block Type space, which is not
-    possible. The fact is that any block of `DATA` will never have less
-    than 16 so we can eliminate the case with 0 bytes which gives us
-    enough space for the block magic.
+    This is an array of references to blocks with free space. These
+    blocks include a next reference (i.e. it is a linked list of such
+    free spaces).
+
+    We always allocate a bare minimum of 16 bytes which allows us to have
+    an 8 bytes reference So this array is one pointer per possible size which
+    is a multiple of the minimum size we'd allocate for a row.
+
+    (The minimum of 64 bytes is likely going to be _much more_ but that's
+    the system requirement.)
+
+    The reference for case 0 an 1 are not defined in the Free Space array.
+    Each reference represent a space with a multiple of 8 bytes. In other
+    words, we divide the size available by 8 and then save it here. Since
+    all blocks have a similar size, a reference to free space is going to
+    be a multiple of 8 bytes, we get
+    
+        Block Size / 8 * 4
+
+    as the number of entries in the Free Space block. So we use only 50%
+    of this block.
 
 
 ### Top Direct Data Block (`TDIR`, for sequential data)
@@ -711,7 +775,7 @@ anywhere in the file. The `FREE` is handled _differently_ since only one
 size is going to be used we could instead directly point to a free block
 in the `SDBT` block and not have any `FREE` block.
 
-* Block Type (`TDIR`, Type: `char[4]`)
+* Magic (`TDIR`, Type: `dbtype_t`)
 
     The magic word.
 
@@ -742,7 +806,7 @@ Say one `INDR` supports 500 blocks. A `TIND` at level 0 supports 500 x 500
 = 250,000 rows. A `TIND` at level 1 supports one extra level so 500 ^ 3 =
 125,000,000 rows and so on.
 
-* Block Type (`TIND`, Type: `char[4]`)
+* Magic (`TIND`, Type: `dbtype_t`)
 
     The magic word.
 
@@ -784,9 +848,9 @@ location ends up having to handle one extra redirection.
 
 The block is pretty simple:
 
-* Block Type (`INDR`, Type: `char[4]`)
+* Magic (`INDR`, Type: `dbtype_t`)
 
-    The magic defining this block's content.
+    The magic word.
 
 * Block Size (Needed?)
 
@@ -967,6 +1031,15 @@ this table.
 
     Pointer to the first B+tree index block with space available.
 
+* Bloom Filter Flags (`uint32_t`)
+
+    The bloom filter of the primary filter can be used by secondary indexes
+    as long as these are used as filters only and thus the key remains the
+    same. In that case, the algorithm is set to "none" here. When the
+    secondary index has a different key (i.e. it is used to sort the
+    rows in a different order, possibly also filtering out some or even
+    many rows).
+
 Fields Name to First Secondary Index Block are repeated for each secondary
 index.
 
@@ -1071,11 +1144,9 @@ The Index Pointer block is an extension for secondary indexes that match
 many entries. One such block is used as an offload of the Index field of
 a Secondary Index.
 
-This block starts with a Block Type like other blocks:
+* Magic (`IDXP`, Type: `dbtype_t`)
 
-* Block Type (`IDXP`, Type `char[4]`)
-
-    The block is an Index Pointer Block.
+    The magic word.
 
 Since it is very likely that such blocks would just have one or two offloaded
 pointers for a given index, we manage vectors with these items:
@@ -1118,16 +1189,7 @@ The block includes the following fields:
 
     The block of data starts with `DATA`.
 
-* Size (Type: `uint32_t` or `uint16_t`)
-
-    The Size of the next data buffer. Note that we have that size in the
-    index, but it's really not that practical there. Also if we limit
-    the size of a block to 64Kb then we could use a `uint16_t` and save
-    much space. Also we could support a little bigger sizes if we consider
-    that each block has to be aligned in some way. An 8 bytes alignment
-    would give us 3 bits so 64Kb x 8 = 512Kb blocks would be supported.
-
-* Data (Type: complex)
+* Data (Type: _complex_)
 
     A block of data is defined with a dynamic structure as defined in the
     SCHEMA.md file, see Blob.
@@ -1174,18 +1236,18 @@ The block includes the following fields:
 Whenever a row is really large, instead of saving that data in a block
 with other rows, we directly save the data in a Blob Block.
 
-The block has still has a header:
+The block still has a header:
 
-* Block Type (`BLOB`, Type: `char[4]`)
+* Magic (`BLOB`, Type: `dbtype_t`)
 
-    The type of block.
+    The magic word.
 
 * Size (Type: `uint32_t`)
 
     The number of bytes saved in this block. It may be the entire block
     (outside of the header, of course).
 
-* Next Block (Type: `uint64_t`)
+* Next Blob (Type: `reference`)
 
     A pointer to the following block where the blob continues.
 
@@ -1220,6 +1282,11 @@ still a lot faster than losing a ton of data. A computer with 1Tb or
 similar amount of RAM would not suffer as much from such a large amount
 of memory being used, but in most cases clusters of databases like
 Cassandra use much smaller computers (i.e. between 16Gb and 64Gb)._
+
+TBD: I think we can give the user ways to specify:
+
+* Use blobs or files;
+* Specify the size at which a blob is saved in an external file.
 
 
 ### Shrinking Database
@@ -1366,9 +1433,9 @@ does not happen immediately. We still have the data accessible as expected.
 ### Allocation Map Array (`MAPA`)
 
 DO NOT IMPLEMENT: I think that a list of empty blocks is going to be
-much more efficient and for free space, we want a list of blocks with
-N bytes still available, since a row is at least 16 bytes, we can put
-all such entries in a single block making it easy to handle.
+much more efficient and for free space in _data blocks_, we want a list
+of blocks with N bytes still available, since a row is at least 16 bytes,
+we can put all such entries in a single block making it very easy to handle.
 
 In order to quickly access any `AMAP`, we want to have an array of pointers
 to all the `AMAP`. This is similar to the Top Index. Here we have an array
@@ -1377,9 +1444,9 @@ go accross the blocks and download the correct data.
 
 The block includes the following
 
-* Block Type (MAPA, Type: `char[4]`)
+* Magic (`MAPA`, Type: `dbtype_t`)
 
-    The magic for this block.
+    The magic word.
 
 * Level (Type: `uint8_t`)
 
@@ -1417,9 +1484,9 @@ appear back in the table. A block which is full has its bit set to 1.
 
 This block includes a small structure at the start with:
 
-* Block Type (AMAP, `char[4]`)
+* Magic (`AMAP`, Type: `dbtype_t`)
 
-    The magic for this block.
+    The magic word.
 
 * Previous Block of Allocation Map (`uint64_t`)
 

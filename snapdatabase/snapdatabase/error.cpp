@@ -27,7 +27,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
+#include    "snapdatabase/error.h"
 
 
 // last include

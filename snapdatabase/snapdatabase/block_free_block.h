@@ -16,23 +16,19 @@
 // You should have received a copy of the GNU General Public License along
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#pragma once
 
 
 /** \file
- * \brief Base block implementation.
+ * \brief Block representing free space that can be allocated.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * This block is a _free_ blok meaning that it is not current used for
+ * anything. It is part of the list of free blocks (linked list).
  */
 
 // self
 //
 #include    "snapdatabase/block.h"
-
-
-// last include
-//
-#include    <snapdev/poison.h>
 
 
 
@@ -41,44 +37,25 @@ namespace snapdatabase
 
 
 
-block::pointer_t block::create_block(dbfile::pointer_t f, file_addr_t offset)
+extern struct_description_t * g_free_block_description;
+
+
+class block_free_block
+    : public block
 {
-    return block::pointer_t(new block(f, offset));
-}
+public:
+    typedef std::shared_ptr<block_free_block>       pointer_t;
 
+                                block_free_block(dbfile::pointer_t f, file_addr_t offset);
 
-block::pointer_t block::create_block(dbfile::pointer_t f, dbtype_t type)
-{
-    pointer_t header(create_block(f, 0));
+    file_addr_t                 get_next_free_block();
+    void                        set_next_free_block(file_addr_t offset);
 
-    file_addr_t const offset(f->get_new_block(type));
-    return pointer_t(new block(f, offset));
-}
+    static pointer_t            allocate_new_block(dbfile::pointer_t f, dbtype_t type);
 
-
-block::block(dbfile::pointer_t f, file_addr_t offset)
-    : f_file(f)
-    , f_offset(offset)
-{
-}
-
-
-block::dbtype_t block::get_dbtype() const
-{
-    return f_type;
-}
-
-
-size_t block::size()
-{
-    return f_size;
-}
-
-
-virtual_buffer::pointer_t block::data()
-{
-    return f_data;
-}
+private:
+    structure                   f_structure = structure();
+};
 
 
 

@@ -20,15 +20,17 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief Very simple XML parser.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * The definitions of the Snap! Database tables is done in XML files.
+ * These classes are used to load and parse those files to use them
+ * as the schema definition of the tables.
  */
 
-// lib snapdatabase
+// C++ lib
 //
-#include    "snapdatabase/context.h"
+#include    <memory>
+#include    <ostream>
 
 
 
@@ -36,10 +38,13 @@ namespace snapdatabase
 {
 
 
+
 class xml_node
 {
 public:
     typedef std::shared_ptr<xml>    pointer_t;
+    typedef std::map<std::string, xml>
+                                    map_t;
     typedef std::weak_ptr<xml>      weak_pointer_t;
     typedef std::map<std::string, std::string>  
                                     attribute_map_t;

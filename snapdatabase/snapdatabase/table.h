@@ -38,12 +38,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
-
-
-// last include
-//
-#include    <snapdev/poison.h>
+#include    "snapdatabase/xml.h"
 
 
 
@@ -58,6 +53,7 @@ class table_impl;
 }
 
 
+class context;
 
 class table
 {
@@ -65,7 +61,10 @@ public:
     typedef std::shared_ptr<table>              pointer_t;
     typedef std::map<std::string, pointer_t>    map_t;
 
-                                                table(context::pointer_t c, xml_node::pointer_t x);
+                                                table(
+                                                      std::shared_ptr<context> c
+                                                    , xml_node::pointer_t x
+                                                    , xml_node::map_t complex_types);
 
     void                                        load_extension(xml_node::pointer_t e);
 

@@ -27,7 +27,7 @@
 
 // self
 //
-#include    "snapdatabase/block_schema.h"
+#include    "snapdatabase/block_blob.h"
 
 
 // last include
@@ -41,11 +41,17 @@ namespace snapdatabase
 
 
 
-// 'SCHM'
-struct_description_t * g_block_schema =
+namespace detail
+{
+}
+
+
+
+// 'BLOB'
+struct_description_t * g_block_blob =
 {
     define_description(
-          FieldName("magic")    // dbtype_t = SCHM
+          FieldName("magic")    // dbtype_t = BLOB
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
     ),
     define_description(
@@ -53,7 +59,7 @@ struct_description_t * g_block_schema =
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
     ),
     define_description(
-          FieldName("next_schema_block")
+          FieldName("next_blob")
         , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
     end_descriptions()
@@ -61,40 +67,38 @@ struct_description_t * g_block_schema =
 
 
 
-block_schema::block_schema(dbfile::pointer_t f, file_addr_t offset)
+block_blob::block_blob(dbfile::pointer_t f, file_addr_t offset)
     : block(f, offset)
-    , f_structure(g_block_schema, data(), offset)
+    , f_structure(g_block_blob, data(), offset)
 {
 }
 
 
-uint32_t block_schema::get_size()
+uint32_t block_blob::get_size()
 {
     return static_cast<uint32_t>(f_structure.get_uinteger("size"));
 }
 
 
-void block_schema::set_size(uint32_t size)
+void block_blob::set_size(uint32_t size)
 {
     f_structure.set_uinteger("size", size);
 }
 
 
-file_addr_t block_schema::get_next_schema_block()
+file_addr_t block_blob::get_next_blob()
 {
-    return static_cast<file_addr_t>(f_structure.get_uinteger("next_schema_block"));
+    return static_cast<file_addr_t>(f_structure.get_uinteger("next_free_block"));
 }
 
 
-void block_schema::set_next_schema_block(file_addr_t offset)
+void block_blob::set_next_blob(file_addr_t offset)
 {
-    f_structure.set_uinteger("next_schema_block", offset);
+    f_structure.set_uinteger("next_free_block", offset);
 }
 
 
-virtual_block_t block_schema::get_schema()
-{
-}
+
 
 
 } // namespace snapdatabase

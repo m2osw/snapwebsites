@@ -19,7 +19,7 @@
 #
 cmake_minimum_required(VERSION 3.5)
 
-#################################################################################
+###############################################################################
 ## The Snap! Versatile Database Support
 ##
 project(snapdatabase_project)
@@ -30,7 +30,7 @@ set( SNAP_TABLE_DESCRIPTION_PATH lib/snapwebsites/tables )
 
 #SnapGetVersion( SNAPDATABASE ${CMAKE_CURRENT_SOURCE_DIR} )
 
-set( SNAPDATABASE_VERDATABASEOR ${SNAPWEBSITES_VERSION_MAJOR} )
+set( SNAPDATABASE_VERSION_MAJOR ${SNAPWEBSITES_VERSION_MAJOR} )
 set( SNAPDATABASE_VERSION_MINOR ${SNAPWEBSITES_VERSION_MINOR} )
 set( SNAPDATABASE_VERSION_PATCH ${SNAPWEBSITES_VERSION_PATCH} )
 

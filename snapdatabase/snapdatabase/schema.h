@@ -33,11 +33,6 @@
 #include    "snapdatabase/dbfile.h"
 
 
-// last include
-//
-#include    <snapdev/poison.h>
-
-
 
 namespace snapdatabase
 {
@@ -49,6 +44,15 @@ namespace detail
 }
 
 
+//typedef std::vector<uint8_t>            buffer_t;
+//typedef uint16_t                        version_t;
+//typedef uint64_t                        block_ref_t;
+//typedef uint9_t                         flag8_t;
+//typedef uint16_t                        flag16_t;
+//typedef uint32_t                        flag32_t;
+//typedef uint64_t                        flag64_t;
+//typedef std::vector<uint16_t>           row_key_t;
+
 typedef std::vector<uint8_t>            buffer_t;
 typedef uint16_t                        version_t;
 typedef uint64_t                        flags_t;
@@ -57,8 +61,30 @@ typedef std::vector<column_id_t>        column_ids_t;
 typedef uint16_t                        column_type_t;
 
 
-constexpr flag_t        COLUMN_FLAG_LIMITED     = 0x01;
-constexpr flag_t        COLUMN_FLAG_REQUIRED    = 0x02;
+
+enum model_t
+{
+    TABLE_MODEL_CONTENT,
+    TABLE_MODEL_DATA,
+    TABLE_MODEL_LOG,
+    TABLE_MODEL_QUEUE,
+    TABLE_MODEL_SESSION,
+    TABLE_MODEL_SEQUENCIAL,
+    TABLE_MODEL_TREE
+};
+
+
+constexpr flag64_t                          SCHEMA_FLAG_TEMPORARY  = 1LL << 0;
+constexpr flag64_t                          SCHEMA_FLAG_DROP       = 1LL << 1;
+
+constexpr flag32_t                          COLUMN_FLAG_LIMITED    = (1LL << 0);
+constexpr flag32_t                          COLUMN_FLAG_REQUIRED   = (1LL << 1);
+constexpr flag32_t                          COLUMN_FLAG_ENCRYPT    = (1LL << 2);
+constexpr flag32_t                          COLUMN_FLAG_DEFAULT    = (1LL << 3);
+constexpr flag32_t                          COLUMN_FLAG_BOUNDS     = (1LL << 4);
+constexpr flag32_t                          COLUMN_FLAG_LENGTH     = (1LL << 5);
+constexpr flag32_t                          COLUMN_FLAG_VALIDATION = (1LL << 6);
+
 
 
 class schema_complex_type
@@ -137,6 +163,8 @@ private:
 };
 
 
+
+
 class schema_secondary_index
 {
 public:
@@ -166,12 +194,12 @@ public:
     typedef std::shared_ptr<schema_table>   pointer_t;
 
                                             schema_table(xml_node::pointer_t x);
-                                            schema_table(buffer_t const & x);
+                                            schema_table(virtual_buffer_t const & x);
 
     void                                    load_extension(xml_node::pointer_t e);
 
-    void                                    from_binary(buffer_t const & x);
-    buffer_t                                to_binary() const;
+    void                                    from_binary(virtual_buffer_t const & x);
+    virtual_buffer_t                        to_binary() const;
 
     version_t                               version() const;
     std::string                             name() const;

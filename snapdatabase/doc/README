@@ -84,6 +84,8 @@ Important parts of Cassandra that we are using:
 
      https://en.wikipedia.org/wiki/Bloom_filter
 
+     https://hur.st/bloomfilter/
+
      We could look into it, but it seems to me that comparing long keys
      would be slower than having to compare the results of a very small
      number of hash results (i.e. say you have 4 hashes, you save there
