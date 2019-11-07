@@ -30,7 +30,7 @@
 
 // self
 //
-#include    "snapdatabase/dbfile.h"
+#include    "snapdatabase/structure.h"
 
 
 
@@ -44,18 +44,13 @@ namespace detail
 }
 
 
-//typedef std::vector<uint8_t>            buffer_t;
-//typedef uint16_t                        version_t;
 //typedef uint64_t                        block_ref_t;
-//typedef uint9_t                         flag8_t;
+//typedef uint8_t                         flag8_t;
 //typedef uint16_t                        flag16_t;
 //typedef uint32_t                        flag32_t;
 //typedef uint64_t                        flag64_t;
 //typedef std::vector<uint16_t>           row_key_t;
 
-typedef std::vector<uint8_t>            buffer_t;
-typedef uint16_t                        version_t;
-typedef uint64_t                        flags_t;
 typedef uint16_t                        column_id_t;
 typedef std::vector<column_id_t>        column_ids_t;
 typedef uint16_t                        column_type_t;
@@ -68,22 +63,25 @@ enum model_t
     TABLE_MODEL_DATA,
     TABLE_MODEL_LOG,
     TABLE_MODEL_QUEUE,
-    TABLE_MODEL_SESSION,
     TABLE_MODEL_SEQUENCIAL,
+    TABLE_MODEL_SESSION,
     TABLE_MODEL_TREE
 };
 
 
-constexpr flag64_t                          SCHEMA_FLAG_TEMPORARY  = 1LL << 0;
-constexpr flag64_t                          SCHEMA_FLAG_DROP       = 1LL << 1;
+constexpr flag64_t                          SCHEMA_FLAG_TEMPORARY               = 1LL << 0;
+constexpr flag64_t                          SCHEMA_FLAG_DROP                    = 1LL << 1;
 
-constexpr flag32_t                          COLUMN_FLAG_LIMITED    = (1LL << 0);
-constexpr flag32_t                          COLUMN_FLAG_REQUIRED   = (1LL << 1);
-constexpr flag32_t                          COLUMN_FLAG_ENCRYPT    = (1LL << 2);
-constexpr flag32_t                          COLUMN_FLAG_DEFAULT    = (1LL << 3);
-constexpr flag32_t                          COLUMN_FLAG_BOUNDS     = (1LL << 4);
-constexpr flag32_t                          COLUMN_FLAG_LENGTH     = (1LL << 5);
-constexpr flag32_t                          COLUMN_FLAG_VALIDATION = (1LL << 6);
+// SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
+constexpr flag32_t                          COLUMN_FLAG_LIMITED                 = (1LL << 0);
+constexpr flag32_t                          COLUMN_FLAG_REQUIRED                = (1LL << 1);
+constexpr flag32_t                          COLUMN_FLAG_ENCRYPT                 = (1LL << 2);
+constexpr flag32_t                          COLUMN_FLAG_DEFAULT_VALUE           = (1LL << 3);
+constexpr flag32_t                          COLUMN_FLAG_BOUNDS                  = (1LL << 4);
+constexpr flag32_t                          COLUMN_FLAG_LENGTH                  = (1LL << 5);
+constexpr flag32_t                          COLUMN_FLAG_VALIDATION              = (1LL << 6);
+
+constexpr flag32_t                          SECONDARY_INDEX_FLAG_DISTRIBUTED    = (1LL << 0);
 
 
 
@@ -176,6 +174,9 @@ public:
     std::string                             get_index_name() const;
     void                                    set_index_name(std::string const & index_name);
 
+    bool                                    get_distributed_index() const;
+    void                                    set_distributed_index(bool distributed);
+
     size_t                                  get_column_count();
     column_id_t                             get_column_id(int idx);
     void                                    add_column_id(column_id_t id);
@@ -183,6 +184,7 @@ public:
 private:
     std::string                             f_index_name = std::string();
     column_ids_t                            f_column_ids = column_ids_t();
+    flags_t                                 f_flags = flags_t();
 };
 
 

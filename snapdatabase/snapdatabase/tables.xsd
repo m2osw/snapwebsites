@@ -34,7 +34,7 @@
             <table name="..." model="..." row-key="..." drop="..." temporary="..." sparse="...">
               <block-size>...</block-size>
               <description>...</description>
-              <schema kind="...">
+              <schema>
                 <column name="..." type="..." limited="..." encrypt="..." required="...">
                   <description>...</description>
                   <default>...</default>
@@ -87,21 +87,25 @@
                    (i.e. branch table)
       * data == a content table which is written once and read many times
                 and has nearly no updates (i.e. revision table)
+      * log == a table that is mainly used to write to in normal operation;
+               obviously we want to be able to read from those tables, but
+               they will be optimized for writing
       * queue == the table is used in an anti-patterns, as far as Cassandra
                  is concerned (at some point we will add capability to avoid
                  Cassandra for these tables); this type of table has rows
                  that are written once, read once, then dropped; these are
                  used as work journals by plugins such as list and images
-      * log == a table that is mainly used to write to in normal operation;
-               obviously we want to be able to read from those tables, but
-               they will be optimized for writing
-      * session ==  a table which is both written and read equally; also
-                    the rows are likely setup to timeout automatically;
-                    tables are not likely to grow forever, although they
-                    could still be really large
       * sequential == I don't really know of such at this time, except maybe
                       for journals, it would be a file where all the records
                       have exactly the same size
+      * session == a table which is both written and read equally; also
+                   the rows are likely setup to timeout automatically;
+                   tables are not likely to grow forever, although they
+                   could still be really large
+      * tree == the table is specifically used to build a tree index to
+                data found in another table (TBD: I think it's still
+                possible to have a single table with the "tree", "content",
+                "branch", and "revision", all in one for our _special case_)
 
       The <row-key> attribute defines the list of columns used to build
       the key.
@@ -235,20 +239,6 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <xs:simpleType name="kind">
-    <xs:annotation>
-      <xs:documentation>
-        The kind of a table we want the system to create. We used "thrift"
-        like tables before and now we also have "blob" tables which do
-        not include the "column1" column.
-      </xs:documentation>
-    </xs:annotation>
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="thrift"/>
-      <xs:enumeration value="blob"/>
-    </xs:restriction>
-  </xs:simpleType>
-
   <xs:simpleType name="drop">
     <xs:annotation>
       <xs:documentation>
@@ -370,14 +360,16 @@
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="column" minOccurs="1" maxOccurs="unbounded"/>
       </xs:choice>
-      <xs:attribute name="kind" type="kind"/> <!-- default is "thrift" -->
     </xs:complexType>
   </xs:element>
 
   <xs:element name="secondary-index">
     <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="column_names"/>
+      </xs:choice>
       <xs:attribute name="name" type="name"/>
-      <xs:attribute name="columns" type="name" use="required"/>
+      <xs:attribute name="distributed" type="name"/> <!-- default is "distributed" -->
     </xs:complexType>
   </xs:element>
 
@@ -407,6 +399,8 @@
   </xs:element>
 
   <xs:element name="type" type="xs:string"/>
+
+  <xs:element name="column_names" type="xs:string"/>
 
   <xs:element name="value">
     <xs:complexType>

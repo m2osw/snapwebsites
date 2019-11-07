@@ -44,17 +44,18 @@ namespace
 {
 
 
+constexpr char *        g_table_extension = ".snapdb";
 constexpr char *        g_global_lock_filename = "global.lock";
 
 
-std::string generate_table_dir(std::string const & path, std::string const & name)
+std::string generate_table_dir(std::string const & path, std::string const & table_name)
 {
     std::string dirname(path);
     if(!dirname.empty())
     {
         dirname += '/';
     }
-    dirname += name;
+    dirname += table_name;
 
     struct stat s;
     if(stat(dirname.c_str(), &s) != 0)
@@ -66,6 +67,8 @@ std::string generate_table_dir(std::string const & path, std::string const & nam
             throw io_error(
                   "System could not properly create directory \""
                 + dirname
+                + "\" to handle table \""
+                + table_name
                 + "\".");
         }
     }
@@ -127,6 +130,9 @@ void dbfile::set_page_size(size_t page_size)
         throw snapdatabase_logic_error("The size of a page in a dbfile can only be set once.");
     }
 
+    // make sure it is at least one system page in size and a multiple of
+    // the system page so we can easily mmap() our blocks
+    //
     size_t const system_page_size(get_system_page_size());
     size_t const count((page_size + system_page_size - 1) / system_page_size);
     if(count <= 1)
@@ -183,7 +189,7 @@ int dbfile::open_file()
 
     size_t const page_size(dbfile::get_page_size());
 
-    std::string const fullname(f_dirname + "/" + f_filename + ".snapdb");
+    std::string const fullname(f_dirname + "/" + f_filename + g_table_extension);
 
     // we need to have a global lock in case the file was not yet created
     //
@@ -273,10 +279,10 @@ data_t dbfile::data(file_addr_t offset) const
     size_t const sz(get_page_size());
 
     page_offset = offset % sz;
-    start = offset - page_offset;
+    page_start = offset - page_offset;
 
-    auto it(f_pages.find(start));
-    if(it == f_pages.end())
+    auto it(f_pages.find(page_start));
+    if(it != f_pages.end())
     {
         return it.second;
     }
@@ -287,7 +293,17 @@ data_t dbfile::data(file_addr_t offset) const
         , PROT_READ | PROT_WRITE
         , MAP_SHARED
         , fd
-        , start));
+        , page_start));
+
+    if(ptr == nullptr)
+    {
+        throw io_error(
+                  "mmap() failed on \""
+                + f_filename
+                + "\" at offset "
+                + std::to_string(offset)
+                + ".");
+    }
 
     page_t p;
     p.f_addr = offset;
@@ -344,13 +360,14 @@ file_addr_t dbfile::append_free_block(file_addr_t const previous_block_offset)
     if(f_fd == -1)
     {
         throw file_not_opened(
-                  "file is not yet opened, get_size() can't be called.");
+                  "file is not yet opened, append_free_block() can't be called.");
     }
 
-    file_addr_t const p(lseek(f_fd, 0, SEEK_END);
+    file_addr_t const p(lseek(f_fd, 0, SEEK_END));
     if(p == -1)
     {
-        throw file_not_opened(
+        close();
+        throw io_error(
                   "lseek() failed on \""
                 + f_filename
                 + "\".");
@@ -375,14 +392,22 @@ file_addr_t dbfile::append_free_block(file_addr_t const previous_block_offset)
 }
 
 
+/** \brief Grow the file.
+ *
+ * We use this function to grow the file with a full page of data.
+ *
+ * \exception io_error
+ * On an error, the function raises this exception and closes the file.
+ *
+ * \param[in] ptr  Pointer to the block of data to write to the file.
+ * \param[in] size  The number of bytes in the block of data to write.
+ */
 void dbfile::write_data(void const * ptr, size_t size)
 {
     int const sz(write(f_fd, ptr, size));
     if(sz != size)
     {
-        close(f_fd);
-        f_fd = -1;
-        //unlink(fullname.c_str());
+        close();
         throw io_error(
               "System could not properly write to file \""
             + f_filename

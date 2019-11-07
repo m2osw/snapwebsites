@@ -30,6 +30,11 @@
 #include    "snapdatabase/context.h"
 
 
+// snapwebsites lib
+//
+#include    <snapwebsites/mkdir_p.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -69,6 +74,19 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
     , f_opts(opts)
 {
     pointer_t me(shared_from_this());
+
+    f_path = f_opts->string("context");
+    if(f_path.empty())
+    {
+        f_path = "/var/lib/snapwebsites/database";
+    }
+    if(mkdir_p(f_path, false, 0700, "snapwebsites", "snapwebsites") != 0)
+    {
+        throw io_error(
+              "Could not create or access the context directory \""
+            + f_path
+            + "\".");
+    }
 
     xml_node::deque_t table_extensions;
 
@@ -220,6 +238,7 @@ std::string context_impl::get_path() const
 {
     return f_path;
 }
+
 
 
 } // namespace detail

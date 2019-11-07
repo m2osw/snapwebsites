@@ -68,8 +68,8 @@ public:
 
 private:
     context::weak_pointer_t                     f_context = context::weak_pointer_t();
-    dbfile::pointer_t                           f_dbfile = dbfile::pointer_t();
     schema_table::pointer_t                     f_schema_table = schema_table::pointer_t();
+    dbfile::pointer_t                           f_dbfile = dbfile::pointer_t();
     xml_node::map_t                             f_complex_types = xml_node::map_t();
 };
 
@@ -79,13 +79,12 @@ table_impl::table_impl(
         , xml_node::pointer_t x
         , xml_node::map_t complex_types)
     : f_context(c)
-    , f_dbfile(std::make_shared<dbfile>(c->get_path(), "data"))
     , f_schema_table(std::make_shared<schema_table>(x))
+    , f_dbfile(std::make_shared<dbfile>(c->get_path(), f_schema_table->name(), "main"))
     , f_complex_types(complex_types)
 {
-    // open the file
+    // open the main database file
     //
-    f_file
 
     // the schema found in the XML file is the authoritative one
     // load the one from the table and if different, apply the

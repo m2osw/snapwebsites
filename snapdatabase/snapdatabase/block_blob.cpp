@@ -41,12 +41,6 @@ namespace snapdatabase
 
 
 
-namespace detail
-{
-}
-
-
-
 // 'BLOB'
 struct_description_t * g_block_blob =
 {
@@ -59,7 +53,7 @@ struct_description_t * g_block_blob =
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
     ),
     define_description(
-          FieldName("next_blob")
+          FieldName("next_blob")    // blob is so big we need multiple buffers
         , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
     end_descriptions()
@@ -88,13 +82,13 @@ void block_blob::set_size(uint32_t size)
 
 file_addr_t block_blob::get_next_blob()
 {
-    return static_cast<file_addr_t>(f_structure.get_uinteger("next_free_block"));
+    return static_cast<file_addr_t>(f_structure.get_uinteger("next_blob"));
 }
 
 
 void block_blob::set_next_blob(file_addr_t offset)
 {
-    f_structure.set_uinteger("next_free_block", offset);
+    f_structure.set_uinteger("next_blob", offset);
 }
 
 

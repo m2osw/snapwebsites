@@ -74,7 +74,7 @@ public:
                 >
         > page_map_t;
 
-                            dbfile(std::string const & path, std::string const & name);
+                            dbfile(std::string const & path, std::string const & table_name, std::string const & filename);
                             dbfile(dbfile const & rhs) = delete;
                             ~dbfile();
 

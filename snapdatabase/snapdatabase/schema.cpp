@@ -47,14 +47,6 @@ namespace
 
 
 
-// SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
-constexpr uint32_t                      COLUMN_FLAG_LIMITED         = 0x0001;
-constexpr uint32_t                      COLUMN_FLAG_REQUIRED        = 0x0002;
-constexpr uint32_t                      COLUMN_FLAG_ENCRYPT         = 0x0004;
-constexpr uint32_t                      COLUMN_FLAG_DEFAULT_VALUE   = 0x0008;
-constexpr uint32_t                      COLUMN_FLAG_BOUNDS          = 0x0010;
-constexpr uint32_t                      COLUMN_FLAG_LENGTH          = 0x0020;
-constexpr uint32_t                      COLUMN_FLAG_VALIDATION      = 0x0040;
 
 
 struct_description_t g_column_description[] =
@@ -133,6 +125,11 @@ struct_description_t g_table_secondary_index[] =
     define_description(
           FieldName("name")
         , FieldType(struct_type_t::STRUCT_TYPE_P8STRING)
+    ),
+    define_description(
+          FieldName("flags=distributed")
+        , FieldType(struct_type_t::STRUCT_TYPE_BITS32)
+        , FieldDescription(g_table_column_reference)
     ),
     define_description(
           FieldName("columns")
@@ -676,7 +673,25 @@ schema_table::schema_table(xml_node::pointer_t x)
         schema_secondary_index index;
         index.set_index_name(si->attribute("name"));
 
-        std::string const columns(si->attribute("columns"));
+        std::string const distributed(si->attribute("distributed"));
+        if(distributed.empty() || distributed == "distributed")
+        {
+            index.set_distributed_index(true);
+        }
+        else if(distributed == "one-instance")
+        {
+            index.set_distributed_index(false);
+        }
+        else
+        {
+            SNAP_LOG_WARNING
+                << "Unknown distributed attribute value \""
+                << distributed
+                << "\" within a <secondary-index> tag ignored."
+                << SNAP_LOG_END;
+        }
+
+        std::string const columns(si->text());
         advgetopt::string_list_t column_names;
         advgetopt::split_string(
                   columns
