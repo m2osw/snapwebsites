@@ -29,6 +29,11 @@
 //
 #include    "snapdatabase/hash.h"
 
+#include    "snapdatabase/exception.h"
+
+// C lib
+//
+#include    <string.h>
 
 // last include
 //
@@ -58,7 +63,7 @@ hash::hash(hash_t seed)
 }
 
 
-hash_t hash::get_byte()
+hash_t hash::get_byte() const
 {
     if(f_temp_size > 0)
     {
@@ -80,7 +85,7 @@ hash_t hash::get_byte()
 
 hash_t hash::peek_byte(int pos) const
 {
-    if(pos < f_temp_size)
+    if(static_cast<std::size_t>(pos) < f_temp_size)
     {
         // bytes are in reverse order in f_temp
         //
@@ -88,7 +93,7 @@ hash_t hash::peek_byte(int pos) const
     }
     pos -= f_temp_size;
 
-    if(pos < f_size)
+    if(static_cast<std::size_t>(pos) < f_size)
     {
         return f_buffer[pos];
     }
@@ -144,9 +149,9 @@ void hash::get_64bits(hash_t & v1, hash_t & v2)
 }
 
 
-void hash::peek_64bits(hash_t & v1, hash_t & v2)
+void hash::peek_64bits(hash_t & v1, hash_t & v2) const
 {
-    switch(get_size())
+    switch(size())
     {
     case 7:
         v1 = (get_byte() << 24)
@@ -223,10 +228,10 @@ void hash::peek_64bits(hash_t & v1, hash_t & v2)
 // hash function taken from: https://github.com/ArashPartow/bloom
 // and modified to work incrementally.
 //
-void hash::add(uint8_t const * v, std::size_t size)
+void hash::add(uint8_t const * v, std::size_t buffer_size)
 {
     f_buffer = v;
-    f_size = size;
+    f_size = buffer_size;
 
     while(size() >= 8)
     {
@@ -255,14 +260,15 @@ void hash::add(uint8_t const * v, std::size_t size)
 hash_t hash::get() const
 {
     hash_t h(f_hash);
-    if(size > 0)
+
+    std::size_t sz(size());
+    if(sz > 0)
     {
         hash_t loop(0);
         hash_t v1;
         hash_t v2;
         peek_64bits(v1, v2);
 
-        size_t sz(size());
         if(sz >= 4)
         {
             h ^= ~((h << 11) + (v1 ^ (h >> 5)));

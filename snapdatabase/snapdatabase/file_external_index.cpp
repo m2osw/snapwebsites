@@ -42,7 +42,7 @@ namespace snapdatabase
 
 
 // 'INDX'
-struct_description_t * g_header_description =
+constexpr struct_description_t g_external_index_description[] =
 {
     define_description(
           FieldName("magic")    // dbtype_t = INDX
@@ -50,6 +50,15 @@ struct_description_t * g_header_description =
     ),
     end_descriptions()
 };
+
+
+
+
+file_external_index::file_external_index(dbfile::pointer_t f, reference_t offset)
+    : block(f, offset)
+{
+    f_structure = std::make_shared<structure>(g_external_index_description);
+}
 
 
 

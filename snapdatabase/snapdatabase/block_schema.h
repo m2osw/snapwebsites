@@ -29,7 +29,9 @@
 
 // self
 //
-#include    "snapdatabase/block.h"
+#include    "snapdatabase/structure.h"
+
+//#include    "snapdatabase/virtual_buffer.h"
 
 
 
@@ -44,18 +46,17 @@ class block_schema
 public:
     typedef std::shared_ptr<block_schema>       pointer_t;
 
-                                block_schema(dbfile::pointer_t f, file_addr_t offset);
+                                block_schema(dbfile::pointer_t f, reference_t offset);
 
     uint32_t                    get_size();
     void                        set_size(uint32_t size);
-    file_addr_t                 get_next_schema_block();
-    void                        set_next_schema_block(file_addr_t offset);
+    reference_t                 get_next_schema_block();
+    void                        set_next_schema_block(reference_t offset);
 
-    virtual_block_t             get_schema();
-    void                        get_schema(virtual_block_t & schema);
+    virtual_buffer              get_schema() const;
+    void                        set_schema(virtual_buffer & schema);
 
 private:
-    structure                   f_structure = structure();
 };
 
 

@@ -28,7 +28,7 @@
 
 // self
 //
-#include    "snapdatabase/block.h"
+#include    "snapdatabase/structure.h"
 
 
 
@@ -37,8 +37,8 @@ namespace snapdatabase
 
 
 
-extern struct_description_t * g_free_block_description;
-
+class table;
+typedef std::shared_ptr<table>      table_pointer_t;
 
 class block_free_block
     : public block
@@ -46,15 +46,14 @@ class block_free_block
 public:
     typedef std::shared_ptr<block_free_block>       pointer_t;
 
-                                block_free_block(dbfile::pointer_t f, file_addr_t offset);
+                                block_free_block(dbfile::pointer_t f, reference_t offset);
 
-    file_addr_t                 get_next_free_block();
-    void                        set_next_free_block(file_addr_t offset);
+    reference_t                 get_next_free_block() const;
+    void                        set_next_free_block(reference_t offset);
 
-    static pointer_t            allocate_new_block(dbfile::pointer_t f, dbtype_t type);
+    static block::pointer_t     allocate_new_block(table_pointer_t t, dbfile::pointer_t f, dbtype_t type);
 
 private:
-    structure                   f_structure = structure();
 };
 
 

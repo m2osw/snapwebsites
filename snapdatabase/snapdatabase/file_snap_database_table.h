@@ -26,7 +26,7 @@
 
 // self
 //
-//#include    "snapdatabase/dbfile.h"
+#include    "snapdatabase/structure.h"
 
 
 
@@ -99,14 +99,17 @@ class file_snap_database_table
 public:
     typedef std::shared_ptr<file_snap_database_table>       pointer_t;
 
-                                file_snap_database_table(dbfile::pointer_t f, file_addr_t offset);
+                                file_snap_database_table(dbfile::pointer_t f, reference_t offset);
 
-    file_addr_t                 get_first_free_block();
-    void                        set_first_free_block(file_addr_t offset);
+    version_t                   get_version() const;
+    void                        set_version(version_t v);
+    reference_t                 get_first_free_block() const;
+    void                        set_first_free_block(reference_t offset);
+    uint32_t                    get_block_size() const;
+    void                        set_block_size(uint32_t size);
 
 private:
-    structure                   f_structure = structure();
-    schema_table::pointer_t     f_schema = schema_table::pointer_t();
+    //schema_table::pointer_t     f_schema = schema_table::pointer_t();
 };
 
 

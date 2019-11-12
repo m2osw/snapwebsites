@@ -36,7 +36,18 @@
 
 // self
 //
-//#include    "snapdatabase/block.h"
+#include    "snapdatabase/exception.h"
+#include    "snapdatabase/virtual_buffer.h"
+
+
+// snapdev lib
+//
+#include    <snapdev/not_used.h>
+
+
+// C++ lib
+//
+#include    <map>
 
 
 
@@ -45,44 +56,63 @@ namespace snapdatabase
 
 
 
-constexpr   uint16_t                    STRUCTURE_VERSION_MAJOR = 0;
-constexpr   uint16_t                    STRUCTURE_VERSION_MINOR = 1;
+constexpr   std::uint16_t                   STRUCTURE_VERSION_MAJOR = 0;
+constexpr   std::uint16_t                   STRUCTURE_VERSION_MINOR = 1;
 
 
 typedef uint64_t                        flags_t;
-typedef std::vector<uint8_t>            buffer_t;
 
 
 struct version_t
 {
-                    version_t(int major = 0, int minor = 0)
+    constexpr       version_t(version_t const & v)
+                        : f_major(v.f_major)
+                        , f_minor(v.f_minor)
+                    {
+                    }
+
+    constexpr       version_t()
+                        : f_major(0)
+                        , f_minor(0)
+                    {
+                    }
+
+    constexpr       version_t(int major, int minor)
                         : f_major(major)
                         , f_minor(minor)
                     {
-                        if(major < 0 || major >= 256
-                        || minor < 0 || minor >= 256)
+                        if(major < 0 || major >= 65536
+                        || minor < 0 || minor >= 65536)
                         {
                             throw invalid_parameter(
-                                    "major/minor version must be between 0 and 255 inclusive, "
+                                    "major/minor version must be between 0 and 65535 inclusive, "
                                     + std::to_string(major)
                                     + "."
                                     + std::to_string(minor)
-                                    + " is incorrect.")
+                                    + " is incorrect.");
                         }
                     }
 
-                    version_t(uint32_t v)
+    constexpr       version_t(std::uint32_t v)
                         : f_major(v >> 16)
                         , f_minor(v)
                     {
                     }
 
-    uint32_t        to_binary() const
+    version_t &     operator = (version_t const & v)
                     {
-                        return (static_cast<uint32_t>(f_major) << 16) + static_cast<uint32_t>(f_minor);
+                        f_major = v.f_major;
+                        f_minor = v.f_minor;
+
+                        return *this;
                     }
 
-    void            from_binary(uint32_t v)
+    std::uint32_t   to_binary() const
+                    {
+                        return (static_cast<std::uint32_t>(f_major) << 16) + static_cast<uint32_t>(f_minor);
+                    }
+
+    void            from_binary(std::uint32_t v)
                     {
                         f_major = v >> 16;
                         f_minor = v;
@@ -90,9 +120,9 @@ struct version_t
 
     bool            is_null() const             { return f_major == 0 && f_minor == 0; }
 
-    uint16_t        get_major() const           { return f_major; }
+    std::uint16_t   get_major() const           { return f_major; }
     void            set_major(uint16_t major)   { f_major = major; }
-    uint16_t        get_minor() const           { return f_major; }
+    std::uint16_t   get_minor() const           { return f_major; }
     void            set_minor(uint16_t minor)   { f_minor = minor; }
 
     bool            operator == (version_t const & rhs)
@@ -133,7 +163,7 @@ struct version_t
 
 struct min_max_version_t
 {
-                    min_max_version_t(int min_major = 0, int min_minor = 0, int max_major = 0, int max_minor = 0)
+    constexpr       min_max_version_t(int min_major = 0, int min_minor = 0, int max_major = 0, int max_minor = 0)
                         : f_min_version(min_major, min_minor)
                         , f_max_version(max_major, max_minor)
                     {
@@ -155,70 +185,70 @@ constexpr int FlagPosition(flags_t const flag)
 {
     switch(flag)
     {
-    case (1<< 0): return  0;
-    case (1<< 1): return  1;
-    case (1<< 2): return  2;
-    case (1<< 3): return  3;
-    case (1<< 4): return  4;
-    case (1<< 5): return  5;
-    case (1<< 6): return  6;
-    case (1<< 7): return  7;
-    case (1<< 8): return  8;
-    case (1<< 9): return  9;
-    case (1<<10): return 10;
-    case (1<<11): return 11;
-    case (1<<12): return 12;
-    case (1<<13): return 13;
-    case (1<<14): return 14;
-    case (1<<15): return 15;
-    case (1<<16): return 16;
-    case (1<<17): return 17;
-    case (1<<18): return 18;
-    case (1<<19): return 19;
-    case (1<<20): return 20;
-    case (1<<21): return 21;
-    case (1<<22): return 22;
-    case (1<<23): return 23;
-    case (1<<24): return 24;
-    case (1<<25): return 25;
-    case (1<<26): return 26;
-    case (1<<27): return 27;
-    case (1<<28): return 28;
-    case (1<<29): return 29;
-    case (1<<30): return 30;
-    case (1<<31): return 31;
-    case (1<<32): return 32;
-    case (1<<33): return 33;
-    case (1<<34): return 34;
-    case (1<<35): return 35;
-    case (1<<36): return 36;
-    case (1<<37): return 37;
-    case (1<<38): return 38;
-    case (1<<39): return 39;
-    case (1<<40): return 40;
-    case (1<<41): return 41;
-    case (1<<42): return 42;
-    case (1<<43): return 43;
-    case (1<<44): return 44;
-    case (1<<45): return 45;
-    case (1<<46): return 46;
-    case (1<<47): return 47;
-    case (1<<48): return 48;
-    case (1<<49): return 49;
-    case (1<<50): return 50;
-    case (1<<51): return 51;
-    case (1<<52): return 52;
-    case (1<<53): return 53;
-    case (1<<54): return 54;
-    case (1<<55): return 55;
-    case (1<<56): return 56;
-    case (1<<57): return 57;
-    case (1<<58): return 58;
-    case (1<<59): return 59;
-    case (1<<60): return 60;
-    case (1<<61): return 61;
-    case (1<<62): return 62;
-    case (1<<63): return 63;
+    case (1LL<< 0): return  0;
+    case (1LL<< 1): return  1;
+    case (1LL<< 2): return  2;
+    case (1LL<< 3): return  3;
+    case (1LL<< 4): return  4;
+    case (1LL<< 5): return  5;
+    case (1LL<< 6): return  6;
+    case (1LL<< 7): return  7;
+    case (1LL<< 8): return  8;
+    case (1LL<< 9): return  9;
+    case (1LL<<10): return 10;
+    case (1LL<<11): return 11;
+    case (1LL<<12): return 12;
+    case (1LL<<13): return 13;
+    case (1LL<<14): return 14;
+    case (1LL<<15): return 15;
+    case (1LL<<16): return 16;
+    case (1LL<<17): return 17;
+    case (1LL<<18): return 18;
+    case (1LL<<19): return 19;
+    case (1LL<<20): return 20;
+    case (1LL<<21): return 21;
+    case (1LL<<22): return 22;
+    case (1LL<<23): return 23;
+    case (1LL<<24): return 24;
+    case (1LL<<25): return 25;
+    case (1LL<<26): return 26;
+    case (1LL<<27): return 27;
+    case (1LL<<28): return 28;
+    case (1LL<<29): return 29;
+    case (1LL<<30): return 30;
+    case (1LL<<31): return 31;
+    case (1LL<<32): return 32;
+    case (1LL<<33): return 33;
+    case (1LL<<34): return 34;
+    case (1LL<<35): return 35;
+    case (1LL<<36): return 36;
+    case (1LL<<37): return 37;
+    case (1LL<<38): return 38;
+    case (1LL<<39): return 39;
+    case (1LL<<40): return 40;
+    case (1LL<<41): return 41;
+    case (1LL<<42): return 42;
+    case (1LL<<43): return 43;
+    case (1LL<<44): return 44;
+    case (1LL<<45): return 45;
+    case (1LL<<46): return 46;
+    case (1LL<<47): return 47;
+    case (1LL<<48): return 48;
+    case (1LL<<49): return 49;
+    case (1LL<<50): return 50;
+    case (1LL<<51): return 51;
+    case (1LL<<52): return 52;
+    case (1LL<<53): return 53;
+    case (1LL<<54): return 54;
+    case (1LL<<55): return 55;
+    case (1LL<<56): return 56;
+    case (1LL<<57): return 57;
+    case (1LL<<58): return 58;
+    case (1LL<<59): return 59;
+    case (1LL<<60): return 60;
+    case (1LL<<61): return 61;
+    case (1LL<<62): return 62;
+    case (1LL<<63): return 63;
     }
     return -1;
 }
@@ -281,6 +311,7 @@ enum class struct_type_t : uint16_t
 
     STRUCT_TYPE_FLOAT32,
     STRUCT_TYPE_FLOAT64,
+    STRUCT_TYPE_FLOAT128,
 
     STRUCT_TYPE_VERSION,            // UINT16:UINT16 (Major:Minor)
 
@@ -313,30 +344,55 @@ enum class struct_type_t : uint16_t
 };
 
 
-constexpr struct_type_t INVALID_STRUCT_TYPE(static_cast<struct_type_t>(-1));
+constexpr struct_type_t             INVALID_STRUCT_TYPE(static_cast<struct_type_t>(-1));
+
+struct_type_t                       name_to_struct_type(std::string const & type_name);
 
 
 
-struct_type_t name_to_struct_type(std::string const & type_name);
+void                                add128(uint64_t * dst, uint64_t const * src);
+void                                add256(uint64_t * dst, uint64_t const * src);
+void                                add512(uint64_t * dst, uint64_t const * src);
+
+void                                sub128(uint64_t * dst, uint64_t const * src);
+void                                sub256(uint64_t * dst, uint64_t const * src);
+void                                sub512(uint64_t * dst, uint64_t const * src);
 
 
+struct uint512_t;
 
 struct int512_t
 {
-    bool                                    is_positive() const { return f_high_value >= 0; }
-    bool                                    is_negative() const { return f_high_value < 0; }
+                                    int512_t();
+                                    int512_t(int512_t const & rhs);
+                                    int512_t(uint512_t const & rhs);
 
-    uint64_t                                f_value[7] = { 0 };
-    int64_t                                 f_high_value = 0;
+    bool                            is_positive() const { return f_high_value >= 0; }
+    bool                            is_negative() const { return f_high_value < 0; }
+
+    size_t                          bit_size() const;
+
+    int512_t                        operator - () const;
+    int512_t &                      operator += (int512_t const & rhs);
+    int512_t &                      operator -= (int512_t const & rhs);
+
+    uint64_t                        f_value[7] = { 0 };
+    int64_t                         f_high_value = 0;
 };
 
 
 struct uint512_t
 {
-    bool                                    is_positive() const { return true; }
-    bool                                    is_negative() const { return false; }
+    bool                            is_positive() const { return true; }
+    bool                            is_negative() const { return false; }
 
-    uint64_t                                f_value[8] = { 0 };
+    size_t                          bit_size() const;
+
+    uint512_t                       operator - () const;
+    uint512_t &                     operator += (uint512_t const & rhs);
+    uint512_t &                     operator -= (uint512_t const & rhs);
+
+    uint64_t                        f_value[8] = { 0 };
 };
 
 
@@ -351,9 +407,9 @@ struct struct_description_t
 {
     char const * const                      f_field_name = nullptr;
     struct_type_t const                     f_type = struct_type_t::STRUCT_TYPE_VOID;
-    struct_description_flags_t              f_flags = 0;
-    version_t                               f_min_version = version_t();
-    version_t                               f_max_version = version_t();
+    struct_description_flags_t const        f_flags = 0;
+    version_t const                         f_min_version = version_t();
+    version_t const                         f_max_version = version_t();
     struct_description_t const * const      f_sub_description = nullptr;       // i.e. for an array, the type of the items
 };
 
@@ -448,12 +504,12 @@ class FieldVersion
 {
 public:
     constexpr FieldVersion()
-        : DescriptionValue<min_max_version_t>(STRUCT_DESCRIPTION_FLAG_NONE)
+        : DescriptionValue<min_max_version_t>(min_max_version_t())
     {
     }
 
     constexpr FieldVersion(int min_major, int min_minor, int max_major, int max_minor)
-        : DescriptionValue<min_max_version_t>(min_max_version(min_major, min_minor, max_major, max_minor))
+        : DescriptionValue<min_max_version_t>(min_max_version_t(min_major, min_minor, max_major, max_minor))
     {
     }
 };
@@ -498,13 +554,14 @@ constexpr struct_description_t define_description(ARGS ...args)
 #pragma GCC diagnostic ignored "-Wpedantic"
     struct_description_t s =
     {
-        .f_field_name =          find_option<FieldName        >(args...),        // no default, mandatory
-        .f_type =                find_option<FieldType        >(args...),        // no default, mandatory
-        .f_flags =               find_option<FieldFlags       >(args..., FieldFlags())
-                                    | find_option<FieldOptionalFlag>(args..., FieldOptionalFlag()),
-        .f_min_version =         find_option<FieldVersion     >(args..., FieldVersion()).min(),
-        .f_max_version =         find_option<FieldVersion     >(args..., FieldVersion()).max(),
-        .f_sub_description =     find_option<FieldDescription >(args..., FieldDescription()),
+        .f_field_name =          find_option<FieldName          >(args...),        // no default, mandatory
+        .f_type =                find_option<FieldType          >(args...),        // no default, mandatory
+        .f_flags =               static_cast<struct_description_flags_t>(
+                                    find_option<FieldFlags         >(args..., FieldFlags())
+                                        | find_option<FieldOptionalField>(args..., FieldOptionalField())),
+        .f_min_version =         0, //find_option<FieldVersion       >(args..., FieldVersion()).min(),
+        .f_max_version =         65535, //find_option<FieldVersion       >(args..., FieldVersion()).max(),
+        .f_sub_description =     find_option<FieldSubDescription>(args..., FieldSubDescription()),
     };
 #pragma GCC diagnostic pop
 
@@ -568,10 +625,7 @@ struct field_t
     typedef std::shared_ptr<field_t>        pointer_t;
     typedef std::map<std::string, pointer_t> map_t;
 
-    static constexpr uint32_t               FIELD_FLAG_ALLOCATED        = 0x0001;
-    static constexpr uint32_t               FIELD_FLAG_VARIABLE_SIZE    = 0x0002;
-
-                                            ~field_t();
+    static constexpr uint32_t               FIELD_FLAG_VARIABLE_SIZE    = 0x0001;
 
     uint32_t                                size() const;
     structure_pointer_t                     operator [] (int idx);
@@ -579,9 +633,9 @@ struct field_t
     struct struct_description_t const *     f_description = nullptr;
     uint32_t                                f_size = 0;
     uint32_t                                f_flags = 0;
-    uint64_t                                f_offset = nullptr;
+    uint64_t                                f_offset = 0;
     structure_vector_t                      f_sub_structures = structure_vector_t();    // for ARRAY# and STRUCTURE
-    flag_definition::map_t                  f_flag_definitions = flag_definition::map_t; // for BIT representing flags
+    flag_definition::map_t                  f_flag_definitions = flag_definition::map_t(); // for BIT representing flags
 };
 
 
@@ -591,11 +645,14 @@ public:
     typedef std::shared_ptr<structure>      pointer_t;
     typedef std::vector<pointer_t>          vector_t;
 
-                                            structure(
-                                                  struct_description_t const * description);
-                                            structure(
-                                                  struct_description_t const * description
-                                                , virtual_buffer & buffer
+                                            structure(struct_description_t const * description);
+                                            structure(structure const & rhs) = delete;
+
+    structure &                             operator = (structure const & rhs) = delete;
+
+    void                                    set_block(block::pointer_t b);
+    void                                    set_buffer(
+                                                  virtual_buffer & buffer
                                                 , uint64_t start_offset);
 
     size_t                                  get_size() const;

@@ -31,37 +31,56 @@
 #include    "snapdatabase/dbfile.h"
 
 
+// C++ lib
+//
+#include    <map>
+
 
 namespace snapdatabase
 {
 
 
+class table;
+typedef std::shared_ptr<table>      table_pointer_t;
+
+class structure;
+typedef std::shared_ptr<structure>  structure_pointer_t;
+
 
 class block
+    : protected std::enable_shared_from_this<block>
 {
 public:
-    typedef std::shared_ptr<block>      pointer_t;
+    typedef std::shared_ptr<block>              pointer_t;
+    typedef std::map<reference_t, pointer_t>    map_t;
 
                                 block(block const & rhs) = delete;
+
     block &                     operator = (block const & rhs) = delete;
 
-    static pointer_t            create_block(dbfile::pointer_t f, file_addr_t offset);
-    static pointer_t            create_block(dbfile::pointer_t f, dbtype_t type);
+    //static pointer_t            create_block(dbfile::pointer_t f, reference_t offset);
+    //static pointer_t            create_block(dbfile::pointer_t f, dbtype_t type);
+
+    table_pointer_t             get_table() const;
+    void                        set_table(table_pointer_t table);
+    structure_pointer_t         get_structure() const;
 
     dbtype_t                    get_dbtype() const;
-    size_t                      size() const;
-    virtual_buffer::pointer_t   data();
+    void                        set_dbtype(dbtype_t type);
+    reference_t                 get_offset() const;
+    data_t                      data(reference_t offset = 0);
+    const_data_t                data(reference_t offset = 0) const;
 
 protected:
-                                block(dbfile::pointer_t f, file_addr_t offset);
+                                block(dbfile::pointer_t f, reference_t offset);
 
+    table_pointer_t             f_table = table_pointer_t();
     dbfile::pointer_t           f_file = dbfile::pointer_t();
-    file_addr_t                 f_offset = file_addr_t();
+    structure_pointer_t         f_structure = structure_pointer_t();
+    reference_t                 f_offset = reference_t();
 
-    dbtype_t                    f_dbtype = BLOCK_TYPE_FREE_BLOCK;
-    size_t                      f_size = 0;
-    uint8_t *                   f_data = nullptr;
-    //virtual_buffer::pointer_t   f_buffer = virtual_buffer::pointer_t();
+    dbtype_t                    f_dbtype = dbtype_t::BLOCK_TYPE_FREE_BLOCK;
+    mutable data_t              f_data = nullptr;
 };
 
 

@@ -35,7 +35,7 @@
 
 // advgetopt lib
 //
-#include    <advgetopt/getopt.h>
+#include    <advgetopt/advgetopt.h>
 
 
 
@@ -62,10 +62,12 @@ public:
     typedef std::weak_ptr<context>          weak_pointer_t;
 
                                             context(advgetopt::getopt::pointer_t opts);
+                                            ~context() {}
 
-    table::pointer_t                        get_table(std::string const & name);
-    table::map_t                            list_tables();
-    std::string                             get_path();
+    table::pointer_t                        get_table(std::string const & name) const;
+    table::map_t                            list_tables() const;
+    std::string                             get_path() const;
+    void                                    limit_allocated_memory();
 
 private:
     std::unique_ptr<detail::context_impl>   f_impl;

@@ -29,6 +29,10 @@
  * the dbfile.cpp/.h and block.cpp/.h files.
  */
 
+// C++ lib
+//
+#include    <cstdint>
+#include    <string>
 
 
 namespace snapdatabase
@@ -36,9 +40,9 @@ namespace snapdatabase
 
 
 
-#define DBTYPE_NAME(s)       ((::snapdatabase::dbtype_t)((s[0]<<24)|(s[1]<<16)|(s[2]<<8)|(s[3]<<0)))
+#define DBTYPE_NAME(s)       (static_cast<std::uint32_t>((s[0]<<24)|(s[1]<<16)|(s[2]<<8)|(s[3]<<0)))
 
-enum class dbtype_t : uint32_t
+enum class dbtype_t : std::uint32_t
 {
     DBTYPE_UNKNOWN                  = DBTYPE_NAME("????"),
 
@@ -57,6 +61,8 @@ enum class dbtype_t : uint32_t
     BLOCK_TYPE_SCHEMA               = DBTYPE_NAME("SCHM"),
     BLOCK_TYPE_TOP_INDEX            = DBTYPE_NAME("TIDX"),
 };
+
+std::string                         dbtype_to_string(dbtype_t type);
 
 
 

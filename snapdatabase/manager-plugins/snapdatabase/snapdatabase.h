@@ -1,4 +1,4 @@
-// Snap Websites Server -- manage the snapfirewall settings
+// Snap Websites Server -- manage the snapdatabase settings
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,56 +25,44 @@
 
 namespace snap
 {
-namespace firewall
+namespace snapdatabase
 {
 
 
 enum class name_t
 {
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_ADMIN_IPS,
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_NAME,
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_INTERFACE,
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_IP,
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_INTERFACE,
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_IP,
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS,
-    SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST
+    SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_ADMIN_IPS,
+    SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_NAME,
+    SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_INTERFACE,
+    SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_IP,
+    SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_INTERFACE,
+    SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_IP,
+    SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_SERVICE_STATUS,
+    SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_WHITELIST
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
 
 
-class firewall_exception : public snap_exception
-{
-public:
-    firewall_exception(char const *        what_msg) : snap_exception("firewall", what_msg) {}
-    firewall_exception(std::string const & what_msg) : snap_exception("firewall", what_msg) {}
-    firewall_exception(QString const &     what_msg) : snap_exception("firewall", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(snapdatabase_manager_error);
 
-class firewall_exception_invalid_argument : public firewall_exception
-{
-public:
-    firewall_exception_invalid_argument(char const *        what_msg) : firewall_exception(what_msg) {}
-    firewall_exception_invalid_argument(std::string const & what_msg) : firewall_exception(what_msg) {}
-    firewall_exception_invalid_argument(QString const &     what_msg) : firewall_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(snapdatabase_manager_error, snapdatabase_invalid_argument);
 
 
 
 
 
-class firewall
+class snapdatabase
     : public snap_manager::plugin_base
 {
 public:
-                            firewall();
-                            firewall(firewall const & rhs) = delete;
-    virtual                 ~firewall() override;
+                            snapdatabase();
+                            snapdatabase(snapdatabase const & rhs) = delete;
+    virtual                 ~snapdatabase() override;
 
-    firewall &              operator = (firewall const & rhs) = delete;
+    snapdatabase &          operator = (snapdatabase const & rhs) = delete;
 
-    static firewall *       instance();
+    static snapdatabase *   instance();
 
     // plugins::plugin implementation
     virtual QString         description() const override;
@@ -98,6 +86,6 @@ private:
     snap_manager::manager * f_snap = nullptr;
 };
 
-} // namespace firewall
+} // namespace snapdatabase
 } // namespace snap
 // vim: ts=4 sw=4 et

@@ -29,6 +29,21 @@
 //
 #include    "snapdatabase/dbfile.h"
 
+#include    "snapdatabase/block_free_block.h"
+#include    "snapdatabase/dbtype.h"
+#include    "snapdatabase/exception.h"
+#include    "snapdatabase/file_snap_database_table.h"
+#include    "snapdatabase/structure.h"
+#include    "snapdatabase/table.h"
+
+// snapdev lib
+//
+#include    <snapdev/not_used.h>
+
+// C lib
+//
+#include    <sys/mman.h>
+#include    <sys/stat.h>
 
 // last include
 //
@@ -44,8 +59,8 @@ namespace
 {
 
 
-constexpr char *        g_table_extension = ".snapdb";
-constexpr char *        g_global_lock_filename = "global.lock";
+constexpr char const *          g_table_extension = ".snapdb";
+constexpr char const *          g_global_lock_filename = "global.lock";
 
 
 std::string generate_table_dir(std::string const & path, std::string const & table_name)
@@ -58,11 +73,11 @@ std::string generate_table_dir(std::string const & path, std::string const & tab
     dirname += table_name;
 
     struct stat s;
-    if(stat(dirname.c_str(), &s) != 0)
+    if(::stat(dirname.c_str(), &s) != 0)
     {
         snap::NOTUSED(mkdir(dirname.c_str(), S_IRWXU));
 
-        if(stat(dirname.c_str(), &s) != 0)
+        if(::stat(dirname.c_str(), &s) != 0)
         {
             throw io_error(
                   "System could not properly create directory \""
@@ -95,6 +110,8 @@ dbfile::dbfile(std::string const & path, std::string const & table_name, std::st
     , f_table_name(table_name)
     , f_filename(filename)
     , f_dirname(generate_table_dir(path, table_name))
+    , f_fullname(f_dirname + "/" + f_filename + g_table_extension)
+    , f_lock_filename(f_dirname + "/" + g_global_lock_filename)
     , f_pid(getpid())
 {
 }
@@ -103,6 +120,18 @@ dbfile::dbfile(std::string const & path, std::string const & table_name, std::st
 dbfile::~dbfile()
 {
     close();
+}
+
+
+void dbfile::set_table(table::pointer_t t)
+{
+    f_table = t;
+}
+
+
+table::pointer_t dbfile::get_table() const
+{
+    return f_table;
 }
 
 
@@ -157,6 +186,18 @@ size_t dbfile::get_page_size() const
 }
 
 
+void dbfile::set_sparse(bool sparse)
+{
+    f_sparse_file = sparse;
+}
+
+
+bool dbfile::get_sparse() const
+{
+    return f_sparse_file;
+}
+
+
 void dbfile::set_type(dbtype_t type)
 {
     if(f_type != dbtype_t::DBTYPE_UNKNOWN)
@@ -168,7 +209,7 @@ void dbfile::set_type(dbtype_t type)
         throw snapdatabase_logic_error("The dbfile type cannot be set to dbtype_t::DBTYPE_UNKNOWN.");
     }
 
-    f_type = type
+    f_type = type;
 }
 
 
@@ -189,27 +230,25 @@ int dbfile::open_file()
 
     size_t const page_size(dbfile::get_page_size());
 
-    std::string const fullname(f_dirname + "/" + f_filename + g_table_extension);
-
     // we need to have a global lock in case the file was not yet created
     //
-    snap::lockfile global_lock(f_dirname + "/" + g_global_lock_filename, snap::lockfile::mode_t::LOCKFILE_EXCLUSIVE);
+    snap::lockfile global_lock(f_lock_filename, snap::lockfile::mode_t::LOCKFILE_EXCLUSIVE);
     global_lock.lock();
 
     // first attempt a regular open because once a file was created, this
     // works every time
     //
-    f_fd = open(fullname.c_str(), O_RDWR | O_CLOEXEC | O_NOATIME | O_NOFOLLOW);
+    f_fd = open(f_fullname.c_str(), O_RDWR | O_CLOEXEC | O_NOATIME | O_NOFOLLOW);
     if(f_fd == -1)
     {
-        f_fd = open(fullname.c_str(), O_RDWR | O_CLOEXEC | O_NOATIME | O_NOFOLLOW | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+        f_fd = open(f_fullname.c_str(), O_RDWR | O_CLOEXEC | O_NOATIME | O_NOFOLLOW | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
         if(f_fd == -1)
         {
             // nothing more we can do
             //
             throw io_error(
                   "System could not open file \""
-                + fullname
+                + f_fullname
                 + "\".");
         }
         else
@@ -218,47 +257,38 @@ int dbfile::open_file()
             // create the header block, which is important because it has
             // the special offset of 0
             //
-            auto write_block = [&](structure & s)
-            {
-                int const sz(write(f_fd, s.data(), page_size));
-                if(sz != page_size)
-                {
-                    close(f_fd);
-                    f_fd = -1;
-                    unlink(fullname.c_str());
-                    throw io_error(
-                          "System could not properly write to file \""
-                        + fullname
-                        + "\".");
-                }
-            };
+            //auto write_block = [&](structure & s)
+            //{
+            //    int const sz(write(f_fd, s.data(), page_size));
+            //    if(sz != page_size)
+            //    {
+            //        close();
+            //        unlink(f_fullname.c_str());
+            //        throw io_error(
+            //              "System could not properly write to file \""
+            //            + f_fullname
+            //            + "\".");
+            //    }
+            //};
 
-            block_free_block::allocate_new_block(shared_from_this());
+            version_t v(STRUCTURE_VERSION_MAJOR, STRUCTURE_VERSION_MINOR);
 
-            version_t struct_version(STRUCTURE_VERSION_MAJOR, STRUCTURE_VERSION_MINOR);
+            file_snap_database_table::pointer_t sdbt(std::static_pointer_cast<file_snap_database_table>(
+                        block_free_block::allocate_new_block(
+                                  f_table
+                                , shared_from_this()
+                                , dbtype_t::FILE_TYPE_SNAP_DATABASE_TABLE)));
+            sdbt->set_first_free_block(page_size);
+            sdbt->set_block_size(page_size);
+            sdbt->set_version(v);
 
-            structure header(g_header_description);
-            header.set_uinteger("magic",             dbtype_t::FILE_TYPE_SPDB);
-            header.set_uinteger("version",           struct_version.to_binary());
-            header.set_uinteger("block_size",        page_size);
-            header.set_uinteger("free_block",        page_size);
-            write_block(header);
 
-            file_addr_t offset(page_size * 2);
-            for(int idx(0); idx < 14; ++idx, offset += page_size)
-            {
-                structure free_block(g_free_block_description);
-                free_block.set_uinteger("magic",             dbtype_t::BLOCK_TYPE_FREE_BLOCK);
-                free_block.set_uinteger("next_free_block",   offset);
-                write_block(free_block);
-            }
-
-            // the last FREE block has no "next_free_block"
-            {
-                structure free_block(g_free_block_description);
-                free_block.set_uinteger("magic",             dbtype_t::BLOCK_TYPE_FREE_BLOCK);
-                write_block(free_block);
-            }
+            //structure header(g_header_description);
+            //header.set_uinteger("magic",             dbtype_t::FILE_TYPE_SPDB);
+            //header.set_uinteger("version",           struct_version.to_binary());
+            //header.set_uinteger("block_size",        page_size);
+            //header.set_uinteger("free_block",        page_size);    // allocate_new_block() already allocated this free_block (and another 15)
+            //write_block(header);
         }
     }
 
@@ -266,34 +296,28 @@ int dbfile::open_file()
 }
 
 
-data_t dbfile::page_offset(file_addr_t offset) const
-{
-    return offset % get_page_size();
-}
-
-
-data_t dbfile::data(file_addr_t offset) const
+data_t dbfile::data(reference_t offset)
 {
     int fd(open_file());
 
     size_t const sz(get_page_size());
 
-    page_offset = offset % sz;
-    page_start = offset - page_offset;
+    reference_t page_offset(offset % sz);
+    reference_t page_start(offset - page_offset);
 
-    auto it(f_pages.find(page_start));
-    if(it != f_pages.end())
+    auto it(f_pages.left.find(page_start));
+    if(it != f_pages.left.end())
     {
-        return it.second;
+        return it->second;
     }
 
-    data_t ptr(mmap(
+    data_t ptr(reinterpret_cast<data_t>(mmap(
           nullptr
         , get_page_size()
         , PROT_READ | PROT_WRITE
         , MAP_SHARED
         , fd
-        , page_start));
+        , page_start)));
 
     if(ptr == nullptr)
     {
@@ -305,11 +329,7 @@ data_t dbfile::data(file_addr_t offset) const
                 + ".");
     }
 
-    page_t p;
-    p.f_addr = offset;
-    p.f_data = ptr;
-
-    f_pages.insert(p);
+    f_pages.insert(page_bimap_t::value_type(offset, ptr));
 
     return ptr;
 }
@@ -320,21 +340,21 @@ void dbfile::release_data(data_t ptr)
     intptr_t data_ptr(reinterpret_cast<intptr_t>(ptr));
     size_t const sz(get_page_size());
     intptr_t page_ptr(data_ptr - data_ptr % sz);
-    auto it(f_pages.find(page_ptr));
-    if(it == f_pages.end())
+    auto it(f_pages.right.find(reinterpret_cast<data_t>(page_ptr)));
+    if(it == f_pages.right.end())
     {
         throw page_not_found(
                   "page "
                 + std::to_string(page_ptr)
                 + " not found. It can be unmapped.");
     }
-    f_pages.erase(it);
+    f_pages.right.erase(it);
 
     munmap(ptr, get_page_size());
 }
 
 
-size_t dbfile::get_size()
+size_t dbfile::get_size() const
 {
     if(f_fd == -1)
     {
@@ -342,8 +362,8 @@ size_t dbfile::get_size()
                   "file is not yet opened, get_size() can't be called.");
     }
 
-    struct st s;
-    if(stat(f_d, &s) == -1)
+    struct stat s;
+    if(::fstat(f_fd, &s) == -1)
     {
         throw io_error(
                   "stat() failed on \""
@@ -351,11 +371,11 @@ size_t dbfile::get_size()
                 + "\".");
     }
 
-    return st.st_size;
+    return s.st_size;
 }
 
 
-file_addr_t dbfile::append_free_block(file_addr_t const previous_block_offset)
+reference_t dbfile::append_free_block(reference_t const previous_block_offset)
 {
     if(f_fd == -1)
     {
@@ -363,8 +383,8 @@ file_addr_t dbfile::append_free_block(file_addr_t const previous_block_offset)
                   "file is not yet opened, append_free_block() can't be called.");
     }
 
-    file_addr_t const p(lseek(f_fd, 0, SEEK_END));
-    if(p == -1)
+    reference_t const p(lseek(f_fd, 0, SEEK_END));
+    if(p == static_cast<reference_t>(-1))
     {
         close();
         throw io_error(
@@ -373,22 +393,18 @@ file_addr_t dbfile::append_free_block(file_addr_t const previous_block_offset)
                 + "\".");
     }
 
-    if(f_spares_file)
+    dbtype_t magic(dbtype_t::BLOCK_TYPE_FREE_BLOCK);
+    write_data(&magic, sizeof(magic));
+    write_data(&previous_block_offset, sizeof(previous_block_offset));
+    if(!f_sparse_file)
     {
-        // in this case we write the minimum for a chance to keep some
-        // data at 0x00 so the file is sparse
+        // make sure to write the rest too so for sure it's not sparse
         //
-        dbtype_t magic(dbtype_t::BLOCK_TYPE_FREE_BLOCK);
-        write_data(&magic, sizeof(magic));
-        write_data(&previous_block_offset, sizeof(previous_block_offset));
+        std::vector<uint8_t> zeroes(get_page_size() - sizeof(magic) - sizeof(previous_block_offset));
+        write_data(zeroes.data(), zeroes.size());
     }
-    else
-    {
-        structure free_block(g_free_block_description);
-        free_block.set_uinteger("magic",             dbtype_t::BLOCK_TYPE_FREE_BLOCK);
-        free_block.set_uinteger("next_free_block",   previous_block_offset);
-        write_data(free_block.data(), f_page_size);
-    }
+
+    return p;
 }
 
 
@@ -405,7 +421,7 @@ file_addr_t dbfile::append_free_block(file_addr_t const previous_block_offset)
 void dbfile::write_data(void const * ptr, size_t size)
 {
     int const sz(write(f_fd, ptr, size));
-    if(sz != size)
+    if(static_cast<size_t>(sz) != size)
     {
         close();
         throw io_error(
@@ -413,6 +429,58 @@ void dbfile::write_data(void const * ptr, size_t size)
             + f_filename
             + "\".");
     }
+}
+
+
+std::string dbtype_to_string(dbtype_t type)
+{
+    switch(type)
+    {
+    case dbtype_t::DBTYPE_UNKNOWN:
+        return std::string("Unknown");
+
+    case dbtype_t::FILE_TYPE_SNAP_DATABASE_TABLE:
+        return std::string("Snap Database Type (SDBT)");
+
+    case dbtype_t::FILE_TYPE_EXTERNAL_INDEX:
+        return std::string("External Index File (INDX)");
+
+    case dbtype_t::FILE_TYPE_BLOOM_FILTER:
+        return std::string("Bloom Filter File (BLMF)");
+
+    case dbtype_t::BLOCK_TYPE_BLOB:
+        return std::string("Blob Block (BLOB)");
+
+    case dbtype_t::BLOCK_TYPE_DATA:
+        return std::string("Data Block (DATA)");
+
+    case dbtype_t::BLOCK_TYPE_ENTRY_INDEX:
+        return std::string("Entry Index Block (EIDX)");
+
+    case dbtype_t::BLOCK_TYPE_FREE_BLOCK:
+        return std::string("Free Block (FREE)");
+
+    case dbtype_t::BLOCK_TYPE_FREE_SPACE:
+        return std::string("Free Space Block (FSPC)");
+
+    case dbtype_t::BLOCK_TYPE_INDEX_POINTERS:
+        return std::string("Index Pointer Block (IDXP)");
+
+    case dbtype_t::BLOCK_TYPE_INDIRECT_INDEX:
+        return std::string("Indirect Index Block (INDR)");
+
+    case dbtype_t::BLOCK_TYPE_SECONDARY_INDEX:
+        return std::string("Secondary Index Block (SIDX)");
+
+    case dbtype_t::BLOCK_TYPE_SCHEMA:
+        return std::string("Schema Block (SCHM)");
+
+    case dbtype_t::BLOCK_TYPE_TOP_INDEX:
+        return std::string("Top Index Block (TIDX)");
+
+    }
+
+    return std::string("Invalid");
 }
 
 

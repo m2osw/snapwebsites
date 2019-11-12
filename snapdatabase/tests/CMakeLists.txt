@@ -1,4 +1,3 @@
-#
 # Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/snaplogger
@@ -20,7 +19,7 @@
 #
 
 ##
-## snaplogger unittest
+## snapdatabase unittest
 ##
 project(unittest)
 
@@ -40,27 +39,21 @@ if( Catch2_FOUND )
         ${LIBUTF8_INCLUDE_DIRS}
     )
 
-    add_executable( ${PROJECT_NAME}
+    add_executable(${PROJECT_NAME}
         main.cpp
 
-        appender.cpp
-        asynchronous.cpp
-        diagnostic.cpp
-        message.cpp
-        severity.cpp
-        variable.cpp
         version.cpp
     )
 
-    target_link_libraries( ${PROJECT_NAME}
-        snaplogger
+    target_link_libraries(${PROJECT_NAME}
+        snapdatabase
     )
 
-    add_test( unittests ${PROJECT_NAME} )
+    add_test(unittests ${PROJECT_NAME})
 
 else( Catch2_FOUND )
 
-    message("snapcatch2 not found... no test will be built.")
+    message("snapcatch2 not found... no unit test will be built.")
 
 endif( Catch2_FOUND )
 

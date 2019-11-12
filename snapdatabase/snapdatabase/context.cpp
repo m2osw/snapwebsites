@@ -25,15 +25,27 @@
  * object and a corresponding set of blocks.
  */
 
+#define NOQT
+
 // self
 //
 #include    "snapdatabase/context.h"
-
 
 // snapwebsites lib
 //
 #include    <snapwebsites/mkdir_p.h>
 
+// snaplogger lib
+//
+#include    <snaplogger/message.h>
+
+// snapdev lib
+//
+#include    <snapdev/glob_to_list.h>
+
+// C++ lib
+//
+#include    <deque>
 
 // last include
 //
@@ -51,36 +63,37 @@ namespace detail
 
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class context_impl
 {
 public:
-                                    context_impl(advgetopt::getopt::pointer_t opts);
+                                    context_impl(context *c, advgetopt::getopt::pointer_t opts);
 
     table::pointer_t                get_table(std::string const & name) const;
     table::map_t                    list_tables() const;
     std::string                     get_path() const;
 
 private:
-    context::pointer_t              f_context = context::pointer_t();
+    context *                       f_context = nullptr;
     advgetopt::getopt::pointer_t    f_opts = advgetopt::getopt::pointer_t();
     std::string                     f_path = std::string();
     int                             f_lock = -1;        // TODO: lock the context so only one snapdatabasedaemon can run against it
     table::map_t                    f_tables = table::map_t();
 };
+#pragma GCC diagnostic pop
 
 
-context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointer_t opts)
-    : f_context(context)
+context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
+    : f_context(c)
     , f_opts(opts)
 {
-    pointer_t me(shared_from_this());
-
-    f_path = f_opts->string("context");
+    f_path = f_opts->get_string("context");
     if(f_path.empty())
     {
         f_path = "/var/lib/snapwebsites/database";
     }
-    if(mkdir_p(f_path, false, 0700, "snapwebsites", "snapwebsites") != 0)
+    if(snap::mkdir_p(f_path, false, 0700, "snapwebsites", "snapwebsites") != 0)
     {
         throw io_error(
               "Could not create or access the context directory \""
@@ -95,7 +108,7 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
     {
         std::string const path(opts->get_string("table_schema_path", idx));
 
-        snap::glob_to_list<std::deque> list;
+        snap::glob_to_list<std::deque<std::string>> list;
         if(!list.read_path<
                   snap::glob_to_list_flag_t::GLOB_FLAG_ONLY_DIRECTORIES
                 , snap::glob_to_list_flag_t::GLOB_FLAG_TILDE>(path + "/*.xml"))
@@ -104,7 +117,7 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
                 << "Could not read directory \""
                 << path
                 << "\" for XML table declarations."
-                << SNAP_LOG_END;
+                << SNAP_LOG_SEND;
             continue;
         }
 
@@ -114,7 +127,7 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
                 << "Directory \""
                 << path
                 << "\" is empty."
-                << SNAP_LOG_END;
+                << SNAP_LOG_SEND;
             continue;
         }
 
@@ -126,19 +139,31 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
             xml x(filename);
 
             xml_node::pointer_t root(x.root());
+            if(root == nullptr)
+            {
+                SNAP_LOG_WARNING
+                    << "Problem reading table schema \""
+                    << filename
+                    << "\" is not acceptable."
+                    << SNAP_LOG_SEND;
+                continue;
+            }
+
             if(root->tag_name() != "keyspaces"
             && root->tag_name() != "context")
             {
                 SNAP_LOG_WARNING
-                    << "A table schema must be a \"keyspaces\" or \"context\". \""
+                    << "Table \""
+                    << filename
+                    << "\" schema must be a \"keyspaces\" or \"context\". \""
                     << root->tag_name()
                     << "\" is not acceptable."
-                    << SNAP_LOG_END;
+                    << SNAP_LOG_SEND;
                 continue;
             }
 
             xml_node::map_t complex_types;
-            for(auto child(x->first_child()); child != nullptr; child = child->next())
+            for(auto child(root->first_child()); child != nullptr; child = child->next())
             {
                 if(child->tag_name() == "complex-type")
                 {
@@ -149,7 +174,7 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
                             << "The name of a complex type cannot be the name of a system type. \""
                             << name
                             << "\" is not acceptable."
-                            << SNAP_LOG_END;
+                            << SNAP_LOG_SEND;
                         continue;
                     }
                     if(complex_types.find(name) != complex_types.end())
@@ -158,19 +183,21 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
                             << "The complex type named \""
                             << name
                             << "\" is defined twice. Only the very first intance is used."
-                            << SNAP_LOG_END;
+                            << SNAP_LOG_SEND;
                         continue;
                     }
-                    complex_types[name].push_back(child);
+                    complex_types[name] = child;
                 }
             }
 
-            for(auto child(x->first_child()); child != nullptr; child = child->next())
+            for(auto child(root->first_child()); child != nullptr; child = child->next())
             {
                 if(child->tag_name() == "table")
                 {
-                    table::pointer_t t(std::make_shared<table>(me, child, complex_types));
+                    table::pointer_t t(std::make_shared<table>(f_context, child, complex_types));
                     f_tables[t->name()] = t;
+
+                    t->get_dbfile()->set_sparse(t->is_sparse());
                 }
                 else if(child->tag_name() == "table-extension")
                 {
@@ -192,7 +219,7 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
                         << "Unknown tag \""
                         << child->tag_name()
                         << "\" within a <context> tag ignored."
-                        << SNAP_LOG_END;
+                        << SNAP_LOG_SEND;
                 }
             }
         }
@@ -206,9 +233,9 @@ context_impl::context_impl(context::pointer_t context, advgetopt::getopt::pointe
         {
             SNAP_LOG_WARNING
                 << "Unknown table \""
-                << child->tag_name()
+                << e->tag_name()
                 << "\" within a <table-extension>, tag ignored."
-                << SNAP_LOG_END;
+                << SNAP_LOG_SEND;
             continue;
         }
         t->load_extension(e);
@@ -224,7 +251,7 @@ table::pointer_t context_impl::get_table(std::string const & name) const
         return table::pointer_t();
     }
 
-    return it.second;
+    return it->second;
 }
 
 
@@ -246,7 +273,7 @@ std::string context_impl::get_path() const
 
 
 context::context(advgetopt::getopt::pointer_t opts)
-    : f_impl(std::shared_from_this(), new context_impl(opt))
+    : f_impl(std::make_unique<detail::context_impl>(this, opts))
 {
 }
 
@@ -266,6 +293,20 @@ table::map_t context::list_tables() const
 std::string context::get_path() const
 {
     return f_impl->get_path();
+}
+
+
+/** \brief Signal that a new allocation was made.
+ *
+ * This function is just a signal sent to the memory manager so it knows
+ * it should check and see whether too much memory is currently used and
+ * attempt to release some memory.
+ *
+ * \note
+ * The memory manager runs in a separate thread.
+ */
+void context::limit_allocated_memory()
+{
 }
 
 

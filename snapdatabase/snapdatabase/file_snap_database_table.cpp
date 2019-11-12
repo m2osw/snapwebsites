@@ -48,7 +48,7 @@ namespace detail
 
 
 // 'SDBT'
-struct_description_t * g_snap_database_table_description =
+constexpr struct_description_t g_snap_database_table_description[] =
 {
     define_description(
           FieldName("magic")    // dbtype_t = SDBT
@@ -126,22 +126,46 @@ struct_description_t * g_snap_database_table_description =
 
 
 
-file_snap_database_table::file_snap_database_table(dbfile::pointer_t f, file_addr_t offset)
+file_snap_database_table::file_snap_database_table(dbfile::pointer_t f, reference_t offset)
     : block(f, offset)
-    , f_structure(g_snap_database_table_description, data(), offset)
 {
+    f_structure = std::make_shared<structure>(g_snap_database_table_description);
 }
 
 
-file_addr_t file_snap_database_table::get_first_free_block()
+version_t file_snap_database_table::get_version() const
 {
-    return static_cast<file_addr_t>(f_structure.get_uinteger("first_free_block"));
+    return static_cast<version_t>(static_cast<uint32_t>(f_structure->get_uinteger("version")));
 }
 
 
-void file_snap_database_table::set_first_free_block(file_addr_t offset)
+void file_snap_database_table::set_version(version_t v)
 {
-    f_structure.set_uinteger("first_free_block", offset);
+    f_structure->set_uinteger("version", v.to_binary());
+}
+
+
+uint32_t file_snap_database_table::get_block_size() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("block_size"));
+}
+
+
+void file_snap_database_table::set_block_size(uint32_t offset)
+{
+    f_structure->set_uinteger("block_size", offset);
+}
+
+
+reference_t file_snap_database_table::get_first_free_block() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("first_free_block"));
+}
+
+
+void file_snap_database_table::set_first_free_block(reference_t offset)
+{
+    f_structure->set_uinteger("first_free_block", offset);
 }
 
 

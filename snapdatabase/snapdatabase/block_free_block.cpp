@@ -29,7 +29,6 @@
 //
 #include    "snapdatabase/block_free_block.h"
 
-
 // last include
 //
 #include    <snapdev/poison.h>
@@ -41,14 +40,8 @@ namespace snapdatabase
 
 
 
-namespace detail
-{
-}
-
-
-
 // 'FREE'
-struct_description_t * g_free_block_description =
+constexpr struct_description_t g_free_block_description[] =
 {
     define_description(
           FieldName("magic")    // dbtype_t = FREE
@@ -64,85 +57,22 @@ struct_description_t * g_free_block_description =
 
 
 
-block_free_block::block_free_block(dbfile::pointer_t f, file_addr_t offset)
+block_free_block::block_free_block(dbfile::pointer_t f, reference_t offset)
     : block(f, offset)
-    , f_structure(g_free_block_description, data(), offset)
 {
+    f_structure = std::make_shared<structure>(g_free_block_description);
 }
 
 
-file_addr_t block_free_block::get_next_free_block()
+reference_t block_free_block::get_next_free_block() const
 {
-    return static_cast<file_addr_t>(f_structure.get_uinteger("next_free_block"));
+    return static_cast<reference_t>(f_structure->get_uinteger("next_free_block"));
 }
 
 
-void block_free_block::set_next_free_block(file_addr_t offset)
+void block_free_block::set_next_free_block(reference_t offset)
 {
-    f_structure.set_uinteger("next_free_block", offset);
-}
-
-
-block::pointer_t block_free_block::allocate_new_block(dbfile::pointer_t f, dbtype_t type)
-{
-    file_addr_t ptr(0);
-    if(f->get_size() == 0)
-    {
-        switch(type)
-        {
-        case FILE_TYPE_SNAP_DATABASE_TABLE:
-        case FILE_TYPE_EXTERNAL_INDEX:
-        case FILE_TYPE_BLOOM_FILTER:
-            break;
-
-        default:
-            throw snapdatabase_logic_error(
-                      "a new file can't be created with type \""
-                    + type_to_string(type)
-                    + "\".");
-
-        }
-
-        // this is a new file, create 16 `FREE` blocks
-        //
-        f->append_free_block(0);
-        file_addr_t next(f->get_page_size() * 2);
-        for(int idx(0); idx < 14; ++idx, next += f->get_page_size())
-        {
-            f->append_free_block(next);
-        }
-        f->append_free_block(0);
-
-        // ptr is already 0
-    }
-    else
-    {
-        // get next free block from the header
-        //
-
-        // WE DON'T HAVE AN f_table HERE AT THIS TIME, THOUGH...
-        //
-        file_snap_database_table::pointer_t header(f_table->get_block(0));
-        ptr = header->get_first_free_block();
-        if(ptr == 0)
-        {
-            ptr = f->append_free_block(0);
-
-            file_addr_t next(ptr + f->get_page_size() * 2);
-            for(int idx(0); idx < 14; ++idx, next += f->get_page_size())
-            {
-                f->append_free_block(next);
-            }
-            f->append_free_block(0);
-
-            header->set_first_free_block(ptr + f->get_page_size());
-        }
-        else
-        {
-            block_free_block::pointer_t p(new block_free_block(f, ptr));
-            header->set_first_free_block(p->get_next_free_block());
-        }
-    }
+    f_structure->set_uinteger("next_free_block", offset);
 }
 
 

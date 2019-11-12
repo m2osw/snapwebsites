@@ -26,7 +26,7 @@
 
 // self
 //
-#include    "snapdatabase/block.h"
+#include    "snapdatabase/structure.h"
 
 
 
@@ -41,11 +41,10 @@ class block_index_pointer
 public:
     typedef std::shared_ptr<block_index_pointer>       pointer_t;
 
-                                block_index_pointer(dbfile::pointer_t f, file_addr_t offset);
+                                block_index_pointer(dbfile::pointer_t f, reference_t offset);
 
 
 private:
-    structure                   f_structure = structure();
 };
 
 

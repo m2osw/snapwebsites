@@ -25,7 +25,7 @@
 
 // snaplogger lib
 //
-#include    <snaplogger/version.h>
+#include    <snapdatabase/version.h>
 
 
 

@@ -41,24 +41,43 @@ namespace snapdatabase
 
 
 
-namespace detail
-{
-}
-
-
-
 // 'INDR'
-struct_description_t * g_header_description =
+struct_description_t g_indirect_index_description[] =
 {
     define_description(
           FieldName("magic")    // dbtype_t = INDR
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
     ),
+    define_description(
+          FieldName("size")
+        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
+    ),
+    //define_description(
+    //      FieldName("size")
+    //    , FieldType(the struct_type_t::STRUCT_TYPE_ARRAY32 data)
+    //),
     end_descriptions()
 };
 
 
 
+block_indirect_index::block_indirect_index(dbfile::pointer_t f, reference_t offset)
+    : block(f, offset)
+{
+    f_structure = std::make_shared<structure>(g_indirect_index_description);
+}
+
+
+uint32_t block_indirect_index::get_size() const
+{
+    return static_cast<uint32_t>(f_structure->get_uinteger("size"));
+}
+
+
+void block_indirect_index::set_size(uint32_t size)
+{
+    f_structure->set_uinteger("size", size);
+}
 
 
 

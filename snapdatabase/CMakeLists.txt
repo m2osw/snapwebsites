@@ -26,25 +26,18 @@ project(snapdatabase_project)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set( SNAP_TABLE_DESCRIPTION_PATH lib/snapwebsites/tables )
+set(SNAP_TABLE_DESCRIPTION_PATH lib/snapwebsites/tables)
 
-#SnapGetVersion( SNAPDATABASE ${CMAKE_CURRENT_SOURCE_DIR} )
+#SnapGetVersion(SNAPDATABASE ${CMAKE_CURRENT_SOURCE_DIR})
 
-set( SNAPDATABASE_VERSION_MAJOR ${SNAPWEBSITES_VERSION_MAJOR} )
-set( SNAPDATABASE_VERSION_MINOR ${SNAPWEBSITES_VERSION_MINOR} )
-set( SNAPDATABASE_VERSION_PATCH ${SNAPWEBSITES_VERSION_PATCH} )
+set(SNAPDATABASE_VERSION_MAJOR ${SNAPWEBSITES_VERSION_MAJOR})
+set(SNAPDATABASE_VERSION_MINOR ${SNAPWEBSITES_VERSION_MINOR})
+set(SNAPDATABASE_VERSION_PATCH ${SNAPWEBSITES_VERSION_PATCH})
 
 include_directories(
-    SYSTEM
-        ${Qt5Core_INCLUDE_DIRS}
-        ${Qt5Sql_INCLUDE_DIRS}
-        ${Qt5Xml_INCLUDE_DIRS}
-)
-set( QT_LIBRARIES
-    Qt5::Core
-    Qt5::Xml
-)
-include_directories(
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+
     ${libsnapwebsites_project_SOURCE_DIR}/src
     ${libsnapwebsites_project_BINARY_DIR}/src
     ${snapmanagercgi_project_BINARY_DIR}/lib
@@ -52,9 +45,10 @@ include_directories(
 
     ${LIBEXCEPT_INCLUDE_DIRS}
     ${SNAPDEV_INCLUDE_DIRS}
+    ${SNAPLOGGER_INCLUDE_DIRS}
 )
 
-#snap_clear_xml_targets()
+snap_clear_xml_targets()
 
 add_subdirectory( cmake           )
 add_subdirectory( conf            )
@@ -65,6 +59,6 @@ add_subdirectory( manager-plugins )
 add_subdirectory( tests           )
 add_subdirectory( doc             )
 
-#snap_build_xml_targets()
+snap_build_xml_targets()
 
 # vim: ts=4 sw=4 et

@@ -18,48 +18,46 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_snapdatabase)
+project(snapdatabase_conf)
 
-find_package( Qt5Core REQUIRED )
-find_package( Qt5Xml  REQUIRED )
+snap_validate_xml( bundle-database.xml     bundles.xsd )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
 
-qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    snapdatabase.qrc
-)
 
-add_library(snapdatabase SHARED
-    snapdatabase.cpp
-    ${SNAP_MANAGER_MOC_CXX}
-    ${SNAP_MANAGER_RESOURCES_RCC}
-)
-
-#message("AS2JS_LIBRARIES = " ${AS2JS_LIBRARIES})
-
-target_link_libraries(snapdatabase
-    ${QT_LIBRARIES}
-)
-
+###############################################################################
+## Logger files
+##
 install(
-    TARGETS
-        snapdatabase
-
-    LIBRARY DESTINATION
-        ${PLUGIN_INSTALL_DIR}
-)
-
-install(
-    DIRECTORY
-        ${CMAKE_CURRENT_SOURCE_DIR}/
+    FILES 
+        snapdatabase.properties
 
     DESTINATION
-        include/snapmanager/plugins/snapdatabase
-
-    FILES_MATCHING PATTERN
-        "*.h"
+        share/snapwebsites/logger
 )
+
+
+###############################################################################
+## Bundles are also saved under a bundle directory for reference
+##
+install(
+    FILES
+        bundle-database.xml
+
+    DESTINATION
+        share/snapwebsites/bundles
+)
+
+
+###############################################################################
+## Configuration file
+##
+install(
+    FILES 
+        snapdatabase.conf
+
+    DESTINATION
+        share/snapwebsites
+)
+
 
 # vim: ts=4 sw=4 et

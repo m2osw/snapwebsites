@@ -18,7 +18,7 @@
 
 // self
 //
-#include "firewall.h"
+#include "snapdatabase.h"
 
 
 // our lib
@@ -72,7 +72,7 @@ char const *    g_conf_filename   = "/etc/network/firewall.conf";
 char const *    g_firewall_script = "/etc/network/firewall";
 
 char const *    g_conf_iplock_filename = "/etc/iplock/schemes/schemes.d/all.conf";
-char const *    g_conf_iplock_glob = "/etc/iplock/schemes/*.conf";
+char const *    g_conf_iplock_glob     = "/etc/iplock/schemes/*.conf";
 
 
 } // no name namespace

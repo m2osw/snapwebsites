@@ -29,6 +29,7 @@
 //
 #include    "snapdatabase/block_data.h"
 
+#include    "snapdatabase/table.h"
 
 // last include
 //
@@ -48,7 +49,7 @@ namespace detail
 
 
 // 'DATA'
-struct_description_t * g_data_description =
+constexpr struct_description_t g_data_description[] =
 {
     define_description(
           FieldName("magic")    // dbtype_t = DATA
@@ -58,7 +59,17 @@ struct_description_t * g_data_description =
 };
 
 
+block_data::block_data(dbfile::pointer_t f, reference_t offset)
+    : block(f, offset)
+{
+    f_structure = std::make_shared<structure>(g_data_description);
+}
 
+
+uint32_t block_data::block_total_space(table_pointer_t t)
+{
+    return t->get_page_size() - sizeof(uint32_t);
+}
 
 
 

@@ -18,48 +18,16 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_snapdatabase)
 
-find_package( Qt5Core REQUIRED )
-find_package( Qt5Xml  REQUIRED )
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
+##
+## Documentation
+##
+AddDoxygenTarget(
+    snapdatabase
+    ${SNAPWEBSITES_VERSION_MAJOR}
+    ${SNAPWEBSITES_VERSION_MINOR}
+    ${SNAPWEBSITES_VERSION_PATCH}
 )
 
-qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    snapdatabase.qrc
-)
 
-add_library(snapdatabase SHARED
-    snapdatabase.cpp
-    ${SNAP_MANAGER_MOC_CXX}
-    ${SNAP_MANAGER_RESOURCES_RCC}
-)
-
-#message("AS2JS_LIBRARIES = " ${AS2JS_LIBRARIES})
-
-target_link_libraries(snapdatabase
-    ${QT_LIBRARIES}
-)
-
-install(
-    TARGETS
-        snapdatabase
-
-    LIBRARY DESTINATION
-        ${PLUGIN_INSTALL_DIR}
-)
-
-install(
-    DIRECTORY
-        ${CMAKE_CURRENT_SOURCE_DIR}/
-
-    DESTINATION
-        include/snapmanager/plugins/snapdatabase
-
-    FILES_MATCHING PATTERN
-        "*.h"
-)
-
-# vim: ts=4 sw=4 et
+# vim: ts=4 sw=4 et nocindent

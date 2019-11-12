@@ -42,7 +42,7 @@ namespace snapdatabase
 
 
 // 'BLMF'
-struct_description_t * g_header_description =
+constexpr struct_description_t g_bloom_filter_description[] =
 {
     define_description(
           FieldName("magic")    // dbtype_t = BLMF
@@ -50,6 +50,15 @@ struct_description_t * g_header_description =
     ),
     end_descriptions()
 };
+
+
+
+
+file_bloom_filter::file_bloom_filter(dbfile::pointer_t f, reference_t offset)
+    : block(f, offset)
+{
+    f_structure = std::make_shared<structure>(g_bloom_filter_description);
+}
 
 
 

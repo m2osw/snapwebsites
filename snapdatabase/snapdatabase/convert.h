@@ -20,8 +20,10 @@
 
 
 /** \file
- * \brief Block representing the database file header.
+ * \brief Convert file header.
  *
+ * The convert code is used to transform data from text to binary and vice
+ * versa.
  */
 
 // self
@@ -35,21 +37,14 @@ namespace snapdatabase
 
 
 
-class block_indirect_index
-    : public block
-{
-public:
-    typedef std::shared_ptr<block_indirect_index>       pointer_t;
+int64_t convert_to_int(std::string const & value, size_t max_size);
+uint64_t convert_to_uint(std::string const & value, size_t max_size);
 
-                                block_indirect_index(dbfile::pointer_t f, reference_t offset);
-
-    uint32_t                    get_size() const;
-    void                        set_size(uint32_t size);
-
-private:
-};
+buffer_t string_to_typed_buffer(struct_type_t type, std::string value);
+std::string typed_buffer_to_string(struct_type_t type, buffer_t value);
 
 
 
 } // namespace snapdatabase
 // vim: ts=4 sw=4 et
+

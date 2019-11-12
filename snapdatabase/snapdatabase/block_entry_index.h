@@ -26,7 +26,7 @@
 
 // self
 //
-#include    "snapdatabase/block.h"
+#include    "snapdatabase/structure.h"
 
 
 
@@ -41,11 +41,18 @@ class block_entry_index
 public:
     typedef std::shared_ptr<block_entry_index>       pointer_t;
 
-                                block_entry_index(dbfile::pointer_t f, file_addr_t offset);
+                                block_entry_index(dbfile::pointer_t f, reference_t offset);
 
+    uint32_t                    get_count() const;
+    void                        set_count(uint32_t count);
+    uint32_t                    get_size() const;
+    void                        set_size(uint32_t size);
+    reference_t                 get_next() const;
+    void                        set_next(reference_t offset);
+    reference_t                 get_previous() const;
+    void                        set_previous(reference_t offset);
 
 private:
-    structure                   f_structure = structure();
 };
 
 

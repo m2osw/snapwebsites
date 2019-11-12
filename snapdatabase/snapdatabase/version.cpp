@@ -54,7 +54,7 @@ namespace snapdatabase
  */
 int get_major_version()
 {
-    return SNAPLOGGER_VERSION_MAJOR;
+    return SNAPDATABASE_VERSION_MAJOR;
 }
 
 
@@ -67,7 +67,7 @@ int get_major_version()
  */
 int get_release_version()
 {
-    return SNAPLOGGER_VERSION_MINOR;
+    return SNAPDATABASE_VERSION_MINOR;
 }
 
 
@@ -80,7 +80,7 @@ int get_release_version()
  */
 int get_patch_version()
 {
-    return SNAPLOGGER_VERSION_PATCH;
+    return SNAPDATABASE_VERSION_PATCH;
 }
 
 
@@ -99,7 +99,7 @@ int get_patch_version()
  */
 char const * get_version_string()
 {
-    return SNAPLOGGER_VERSION_STRING;
+    return SNAPDATABASE_VERSION_STRING;
 }
 
 

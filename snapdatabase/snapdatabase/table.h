@@ -33,11 +33,12 @@
  * request those files to load blocks and thus the settings and data saved
  * in those files.
  *
- * Tables are owned by a context.
+ * A table is owned by a context.
  */
 
 // self
 //
+#include    "snapdatabase/schema.h"
 #include    "snapdatabase/xml.h"
 
 
@@ -54,6 +55,10 @@ class table_impl;
 
 
 class context;
+class dbfile;
+typedef std::shared_ptr<dbfile>                 dbfile_pointer_t;
+class block;
+typedef std::shared_ptr<block>                  block_pointer_t;
 
 class table
 {
@@ -62,24 +67,31 @@ public:
     typedef std::map<std::string, pointer_t>    map_t;
 
                                                 table(
-                                                      std::shared_ptr<context> c
+                                                      context * c
                                                     , xml_node::pointer_t x
                                                     , xml_node::map_t complex_types);
 
     void                                        load_extension(xml_node::pointer_t e);
 
+    dbfile_pointer_t                            get_dbfile() const;
     version_t                                   version() const;
     std::string                                 name() const;
     model_t                                     model() const;
     column_ids_t                                row_key() const;
-    schema_column_t::pointer_t                  column(std::string const & name) const;
-    schema_column_t::pointer_t                  column(column_id_t id) const;
-    map_by_id_t                                 columns_by_id() const;
-    map_by_name_t                               columns_by_name() const;
+    schema_column::pointer_t                    column(std::string const & name) const;
+    schema_column::pointer_t                    column(column_id_t id) const;
+    schema_column::map_by_id_t                  columns_by_id() const;
+    schema_column::map_by_name_t                columns_by_name() const;
+    bool                                        is_sparse() const;
+    bool                                        is_secure() const;
     std::string                                 description() const;
+    size_t                                      get_size() const; // total size of the file right now
+    size_t                                      get_page_size() const; // size of one block in bytes including the magic
+    block_pointer_t                             get_block(reference_t offset);
+    block_pointer_t                             allocate_new_block(dbtype_t type);
 
 private:
-    std::unique_ptr<table_impl>                 f_impl;
+    std::unique_ptr<detail::table_impl>         f_impl;
 };
 
 

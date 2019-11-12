@@ -27,10 +27,17 @@
  * as the schema definition of the tables.
  */
 
+// self lib
+//
+//#include    "snapdatabase/structure.h"
+
 // C++ lib
 //
+#include    <deque>
+#include    <map>
 #include    <memory>
 #include    <ostream>
+#include    <vector>
 
 
 
@@ -42,16 +49,17 @@ namespace snapdatabase
 class xml_node
 {
 public:
-    typedef std::shared_ptr<xml>    pointer_t;
-    typedef std::map<std::string, xml>
+    typedef std::shared_ptr<xml_node>
+                                    pointer_t;
+    typedef std::map<std::string, pointer_t>
                                     map_t;
-    typedef std::weak_ptr<xml>      weak_pointer_t;
+    typedef std::weak_ptr<xml_node> weak_pointer_t;
     typedef std::map<std::string, std::string>  
                                     attribute_map_t;
     typedef std::vector<pointer_t>  vector_t;
     typedef std::deque<pointer_t>   deque_t;
 
-                                    node(std::string const & name);
+                                    xml_node(std::string const & name);
 
     std::string const &             tag_name() const;
     std::string                     text() const;
@@ -59,7 +67,7 @@ public:
     attribute_map_t                 all_attributes() const;
     std::string                     attribute(std::string const & name) const;
     void                            set_attribute(std::string const & name, std::string const & value);
-    void                            append_child(xml_node const & n);
+    void                            append_child(pointer_t n);
 
     pointer_t                       parent() const;
     pointer_t                       first_child() const;
@@ -94,7 +102,7 @@ public:
     xml_node::pointer_t             root();
 
 private:
-    xml_node::pointer_t             f_root;
+    xml_node::pointer_t             f_root = xml_node::pointer_t();
 };
 
 

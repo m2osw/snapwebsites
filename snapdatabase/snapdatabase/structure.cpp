@@ -29,6 +29,12 @@
 //
 #include    "snapdatabase/structure.h"
 
+#include    "snapdatabase/convert.h"
+
+
+// boost lib
+//
+#include    <boost/algorithm/string.hpp>
 
 // last include
 //
@@ -55,6 +61,8 @@ struct name_to_struct_type_t
 
 name_to_struct_type_t g_name_to_struct_type[] =
 {
+    // WARNING: Keep in alphabetical order
+    //
     NAME_TO_STRUCT_TYPE(ARRAY16),
     NAME_TO_STRUCT_TYPE(ARRAY32),
     NAME_TO_STRUCT_TYPE(ARRAY8),
@@ -85,7 +93,7 @@ name_to_struct_type_t g_name_to_struct_type[] =
     NAME_TO_STRUCT_TYPE(P32STRING),
     NAME_TO_STRUCT_TYPE(P8STRING),
     NAME_TO_STRUCT_TYPE(REFERENCE),
-    NAME_TO_STRUCT_TYPE(RENAMED)
+    NAME_TO_STRUCT_TYPE(RENAMED),
     NAME_TO_STRUCT_TYPE(STRUCTURE),
     NAME_TO_STRUCT_TYPE(TIME),
     NAME_TO_STRUCT_TYPE(UINT16),
@@ -97,29 +105,29 @@ name_to_struct_type_t g_name_to_struct_type[] =
     NAME_TO_STRUCT_TYPE(UINT512),
     NAME_TO_STRUCT_TYPE(USTIME),
     NAME_TO_STRUCT_TYPE(VERSION),
-    NAME_TO_STRUCT_TYPE(VOID),
+    NAME_TO_STRUCT_TYPE(VOID)
 };
 
 
 
 union float32_uint32_t
 {
-    float       f_float = 0.0l;
+    float       f_float;
     uint32_t    f_int = 0;
 };
 
 
 union float64_uint64_t
 {
-    double      f_float = 0.0l;
+    double      f_float;
     uint64_t    f_int = 0;
 };
 
 
 union float128_uint128_t
 {
-    long double f_float = 0.0l;
-    uint64_t    f_int[2] = 0;
+    long double f_float;
+    uint64_t    f_int[2] = { 0, 0 };
 };
 
 
@@ -128,6 +136,124 @@ union float128_uint128_t
 
 }
 // no name namespace
+
+
+
+
+int512_t::int512_t()
+{
+}
+
+
+int512_t::int512_t(int512_t const & rhs)
+{
+    for(int idx(0); idx < 7; ++idx)
+    {
+        f_value[idx] = rhs.f_value[idx];
+    }
+    f_high_value = rhs.f_high_value;
+}
+
+
+int512_t::int512_t(uint512_t const & rhs)
+{
+    for(int idx(0); idx < 7; ++idx)
+    {
+        f_value[idx] = rhs.f_value[idx];
+    }
+    f_high_value = rhs.f_value[7];
+}
+
+
+size_t int512_t::bit_size() const
+{
+    if(is_negative())
+    {
+        int512_t opp;
+        opp -= *this;
+        if(opp.is_negative())
+        {
+            return 512;
+        }
+    }
+
+    if(f_high_value != 0)
+    {
+        return __builtin_clzll(f_high_value) + 7 * 64 + 1;
+    }
+
+    size_t result(512 - 64);
+    for(int idx(6); idx >= 0; --idx)
+    {
+        if(f_value[idx] != 0)
+        {
+            return __builtin_clzll(f_value[idx]) + result;
+        }
+    }
+
+    return 0;
+}
+
+
+int512_t int512_t::operator - () const
+{
+    int512_t neg;
+    neg -= *this;
+    return neg;
+}
+
+
+int512_t & int512_t::operator += (int512_t const & rhs)
+{
+    add512(f_value, rhs.f_value);       // the add includes the high value
+    return *this;
+}
+
+
+int512_t & int512_t::operator -= (int512_t const & rhs)
+{
+    sub512(f_value, rhs.f_value);       // the add includes the high value
+    return *this;
+}
+
+
+
+
+size_t uint512_t::bit_size() const
+{
+    size_t result(512);
+    for(int idx(7); idx >= 0; --idx)
+    {
+        if(f_value[idx] != 0)
+        {
+            return __builtin_clzll(f_value[idx]) + result;
+        }
+    }
+
+    return 0;
+}
+
+
+uint512_t uint512_t::operator - () const
+{
+    uint512_t neg;
+    neg -= *this;
+    return neg;
+}
+
+
+uint512_t & uint512_t::operator += (uint512_t const & rhs)
+{
+    add512(f_value, rhs.f_value);
+    return *this;
+}
+
+
+uint512_t & uint512_t::operator -= (uint512_t const & rhs)
+{
+    sub512(f_value, rhs.f_value);
+    return *this;
+}
 
 
 
@@ -241,22 +367,13 @@ flag_t flag_definition::mask() const
 
 
 
-field_t::~field_t()
-{
-    if((f_flags & FIELD_FLAG_ALLOCATED) != 0)
-    {
-        delete f_data;
-    }
-}
-
-
 uint32_t field_t::size() const
 {
     return f_size;
 }
 
 
-structure_pointer_t field_t::operator [] (int idx)
+structure::pointer_t field_t::operator [] (int idx)
 {
     if(static_cast<uint32_t>(idx) >= f_sub_structures.size())
     {
@@ -280,14 +397,16 @@ structure::structure(struct_description const * description)
 }
 
 
-structure::structure(
-              struct_description const * description
-            , virtual_buffer & buffer
-            , uint64_t start_offset)
-    : f_descriptions(descriptions)
-    , f_buffer(buffer)
-    , f_start_offset(start_offset)
+void structure::set_block(block & b)
 {
+    f_buffer.add_buffer(b, 0, b.size());
+}
+
+
+void structure::set_buffer(virtual_buffer & buffer, uint64_t start_offset)
+{
+    f_buffer = buffer;
+    f_start_offset = start_offset;
 }
 
 
@@ -313,12 +432,12 @@ size_t structure::get_size() const
 
     for(auto f : f_fields_by_name)
     {
-        if((f->f_flags & FIELD_FLAG_VARIABLE_SIZE) != 0)
+        if((f.f_flags & field_t::FIELD_FLAG_VARIABLE_SIZE) != 0)
         {
             return 0;
         }
 
-        if(f->f_type == struct_type_t::STRUCT_TYPE_RENAMED)
+        if(f.f_type == struct_type_t::STRUCT_TYPE_RENAMED)
         {
             continue;
         }
@@ -327,12 +446,12 @@ size_t structure::get_size() const
         // and it has nothing to do with the sze of the resulting
         // binary
         //
-        if(f->f_type != struct_type_t::STRUCT_TYPE_STRUCTURE)
+        if(f.f_type != struct_type_t::STRUCT_TYPE_STRUCTURE)
         {
-            result += f->f_size;
+            result += f.size();
         }
 
-        for(auto s : f_sub_structures)
+        for(auto s : f->f_sub_structures)
         {
             result += s->get_size();
         }
@@ -387,7 +506,7 @@ size_t structure::get_current_size() const
 
         }
 
-        for(auto s : f_sub_structures)
+        for(auto s : f->f_sub_structures)
         {
             result += s->get_size();
         }
@@ -831,7 +950,7 @@ void structure::set_bits(std::string const & flag_name, uint64_t value)
 
     if((value & (flag.mask() >> flag.pos())) != value)
     {
-        throw invalid_value(
+        throw invalid_number(
                   "Value \""
                 + std::to_string(value)
                 + "\" does not fit in flag field \""
@@ -1982,7 +2101,7 @@ structure::vector_t structure::get_array(std::string const & field_name) const
 }
 
 
-void structure::set_array(std::string const & field_name, structure_vector_t const & value)
+void structure::set_array(std::string const & field_name, structure::vector_t const & value)
 {
     auto f(get_field(field_name));
 

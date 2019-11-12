@@ -31,6 +31,7 @@
 //
 #include    "snapdatabase/virtual_buffer.h"
 
+#include    "snapdatabase/exception.h"
 
 // last include
 //
@@ -43,7 +44,32 @@ namespace snapdatabase
 
 
 
-void virtual_buffer::add_buffer(block::pointer_t block, uint64_t offset, uint64_t size)
+virtual_buffer::vbuf_t::vbuf_t()
+{
+}
+
+
+virtual_buffer::vbuf_t::vbuf_t(block::pointer_t b, std::uint64_t offset, std::uint64_t size)
+    : f_block(b)
+    , f_offset(offset)
+    , f_size(size)
+{
+}
+
+
+
+virtual_buffer::virtual_buffer()
+{
+}
+
+
+virtual_buffer::virtual_buffer(block::pointer_t b, std::uint64_t offset, std::uint64_t size)
+{
+    add_buffer(b, offset, size);
+}
+
+
+void virtual_buffer::add_buffer(block::pointer_t b, std::uint64_t offset, std::uint64_t size)
 {
     if(f_modified)
     {
@@ -52,66 +78,69 @@ void virtual_buffer::add_buffer(block::pointer_t block, uint64_t offset, uint64_
                 " another buffer until you commit this virtual buffer.");
     }
 
-    vbuf_t append;
-    append.f_block = block;
-    append.f_offset = offset;
-    append.f_size = size;
+    vbuf_t const append(b, offset, size);
     f_buffers.push_back(append);
 }
 
 
-size_t virutal_buffer::count_buffers() const
+bool virtual_buffer::modified() const
+{
+    return f_modified;
+}
+
+
+std::size_t virtual_buffer::count_buffers() const
 {
     return f_buffers.size();
 }
 
 
-uint64_t virtual_buffer::size() const
+std::uint64_t virtual_buffer::size() const
 {
     return f_total_size;
 }
 
 
-bool virtual_buffer::is_data_available(uint64_t size, uint64_t offset) const
+bool virtual_buffer::is_data_available(std::uint64_t size, std::uint64_t offset) const
 {
     return offset + size <= f_total_size;
 }
 
 
-uint64_t virtual_buffer::pread(void * buf, uint64_t size, uint64_t offset, bool full)
+int virtual_buffer::pread(void * buf, std::uint64_t size, std::uint64_t offset, bool full) const
 {
     if(full
     && !is_data_available(size, offset))
     {
         throw invalid_size(
                 "Not enough data to process virtual buffer pread(). Read "
-                + std::to_string(bytes_read)
+                + std::to_string(offset)
                 + " bytes, "
                 + std::to_string(size)
                 + " still missing.");
     }
 
-    uint64_t bytes_read(0);
+    std::uint64_t bytes_read(0);
     for(auto b : f_buffers)
     {
-        if(offset >= b->f_size)
+        if(offset >= b.f_size)
         {
-            offset -= b->f_size;
+            offset -= b.f_size;
         }
         else
         {
             auto sz(size);
-            if(sz > b->f_size - offset)
+            if(sz > b.f_size - offset)
             {
-                sz = b->f_size - offset;
+                sz = b.f_size - offset;
             }
-            if(b->f_block != nullptr)
+            if(b.f_block != nullptr)
             {
-                memcpy(buf, b->f_block->data() + b->f_offset + offset, sz);
+                memcpy(buf, b.f_block->data() + b.f_offset + offset, sz);
             }
             else
             {
-                memcpy(buf, b->f_data.data() + offset, sz);
+                memcpy(buf, b.f_data.data() + offset, sz);
             }
             size -= sz;
             bytes_read += sz;
@@ -129,7 +158,7 @@ uint64_t virtual_buffer::pread(void * buf, uint64_t size, uint64_t offset, bool 
 }
 
 
-int virtual_buffer::pwrite(void const * buf, uint64_t size, uint64_t offset, bool allow_growth)
+int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t offset, bool allow_growth)
 {
     if(!allow_growth
     && !is_data_available(offset, size))
@@ -144,29 +173,29 @@ int virtual_buffer::pwrite(void const * buf, uint64_t size, uint64_t offset, boo
                 + " bytes only.");
     }
 
-    uint8_t const * in(reinterpret_cast<uint8_t const *>(buf));
-    uint64_t bytes_written(0);
+    std::uint8_t const * in(reinterpret_cast<std::uint8_t const *>(buf));
+    std::uint64_t bytes_written(0);
 
     for(auto b : f_buffers)
     {
-        if(offset >= b->f_size)
+        if(offset >= b.f_size)
         {
-            offset -= b->f_size;
+            offset -= b.f_size;
         }
         else
         {
             auto sz(size);
-            if(sz > b->f_size - offset)
+            if(sz > b.f_size - offset)
             {
-                sz = b->f_size - offset;
+                sz = b.f_size - offset;
             }
-            if(b->f_block != nullptr)
+            if(b.f_block != nullptr)
             {
-                memcpy(b->f_block->data() + offset, in, sz);
+                memcpy(b.f_block->data() + offset, in, sz);
             }
             else
             {
-                memcpy(b->f_data.data() + offset, in, sz);
+                memcpy(b.f_data.data() + offset, in, sz);
             }
             size -= sz;
             bytes_written += sz;
@@ -193,12 +222,12 @@ int virtual_buffer::pwrite(void const * buf, uint64_t size, uint64_t offset, boo
 
     if(f_buffers.back().f_block == nullptr)
     {
-        auto const available(f_buffers.back().f_size < f_buffer.back().f_data->capacity());
+        std::uint64_t const available(f_buffers.back().f_data.capacity() - f_buffers.back().f_size);
         if(available > 0)
         {
             auto const sz(std::min(available, size));
-            f_buffer.back().f_data.resize(f_buffers.back().f_size + sz);
-            memcpy(f_buffer.back().f_data.data() + f_buffers.back().f_size, in, sz);
+            f_buffers.back().f_data.resize(f_buffers.back().f_size + sz);
+            memcpy(f_buffers.back().f_data.data() + f_buffers.back().f_size, in, sz);
             size -= sz;
             bytes_written += sz;
             f_total_size += sz;
@@ -243,7 +272,7 @@ int virtual_buffer::pwrite(void const * buf, uint64_t size, uint64_t offset, boo
 }
 
 
-int virtual_buffer::pinsert(void * buf, uint64_t size, uint64_t offset)
+int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t offset)
 {
     // avoid an insert if possible
     //
@@ -259,44 +288,43 @@ int virtual_buffer::pinsert(void * buf, uint64_t size, uint64_t offset)
 
     // insert has to happen... search the buffer where it will happen
     //
-    uint8_t const * in(reinterpret_cast<uint8_t const *>(buf));
+    std::uint8_t const * in(reinterpret_cast<std::uint8_t const *>(buf));
     for(auto b : f_buffers)
     {
-        if(offset >= b->f_size)
+        if(offset >= b.f_size)
         {
-            offset -= b->f_size;
+            offset -= b.f_size;
         }
         else
         {
-            if(b->f_block != nullptr)
+            if(b.f_block != nullptr)
             {
                 // if inserting within a block, we have to break the block
                 // in two
                 {
                     vbuf_t append;
-                    append.f_block = b->f_block;
-                    append.f_size = b->f_size - offset;
-                    append.f_offset = b->f_offset + offset;
-                    f_buffers.insert(b + 1, append);
+                    append.f_block = b.f_block;
+                    append.f_size = b.f_size - offset;
+                    append.f_offset = b.f_offset + offset;
+                    f_buffers.insert(&b + 1, append);
                 }
 
-                b->f_size = offset;
+                b.f_size = offset;
 
                 {
                     vbuf_t append;
                     append.f_size = size;
                     memcpy(append.f_data.data(), in, size);
-                    f_buffers.insert(b + 1, append);
+                    f_buffers.insert(&b + 1, append);
                 }
             }
             else
             {
-                f_data.insert(f_data.begin() + offset, in, in + size);
+                b.f_data.insert(f_data.begin() + offset, in, in + size);
             }
-            bytes_written += size;
             f_total_size += size;
-            f_modified = bytes_written != 0;
-            return bytes_written;
+            f_modified = size != 0;
+            return size;
         }
     }
 
@@ -304,7 +332,7 @@ int virtual_buffer::pinsert(void * buf, uint64_t size, uint64_t offset)
 }
 
 
-int virtual_buffer::perase(uint64_t size, uint64_t offset)
+int virtual_buffer::perase(std::uint64_t size, std::uint64_t offset)
 {
     if(size == 0)
     {
@@ -326,8 +354,7 @@ int virtual_buffer::perase(uint64_t size, uint64_t offset)
     // since we are going to erase/add some buffers (eventually)
     // we need to use our own iterator
     //
-    uint64_t bytes_erased(0);
-    size_t max(f_buffers.size());
+    std::uint64_t bytes_erased(0);
     for(auto it(f_buffers.begin()); it != f_buffers.end() && size > 0; )
     {
         auto next(it + 1);
@@ -352,7 +379,7 @@ int virtual_buffer::perase(uint64_t size, uint64_t offset)
                 {
                     // remove end of this block
                     //
-                    uint64_t const sz(it->f_size - offset);
+                    std::uint64_t const sz(it->f_size - offset);
                     it->f_size = offset;
                     f_total_size -= sz;
                     size -= sz;
@@ -366,7 +393,7 @@ int virtual_buffer::perase(uint64_t size, uint64_t offset)
                 {
                     // remove the start of this block
                     //
-                    if(it->f_buffer != nullptr)
+                    if(it->f_block != nullptr)
                     {
                         it->f_offset += size;
                     }
@@ -405,15 +432,16 @@ int virtual_buffer::perase(uint64_t size, uint64_t offset)
                     }
                 }
                 f_total_size -= size;
+                bytes_erased += size;
                 f_modified = bytes_erased != 0;
-                return bytes_erased + size;
+                return bytes_erased;
             }
         }
         it = next;
     }
 
     f_modified = bytes_erased != 0;
-    return erased_bytes;
+    return bytes_erased;
 }
 
 

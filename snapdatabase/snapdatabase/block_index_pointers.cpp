@@ -42,7 +42,7 @@ namespace snapdatabase
 
 
 // 'IDXP'
-struct_description_t * g_header_description =
+constexpr struct_description_t g_index_pointer_description[] =
 {
     define_description(
           FieldName("magic")    // dbtype_t = IDXP
@@ -50,6 +50,13 @@ struct_description_t * g_header_description =
     ),
     end_descriptions()
 };
+
+
+block_index_pointer::block_index_pointer(dbfile::pointer_t f, reference_t offset)
+    : block(f, offset)
+{
+    f_structure = std::make_shared<structure>(g_index_pointer_description);
+}
 
 
 

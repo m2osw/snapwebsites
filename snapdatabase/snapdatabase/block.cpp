@@ -29,6 +29,9 @@
 //
 #include    "snapdatabase/block.h"
 
+#include    "snapdatabase/exception.h"
+#include    "snapdatabase/structure.h"
+#include    "snapdatabase/table.h"
 
 // last include
 //
@@ -41,43 +44,81 @@ namespace snapdatabase
 
 
 
-block::pointer_t block::create_block(dbfile::pointer_t f, file_addr_t offset)
-{
-    return block::pointer_t(new block(f, offset));
-}
-
-
-block::pointer_t block::create_block(dbfile::pointer_t f, dbtype_t type)
-{
-    pointer_t header(create_block(f, 0));
-
-    file_addr_t const offset(f->get_new_block(type));
-    return pointer_t(new block(f, offset));
-}
-
-
-block::block(dbfile::pointer_t f, file_addr_t offset)
+block::block(dbfile::pointer_t f, reference_t offset)
     : f_file(f)
     , f_offset(offset)
 {
 }
 
 
-block::dbtype_t block::get_dbtype() const
+table_pointer_t block::get_table() const
 {
-    return f_type;
+    if(f_table == nullptr)
+    {
+        throw invalid_xml("block::get_table() called before the table was defined.");
+    }
+
+    return f_table;
 }
 
 
-size_t block::size()
+void block::set_table(table_pointer_t table)
 {
-    return f_size;
+    if(f_table != nullptr)
+    {
+        throw invalid_xml("block::set_table() called twice.");
+    }
+
+    f_table = table;
 }
 
 
-virtual_buffer::pointer_t block::data()
+structure::pointer_t block::get_structure() const
 {
-    return f_data;
+    return f_structure;
+}
+
+
+dbtype_t block::get_dbtype() const
+{
+    return f_dbtype;
+}
+
+
+void block::set_dbtype(dbtype_t type)
+{
+    // TODO: add verifications (i.e. go from FREE to any or any to FREE
+    //       and maybe a few others)
+    //
+    *reinterpret_cast<dbtype_t *>(data(0)) = type;
+}
+
+
+reference_t block::get_offset() const
+{
+    return f_offset;
+}
+
+
+data_t block::data(reference_t offset)
+{
+    if(f_data == nullptr)
+    {
+        f_data = get_table()->get_dbfile()->data(f_offset);
+    }
+
+    return f_data + (offset % get_table()->get_page_size());
+}
+
+
+const_data_t block::data(reference_t offset) const
+{
+    if(f_data == nullptr)
+    {
+        f_data = get_table()->get_dbfile()->data(f_offset);
+    }
+
+    return f_data + (offset % get_table()->get_page_size());
 }
 
 

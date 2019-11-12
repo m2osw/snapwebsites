@@ -29,6 +29,18 @@
 //
 #include    "snapdatabase/schema.h"
 
+#include    "snapdatabase/convert.h"
+
+
+// C++ lib
+//
+#include    <type_traits>
+
+
+// snaplogger lib
+//
+#include    <snaplogger/message.h>
+
 
 // last include
 //
@@ -129,22 +141,23 @@ struct_description_t g_table_secondary_index[] =
     define_description(
           FieldName("flags=distributed")
         , FieldType(struct_type_t::STRUCT_TYPE_BITS32)
-        , FieldDescription(g_table_column_reference)
+        , FieldSubDescription(g_table_column_reference)
     ),
     define_description(
           FieldName("columns")
         , FieldType(struct_type_t::STRUCT_TYPE_ARRAY16)
-        , FieldDescription(g_table_column_reference)
+        , FieldSubDescription(g_table_column_reference)
     ),
     end_descriptions()
 };
 
 
 
-constexpr flag_t                        TABLE_FLAG_TEMPORARY    = 0x0001;
-constexpr flag_t                        TABLE_FLAG_SPARSE       = 0x0002;
+constexpr flags_t                       TABLE_FLAG_TEMPORARY    = 0x0001;
+constexpr flags_t                       TABLE_FLAG_SPARSE       = 0x0002;
+constexpr flags_t                       TABLE_FLAG_SECURE       = 0x0004;
 
-constexpr flag_t                        TABLE_FLAG_DROP         = 0x80000000;   // NEVER SAVED, used internally only
+constexpr flags_t                       TABLE_FLAG_DROP         = 0x80000000;   // NEVER SAVED, used internally only
 
 struct_description_t g_table_description[] =
 {
@@ -171,17 +184,17 @@ struct_description_t g_table_description[] =
     define_description(
           FieldName("row_key")
         , FieldType(struct_type_t::STRUCT_TYPE_ARRAY16)
-        , FieldDescription(g_table_column_reference)
+        , FieldSubDescription(g_table_column_reference)
     ),
     define_description(
           FieldName("secondary_indexes")
         , FieldType(struct_type_t::STRUCT_TYPE_ARRAY16)
-        , FieldDescription(g_table_secondary_index)
+        , FieldSubDescription(g_table_secondary_index)
     ),
     define_description(
           FieldName("columns")
         , FieldType(struct_type_t::STRUCT_TYPE_ARRAY16)
-        , FieldDescription(g_column_description)
+        , FieldSubDescription(g_column_description)
     ),
     end_descriptions()
 };
@@ -210,7 +223,7 @@ bool validate_name(std::string const & name, size_t max_length = 255)
     }
 
     auto const max(name.length());
-    for(decltype(max) idx(0); idx < max; ++idx)
+    for(std::remove_const<decltype(max)>::type idx(0); idx < max; ++idx)
     {
         c = name[idx];
         if((c < 'a' || c > 'z')
@@ -263,7 +276,7 @@ schema_complex_type::schema_complex_type(xml_node::pointer_t x)
                         + child->text()
                         + "\" was found after the END.");
             }
-            complex_type_t ct;
+            field_t ct;
             ct.f_name = child->attribute("name");
             ct.f_type = name_to_struct_type(child->text());
             if(ct.f_type == INVALID_STRUCT_TYPE)
@@ -277,7 +290,7 @@ schema_complex_type::schema_complex_type(xml_node::pointer_t x)
 
             if(ct.f_type != struct_type_t::STRUCT_TYPE_END)
             {
-                f_complex_type.push_back(ct);
+                f_fields.push_back(ct);
             }
         }
         else
@@ -286,7 +299,7 @@ schema_complex_type::schema_complex_type(xml_node::pointer_t x)
                 << "Unknown tag \""
                 << child->tag_name()
                 << "\" within a <complex-type> tag ignored."
-                << SNAP_LOG_END;
+                << SNAP_LOG_SEND;
         }
     }
 }
@@ -300,19 +313,39 @@ std::string schema_complex_type::name() const
 
 size_t schema_complex_type::size() const
 {
-    return f_complex_type.size();
+    return f_fields.size();
 }
 
 
 std::string schema_complex_type::type_name(int idx) const
 {
-    return f_complex_type[idx].f_name;
+    if(static_cast<std::size_t>(idx) >= f_fields.size())
+    {
+        throw snapdatabase_out_of_range(
+                "index ("
+                + std::to_string(idx)
+                + ") is too large for this complex type list of fields (max: "
+                + std::to_string(f_fields.size())
+                + ").");
+    }
+
+    return f_fields[idx].f_name;
 }
 
 
 struct_type_t schema_complex_type::type(int idx) const
 {
-    return f_complex_type[idx].f_type;
+    if(static_cast<std::size_t>(idx) >= f_fields.size())
+    {
+        throw snapdatabase_out_of_range(
+                "index ("
+                + std::to_string(idx)
+                + ") is too large for this complex type list of fields (max: "
+                + std::to_string(f_fields.size())
+                + ").");
+    }
+
+    return f_fields[idx].f_type;
 }
 
 
@@ -341,7 +374,7 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
     }
 
     f_type = name_to_struct_type(x->attribute("type"));
-    if(ct.f_type == INVALID_STRUCT_TYPE)
+    if(f_type == INVALID_STRUCT_TYPE)
     {
         // TODO: search for complex type first
         //
@@ -352,13 +385,17 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
     }
 
     f_flags = 0;
-    if(x->attribute("limited"))
+    if(x->attribute("limited") == "limited")
     {
         f_flags |= COLUMN_FLAG_LIMITED;
     }
-    if(x->attribute("required"))
+    if(x->attribute("required") == "required")
     {
         f_flags |= COLUMN_FLAG_REQUIRED;
+    }
+    if(x->attribute("blob") == "blob")
+    {
+        f_flags |= COLUMN_FLAG_BLOB;
     }
 
     f_encrypt_key_name = x->attribute("encrypt");
@@ -372,6 +409,10 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
         else if(child->tag_name() == "default")
         {
             f_default_value = string_to_typed_buffer(f_type, child->text());
+        }
+        else if(child->tag_name() == "external")
+        {
+            f_internal_size_limit = convert_to_int(f_type, child->text(), 32);
         }
         else if(child->tag_name() == "min-value")
         {
@@ -401,7 +442,7 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
                 << "Unknown tag \""
                 << child->tag_name()
                 << "\" within a <column> tag ignored."
-                << SNAP_LOG_END;
+                << SNAP_LOG_SEND;
         }
     }
 }
@@ -458,13 +499,13 @@ std::string schema_column::name() const
 }
 
 
-column_type_t schema_column::type() const
+struct_type_t schema_column::type() const
 {
     return f_type;
 }
 
 
-flag_t schema_column::flags() const
+flags_t schema_column::flags() const
 {
     return f_flags;
 }
@@ -562,6 +603,11 @@ schema_table::schema_table(xml_node::pointer_t x)
         f_flags |= TABLE_FLAG_SPARSE;
     }
 
+    if(x->attribute("secure"))
+    {
+        f_flags |= TABLE_FLAG_SECURE;
+    }
+
     xml_node::deque_t schemata;
     xml_node::deque_t secondary_indexes;
 
@@ -573,7 +619,20 @@ schema_table::schema_table(xml_node::pointer_t x)
     {
         if(child->tag_name() == "block-size")
         {
-            f_block_size = convert_to_int(child->text());
+            f_block_size = convert_to_uint(child->text(), 32);
+
+            size_t const page_size(dbfile::get_system_page_size());
+            if((f_block_size % page_size) != 0)
+            {
+                throw invalid_xml(
+                          "Table \""
+                        + f_name
+                        + "\" is not compatible, block size "
+                        + std::to_string(f_block_size)
+                        + " is not supported because it is not an exact multiple of "
+                        + std::to_string(page_size)
+                        + ".");
+            }
         }
         else if(child->tag_name() == "description")
         {
@@ -609,7 +668,7 @@ schema_table::schema_table(xml_node::pointer_t x)
                 << "\" within <table name=\""
                 << f_name
                 << "\"> tag ignored."
-                << SNAP_LOG_END;
+                << SNAP_LOG_SEND;
         }
     }
 
@@ -618,7 +677,7 @@ schema_table::schema_table(xml_node::pointer_t x)
     column_id_t col_id(1);
     for(auto child : schemata)
     {
-        for(auto column(child->first_child();
+        for(auto column(child->first_child());
             column != nullptr;
             column = column->next())
         {
@@ -688,7 +747,7 @@ schema_table::schema_table(xml_node::pointer_t x)
                 << "Unknown distributed attribute value \""
                 << distributed
                 << "\" within a <secondary-index> tag ignored."
-                << SNAP_LOG_END;
+                << SNAP_LOG_SEND;
         }
 
         std::string const columns(si->text());
@@ -772,7 +831,7 @@ void schema_table::load_extension(xml_node::pointer_t e)
                 << "Unknown tag \""
                 << child->tag_name()
                 << "\" within a <table-extension> tag ignored."
-                << SNAP_LOG_END;
+                << SNAP_LOG_SEND;
         }
     }
 }
@@ -919,29 +978,41 @@ model_t schema_table::model() const
 }
 
 
+bool schema_table::is_sparse() const
+{
+    return (f_flags & TABLE_FLAG_SPARSE) != 0;
+}
+
+
+bool schema_table::is_secure() const
+{
+    return (f_flags & TABLE_FLAG_SECURE) != 0;
+}
+
+
 row_key_t schema_table::row_key() const
 {
     return f_row_key;
 }
 
 
-schema_column_t::pointer_t schema_table::column(std::string const & name) const
+schema_column::pointer_t schema_table::column(std::string const & name) const
 {
     auto it(f_column_by_name.find(id));
     if(it == f_column_by_name.end())
     {
-        return schema_column_t::pointer_t();
+        return schema_column::pointer_t();
     }
     return it->second;
 }
 
 
-schema_column_t::pointer_t schema_table::column(column_id_t id) const
+schema_column::pointer_t schema_table::column(column_id_t id) const
 {
     auto it(f_column_by_id.find(id));
     if(it == f_column_by_id.end())
     {
-        return schema_column_t::pointer_t();
+        return schema_column::pointer_t();
     }
     return it->second;
 }

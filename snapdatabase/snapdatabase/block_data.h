@@ -27,7 +27,7 @@
 
 // self
 //
-#include    "snapdatabase/block.h"
+#include    "snapdatabase/schema.h"
 
 
 
@@ -43,11 +43,11 @@ class block_data
 public:
     typedef std::shared_ptr<block_data>       pointer_t;
 
-                                block_data(dbfile::pointer_t f, file_addr_t offset);
+                                block_data(dbfile::pointer_t f, reference_t offset);
 
+    static uint32_t             block_total_space(table_pointer_t t);
 
 private:
-    structure                   f_structure = structure();
     schema_table::pointer_t     f_schema = schema_table::pointer_t();
 };
 

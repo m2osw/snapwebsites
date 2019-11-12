@@ -185,9 +185,9 @@ void verify()
 void fill_ratio()
 {
     int counts[HASH_COUNT + 1] = { 0 };
-    for(int r(0); r < BLOOM_FILTER_SIZE; ++r)
+    for(size_t r(0); r < BLOOM_FILTER_SIZE; ++r)
     {
-        for(int h(0); h <= HASH_COUNT; ++h)
+        for(size_t h(0); h <= HASH_COUNT; ++h)
         {
             if(g_bloom_filter[h][r] != 0)
             {
@@ -195,7 +195,7 @@ void fill_ratio()
             }
         }
     }
-    for(int h(0); h <= HASH_COUNT; ++h)
+    for(size_t h(0); h <= HASH_COUNT; ++h)
     {
         std::cerr << "  "
                   << h

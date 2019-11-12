@@ -16,18 +16,22 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+#ifndef NOQT
 // Qt lib
 //
 #include <QString>
+#endif
 
 namespace snap
 {
 
+#ifndef NOQT
 int mkdir_p(QString const & path
           , bool include_filename = false
           , int mode = 0
           , QString const & owner = QString()
           , QString const & group = QString());
+#endif
 
 int mkdir_p(std::string const & path
           , bool include_filename = false

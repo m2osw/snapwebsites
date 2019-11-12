@@ -2,7 +2,7 @@
 #
 # Run make with proper parameters for me...
 
-PROCESSORS=2
+PROCESSORS=`nproc`
 
 case "$1" in
 "-a"|"--all")
@@ -21,7 +21,8 @@ case "$1" in
 "-p"|"--packages")
     # Run a dput to generate all the packages on launchpad
     #
-    make -C ../../BUILD dput
+    #make -C ../../BUILD dput
+    echo "Please use ../bin/send-to-launchpad.sh instead"
     ;;
 
 "-v"|"--verbose")

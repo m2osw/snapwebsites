@@ -29,6 +29,23 @@
 //
 #include    "snapdatabase/xml.h"
 
+#include    "snapdatabase/exception.h"
+
+
+// C++ lib
+//
+#include    <fstream>
+
+
+// boost lib
+//
+#include    <boost/algorithm/string.hpp>
+
+
+// C lib
+//
+#include    <string.h>
+
 
 // last include
 //
@@ -73,27 +90,28 @@ bool is_space(char c)
 
 bool is_token(std::string const s)
 {
-    if(name.empty())
+    if(s.empty())
     {
         return false;
     }
 
-    if(!is_alpha(name[0]))
+    if(!is_alpha(s[0]))
     {
         return false;
     }
 
-    std::string::size_type const max(name.length());
+    std::string::size_type const max(s.length());
     for(std::string::size_type idx(1); idx < max; ++idx)
     {
-        char const c(name[idx]);
-        if(!is_alpah(c)
-        && !is_digit(c))
+        char const c(s[idx]);
+        if(!is_alpha(c)
+        && !is_digit(c)
+        && c != '-')
         {
             return false;
         }
     }
-    if(name[max - 1] == '-')
+    if(s[max - 1] == '-')
     {
         return false;
     }
@@ -103,7 +121,7 @@ bool is_token(std::string const s)
 
 
 
-enum token_t
+enum class token_t
 {
     TOK_CLOSE_TAG,
     TOK_EMPTY_TAG,
@@ -121,22 +139,26 @@ enum token_t
 class xml_parser
 {
 public:
-                        xml_parser(std::string const & filename, node::pointer_t & root);
+                        xml_parser(std::string const & filename, xml_node::pointer_t & root);
 
 private:
-    void                read_xml(node::pointer_t & root);
+    void                read_xml(xml_node::pointer_t & root);
+    token_t             get_token(bool parsing_attributes);
     int                 getc();
+    void                ungetc(int c);
 
+    std::string         f_filename = std::string();
     std::ifstream       f_in;
-    int                 f_ungetc_pos = 0;
+    size_t              f_ungetc_pos = 0;
     int                 f_ungetc[4] = { '\0' };
     int                 f_line = 1;
     std::string         f_value = std::string();
 };
 
 
-xml_parser::xml_parser(std::string const & filename, node::pointer_t & root)
-    : f_in(filename)
+xml_parser::xml_parser(std::string const & filename, xml_node::pointer_t & root)
+    : f_filename(filename)
+    , f_in(filename)
 {
     if(!f_in.is_open())
     {
@@ -157,7 +179,7 @@ xml_parser::xml_parser(std::string const & filename, node::pointer_t & root)
  *
  * \param[in] root  A reference to the root pointer where the results are saved.
  */
-void xml_parser::read_xml(node::pointer_t & root)
+void xml_parser::read_xml(xml_node::pointer_t & root)
 {
     token_t tok(get_token(false));
 
@@ -170,13 +192,13 @@ void xml_parser::read_xml(node::pointer_t & root)
             {
                 throw unexpected_token(
                           std::string("File \"")
-                        + filename
+                        + f_filename
                         + "\" cannot include text data before the root tag.");
             }
         }
     };
 
-    auto read_tag_attributes = [&](node::pointer_t & tag)
+    auto read_tag_attributes = [&](xml_node::pointer_t & tag)
     {
         for(;;)
         {
@@ -190,7 +212,7 @@ void xml_parser::read_xml(node::pointer_t & root)
             {
                 throw invalid_xml("Expected the end of the tag (>) or an attribute name.");
             }
-            std::string const name(tok);
+            std::string const name(f_value);
             tok = get_token(true);
             if(tok != token_t::TOK_EQUAL)
             {
@@ -221,30 +243,32 @@ void xml_parser::read_xml(node::pointer_t & root)
     {
         throw unexpected_token(
                   std::string("File \"")
-                + filename
+                + f_filename
                 + "\" cannot include anything else than a processor tag and comments before the root tag.");
     }
-    root.reset(new node(f_value))
+    root = std::make_shared<xml_node>(f_value);
     if(read_tag_attributes(root) == token_t::TOK_EMPTY_TAG)
     {
         throw unexpected_token(
                   std::string("File \"")
-                + filename
+                + f_filename
                 + "\" root tag cannot be an empty tag.");
     }
 
-    node::pointer_t parent(root);
+    xml_node::pointer_t parent(root);
     while(tok != token_t::TOK_EOF)
     {
         switch(tok)
         {
         case token_t::TOK_EOF:
         case token_t::TOK_OPEN_TAG:
-            node::pointer_t child(new node(f_value));
-            parent->append_child(child);
-            if(read_tag_attributes(root) == token_t::TOK_END_TAG)
             {
-                parent = child;
+                xml_node::pointer_t child = std::make_shared<xml_node>(f_value);
+                parent->append_child(child);
+                if(read_tag_attributes(root) == token_t::TOK_END_TAG)
+                {
+                    parent = child;
+                }
             }
             break;
 
@@ -263,7 +287,7 @@ void xml_parser::read_xml(node::pointer_t & root)
             {
                 do
                 {
-                    tok = get_token();
+                    tok = get_token(false);
                     skip_empty();
                 }
                 while(tok != token_t::TOK_EOF);
@@ -287,7 +311,7 @@ void xml_parser::read_xml(node::pointer_t & root)
             throw snapdatabase_logic_error("Received an unexpected token in the switch hanlder.");
 
         }
-        tok = get_token();
+        tok = get_token(false);
     }
 }
 
@@ -352,7 +376,7 @@ token_t xml_parser::get_token(bool parsing_attributes)
                 {
                     // <![CDATA[ ... or throw
                     //
-                    char const * expect = "CDATA[";
+                    char const * expected = "CDATA[";
                     for(int j(0); j < 6; ++j)
                     {
                         if(getc() != expected[j])
@@ -564,10 +588,11 @@ token_t xml_parser::get_token(bool parsing_attributes)
         {
             for(;;)
             {
-                f_value += static_cast<c>;
+                f_value += static_cast<char>(c);
                 c = getc();
                 if(!is_alpha(c)
-                && !is_digit(c))
+                && !is_digit(c)
+                && c != '-')
                 {
                     return token_t::TOK_IDENTIFIER;
                 }
@@ -576,7 +601,7 @@ token_t xml_parser::get_token(bool parsing_attributes)
 
         for(;;)
         {
-            f_value += static_cast<c>;
+            f_value += static_cast<char>(c);
             c = getc();
             if(c == '<'
             || c == EOF)
@@ -593,15 +618,15 @@ int xml_parser::getc()
 {
     if(f_ungetc_pos > 0)
     {
-        --f_unget_pos;
+        --f_ungetc_pos;
         return f_ungetc[f_ungetc_pos];
     }
 
-    int c(f_in.getc());
+    int c(f_in.get());
     if(c == '\r')
     {
         ++f_line;
-        c = f_in.getc();
+        c = f_in.get();
         if(c != '\n')
         {
             ungetc(c);
@@ -621,7 +646,7 @@ void xml_parser::ungetc(int c)
 {
     if(c != EOF)
     {
-        if(f_ungetc_pos > sizeof(f_ungetc) / sizeof(f_ungetc[0]))
+        if(f_ungetc_pos >= sizeof(f_ungetc) / sizeof(f_ungetc[0]))
         {
             throw snapdatabase_logic_error("Somehow the f_ungetc buffer was overflowed.");
         }
@@ -637,7 +662,7 @@ void xml_parser::ungetc(int c)
 
 
 
-node::node(std::string const & name)
+xml_node::xml_node(std::string const & name)
     : f_name(name)
 {
     if(!is_token(name))
@@ -647,31 +672,31 @@ node::node(std::string const & name)
 }
 
 
-std::string const & node::tag_name() const
+std::string const & xml_node::tag_name() const
 {
     return f_name;
 }
 
 
-std::string node::text() const
+std::string xml_node::text() const
 {
     return f_text;
 }
 
 
-void node::append_text(std::string const & text)
+void xml_node::append_text(std::string const & text)
 {
     f_text += text;
 }
 
 
-node::attribute_map_t node::all_attributes() const
+xml_node::attribute_map_t xml_node::all_attributes() const
 {
     return f_attributes;
 }
 
 
-std::string node::attribute(std::string const & name) const
+std::string xml_node::attribute(std::string const & name) const
 {
     auto const it(f_attributes.find(name));
     if(it == f_attributes.end())
@@ -682,7 +707,7 @@ std::string node::attribute(std::string const & name) const
 }
 
 
-void node::set_attribute(std::string const & name, std::string const & value)
+void xml_node::set_attribute(std::string const & name, std::string const & value)
 {
     if(!is_token(name))
     {
@@ -692,12 +717,12 @@ void node::set_attribute(std::string const & name, std::string const & value)
 }
 
 
-void node::append_child(xml_node const & n)
+void xml_node::append_child(pointer_t n)
 {
     if(n->f_next != nullptr
-    || n->f_previous != nullptr)
+    || n->f_previous.lock() != nullptr)
     {
-        throw node_already_in_tree("Somehow you are trying to add a child node of a node that was already added to a tree of nodes.");
+        throw node_already_in_tree("Somehow you are trying to add a child xml_node of a xml_node that was already added to a tree of nodes.");
     }
 
     auto l(last_child());
@@ -713,38 +738,38 @@ void node::append_child(xml_node const & n)
 }
 
 
-pointer_t node::parent() const
+xml_node::pointer_t xml_node::parent() const
 {
     auto result(f_parent.lock());
     return result;
 }
 
 
-pointer_t node::first_child() const
+xml_node::pointer_t xml_node::first_child() const
 {
     return f_child;
 }
 
 
-pointer_t node::last_child() const
+xml_node::pointer_t xml_node::last_child() const
 {
     pointer_t l(f_child);
-    while(l.f_next != nullptr)
+    while(l->f_next != nullptr)
     {
-        l = l.f_next;
+        l = l->f_next;
     }
 
     return l;
 }
 
 
-pointer_t node::next() const
+xml_node::pointer_t xml_node::next() const
 {
     return f_next;
 }
 
 
-pointer_t node::previous() const
+xml_node::pointer_t xml_node::previous() const
 {
     return f_previous.lock();
 }

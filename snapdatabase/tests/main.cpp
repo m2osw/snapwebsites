@@ -27,9 +27,9 @@
 #include "main.h"
 
 
-// snaplogger lib
+// snapdatabase lib
 //
-#include <snaplogger/version.h>
+#include <snapdatabase/version.h>
 
 
 // libexcept lib
@@ -48,7 +48,7 @@
 int main(int argc, char * argv[])
 {
     return SNAP_CATCH2_NAMESPACE::snap_catch2_main(
-              "snaplogger"
+              "snapdatabase"
             , SNAPLOGGER_VERSION_STRING
             , argc
             , argv

@@ -31,12 +31,13 @@
       There is the basic format:
 
           <context dependencies="...">
-            <table name="..." model="..." row-key="..." drop="..." temporary="..." sparse="...">
+            <table name="..." model="..." row-key="..." drop="..." temporary="..." sparse="..." secure="...">
               <block-size>...</block-size>
               <description>...</description>
               <schema>
-                <column name="..." type="..." limited="..." encrypt="..." required="...">
+                <column name="..." type="..." limited="..." encrypt="..." required="..." blob="...">
                   <description>...</description>
+                  <external>...</external>
                   <default>...</default>
                   <min-value>...</min-value>
                   <max-value>...</max-value>
@@ -55,7 +56,7 @@
             </complex-type>
             <table-extension name="..."> <!-- see SNAP-294 -->
               <schema>
-                <column name="..." type="..." limited="...">
+                <column name="..." type="..." limited="..." ...>
                   ...see <column> definition above...
                 </column>
               </schema>
@@ -67,17 +68,15 @@
       considered equivalent. The current official tag, though, is
       <context>.
 
-      The <name> attribute defines the table name. This name is verified. It
-      can only include letters 'a' to 'z', digits '0' to '9', and the
-      underscore '_' character. Also the name cannot start with a digit.
+      The <table name="..."> attribute defines the table name. This name is
+      verified. It can only include letters 'a' to 'z', digits '0' to '9', and
+      the underscore '_' character. Also the name cannot start with a digit.
       Uppercase letters are functional but require quoting the table name
       each time it gets used so it is not recommended.
 
-      The <model> attribute defines how the table is to be used. Internally
-      we have ways to transform the <model> to a set of Cassandra parameters
-      without the need for the end user to choose over a complex set of
-      parameters which most people have no clue how to tweak properly
-      (including me!)
+      The <table model="..."> attribute defines how the table is to be used.
+      Internally, this means we use one or another set of parameters which
+      better fit that model.
 
       The available models are:
 
@@ -107,8 +106,10 @@
                 possible to have a single table with the "tree", "content",
                 "branch", and "revision", all in one for our _special case_)
 
-      The <row-key> attribute defines the list of columns used to build
-      the key.
+      The <table row-key="..."> attribute defines the list of columns used
+      to build the primary key. You can use the <secondary-key> tag to
+      define other keys which is useful to (1) filter data and (2) have
+      advanced sorting capabilities.
 
       The <table drop="drop"> attribute is used to mark a table that needs to
       be dropped. Whenever this attribute is defined, the named table gets
@@ -127,6 +128,15 @@
       sparse allocates disk space at the time it gets used. So the size
       of your database grows as data is added and it may cause more I/O
       issues if a write fails because your drive is full.
+
+      The <table secure="secure"> attribute marks the entire table as secure.
+      This means that any data that gets deleted will be overwritten with
+      zeroes. This very much reduces the chances that the data leaks once
+      not used by us anymore. In Snap! we use two tables of data, one is
+      marked as being secure so that way we can save data which we consider
+      as being secure in that other table. You can use lower granularity
+      with the encrypt attribute of the columns. However, the encrypt
+      prevents you 100% from using that column in a WHERE clause.
 
       The <block-size> tag defines the size of one block in your file.
       By default this is set to the system block size (in general, this
@@ -149,6 +159,18 @@
       current version does not yet allow for varying column names. However,
       this is most often an artifact of the lack of indexes in Cassandra
       and not something we should support long term.
+
+      The <column encrypt="..."> attribute is the name of a key used to
+      encrypt the data in this database. The key is saved in another file
+      in a different folder (we have a _key store_ in the context). This
+      way we can use different keys for different set of data: user data,
+      financial data, AI data, etc.
+
+      The <external> tag of a column defines a size which is used to limited
+      the data saved in the main table. If the user data is larger than this
+      amount, then the data is to be saved in a separate file instead of the
+      main table. (TBD: should that be a table or even context parameter
+      instead?)
 
       The <complex-type> tag let you define a complex type based on a list
       of types. These can be used to define a <column>
@@ -254,12 +276,28 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="blob">
+    <xs:annotation>
+      <xs:documentation>
+        Whether that column is part of the blob. This means you can't do a
+        WHERE against this column because it's going to be (1) compressed
+        and (2) part of the blob (i.e. possibly separated from the main
+        row columns). In most cases, extension columns are all marked as
+        blobs.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="blob"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="limited">
     <xs:annotation>
       <xs:documentation>
         Binary columns may be really large (i.e. a PNG image for example.)
         The "limited" flag tells tools used to display such columns to limit
-        their output so it does not cover hundred of pages.
+        their output so it does not cover hundred of pages. This is only a
+        display flag.
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
@@ -350,8 +388,9 @@
       <xs:attribute name="type" type="column_type"/>
       <xs:attribute name="limited" type="limited"/>
       <xs:attribute name="encrypt" type="name"/> <!-- name of the key used to encrypt this column -->
-      <!-- the value can be set to null unless required="true" -->
-      <xs:attribute name="required" type="required"/> <!-- default is false (not a required value) -->
+      <!-- the value can be set to null unless required="required" -->
+      <xs:attribute name="required" type="required"/> <!-- default is undefined (not a required value) -->
+      <xs:attribute name="blob" type="blob"/>
     </xs:complexType>
   </xs:element>
 

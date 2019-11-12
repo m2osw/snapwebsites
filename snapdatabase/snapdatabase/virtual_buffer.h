@@ -42,10 +42,18 @@
 #include    "snapdatabase/block.h"
 
 
+// C++ lib
+//
+#include    <deque>
+
+
 
 namespace snapdatabase
 {
 
+
+
+typedef std::vector<uint8_t>            buffer_t;
 
 
 class virtual_buffer
@@ -53,31 +61,38 @@ class virtual_buffer
 public:
     typedef std::shared_ptr<virtual_buffer> pointer_t;
 
-    void                                    add_buffer(block::pointer_t block, uint64_t offset, uint64_t size);
+                                        virtual_buffer();
+                                        virtual_buffer(block::pointer_t b, std::uint64_t offset, std::uint64_t size);
 
-    size_t                                  count_buffers() const;
-    uint64_t                                size() const;
-    bool                                    is_data_available(uint64_t size, uint64_t offset) const;
+    void                                add_buffer(block::pointer_t b, std::uint64_t offset, std::uint64_t size);
 
-    int                                     pread(void * buf, uint64_t size, uint64_t offset, bool full = true) const;
-    int                                     pwrite(void const * buf, uint64_t size, uint64_t offset, bool allow_growth = true);
-    int                                     pinsert(void const * buf, uint64_t size, uint64_t offset);
-    int                                     perase(uint64_t size, uint64_t offset);
+    bool                                modified() const;
+    std::size_t                         count_buffers() const;
+    std::uint64_t                       size() const;
+    bool                                is_data_available(std::uint64_t size, std::uint64_t offset) const;
+
+    int                                 pread(void * buf, std::uint64_t size, std::uint64_t offset, bool full = true) const;
+    int                                 pwrite(void const * buf, std::uint64_t size, std::uint64_t offset, bool allow_growth = true);
+    int                                 pinsert(void const * buf, std::uint64_t size, std::uint64_t offset);
+    int                                 perase(std::uint64_t size, std::uint64_t offset);
 
 private:
     struct vbuf_t
     {
         typedef std::deque<vbuf_t>          deque_t;
 
+                                            vbuf_t();
+                                            vbuf_t(block::pointer_t b, std::uint64_t offset, std::uint64_t size);
+
         block::pointer_t                    f_block = block::pointer_t();
         buffer_t                            f_data = buffer_t();    // data not (yet) in the block(s)
-        uint64_t                            f_offset = 0;
-        uint64_t                            f_size = 0;
+        std::uint64_t                       f_offset = 0;
+        std::uint64_t                       f_size = 0;
     };
 
-    vbuf_t::deque_t                         f_buffers = vbuf_t::deque_t();
-    uint64_t                                f_total_size = 0;
-    bool                                    f_modified = false;
+    vbuf_t::deque_t                     f_buffers = vbuf_t::deque_t();
+    std::uint64_t                       f_total_size = 0;
+    bool                                f_modified = false;
 };
 
 

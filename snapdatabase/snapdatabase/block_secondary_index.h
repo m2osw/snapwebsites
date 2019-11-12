@@ -37,7 +37,7 @@
 
 // self
 //
-#include    "snapdatabase/block.h"
+#include    "snapdatabase/structure.h"
 
 
 
@@ -54,11 +54,18 @@ class block_secondary_index
 public:
     typedef std::shared_ptr<block_secondary_index>       pointer_t;
 
-                                block_secondary_index(dbfile::pointer_t f, file_addr_t offset);
+                                block_secondary_index(dbfile::pointer_t f, reference_t offset);
 
+    uint32_t                    get_id() const;
+    void                        set_id(uint32_t id);
+    uint64_t                    get_number_of_rows() const;
+    void                        set_number_of_rows(uint64_t count);
+    reference_t                 get_top_index() const;
+    void                        set_top_index(reference_t offset);
+    uint32_t                    get_bloom_filter_flags() const;
+    void                        set_bloom_filter_flags(uint32_t flags);
 
 private:
-    structure                   f_structure = structure();
 };
 
 

@@ -53,6 +53,48 @@ Once we receive the entire file, then we may want to run `fdatasync()`
 to commit the data to disk. Once that command returns, then we can
 acknowledge that the write occurred safely.
 
+#### Indexing
+
+* Indirect Index (`INDR`/`TIND`)
+
+To allow for changes in the data location, we use a two layered indexing
+method. Each row is assigned an identifier (OID). That identifier is
+incremented starting at 1. Knowing the number of pointers per page and
+the current number of levels (the `TIND` includes that level), we can
+immediately calculate where the pointer is located and load the exact
+page at once.
+
+Note: we can't safely expose this identifier because when a row gets
+deleted its OID gets reassigned to another row.
+
+* Primary Index
+
+We primarily use B-trees in our implementation.
+
+Cassandra uses LSMtree
+instead. LSMtree has the advantage of offering a very fast write mechanism.
+We want to look into using a level 0 LSMtree which spans between the
+_commitlog_ (incoming data saved in our temporary journal) and the commited
+data.
+
+* Tree Index
+
+We also have a special case of a Direct Tree to support searches on a path
+organized in a _perfect tree_ (perfect as in any child always has a parent
+page). This will allow us to access the data by path and to assign any page
+to any point in a path (to make it easy to move the page to a new location
+and even duplicate the same page under multiple paths).
+
+The primary index makes use of a Murmur3 hash to transform the key to a
+value which is exactly 128 bits. This is very useful to better partition
+the data (grow horizontally). However, it's not as useful for secondary
+indexes that require a specific sort order.
+
+Note: Cassandra's first solution was to use column names. These were sorted
+(in binary by default). However, that meant it wasn't distributed. Later
+Cassandra added Secondary Indexes which they implemented so they would be
+distributed.
+
 ### Data
 
 We can manage all the data in a single file. In this case, we have one
@@ -527,7 +569,7 @@ data.
 
     Note: by default we use a Counting Bloom Filter which means that
     we can delete rows. However, if a counter reaches the maximum (which
-    at this point we plan to be 65535) then we will need to regenerate the
+    at this point we plan to be 255) then we will need to regenerate the
     bloom filter after a while because proper deletion of any row in link
     with that very entry will _fail_.
 
@@ -720,13 +762,7 @@ next incoming blob of data.
 
     The magic word.
 
-* PAD (TBD, Type: `uint32_t`)
-
-    This is a pad for now so the Free Space starts at _the correct position_.
-    (i.e. Entry 0 and 1 represent 0 and 8 bytes which are not possible since
-    we have a minimum size of 64 for any block.)
-
-* Free Space (Type: `reference`)
+* Free Space (Type: `reference`, Alignment: `sizeof(reference_t) * 2`)
 
     This is an array of references to blocks with free space. These
     blocks include a next reference (i.e. it is a linked list of such
@@ -852,11 +888,11 @@ The block is pretty simple:
 
     The magic word.
 
-* Block Size (Needed?)
+* Size (Needed?, Type: `uint32_t`)
 
     The number of pointers.
 
-* Pointers (Type: `uint64_t`)
+* Pointers (Type: `reference`)
 
     An array of pointers to the data.
 
@@ -895,7 +931,7 @@ overwritten on write. So the process goes something like this:
         END IF
     END WHILE
 
-I'm not too sure how the handle the changes in the primary index, but I
+I'm not too sure how they handle the changes in the primary index, but I
 suspect that it works as in my Other Solution below. In other words, any
 secondary index includes the key of the row you found and then that key
 is used to find the data. In other words, the only place where we have
@@ -1008,11 +1044,11 @@ Block used to sort the elements present in that Secondary Index Block.
 The definition of the secondary index is found in the XML file defining
 this table.
 
-* Header (`SIDX`, Type: `char[4]`)
+* Header (`SIDX`, Type: `dbtype_t`)
 
     The block magic.
 
-* Name (Type: `uint32_t`)
+* Secondary Index Identifier (Type: `uint32_t`)
 
     This secondary index identifier. As we parse the XML data, we
     assign an identifier to each secondary index. This is that
@@ -1023,13 +1059,18 @@ this table.
 
     The total number of rows indexed by this secondary index.
 
-* Top Secondary Index Block (`uint64_t`)
+* Top Secondary Index Block (`reference`)
 
     The pointer to the top index block for this secondary index.
 
-* First Secondary Index Block with Free Space (`uint64_t`)
+* First Secondary Index Block with Free Space (`reference`)
 
     Pointer to the first B+tree index block with space available.
+
+    TBD: Is that necessary at all? B-trees are managed by searching the rows
+    and placing new rows where there is around the location where it needs to
+    go (i.e. because it's sorted) This was probably as I was thinking about
+    it.
 
 * Bloom Filter Flags (`uint32_t`)
 
@@ -1081,7 +1122,9 @@ Especially for the primary index, we want to have the full key (which
 is the Murmur hash). Otherwise we'd end up having to scan the data
 one row at a time...
 
-* Header (`EIDX`, Type: `char[4]`)
+* Header (`EIDX`, Type: `dbtype_t`)
+
+    The block magic.
 
     The header indicates the type of index block. Note that this is very
     important in these blocks since you first navigate `TIDX` blocks
@@ -1096,13 +1139,13 @@ one row at a time...
 
     The size of one index.
 
-* Next (Type: `uint64_t`)
+* Next (Type: `reference`)
 
     A pointer to the next `EIDX`. This is used whenever we do a SELECT of
     may rows. We start from the first match and then go on to the last
     entry that still matches or the `LIMIT` is reached.
 
-* Previous (Type: `uint64_t`)
+* Previous (Type: `reference`)
 
     To easily maintain a `Next` field, we need a `Previous` field too.
     Also this is useful if we support the `DESC` feature in which case
@@ -1112,21 +1155,45 @@ one row at a time...
 
 * Index (Type: Complex, see below)
 
-    This is the actual index which gives us a (more) complete key so we
-    can be sure to read the correct data. Because of that, we may have an
-    index of variable size. (TBD)
+    This is the actual index which gives us a complete key (compared to a
+    `TIDX` which may shorten the key) so we can be sure to read the correct
+    data.
 
-    To the minimum, one index entry includes the key and a pointer to the
-    actual data.
+    The index is an array of equally sized entries when dealing with the
+    primary key since keys are murmur3 codes which are always exactly 128
+    bits (16 bytes).
 
-    - Flags/Size (`uint32_t`, 8 bits for the flags)
-      - Flag: Key is Complete (0x80); which means we do not have to compare
+    However, keys of secondary indexes may vary in size. TBD:
+
+    Solution 1. we have a sequential array we can search using a binary search
+    (fastest search) and the Key Data is an offset to the actual data.
+
+    Solution 2. we have a non-sequential array (varying sizes) and we have
+    to search linearly; if the number of entries is relatively small, it is
+    likely going to be fast anyway but still much slower when hitting the
+    latest keys of a page.
+
+    To the minimum, one index entry includes flags, the key and a pointer
+    to the actual data.
+
+    - Flags (`uint8_t`)
+      - Flag: Key is Complete (0x01); which means we do not have to compare
         again once we access the data
-      - Flag: Index has Identifier (0x40)
-      - Size defines the size of the entire Index and thus the Key Data
-    - Pointer to `DATA` or `INDP` (Type: `uint64_t`)
-    - Index Identifier (optional, see flags, Type: `uint64_t`)
-    - Key Data
+    - Pointer to `DATA` or row ID in `INDR` (Type: `reference` or `uint64_t`)
+    - Index Identifier (Type: `reference`)
+    - Key Data (Actual data or an offset to the data because it varies in
+      size; the size would appear in the destination as in an ARRAY16)
+
+    The Index Identifier (`IDXP`) is used when one key matches multiple
+    rows. This happens when dealing with secondary indexes where the
+    index is not required to be unique.
+
+    **NOTE:** There is a _right balance_ between functionality and efficiency.
+    In most cases, I prefere functionality. However, having really long
+    indexes is likely to very much impair your index. We want to support
+    a hard coded limited in length at which point the key itself gets moved
+    to a BLOB. At that point, the index is likely going to be _rather slow_.
+    MySQL limits indexes to 1,000 bytes.
 
     **WARNING:** A Secondary Index may need support for multiple pointers.
     That is, one Index Key, to multiple Data Blocks. For example,
@@ -1140,7 +1207,7 @@ one row at a time...
 
 ### Index Pointers Block (`IDXP`)
 
-The Index Pointer block is an extension for secondary indexes that match
+The Index Pointer Block is an extension for secondary indexes that match
 many entries. One such block is used as an offload of the Index field of
 a Secondary Index.
 
@@ -1151,27 +1218,23 @@ a Secondary Index.
 Since it is very likely that such blocks would just have one or two offloaded
 pointers for a given index, we manage vectors with these items:
 
-* Index Identifier (`uint64_t`)
+* Index Identifier (`reference`)
 
     A number that clearly defines which index entry this data is for.
 
-* Next Index Pointers Block (`uint64_t`)
+* Next Index Pointers Block (`reference`)
 
     A pointer to another Index Pointers Block in case this one was not enough
     to manage all the pointers for this index.
 
     Note that before using this feature the system should allocate a new
-    `INDP` and fill that block up with just this one Index offloaded pointers.
+    `INDR` and fill that block up with just this one Index offloaded pointers.
     (i.e. avoid one block access if we can instead have the entire list
     in a single block).
 
-* Pointer Size (`uint32_t`)
+* Array of Pointers (`array32` of `reference`)
 
-    The number of pointers for this Specific Index Identifier.
-
-* Array of Pointers (`uint64_t[<Pointer Size>]`)
-
-    The actual offloaded pointers.
+    The actual offloaded references.
 
 This way the system can manage multiple arrays in the same block.
 
@@ -1185,50 +1248,57 @@ need all the data here, which makes it easier.
 
 The block includes the following fields:
 
-* Header (`DATA`, Type: `char[4]`)
+* Magic (`DATA`, Type: `dbtype_t`)
 
-    The block of data starts with `DATA`.
+    The magic word.
 
 * Data (Type: _complex_)
 
     A block of data is defined with a dynamic structure as defined in the
-    SCHEMA.md file, see Blob.
+    SCHEMA.md file, see Blob as well.
 
-    The first byte is used to define the status of this Data block:
+    The row buffers are allocated using the block_free_space class. The
+    result is a pointer to a block of data which is giving us access to
+    a set of 24 flags. We use two flags to define the status of a row:
 
-    - Valid -- everything is fine, we can access this block as expected
+    - Valid -- the row is considered valid; when the Moved and Deleted
+      flags are both 0, the status is considered to be Valid
     - Moved -- the user made an update and the new block was larger so
-      it was saved somewhere else, the next 8 bytes represent the
-      offset of the new location
-    - Deleted -- the block was deleted (space is available for another
-      block but really only if we properly removed the index too)
+      it was saved somewhere else; the first 8 bytes of data represent
+      the offset of the new location (note: this is used only if the
+      `INDP` is not used in this table)
+    - Deleted -- the block was deleted; space is available for another
+      block only it still appears in the index(es) so we cannot just
+      release the space (note: this is used only if the `INDP` is not
+      used since with `INDP` we only have to update the `INDP` pages)
 
     If we want to be able to get rid of the `Moved` over time, we need
     to have a reference counter as well. So each index that points to
     this data can be updated whenever we pass through it and the counter
     decremented. Once the counter reaches 0, we can actually reclaim
-    the space and mark the entry as Deleted and clear the bit in the
-    AMAP as required.
+    the space and mark the entry as Deleted and release the data to the
+    `FSPC` as expected.
 
     If the table is marked as "Secure" then the data of deleted rows
-    get cleared immediately.
+    gets cleared immediately.
 
-    Data with a blob larger than a Data Block requires special handling.
+    Data with a blob larger than one Data Block requires special handling.
     We have multiple solutions at our disposal:
 
     - Save a minimum amount of data here (i.e. small fields and especially
       fields we may SELECT against) then save the rest at the end of a
       separate file and save the pointer to that data
 
-    - Save the data in multiple block; this block would include a pointer
-      to the first block where the block is saved and each such block can
+    - Save the data in multiple blocks; this block would include a pointer
+      to the first block where the excess is saved and each such block can
       be linked to another block until the full size is saved. (See the
-      Blob Block) -- to save space, we want to allow for pointers to
+      `BLOB` Block) -- to save space, we want to allow for pointers to
       go to the end of a previous blob. The code can easily use a modulo
       to know whether we're at the start or in the middle of a block.
 
     We want to have a special type that we use whenever a blob is not
-    defined directly in the Data Block.
+    defined directly in the Data Block. The table defines the size at
+    which the system decides to use an external file.
 
 
 ### Blob Block (`BLOB`)

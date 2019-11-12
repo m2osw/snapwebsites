@@ -31,6 +31,7 @@
 // self
 //
 #include    "snapdatabase/structure.h"
+#include    "snapdatabase/xml.h"
 
 
 
@@ -39,25 +40,19 @@ namespace snapdatabase
 
 
 
-namespace detail
-{
-}
-
-
 //typedef uint64_t                        block_ref_t;
 //typedef uint8_t                         flag8_t;
 //typedef uint16_t                        flag16_t;
-//typedef uint32_t                        flag32_t;
-//typedef uint64_t                        flag64_t;
+typedef uint32_t                        flag32_t;       // look into not using these, instead use the structure directly
+typedef uint64_t                        flag64_t;
 //typedef std::vector<uint16_t>           row_key_t;
 
 typedef uint16_t                        column_id_t;
 typedef std::vector<column_id_t>        column_ids_t;
-typedef uint16_t                        column_type_t;
 
 
 
-enum model_t
+enum class model_t
 {
     TABLE_MODEL_CONTENT,
     TABLE_MODEL_DATA,
@@ -80,6 +75,7 @@ constexpr flag32_t                          COLUMN_FLAG_DEFAULT_VALUE           
 constexpr flag32_t                          COLUMN_FLAG_BOUNDS                  = (1LL << 4);
 constexpr flag32_t                          COLUMN_FLAG_LENGTH                  = (1LL << 5);
 constexpr flag32_t                          COLUMN_FLAG_VALIDATION              = (1LL << 6);
+constexpr flag32_t                          COLUMN_FLAG_BLOB                    = (1LL << 7);
 
 constexpr flag32_t                          SECONDARY_INDEX_FLAG_DISTRIBUTED    = (1LL << 0);
 
@@ -99,19 +95,20 @@ public:
     struct_type_t                           type(int idx) const;
 
 private:
-    struct complex_type_t
+    struct field_t
     {
         typedef std::vector<field_t>        vector_t;
 
-        std::string     f_name = std::string();
-        struct_type_t   f_type = STRUCT_TYPE_VOID;
+        std::string             f_name = std::string();
+        struct_type_t           f_type = struct_type_t::STRUCT_TYPE_VOID;
     };
 
     std::string                             f_name = std::string();
-    complex_type_t::vector_t                f_complex_type = complex_type_t::vector_t();
+    field_t::vector_t                       f_fields = field_t::vector_t();
 };
 
-
+class schema_table;
+typedef std::shared_ptr<schema_table>       schema_table_pointer_t;
 
 class schema_column
 {
@@ -120,17 +117,17 @@ public:
     typedef std::map<column_id_t, pointer_t>    map_by_id_t;
     typedef std::map<std::string, pointer_t>    map_by_name_t;
 
-                                            schema_column(schema_table::pointer_t table, xml_node::pointer_t x);
-                                            schema_column(schema_table::pointer_t table, structure::pointer_t const & s);
+                                            schema_column(schema_table_pointer_t table, xml_node::pointer_t x);
+                                            schema_column(schema_table_pointer_t table, structure::pointer_t const & s);
 
     void                                    from_structure(structure::pointer_t const & s);
 
-    schema_table::pointer_t                 table() const;
+    schema_table_pointer_t                  table() const;
 
     void                                    hash(uint64_t & h0, uint64_t & h1) const;
     std::string                             name() const;
     column_id_t                             column_id() const;
-    column_type_t                           type() const;
+    struct_type_t                           type() const;
     flags_t                                 flags() const;
     std::string                             encrypt_key_name() const;
     buffer_t                                default_value() const;
@@ -144,9 +141,10 @@ private:
     uint64_t                                f_hash[2] = { 0ULL, 0ULL };
     std::string                             f_name = std::string();
     column_id_t                             f_column_id = column_id_t();
-    column_type_t                           f_type = column_type_t();
-    flags_t                                 f_flags = flag_t();
+    struct_type_t                           f_type = struct_type_t();
+    flags_t                                 f_flags = flags_t();
     std::string                             f_encrypt_key_name = std::string();
+    int32_t                                 f_internal_size_limit = -1; // -1 = no limit; if size > f_internal_size_limit, save in external file
     buffer_t                                f_default_value = buffer_t();
     buffer_t                                f_minimum_value = buffer_t();
     buffer_t                                f_maximum_value = buffer_t();
@@ -156,7 +154,7 @@ private:
 
     // not saved on disk
     //
-    schema_table::pointer_t                 f_schema_table = schema_table::pointer_t();
+    schema_table_pointer_t                  f_schema_table = schema_table_pointer_t();
     std::string                             f_description = std::string();
 };
 
@@ -196,36 +194,39 @@ public:
     typedef std::shared_ptr<schema_table>   pointer_t;
 
                                             schema_table(xml_node::pointer_t x);
-                                            schema_table(virtual_buffer_t const & x);
+                                            schema_table(virtual_buffer const & b);
 
     void                                    load_extension(xml_node::pointer_t e);
 
-    void                                    from_binary(virtual_buffer_t const & x);
-    virtual_buffer_t                        to_binary() const;
+    void                                    from_binary(virtual_buffer const & b);
+    virtual_buffer                          to_binary() const;
 
     version_t                               version() const;
     std::string                             name() const;
     model_t                                 model() const;
+    bool                                    is_sparse() const;
+    bool                                    is_secure() const;
     column_ids_t                            row_key() const;
-    schema_column_t::pointer_t              column(std::string const & name) const;
-    schema_column_t::pointer_t              column(column_id_t id) const;
-    map_by_id_t                             columns_by_id() const;
-    map_by_name_t                           columns_by_name() const;
+    schema_column::pointer_t                column(std::string const & name) const;
+    schema_column::pointer_t                column(column_id_t id) const;
+    schema_column::map_by_id_t              columns_by_id() const;
+    schema_column::map_by_name_t            columns_by_name() const;
 
     std::string                             description() const;
 
 private:
     version_t                               f_version = version_t();
     std::string                             f_name = std::string();
-    flag_t                                  f_flags = flag_t();
+    flags_t                                 f_flags = flags_t();
     model_t                                 f_model = model_t::TABLE_MODEL_CONTENT;
+    uint32_t                                f_block_size = 0;
     column_ids_t                            f_row_key = column_ids_t();
     schema_secondary_index::vector_t        f_secondary_indexes = schema_secondary_index::vector_t();
     schema_complex_type::map_t              f_complex_types = schema_complex_type::map_t();
-    map_by_name_t                           f_columns_by_name = schema_column::map_t();
-    map_by_id_t                             f_columns_by_id = schema_column::map_t();
+    schema_column::map_by_name_t            f_columns_by_name = schema_column::map_by_name_t();
+    schema_column::map_by_id_t              f_columns_by_id = schema_column::map_by_id_t();
 
-    // not saved on disk
+    // not saved in database, only in XML
     //
     std::string                             f_description = std::string();
 };

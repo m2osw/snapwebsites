@@ -37,7 +37,7 @@
 
 // self
 //
-#include    "snapdatabase/block.h"
+#include    "snapdatabase/structure.h"
 
 
 
@@ -52,11 +52,10 @@ class file_bloom_filter
 public:
     typedef std::shared_ptr<file_bloom_filter>       pointer_t;
 
-                                file_bloom_filter(dbfile::pointer_t f, file_addr_t offset);
+                                file_bloom_filter(dbfile::pointer_t f, reference_t offset);
 
 
 private:
-    structure                   f_structure = structure();
 };
 
 

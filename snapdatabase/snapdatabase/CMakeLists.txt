@@ -29,31 +29,39 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/version.h
 )
 
-add_library( ${PROJECT_NAME} SHARED
-    appender.cpp
-    buffer_appender.cpp
-    component.cpp
-    console_appender.cpp
-    date_variable.cpp
-    environment.cpp
-    environment_variable.cpp
-    file_appender.cpp
-    format.cpp
-    guard.cpp
-    logger.cpp
-    logger_variable.cpp
-    map_diagnostic.cpp
-    message.cpp
-    nested_diagnostic.cpp
-    options.cpp
-    private_logger.cpp
-    severity.cpp
-    syslog_appender.cpp
-    system_functions.cpp
-    system_variable.cpp
-    user_variable.cpp
-    variable.cpp
+add_library(${PROJECT_NAME} SHARED
+    add128.s
+    add256.s
+    add512.s
+    sub128.s
+    sub256.s
+    sub512.s
+
+    block_blob.cpp
+    block.cpp
+    block_data.cpp
+    block_entry_index.cpp
+    block_free_block.cpp
+    block_free_space.cpp
+    block_index_pointers.cpp
+    block_indirect_index.cpp
+    block_schema.cpp
+    block_secondary_index.cpp
+    block_top_index.cpp
+    context.cpp
+    convert.cpp
+    dbfile.cpp
+    error.cpp
+    file_bloom_filter.cpp
+    file_external_index.cpp
+    file_snap_database_table.cpp
+    hash.cpp
+    schema.cpp
+    structure.cpp
+    table.cpp
     version.cpp
+    virtual_buffer.cpp
+    xml.cpp
 )
 
 include_directories(
@@ -73,10 +81,10 @@ target_link_libraries(${PROJECT_NAME}
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION
-        ${SNAPLOGGER_VERSION_MAJOR}.${SNAPLOGGER_VERSION_MINOR}
+        ${SNAPDATABASE_VERSION_MAJOR}.${SNAPDATABASE_VERSION_MINOR}
 
     SOVERSION
-        ${SNAPLOGGER_VERSION_MAJOR}
+        ${SNAPDATABASE_VERSION_MAJOR}
 )
 
 install(
@@ -95,28 +103,36 @@ install(
 
 install(
     FILES
-        appender.h
-        buffer_appender.h
-        component.h
-        console_appender.h
-        environment.h
+        block_blob.h
+        block_data.h
+        block_entry_index.h
+        block_free_block.h
+        block_free_space.h
+        block.h
+        block_index_pointers.h
+        block_indirect_index.h
+        block_schema.h
+        block_secondary_index.h
+        block_top_index.h
+        consistency.h
+        context.h
+        dbfile.h
+        dbtype.h
+        error.h
         exception.h
-        file_appender.h
-        format.h
-        guard.h
-        logger.h
-        map_diagnostic.h
-        message.h
-        nested_diagnostic.h
-        options.h
-        severity.h
-        syslog_appender.h
-        utils.h
-        variable.h
+        file_bloom_filter.h
+        file_external_index.h
+        file_snap_database_table.h
+        hash.h
+        schema.h
+        structure.h
+        table.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
+        virtual_buffer.h
+        xml.h
 
     DESTINATION
-        include/snaplogger
+        include/snapdatabase
 )
 
 

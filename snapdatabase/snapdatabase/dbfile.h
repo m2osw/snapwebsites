@@ -30,16 +30,15 @@
 //
 #include    "snapdatabase/dbtype.h"
 
+
 // snapdev lib
 //
 #include    <snapdev/lockfile.h>
 
+
 // boost lib
 //
-#include    <boost/multi_index_container.hpp>
-#include    <boost/multi_index/sequenced_index.hpp>
-#include    <boost/multi_index/ordered_index.hpp>
-#include    <boost/multi_index/identity.hpp>
+#include    <boost/bimap.hpp>
 
 
 
@@ -48,31 +47,23 @@ namespace snapdatabase
 
 
 
-typedef uint64_t            file_addr_t;
+typedef uint64_t            reference_t;
 typedef uint8_t *           data_t;
+typedef uint8_t const *     const_data_t;
 
-constexpr file_addr_t       NULL_FILE_ADDR = static_cast<file_addr_t>(0);
+constexpr reference_t       NULL_FILE_ADDR = static_cast<reference_t>(0);
+
+class table;
+typedef std::shared_ptr<table>  table_pointer_t;
 
 
 class dbfile
     : protected std::enable_shared_from_this<dbfile>
 {
 public:
-    //typedef std::map<file_addr_t, data_t>   page_map_t;
-
-    struct page_t
-    {
-        file_addr_t     f_addr;
-        data_t          f_data;
-    };
-
-    typedef boost::multi_index_container<
-                  page_t
-                , indexed_by<
-                      boost::ordered_unique<page_t, page_addr_t, &page_t::f_addr>
-                    , boost::ordered_unique<page_t, data_t, &page_t::f_data>
-                >
-        > page_map_t;
+    typedef std::shared_ptr<dbfile>             pointer_t;
+    //typedef std::map<reference_t, data_t>   page_map_t;
+    typedef boost::bimap<reference_t, data_t>  page_bimap_t;
 
                             dbfile(std::string const & path, std::string const & table_name, std::string const & filename);
                             dbfile(dbfile const & rhs) = delete;
@@ -80,28 +71,38 @@ public:
 
     dbfile &                operator = (dbfile const & rhs) = delete;
 
+    void                    set_table(table_pointer_t t);
+    table_pointer_t         get_table() const;
+    void                    close();
     static size_t           get_system_page_size();
     void                    set_page_size(size_t size);
     size_t                  get_page_size() const;
+    void                    set_sparse(bool sparse);
+    bool                    get_sparse() const;
     void                    set_type(dbtype_t type);
     dbtype_t                get_type() const;
-    data_t                  data(file_addr_t offset) const;
-    void                    release_data(data_t data) const;
+    data_t                  data(reference_t offset);
+    void                    release_data(data_t data);
     size_t                  get_size() const;
+    reference_t             append_free_block(reference_t const previous_block_offset);
 
 private:
     int                     open_file();
+    void                    write_data(void const * ptr, size_t size);
 
+    table_pointer_t         f_table = table_pointer_t();
     std::string             f_path = std::string();
     std::string             f_table_name = std::string();
     std::string             f_filename = std::string();
     std::string             f_dirname = std::string();
+    std::string             f_fullname = std::string();
+    std::string             f_lock_filename = std::string();
     size_t                  f_page_size = 0;
     dbtype_t                f_type = dbtype_t::DBTYPE_UNKNOWN;
     pid_t                   f_pid = -1;
     int                     f_fd = -1;
-    page_map_t              f_pages = page_map_t();
-    bool                    f_spares_file = false;
+    page_bimap_t            f_pages = page_bimap_t();
+    bool                    f_sparse_file = false;
 };
 
 

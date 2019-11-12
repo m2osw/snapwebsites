@@ -26,7 +26,7 @@
 
 // self
 //
-#include    "snapdatabase/block.h"
+#include    "snapdatabase/structure.h"
 
 
 
@@ -41,11 +41,9 @@ class file_external_index
 public:
     typedef std::shared_ptr<file_external_index>       pointer_t;
 
-                                file_external_index(dbfile::pointer_t f, file_addr_t offset);
-
+                                file_external_index(dbfile::pointer_t f, reference_t offset);
 
 private:
-    structure                   f_structure = structure();
 };
 
 
