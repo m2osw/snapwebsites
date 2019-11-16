@@ -51,18 +51,18 @@ class context_impl;
 
 
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Weffc++"
+//#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 class context
-    : public std::enable_shared_from_this<context>
+    //: public std::enable_shared_from_this<context>
 {
 public:
     typedef std::shared_ptr<context>        pointer_t;
     typedef std::weak_ptr<context>          weak_pointer_t;
 
                                             context(advgetopt::getopt::pointer_t opts);
-                                            ~context() {}
+                                            ~context();
 
     table::pointer_t                        get_table(std::string const & name) const;
     table::map_t                            list_tables() const;
@@ -72,7 +72,7 @@ public:
 private:
     std::unique_ptr<detail::context_impl>   f_impl;
 };
-#pragma GCC diagnostic pop
+//#pragma GCC diagnostic pop
 
 
 

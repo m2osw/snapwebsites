@@ -55,6 +55,15 @@ acknowledge that the write occurred safely.
 
 #### Indexing
 
+TODO: Look into supporting Branches and Revisions straight in here because
+having to maintain 3 tables (4 if we had the tree...) is complex in the
+client's code, better have all of that here where we can make it very
+effective. It seems to me that we can have a form of sub-indexing where
+the OID is the main reference to the data and that OID gives us access
+to the version which further manages pointers to the revisioned data.
+Columns are given a sub-type of "global", "branch", or "revision" to
+knwow whether it is affected by those two numbers.
+
 * Indirect Index (`INDR`/`TIND`)
 
 To allow for changes in the data location, we use a two layered indexing
@@ -721,6 +730,7 @@ rows to a newer schema.
                 > bounds (0x0010)
                 > length limits (0x0020)
                 > validation (0x0040)
+                > revision_type (0x0180)    0- global, 1- branch, 2- revision, 3- TBD
             + encrypt key name (`p16-string`, optional, see flags)
             + default value (see column type, optional, see flags)
             + minimum value (see column type, optional, see flags)

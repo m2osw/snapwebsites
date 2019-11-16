@@ -20,13 +20,25 @@
 
 
 /** \file
- * \brief Block representing the database file header.
+ * \brief Row header.
  *
+ * The row header defines the row class which is used to transform data to
+ * a binary buffer (often reference to as a blob) and vice versa.
+ *
+ * The row is used on the client to transform the data to transfer it to
+ * file and the database servers and to receive it back from those devices.
+ *
+ * The server uses it to transform the data so as to sort it when working
+ * with secondary indexes.
+ *
+ * \note
+ * The primary key is a special case and we have access to it
+ * _automatically_.
  */
 
 // self
 //
-#include    "snapdatabase/structure.h"
+#include    "snapdatabase/table.h"
 
 
 
@@ -35,16 +47,19 @@ namespace snapdatabase
 
 
 
-class block_index_pointers
-    : public block
+class row
 {
 public:
-    typedef std::shared_ptr<block_index_pointers>       pointer_t;
+    typedef std::shared_ptr<row>                pointer_t;
+    typedef std::map<std::string, pointer_t>    map_t;
 
-                                block_index_pointers(dbfile::pointer_t f, reference_t offset);
+                                                row(table::pointer_t t);
 
+    buffer_t                                    to_binary();
+    void                                        from_binary(buffer_t const & blob) const;
 
 private:
+    table::weak_pointer_t                       f_table = table::weak_pointer_t();
 };
 
 

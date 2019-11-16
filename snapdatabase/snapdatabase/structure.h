@@ -38,6 +38,7 @@
 //
 #include    "snapdatabase/exception.h"
 #include    "snapdatabase/virtual_buffer.h"
+#include    "snapdatabase/bigint.h"
 
 
 // snapdev lib
@@ -105,6 +106,13 @@ struct version_t
                         f_minor = v.f_minor;
 
                         return *this;
+                    }
+
+    std::string     to_string() const
+                    {
+                        return std::to_string(static_cast<uint32_t>(f_major))
+                             + "."
+                             + std::to_string(static_cast<uint32_t>(f_minor));
                     }
 
     std::uint32_t   to_binary() const
@@ -346,54 +354,12 @@ enum class struct_type_t : uint16_t
 
 constexpr struct_type_t             INVALID_STRUCT_TYPE(static_cast<struct_type_t>(-1));
 
+constexpr ssize_t                   INVALID_SIZE = -1;
+constexpr ssize_t                   VARIABLE_SIZE = -2;
+
 struct_type_t                       name_to_struct_type(std::string const & type_name);
 
 
-
-void                                add128(uint64_t * dst, uint64_t const * src);
-void                                add256(uint64_t * dst, uint64_t const * src);
-void                                add512(uint64_t * dst, uint64_t const * src);
-
-void                                sub128(uint64_t * dst, uint64_t const * src);
-void                                sub256(uint64_t * dst, uint64_t const * src);
-void                                sub512(uint64_t * dst, uint64_t const * src);
-
-
-struct uint512_t;
-
-struct int512_t
-{
-                                    int512_t();
-                                    int512_t(int512_t const & rhs);
-                                    int512_t(uint512_t const & rhs);
-
-    bool                            is_positive() const { return f_high_value >= 0; }
-    bool                            is_negative() const { return f_high_value < 0; }
-
-    size_t                          bit_size() const;
-
-    int512_t                        operator - () const;
-    int512_t &                      operator += (int512_t const & rhs);
-    int512_t &                      operator -= (int512_t const & rhs);
-
-    uint64_t                        f_value[7] = { 0 };
-    int64_t                         f_high_value = 0;
-};
-
-
-struct uint512_t
-{
-    bool                            is_positive() const { return true; }
-    bool                            is_negative() const { return false; }
-
-    size_t                          bit_size() const;
-
-    uint512_t                       operator - () const;
-    uint512_t &                     operator += (uint512_t const & rhs);
-    uint512_t &                     operator -= (uint512_t const & rhs);
-
-    uint64_t                        f_value[8] = { 0 };
-};
 
 
 typedef uint16_t                            struct_description_flags_t;
@@ -596,18 +562,23 @@ class flag_definition
 public:
     typedef std::map<std::string, flag_definition>      map_t;
 
+                            flag_definition();
                             flag_definition(
-                                      std::string const & name
+                                      std::string const & field_name
+                                    , std::string const & flag_name
                                     , size_t pos
                                     , size_t size = 1);
 
-    std::string             name() const;
+    std::string             full_name() const;
+    std::string             field_name() const;
+    std::string             flag_name() const;
     size_t                  pos() const;
     size_t                  size() const;
     flags_t                 mask() const;
 
 private:
-    std::string             f_name = std::string();
+    std::string             f_field_name = std::string();
+    std::string             f_flag_name = std::string();
     size_t                  f_pos = 0;
     size_t                  f_size = 0;
     flags_t                 f_mask = 0;
@@ -630,7 +601,7 @@ struct field_t
     uint32_t                                size() const;
     structure_pointer_t                     operator [] (int idx);
 
-    struct struct_description_t const *     f_description = nullptr;
+    struct_description_t const *            f_description = nullptr;
     uint32_t                                f_size = 0;
     uint32_t                                f_flags = 0;
     uint64_t                                f_offset = 0;
@@ -645,19 +616,23 @@ public:
     typedef std::shared_ptr<structure>      pointer_t;
     typedef std::vector<pointer_t>          vector_t;
 
-                                            structure(struct_description_t const * description);
+                                            structure(struct_description_t const * descriptions);
                                             structure(structure const & rhs) = delete;
 
     structure &                             operator = (structure const & rhs) = delete;
 
-    void                                    set_block(block::pointer_t b);
-    void                                    set_buffer(
-                                                  virtual_buffer & buffer
+    void                                    set_block(
+                                                  block::pointer_t b
+                                                , std::uint64_t size);
+    void                                    set_virtual_buffer(
+                                                  virtual_buffer::pointer_t buffer
                                                 , uint64_t start_offset);
+    virtual_buffer::pointer_t               get_virtual_buffer(uint64_t & start_offset) const;
 
     size_t                                  get_size() const;
+    size_t                                  get_current_size() const;
 
-    field_t &                               get_field(
+    field_t::pointer_t                      get_field(
                                                   std::string const & field_name
                                                 , struct_type_t type = struct_type_t::STRUCT_TYPE_END) const;
 
@@ -702,11 +677,11 @@ public:
     void                                    set_buffer(std::string const & field_name, buffer_t const & value);
 
 private:
-    void                                    parse();
-    uint8_t *                               parse_description(uint8_t * data);
+    void                                    parse() const;
+    uint64_t                                parse_descriptions(uint64_t offset) const;
 
     struct_description_t const *            f_descriptions = nullptr;
-    virtual_buffer                          f_buffer = virtual_buffer();
+    virtual_buffer::pointer_t               f_buffer = virtual_buffer::pointer_t();
     uint64_t                                f_start_offset = 0;
     field_t::map_t                          f_fields_by_name = field_t::map_t();
 };

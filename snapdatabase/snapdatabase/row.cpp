@@ -27,7 +27,7 @@
 
 // self
 //
-#include    "snapdatabase/block_index_pointers.h"
+#include    "snapdatabase/row.h"
 
 
 // last include
@@ -41,25 +41,41 @@ namespace snapdatabase
 
 
 
-// 'IDXP'
-constexpr struct_description_t g_index_pointers_description[] =
+row::row(table::pointer_t t)
+    : f_table(t)
 {
-    define_description(
-          FieldName("magic")    // dbtype_t = IDXP
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-    ),
-    end_descriptions()
-};
-
-
-block_index_pointers::block_index_pointers(dbfile::pointer_t f, reference_t offset)
-    : block(f, offset)
-{
-    f_structure = std::make_shared<structure>(g_index_pointers_description);
 }
 
 
+buffer_t row::to_binary()
+{
+    buffer_t result;
 
+    return result;
+}
+
+
+void row::from_binary(buffer_t const & blob) const
+{
+    table::pointer_t t(f_table.lock());
+    schema_column::map_by_id_t columns(t->columns_by_id());
+
+    size_t pos(0);
+    for(auto c : columns)
+    {
+        column_id_t const id((blob[pos    ] << 0)
+                           + (blob[pos + 1] << 8));
+
+        auto it(columns.find(id));
+        if(it == columns.end())
+        {
+            throw column_not_found(
+                    "column "
+                    + std::to_string(static_cast<int>(id))
+                    + " not found.");
+        }
+    }
+}
 
 
 

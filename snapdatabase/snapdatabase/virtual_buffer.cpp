@@ -289,43 +289,65 @@ int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t 
     // insert has to happen... search the buffer where it will happen
     //
     std::uint8_t const * in(reinterpret_cast<std::uint8_t const *>(buf));
-    for(auto b : f_buffers)
+    //for(auto b : f_buffers)
+    for(auto b(f_buffers.begin()); b != f_buffers.end(); ++b)
     {
-        if(offset >= b.f_size)
+        if(offset >= b->f_size)
         {
-            offset -= b.f_size;
+            offset -= b->f_size;
         }
         else
         {
-            if(b.f_block != nullptr)
+            if(b->f_block != nullptr)
             {
                 // if inserting within a block, we have to break the block
                 // in two
                 {
                     vbuf_t append;
-                    append.f_block = b.f_block;
-                    append.f_size = b.f_size - offset;
-                    append.f_offset = b.f_offset + offset;
-                    f_buffers.insert(&b + 1, append);
+                    append.f_block = b->f_block;
+                    append.f_size = b->f_size - offset;
+                    append.f_offset = b->f_offset + offset;
+                    f_buffers.insert(b + 1, append);
                 }
 
-                b.f_size = offset;
+                b->f_size = offset;
 
                 {
                     vbuf_t append;
                     append.f_size = size;
                     memcpy(append.f_data.data(), in, size);
-                    f_buffers.insert(&b + 1, append);
+                    f_buffers.insert(b + 1, append);
                 }
             }
             else
             {
-                b.f_data.insert(f_data.begin() + offset, in, in + size);
+                b->f_data.insert(b->f_data.begin() + offset, in, in + size);
             }
             f_total_size += size;
-            f_modified = size != 0;
+            f_modified = true;
             return size;
         }
+    }
+
+    if(offset == 0)
+    {
+        // append at the end
+        //
+        if(!f_buffers.empty()
+        && f_buffers.back().f_block == nullptr)
+        {
+            f_buffers.back().f_data.insert(f_buffers.back().f_data.end(), in, in + size);
+        }
+        else
+        {
+            vbuf_t append;
+            append.f_size = size;
+            memcpy(append.f_data.data(), in, size);
+            f_buffers.push_back(append);
+        }
+        f_total_size += size;
+        f_modified = true;
+        return size;
     }
 
     throw snapdatabase_logic_error("Reached the end of the pinsert() function. It should never happen.");

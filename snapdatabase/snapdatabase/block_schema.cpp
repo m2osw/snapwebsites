@@ -99,7 +99,7 @@ virtual_buffer block_schema::get_schema() const
     virtual_buffer result;
 
     reference_t const offset(f_structure->get_size());
-    block_schema::pointer_t s(std::shared_from_this());
+    block_schema::pointer_t s(std::static_pointer_cast<block_schema>(const_cast<block_schema *>(this)->shared_from_this()));
     for(;;)
     {
         block::pointer_t block_ptr(s);

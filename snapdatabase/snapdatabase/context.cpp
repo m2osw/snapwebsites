@@ -63,12 +63,16 @@ namespace detail
 
 
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Weffc++"
 class context_impl
 {
 public:
                                     context_impl(context *c, advgetopt::getopt::pointer_t opts);
+                                    context_impl(context_impl const & rhs) = delete;
+                                    ~context_impl();
+
+    context_impl &                  operator = (context_impl const & rhs) = delete;
 
     table::pointer_t                get_table(std::string const & name) const;
     table::map_t                    list_tables() const;
@@ -81,7 +85,7 @@ private:
     int                             f_lock = -1;        // TODO: lock the context so only one snapdatabasedaemon can run against it
     table::map_t                    f_tables = table::map_t();
 };
-#pragma GCC diagnostic pop
+//#pragma GCC diagnostic pop
 
 
 context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
@@ -243,6 +247,11 @@ context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
 }
 
 
+context_impl::~context_impl()
+{
+}
+
+
 table::pointer_t context_impl::get_table(std::string const & name) const
 {
     auto it(f_tables.find(name));
@@ -274,6 +283,12 @@ std::string context_impl::get_path() const
 
 context::context(advgetopt::getopt::pointer_t opts)
     : f_impl(std::make_unique<detail::context_impl>(this, opts))
+{
+}
+
+
+// required for the std::unique_ptr<>() of the impl
+context::~context()
 {
 }
 

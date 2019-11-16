@@ -37,6 +37,7 @@ add_library(${PROJECT_NAME} SHARED
     sub256.s
     sub512.s
 
+    bigint.cpp
     block_blob.cpp
     block.cpp
     block_data.cpp
@@ -48,6 +49,7 @@ add_library(${PROJECT_NAME} SHARED
     block_schema.cpp
     block_secondary_index.cpp
     block_top_index.cpp
+    cell.cpp
     context.cpp
     convert.cpp
     dbfile.cpp
@@ -56,7 +58,9 @@ add_library(${PROJECT_NAME} SHARED
     file_external_index.cpp
     file_snap_database_table.cpp
     hash.cpp
+    row.cpp
     schema.cpp
+    script.cpp
     structure.cpp
     table.cpp
     version.cpp
@@ -87,6 +91,23 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         ${SNAPDATABASE_VERSION_MAJOR}
 )
 
+
+set(QT_INCLUDE_PROPERTIES "")
+foreach(DIR ${Qt5Core_INCLUDE_DIRS})
+    set(QT_INCLUDE_PROPERTIES "${QT_INCLUDE_PROPERTIES} -isystem ${DIR}")
+endforeach()
+set_source_files_properties(script.cpp PROPERTIES
+    COMPILE_FLAGS
+        ${QT_INCLUDE_PROPERTIES}
+)
+
+#${Qt5Network_INCLUDE_DIRS}
+#${Qt5Script_INCLUDE_DIRS}
+#${Qt5Sql_INCLUDE_DIRS}
+#${Qt5Widgets_INCLUDE_DIRS}
+#${Qt5Xml_INCLUDE_DIRS}
+#${Qt5XmlPatterns_INCLUDE_DIRS}
+
 install(
     TARGETS
         ${PROJECT_NAME}
@@ -103,6 +124,7 @@ install(
 
 install(
     FILES
+        bigint.h
         block_blob.h
         block_data.h
         block_entry_index.h
@@ -114,8 +136,10 @@ install(
         block_schema.h
         block_secondary_index.h
         block_top_index.h
+        cell.h
         consistency.h
         context.h
+        convert.h
         dbfile.h
         dbtype.h
         error.h
@@ -124,6 +148,7 @@ install(
         file_external_index.h
         file_snap_database_table.h
         hash.h
+        row.h
         schema.h
         structure.h
         table.h

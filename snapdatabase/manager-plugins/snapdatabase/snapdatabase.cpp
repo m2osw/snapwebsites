@@ -1,4 +1,4 @@
-// Snap Websites Server -- manage the snapfirewall settings
+// Snap Websites Server -- manage the snapdatabase settings
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@
 
 
 
-SNAP_PLUGIN_START(firewall, 1, 0)
+SNAP_PLUGIN_START(snapdatabase, 1, 0)
 
 
 namespace
@@ -79,9 +79,9 @@ char const *    g_conf_iplock_glob     = "/etc/iplock/schemes/*.conf";
 
 
 
-/** \brief Get a fixed firewall plugin name.
+/** \brief Get a fixed snapdatabase plugin name.
  *
- * The firewall plugin makes use of different fixed names. This function
+ * The snapdatabase plugin makes use of different fixed names. This function
  * ensures that you always get the right spelling for a given name.
  *
  * \param[in] name  The name to retrieve.
@@ -92,33 +92,33 @@ char const * get_name(name_t name)
 {
     switch(name)
     {
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_ADMIN_IPS:
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_ADMIN_IPS:
         return "admin_ips";
 
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_NAME:
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_NAME:
         return "name";
 
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_INTERFACE:
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_INTERFACE:
         return "private_interface";
 
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_IP:
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_IP:
         return "private_ip";
 
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_INTERFACE:
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_INTERFACE:
         return "public_interface";
 
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_IP:
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_IP:
         return "public_ip";
 
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS:
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_SERVICE_STATUS:
         return "service_status";
 
-    case name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST:
+    case name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_WHITELIST:
         return "whitelist";
 
     default:
         // invalid index
-        throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_FIREWALL_...");
+        throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_...");
 
     }
     NOTREACHED();
@@ -127,37 +127,37 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the firewall plugin.
+/** \brief Initialize the snapdatabase plugin.
  *
- * This function is used to initialize the firewall plugin object.
+ * This function is used to initialize the snapdatabase plugin object.
  */
-firewall::firewall()
+snapdatabase::snapdatabase()
     //: f_snap(nullptr) -- auto-init
 {
 }
 
 
-/** \brief Clean up the firewall plugin.
+/** \brief Clean up the snapdatabase plugin.
  *
- * Ensure the firewall object is clean before it is gone.
+ * Ensure the snapdatabase object is clean before it is gone.
  */
-firewall::~firewall()
+snapdatabase::~snapdatabase()
 {
 }
 
 
-/** \brief Get a pointer to the firewall plugin.
+/** \brief Get a pointer to the snapdatabase plugin.
  *
- * This function returns an instance pointer to the firewall plugin.
+ * This function returns an instance pointer to the snapdatabase plugin.
  *
  * Note that you cannot assume that the pointer will be valid until the
  * bootstrap event is called.
  *
- * \return A pointer to the firewall plugin.
+ * \return A pointer to the snapdatabase plugin.
  */
-firewall * firewall::instance()
+snapdatabase * snapdatabase::instance()
 {
-    return g_plugin_firewall_factory.instance();
+    return g_plugin_snapdatabase_factory.instance();
 }
 
 
@@ -170,9 +170,9 @@ firewall * firewall::instance()
  *
  * \return The description in a QString.
  */
-QString firewall::description() const
+QString snapdatabase::description() const
 {
-    return "Manage the snapfirewall settings.";
+    return "Manage the snapdatabase settings.";
 }
 
 
@@ -183,7 +183,7 @@ QString firewall::description() const
  *
  * \return Our list of dependencies.
  */
-QString firewall::dependencies() const
+QString snapdatabase::dependencies() const
 {
     return "|server|";
 }
@@ -197,7 +197,7 @@ QString firewall::dependencies() const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t firewall::do_update(int64_t last_updated)
+int64_t snapdatabase::do_update(int64_t last_updated)
 {
     NOTUSED(last_updated);
 
@@ -207,14 +207,14 @@ int64_t firewall::do_update(int64_t last_updated)
 }
 
 
-/** \brief Initialize firewall.
+/** \brief Initialize snapdatabase.
  *
- * This function terminates the initialization of the firewall plugin
+ * This function terminates the initialization of the snapdatabase plugin
  * by registering for different events.
  *
  * \param[in] snap  The child handling this request.
  */
-void firewall::bootstrap(snap_child * snap)
+void snapdatabase::bootstrap(snap_child * snap)
 {
     f_snap = dynamic_cast<snap_manager::manager *>(snap);
     if(f_snap == nullptr)
@@ -222,8 +222,8 @@ void firewall::bootstrap(snap_child * snap)
         throw snap_logic_exception("snap pointer does not represent a valid manager object.");
     }
 
-    SNAP_LISTEN(firewall, "server", snap_manager::manager, retrieve_status, _1);
-    SNAP_LISTEN(firewall, "server", snap_manager::manager, handle_affected_services, _1);
+    SNAP_LISTEN(snapdatabase, "server", snap_manager::manager, retrieve_status, _1);
+    SNAP_LISTEN(snapdatabase, "server", snap_manager::manager, handle_affected_services, _1);
 }
 
 
@@ -233,7 +233,7 @@ void firewall::bootstrap(snap_child * snap)
  *
  * \param[in] server_status  The map of statuses.
  */
-void firewall::on_retrieve_status(snap_manager::server_status & server_status)
+void snapdatabase::on_retrieve_status(snap_manager::server_status & server_status)
 {
     if(f_snap->stop_now_prima())
     {
@@ -241,9 +241,9 @@ void firewall::on_retrieve_status(snap_manager::server_status & server_status)
     }
 
     {
-        // get the snapfirewall status
+        // get the snapdatabase status
         //
-        snap_manager::service_status_t status(f_snap->service_status("/usr/sbin/snapfirewall", "snapfirewall"));
+        snap_manager::service_status_t status(f_snap->service_status("/usr/sbin/snapdatabase", "snapdatabase"));
 
         // transform to a string
         //
@@ -258,7 +258,7 @@ void firewall::on_retrieve_status(snap_manager::server_status & server_status)
                                         ? snap_manager::status_t::state_t::STATUS_STATE_HIGHLIGHT
                                         : snap_manager::status_t::state_t::STATUS_STATE_INFO,
                         get_plugin_name(),
-                        get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS),
+                        get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_SERVICE_STATUS),
                         status_string);
         server_status.set_field(status_widget);
     }
@@ -271,7 +271,7 @@ void firewall::on_retrieve_status(snap_manager::server_status & server_status)
         std::string whitelist;
         if(iplock_config.configuration_file_exists())
         {
-            whitelist = iplock_config[get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST)];
+            whitelist = iplock_config[get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_WHITELIST)];
         }
 
         // create status widget
@@ -281,7 +281,7 @@ void firewall::on_retrieve_status(snap_manager::server_status & server_status)
         snap_manager::status_t const status_widget(
                         snap_manager::status_t::state_t::STATUS_STATE_INFO,
                         get_plugin_name(),
-                        get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST),
+                        get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_WHITELIST),
                         QString::fromUtf8(whitelist.c_str()));
         server_status.set_field(status_widget);
     }
@@ -298,7 +298,7 @@ void firewall::on_retrieve_status(snap_manager::server_status & server_status)
 }
 
 
-void firewall::retrieve_settings_field(snap_manager::server_status & server_status,
+void snapdatabase::retrieve_settings_field(snap_manager::server_status & server_status,
                                        std::string const & variable_name)
 {
     // we want fields to be lowercase, when these variables are uppercase
@@ -395,13 +395,13 @@ void firewall::retrieve_settings_field(snap_manager::server_status & server_stat
  *
  * \return true if we handled this field.
  */
-bool firewall::display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri)
+bool snapdatabase::display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri)
 {
     QDomDocument doc(parent.ownerDocument());
 
-    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS))
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_SERVICE_STATUS))
     {
-        // The current status of the snapfirewall service
+        // The current status of the snapdatabase service
         //
         snap_manager::service_status_t const status(snap_manager::manager::string_to_service_status(s.get_value().toUtf8().data()));
 
@@ -445,7 +445,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
                             , s.get_field_name()
                             , service_list
                             , s.get_value()
-                            , "<p>Enter the new state of the snapfirewall"
+                            , "<p>Enter the new state of the snapdatabase"
                               " service as one of:</p>"
                               "<ul>"
                               "  <li>disabled -- deactivate and disable the service</li>"
@@ -468,7 +468,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST))
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_WHITELIST))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -500,7 +500,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_IP))
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_IP))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -521,7 +521,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_INTERFACE))
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_INTERFACE))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -542,7 +542,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_IP))
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_IP))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -563,7 +563,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_INTERFACE))
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_INTERFACE))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -584,7 +584,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
         return true;
     }
 
-    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_ADMIN_IPS))
+    if(s.get_field_name() == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_ADMIN_IPS))
     {
         snap_manager::form f(
                   get_plugin_name()
@@ -670,19 +670,19 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
  *
  * \return true if the new_value was applied successfully.
  */
-bool firewall::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
+bool snapdatabase::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
     NOTUSED(old_or_installation_value);
     NOTUSED(button_name);
 
-    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS))
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_SERVICE_STATUS))
     {
         snap_manager::service_status_t const status(snap_manager::manager::string_to_service_status(new_value.toUtf8().data()));
-        f_snap->service_apply_status("snapfirewall", status);
+        f_snap->service_apply_status("snapdatabase", status);
         return true;
     }
 
-    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_WHITELIST))
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_WHITELIST))
     {
         // go through the list of .conf files in the schemes directory
         // and update the corresponding file in the schemes.d directory
@@ -717,7 +717,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_IP))
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_IP))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -728,7 +728,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_INTERFACE))
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_INTERFACE))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -739,7 +739,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_IP))
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_IP))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -750,7 +750,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_INTERFACE))
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_INTERFACE))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -761,7 +761,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
         return true;
     }
 
-    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_ADMIN_IPS))
+    if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_ADMIN_IPS))
     {
         affected_services.insert("firewall-reload");
         NOTUSED(f_snap->replace_configuration_value(
@@ -798,7 +798,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
 }
 
 
-void firewall::on_handle_affected_services(std::set<QString> & affected_services)
+void snapdatabase::on_handle_affected_services(std::set<QString> & affected_services)
 {
     auto const & it_reload(std::find(affected_services.begin(), affected_services.end(), QString("firewall-reload")));
     if(it_reload != affected_services.end())

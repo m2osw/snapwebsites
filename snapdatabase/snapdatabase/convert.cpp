@@ -29,6 +29,7 @@
 //
 #include    "snapdatabase/schema.h"
 
+#include    "snapdatabase/exception.h"
 
 // C++ lib
 //
@@ -39,6 +40,16 @@
 // snaplogger lib
 //
 #include    <snaplogger/message.h>
+
+
+// boost lib
+//
+#include    <boost/preprocessor/stringize.hpp>
+
+
+// C++ lib
+//
+#include    <sstream>
 
 
 // last include
@@ -232,8 +243,9 @@ uint512_t string_to_int(std::string const & number, bool accept_negative_values)
 }
 
 
-buffer_t & string_to_uinteger(buffer_t & result, std::string const & value, size_t max_size)
+buffer_t string_to_uinteger(std::string const & value, size_t max_size)
 {
+    buffer_t result;
     uint512_t const n(string_to_int(value, false));
 
     if(max_size != 512 && n.bit_size() > max_size)
@@ -254,8 +266,88 @@ buffer_t & string_to_uinteger(buffer_t & result, std::string const & value, size
 }
 
 
-buffer_t & string_to_integer(buffer_t & result, std::string const & value, size_t max_size)
+std::string uinteger_to_string(buffer_t value, int bytes_for_size, int base)
 {
+    if(value.size() > static_cast<size_t>(bytes_for_size))
+    {
+        throw snapdatabase_out_of_range(
+                  "Value too large ("
+                + std::to_string(value.size() * 8)
+                + ") for this field (max: "
+                + std::to_string(bytes_for_size * 8)
+                + ").");
+    }
+
+    uint512_t v;
+    std::memcpy(reinterpret_cast<uint8_t *>(v.f_value), reinterpret_cast<uint8_t *>(value.data()), value.size());
+
+    if(v.is_zero())
+    {
+        return std::string("0");
+    }
+
+    char const * intro("");
+    std::string result;
+    switch(base)
+    {
+    case 2:
+        while(!v.is_zero())
+        {
+            result += (v.f_value[0] & 1) + '0';
+            v.lsr(1);
+        }
+        intro = "0b";
+        break;
+
+    case 8:
+        while(!v.is_zero())
+        {
+            result += (v.f_value[0] & 7) + '0';
+            v.lsr(3);
+        }
+        intro = "0";
+        break;
+
+    case 10:
+        {
+            uint512_t remainder;
+            uint512_t ten;
+            ten.f_value[0] = 10;
+            while(!v.is_zero())
+            {
+                v.div(ten, remainder);
+                result += remainder.f_value[0] + '0';
+            }
+        }
+        break;
+
+    case 16:
+        while(!v.is_zero())
+        {
+            int const digit(v.f_value[0]);
+            if(digit >= 10)
+            {
+                result += digit + 'A';
+            }
+            else
+            {
+                result += digit + '0';
+            }
+            v.lsr(4);
+        }
+        intro = "0x";
+        break;
+
+    }
+
+    std::reverse(result.begin(), result.end());
+    return intro + result;
+}
+
+
+buffer_t string_to_integer(std::string const & value, size_t max_size)
+{
+    buffer_t result;
     int512_t const n(string_to_int(value, true));
 
     if(max_size != 512 && n.bit_size() > max_size)
@@ -276,9 +368,30 @@ buffer_t & string_to_integer(buffer_t & result, std::string const & value, size_
 }
 
 
-template<typename T>
-buffer_t & string_to_float(buffer_t & result, std::string const & value, std::function<T(char const *, char **)> f)
+std::string integer_to_string(buffer_t value, int bytes_for_size, int base)
 {
+    if(static_cast<int8_t>(value.data()[value.size() - 1]) < 0)
+    {
+        // TODO: this is a tad bit ugly... (i.e. triple memcpy()!!!)
+        //
+        int512_t v;
+        std::memcpy(v.f_value, value.data(), value.size());
+        v = -v;
+        buffer_t neg(reinterpret_cast<uint8_t const *>(v.f_value), reinterpret_cast<uint8_t const *>(v.f_value + 8));
+        return "-" + uinteger_to_string(neg, bytes_for_size, base);
+    }
+    else
+    {
+        return uinteger_to_string(value, bytes_for_size, base);
+    }
+}
+
+
+
+template<typename T>
+buffer_t string_to_float(std::string const & value, std::function<T(char const *, char **)> f)
+{
+    buffer_t result;
     char * e(nullptr);
     errno = 0;
     T r(f(value.c_str(), &e));
@@ -313,80 +426,28 @@ buffer_t & string_to_float(buffer_t & result, std::string const & value, std::fu
 }
 
 
-//buffer_t & string_to_float(buffer_t & result, std::string const & value)
-//{
-//    char * e(nullptr);
-//    errno = 0;
-//    double r(strtod(value.c_str(), &e));
-//    if(errno == ERANGE)
-//    {
-//        throw snapdatabase_out_of_range(
-//                  "Floating point number \""
-//                + value
-//                + "\" out of range.");
-//    }
-//
-//    // ignore ending spaces
-//    //
-//    while(isspace(*e))
-//    {
-//        ++e;
-//    }
-//
-//    if(*e != '\0')
-//    {
-//        throw invalid_number(
-//                  "Floating point number \""
-//                + value
-//                + "\" includes invalid numbers.");
-//    }
-//
-//    result.insert(result.end()
-//                , reinterpret_cast<uint8_t *>(&r)
-//                , reinterpret_cast<uint8_t *>(&r) + sizeof(r));
-//
-//    return result;
-//}
-
-
-//buffer_t & string_to_float128(buffer_t & result, std::string const & value)
-//{
-//    char * e(nullptr);
-//    errno = 0;
-//    long double r(strtold(value.c_str(), &e));
-//    if(errno == ERANGE)
-//    {
-//        throw snapdatabase_out_of_range(
-//                  "Floating point number \""
-//                + value
-//                + "\" out of range.");
-//    }
-//
-//    // ignore ending spaces
-//    //
-//    while(isspace(*e))
-//    {
-//        ++e;
-//    }
-//
-//    if(*e != '\0')
-//    {
-//        throw invalid_number(
-//                  "Floating point number \""
-//                + value
-//                + "\" includes invalid numbers.");
-//    }
-//
-//    result.insert(result.end()
-//                , reinterpret_cast<uint8_t *>(&r)
-//                , reinterpret_cast<uint8_t *>(&r) + sizeof(r));
-//
-//    return result;
-//}
-
-
-buffer_t & string_to_version(buffer_t & result, std::string const & value)
+template<typename T>
+std::string float_to_string(buffer_t value)
 {
+    // TBD: we may want to specify the format
+    if(value.size() != sizeof(T))
+    {
+        throw snapdatabase_out_of_range(
+                  "Value buffer has an unexpected size ("
+                + std::to_string(value.size())
+                + ") for this field (expected floating point size: "
+                  BOOST_PP_STRINGIZE(sizeof(T))
+                  ").");
+    }
+    std::ostringstream ss;
+    ss << *reinterpret_cast<T *>(value.data());
+    return ss.str();
+}
+
+
+buffer_t string_to_version(std::string const & value)
+{
+    buffer_t result;
     std::string::size_type const pos(value.find('.'));
     if(pos == std::string::npos)
     {
@@ -422,8 +483,23 @@ buffer_t & string_to_version(buffer_t & result, std::string const & value)
 }
 
 
-buffer_t & cstring_to_buffer(buffer_t & result, std::string const & value)
+std::string version_to_string(buffer_t value)
 {
+    if(value.size() != 4)
+    {
+        throw snapdatabase_out_of_range(
+                  "A buffer representing a version must be exactly 4 bytes, not "
+                + std::to_string(value.size())
+                + ".");
+    }
+    version_t v(*reinterpret_cast<uint32_t *>(value.data()));
+    return v.to_string();
+}
+
+
+buffer_t cstring_to_buffer(std::string const & value)
+{
+    buffer_t result;
     result.insert(result.end(), value.begin(), value.end());
 
     // null terminated
@@ -434,8 +510,27 @@ buffer_t & cstring_to_buffer(buffer_t & result, std::string const & value)
 }
 
 
-buffer_t & string_to_buffer(buffer_t & result, std::string const & value, size_t bytes_for_size)
+std::string buffer_to_cstring(buffer_t const & value)
 {
+    if(value.empty())
+    {
+        throw snapdatabase_out_of_range(
+                  "A C-String cannot be saved in an empty buffer ('\\0' missing).");
+    }
+
+    if(value[value.size() - 1] != '\0')
+    {
+        throw snapdatabase_out_of_range(
+                  "C-String last byte cannot be anything else than '\\0'.");
+    }
+
+    return std::string(value.data(), value.data() + value.size() - 1);
+}
+
+
+buffer_t string_to_buffer(std::string const & value, size_t bytes_for_size)
+{
+    buffer_t result;
     uint32_t size(value.length());
 
     uint64_t max_size(1ULL << bytes_for_size * 8);
@@ -460,6 +555,125 @@ buffer_t & string_to_buffer(buffer_t & result, std::string const & value, size_t
 }
 
 
+std::string buffer_to_string(buffer_t value, size_t bytes_for_size)
+{
+    if(value.size() < bytes_for_size)
+    {
+        throw snapdatabase_out_of_range(
+                  "Buffer too small to incorporate the P-String size ("
+                + std::to_string(value.size())
+                + ", expected at least: "
+                + std::to_string(bytes_for_size)
+                + ").");
+    }
+
+    uint32_t size(0);
+    memcpy(&size, value.data(), bytes_for_size);
+
+    if(bytes_for_size + size > value.size())
+    {
+        throw snapdatabase_out_of_range(
+                  "Buffer too small for the P-String characters (size: "
+                + std::to_string(size)
+                + ", character bytes in buffer: "
+                + std::to_string(value.size() - bytes_for_size)
+                + ").");
+    }
+
+    return std::string(value.data() + bytes_for_size, value.data() + bytes_for_size + size);
+}
+
+
+// TODO: add support for getdate()
+buffer_t string_to_unix_time(std::string value, int fraction)
+{
+    struct tm t;
+    memset(&t, 0, sizeof(t));
+    std::string format("%Y-%m-%dT%T");
+    std::string::size_type const pos(value.find('.'));
+    int f(0);
+    if(pos != std::string::npos)
+    {
+        std::string date_time(value.substr(0, pos));
+        std::string::size_type zone(value.find_first_of("+-"));
+        if(zone == std::string::npos)
+        {
+            zone = value.size();
+        }
+        else
+        {
+            format += "%z";
+            date_time += value.substr(zone);
+        }
+        std::string frac(value.substr(pos, zone - pos));
+        f = std::atoi(frac.c_str());
+        if(f < 0
+        || f >= fraction)
+        {
+            throw snapdatabase_out_of_range(
+                      "Time fraction is out of bounds in \""
+                    + value
+                    + "\".");
+        }
+
+        strptime(date_time.c_str(), format.c_str(), &t);
+    }
+    else
+    {
+        std::string::size_type zone(value.find_first_of("+-"));
+        if(zone != std::string::npos)
+        {
+            format += "%z";
+        }
+
+        strptime(value.c_str(), format.c_str(), &t);
+    }
+
+    time_t v(mktime(&t));
+    uint64_t with_fraction(v * fraction + f);
+
+    return buffer_t(reinterpret_cast<uint8_t const *>(&with_fraction), reinterpret_cast<uint8_t const *>(&with_fraction + 1));
+}
+
+
+std::string unix_time_to_string(buffer_t value, int fraction)
+{
+    uint64_t time;
+    if(value.size() != sizeof(time))
+    {
+        throw snapdatabase_out_of_range(
+                  "Buffer size is invalid for a time value (size: "
+                + std::to_string(value.size())
+                + ", expected size: "
+                + std::to_string(sizeof(time))
+                + ").");
+    }
+    memcpy(&time, value.data(), sizeof(time));
+    time_t const v(time / fraction);
+    struct tm t;
+    gmtime_r(&v, &t);
+
+    char buf[256];
+    strftime(buf, sizeof(buf) - 1, "%FT%T", &t);
+    buf[sizeof(buf) - 1] = '\0';
+
+    std::string result(buf);
+
+    if(fraction != 1)
+    {
+        result += ".";
+        std::string frac(std::to_string(time % fraction));
+        size_t sz(fraction == 1000 ? 3 : 6);
+        while(frac.size() < sz)
+        {
+            frac = '0' + frac;
+        }
+        result += frac;
+    }
+
+    return result + "+0000";
+}
+
 
 } // no name namespace
 
@@ -469,88 +683,91 @@ buffer_t & string_to_buffer(buffer_t & result, std::string const & value, size_t
 
 buffer_t string_to_typed_buffer(struct_type_t type, std::string const & value)
 {
-    buffer_t result;
     switch(type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
     case struct_type_t::STRUCT_TYPE_UINT8:
-        return string_to_uinteger(result, value, 8);
+        return string_to_uinteger(value, 8);
 
     case struct_type_t::STRUCT_TYPE_BITS16:
     case struct_type_t::STRUCT_TYPE_UINT16:
-        return string_to_uinteger(result, value, 16);
+        return string_to_uinteger(value, 16);
 
     case struct_type_t::STRUCT_TYPE_BITS32:
     case struct_type_t::STRUCT_TYPE_UINT32:
-        return string_to_uinteger(result, value, 32);
+        return string_to_uinteger(value, 32);
 
     case struct_type_t::STRUCT_TYPE_BITS64:
     case struct_type_t::STRUCT_TYPE_UINT64:
     case struct_type_t::STRUCT_TYPE_OID:
     case struct_type_t::STRUCT_TYPE_REFERENCE:
-        return string_to_uinteger(result, value, 64);
+        return string_to_uinteger(value, 64);
 
     case struct_type_t::STRUCT_TYPE_BITS128:
     case struct_type_t::STRUCT_TYPE_UINT128:
-        return string_to_uinteger(result, value, 128);
+        return string_to_uinteger(value, 128);
 
     case struct_type_t::STRUCT_TYPE_BITS256:
     case struct_type_t::STRUCT_TYPE_UINT256:
-        return string_to_uinteger(result, value, 256);
+        return string_to_uinteger(value, 256);
 
     case struct_type_t::STRUCT_TYPE_BITS512:
     case struct_type_t::STRUCT_TYPE_UINT512:
-        return string_to_uinteger(result, value, 512);
+        return string_to_uinteger(value, 512);
 
     case struct_type_t::STRUCT_TYPE_INT8:
-        return string_to_integer(result, value, 8);
+        return string_to_integer(value, 8);
 
     case struct_type_t::STRUCT_TYPE_INT16:
-        return string_to_integer(result, value, 16);
+        return string_to_integer(value, 16);
 
     case struct_type_t::STRUCT_TYPE_INT32:
-        return string_to_integer(result, value, 32);
+        return string_to_integer(value, 32);
 
     case struct_type_t::STRUCT_TYPE_INT64:
-        return string_to_integer(result, value, 64);
+        return string_to_integer(value, 64);
 
     case struct_type_t::STRUCT_TYPE_INT128:
-        return string_to_integer(result, value, 128);
+        return string_to_integer(value, 128);
 
     case struct_type_t::STRUCT_TYPE_INT256:
-        return string_to_integer(result, value, 256);
+        return string_to_integer(value, 256);
 
     case struct_type_t::STRUCT_TYPE_INT512:
-        return string_to_integer(result, value, 512);
+        return string_to_integer(value, 512);
 
     case struct_type_t::STRUCT_TYPE_FLOAT32:
-        return string_to_float<float>(result, value, std::strtof);
+        return string_to_float<float>(value, std::strtof);
 
     case struct_type_t::STRUCT_TYPE_FLOAT64:
-        return string_to_float<double>(result, value, std::strtod);
+        return string_to_float<double>(value, std::strtod);
 
     case struct_type_t::STRUCT_TYPE_FLOAT128:
-        return string_to_float<long double>(result, value, std::strtold);
+        return string_to_float<long double>(value, std::strtold);
 
     case struct_type_t::STRUCT_TYPE_VERSION:
-        return string_to_version(result, value);
+        return string_to_version(value);
 
     case struct_type_t::STRUCT_TYPE_TIME:
+        return string_to_unix_time(value, 1);
+
     case struct_type_t::STRUCT_TYPE_MSTIME:
+        return string_to_unix_time(value, 1000);
+
     case struct_type_t::STRUCT_TYPE_USTIME:
-        throw snapdatabase_logic_error("Conversion not yet implemented...");
+        return string_to_unix_time(value, 1000000);
 
     case struct_type_t::STRUCT_TYPE_CSTRING:
-        return cstring_to_buffer(result, value);
+        return cstring_to_buffer(value);
 
     case struct_type_t::STRUCT_TYPE_P8STRING:
-        return string_to_buffer(result, value, 1);
+        return string_to_buffer(value, 1);
 
     case struct_type_t::STRUCT_TYPE_P16STRING:
-        return string_to_buffer(result, value, 2);
+        return string_to_buffer(value, 2);
 
     case struct_type_t::STRUCT_TYPE_P32STRING:
-        return string_to_buffer(result, value, 4);
+        return string_to_buffer(value, 4);
 
     case struct_type_t::STRUCT_TYPE_BUFFER8:
     case struct_type_t::STRUCT_TYPE_BUFFER16:
@@ -574,52 +791,104 @@ buffer_t string_to_typed_buffer(struct_type_t type, std::string const & value)
 }
 
 
-std::string typed_buffer_to_string(struct_type_t type, buffer_t value)
+std::string typed_buffer_to_string(struct_type_t type, buffer_t value, int base)
 {
     switch(type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
-    case struct_type_t::STRUCT_TYPE_BITS16:
-    case struct_type_t::STRUCT_TYPE_BITS32:
-    case struct_type_t::STRUCT_TYPE_BITS64:
-    case struct_type_t::STRUCT_TYPE_BITS128:
-    case struct_type_t::STRUCT_TYPE_BITS256:
-    case struct_type_t::STRUCT_TYPE_BITS512:
-    case struct_type_t::STRUCT_TYPE_INT8:
     case struct_type_t::STRUCT_TYPE_UINT8:
-    case struct_type_t::STRUCT_TYPE_INT16:
+        return uinteger_to_string(value, 8, base);
+
+    case struct_type_t::STRUCT_TYPE_BITS16:
     case struct_type_t::STRUCT_TYPE_UINT16:
-    case struct_type_t::STRUCT_TYPE_INT32:
+        return uinteger_to_string(value, 16, base);
+
+    case struct_type_t::STRUCT_TYPE_BITS32:
     case struct_type_t::STRUCT_TYPE_UINT32:
-    case struct_type_t::STRUCT_TYPE_INT64:
+        return uinteger_to_string(value, 32, base);
+
+    case struct_type_t::STRUCT_TYPE_BITS64:
     case struct_type_t::STRUCT_TYPE_UINT64:
-    case struct_type_t::STRUCT_TYPE_INT128:
+    case struct_type_t::STRUCT_TYPE_REFERENCE:
+    case struct_type_t::STRUCT_TYPE_OID:
+        return uinteger_to_string(value, 64, base);
+
+    case struct_type_t::STRUCT_TYPE_BITS128:
     case struct_type_t::STRUCT_TYPE_UINT128:
-    case struct_type_t::STRUCT_TYPE_INT256:
+        return uinteger_to_string(value, 128, base);
+
+    case struct_type_t::STRUCT_TYPE_BITS256:
     case struct_type_t::STRUCT_TYPE_UINT256:
-    case struct_type_t::STRUCT_TYPE_INT512:
+        return uinteger_to_string(value, 256, base);
+
+    case struct_type_t::STRUCT_TYPE_BITS512:
     case struct_type_t::STRUCT_TYPE_UINT512:
+        return uinteger_to_string(value, 512, base);
+
+    case struct_type_t::STRUCT_TYPE_INT8:
+        return integer_to_string(value, 8, base);
+
+    case struct_type_t::STRUCT_TYPE_INT16:
+        return integer_to_string(value, 16, base);
+
+    case struct_type_t::STRUCT_TYPE_INT32:
+        return integer_to_string(value, 32, base);
+
+    case struct_type_t::STRUCT_TYPE_INT64:
+        return integer_to_string(value, 64, base);
+
+    case struct_type_t::STRUCT_TYPE_INT128:
+        return integer_to_string(value, 128, base);
+
+    case struct_type_t::STRUCT_TYPE_INT256:
+        return integer_to_string(value, 256, base);
+
+    case struct_type_t::STRUCT_TYPE_INT512:
+        return integer_to_string(value, 512, base);
+
     case struct_type_t::STRUCT_TYPE_FLOAT32:
+        return float_to_string<float>(value);
+
     case struct_type_t::STRUCT_TYPE_FLOAT64:
+        return float_to_string<double>(value);
+
+    case struct_type_t::STRUCT_TYPE_FLOAT128:
+        return float_to_string<long double>(value);
+
     case struct_type_t::STRUCT_TYPE_VERSION:
+        return version_to_string(value);
+
     case struct_type_t::STRUCT_TYPE_TIME:
+        return unix_time_to_string(value, 1);
+
     case struct_type_t::STRUCT_TYPE_MSTIME:
+        return unix_time_to_string(value, 1000);
+
     case struct_type_t::STRUCT_TYPE_USTIME:
+        return unix_time_to_string(value, 1000000);
+
     case struct_type_t::STRUCT_TYPE_CSTRING:
+        return buffer_to_cstring(value);
+
     case struct_type_t::STRUCT_TYPE_P8STRING:
+        return buffer_to_string(value, 1);
+
     case struct_type_t::STRUCT_TYPE_P16STRING:
+        return buffer_to_string(value, 2);
+
     case struct_type_t::STRUCT_TYPE_P32STRING:
-    case struct_type_t::STRUCT_TYPE_STRUCTURE:
-    case struct_type_t::STRUCT_TYPE_ARRAY8:
-    case struct_type_t::STRUCT_TYPE_ARRAY16:
-    case struct_type_t::STRUCT_TYPE_ARRAY32:
+        return buffer_to_string(value, 4);
+
     case struct_type_t::STRUCT_TYPE_BUFFER8:
     case struct_type_t::STRUCT_TYPE_BUFFER16:
     case struct_type_t::STRUCT_TYPE_BUFFER32:
-    case struct_type_t::STRUCT_TYPE_REFERENCE:
-    case struct_type_t::STRUCT_TYPE_OID:
+        throw snapdatabase_logic_error("Conversion not yet implemented...");
 
     default:
+        //struct_type_t::STRUCT_TYPE_STRUCTURE:
+        //struct_type_t::STRUCT_TYPE_ARRAY8:
+        //struct_type_t::STRUCT_TYPE_ARRAY16:
+        //struct_type_t::STRUCT_TYPE_ARRAY32:
         //struct_type_t::STRUCT_TYPE_END
         //struct_type_t::STRUCT_TYPE_VOID
         //struct_type_t::STRUCT_TYPE_RENAMED

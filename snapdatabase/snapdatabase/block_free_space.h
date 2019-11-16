@@ -61,6 +61,7 @@ public:
     typedef std::shared_ptr<block_free_space>       pointer_t;
 
                                 block_free_space(dbfile::pointer_t f, reference_t offset);
+                                ~block_free_space();
 
     free_space_t                get_free_space(uint32_t minimum_size);
     void                        release_space(reference_t offset);

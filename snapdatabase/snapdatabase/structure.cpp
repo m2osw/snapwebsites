@@ -32,9 +32,20 @@
 #include    "snapdatabase/convert.h"
 
 
+// snaplogger lib
+//
+#include    <snaplogger/message.h>
+
+
 // boost lib
 //
 #include    <boost/algorithm/string.hpp>
+
+
+// snapdev lib
+//
+#include    <snapdev/not_used.h>
+
 
 // last include
 //
@@ -110,26 +121,85 @@ name_to_struct_type_t g_name_to_struct_type[] =
 
 
 
-union float32_uint32_t
+
+
+
+
+
+#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wpedantic"
+constexpr ssize_t const g_struct_type_sizes[] =
 {
-    float       f_float;
-    uint32_t    f_int = 0;
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_END)]          = INVALID_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_VOID)]         = 0,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8)]        = sizeof(uint8_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16)]       = sizeof(uint16_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32)]       = sizeof(uint32_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64)]       = sizeof(uint64_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BITS128)]      = sizeof(uint64_t) * 2,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BITS256)]      = sizeof(uint64_t) * 4,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BITS512)]      = sizeof(uint64_t) * 8,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_INT8)]         = sizeof(int8_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8)]        = sizeof(uint8_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_INT16)]        = sizeof(int16_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16)]       = sizeof(uint16_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_INT32)]        = sizeof(int32_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32)]       = sizeof(uint32_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_INT64)]        = sizeof(int64_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64)]       = sizeof(uint64_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_INT128)]       = sizeof(int64_t) * 2,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_UINT128)]      = sizeof(uint64_t) * 2,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_INT256)]       = sizeof(int64_t) * 4,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_UINT256)]      = sizeof(uint64_t) * 4,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_INT512)]       = sizeof(int64_t) * 8,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_UINT512)]      = sizeof(uint64_t) * 8,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_FLOAT32)]      = sizeof(float),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_FLOAT64)]      = sizeof(double),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_FLOAT128)]     = sizeof(long double),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_VERSION)]      = sizeof(uint32_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_TIME)]         = sizeof(time_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME)]       = sizeof(uint64_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME)]       = sizeof(uint64_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_CSTRING)]      = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_P8STRING)]     = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_P16STRING)]    = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_P32STRING)]    = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_STRUCTURE)]    = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_ARRAY8)]       = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_ARRAY16)]      = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_ARRAY32)]      = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BUFFER8)]      = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BUFFER16)]     = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_BUFFER32)]     = VARIABLE_SIZE,
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE)]    = sizeof(uint64_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_OID)]          = sizeof(uint64_t),
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_RENAMED)]      = INVALID_SIZE
 };
+#pragma GCC diagnostic pop
 
 
-union float64_uint64_t
+void verify_size(struct_type_t type, size_t size)
 {
-    double      f_float;
-    uint64_t    f_int = 0;
-};
+    if(static_cast<size_t>(type) >= sizeof(g_struct_type_sizes) / sizeof(g_struct_type_sizes[0]))
+    {
+        throw snapdatabase_out_of_range(
+                  "type out of range for converting it to a size ("
+                + std::to_string(static_cast<int>(type))
+                + ", max: "
+                + std::to_string(sizeof(g_struct_type_sizes) / sizeof(g_struct_type_sizes[0]))
+                + ").");
+    }
 
-
-union float128_uint128_t
-{
-    long double f_float;
-    uint64_t    f_int[2] = { 0, 0 };
-};
-
+    if(g_struct_type_sizes[static_cast<int>(type)] != static_cast<ssize_t>(size))
+    {
+        throw snapdatabase_out_of_range(
+                  "value and type sizes do not correspond ("
+                + std::to_string(size)
+                + ", max: "
+                + std::to_string(g_struct_type_sizes[static_cast<int>(type)])
+                + ").");
+    }
+}
 
 
 
@@ -140,127 +210,13 @@ union float128_uint128_t
 
 
 
-int512_t::int512_t()
-{
-}
-
-
-int512_t::int512_t(int512_t const & rhs)
-{
-    for(int idx(0); idx < 7; ++idx)
-    {
-        f_value[idx] = rhs.f_value[idx];
-    }
-    f_high_value = rhs.f_high_value;
-}
-
-
-int512_t::int512_t(uint512_t const & rhs)
-{
-    for(int idx(0); idx < 7; ++idx)
-    {
-        f_value[idx] = rhs.f_value[idx];
-    }
-    f_high_value = rhs.f_value[7];
-}
-
-
-size_t int512_t::bit_size() const
-{
-    if(is_negative())
-    {
-        int512_t opp;
-        opp -= *this;
-        if(opp.is_negative())
-        {
-            return 512;
-        }
-    }
-
-    if(f_high_value != 0)
-    {
-        return __builtin_clzll(f_high_value) + 7 * 64 + 1;
-    }
-
-    size_t result(512 - 64);
-    for(int idx(6); idx >= 0; --idx)
-    {
-        if(f_value[idx] != 0)
-        {
-            return __builtin_clzll(f_value[idx]) + result;
-        }
-    }
-
-    return 0;
-}
-
-
-int512_t int512_t::operator - () const
-{
-    int512_t neg;
-    neg -= *this;
-    return neg;
-}
-
-
-int512_t & int512_t::operator += (int512_t const & rhs)
-{
-    add512(f_value, rhs.f_value);       // the add includes the high value
-    return *this;
-}
-
-
-int512_t & int512_t::operator -= (int512_t const & rhs)
-{
-    sub512(f_value, rhs.f_value);       // the add includes the high value
-    return *this;
-}
-
-
-
-
-size_t uint512_t::bit_size() const
-{
-    size_t result(512);
-    for(int idx(7); idx >= 0; --idx)
-    {
-        if(f_value[idx] != 0)
-        {
-            return __builtin_clzll(f_value[idx]) + result;
-        }
-    }
-
-    return 0;
-}
-
-
-uint512_t uint512_t::operator - () const
-{
-    uint512_t neg;
-    neg -= *this;
-    return neg;
-}
-
-
-uint512_t & uint512_t::operator += (uint512_t const & rhs)
-{
-    add512(f_value, rhs.f_value);
-    return *this;
-}
-
-
-uint512_t & uint512_t::operator -= (uint512_t const & rhs)
-{
-    sub512(f_value, rhs.f_value);
-    return *this;
-}
-
 
 
 struct_type_t name_to_struct_type(std::string const & type_name)
 {
 #ifdef _DEBUG
-    for(size_t idx(0);
+    // verify in debug because if not in order we can't do a binary search
+    for(size_t idx(1);
         idx < sizeof(g_name_to_struct_type) / sizeof(g_name_to_struct_type[0]);
         ++idx)
     {
@@ -268,24 +224,25 @@ struct_type_t name_to_struct_type(std::string const & type_name)
                 , g_name_to_struct_type[idx].f_name) >= 0)
         {
             throw snapdatabase_logic_error(
-                      "name to struct type not in alphabetical order "
+                      "names in g_name_to_struct_type area not in alphabetical order: "
                     + std::string(g_name_to_struct_type[idx - 1].f_name)
                     + " >= "
                     + g_name_to_struct_type[idx].f_name
                     + " (position: "
-                    + std::to_string(idx));
+                    + std::to_string(idx)
+                    + ").");
         }
     }
 #endif
 
-    std::string const lc(boost::algorithm::to_upper(type_name));
+    std::string const uc(boost::algorithm::to_upper_copy(type_name));
 
     int j(sizeof(g_name_to_struct_type) / sizeof(g_name_to_struct_type[0]));
     int i(0);
     while(i < j)
     {
         int const p((j - i) / 2 + i);
-        int const r(type_name.compare(g_name_to_struct_type[p].f_name));
+        int const r(uc.compare(g_name_to_struct_type[p].f_name));
         if(r < 0)
         {
             i = p + 1;
@@ -305,11 +262,18 @@ struct_type_t name_to_struct_type(std::string const & type_name)
 
 
 
+flag_definition::flag_definition()
+{
+}
+
+
 flag_definition::flag_definition(
-          std::string const & name
+          std::string const & field_name
+        , std::string const & flag_name
         , size_t pos
         , size_t size)
-    : f_name(name)
+    : f_field_name(field_name)
+    , f_flag_name(flag_name)
     , f_pos(pos)
     , f_size(size)
     , f_mask(((1 << size) - 1) << pos)  // fails if size == 64...
@@ -318,14 +282,18 @@ flag_definition::flag_definition(
     {
         throw invalid_parameter(
                   "Bit field named \""
-                + name
+                + field_name
+                + "."
+                + flag_name
                 + "\" can't have a size of 0.");
     }
     if(size >= 64)
     {
         throw invalid_parameter(
                   "Bit field named \""
-                + name
+                + field_name
+                + "."
+                + flag_name
                 + "\" is too large ("
                 + std::to_string(size)
                 + " >= 64).");
@@ -334,15 +302,29 @@ flag_definition::flag_definition(
     {
         throw invalid_parameter(
                   "The mask of the bit field named \""
-                + name
+                + field_name
+                + "."
+                + flag_name
                 + "\" does not fit in a uint64_t.");
     }
 }
 
 
-std::string flag_definition::name() const
+std::string flag_definition::full_name() const
 {
-    return f_name;
+    return f_field_name + "." + f_flag_name;
+}
+
+
+std::string flag_definition::field_name() const
+{
+    return f_field_name;
+}
+
+
+std::string flag_definition::flag_name() const
+{
+    return f_flag_name;
 }
 
 
@@ -358,7 +340,7 @@ size_t flag_definition::size() const
 }
 
 
-flag_t flag_definition::mask() const
+flags_t flag_definition::mask() const
 {
     return f_mask;
 }
@@ -391,23 +373,32 @@ structure::pointer_t field_t::operator [] (int idx)
 
 
 
-structure::structure(struct_description const * description)
+structure::structure(struct_description_t const * descriptions)
     : f_descriptions(descriptions)
 {
 }
 
 
-void structure::set_block(block & b)
+void structure::set_block(block::pointer_t b, std::uint64_t size)
 {
-    f_buffer.add_buffer(b, 0, b.size());
+    f_buffer->add_buffer(b, 0, size);
 }
 
 
-void structure::set_buffer(virtual_buffer & buffer, uint64_t start_offset)
+void structure::set_virtual_buffer(virtual_buffer::pointer_t buffer, uint64_t start_offset)
 {
     f_buffer = buffer;
     f_start_offset = start_offset;
 }
+
+
+virtual_buffer::pointer_t structure::get_virtual_buffer(uint64_t & start_offset) const
+{
+    start_offset = f_start_offset;
+    return f_buffer;
+}
+
+
 
 
 /** \brief Get the static size or get 0.
@@ -432,12 +423,12 @@ size_t structure::get_size() const
 
     for(auto f : f_fields_by_name)
     {
-        if((f.f_flags & field_t::FIELD_FLAG_VARIABLE_SIZE) != 0)
+        if((f.second->f_flags & field_t::FIELD_FLAG_VARIABLE_SIZE) != 0)
         {
             return 0;
         }
 
-        if(f.f_type == struct_type_t::STRUCT_TYPE_RENAMED)
+        if(f.second->f_description->f_type == struct_type_t::STRUCT_TYPE_RENAMED)
         {
             continue;
         }
@@ -446,12 +437,12 @@ size_t structure::get_size() const
         // and it has nothing to do with the sze of the resulting
         // binary
         //
-        if(f.f_type != struct_type_t::STRUCT_TYPE_STRUCTURE)
+        if(f.second->f_description->f_type != struct_type_t::STRUCT_TYPE_STRUCTURE)
         {
-            result += f.size();
+            result += f.second->size();
         }
 
-        for(auto s : f->f_sub_structures)
+        for(auto s : f.second->f_sub_structures)
         {
             result += s->get_size();
         }
@@ -467,7 +458,7 @@ size_t structure::get_current_size() const
 
     for(auto f : f_fields_by_name)
     {
-        if(f->f_type == struct_type_t::STRUCT_TYPE_RENAMED)
+        if(f.second->f_description->f_type == struct_type_t::STRUCT_TYPE_RENAMED)
         {
             continue;
         }
@@ -476,7 +467,7 @@ size_t structure::get_current_size() const
         // and it has nothing to do with the sze of the resulting
         // binary
         //
-        switch(f->f_type)
+        switch(f.second->f_description->f_type)
         {
         case struct_type_t::STRUCT_TYPE_STRUCTURE:
             break;
@@ -485,28 +476,28 @@ size_t structure::get_current_size() const
         case struct_type_t::STRUCT_TYPE_P8STRING:
         case struct_type_t::STRUCT_TYPE_ARRAY8:
         case struct_type_t::STRUCT_TYPE_BUFFER8:
-            result += 1 + f->f_size;
+            result += 1 + f.second->f_size;
             break;
 
         case struct_type_t::STRUCT_TYPE_P16STRING:
         case struct_type_t::STRUCT_TYPE_ARRAY16:
         case struct_type_t::STRUCT_TYPE_BUFFER16:
-            result += 2 + f->f_size;
+            result += 2 + f.second->f_size;
             break;
 
         case struct_type_t::STRUCT_TYPE_P32STRING:
         case struct_type_t::STRUCT_TYPE_ARRAY32:
         case struct_type_t::STRUCT_TYPE_BUFFER32:
-            result += 4 + f->f_size;
+            result += 4 + f.second->f_size;
             break;
 
         default:
-            result += f->f_size;
+            result += f.second->f_size;
             break;
 
         }
 
-        for(auto s : f->f_sub_structures)
+        for(auto s : f.second->f_sub_structures)
         {
             result += s->get_size();
         }
@@ -516,7 +507,7 @@ size_t structure::get_current_size() const
 }
 
 
-field_t & structure::get_field(std::string const & field_name, type_t type) const
+field_t::pointer_t structure::get_field(std::string const & field_name, struct_type_t type) const
 {
     // make sure we've parsed the descriptions
     //
@@ -529,7 +520,7 @@ field_t & structure::get_field(std::string const & field_name, type_t type) cons
         //
         for(auto f : f_fields_by_name)
         {
-            switch(f->f_description->f_type)
+            switch(f.second->f_description->f_type)
             {
             case struct_type_t::STRUCT_TYPE_BITS8:
             case struct_type_t::STRUCT_TYPE_BITS16:
@@ -539,14 +530,18 @@ field_t & structure::get_field(std::string const & field_name, type_t type) cons
             case struct_type_t::STRUCT_TYPE_BITS256:
             case struct_type_t::STRUCT_TYPE_BITS512:
                 {
-                    auto flag(f_flag_definitions.find(field_name));
-                    if(flag == f_flag_definitions.end())
+                    auto flag(f.second->f_flag_definitions.find(field_name));
+                    if(flag != f.second->f_flag_definitions.end())
                     {
                         // found it!
                         //
-                        return f;
+                        return f.second;
                     }
                 }
+                break;
+
+            default:
+                // miss
                 break;
 
             }
@@ -562,11 +557,11 @@ field_t & structure::get_field(std::string const & field_name, type_t type) cons
                 + "\".");
     }
 
-    field_t::pointer_t f(field.second);
+    field_t::pointer_t f(field->second);
     if(f->f_description->f_type == struct_type_t::STRUCT_TYPE_RENAMED)
     {
-        std::string const new_name(f->f_description->f_sub_description->f_name);
-        auto field(f_fields_by_name.find(new_name));
+        std::string const new_name(f->f_description->f_sub_description->f_field_name);
+        field = f_fields_by_name.find(new_name);
         if(field == f_fields_by_name.end())
         {
             throw field_not_found(
@@ -576,7 +571,7 @@ field_t & structure::get_field(std::string const & field_name, type_t type) cons
                     + new_name
                     + "\" but we could not find the new name field.");
         }
-        f = field.second;
+        f = field->second;
 
         // let programmers know that the old name is deprecated
         SNAP_LOG_DEBUG
@@ -585,7 +580,7 @@ field_t & structure::get_field(std::string const & field_name, type_t type) cons
             << "\" was changed to \""
             << new_name
             << "\". Please change your code to use the new name."
-            << SNAP_LOG_END;
+            << SNAP_LOG_SEND;
     }
 
     if(type != struct_type_t::STRUCT_TYPE_END
@@ -593,7 +588,7 @@ field_t & structure::get_field(std::string const & field_name, type_t type) cons
     {
         throw type_mismatch(
                   "This field type is \""
-                + std::to_string(f->f_description->f_type)
+                + std::to_string(static_cast<int>(f->f_description->f_type))    // TODO: convert to name
                 + "\" but we expected \""
                 + std::to_string(static_cast<int>(type))
                 + "\".");
@@ -607,50 +602,53 @@ int64_t structure::get_integer(std::string const & field_name) const
 {
     auto f(get_field(field_name));
 
+    verify_size(f->f_description->f_type, f->f_size);
+
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_INT8:
-        int8_t v;
-        f_buffer.read(&v, 1, 0);
-    int                                     pread(void * buf, uint64_t size, uint64_t offset, bool full = true) const;
-        return static_cast<int8_t>(f->f_data[0]);
+        {
+            int8_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return value;
+        }
 
     case struct_type_t::STRUCT_TYPE_INT16:
-        return static_cast<int16_t>(
-               (f->f_data[0] << 8)
-             | (f->f_data[1] << 0));
+        {
+            int16_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return value;
+        }
 
     case struct_type_t::STRUCT_TYPE_INT32:
-        return static_cast<int32_t>(
-             | (f->f_data[0] << 24)
-             | (f->f_data[1] << 16)
-             | (f->f_data[2] <<  8)
-             | (f->f_data[3] <<  0));
+        {
+            int32_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return value;
+        }
 
     case struct_type_t::STRUCT_TYPE_INT64:
-        return (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
+        {
+            int64_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return value;
+        }
+
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT64))
+                + "\".");
 
     }
-
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT64))
-            + "\".");
 }
 
 
@@ -658,49 +656,53 @@ void structure::set_integer(std::string const & field_name, int64_t value)
 {
     auto f(get_field(field_name));
 
+    verify_size(f->f_description->f_type, f->f_size);
+
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_INT8:
-        f->f_data[0] = value;
+        {
+            int8_t v(value);
+            f_buffer->pwrite(&v, sizeof(v), f->f_offset);
+        }
         return;
 
     case struct_type_t::STRUCT_TYPE_INT16:
-        f->f_data[0] = value >> 8;
-        f->f_data[1] = value >> 0;
+        {
+            int16_t v(value);
+            f_buffer->pwrite(&v, sizeof(v), f->f_offset);
+        }
         return;
 
     case struct_type_t::STRUCT_TYPE_INT32:
-        f->f_data[0] = value >> 24;
-        f->f_data[1] = value >> 16;
-        f->f_data[2] = value >>  8;
-        f->f_data[3] = value >>  0;
+        {
+            int32_t v(value);
+            f_buffer->pwrite(&v, sizeof(v), f->f_offset);
+        }
         return;
 
     case struct_type_t::STRUCT_TYPE_INT64:
-        f->f_data[0] = value >> 56;
-        f->f_data[1] = value >> 48;
-        f->f_data[2] = value >> 40;
-        f->f_data[3] = value >> 32;
-        f->f_data[4] = value >> 24;
-        f->f_data[5] = value >> 16;
-        f->f_data[6] = value >>  8;
-        f->f_data[7] = value >>  0;
+        {
+            int64_t v(value);
+            f_buffer->pwrite(&v, sizeof(v), f->f_offset);
+        }
         return;
 
-    }
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT64))
+                + "\".");
 
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT64))
-            + "\".");
+    }
 }
 
 
@@ -708,23 +710,33 @@ uint64_t structure::get_uinteger(std::string const & field_name) const
 {
     auto f(get_field(field_name));
 
+    verify_size(f->f_description->f_type, f->f_size);
+
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
     case struct_type_t::STRUCT_TYPE_UINT8:
-        return f->f_data[0];
+        {
+            uint8_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return value;
+        }
 
     case struct_type_t::STRUCT_TYPE_BITS16:
     case struct_type_t::STRUCT_TYPE_UINT16:
-        return (f->f_data[0] << 8)
-             | (f->f_data[1] << 0);
+        {
+            uint16_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return value;
+        }
 
     case struct_type_t::STRUCT_TYPE_BITS32:
     case struct_type_t::STRUCT_TYPE_UINT32:
-        return (f->f_data[0] << 24)
-             | (f->f_data[1] << 16)
-             | (f->f_data[2] <<  8)
-             | (f->f_data[3] <<  0);
+        {
+            uint32_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return value;
+        }
 
     case struct_type_t::STRUCT_TYPE_BITS64:
     case struct_type_t::STRUCT_TYPE_UINT64:
@@ -733,47 +745,45 @@ uint64_t structure::get_uinteger(std::string const & field_name) const
     case struct_type_t::STRUCT_TYPE_TIME:
     case struct_type_t::STRUCT_TYPE_MSTIME:
     case struct_type_t::STRUCT_TYPE_USTIME:
-        return (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
+        {
+            uint64_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return value;
+        }
+
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_OID))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_TIME))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME))
+                + "\".");
 
     }
-
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_OID))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_TIME))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME))
-            + "\".");
 }
 
 
@@ -781,25 +791,32 @@ void structure::set_uinteger(std::string const & field_name, uint64_t value)
 {
     auto f(get_field(field_name));
 
+    verify_size(f->f_description->f_type, f->f_size);
+
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
     case struct_type_t::STRUCT_TYPE_UINT8:
-        f->f_data[0] = value;
+        {
+            uint8_t v(value);
+            f_buffer->pwrite(&v, sizeof(v), f->f_offset);
+        }
         return;
 
     case struct_type_t::STRUCT_TYPE_BITS16:
     case struct_type_t::STRUCT_TYPE_UINT16:
-        f->f_data[0] = value >> 8;
-        f->f_data[1] = value >> 0;
+        {
+            uint16_t v(value);
+            f_buffer->pwrite(&v, sizeof(v), f->f_offset);
+        }
         return;
 
     case struct_type_t::STRUCT_TYPE_BITS32:
     case struct_type_t::STRUCT_TYPE_UINT32:
-        f->f_data[0] = value >> 24;
-        f->f_data[1] = value >> 16;
-        f->f_data[2] = value >>  8;
-        f->f_data[3] = value >>  0;
+        {
+            uint32_t v(value);
+            f_buffer->pwrite(&v, sizeof(v), f->f_offset);
+        }
         return;
 
     case struct_type_t::STRUCT_TYPE_BITS64:
@@ -809,120 +826,141 @@ void structure::set_uinteger(std::string const & field_name, uint64_t value)
     case struct_type_t::STRUCT_TYPE_TIME:
     case struct_type_t::STRUCT_TYPE_MSTIME:
     case struct_type_t::STRUCT_TYPE_USTIME:
-        f->f_data[0] = value >> 56;
-        f->f_data[1] = value >> 48;
-        f->f_data[2] = value >> 40;
-        f->f_data[3] = value >> 32;
-        f->f_data[4] = value >> 24;
-        f->f_data[5] = value >> 16;
-        f->f_data[6] = value >>  8;
-        f->f_data[7] = value >>  0;
+        {
+            uint64_t v(value);
+            f_buffer->pwrite(&v, sizeof(v), f->f_offset);
+        }
         return;
 
-    }
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_OID))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_TIME))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME))
+                + "\".");
 
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_OID))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_TIME))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME))
-            + "\".");
+    }
 }
 
 
 uint64_t structure::get_bits(std::string const & flag_name) const
 {
-    auto f(get_field(flag_name));
-
-    auto it(f->f_flag_definitions.find(flag_name));
-    if(it == f->f_flags_definitions.end())
+    field_t::pointer_t f;
+    flag_definition * flag(nullptr);
+    for(auto field : f_fields_by_name)
+    {
+        auto it(field.second->f_flag_definitions.find(flag_name));
+        if(it == field.second->f_flag_definitions.end())
+        {
+            flag = &it->second;
+            f = field.second;
+        }
+    }
+    if(flag == nullptr)
     {
         throw type_mismatch(
-                  "get_bits() called with field \""
-                + field_name
+                  "get_bits() called with flag name \""
+                + flag_name
                 + "\" which has no flag definitions...");
     }
-    auto flag(it.second);
+
+    verify_size(f->f_description->f_type, f->f_size);
 
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
-        return (f->f_data[0] & flag.mask()) >> flag.pos();
+        {
+            uint8_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return (value & flag->mask()) >> flag->pos();
+        }
 
     case struct_type_t::STRUCT_TYPE_BITS16:
-        return (((f->f_data[0] << 8)
-               | (f->f_data[1] << 0)) & flag.mask()) >> flag.pos();
+        {
+            uint16_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return (value & flag->mask()) >> flag->pos();
+        }
 
     case struct_type_t::STRUCT_TYPE_BITS32:
-        return (((f->f_data[0] << 24)
-               | (f->f_data[1] << 16)
-               | (f->f_data[2] <<  8)
-               | (f->f_data[3] <<  0)) & flag.mask()) >> flag.pos();
+        {
+            uint32_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return (value & flag->mask()) >> flag->pos();
+        }
 
     case struct_type_t::STRUCT_TYPE_BITS64:
-        return (((f->f_data[0] << 56)
-               | (f->f_data[1] << 48)
-               | (f->f_data[2] << 40)
-               | (f->f_data[3] << 32)
-               | (f->f_data[4] << 24)
-               | (f->f_data[5] << 16)
-               | (f->f_data[6] <<  8)
-               | (f->f_data[7] <<  0)) & flag.mask()) >> flag.pos();
+        {
+            uint64_t value(0);
+            f_buffer->pread(&value, sizeof(value), f->f_offset);
+            return (value & flag->mask()) >> flag->pos();
+        }
+
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64))
+                + "\".");
 
     }
-
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT64))
-            + "\".");
 }
 
 
 void structure::set_bits(std::string const & flag_name, uint64_t value)
 {
-    auto f(get_field(flag_name));
-
-    auto it(f->f_flag_definitions.find(flag_name));
-    if(it == f->f_flags_definitions.end())
+    field_t::pointer_t f;
+    flag_definition * flag(nullptr);
+    for(auto field : f_fields_by_name)
+    {
+        auto it(field.second->f_flag_definitions.find(flag_name));
+        if(it == field.second->f_flag_definitions.end())
+        {
+            flag = &it->second;
+            f = field.second;
+        }
+    }
+    if(flag == nullptr)
     {
         throw type_mismatch(
-                  "set_bits() called with field \""
-                + field_name
+                  "get_bits() called with flag name \""
+                + flag_name
                 + "\" which has no flag definitions...");
     }
-    auto flag(it.second);
+
+    verify_size(f->f_description->f_type, f->f_size);
 
     switch(f->f_description->f_type)
     {
@@ -935,36 +973,36 @@ void structure::set_bits(std::string const & flag_name, uint64_t value)
     default:
         throw type_mismatch(
                   "This description type is \""
-                + std::to_string(f->f_description->f_type)
+                + std::to_string(static_cast<int>(f->f_description->f_type))
                 + "\" but we expected one of \""
-                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT8))
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8))
                 + ", "
-                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT16))
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16))
                 + ", "
-                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT32))
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32))
                 + ", "
-                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BIT64))
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64))
                 + "\".");
 
     }
 
-    if((value & (flag.mask() >> flag.pos())) != value)
+    if((value & (flag->mask() >> flag->pos())) != value)
     {
         throw invalid_number(
                   "Value \""
                 + std::to_string(value)
                 + "\" does not fit in flag field \""
-                + flag_name
-                + "\".")
+                + flag->full_name()
+                + "\".");
     }
 
     // some day we may want to optimize better, but this is the easiest
     // right now
     //
-    uint64_t v(get_uinteger(field_name));
-    v &= ~flag.mask();
-    v |= value << flag.pos();
-    set_uinteger(field_name, v);
+    uint64_t v(get_uinteger(f->f_description->f_field_name));
+    v &= ~flag->mask();
+    v |= value << flag->pos();
+    set_uinteger(f->f_description->f_field_name, v);
 }
 
 
@@ -972,11 +1010,14 @@ int512_t structure::get_large_integer(std::string const & field_name) const
 {
     auto f(get_field(field_name));
 
+    verify_size(f->f_description->f_type, f->f_size);
+
     int512_t result;
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_INT8:
-        result.f_value[0] = static_cast<int8_t>(f->f_data[0]);
+        f_buffer->pread(&result.f_value, sizeof(int8_t), f->f_offset);
+        result.f_value[0] = static_cast<int8_t>(result.f_value[0]); // sign extend
 sign_extend_64bit:
         result.f_value[1] = static_cast<int64_t>(result.f_value[0]) < 0
                                     ? -1
@@ -990,53 +1031,24 @@ sign_extend_64bit:
         return result;
 
     case struct_type_t::STRUCT_TYPE_INT16:
-        result.f_value[0] = static_cast<int16_t>(
-              (f->f_data[0] << 8)
-            | (f->f_data[1] << 0));
+        f_buffer->pread(&result.f_value, sizeof(int16_t), f->f_offset);
+        result.f_value[0] = static_cast<int16_t>(result.f_value[0]); // sign extend
         goto sign_extend_64bit;
 
     case struct_type_t::STRUCT_TYPE_INT32:
-        result.f_value[0] = static_cast<int32_t>(
-               (f->f_data[0] << 24)
-             | (f->f_data[1] << 16)
-             | (f->f_data[2] <<  8)
-             | (f->f_data[3] <<  0));
+        f_buffer->pread(&result.f_value, sizeof(int32_t), f->f_offset);
+        result.f_value[0] = static_cast<int32_t>(result.f_value[0]); // sign extend
         goto sign_extend_64bit;
 
     case struct_type_t::STRUCT_TYPE_INT64:
-        result.f_value[0] =
-               (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
+        f_buffer->pread(&result.f_value, sizeof(int64_t), f->f_offset);
+        result.f_value[0] = static_cast<int64_t>(result.f_value[0]); // sign extend
         goto sign_extend_64bit;
 
     case struct_type_t::STRUCT_TYPE_INT128:
-        result.f_value[1] =
-               (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
+        f_buffer->pread(&result.f_value, sizeof(int64_t) * 2, f->f_offset);
 
-        result.f_value[0] =
-               (f->f_data[ 8] << 56)
-             | (f->f_data[ 9] << 48)
-             | (f->f_data[10] << 40)
-             | (f->f_data[11] << 32)
-             | (f->f_data[12] << 24)
-             | (f->f_data[13] << 16)
-             | (f->f_data[14] <<  8)
-             | (f->f_data[15] <<  0);
-
-        result.f_value[2] = (static_cast<int64_t>(result.f_value[1]) < 0
+        result.f_value[2] = static_cast<int64_t>(result.f_value[1]) < 0
                                     ? -1
                                     : 0;
         result.f_value[3] = result.f_value[2];
@@ -1048,47 +1060,9 @@ sign_extend_64bit:
         return result;
 
     case struct_type_t::STRUCT_TYPE_INT256:
-        result.f_value[3] =
-               (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
+        f_buffer->pread(&result.f_value, sizeof(int64_t) * 4, f->f_offset);
 
-        result.f_value[2] =
-               (f->f_data[ 8] << 56)
-             | (f->f_data[ 9] << 48)
-             | (f->f_data[10] << 40)
-             | (f->f_data[11] << 32)
-             | (f->f_data[12] << 24)
-             | (f->f_data[13] << 16)
-             | (f->f_data[14] <<  8)
-             | (f->f_data[15] <<  0);
-
-        result.f_value[1] =
-               (f->f_data[16] << 56)
-             | (f->f_data[17] << 48)
-             | (f->f_data[18] << 40)
-             | (f->f_data[19] << 32)
-             | (f->f_data[20] << 24)
-             | (f->f_data[21] << 16)
-             | (f->f_data[22] <<  8)
-             | (f->f_data[23] <<  0);
-
-        result.f_value[0] =
-               (f->f_data[24] << 56)
-             | (f->f_data[25] << 48)
-             | (f->f_data[26] << 40)
-             | (f->f_data[27] << 32)
-             | (f->f_data[28] << 24)
-             | (f->f_data[29] << 16)
-             | (f->f_data[30] <<  8)
-             | (f->f_data[31] <<  0);
-
-        result.f_value[4] = (static_cast<int64_t>(result.f_value[3]) < 0
+        result.f_value[4] = static_cast<int64_t>(result.f_value[3]) < 0
                                     ? -1
                                     : 0;
         result.f_value[5] = result.f_value[4];
@@ -1098,108 +1072,31 @@ sign_extend_64bit:
         return result;
 
     case struct_type_t::STRUCT_TYPE_INT512:
-        result.f_high_value =
-               (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
-
-        result.f_value[6] =
-               (f->f_data[ 8] << 56)
-             | (f->f_data[ 9] << 48)
-             | (f->f_data[10] << 40)
-             | (f->f_data[11] << 32)
-             | (f->f_data[12] << 24)
-             | (f->f_data[13] << 16)
-             | (f->f_data[14] <<  8)
-             | (f->f_data[15] <<  0);
-
-        result.f_value[5] =
-               (f->f_data[16] << 56)
-             | (f->f_data[17] << 48)
-             | (f->f_data[18] << 40)
-             | (f->f_data[19] << 32)
-             | (f->f_data[20] << 24)
-             | (f->f_data[21] << 16)
-             | (f->f_data[22] <<  8)
-             | (f->f_data[23] <<  0);
-
-        result.f_value[4] =
-               (f->f_data[24] << 56)
-             | (f->f_data[25] << 48)
-             | (f->f_data[26] << 40)
-             | (f->f_data[27] << 32)
-             | (f->f_data[28] << 24)
-             | (f->f_data[29] << 16)
-             | (f->f_data[30] <<  8)
-             | (f->f_data[31] <<  0);
-
-        result.f_value[3] =
-               (f->f_data[32] << 56)
-             | (f->f_data[33] << 48)
-             | (f->f_data[34] << 40)
-             | (f->f_data[35] << 32)
-             | (f->f_data[36] << 24)
-             | (f->f_data[37] << 16)
-             | (f->f_data[38] <<  8)
-             | (f->f_data[39] <<  0);
-
-        result.f_value[2] =
-               (f->f_data[40] << 56)
-             | (f->f_data[41] << 48)
-             | (f->f_data[42] << 40)
-             | (f->f_data[43] << 32)
-             | (f->f_data[44] << 24)
-             | (f->f_data[45] << 16)
-             | (f->f_data[46] <<  8)
-             | (f->f_data[47] <<  0);
-
-        result.f_value[1] =
-               (f->f_data[48] << 56)
-             | (f->f_data[49] << 48)
-             | (f->f_data[50] << 40)
-             | (f->f_data[51] << 32)
-             | (f->f_data[52] << 24)
-             | (f->f_data[53] << 16)
-             | (f->f_data[54] <<  8)
-             | (f->f_data[55] <<  0);
-
-        result.f_value[0] =
-               (f->f_data[56] << 56)
-             | (f->f_data[57] << 48)
-             | (f->f_data[58] << 40)
-             | (f->f_data[59] << 32)
-             | (f->f_data[60] << 24)
-             | (f->f_data[61] << 16)
-             | (f->f_data[62] <<  8)
-             | (f->f_data[63] <<  0);
+        f_buffer->pread(&result.f_value, sizeof(int64_t) * 8, f->f_offset);
 
         return result;
 
-    }
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT128))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT256))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT512))
+                + "\".");
 
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT128))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT256))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT512))
-            + "\".");
+    }
 }
 
 
@@ -1207,190 +1104,41 @@ void structure::set_large_integer(std::string const & field_name, int512_t value
 {
     auto f(get_field(field_name));
 
+    verify_size(f->f_description->f_type, f->f_size);
+
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_INT8:
-        f->f_data[0] = value.f_value[0];
-        return;
-
     case struct_type_t::STRUCT_TYPE_INT16:
-        f->f_data[0] = value.f_value[0] >> 8;
-        f->f_data[1] = value.f_value[0] >> 0;
-        return;
-
     case struct_type_t::STRUCT_TYPE_INT32:
-        f->f_data[0] = value.f_value[0] >> 24;
-        f->f_data[1] = value.f_value[0] >> 16;
-        f->f_data[2] = value.f_value[0] >>  8;
-        f->f_data[3] = value.f_value[0] >>  0;
-        return;
-
     case struct_type_t::STRUCT_TYPE_INT64:
-        f->f_data[0] = value.f_value[0] >> 56;
-        f->f_data[1] = value.f_value[0] >> 48;
-        f->f_data[2] = value.f_value[0] >> 40;
-        f->f_data[3] = value.f_value[0] >> 32;
-        f->f_data[4] = value.f_value[0] >> 24;
-        f->f_data[5] = value.f_value[0] >> 16;
-        f->f_data[6] = value.f_value[0] >>  8;
-        f->f_data[7] = value.f_value[0] >>  0;
-        return;
-
     case struct_type_t::STRUCT_TYPE_INT128:
-        f->f_data[0] = value.f_value[1] >> 56;
-        f->f_data[1] = value.f_value[1] >> 48;
-        f->f_data[2] = value.f_value[1] >> 40;
-        f->f_data[3] = value.f_value[1] >> 32;
-        f->f_data[4] = value.f_value[1] >> 24;
-        f->f_data[5] = value.f_value[1] >> 16;
-        f->f_data[6] = value.f_value[1] >>  8;
-        f->f_data[7] = value.f_value[1] >>  0;
-
-        f->f_data[ 8] = value.f_value[0] >> 56;
-        f->f_data[ 9] = value.f_value[0] >> 48;
-        f->f_data[10] = value.f_value[0] >> 40;
-        f->f_data[11] = value.f_value[0] >> 32;
-        f->f_data[12] = value.f_value[0] >> 24;
-        f->f_data[13] = value.f_value[0] >> 16;
-        f->f_data[14] = value.f_value[0] >>  8;
-        f->f_data[15] = value.f_value[0] >>  0;
-
-        return;
-
     case struct_type_t::STRUCT_TYPE_INT256:
-        f->f_data[0] = value.f_value[3] >> 56;
-        f->f_data[1] = value.f_value[3] >> 48;
-        f->f_data[2] = value.f_value[3] >> 40;
-        f->f_data[3] = value.f_value[3] >> 32;
-        f->f_data[4] = value.f_value[3] >> 24;
-        f->f_data[5] = value.f_value[3] >> 16;
-        f->f_data[6] = value.f_value[3] >>  8;
-        f->f_data[7] = value.f_value[3] >>  0;
-
-        f->f_data[ 8] = value.f_value[2] >> 56;
-        f->f_data[ 9] = value.f_value[2] >> 48;
-        f->f_data[10] = value.f_value[2] >> 40;
-        f->f_data[11] = value.f_value[2] >> 32;
-        f->f_data[12] = value.f_value[2] >> 24;
-        f->f_data[13] = value.f_value[2] >> 16;
-        f->f_data[14] = value.f_value[2] >>  8;
-        f->f_data[15] = value.f_value[2] >>  0;
-
-        f->f_data[16] = value.f_value[1] >> 56;
-        f->f_data[17] = value.f_value[1] >> 48;
-        f->f_data[18] = value.f_value[1] >> 40;
-        f->f_data[19] = value.f_value[1] >> 32;
-        f->f_data[20] = value.f_value[1] >> 24;
-        f->f_data[21] = value.f_value[1] >> 16;
-        f->f_data[22] = value.f_value[1] >>  8;
-        f->f_data[23] = value.f_value[1] >>  0;
-
-        f->f_data[24] = value.f_value[0] >> 56;
-        f->f_data[25] = value.f_value[0] >> 48;
-        f->f_data[26] = value.f_value[0] >> 40;
-        f->f_data[27] = value.f_value[0] >> 32;
-        f->f_data[28] = value.f_value[0] >> 24;
-        f->f_data[29] = value.f_value[0] >> 16;
-        f->f_data[30] = value.f_value[0] >>  8;
-        f->f_data[31] = value.f_value[0] >>  0;
-
-        return;
-
     case struct_type_t::STRUCT_TYPE_INT512:
-        f->f_data[0] = value.f_high_value >> 56;
-        f->f_data[1] = value.f_high_value >> 48;
-        f->f_data[2] = value.f_high_value >> 40;
-        f->f_data[3] = value.f_high_value >> 32;
-        f->f_data[4] = value.f_high_value >> 24;
-        f->f_data[5] = value.f_high_value >> 16;
-        f->f_data[6] = value.f_high_value >>  8;
-        f->f_data[7] = value.f_high_value >>  0;
-
-        f->f_data[ 8] = value.f_value[6] >> 56;
-        f->f_data[ 9] = value.f_value[6] >> 48;
-        f->f_data[10] = value.f_value[6] >> 40;
-        f->f_data[11] = value.f_value[6] >> 32;
-        f->f_data[12] = value.f_value[6] >> 24;
-        f->f_data[13] = value.f_value[6] >> 16;
-        f->f_data[14] = value.f_value[6] >>  8;
-        f->f_data[15] = value.f_value[6] >>  0;
-
-        f->f_data[16] = value.f_value[5] >> 56;
-        f->f_data[17] = value.f_value[5] >> 48;
-        f->f_data[18] = value.f_value[5] >> 40;
-        f->f_data[19] = value.f_value[5] >> 32;
-        f->f_data[20] = value.f_value[5] >> 24;
-        f->f_data[21] = value.f_value[5] >> 16;
-        f->f_data[22] = value.f_value[5] >>  8;
-        f->f_data[23] = value.f_value[5] >>  0;
-
-        f->f_data[24] = value.f_value[4] >> 56;
-        f->f_data[25] = value.f_value[4] >> 48;
-        f->f_data[26] = value.f_value[4] >> 40;
-        f->f_data[27] = value.f_value[4] >> 32;
-        f->f_data[28] = value.f_value[4] >> 24;
-        f->f_data[29] = value.f_value[4] >> 16;
-        f->f_data[30] = value.f_value[4] >>  8;
-        f->f_data[31] = value.f_value[4] >>  0;
-
-        f->f_data[32] = value.f_value[3] >> 56;
-        f->f_data[33] = value.f_value[3] >> 48;
-        f->f_data[34] = value.f_value[3] >> 40;
-        f->f_data[35] = value.f_value[3] >> 32;
-        f->f_data[36] = value.f_value[3] >> 24;
-        f->f_data[37] = value.f_value[3] >> 16;
-        f->f_data[38] = value.f_value[3] >>  8;
-        f->f_data[39] = value.f_value[3] >>  0;
-
-        f->f_data[40] = value.f_value[2] >> 56;
-        f->f_data[41] = value.f_value[2] >> 48;
-        f->f_data[42] = value.f_value[2] >> 40;
-        f->f_data[43] = value.f_value[2] >> 32;
-        f->f_data[44] = value.f_value[2] >> 24;
-        f->f_data[45] = value.f_value[2] >> 16;
-        f->f_data[46] = value.f_value[2] >>  8;
-        f->f_data[47] = value.f_value[2] >>  0;
-
-        f->f_data[48] = value.f_value[1] >> 56;
-        f->f_data[49] = value.f_value[1] >> 48;
-        f->f_data[50] = value.f_value[1] >> 40;
-        f->f_data[51] = value.f_value[1] >> 32;
-        f->f_data[52] = value.f_value[1] >> 24;
-        f->f_data[53] = value.f_value[1] >> 16;
-        f->f_data[54] = value.f_value[1] >>  8;
-        f->f_data[55] = value.f_value[1] >>  0;
-
-        f->f_data[56] = value.f_value[0] >> 56;
-        f->f_data[57] = value.f_value[0] >> 48;
-        f->f_data[58] = value.f_value[0] >> 40;
-        f->f_data[59] = value.f_value[0] >> 32;
-        f->f_data[60] = value.f_value[0] >> 24;
-        f->f_data[61] = value.f_value[0] >> 16;
-        f->f_data[62] = value.f_value[0] >>  8;
-        f->f_data[63] = value.f_value[0] >>  0;
-
+        f_buffer->pwrite(value.f_value, f->f_size, f->f_offset);
         return;
+
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT128))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT256))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT512))
+                + "\".");
 
     }
-
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT128))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT256))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_INT512))
-            + "\".");
 }
 
 
@@ -1398,30 +1146,17 @@ uint512_t structure::get_large_uinteger(std::string const & field_name) const
 {
     auto f(get_field(field_name));
 
+    verify_size(f->f_description->f_type, f->f_size);
+
     uint512_t result;
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
     case struct_type_t::STRUCT_TYPE_UINT8:
-        result.f_value[0] = f->f_data[0];
-        return result;
-
     case struct_type_t::STRUCT_TYPE_BITS16:
     case struct_type_t::STRUCT_TYPE_UINT16:
-        result.f_value[0] =
-              (f->f_data[0] << 8)
-            | (f->f_data[1] << 0);
-        return result;
-
     case struct_type_t::STRUCT_TYPE_BITS32:
     case struct_type_t::STRUCT_TYPE_UINT32:
-        result.f_value[0] =
-               (f->f_data[0] << 24)
-             | (f->f_data[1] << 16)
-             | (f->f_data[2] <<  8)
-             | (f->f_data[3] <<  0);
-        return result;
-
     case struct_type_t::STRUCT_TYPE_BITS64:
     case struct_type_t::STRUCT_TYPE_UINT64:
     case struct_type_t::STRUCT_TYPE_REFERENCE:
@@ -1429,204 +1164,53 @@ uint512_t structure::get_large_uinteger(std::string const & field_name) const
     case struct_type_t::STRUCT_TYPE_TIME:
     case struct_type_t::STRUCT_TYPE_MSTIME:
     case struct_type_t::STRUCT_TYPE_USTIME:
-        result.f_value[0] =
-               (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
-        return result;
-
     case struct_type_t::STRUCT_TYPE_UINT128:
-        result.f_value[1] =
-               (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
-
-        result.f_value[0] =
-               (f->f_data[ 8] << 56)
-             | (f->f_data[ 9] << 48)
-             | (f->f_data[10] << 40)
-             | (f->f_data[11] << 32)
-             | (f->f_data[12] << 24)
-             | (f->f_data[13] << 16)
-             | (f->f_data[14] <<  8)
-             | (f->f_data[15] <<  0);
-
-        return result;
-
     case struct_type_t::STRUCT_TYPE_UINT256:
-        result.f_value[3] =
-               (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
-
-        result.f_value[2] =
-               (f->f_data[ 8] << 56)
-             | (f->f_data[ 9] << 48)
-             | (f->f_data[10] << 40)
-             | (f->f_data[11] << 32)
-             | (f->f_data[12] << 24)
-             | (f->f_data[13] << 16)
-             | (f->f_data[14] <<  8)
-             | (f->f_data[15] <<  0);
-
-        result.f_value[1] =
-               (f->f_data[16] << 56)
-             | (f->f_data[17] << 48)
-             | (f->f_data[18] << 40)
-             | (f->f_data[19] << 32)
-             | (f->f_data[20] << 24)
-             | (f->f_data[21] << 16)
-             | (f->f_data[22] <<  8)
-             | (f->f_data[23] <<  0);
-
-        result.f_value[0] =
-               (f->f_data[24] << 56)
-             | (f->f_data[25] << 48)
-             | (f->f_data[26] << 40)
-             | (f->f_data[27] << 32)
-             | (f->f_data[28] << 24)
-             | (f->f_data[29] << 16)
-             | (f->f_data[30] <<  8)
-             | (f->f_data[31] <<  0);
-
-        return result;
-
     case struct_type_t::STRUCT_TYPE_UINT512:
-        result.f_value[7] =
-               (f->f_data[0] << 56)
-             | (f->f_data[1] << 48)
-             | (f->f_data[2] << 40)
-             | (f->f_data[3] << 32)
-             | (f->f_data[4] << 24)
-             | (f->f_data[5] << 16)
-             | (f->f_data[6] <<  8)
-             | (f->f_data[7] <<  0);
+        f_buffer->pread(&result.f_value, f->f_size, f->f_offset);
+        break;
 
-        result.f_value[6] =
-               (f->f_data[ 8] << 56)
-             | (f->f_data[ 9] << 48)
-             | (f->f_data[10] << 40)
-             | (f->f_data[11] << 32)
-             | (f->f_data[12] << 24)
-             | (f->f_data[13] << 16)
-             | (f->f_data[14] <<  8)
-             | (f->f_data[15] <<  0);
-
-        result.f_value[5] =
-               (f->f_data[16] << 56)
-             | (f->f_data[17] << 48)
-             | (f->f_data[18] << 40)
-             | (f->f_data[19] << 32)
-             | (f->f_data[20] << 24)
-             | (f->f_data[21] << 16)
-             | (f->f_data[22] <<  8)
-             | (f->f_data[23] <<  0);
-
-        result.f_value[4] =
-               (f->f_data[24] << 56)
-             | (f->f_data[25] << 48)
-             | (f->f_data[26] << 40)
-             | (f->f_data[27] << 32)
-             | (f->f_data[28] << 24)
-             | (f->f_data[29] << 16)
-             | (f->f_data[30] <<  8)
-             | (f->f_data[31] <<  0);
-
-        result.f_value[3] =
-               (f->f_data[32] << 56)
-             | (f->f_data[33] << 48)
-             | (f->f_data[34] << 40)
-             | (f->f_data[35] << 32)
-             | (f->f_data[36] << 24)
-             | (f->f_data[37] << 16)
-             | (f->f_data[38] <<  8)
-             | (f->f_data[39] <<  0);
-
-        result.f_value[2] =
-               (f->f_data[40] << 56)
-             | (f->f_data[41] << 48)
-             | (f->f_data[42] << 40)
-             | (f->f_data[43] << 32)
-             | (f->f_data[44] << 24)
-             | (f->f_data[45] << 16)
-             | (f->f_data[46] <<  8)
-             | (f->f_data[47] <<  0);
-
-        result.f_value[1] =
-               (f->f_data[48] << 56)
-             | (f->f_data[49] << 48)
-             | (f->f_data[50] << 40)
-             | (f->f_data[51] << 32)
-             | (f->f_data[52] << 24)
-             | (f->f_data[53] << 16)
-             | (f->f_data[54] <<  8)
-             | (f->f_data[55] <<  0);
-
-        result.f_value[0] =
-               (f->f_data[56] << 56)
-             | (f->f_data[57] << 48)
-             | (f->f_data[58] << 40)
-             | (f->f_data[59] << 32)
-             | (f->f_data[60] << 24)
-             | (f->f_data[61] << 16)
-             | (f->f_data[62] <<  8)
-             | (f->f_data[63] <<  0);
-
-        return result;
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT128))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT256))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT512))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_OID))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_TIME))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME))
+                + "\".");
 
     }
 
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT128))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT256))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT512))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_OID))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_TIME))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME))
-            + "\".");
+    return result;
 }
 
 
@@ -1634,218 +1218,68 @@ void structure::set_large_uinteger(std::string const & field_name, uint512_t val
 {
     auto f(get_field(field_name));
 
-    uint512_t result;
+    verify_size(f->f_description->f_type, f->f_size);
+
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
-    case struct_type_t::STRUCT_TYPE_UINT8:
-        f->f_data[0] = result.f_value[0];
-        return;
-
     case struct_type_t::STRUCT_TYPE_BITS16:
-    case struct_type_t::STRUCT_TYPE_UINT16:
-        f->f_data[0] = result.f_value[0] >> 8;
-        f->f_data[1] = result.f_value[0] >> 0;
-        return;
-
     case struct_type_t::STRUCT_TYPE_BITS32:
-    case struct_type_t::STRUCT_TYPE_UINT32:
-        f->f_data[0] = result.f_value[0] >> 24;
-        f->f_data[1] = result.f_value[0] >> 16;
-        f->f_data[2] = result.f_value[0] >>  8;
-        f->f_data[3] = result.f_value[0] >>  0;
-        return;
-
     case struct_type_t::STRUCT_TYPE_BITS64:
+    case struct_type_t::STRUCT_TYPE_UINT8:
+    case struct_type_t::STRUCT_TYPE_UINT16:
+    case struct_type_t::STRUCT_TYPE_UINT32:
     case struct_type_t::STRUCT_TYPE_UINT64:
+    case struct_type_t::STRUCT_TYPE_UINT128:
+    case struct_type_t::STRUCT_TYPE_UINT256:
+    case struct_type_t::STRUCT_TYPE_UINT512:
     case struct_type_t::STRUCT_TYPE_REFERENCE:
     case struct_type_t::STRUCT_TYPE_OID:
     case struct_type_t::STRUCT_TYPE_TIME:
     case struct_type_t::STRUCT_TYPE_MSTIME:
     case struct_type_t::STRUCT_TYPE_USTIME:
-        f->f_data[0] = result.f_value[0] >> 56;
-        f->f_data[1] = result.f_value[0] >> 48;
-        f->f_data[2] = result.f_value[0] >> 40;
-        f->f_data[3] = result.f_value[0] >> 32;
-        f->f_data[4] = result.f_value[0] >> 24;
-        f->f_data[5] = result.f_value[0] >> 16;
-        f->f_data[6] = result.f_value[0] >>  8;
-        f->f_data[7] = result.f_value[0] >>  0;
-        return;
+        f_buffer->pwrite(value.f_value, f->f_size, f->f_offset);
+        break;
 
-    case struct_type_t::STRUCT_TYPE_UINT128:
-        f->f_data[0] = result.f_value[1] >> 56;
-        f->f_data[1] = result.f_value[1] >> 48;
-        f->f_data[2] = result.f_value[1] >> 40;
-        f->f_data[3] = result.f_value[1] >> 32;
-        f->f_data[4] = result.f_value[1] >> 24;
-        f->f_data[5] = result.f_value[1] >> 16;
-        f->f_data[6] = result.f_value[1] >>  8;
-        f->f_data[7] = result.f_value[1] >>  0;
-
-        f->f_data[ 8] = result.f_value[0] >> 56;
-        f->f_data[ 9] = result.f_value[0] >> 48;
-        f->f_data[10] = result.f_value[0] >> 40;
-        f->f_data[11] = result.f_value[0] >> 32;
-        f->f_data[12] = result.f_value[0] >> 24;
-        f->f_data[13] = result.f_value[0] >> 16;
-        f->f_data[14] = result.f_value[0] >>  8;
-        f->f_data[15] = result.f_value[0] >>  0;
-
-        return;
-
-    case struct_type_t::STRUCT_TYPE_UINT256:
-        f->f_data[0] = result.f_value[3] >> 56;
-        f->f_data[1] = result.f_value[3] >> 48;
-        f->f_data[2] = result.f_value[3] >> 40;
-        f->f_data[3] = result.f_value[3] >> 32;
-        f->f_data[4] = result.f_value[3] >> 24;
-        f->f_data[5] = result.f_value[3] >> 16;
-        f->f_data[6] = result.f_value[3] >>  8;
-        f->f_data[7] = result.f_value[3] >>  0;
-
-        f->f_data[ 8] = result.f_value[2] >> 56;
-        f->f_data[ 9] = result.f_value[2] >> 48;
-        f->f_data[10] = result.f_value[2] >> 40;
-        f->f_data[11] = result.f_value[2] >> 32;
-        f->f_data[12] = result.f_value[2] >> 24;
-        f->f_data[13] = result.f_value[2] >> 16;
-        f->f_data[14] = result.f_value[2] >>  8;
-        f->f_data[15] = result.f_value[2] >>  0;
-
-        f->f_data[16] = result.f_value[1] >> 56;
-        f->f_data[17] = result.f_value[1] >> 48;
-        f->f_data[18] = result.f_value[1] >> 40;
-        f->f_data[19] = result.f_value[1] >> 32;
-        f->f_data[20] = result.f_value[1] >> 24;
-        f->f_data[21] = result.f_value[1] >> 16;
-        f->f_data[22] = result.f_value[1] >>  8;
-        f->f_data[23] = result.f_value[1] >>  0;
-
-        f->f_data[24] = result.f_value[0] >> 56;
-        f->f_data[25] = result.f_value[0] >> 48;
-        f->f_data[26] = result.f_value[0] >> 40;
-        f->f_data[27] = result.f_value[0] >> 32;
-        f->f_data[28] = result.f_value[0] >> 24;
-        f->f_data[29] = result.f_value[0] >> 16;
-        f->f_data[30] = result.f_value[0] >>  8;
-        f->f_data[31] = result.f_value[0] >>  0;
-
-        return;
-
-    case struct_type_t::STRUCT_TYPE_UINT512:
-        f->f_data[0] = result.f_value[7] >> 56;
-        f->f_data[1] = result.f_value[7] >> 48;
-        f->f_data[2] = result.f_value[7] >> 40;
-        f->f_data[3] = result.f_value[7] >> 32;
-        f->f_data[4] = result.f_value[7] >> 24;
-        f->f_data[5] = result.f_value[7] >> 16;
-        f->f_data[6] = result.f_value[7] >>  8;
-        f->f_data[7] = result.f_value[7] >>  0;
-
-        f->f_data[ 8] = result.f_value[6] >> 56;
-        f->f_data[ 9] = result.f_value[6] >> 48;
-        f->f_data[10] = result.f_value[6] >> 40;
-        f->f_data[11] = result.f_value[6] >> 32;
-        f->f_data[12] = result.f_value[6] >> 24;
-        f->f_data[13] = result.f_value[6] >> 16;
-        f->f_data[14] = result.f_value[6] >>  8;
-        f->f_data[15] = result.f_value[6] >>  0;
-
-        f->f_data[16] = result.f_value[5] >> 56;
-        f->f_data[17] = result.f_value[5] >> 48;
-        f->f_data[18] = result.f_value[5] >> 40;
-        f->f_data[19] = result.f_value[5] >> 32;
-        f->f_data[20] = result.f_value[5] >> 24;
-        f->f_data[21] = result.f_value[5] >> 16;
-        f->f_data[22] = result.f_value[5] >>  8;
-        f->f_data[23] = result.f_value[5] >>  0;
-
-        f->f_data[24] = result.f_value[4] >> 56;
-        f->f_data[25] = result.f_value[4] >> 48;
-        f->f_data[26] = result.f_value[4] >> 40;
-        f->f_data[27] = result.f_value[4] >> 32;
-        f->f_data[28] = result.f_value[4] >> 24;
-        f->f_data[29] = result.f_value[4] >> 16;
-        f->f_data[30] = result.f_value[4] >>  8;
-        f->f_data[31] = result.f_value[4] >>  0;
-
-        f->f_data[32] = result.f_value[3] >> 56;
-        f->f_data[33] = result.f_value[3] >> 48;
-        f->f_data[34] = result.f_value[3] >> 40;
-        f->f_data[35] = result.f_value[3] >> 32;
-        f->f_data[36] = result.f_value[3] >> 24;
-        f->f_data[37] = result.f_value[3] >> 16;
-        f->f_data[38] = result.f_value[3] >>  8;
-        f->f_data[39] = result.f_value[3] >>  0;
-
-        f->f_data[40] = result.f_value[2] >> 56;
-        f->f_data[41] = result.f_value[2] >> 48;
-        f->f_data[42] = result.f_value[2] >> 40;
-        f->f_data[43] = result.f_value[2] >> 32;
-        f->f_data[44] = result.f_value[2] >> 24;
-        f->f_data[45] = result.f_value[2] >> 16;
-        f->f_data[46] = result.f_value[2] >>  8;
-        f->f_data[47] = result.f_value[2] >>  0;
-
-        f->f_data[48] = result.f_value[1] >> 56;
-        f->f_data[49] = result.f_value[1] >> 48;
-        f->f_data[50] = result.f_value[1] >> 40;
-        f->f_data[51] = result.f_value[1] >> 32;
-        f->f_data[52] = result.f_value[1] >> 24;
-        f->f_data[53] = result.f_value[1] >> 16;
-        f->f_data[54] = result.f_value[1] >>  8;
-        f->f_data[55] = result.f_value[1] >>  0;
-
-        f->f_data[56] = result.f_value[0] >> 56;
-        f->f_data[57] = result.f_value[0] >> 48;
-        f->f_data[58] = result.f_value[0] >> 40;
-        f->f_data[59] = result.f_value[0] >> 32;
-        f->f_data[60] = result.f_value[0] >> 24;
-        f->f_data[61] = result.f_value[0] >> 16;
-        f->f_data[62] = result.f_value[0] >>  8;
-        f->f_data[63] = result.f_value[0] >>  0;
-
-        return;
+    default:
+        throw type_mismatch(
+                  "This description type is \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\" but we expected one of \""
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT128))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT256))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT512))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_OID))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_TIME))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME))
+                + "\".");
 
     }
-
-    throw type_mismatch(
-              "This description type is \""
-            + std::to_string(f->f_description->f_type)
-            + "\" but we expected one of \""
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_BITS64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT8))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT128))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT256))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT512))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_OID))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_TIME))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME))
-            + ", "
-            + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME))
-            + "\".");
 }
 
 
@@ -1853,14 +1287,11 @@ float structure::get_float32(std::string const & field_name) const
 {
     auto f(get_field(field_name, struct_type_t::STRUCT_TYPE_FLOAT32));
 
-    float32_uint32_t convert;
-    convert.f_int =
-           (f->f_data[0] << 24)
-         | (f->f_data[1] << 16)
-         | (f->f_data[2] <<  8)
-         | (f->f_data[3] <<  0);
+    verify_size(struct_type_t::STRUCT_TYPE_FLOAT32, f->f_size);
 
-    return convert.f_float;
+    float result;
+    f_buffer->pread(&result, sizeof(float), f->f_offset);
+    return result;
 }
 
 
@@ -1868,13 +1299,9 @@ void structure::set_float32(std::string const & field_name, float value)
 {
     auto f(get_field(field_name, struct_type_t::STRUCT_TYPE_FLOAT32));
 
-    float32_uint32_t convert;
-    convert.f_float = value;
+    verify_size(struct_type_t::STRUCT_TYPE_FLOAT32, f->f_size);
 
-    f->f_data[0] = convert.f_int >> 24;
-    f->f_data[1] = convert.f_int >> 16;
-    f->f_data[2] = convert.f_int >>  8;
-    f->f_data[3] = convert.f_int >>  0;
+    f_buffer->pwrite(&value, sizeof(float), f->f_offset);
 }
 
 
@@ -1882,18 +1309,11 @@ double structure::get_float64(std::string const & field_name) const
 {
     auto f(get_field(field_name, struct_type_t::STRUCT_TYPE_FLOAT64));
 
-    float64_uint64_t convert;
-    convert.f_int =
-           (f->f_data[0] << 56)
-         | (f->f_data[1] << 48)
-         | (f->f_data[2] << 40)
-         | (f->f_data[3] << 32)
-         | (f->f_data[4] << 24)
-         | (f->f_data[5] << 16)
-         | (f->f_data[6] <<  8)
-         | (f->f_data[7] <<  0);
+    verify_size(struct_type_t::STRUCT_TYPE_FLOAT64, f->f_size);
 
-    return convert.f_float;
+    double result;
+    f_buffer->pread(&result, sizeof(double), f->f_offset);
+    return result;
 }
 
 
@@ -1901,17 +1321,9 @@ void structure::set_float64(std::string const & field_name, double value)
 {
     auto f(get_field(field_name, struct_type_t::STRUCT_TYPE_FLOAT64));
 
-    float64_uint64_t convert;
-    convert.f_float = value;
+    verify_size(struct_type_t::STRUCT_TYPE_FLOAT64, f->f_size);
 
-    f->f_data[ 0] = convert.f_int >> 56;
-    f->f_data[ 1] = convert.f_int >> 48;
-    f->f_data[ 2] = convert.f_int >> 40;
-    f->f_data[ 3] = convert.f_int >> 32;
-    f->f_data[ 4] = convert.f_int >> 24;
-    f->f_data[ 5] = convert.f_int >> 16;
-    f->f_data[ 6] = convert.f_int >>  8;
-    f->f_data[ 7] = convert.f_int >>  0;
+    f_buffer->pwrite(&value, sizeof(double), f->f_offset);
 }
 
 
@@ -1919,29 +1331,11 @@ long double structure::get_float128(std::string const & field_name) const
 {
     auto f(get_field(field_name, struct_type_t::STRUCT_TYPE_FLOAT128));
 
-    float128_uint128_t convert;
+    verify_size(struct_type_t::STRUCT_TYPE_FLOAT128, f->f_size);
 
-    convert.f_int[1] =
-           (f->f_data[0] << 56)
-         | (f->f_data[1] << 48)
-         | (f->f_data[2] << 40)
-         | (f->f_data[3] << 32)
-         | (f->f_data[4] << 24)
-         | (f->f_data[5] << 16)
-         | (f->f_data[6] <<  8)
-         | (f->f_data[7] <<  0);
-
-    convert.f_int[0] =
-           (f->f_data[ 8] << 56)
-         | (f->f_data[ 0] << 48)
-         | (f->f_data[10] << 40)
-         | (f->f_data[11] << 32)
-         | (f->f_data[12] << 24)
-         | (f->f_data[13] << 16)
-         | (f->f_data[14] <<  8)
-         | (f->f_data[15] <<  0);
-
-    return convert.f_float;
+    long double result;
+    f_buffer->pread(&result, sizeof(long double), f->f_offset);
+    return result;
 }
 
 
@@ -1949,26 +1343,9 @@ void structure::set_float128(std::string const & field_name, long double value)
 {
     auto f(get_field(field_name, struct_type_t::STRUCT_TYPE_FLOAT128));
 
-    float128_uint128_t convert;
-    convert.f_float = value;
+    verify_size(struct_type_t::STRUCT_TYPE_FLOAT128, f->f_size);
 
-    f->f_data[ 0] = convert.f_int[1] >> 56;
-    f->f_data[ 1] = convert.f_int[1] >> 48;
-    f->f_data[ 2] = convert.f_int[1] >> 40;
-    f->f_data[ 3] = convert.f_int[1] >> 32;
-    f->f_data[ 4] = convert.f_int[1] >> 24;
-    f->f_data[ 5] = convert.f_int[1] >> 16;
-    f->f_data[ 6] = convert.f_int[1] >>  8;
-    f->f_data[ 7] = convert.f_int[1] >>  0;
-
-    f->f_data[ 8] = convert.f_int[0] >> 56;
-    f->f_data[ 9] = convert.f_int[0] >> 48;
-    f->f_data[10] = convert.f_int[0] >> 40;
-    f->f_data[11] = convert.f_int[0] >> 32;
-    f->f_data[12] = convert.f_int[0] >> 24;
-    f->f_data[13] = convert.f_int[0] >> 16;
-    f->f_data[14] = convert.f_int[0] >>  8;
-    f->f_data[15] = convert.f_int[0] >>  0;
+    f_buffer->pwrite(&value, sizeof(long double), f->f_offset);
 }
 
 
@@ -2007,13 +1384,15 @@ std::string structure::get_string(std::string const & field_name) const
 
     }
 
-    return std::string(f->f_data + skip, size);
+    std::string result(size, '\0');
+    f_buffer->pread(result.data(), size, f->f_offset);
+    return result;
 }
 
 
 void structure::set_string(std::string const & field_name, std::string const & value)
 {
-    auto f(get_Field(field_name));
+    auto f(get_field(field_name));
 
     int skip(0);
     uint32_t size(f->f_size);
@@ -2046,7 +1425,38 @@ void structure::set_string(std::string const & field_name, std::string const & v
 
     }
 
-    return std::string(f->f_data + skip, size);
+    // verify the length (make it debug only?)
+    //
+    uint32_t length(0);
+    f_buffer->pread(&length, skip, f->f_offset);
+    if(length != size)
+    {
+        throw invalid_size(
+                  "This string sizes do not match; found "
+                + std::to_string(length)
+                + ", expected "
+                + std::to_string(size)
+                + " instead.");
+    }
+
+    // TODO: this is not a pwrite()
+    //      1. do an erase of the old string
+    //      2. do an insert of the new string
+    //      (or better, overwrite existing N characters and then either
+    //      erase the extras or insert the new chars)
+    //
+    //      BUT ERASE and/or INSERT MEANS ALL FIELDS AFTER THAT GET THEIR
+    //      OFFSET UPDATED!!!
+    //
+    f_buffer->pwrite(value.data(), size, f->f_offset + skip);
+
+    if(f->f_description->f_type == struct_type_t::STRUCT_TYPE_CSTRING)
+    {
+        // `skip` not needed (we know it's 0 here)
+        //
+        uint8_t eos(0);
+        f_buffer->pwrite(&eos, sizeof(uint8_t), f->f_offset + value.length());
+    }
 }
 
 
@@ -2063,7 +1473,7 @@ structure::pointer_t structure::get_structure(std::string const & field_name) co
 }
 
 
-void structure::set_structure(std::string const & field_name, structure const & value)
+void structure::set_structure(std::string const & field_name, structure::pointer_t & value)
 {
     auto f(get_field(field_name, struct_type_t::STRUCT_TYPE_STRUCTURE));
 
@@ -2143,32 +1553,123 @@ buffer_t structure::get_buffer(std::string const & field_name) const
 
     }
 
-    return buffer_t(f->f_data, f->f_size);
+    buffer_t result;
+    result.resize(f->f_size);
+    f_buffer->pread(result.data(), f->f_size, f->f_offset);
+    return result;
 }
 
 
 void structure::set_buffer(std::string const & field_name, buffer_t const & value)
 {
-    
+    auto f(get_field(field_name));
+
+    uint32_t max(0);
+    uint32_t size_bytes(0);
+    uint32_t size(value.size());
+    switch(f->f_description->f_type)
+    {
+    case struct_type_t::STRUCT_TYPE_BUFFER8:
+        max = 0xFF;
+        size_bytes = 1;
+        break;
+
+    case struct_type_t::STRUCT_TYPE_BUFFER16:
+        max = 0xFFFF;
+        size_bytes = 2;
+        break;
+
+    case struct_type_t::STRUCT_TYPE_BUFFER32:
+        max = 0xFFFFFFFF;
+        size_bytes = 4;
+        break;
+
+    default:
+        throw type_mismatch(
+                  "The set_buffer() function expected a STRUCT_TYPE_BUFFER<size> field instead of \""
+                + std::to_string(static_cast<int>(f->f_description->f_type))
+                + "\".");
+
+    }
+
+    if(size > max)
+    {
+        throw snapdatabase_out_of_range(
+                  "Size of input buffer ("
+                + std::to_string(static_cast<int>(value.size()))
+                + " too large to send it to the buffer; the maximum permitted by this field is "
+                + std::to_string(max)
+                + ".");
+    }
+
+    if(f->f_size > size)
+    {
+        // existing buffer too large, make it the right size (smaller)
+        //
+        f_buffer->perase(f->f_size - value.size(), f->f_offset + size_bytes + size);
+
+        f_buffer->pwrite(&size, size_bytes, f->f_offset);
+        f_buffer->pwrite(value.data(), size, f->f_offset + size_bytes);
+        f->f_size = size_bytes + size;
+    }
+    else if(f->f_size < value.size())
+    {
+        // existing buffer too small, enlarge it
+        //
+        //     |*                   |
+        //     | <------>           |
+        //     |         <--------->|
+        //     ^^   ^        ^
+        //     ||   |        |
+        //     ||   |        +----- new space (pinsert)
+        //     ||   |
+        //     ||   +---- existing space (pwrite)
+        //     ||
+        //     |+------ buffer size
+        //     |
+        //     +----- f->f_offset
+        //
+        // Size of each element is:
+        //
+        //     buffer size -- size_bytes
+        //     existing space -- f->f_size - size_bytes
+        //     new space -- value.size() - 'existing space'
+        //
+
+        f_buffer->pwrite(&size, size_bytes, f->f_offset);
+
+        f_buffer->pwrite(value.data(), f->f_size - size_bytes, f->f_offset + size_bytes);
+
+        uint32_t const insert_offset(f->f_size - size_bytes);
+        f_buffer->pinsert(value.data() + insert_offset, size - (f->f_size + size_bytes), f->f_offset + f->f_size);
+
+        f->f_size = size_bytes + size;
+    }
+    else
+    {
+        // same size, just overwrite
+        //
+        f_buffer->pwrite(value.data(), size, f->f_offset + size_bytes);
+    }
 }
 
 
-void structure::parse()
+void structure::parse() const
 {
-    if(!f_descriptions_by_name.empty())
+    if(!f_fields_by_name.empty())
     {
         // already parsed
         //
         return;
     }
 
-    snap::NOT_USED(parse_descriptions(f_start_offset));
+    snap::NOTUSED(parse_descriptions(f_start_offset));
 }
 
 
-uint8_t * structure::parse_description(uint64_t offset)
+uint64_t structure::parse_descriptions(uint64_t offset) const
 {
-    for(struct_description const * def(f_descriptions);
+    for(struct_description_t const * def(f_descriptions);
         def->f_type != struct_type_t::STRUCT_TYPE_END;
         ++def)
     {
@@ -2178,7 +1679,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         f->f_description = def;
         f->f_offset = offset;
         bool has_sub_defs(false);
-        int bit_field(0);
+        size_t bit_field(0);
         switch(def->f_type)
         {
         case struct_type_t::STRUCT_TYPE_VOID:
@@ -2192,7 +1693,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_INT8:
         case struct_type_t::STRUCT_TYPE_UINT8:
             f->f_size = 1;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 offset += 1;
             }
@@ -2206,7 +1707,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_INT16:
         case struct_type_t::STRUCT_TYPE_UINT16:
             f->f_size = 2;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 offset += 2;
             }
@@ -2222,7 +1723,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_FLOAT32:
         case struct_type_t::STRUCT_TYPE_VERSION:
             f->f_size = 4;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 offset += 4;
             }
@@ -2242,7 +1743,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_MSTIME:
         case struct_type_t::STRUCT_TYPE_USTIME:
             f->f_size = 8;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 offset += 8;
             }
@@ -2257,7 +1758,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_UINT128:
         case struct_type_t::STRUCT_TYPE_FLOAT128:
             f->f_size = 16;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 offset += 16;
             }
@@ -2271,7 +1772,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_INT256:
         case struct_type_t::STRUCT_TYPE_UINT256:
             f->f_size = 32;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 offset += 32;
             }
@@ -2279,10 +1780,13 @@ uint8_t * structure::parse_description(uint64_t offset)
 
         case struct_type_t::STRUCT_TYPE_BITS512:
             bit_field = 512;
+#if __cplusplus >= 201700
+            [[fallthrough]];
+#endif
         case struct_type_t::STRUCT_TYPE_INT512:
         case struct_type_t::STRUCT_TYPE_UINT512:
             f->f_size = 64;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 offset += 64;
             }
@@ -2291,7 +1795,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_CSTRING:
             f->f_flags |= field_t::FIELD_FLAG_VARIABLE_SIZE;
             f->f_size = 1;           // include '\0' in the size
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 ++offset;
 
@@ -2313,7 +1817,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_P8STRING:
         case struct_type_t::STRUCT_TYPE_BUFFER8:
             f->f_flags |= field_t::FIELD_FLAG_VARIABLE_SIZE;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 uint8_t sz;
                 f_buffer->pread(&sz, 1, offset);
@@ -2325,7 +1829,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_P16STRING:
         case struct_type_t::STRUCT_TYPE_BUFFER16:
             f->f_flags |= field_t::FIELD_FLAG_VARIABLE_SIZE;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 uint16_t sz;
                 f_buffer->pread(&sz, 2, offset);
@@ -2337,7 +1841,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_P32STRING:
         case struct_type_t::STRUCT_TYPE_BUFFER32:
             f->f_flags |= field_t::FIELD_FLAG_VARIABLE_SIZE;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 uint32_t sz;
                 f_buffer->pread(&sz, 4, offset);
@@ -2360,7 +1864,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_ARRAY8:
             // here f_size is a count, not a byte size
             f->f_flags |= field_t::FIELD_FLAG_VARIABLE_SIZE;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 uint8_t sz;
                 f_buffer->pread(&sz, 1, offset);
@@ -2373,7 +1877,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_ARRAY16:
             // here f_size is a count, not a byte size
             f->f_flags |= field_t::FIELD_FLAG_VARIABLE_SIZE;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 uint16_t sz;
                 f_buffer->pread(&sz, 1, offset);
@@ -2386,7 +1890,7 @@ uint8_t * structure::parse_description(uint64_t offset)
         case struct_type_t::STRUCT_TYPE_ARRAY32:
             // here f_size is a count, not a byte size
             f->f_flags |= field_t::FIELD_FLAG_VARIABLE_SIZE;
-            if(f_buffer->count_buffer() != 0)
+            if(f_buffer->count_buffers() != 0)
             {
                 uint32_t sz;
                 f_buffer->pread(&sz, 4, offset);
@@ -2407,8 +1911,8 @@ uint8_t * structure::parse_description(uint64_t offset)
 
         }
 
-        if(f_buffer->count_buffer() != 0
-        && offset > f_buffer.size())
+        if(f_buffer->count_buffers() != 0
+        && offset > f_buffer->size())
         {
             throw invalid_size(
                       "Field \""
@@ -2427,11 +1931,12 @@ uint8_t * structure::parse_description(uint64_t offset)
             }
 
             f->f_sub_structures.reserve(f->f_size);
-            for(int idx(0); idx < f->f_size; ++idx)
+            for(size_t idx(0); idx < f->f_size; ++idx)
             {
-                pointer_t s(std::make_shared<structure>(def->f_sub_description, f_buffer, offset));
+                pointer_t s(std::make_shared<structure>(def->f_sub_description));
+                s->set_virtual_buffer(f_buffer, offset);
                 offset = s->parse_descriptions(offset);
-                s->f_end_offset = offset;
+                //s->f_end_offset = offset; -- TBD: would that be useful?
 
                 f->f_sub_structures.push_back(s);
             }
@@ -2448,7 +1953,11 @@ uint8_t * structure::parse_description(uint64_t offset)
 
             std::string::size_type pos(field_name.find('='));
 
-            for(std::string::size_type end(pos), size_t bit_pos(0); ; )
+            field_name = field_name.substr(0, pos);
+
+            size_t bit_pos(0);
+            std::string::size_type end(pos);
+            for(;;)
             {
                 std::string::size_type start(end + 1);
                 if(start >= field_name.size())
@@ -2457,6 +1966,7 @@ uint8_t * structure::parse_description(uint64_t offset)
                 }
                 end = field_name.find_first_of(":/", start);
                 std::int64_t size(1);
+                std::string flag_name;
                 if(end == std::string::npos)
                 {
                     // no ':' or '/', we found the last flag
@@ -2474,6 +1984,7 @@ uint8_t * structure::parse_description(uint64_t offset)
                     {
                         start = end + 1;
 
+                        std::string size_str;
                         end = field_name.find_first_of(":/", start);
                         if(end == std::string::npos)
                         {
@@ -2513,17 +2024,17 @@ uint8_t * structure::parse_description(uint64_t offset)
                         }
                     }
                 }
-                flag_definition bits(flag_name, bit_pos, size);
-                f->f_flag_definitions.push_back(bits);
-            }
+                flag_definition bits(field_name, flag_name, bit_pos, size);
+                f->f_flag_definitions[flag_name] = bits;
 
-            field_name = field_name.substr(0, pos);
+                bit_pos += size;
+            }
         }
 
-        f_fields_by_name[field_name] = f;
+        const_cast<structure *>(this)->f_fields_by_name[field_name] = f;
     }
 
-    return data;
+    return offset;
 }
 
 

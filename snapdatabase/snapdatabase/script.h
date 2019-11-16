@@ -16,23 +16,20 @@
 // You should have received a copy of the GNU General Public License along
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#pragma once
 
 
 /** \file
- * \brief Database file implementation.
+ * \brief Script handling file header.
  *
- * Each table uses one or more files. Each file is handled by a dbfile
- * object and a corresponding set of blocks.
+ * The script feature is used to handle data transformation and filtering
+ * for secondary filters (primarily).
  */
 
 // self
 //
-#include    "snapdatabase/block_index_pointers.h"
-
-
-// last include
-//
-#include    <snapdev/poison.h>
+#include    "snapdatabase/row.h"
+#include    "snapdatabase/virtual_buffer.h"
 
 
 
@@ -41,25 +38,8 @@ namespace snapdatabase
 
 
 
-// 'IDXP'
-constexpr struct_description_t g_index_pointers_description[] =
-{
-    define_description(
-          FieldName("magic")    // dbtype_t = IDXP
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-    ),
-    end_descriptions()
-};
-
-
-block_index_pointers::block_index_pointers(dbfile::pointer_t f, reference_t offset)
-    : block(f, offset)
-{
-    f_structure = std::make_shared<structure>(g_index_pointers_description);
-}
-
-
-
+buffer_t        compile_script(std::string const & script);
+buffer_t        execute_script(buffer_t compiled_script, row::pointer_t row);
 
 
 

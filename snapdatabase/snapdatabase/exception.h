@@ -48,7 +48,7 @@ DECLARE_MAIN_EXCEPTION(fatal_error);
 DECLARE_MAIN_EXCEPTION(snapdatabase_error);
 
 // uncomment as we use these
-DECLARE_EXCEPTION(snapdatabase_error, node_already_in_tree);
+DECLARE_EXCEPTION(snapdatabase_error, column_not_found);
 DECLARE_EXCEPTION(snapdatabase_error, field_not_found);
 DECLARE_EXCEPTION(snapdatabase_error, file_not_found);
 DECLARE_EXCEPTION(snapdatabase_error, file_not_opened);
@@ -58,6 +58,7 @@ DECLARE_EXCEPTION(snapdatabase_error, invalid_size);
 DECLARE_EXCEPTION(snapdatabase_error, invalid_token);
 DECLARE_EXCEPTION(snapdatabase_error, invalid_xml);
 DECLARE_EXCEPTION(snapdatabase_error, io_error);
+DECLARE_EXCEPTION(snapdatabase_error, node_already_in_tree);
 DECLARE_EXCEPTION(snapdatabase_error, page_not_found);
 DECLARE_EXCEPTION(snapdatabase_error, string_not_terminated);
 DECLARE_EXCEPTION(snapdatabase_error, type_mismatch);

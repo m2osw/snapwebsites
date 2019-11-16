@@ -47,4 +47,3 @@ std::string typed_buffer_to_string(struct_type_t type, buffer_t value);
 
 } // namespace snapdatabase
 // vim: ts=4 sw=4 et
-

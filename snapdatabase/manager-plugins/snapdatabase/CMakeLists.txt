@@ -27,6 +27,17 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+include_directories(
+    SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Network_INCLUDE_DIRS}
+        ${Qt5Script_INCLUDE_DIRS}
+        ${Qt5Sql_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
+        ${Qt5Xml_INCLUDE_DIRS}
+        ${Qt5XmlPatterns_INCLUDE_DIRS}
+)
+
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
     snapdatabase.qrc
 )

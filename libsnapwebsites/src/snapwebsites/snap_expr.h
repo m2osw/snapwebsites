@@ -153,7 +153,6 @@ public:
     QString                             get_name() const;
 
     variable_type_t                     get_type() const;
-    libdbproxy::value const & get_value() const;
     void                                set_value(variable_type_t type, libdbproxy::value const & value);
     void                                set_value(); // set to NULL
     void                                set_value(bool value);
@@ -173,6 +172,7 @@ public:
     void                                set_value(QString const & value);
     void                                set_value(QByteArray const & value);
 
+    libdbproxy::value const &           get_value() const;
     bool                                get_bool(QString const & name) const;
     int64_t                             get_integer(QString const & name) const;
     double                              get_floating_point(QString const & name) const;

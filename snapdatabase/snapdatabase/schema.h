@@ -45,7 +45,6 @@ namespace snapdatabase
 //typedef uint16_t                        flag16_t;
 typedef uint32_t                        flag32_t;       // look into not using these, instead use the structure directly
 typedef uint64_t                        flag64_t;
-//typedef std::vector<uint16_t>           row_key_t;
 
 typedef uint16_t                        column_id_t;
 typedef std::vector<column_id_t>        column_ids_t;
@@ -62,6 +61,9 @@ enum class model_t
     TABLE_MODEL_SESSION,
     TABLE_MODEL_TREE
 };
+
+
+model_t             name_to_model(std::string const & name);
 
 
 constexpr flag64_t                          SCHEMA_FLAG_TEMPORARY               = 1LL << 0;
@@ -87,6 +89,7 @@ public:
     typedef std::map<std::string, schema_complex_type>
                                             map_t;
 
+                                            schema_complex_type();
                                             schema_complex_type(xml_node::pointer_t x);
 
     std::string                             name() const;
@@ -107,8 +110,12 @@ private:
     field_t::vector_t                       f_fields = field_t::vector_t();
 };
 
+
+
+
 class schema_table;
 typedef std::shared_ptr<schema_table>       schema_table_pointer_t;
+typedef std::weak_ptr<schema_table>         schema_table_weak_pointer_t;
 
 class schema_column
 {
@@ -154,7 +161,7 @@ private:
 
     // not saved on disk
     //
-    schema_table_pointer_t                  f_schema_table = schema_table_pointer_t();
+    schema_table_weak_pointer_t             f_schema_table = schema_table_weak_pointer_t();
     std::string                             f_description = std::string();
 };
 
@@ -166,8 +173,6 @@ class schema_secondary_index
 public:
     typedef std::shared_ptr<schema_secondary_index> pointer_t;
     typedef std::vector<pointer_t>                  vector_t;
-
-                                            schema_secondary_index();
 
     std::string                             get_index_name() const;
     void                                    set_index_name(std::string const & index_name);
@@ -189,17 +194,18 @@ private:
 
 
 class schema_table
+    : protected std::enable_shared_from_this<schema_table>
 {
 public:
     typedef std::shared_ptr<schema_table>   pointer_t;
 
                                             schema_table(xml_node::pointer_t x);
-                                            schema_table(virtual_buffer const & b);
+                                            schema_table(virtual_buffer::pointer_t b);
 
     void                                    load_extension(xml_node::pointer_t e);
 
-    void                                    from_binary(virtual_buffer const & b);
-    virtual_buffer                          to_binary() const;
+    void                                    from_binary(virtual_buffer::pointer_t b);
+    virtual_buffer::pointer_t               to_binary() const;
 
     version_t                               version() const;
     std::string                             name() const;

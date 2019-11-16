@@ -36,6 +36,7 @@
 #include    "snapdatabase/block_blob.h"
 #include    "snapdatabase/block_data.h"
 #include    "snapdatabase/block_entry_index.h"
+#include    "snapdatabase/block_free_block.h"
 #include    "snapdatabase/block_free_space.h"
 #include    "snapdatabase/block_index_pointers.h"
 #include    "snapdatabase/block_indirect_index.h"
@@ -68,6 +69,7 @@ class table_impl
 public:
                                                 table_impl(
                                                       context * c
+                                                    , table * t
                                                     , xml_node::pointer_t x
                                                     , xml_node::map_t complex_types);
                                                 table_impl(table_impl const & rhs) = delete;
@@ -96,7 +98,7 @@ public:
 
 private:
     context *                                   f_context = nullptr;
-    //table::weak_pointer_t                       f_table = table::weak_pointer_t(); still TBD
+    table *                                     f_table = nullptr;
     schema_table::pointer_t                     f_schema_table = schema_table::pointer_t();
     dbfile::pointer_t                           f_dbfile = dbfile::pointer_t();
     xml_node::map_t                             f_complex_types = xml_node::map_t();
@@ -106,9 +108,11 @@ private:
 
 table_impl::table_impl(
           context * c
+        , table * t
         , xml_node::pointer_t x
         , xml_node::map_t complex_types)
     : f_context(c)
+    , f_table(t)
     , f_schema_table(std::make_shared<schema_table>(x))
     , f_dbfile(std::make_shared<dbfile>(c->get_path(), f_schema_table->name(), "main"))
     , f_complex_types(complex_types)
@@ -121,7 +125,7 @@ table_impl::table_impl(
     // load the one from the table and if different, apply the
     // changes
     //
-    auto current_schema(std::make_shared<schema_table>(f_schema_table));
+    auto current_schema(f_schema_table);
 
 }
 
@@ -281,8 +285,8 @@ block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
     }
 
     b->set_dbtype(type);
-    b->set_table(shared_from_this());
-    b->get_structure()->set_block(b);
+    b->set_table(f_table->get_pointer());
+    b->get_structure()->set_block(b, f_dbfile->get_page_size());
 
     return b;
 }
@@ -402,8 +406,14 @@ table::table(
           context * c
         , xml_node::pointer_t x
         , xml_node::map_t complex_types)
-    : f_impl(new detail::table_impl(c, x, complex_types))
+    : f_impl(std::make_shared<detail::table_impl>(c, this, x, complex_types))
 {
+}
+
+
+table::pointer_t table::get_pointer()
+{
+    return shared_from_this();
 }
 
 
@@ -425,9 +435,9 @@ std::string table::name() const
 }
 
 
-dbtype_t table::model() const
+model_t table::model() const
 {
-    return f_impl->mode();
+    return f_impl->model();
 }
 
 

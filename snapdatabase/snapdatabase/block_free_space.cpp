@@ -489,6 +489,11 @@ block_free_space::block_free_space(dbfile::pointer_t f, reference_t offset)
 }
 
 
+block_free_space::~block_free_space()
+{
+}
+
+
 free_space_t block_free_space::get_free_space(uint32_t minimum_size)
 {
     return f_impl->get_free_space(minimum_size);

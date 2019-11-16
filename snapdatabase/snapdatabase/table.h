@@ -61,9 +61,11 @@ class block;
 typedef std::shared_ptr<block>                  block_pointer_t;
 
 class table
+    : protected std::enable_shared_from_this<table>
 {
 public:
     typedef std::shared_ptr<table>              pointer_t;
+    typedef std::weak_ptr<table>                weak_pointer_t;
     typedef std::map<std::string, pointer_t>    map_t;
 
                                                 table(
@@ -73,6 +75,7 @@ public:
 
     void                                        load_extension(xml_node::pointer_t e);
 
+    pointer_t                                   get_pointer();
     dbfile_pointer_t                            get_dbfile() const;
     version_t                                   version() const;
     std::string                                 name() const;
@@ -91,7 +94,7 @@ public:
     block_pointer_t                             allocate_new_block(dbtype_t type);
 
 private:
-    std::unique_ptr<detail::table_impl>         f_impl;
+    std::shared_ptr<detail::table_impl>         f_impl;
 };
 
 
