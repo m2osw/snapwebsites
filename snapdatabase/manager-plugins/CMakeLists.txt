@@ -39,7 +39,7 @@ set( PLUGIN_INSTALL_DIR lib/snapwebsites/manager_plugins )
 ################################################################################
 # Keep the plugins in alphabetical order for ease of management
 #
-add_subdirectory(snapdatabase)
+add_subdirectory(database)
 
 
 # vim: ts=4 sw=4 nocindent et

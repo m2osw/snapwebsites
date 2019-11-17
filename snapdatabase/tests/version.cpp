@@ -23,6 +23,7 @@
 //
 #include    "main.h"
 
+
 // snaplogger lib
 //
 #include    <snapdatabase/version.h>
@@ -34,10 +35,10 @@ CATCH_TEST_CASE("Version", "[version]")
 {
     CATCH_START_SECTION("verify runtime vs compile time version numbers")
     {
-        CATCH_REQUIRE(snaplogger::get_major_version()   == SNAPLOGGER_VERSION_MAJOR);
-        CATCH_REQUIRE(snaplogger::get_release_version() == SNAPLOGGER_VERSION_MINOR);
-        CATCH_REQUIRE(snaplogger::get_patch_version()   == SNAPLOGGER_VERSION_PATCH);
-        CATCH_REQUIRE(strcmp(snaplogger::get_version_string(), SNAPLOGGER_VERSION_STRING) == 0);
+        CATCH_REQUIRE(snapdatabase::get_major_version()   == SNAPDATABASE_VERSION_MAJOR);
+        CATCH_REQUIRE(snapdatabase::get_release_version() == SNAPDATABASE_VERSION_MINOR);
+        CATCH_REQUIRE(snapdatabase::get_patch_version()   == SNAPDATABASE_VERSION_PATCH);
+        CATCH_REQUIRE(strcmp(snapdatabase::get_version_string(), SNAPDATABASE_VERSION_STRING) == 0);
     }
     CATCH_END_SECTION()
 }

@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
 {
     return SNAP_CATCH2_NAMESPACE::snap_catch2_main(
               "snapdatabase"
-            , SNAPLOGGER_VERSION_STRING
+            , SNAPDATABASE_VERSION_STRING
             , argc
             , argv
             , []() { libexcept::set_collect_stack(false); }

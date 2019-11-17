@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-project(plugin_snapdatabase)
+project(plugin_database)
 
 find_package( Qt5Core REQUIRED )
 find_package( Qt5Xml  REQUIRED )
@@ -39,24 +39,24 @@ include_directories(
 )
 
 qt5_add_resources(SNAP_MANAGER_RESOURCES_RCC
-    snapdatabase.qrc
+    database.qrc
 )
 
-add_library(snapdatabase SHARED
-    snapdatabase.cpp
+add_library(database SHARED
+    database.cpp
     ${SNAP_MANAGER_MOC_CXX}
     ${SNAP_MANAGER_RESOURCES_RCC}
 )
 
 #message("AS2JS_LIBRARIES = " ${AS2JS_LIBRARIES})
 
-target_link_libraries(snapdatabase
+target_link_libraries(database
     ${QT_LIBRARIES}
 )
 
 install(
     TARGETS
-        snapdatabase
+        database
 
     LIBRARY DESTINATION
         ${PLUGIN_INSTALL_DIR}
@@ -67,7 +67,7 @@ install(
         ${CMAKE_CURRENT_SOURCE_DIR}/
 
     DESTINATION
-        include/snapmanager/plugins/snapdatabase
+        include/snapmanager/plugins/database
 
     FILES_MATCHING PATTERN
         "*.h"

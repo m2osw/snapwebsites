@@ -648,6 +648,12 @@ void row::from_binary(buffer_t const & blob)
 }
 
 
+cell::map_t row::cells() const
+{
+    return f_cells;
+}
+
+
 
 } // namespace snapdatabase
 // vim: ts=4 sw=4 et

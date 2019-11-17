@@ -59,6 +59,8 @@ public:
     buffer_t                                    to_binary() const;
     void                                        from_binary(buffer_t const & blob);
 
+    cell::map_t                                 cells() const;
+
 private:
     table::weak_pointer_t                       f_table = table::weak_pointer_t();
     cell::map_t                                 f_cells = cell::map_t();

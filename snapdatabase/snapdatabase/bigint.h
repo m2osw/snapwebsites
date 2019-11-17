@@ -91,6 +91,11 @@ struct int512_t
 
 struct uint512_t
 {
+                                    uint512_t();
+                                    uint512_t(uint512_t const & rhs);
+                                    uint512_t(int512_t const & rhs);
+
+    uint512_t &                     operator = (uint512_t const & rhs);
     uint512_t &                     operator = (int512_t const & rhs);
 
     bool                            is_positive() const { return true; }

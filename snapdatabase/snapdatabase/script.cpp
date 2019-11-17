@@ -146,6 +146,149 @@ buffer_t execute_script(buffer_t compiled_script, row::pointer_t row)
 
         // TODO: transform the entire row in script variables
         snap::snap_expr::variable_t::variable_map_t variables;
+        cell::map_t cells(row->cells());
+        for(auto c : cells)
+        {
+            schema_column::pointer_t schema(c.second->schema());
+            snap::snap_expr::variable_t v(QString::fromUtf8(schema->name().c_str()));
+            switch(schema->type())
+            {
+            case struct_type_t::STRUCT_TYPE_VOID:
+                v.set_value();
+                break;
+
+            case struct_type_t::STRUCT_TYPE_BITS8:
+            case struct_type_t::STRUCT_TYPE_UINT8:
+                v.set_value(c.second->get_uint8());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_INT8:
+                v.set_value(c.second->get_int8());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_BITS16:
+            case struct_type_t::STRUCT_TYPE_UINT16:
+                v.set_value(c.second->get_uint16());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_INT16:
+                v.set_value(c.second->get_int16());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_BITS32:
+            case struct_type_t::STRUCT_TYPE_UINT32:
+            case struct_type_t::STRUCT_TYPE_VERSION:
+                v.set_value(c.second->get_uint32());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_INT32:
+                v.set_value(c.second->get_int32());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_BITS64:
+            case struct_type_t::STRUCT_TYPE_UINT64:
+            case struct_type_t::STRUCT_TYPE_REFERENCE:
+            case struct_type_t::STRUCT_TYPE_OID:
+            case struct_type_t::STRUCT_TYPE_TIME:
+            case struct_type_t::STRUCT_TYPE_MSTIME:
+            case struct_type_t::STRUCT_TYPE_USTIME:
+                v.set_value(c.second->get_uint64());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_INT64:
+                v.set_value(c.second->get_int64());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_BITS128:
+            case struct_type_t::STRUCT_TYPE_UINT128:
+                {
+                    uint512_t value(c.second->get_uint128());
+                    QByteArray data(reinterpret_cast<char const *>(value.f_value), sizeof(uint64_t) * 2);
+                    v.set_value(data);
+                }
+                break;
+
+            case struct_type_t::STRUCT_TYPE_INT128:
+                {
+                    uint512_t value(c.second->get_int128());
+                    QByteArray data(reinterpret_cast<char const *>(value.f_value), sizeof(uint64_t) * 2);
+                    v.set_value(data);
+                }
+                break;
+
+            case struct_type_t::STRUCT_TYPE_BITS256:
+            case struct_type_t::STRUCT_TYPE_UINT256:
+                {
+                    uint512_t value(c.second->get_uint256());
+                    QByteArray data(reinterpret_cast<char const *>(value.f_value), sizeof(uint64_t) * 4);
+                    v.set_value(data);
+                }
+                break;
+
+            case struct_type_t::STRUCT_TYPE_INT256:
+                {
+                    uint512_t value(c.second->get_int256());
+                    QByteArray data(reinterpret_cast<char const *>(value.f_value), sizeof(uint64_t) * 4);
+                    v.set_value(data);
+                }
+                break;
+
+            case struct_type_t::STRUCT_TYPE_BITS512:
+            case struct_type_t::STRUCT_TYPE_UINT512:
+                {
+                    uint512_t value(c.second->get_uint512());
+                    QByteArray data(reinterpret_cast<char const *>(value.f_value), sizeof(uint64_t) * 8);
+                    v.set_value(data);
+                }
+                break;
+
+            case struct_type_t::STRUCT_TYPE_INT512:
+                {
+                    uint512_t value(c.second->get_int512());
+                    QByteArray data(reinterpret_cast<char const *>(value.f_value), sizeof(uint64_t) * 8);
+                    v.set_value(data);
+                }
+                break;
+
+            case struct_type_t::STRUCT_TYPE_FLOAT32:
+                v.set_value(c.second->get_float32());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_FLOAT64:
+                v.set_value(c.second->get_float64());
+                break;
+
+            case struct_type_t::STRUCT_TYPE_FLOAT128:
+                // TODO: we have to add support for long double in the
+                //       expression, for now use a double
+                //
+                v.set_value(static_cast<double>(c.second->get_float128()));
+                break;
+
+            case struct_type_t::STRUCT_TYPE_CSTRING:
+            case struct_type_t::STRUCT_TYPE_P8STRING:
+            case struct_type_t::STRUCT_TYPE_P16STRING:
+            case struct_type_t::STRUCT_TYPE_P32STRING:
+                v.set_value(QString::fromUtf8(c.second->get_string().c_str()));
+                break;
+
+            case struct_type_t::STRUCT_TYPE_STRUCTURE:
+            case struct_type_t::STRUCT_TYPE_ARRAY8:
+            case struct_type_t::STRUCT_TYPE_ARRAY16:
+            case struct_type_t::STRUCT_TYPE_ARRAY32:
+            case struct_type_t::STRUCT_TYPE_BUFFER8:
+            case struct_type_t::STRUCT_TYPE_BUFFER16:
+            case struct_type_t::STRUCT_TYPE_BUFFER32:
+            case struct_type_t::STRUCT_TYPE_END:
+            case struct_type_t::STRUCT_TYPE_RENAMED:
+                throw type_mismatch(
+                          "Unexpected type ("
+                        + std::to_string(static_cast<int>(schema->type()))
+                        + ") to convert a cell from binary.");
+
+            }
+            variables[QString::fromUtf8(schema->name().c_str())] = v;
+        }
 
         e.execute(return_value, variables, functions);
 

@@ -18,7 +18,7 @@
 
 // self
 //
-#include "snapdatabase.h"
+#include "database.h"
 
 
 // our lib

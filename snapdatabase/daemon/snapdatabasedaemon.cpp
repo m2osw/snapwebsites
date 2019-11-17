@@ -26,7 +26,6 @@
 // advgetopt lib
 //
 #include    <advgetopt/exception.h>
-#include    <advgetopt/log.h>
 #include    <advgetopt/options.h>
 #include    <advgetopt/utils.h>
 
@@ -36,6 +35,12 @@
 #include    <snapdev/not_reached.h>
 #include    <snapdev/not_used.h>
 #include    <snapdev/raii_generic_deleter.h>
+
+
+// snaplogger lib
+//
+#include    <snaplogger/message.h>
+#include    <snaplogger/options.h>
 
 
 // boost lib
@@ -56,6 +61,7 @@
 #include    <limits.h>
 #include    <stdlib.h>
 #include    <sys/stat.h>
+#include    <sys/sysmacros.h>
 #include    <unistd.h>
 
 
@@ -324,7 +330,7 @@ advgetopt::options_environment const g_options_environment =
     .f_help_header = "Usage: %p [--<opt>] <config-name> ...\n"
                      "where --<opt> is one or more of:",
     .f_help_footer = "%c",
-    .f_version = SNAPLOGGER_VERSION_STRING,
+    .f_version = SNAPDATABASE_VERSION_STRING,
     .f_license = "GNU GPL v2",
     .f_copyright = "Copyright (c) 2013-"
                    BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
@@ -441,10 +447,9 @@ int tool::execute()
         break;
 
     default:
-        advgetopt::log
-                << advgetopt::log_level_t::fatal
+        SNAP_LOG_FATAL
                 << "invalid command combo; try just --auto, --delete, or --shred."
-                << advgetopt::end;
+                << SNAP_LOG_SEND;
         return 1;
 
     }
@@ -821,7 +826,7 @@ int main(int argc, char * argv[])
 
         return t.execute();
     }
-    catch(advgetopt::getopt_exception_exit const & e)
+    catch(advgetopt::getopt_exit const & e)
     {
         snap::NOTUSED(e);
         return 0;

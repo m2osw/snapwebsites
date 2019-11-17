@@ -140,6 +140,52 @@ int512_t & int512_t::operator -= (int512_t const & rhs)
 
 
 
+uint512_t::uint512_t()
+{
+}
+
+
+uint512_t::uint512_t(uint512_t const & rhs)
+{
+    f_value[0] = rhs.f_value[0];
+    f_value[1] = rhs.f_value[1];
+    f_value[2] = rhs.f_value[2];
+    f_value[3] = rhs.f_value[3];
+    f_value[4] = rhs.f_value[4];
+    f_value[5] = rhs.f_value[5];
+    f_value[6] = rhs.f_value[6];
+    f_value[7] = rhs.f_value[7];
+}
+
+
+uint512_t::uint512_t(int512_t const & rhs)
+{
+    f_value[0] = rhs.f_value[0];
+    f_value[1] = rhs.f_value[1];
+    f_value[2] = rhs.f_value[2];
+    f_value[3] = rhs.f_value[3];
+    f_value[4] = rhs.f_value[4];
+    f_value[5] = rhs.f_value[5];
+    f_value[6] = rhs.f_value[6];
+    f_value[7] = rhs.f_high_value;
+}
+
+
+uint512_t & uint512_t::operator = (uint512_t const & rhs)
+{
+    f_value[0] = rhs.f_value[0];
+    f_value[1] = rhs.f_value[1];
+    f_value[2] = rhs.f_value[2];
+    f_value[3] = rhs.f_value[3];
+    f_value[4] = rhs.f_value[4];
+    f_value[5] = rhs.f_value[5];
+    f_value[6] = rhs.f_value[6];
+    f_value[7] = rhs.f_value[7];
+
+    return *this;
+}
+
+
 uint512_t & uint512_t::operator = (int512_t const & rhs)
 {
     f_value[0] = rhs.f_value[0];

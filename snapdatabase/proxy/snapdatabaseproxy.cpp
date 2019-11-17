@@ -30,7 +30,6 @@
 // advgetopt lib
 //
 #include    <advgetopt/exception.h>
-#include    <advgetopt/log.h>
 #include    <advgetopt/options.h>
 #include    <advgetopt/utils.h>
 
@@ -54,12 +53,18 @@
 #include    <map>
 
 
+// cppthread lib
+//
+#include    <cppthread/log.h>
+
+
 // C lib
 //
 #include    <glob.h>
 #include    <limits.h>
 #include    <stdlib.h>
 #include    <sys/stat.h>
+#include    <sys/sysmacros.h>
 #include    <unistd.h>
 
 
@@ -445,10 +450,10 @@ int tool::execute()
         break;
 
     default:
-        advgetopt::log
-                << advgetopt::log_level_t::fatal
+        cppthread::log
+                << cppthread::log_level_t::fatal
                 << "invalid command combo; try just --auto, --delete, or --shred."
-                << advgetopt::end;
+                << cppthread::end;
         return 1;
 
     }
@@ -825,7 +830,7 @@ int main(int argc, char * argv[])
 
         return t.execute();
     }
-    catch(advgetopt::getopt_exception_exit const & e)
+    catch(advgetopt::getopt_exit const & e)
     {
         snap::NOTUSED(e);
         return 0;

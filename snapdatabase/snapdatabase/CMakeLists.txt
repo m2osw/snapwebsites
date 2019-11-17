@@ -1,6 +1,6 @@
 # Copyright (c) 2013-2019 Made to Order Software Corp.
 #
-# https://snapwebsites.org/project/snaplogger
+# https://snapwebsites.org/project/snapdatabase
 # contact@m2osw.com
 #
 # This program is free software; you can redistribute it and/or modify
@@ -19,9 +19,9 @@
 
 
 ##
-## snaplogger library
+## snapdatabase library
 ##
-project(snaplogger)
+project(snapdatabase)
 
 # Put the version in the header file
 configure_file(
@@ -78,6 +78,7 @@ include_directories(
 target_link_libraries(${PROJECT_NAME}
     ${ADVGETOPT_LIBRARIES}
     ${CPPTHREAD_LIBRARIES}
+    ${SNAPLOGGER_LIBRARIES}
     ${LIBEXCEPT_LIBRARIES}
     ${LIBUFTF8_LIBRARIES}
     ${LOG4CPLUS_LIBRARIES}
