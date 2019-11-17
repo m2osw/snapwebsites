@@ -49,6 +49,8 @@ public:
 
                                                 cell(schema_column::pointer_t t);
 
+    schema_column::pointer_t                    schema() const;
+
     bool                                        is_void() const;
     void                                        set_void();
 
@@ -102,6 +104,9 @@ public:
 
     long double                                 get_float128() const;
     void                                        set_float128(long double value);
+
+    version_t                                   get_version() const;
+    void                                        set_version(version_t value);
 
     std::string                                 get_string() const;
     void                                        set_string(std::string const & value);

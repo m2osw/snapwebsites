@@ -48,6 +48,12 @@ cell::cell(schema_column::pointer_t c)
 }
 
 
+schema_column::pointer_t cell::schema() const
+{
+    return f_schema_column;
+}
+
+
 bool cell::is_void() const
 {
     return f_schema_column->type() == struct_type_t::STRUCT_TYPE_VOID;
@@ -237,11 +243,10 @@ void cell::set_int32(int32_t value)
 uint32_t cell::get_uint32() const
 {
     if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_BITS32
-    && f_schema_column->type() != struct_type_t::STRUCT_TYPE_UINT32
-    && f_schema_column->type() != struct_type_t::STRUCT_TYPE_VERSION)
+    && f_schema_column->type() != struct_type_t::STRUCT_TYPE_UINT32)
     {
         throw type_mismatch(
-              "expected bits32, uint32, or version type, received "
+              "expected bits32 or uint32 type, received "
             + std::to_string(static_cast<int>(f_schema_column->type())));
     }
 
@@ -252,11 +257,10 @@ uint32_t cell::get_uint32() const
 void cell::set_uint32(uint32_t value)
 {
     if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_BITS32
-    && f_schema_column->type() != struct_type_t::STRUCT_TYPE_UINT32
-    && f_schema_column->type() != struct_type_t::STRUCT_TYPE_VERSION)
+    && f_schema_column->type() != struct_type_t::STRUCT_TYPE_UINT32)
     {
         throw type_mismatch(
-              "expected bits32, uint32, or version type, received "
+              "expected bits32 or uint32 type, received "
             + std::to_string(static_cast<int>(f_schema_column->type())));
     }
 
@@ -583,6 +587,39 @@ void cell::set_float128(long double value)
 }
 
 
+version_t cell::get_version() const
+{
+    if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_VERSION)
+    {
+        throw type_mismatch(
+              "expected version type, received "
+            + std::to_string(static_cast<int>(f_schema_column->type())));
+    }
+
+    return version_t(f_integer.f_value[0]);
+}
+
+
+void cell::set_version(version_t value)
+{
+    if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_VERSION)
+    {
+        throw type_mismatch(
+              "expected version type, received "
+            + std::to_string(static_cast<int>(f_schema_column->type())));
+    }
+
+    f_integer.f_value[0] = value.to_binary();
+    f_integer.f_value[1] = 0;
+    f_integer.f_value[2] = 0;
+    f_integer.f_value[3] = 0;
+    f_integer.f_value[4] = 0;
+    f_integer.f_value[5] = 0;
+    f_integer.f_value[6] = 0;
+    f_integer.f_value[7] = 0;
+}
+
+
 std::string cell::get_string() const
 {
     if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_CSTRING
@@ -613,6 +650,7 @@ void cell::set_string(std::string const & value)
 
     f_string = value;
 }
+
 
 
 
