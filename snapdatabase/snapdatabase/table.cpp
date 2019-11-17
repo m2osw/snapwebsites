@@ -417,6 +417,12 @@ table::pointer_t table::get_pointer()
 }
 
 
+void table::load_extension(xml_node::pointer_t e)
+{
+    f_impl->load_extension(e);
+}
+
+
 dbfile::pointer_t table::get_dbfile() const
 {
     return f_impl->get_dbfile();

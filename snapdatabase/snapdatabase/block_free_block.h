@@ -51,8 +51,6 @@ public:
     reference_t                 get_next_free_block() const;
     void                        set_next_free_block(reference_t offset);
 
-    static block::pointer_t     allocate_new_block(table_pointer_t t, dbfile::pointer_t f, dbtype_t type);
-
 private:
 };
 

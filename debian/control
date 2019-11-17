@@ -4,6 +4,7 @@ Maintainer: R. Douglas Barbieri <doug@dooglio.net>
 Build-Depends: catch (>= 1.0),
     closure-linter (>= 2.3.13),
     cmake,
+    cppthread (>= 1.0.1.0~xenial),
     csspp (>= 1.0.17.149~xenial),
     debhelper,
     dh-systemd,
@@ -40,6 +41,7 @@ Build-Depends: catch (>= 1.0),
     qtscript5-dev,
     snapcmakemodules (>= 1.0.35.3~xenial),
     snapdev (>= 1.1.2.0~xenial),
+    snaplogger (>= 1.0.7.0~xenial),
     uuid-dev,
     zip
 Standards-Version: 3.9.4

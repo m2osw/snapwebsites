@@ -1,3 +1,8 @@
+snapwebsites (1.8.5.0~xenial) xenial; urgency=high
+
+  * Added the snaplogger and cppthread as dependencies (for snapdatabase).
+  * Added the snapdatabase project to handle journals.
+
 snapwebsites (1.8.4.0~xenial) xenial; urgency=high
 
   * Added the `watch-freq` script (useful on newer processors).

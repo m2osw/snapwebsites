@@ -257,38 +257,13 @@ int dbfile::open_file()
             // create the header block, which is important because it has
             // the special offset of 0
             //
-            //auto write_block = [&](structure & s)
-            //{
-            //    int const sz(write(f_fd, s.data(), page_size));
-            //    if(sz != page_size)
-            //    {
-            //        close();
-            //        unlink(f_fullname.c_str());
-            //        throw io_error(
-            //              "System could not properly write to file \""
-            //            + f_fullname
-            //            + "\".");
-            //    }
-            //};
-
             version_t v(STRUCTURE_VERSION_MAJOR, STRUCTURE_VERSION_MINOR);
 
             file_snap_database_table::pointer_t sdbt(std::static_pointer_cast<file_snap_database_table>(
-                        block_free_block::allocate_new_block(
-                                  f_table
-                                , shared_from_this()
-                                , dbtype_t::FILE_TYPE_SNAP_DATABASE_TABLE)));
+                        f_table->allocate_new_block(dbtype_t::FILE_TYPE_SNAP_DATABASE_TABLE)));
             sdbt->set_first_free_block(page_size);
             sdbt->set_block_size(page_size);
             sdbt->set_version(v);
-
-
-            //structure header(g_header_description);
-            //header.set_uinteger("magic",             dbtype_t::FILE_TYPE_SPDB);
-            //header.set_uinteger("version",           struct_version.to_binary());
-            //header.set_uinteger("block_size",        page_size);
-            //header.set_uinteger("free_block",        page_size);    // allocate_new_block() already allocated this free_block (and another 15)
-            //write_block(header);
         }
     }
 

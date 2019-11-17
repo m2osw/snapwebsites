@@ -21,7 +21,7 @@
 ##
 ## snapdatabase library
 ##
-project(snapdatabase)
+project(snapdatabase CXX ASM)
 
 # Put the version in the header file
 configure_file(
@@ -76,6 +76,8 @@ include_directories(
 )
 
 target_link_libraries(${PROJECT_NAME}
+    snapwebsites
+    libdbproxy
     ${ADVGETOPT_LIBRARIES}
     ${CPPTHREAD_LIBRARIES}
     ${SNAPLOGGER_LIBRARIES}

@@ -40,7 +40,7 @@ namespace snapdatabase
 int64_t convert_to_int(std::string const & value, size_t max_size);
 uint64_t convert_to_uint(std::string const & value, size_t max_size);
 
-buffer_t string_to_typed_buffer(struct_type_t type, std::string value);
+buffer_t string_to_typed_buffer(struct_type_t type, std::string const & value);
 std::string typed_buffer_to_string(struct_type_t type, buffer_t value);
 
 

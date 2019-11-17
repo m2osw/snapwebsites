@@ -19,37 +19,19 @@
 
 
 /** \file
- * \brief Database file implementation.
+ * \brief Various convertions between data types.
  *
- * Each table uses one or more files. Each file is handled by a dbfile
- * object and a corresponding set of blocks.
+ * At this point, we mainly want to convert a structure data type to a string
+ * and vice versa. This is useful to convert values defined in the XML file
+ * such as the default value.
+ *
+ * We also have functions to convert strings to integers of 8, 16, 32, 64,
+ * 128, 256, and 512 bits.
  */
 
 // self
 //
-#include    "snapdatabase/schema.h"
-
-#include    "snapdatabase/exception.h"
-
-// C++ lib
-//
-#include    <type_traits>
-#include    <cstdlib>
-
-
-// snaplogger lib
-//
-#include    <snaplogger/message.h>
-
-
-// boost lib
-//
-#include    <boost/preprocessor/stringize.hpp>
-
-
-// C++ lib
-//
-#include    <sstream>
+#include    "snapdatabase/convert.h"
 
 
 // last include

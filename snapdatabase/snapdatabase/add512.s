@@ -1,20 +1,22 @@
 // add multiple uint64_t with carry
-// the returned value is the carry of the last add operation
 //
-//    // corresponding C function declaration
+//    // corresponding C++ function declaration
+//    namespace snapdatabase {
 //    void add512(uint64_t * dst, uint64_t const * src);
+//    }
 //
 
     .macro add_with_carry offset
         mov         \offset(%rsi), %rax
-        adc         %rax, \offset(%rdi)
+        adc         \offset(%rdi), %rax
+        mov         %rax, \offset(%rdi)
     .endm
 
     .text
     .p2align    4,,15
-    .globl      add512
-    .type       add512, @function
-add512:
+    .globl      _ZN12snapdatabase6add512EPmPKm
+    .type       _ZN12snapdatabase6add512EPmPKm, @function
+_ZN12snapdatabase6add512EPmPKm:
     mov         (%rsi), %rax
     add         %rax, (%rdi)
 
