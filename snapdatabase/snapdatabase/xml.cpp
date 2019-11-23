@@ -29,17 +29,29 @@
 //
 #include    "snapdatabase/xml.h"
 
+#include    "snapdatabase/convert.h"
 #include    "snapdatabase/exception.h"
 
 
-// C++ lib
+// libutf8 lib
 //
-#include    <fstream>
+#include    <libutf8/libutf8.h>
+
+
+// snapdev lib
+//
+#include    <snapdev/not_reached.h>
 
 
 // boost lib
 //
 #include    <boost/algorithm/string.hpp>
+
+
+// C++ lib
+//
+#include    <fstream>
+#include    <iostream>
 
 
 // C lib
@@ -144,6 +156,7 @@ public:
 private:
     void                read_xml(xml_node::pointer_t & root);
     token_t             get_token(bool parsing_attributes);
+    void                unescape_entities();
     int                 getc();
     void                ungetc(int c);
 
@@ -191,10 +204,11 @@ void xml_parser::read_xml(xml_node::pointer_t & root)
             if(!f_value.empty())
             {
                 throw unexpected_token(
-                          std::string("File \"")
+                          "File \""
                         + f_filename
                         + "\" cannot include text data before the root tag.");
             }
+            tok = get_token(false);
         }
     };
 
@@ -242,30 +256,30 @@ void xml_parser::read_xml(xml_node::pointer_t & root)
     if(tok != token_t::TOK_OPEN_TAG)
     {
         throw unexpected_token(
-                  std::string("File \"")
+                  "File \""
                 + f_filename
-                + "\" cannot include anything else than a processor tag and comments before the root tag.");
+                + "\" cannot be empty or include anything other than a processor tag and comments before the root tag.");
     }
     root = std::make_shared<xml_node>(f_value);
     if(read_tag_attributes(root) == token_t::TOK_EMPTY_TAG)
     {
         throw unexpected_token(
-                  std::string("File \"")
+                  "File \""
                 + f_filename
                 + "\" root tag cannot be an empty tag.");
     }
+    tok = get_token(false);
 
     xml_node::pointer_t parent(root);
     while(tok != token_t::TOK_EOF)
     {
         switch(tok)
         {
-        case token_t::TOK_EOF:
         case token_t::TOK_OPEN_TAG:
             {
-                xml_node::pointer_t child = std::make_shared<xml_node>(f_value);
+                xml_node::pointer_t child(std::make_shared<xml_node>(f_value));
                 parent->append_child(child);
-                if(read_tag_attributes(root) == token_t::TOK_END_TAG)
+                if(read_tag_attributes(child) == token_t::TOK_END_TAG)
                 {
                     parent = child;
                 }
@@ -276,7 +290,7 @@ void xml_parser::read_xml(xml_node::pointer_t & root)
             if(parent->tag_name() != f_value)
             {
                 throw unexpected_token(
-                          std::string("Unexpected token name \"")
+                          "Unexpected token name \""
                         + f_value
                         + "\" in this closing tag. Expected \""
                         + parent->tag_name()
@@ -285,16 +299,32 @@ void xml_parser::read_xml(xml_node::pointer_t & root)
             parent = parent->parent();
             if(parent == nullptr)
             {
-                do
+                for(;;)
                 {
                     tok = get_token(false);
-                    skip_empty();
-                }
-                while(tok != token_t::TOK_EOF);
+                    switch(tok)
+                    {
+                    case token_t::TOK_EOF:
+                        // it worked, we're done
+                        //
+                        return;
 
-                // it worked, we're done
-                //
-                return;
+                    case token_t::TOK_TEXT:
+                        skip_empty();
+                        break;
+
+                    case token_t::TOK_PROCESSOR:
+                        // completely ignore those
+                        break;
+
+                    default:
+                        throw unexpected_token(
+                                  "We reached the end of the XML file, but still found a token of type "
+                                + std::to_string(static_cast<int>(tok))
+                                + " instead of the end of the file.");
+
+                    }
+                }
             }
             break;
 
@@ -302,13 +332,14 @@ void xml_parser::read_xml(xml_node::pointer_t & root)
             parent->append_text(f_value);
             break;
 
+        case token_t::TOK_EOF:
         case token_t::TOK_EMPTY_TAG:
         case token_t::TOK_END_TAG:
         case token_t::TOK_EQUAL:
         case token_t::TOK_IDENTIFIER:
         case token_t::TOK_PROCESSOR:
         case token_t::TOK_STRING:
-            throw snapdatabase_logic_error("Received an unexpected token in the switch hanlder.");
+            throw snapdatabase_logic_error("Received an unexpected token in the switch handler.");
 
         }
         tok = get_token(false);
@@ -358,19 +389,22 @@ token_t xml_parser::get_token(bool parsing_attributes)
                         c = getc();
                         if(c == '>')
                         {
-                            break;
+                            return token_t::TOK_PROCESSOR;
                         }
                         f_value += '?';
                     }
                     f_value += static_cast<char>(c);
                 }
+                snap::NOTREACHED();
                 return token_t::TOK_PROCESSOR;
 
             case '!':
                 c = getc();
                 if(is_alpha(c))
                 {
-                    throw invalid_xml("Found an element definition (\"<!ELEMENT...>\" sequence which is not supported.");
+                    // of course, this may be anything other than an element but still something we don't support
+                    //
+                    throw invalid_xml("Found an element definition (such as an \"<!ELEMENT...>\" sequence, which is not supported.");
                 }
                 if(c == '[')
                 {
@@ -404,6 +438,9 @@ token_t xml_parser::get_token(bool parsing_attributes)
                                 }
                                 if(c == '>')
                                 {
+                                    // this is just like some text
+                                    // except we do not convert entities
+                                    //
                                     return token_t::TOK_TEXT;
                                 }
                                 f_value += "]]";
@@ -448,7 +485,7 @@ token_t xml_parser::get_token(bool parsing_attributes)
                                 }
                             }
                         }
-                        break;
+                        continue;
                     }
                 }
                 throw invalid_token(
@@ -471,7 +508,7 @@ token_t xml_parser::get_token(bool parsing_attributes)
                     throw invalid_token(
                               std::string("Character '")
                             + static_cast<char>(c)
-                            + "' is not a valid for a tag name.");
+                            + "' is not valid for a tag name.");
                 }
                 for(;;)
                 {
@@ -518,18 +555,35 @@ token_t xml_parser::get_token(bool parsing_attributes)
                 throw invalid_token(
                           std::string("Character '")
                         + static_cast<char>(c)
-                        + "' is not a valid for a tag name.");
+                        + "' is not valid for a tag name.");
             }
             for(;;)
             {
                 f_value += static_cast<char>(c);
                 c = getc();
                 if(!is_alpha(c)
-                && !is_digit(c))
+                && !is_digit(c)
+                && c != '-')
                 {
                     break;
                 }
             }
+            if(isspace(c))
+            {
+                do
+                {
+                    c = getc();
+                }
+                while(isspace(c));
+            }
+            else if(c != '>' && c != '/')
+            {
+                throw invalid_token(
+                          std::string("Character '")
+                        + static_cast<char>(c)
+                        + "' is not valid right after a tag name.");
+            }
+            ungetc(c);
             return token_t::TOK_OPEN_TAG;
 
         case '>':
@@ -569,7 +623,8 @@ token_t xml_parser::get_token(bool parsing_attributes)
                     c = getc();
                     if(c == quote)
                     {
-                        break;
+                        unescape_entities();
+                        return token_t::TOK_STRING;
                     }
                     if(c == '>')
                     {
@@ -577,7 +632,6 @@ token_t xml_parser::get_token(bool parsing_attributes)
                     }
                     f_value += static_cast<char>(c);
                 }
-                return token_t::TOK_STRING;
             }
             break;
 
@@ -594,6 +648,7 @@ token_t xml_parser::get_token(bool parsing_attributes)
                 && !is_digit(c)
                 && c != '-')
                 {
+                    ungetc(c);
                     return token_t::TOK_IDENTIFIER;
                 }
             }
@@ -607,8 +662,88 @@ token_t xml_parser::get_token(bool parsing_attributes)
             || c == EOF)
             {
                 ungetc(c);
+                unescape_entities();
                 return token_t::TOK_TEXT;
             }
+        }
+    }
+}
+
+
+void xml_parser::unescape_entities()
+{
+    for(std::string::size_type pos(0);;)
+    {
+        pos = f_value.find('&', pos);
+        if(pos == std::string::npos)
+        {
+            break;
+        }
+        std::string::size_type end(f_value.find(';', pos + 1));
+        if(end == std::string::npos)
+        {
+            // generate an error here?
+            //
+            break;
+        }
+        std::string name(f_value.substr(pos + 1, end - pos - 1));
+        if(name == "amp")
+        {
+            f_value.replace(pos, end - pos + 1, 1, '&');
+            ++pos;
+        }
+        else if(name == "quot")
+        {
+            f_value.replace(pos, end - pos + 1, 1, '"');
+            ++pos;
+        }
+        else if(name == "lt")
+        {
+            f_value.replace(pos, end - pos + 1, 1, '<');
+            ++pos;
+        }
+        else if(name == "gt")
+        {
+            f_value.replace(pos, end - pos + 1, 1, '>');
+            ++pos;
+        }
+        else if(name == "apos")
+        {
+            f_value.replace(pos, end - pos + 1, 1, '\'');
+            ++pos;
+        }
+        else if(name.empty())
+        {
+            throw invalid_entity("the name of an entity cannot be empty ('&;' is not valid XML).");
+        }
+        else if(name[0] == '#')
+        {
+            if(name.length() == 1)
+            {
+                throw invalid_entity("a numeric entity must have a number ('&#; is not valid XML).");
+            }
+            if(name[1] == 'x'
+            || name[1] == 'X')
+            {
+                name[0] = '0';
+            }
+            else
+            {
+                name[0] = ' ';
+            }
+            // TODO: enforce base 10 or 16
+            //
+            char32_t unicode(convert_to_int(name, 32));
+            std::string const utf8(libutf8::to_u8string(unicode));
+            f_value.replace(pos, end - pos + 1, utf8);
+            pos += utf8.length();
+        }
+        else
+        {
+            throw invalid_entity(
+                      "Unsupported entity ('&"
+                    + name
+                    + ";').");
         }
     }
 }
@@ -619,6 +754,7 @@ int xml_parser::getc()
     if(f_ungetc_pos > 0)
     {
         --f_ungetc_pos;
+//std::cerr << "re-getc() - '" << static_cast<char>(f_ungetc[f_ungetc_pos]) << "'\n";
         return f_ungetc[f_ungetc_pos];
     }
 
@@ -638,6 +774,14 @@ int xml_parser::getc()
         ++f_line;
     }
 
+//if(c == EOF)
+//{
+//std::cerr << "getc() - 'EOF'\n";
+//}
+//else
+//{
+//std::cerr << "getc() - '" << static_cast<char>(c) << "'\n";
+//}
     return c;
 }
 
@@ -735,6 +879,8 @@ void xml_node::append_child(pointer_t n)
         l->f_next = n;
         n->f_previous = l;
     }
+
+    n->f_parent = shared_from_this();
 }
 
 
@@ -753,6 +899,11 @@ xml_node::pointer_t xml_node::first_child() const
 
 xml_node::pointer_t xml_node::last_child() const
 {
+    if(f_child == nullptr)
+    {
+        return xml_node::pointer_t();
+    }
+
     pointer_t l(f_child);
     while(l->f_next != nullptr)
     {

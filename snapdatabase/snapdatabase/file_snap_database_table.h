@@ -105,6 +105,8 @@ public:
     void                        set_version(version_t v);
     reference_t                 get_first_free_block() const;
     void                        set_first_free_block(reference_t offset);
+    reference_t                 get_table_definition() const;
+    void                        set_table_definition(reference_t offset);
     uint32_t                    get_block_size() const;
     void                        set_block_size(uint32_t size);
 

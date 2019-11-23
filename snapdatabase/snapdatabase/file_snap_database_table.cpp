@@ -157,6 +157,18 @@ void file_snap_database_table::set_block_size(uint32_t offset)
 }
 
 
+reference_t file_snap_database_table::get_table_definition() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("table_definition"));
+}
+
+
+void file_snap_database_table::set_table_definition(reference_t offset)
+{
+    f_structure->set_uinteger("table_definition", offset);
+}
+
+
 reference_t file_snap_database_table::get_first_free_block() const
 {
     return static_cast<reference_t>(f_structure->get_uinteger("first_free_block"));

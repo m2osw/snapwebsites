@@ -74,6 +74,7 @@ public:
 
     context_impl &                  operator = (context_impl const & rhs) = delete;
 
+    void                            initialize();
     table::pointer_t                get_table(std::string const & name) const;
     table::map_t                    list_tables() const;
     std::string                     get_path() const;
@@ -92,7 +93,25 @@ context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
     : f_context(c)
     , f_opts(opts)
 {
+}
+
+
+context_impl::~context_impl()
+{
+}
+
+
+void context_impl::initialize()
+{
+std::cerr << "init context?\n";
     f_path = f_opts->get_string("context");
+
+    SNAP_LOG_NOTICE
+        << "Initialize context \""
+        << f_path
+        << "\"."
+        << SNAP_LOG_SEND;
+
     if(f_path.empty())
     {
         f_path = "/var/lib/snapwebsites/database";
@@ -107,10 +126,18 @@ context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
 
     xml_node::deque_t table_extensions;
 
-    size_t const max(opts->size("table_schema_path"));
+    size_t const max(f_opts->size("table_schema_path"));
+
+    SNAP_LOG_NOTICE
+        << "Reading context "
+        << max
+        << " XML schemata."
+        << SNAP_LOG_SEND;
+
+std::cerr << "schema dirs = " << max << "?\n";
     for(size_t idx(0); idx < max; ++idx)
     {
-        std::string const path(opts->get_string("table_schema_path", idx));
+        std::string const path(f_opts->get_string("table_schema_path", idx));
 
         snap::glob_to_list<std::deque<std::string>> list;
         if(!list.read_path<
@@ -141,6 +168,7 @@ context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
         for(auto filename : list)
         {
             xml x(filename);
+std::cerr << "parsed [" << filename << "]\n";
 
             xml_node::pointer_t root(x.root());
             if(root == nullptr)
@@ -166,6 +194,7 @@ context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
                 continue;
             }
 
+std::cerr << "complex types...\n";
             xml_node::map_t complex_types;
             for(auto child(root->first_child()); child != nullptr; child = child->next())
             {
@@ -194,14 +223,20 @@ context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
                 }
             }
 
+std::cerr << "tables...\n";
             for(auto child(root->first_child()); child != nullptr; child = child->next())
             {
                 if(child->tag_name() == "table")
                 {
+std::cerr << "create table...\n";
                     table::pointer_t t(std::make_shared<table>(f_context, child, complex_types));
+std::cerr << "got table [" << t->name() << "]...\n";
                     f_tables[t->name()] = t;
 
-                    t->get_dbfile()->set_sparse(t->is_sparse());
+std::cerr << "attach dbfile to table [" << t->name() << "]...\n";
+                    dbfile::pointer_t dbfile(t->get_dbfile());
+                    dbfile->set_table(t);
+                    dbfile->set_sparse(t->is_sparse());
                 }
                 else if(child->tag_name() == "table-extension")
                 {
@@ -229,6 +264,13 @@ context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
         }
     }
 
+std::cerr << "table extensions...\n";
+    SNAP_LOG_NOTICE
+        << "Adding "
+        << table_extensions.size()
+        << " XML schema extensions."
+        << SNAP_LOG_SEND;
+
     for(auto e : table_extensions)
     {
         std::string const name(e->attribute("name"));
@@ -244,11 +286,26 @@ context_impl::context_impl(context * c, advgetopt::getopt::pointer_t opts)
         }
         t->load_extension(e);
     }
-}
 
+    SNAP_LOG_NOTICE
+        << "Verify "
+        << f_tables.size()
+        << " table schemata."
+        << SNAP_LOG_SEND;
 
-context_impl::~context_impl()
-{
+std::cerr << "verify schemata...\n";
+    for(auto t : f_tables)
+    {
+        t.second->verify_schema();
+    }
+
+std::cerr << "context ready...\n";
+
+    SNAP_LOG_INFORMATION
+        << "Context \""
+        << f_path
+        << "\" ready."
+        << SNAP_LOG_SEND;
 }
 
 
@@ -290,6 +347,23 @@ context::context(advgetopt::getopt::pointer_t opts)
 // required for the std::unique_ptr<>() of the impl
 context::~context()
 {
+}
+
+
+context::pointer_t context::get_context(advgetopt::getopt::pointer_t opts)
+{
+std::cerr << "context: create\n";
+    pointer_t c(new context(opts));
+std::cerr << "context: initialize\n";
+    c->initialize();
+std::cerr << "context: ready to return\n";
+    return c;
+}
+
+
+void context::initialize()
+{
+    f_impl->initialize();
 }
 
 

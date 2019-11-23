@@ -61,15 +61,19 @@ public:
     typedef std::shared_ptr<context>        pointer_t;
     typedef std::weak_ptr<context>          weak_pointer_t;
 
-                                            context(advgetopt::getopt::pointer_t opts);
                                             ~context();
 
+    static pointer_t                        get_context(advgetopt::getopt::pointer_t opts);
+
+    void                                    initialize();
     table::pointer_t                        get_table(std::string const & name) const;
     table::map_t                            list_tables() const;
     std::string                             get_path() const;
     void                                    limit_allocated_memory();
 
 private:
+                                            context(advgetopt::getopt::pointer_t opts);
+
     std::unique_ptr<detail::context_impl>   f_impl;
 };
 //#pragma GCC diagnostic pop

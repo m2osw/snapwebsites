@@ -45,6 +45,7 @@
 // C++ lib
 //
 #include    <cstring>
+#include    <iostream>
 #include    <string>
 
 
@@ -86,29 +87,54 @@ int512_t::int512_t(uint512_t const & rhs)
 }
 
 
+int512_t::int512_t(std::initializer_list<std::uint64_t> rhs)
+{
+    if(rhs.size() > std::size(f_value))
+    {
+        throw snapdatabase_out_of_range(
+                  "rhs array too large for int512_t constructor ("
+                + std::to_string(rhs.size())
+                + " > "
+                + std::to_string(std::size(f_value))
+                + ").");
+    }
+
+    std::copy(rhs.begin(), rhs.end(), f_value);
+    if(rhs.size() < std::size(f_value))
+    {
+        std::memset(reinterpret_cast<uint8_t *>(f_value) + rhs.size(), 0, sizeof(f_value) - rhs.size());
+    }
+}
+
+
 std::size_t int512_t::bit_size() const
 {
+    int512_t p;
     if(is_negative())
     {
-        int512_t opp;
-        opp -= *this;
-        if(opp.is_negative())
+        p -= *this;
+        if(p.is_negative())
         {
             return 512;
         }
     }
-
-    if(f_high_value != 0)
+    else
     {
-        return __builtin_clzll(f_high_value) + 7 * 64 + 1;
+        p = *this;
     }
 
-    std::size_t result(512 - 64);
+    if(p.f_high_value != 0)
+    {
+        return (__builtin_clzll(p.f_high_value) ^ 0x3F) + 7 * 64 + 1;
+    }
+
+    std::size_t result(512 - 63);
     for(int idx(6); idx >= 0; --idx)
     {
-        if(f_value[idx] != 0)
+        result -= 64;
+        if(p.f_value[idx] != 0)
         {
-            return __builtin_clzll(f_value[idx]) + result;
+            return (__builtin_clzll(p.f_value[idx]) ^ 0x3F) + result;
         }
     }
 
@@ -133,7 +159,7 @@ int512_t & int512_t::operator += (int512_t const & rhs)
 
 int512_t & int512_t::operator -= (int512_t const & rhs)
 {
-    sub512(f_value, rhs.f_value);       // the add includes the high value
+    sub512(f_value, rhs.f_value);       // the sub includes the high value
     return *this;
 }
 
@@ -168,6 +194,26 @@ uint512_t::uint512_t(int512_t const & rhs)
     f_value[5] = rhs.f_value[5];
     f_value[6] = rhs.f_value[6];
     f_value[7] = rhs.f_high_value;
+}
+
+
+uint512_t::uint512_t(std::initializer_list<std::uint64_t> rhs)
+{
+    if(rhs.size() > std::size(f_value))
+    {
+        throw snapdatabase_out_of_range(
+                  "rhs array too large for int512_t constructor ("
+                + std::to_string(rhs.size())
+                + " > "
+                + std::to_string(std::size(f_value))
+                + ").");
+    }
+
+    std::copy(rhs.begin(), rhs.end(), f_value);
+    if(rhs.size() < std::size(f_value))
+    {
+        std::memset(reinterpret_cast<uint8_t *>(f_value) + rhs.size(), 0, sizeof(f_value) - rhs.size());
+    }
 }
 
 
@@ -206,9 +252,10 @@ size_t uint512_t::bit_size() const
     std::size_t result(512);
     for(int idx(7); idx >= 0; --idx)
     {
+        result -= 64;
         if(f_value[idx] != 0)
         {
-            return __builtin_clzll(f_value[idx]) + result;
+            return (__builtin_clzll(f_value[idx]) ^ 0x3F) + result;
         }
     }
 
@@ -427,6 +474,71 @@ uint512_t & uint512_t::operator -= (uint512_t const & rhs)
 {
     sub512(f_value, rhs.f_value);
     return *this;
+}
+
+
+uint512_t & uint512_t::operator *= (uint512_t const & rhs)
+{
+    // this is a very slow way to do a multiplication, but very easy,
+    // we do not use it much so we're fine for now...
+    //
+    uint512_t lhs(*this);
+
+    uint512_t factor(rhs);
+    if((factor.f_value[0] & 1) == 0)
+    {
+        lhs.f_value[0] = 0;
+        lhs.f_value[1] = 0;
+        lhs.f_value[2] = 0;
+        lhs.f_value[3] = 0;
+        lhs.f_value[4] = 0;
+        lhs.f_value[5] = 0;
+        lhs.f_value[6] = 0;
+        lhs.f_value[7] = 0;
+    }
+
+    for(;;)
+    {
+        factor.lsr(1);
+        if(factor == 0)
+        {
+            break;
+        }
+
+        lhs.lsl(1);
+        if((factor.f_value[0] & 1) != 0)
+        {
+            *this += lhs;
+        }
+    }
+
+    return *this;
+}
+
+
+bool uint512_t::operator == (uint64_t rhs) const
+{
+    return f_value[0] == rhs
+        && f_value[1] == 0
+        && f_value[2] == 0
+        && f_value[3] == 0
+        && f_value[4] == 0
+        && f_value[5] == 0
+        && f_value[6] == 0
+        && f_value[7] == 0;
+}
+
+
+bool uint512_t::operator != (uint64_t rhs) const
+{
+    return f_value[0] != rhs
+        || f_value[1] != 0
+        || f_value[2] != 0
+        || f_value[3] != 0
+        || f_value[4] != 0
+        || f_value[5] != 0
+        || f_value[6] != 0
+        || f_value[7] != 0;
 }
 
 

@@ -40,7 +40,7 @@ namespace snapdatabase
 
 
 
-#define DBTYPE_NAME(s)       (static_cast<std::uint32_t>((s[0]<<24)|(s[1]<<16)|(s[2]<<8)|(s[3]<<0)))
+#define DBTYPE_NAME(s)       (static_cast<std::uint32_t>((s[0]<<0)|(s[1]<<8)|(s[2]<<16)|(s[3]<<24)))
 
 enum class dbtype_t : std::uint32_t
 {

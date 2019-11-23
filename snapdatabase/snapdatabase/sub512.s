@@ -8,8 +8,7 @@
 
     .macro sub_with_borrow offset
         mov         \offset(%rsi), %rax
-        sbb         \offset(%rdi), %rax
-        mov         %rax, \offset(%rdi)
+        sbb         %rax, \offset(%rdi)
     .endm
 
     .text

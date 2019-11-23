@@ -48,6 +48,7 @@
 // C++ lib
 //
 #include    <cstdint>
+#include    <initializer_list>
 
 
 
@@ -74,6 +75,7 @@ struct int512_t
                                     int512_t();
                                     int512_t(int512_t const & rhs);
                                     int512_t(uint512_t const & rhs);
+                                    int512_t(std::initializer_list<std::uint64_t> rhs);
 
     bool                            is_positive() const { return f_high_value >= 0; }
     bool                            is_negative() const { return f_high_value < 0; }
@@ -94,6 +96,7 @@ struct uint512_t
                                     uint512_t();
                                     uint512_t(uint512_t const & rhs);
                                     uint512_t(int512_t const & rhs);
+                                    uint512_t(std::initializer_list<std::uint64_t> rhs);
 
     uint512_t &                     operator = (uint512_t const & rhs);
     uint512_t &                     operator = (int512_t const & rhs);
@@ -111,6 +114,10 @@ struct uint512_t
     uint512_t                       operator - () const;
     uint512_t &                     operator += (uint512_t const & rhs);
     uint512_t &                     operator -= (uint512_t const & rhs);
+    uint512_t &                     operator *= (uint512_t const & rhs);
+
+    bool                            operator == (uint64_t rhs) const;
+    bool                            operator != (uint64_t rhs) const;
 
     std::uint64_t                   f_value[8] = { 0 };
 };

@@ -33,6 +33,17 @@
 #include    "snapdatabase/structure.h"
 #include    "snapdatabase/table.h"
 
+
+// snaplogger lib
+//
+#include    <snaplogger/message.h>
+
+
+// C++ lib
+//
+#include    <iostream>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -44,10 +55,59 @@ namespace snapdatabase
 
 
 
+namespace
+{
+
+
+constexpr char const * g_errmsg = "block::~block() called with an f_data pointer, but f_table == nullptr.";
+
+
+}
+
+
+
 block::block(dbfile::pointer_t f, reference_t offset)
     : f_file(f)
     , f_offset(offset)
 {
+}
+
+
+block::~block()
+{
+    if(f_data != nullptr)
+    {
+        if(f_table == nullptr)
+        {
+            SNAP_LOG_FATAL
+                << g_errmsg
+                << SNAP_LOG_SEND;
+            std::cerr << g_errmsg << std::endl;
+            std::terminate();
+        }
+
+        try
+        {
+            f_table->get_dbfile()->release_data(f_data);
+            //f_data = nullptr;
+        }
+        catch(page_not_found const & e)
+        {
+            SNAP_LOG_FATAL
+                << g_errmsg
+                << " ("
+                << e.what()
+                << ")."
+                << SNAP_LOG_SEND;
+            std::cerr
+                << g_errmsg
+                << " ("
+                << e.what()
+                << ")."
+                << std::endl;
+            std::terminate();
+        }
+    }
 }
 
 
@@ -100,6 +160,16 @@ reference_t block::get_offset() const
 }
 
 
+void block::set_data(data_t data)
+{
+    // the table retrieves the data pointer because it needs to determine
+    // the block type (using the first 4 bytes) and so the data pointer
+    // is already locked once and we can immediately save it in the block
+    //
+    f_data = data;
+}
+
+
 data_t block::data(reference_t offset)
 {
     if(f_data == nullptr)
@@ -121,6 +191,11 @@ const_data_t block::data(reference_t offset) const
     return f_data + (offset % get_table()->get_page_size());
 }
 
+
+void block::sync(bool immediate)
+{
+    get_table()->get_dbfile()->sync(f_data, immediate);
+}
 
 
 } // namespace snapdatabase

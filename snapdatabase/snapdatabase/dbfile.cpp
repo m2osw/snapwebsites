@@ -36,14 +36,22 @@
 #include    "snapdatabase/structure.h"
 #include    "snapdatabase/table.h"
 
+
 // snapdev lib
 //
 #include    <snapdev/not_used.h>
+
 
 // C lib
 //
 #include    <sys/mman.h>
 #include    <sys/stat.h>
+
+
+// C++ lib
+//
+#include    <iostream>
+
 
 // last include
 //
@@ -228,7 +236,7 @@ int dbfile::open_file()
         return f_fd;
     }
 
-    size_t const page_size(dbfile::get_page_size());
+    size_t const page_size(get_page_size());
 
     // we need to have a global lock in case the file was not yet created
     //
@@ -241,30 +249,55 @@ int dbfile::open_file()
     f_fd = open(f_fullname.c_str(), O_RDWR | O_CLOEXEC | O_NOATIME | O_NOFOLLOW);
     if(f_fd == -1)
     {
-        f_fd = open(f_fullname.c_str(), O_RDWR | O_CLOEXEC | O_NOATIME | O_NOFOLLOW | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
-        if(f_fd == -1)
+        if(errno != ENOENT)
         {
-            // nothing more we can do
-            //
+            int const e(errno);
             throw io_error(
                   "System could not open file \""
                 + f_fullname
+                + "\" (errno: "
+                + std::to_string(e)
+                + ", "
+                + strerror(e)
+                + ".");
+        }
+
+        f_fd = open(f_fullname.c_str(), O_RDWR | O_CLOEXEC | O_NOATIME | O_NOFOLLOW | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+        if(f_fd == -1)
+        {
+            // nothing more we can do, whatever the error, fail
+            //
+            // (note we have a global lock so we should not have a problem
+            // with the O_EXCL flag)
+            //
+            int const e(errno);
+            throw io_error(
+                  "System could not open file \""
+                + f_fullname
+                + "\" (errno: "
+                + std::to_string(e)
+                + ", "
+                + strerror(e)
                 + "\".");
         }
-        else
-        {
-            // in this one case we are in creation mode which means we
-            // create the header block, which is important because it has
-            // the special offset of 0
-            //
-            version_t v(STRUCTURE_VERSION_MAJOR, STRUCTURE_VERSION_MINOR);
 
-            file_snap_database_table::pointer_t sdbt(std::static_pointer_cast<file_snap_database_table>(
-                        f_table->allocate_new_block(dbtype_t::FILE_TYPE_SNAP_DATABASE_TABLE)));
-            sdbt->set_first_free_block(page_size);
-            sdbt->set_block_size(page_size);
-            sdbt->set_version(v);
-        }
+        // in this one case we are in creation mode which means we
+        // create the header block, which is important because it has
+        // the special offset of 0 and we use that block to allocate
+        // other blocks
+        //
+        version_t v(STRUCTURE_VERSION_MAJOR, STRUCTURE_VERSION_MINOR);
+
+        file_snap_database_table::pointer_t sdbt(std::static_pointer_cast<file_snap_database_table>(
+                    f_table->allocate_new_block(dbtype_t::FILE_TYPE_SNAP_DATABASE_TABLE)));
+std::cerr << "We got our SDBT file! " << reinterpret_cast<void *>(sdbt.get()) << "\n";
+        sdbt->set_first_free_block(page_size);
+std::cerr << "  now set block size\n";
+        sdbt->set_block_size(page_size);
+std::cerr << "  now set version\n";
+        sdbt->set_version(v);
+std::cerr << "  now sync. the blok\n";
+        sdbt->sync(false);
     }
 
     return f_fd;
@@ -310,22 +343,38 @@ data_t dbfile::data(reference_t offset)
 }
 
 
-void dbfile::release_data(data_t ptr)
+void dbfile::release_data(data_t data)
 {
-    intptr_t data_ptr(reinterpret_cast<intptr_t>(ptr));
     size_t const sz(get_page_size());
-    intptr_t page_ptr(data_ptr - data_ptr % sz);
+
+    intptr_t const data_ptr(reinterpret_cast<intptr_t>(data));
+    intptr_t const page_ptr(data_ptr - data_ptr % sz);
     auto it(f_pages.right.find(reinterpret_cast<data_t>(page_ptr)));
     if(it == f_pages.right.end())
     {
         throw page_not_found(
                   "page "
                 + std::to_string(page_ptr)
-                + " not found. It can be unmapped.");
+                + " not found. It cannot be unmapped.");
     }
     f_pages.right.erase(it);
 
-    munmap(ptr, get_page_size());
+    munmap(reinterpret_cast<data_t>(page_ptr), sz);
+}
+
+
+void dbfile::sync(data_t data, bool immediate)
+{
+    size_t const sz(get_page_size());
+
+    intptr_t const data_ptr(reinterpret_cast<intptr_t>(data));
+    intptr_t const page_ptr(data_ptr - data_ptr % sz);
+
+    msync(reinterpret_cast<data_t>(page_ptr)
+        , sz
+        , (immediate ? MS_SYNC : MS_ASYNC) | MS_INVALIDATE);
+
+std::cerr << "(and sync-ed)\n";
 }
 
 
@@ -395,6 +444,12 @@ reference_t dbfile::append_free_block(reference_t const previous_block_offset)
  */
 void dbfile::write_data(void const * ptr, size_t size)
 {
+    if(f_fd == -1)
+    {
+        throw file_not_opened(
+                  "file is not yet opened, write_data() can't be called.");
+    }
+
     int const sz(write(f_fd, ptr, size));
     if(static_cast<size_t>(sz) != size)
     {

@@ -61,7 +61,7 @@ class block;
 typedef std::shared_ptr<block>                  block_pointer_t;
 
 class table
-    : protected std::enable_shared_from_this<table>
+    : public std::enable_shared_from_this<table>
 {
 public:
     typedef std::shared_ptr<table>              pointer_t;
@@ -92,6 +92,7 @@ public:
     size_t                                      get_page_size() const; // size of one block in bytes including the magic
     block_pointer_t                             get_block(reference_t offset);
     block_pointer_t                             allocate_new_block(dbtype_t type);
+    bool                                        verify_schema();
 
 private:
     std::shared_ptr<detail::table_impl>         f_impl;

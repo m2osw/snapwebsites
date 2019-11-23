@@ -34,6 +34,16 @@
 #include    "snapdatabase/convert.h"
 
 
+// boost lib
+//
+#include    <boost/algorithm/string.hpp>
+
+
+// C++ lib
+//
+#include    <iostream>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -57,11 +67,138 @@ enum class number_type_t
 };
 
 
-uint512_t string_to_int(std::string const & number, bool accept_negative_values)
+struct name_to_size_multiplicator_t
+{
+    char const *        f_name = nullptr;
+    uint512_t           f_multiplicator = uint512_t();
+};
+
+#define NAME_TO_SIZE_MULTIPLICATOR(name, lo, hi) \
+                        { name, { lo, hi, 0, 0, 0, 0, 0, 0 } }
+
+name_to_size_multiplicator_t const g_size_name_to_multiplicator[] =
+{
+    // WARNING: Keep in alphabetical order
+    //
+    NAME_TO_SIZE_MULTIPLICATOR("BB",        0x9FD0803CE8000000ULL,  0x00000000033B2E3C  ),  // 1000^9
+    NAME_TO_SIZE_MULTIPLICATOR("BRBI",      0,                      0x0000000004000000  ),  // 2^90 = 1024^9
+    NAME_TO_SIZE_MULTIPLICATOR("BRBIB",     0,                      0x0000000004000000  ),  // 2^90 = 1024^9
+    NAME_TO_SIZE_MULTIPLICATOR("BRONTO",    0x9FD0803CE8000000ULL,  0x00000000033B2E3C  ),  // 1000^9
+    NAME_TO_SIZE_MULTIPLICATOR("EB",        1000000000000000000ULL, 0                   ),  // 1000^6
+    NAME_TO_SIZE_MULTIPLICATOR("EIB",       0x1000000000000000ULL,  0                   ),  // 2^60 = 1024^6
+    NAME_TO_SIZE_MULTIPLICATOR("EXA",       1000000000000000000ULL, 0                   ),  // 1000^6
+    NAME_TO_SIZE_MULTIPLICATOR("EXBI",      0x1000000000000000ULL,  0                   ),  // 2^60 = 1024^6
+    NAME_TO_SIZE_MULTIPLICATOR("GB",        1000000000ULL,          0                   ),  // 1000^3
+    NAME_TO_SIZE_MULTIPLICATOR("GEBI",      0,                      0x0000001000000000  ),  // 2^100 = 1024^10
+    NAME_TO_SIZE_MULTIPLICATOR("GEOP",      0x4674EDEA40000000,     0x0000000C9F2C9CD0  ),  // 1000^10
+    NAME_TO_SIZE_MULTIPLICATOR("GIB",       0x0000000040000000ULL,  0                   ),  // 2^30 = 1024^3
+    NAME_TO_SIZE_MULTIPLICATOR("GIBI",      0x0000000040000000ULL,  0                   ),  // 2^30 = 1024^3
+    NAME_TO_SIZE_MULTIPLICATOR("GIGA",      1000000000ULL,          0                   ),  // 1000^3
+    NAME_TO_SIZE_MULTIPLICATOR("KB",        1000ULL,                0                   ),  // 1000^1
+    NAME_TO_SIZE_MULTIPLICATOR("KIB",       0x0000000000000400ULL,  0                   ),  // 2^10 = 1024^1
+    NAME_TO_SIZE_MULTIPLICATOR("KIBI",      0x0000000000000400ULL,  0                   ),  // 2^10 = 1024^1
+    NAME_TO_SIZE_MULTIPLICATOR("KILO",      1000ULL,                0                   ),  // 1000^1
+    NAME_TO_SIZE_MULTIPLICATOR("MB",        1000000ULL,             0                   ),  // 1000^2
+    NAME_TO_SIZE_MULTIPLICATOR("MEBI",      0x0000000000100000ULL,  0                   ),  // 2^20 = 1024^2
+    NAME_TO_SIZE_MULTIPLICATOR("MEGA",      1000000ULL,             0                   ),  // 1000^2
+    NAME_TO_SIZE_MULTIPLICATOR("MIB",       0x0000000000100000ULL,  0                   ),  // 2^20 = 1024^2
+    NAME_TO_SIZE_MULTIPLICATOR("PB",        1000000000000000ULL,    0                   ),  // 1000^5
+    NAME_TO_SIZE_MULTIPLICATOR("PEBI",      0x0004000000000000ULL,  0                   ),  // 2^50 = 1024^5
+    NAME_TO_SIZE_MULTIPLICATOR("PETA",      1000000000000000ULL,    0                   ),  // 1000^5
+    NAME_TO_SIZE_MULTIPLICATOR("PIB",       0x0004000000000000ULL,  0                   ),  // 2^50 = 1024^5
+    NAME_TO_SIZE_MULTIPLICATOR("TB",        1000000000000ULL,       0                   ),  // 1000^4
+    NAME_TO_SIZE_MULTIPLICATOR("TEBI",      0x0000010000000000ULL,  0                   ),  // 2^40 = 1024^4
+    NAME_TO_SIZE_MULTIPLICATOR("TERA",      1000000000000ULL,       0                   ),  // 1000^4
+    NAME_TO_SIZE_MULTIPLICATOR("TIB",       0x0000010000000000ULL,  0                   ),  // 2^40 = 1024^4
+    NAME_TO_SIZE_MULTIPLICATOR("YB",        0x1BCECCEDA1000000,     0x000000000000D3C2  ),  // 1000^8
+    NAME_TO_SIZE_MULTIPLICATOR("YIB",       0,                      0x0000000000010000  ),  // 2^80 = 1024^8
+    NAME_TO_SIZE_MULTIPLICATOR("YOBI",      0,                      0x0000000000010000  ),  // 2^80 = 1024^8
+    NAME_TO_SIZE_MULTIPLICATOR("YOTTA",     0x1BCECCEDA1000000,     0x000000000000D3C2  ),  // 1000^8
+    NAME_TO_SIZE_MULTIPLICATOR("ZB",        0x35C9ADC5DEA00000,     0x0000000000000036  ),  // 1000^7
+    NAME_TO_SIZE_MULTIPLICATOR("ZEBI",      0,                      0x0000000000000040  ),  // 2^70 = 1024^7
+    NAME_TO_SIZE_MULTIPLICATOR("ZETTA",     0x35C9ADC5DEA00000,     0x0000000000000036  ),  // 1000^7
+    NAME_TO_SIZE_MULTIPLICATOR("ZIB",       0,                      0x0000000000000040  ),  // 2^70 = 1024^7
+};
+
+
+uint512_t size_to_multiplicator(char const * s)
+{
+#ifdef _DEBUG
+    // verify in debug because if not in order we can't do a binary search
+    for(size_t idx(1);
+        idx < sizeof(g_size_name_to_multiplicator) / sizeof(g_size_name_to_multiplicator[0]);
+        ++idx)
+    {
+        if(strcmp(g_size_name_to_multiplicator[idx - 1].f_name
+                , g_size_name_to_multiplicator[idx].f_name) >= 0)
+        {
+            throw snapdatabase_logic_error(
+                      "names in g_name_to_struct_type area not in alphabetical order: "
+                    + std::string(g_size_name_to_multiplicator[idx - 1].f_name)
+                    + " >= "
+                    + g_size_name_to_multiplicator[idx].f_name
+                    + " (position: "
+                    + std::to_string(idx)
+                    + ").");
+        }
+    }
+#endif
+
+    std::string size(s);
+    boost::algorithm::trim(size);
+
+    // keep case of first character only
+    //
+    boost::algorithm::to_upper(size);
+
+    // remove the word "byte[s]" if present
+    //
+    if(size.length() >= 5
+    && size.compare(size.length() - 5, 5, "BYTES") == 0)
+    {
+        size = size.substr(0, size.length() - 5);
+    }
+    else if(size.length() >= 4
+         && size.compare(size.length() - 4, 4, "BYTE") == 0)
+    {
+        size = size.substr(0, size.length() - 4);
+    }
+    boost::algorithm::trim(size);
+
+    if(!size.empty())
+    {
+        int j(sizeof(g_size_name_to_multiplicator) / sizeof(g_size_name_to_multiplicator[0]));
+        int i(0);
+        while(i < j)
+        {
+            int const p((j - i) / 2 + i);
+            int const r(size.compare(g_size_name_to_multiplicator[p].f_name));
+            if(r > 0)
+            {
+                i = p + 1;
+            }
+            else if(r < 0)
+            {
+                j = p;
+            }
+            else
+            {
+                return g_size_name_to_multiplicator[p].f_multiplicator;
+            }
+        }
+    }
+
+    uint512_t one;
+    one.f_value[0] = 1;
+    return one;
+}
+
+
+uint512_t string_to_int(std::string const & number, bool accept_negative_values, unit_t unit)
 {
     bool negative(false);
     char const * n(number.c_str());
-    while(isspace(*n))
+    while(std::isspace(*n))
     {
         ++n;
     }
@@ -176,7 +313,7 @@ uint512_t string_to_int(std::string const & number, bool accept_negative_values)
             }
             else if((*n >= 'a' && *n <= 'f') || (*n >= 'A' && *n <= 'F'))
             {
-                digit.f_value[0] = (*n & 0xDF) - ('A' + 10);
+                digit.f_value[0] = (*n & 0x5F) - ('A' - 10);
             }
             else
             {
@@ -208,17 +345,29 @@ uint512_t string_to_int(std::string const & number, bool accept_negative_values)
         ++n;
     }
 
-    while(isspace(*n))
+    while(std::isspace(*n))
     {
         ++n;
     }
 
     if(*n != '\0')
     {
-        throw invalid_number(
-                  "Could not convert number \""
-                + number
-                + "\" to a valid uint512_t value.");
+        uint512_t multiplicator;
+        switch(unit)
+        {
+        case unit_t::UNIT_NONE:
+            throw invalid_number(
+                      "Could not convert number \""
+                    + number
+                    + "\" to a valid uint512_t value.");
+
+        case unit_t::UNIT_SIZE:
+            multiplicator = size_to_multiplicator(n);
+            break;
+
+        }
+
+        result *= multiplicator;
     }
 
     return negative ? -result : result;
@@ -228,7 +377,7 @@ uint512_t string_to_int(std::string const & number, bool accept_negative_values)
 buffer_t string_to_uinteger(std::string const & value, size_t max_size)
 {
     buffer_t result;
-    uint512_t const n(string_to_int(value, false));
+    uint512_t const n(string_to_int(value, false, unit_t::UNIT_NONE));
 
     if(max_size != 512 && n.bit_size() > max_size)
     {
@@ -330,7 +479,7 @@ std::string uinteger_to_string(buffer_t value, int bytes_for_size, int base)
 buffer_t string_to_integer(std::string const & value, size_t max_size)
 {
     buffer_t result;
-    int512_t const n(string_to_int(value, true));
+    int512_t const n(string_to_int(value, true, unit_t::UNIT_NONE));
 
     if(max_size != 512 && n.bit_size() > max_size)
     {
@@ -344,7 +493,7 @@ buffer_t string_to_integer(std::string const & value, size_t max_size)
 
     result.insert(result.end()
                 , reinterpret_cast<uint8_t const *>(&n.f_value)
-                ,  reinterpret_cast<uint8_t const *>(&n.f_value) + max_size / 8);
+                , reinterpret_cast<uint8_t const *>(&n.f_value) + max_size / 8);
 
     return result;
 }
@@ -387,7 +536,7 @@ buffer_t string_to_float(std::string const & value, std::function<T(char const *
 
     // ignore ending spaces
     //
-    while(isspace(*e))
+    while(std::isspace(*e))
     {
         ++e;
     }
@@ -439,11 +588,23 @@ buffer_t string_to_version(std::string const & value)
                 + "\" must include a period (.) between the major and minor numbers.");
     }
 
-    std::string const version_major(value.substr(0, pos));
+    // allow a 'v' or 'V' introducer as in 'v1.3'
+    //
+    std::string::size_type skip(0);
+    while(skip < value.length() && std::isspace(value[skip]))
+    {
+        ++skip;
+    }
+    if(skip < value.length() && (value[skip] == 'v' || value[skip] == 'V'))
+    {
+        ++skip;
+    }
+
+    std::string const version_major(value.substr(skip, pos));
     std::string const version_minor(value.substr(pos + 1));
 
-    uint512_t const a(string_to_int(version_major, false));
-    uint512_t const b(string_to_int(version_minor, false));
+    uint512_t const a(string_to_int(version_major, false, unit_t::UNIT_NONE));
+    uint512_t const b(string_to_int(version_minor, false, unit_t::UNIT_NONE));
 
     if(a.bit_size() > 16
     || b.bit_size() > 16)
@@ -883,9 +1044,9 @@ std::string typed_buffer_to_string(struct_type_t type, buffer_t value, int base)
 }
 
 
-int64_t convert_to_int(std::string const & value, size_t max_size)
+int64_t convert_to_int(std::string const & value, size_t max_size, unit_t unit)
 {
-    int512_t n(string_to_int(value, true));
+    int512_t n(string_to_int(value, true, unit));
 
     if(n.bit_size() > max_size)
     {
@@ -901,9 +1062,9 @@ int64_t convert_to_int(std::string const & value, size_t max_size)
 }
 
 
-uint64_t convert_to_uint(std::string const & value, size_t max_size)
+uint64_t convert_to_uint(std::string const & value, size_t max_size, unit_t unit)
 {
-    uint512_t n(string_to_int(value, false));
+    uint512_t n(string_to_int(value, false, unit));
 
     if(n.bit_size() > max_size)
     {

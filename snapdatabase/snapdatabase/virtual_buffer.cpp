@@ -80,6 +80,8 @@ void virtual_buffer::add_buffer(block::pointer_t b, std::uint64_t offset, std::u
 
     vbuf_t const append(b, offset, size);
     f_buffers.push_back(append);
+
+    f_total_size += size;
 }
 
 

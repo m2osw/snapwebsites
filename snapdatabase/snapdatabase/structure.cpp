@@ -47,6 +47,11 @@
 #include    <snapdev/not_used.h>
 
 
+// C++ lib
+//
+#include    <iostream>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -107,13 +112,13 @@ name_to_struct_type_t g_name_to_struct_type[] =
     NAME_TO_STRUCT_TYPE(RENAMED),
     NAME_TO_STRUCT_TYPE(STRUCTURE),
     NAME_TO_STRUCT_TYPE(TIME),
-    NAME_TO_STRUCT_TYPE(UINT16),
-    NAME_TO_STRUCT_TYPE(UINT32),
-    NAME_TO_STRUCT_TYPE(UINT8),
-    NAME_TO_STRUCT_TYPE(UINT64),
     NAME_TO_STRUCT_TYPE(UINT128),
+    NAME_TO_STRUCT_TYPE(UINT16),
     NAME_TO_STRUCT_TYPE(UINT256),
+    NAME_TO_STRUCT_TYPE(UINT32),
     NAME_TO_STRUCT_TYPE(UINT512),
+    NAME_TO_STRUCT_TYPE(UINT64),
+    NAME_TO_STRUCT_TYPE(UINT8),
     NAME_TO_STRUCT_TYPE(USTIME),
     NAME_TO_STRUCT_TYPE(VERSION),
     NAME_TO_STRUCT_TYPE(VOID)
@@ -243,11 +248,11 @@ struct_type_t name_to_struct_type(std::string const & type_name)
     {
         int const p((j - i) / 2 + i);
         int const r(uc.compare(g_name_to_struct_type[p].f_name));
-        if(r < 0)
+        if(r > 0)
         {
             i = p + 1;
         }
-        else if(r > 0)
+        else if(r < 0)
         {
             j = p;
         }
@@ -381,7 +386,7 @@ structure::structure(struct_description_t const * descriptions)
 
 void structure::set_block(block::pointer_t b, std::uint64_t size)
 {
-    f_buffer->add_buffer(b, 0, size);
+    f_buffer = std::make_shared<virtual_buffer>(b, 0, size);
 }
 
 
@@ -594,6 +599,7 @@ field_t::pointer_t structure::get_field(std::string const & field_name, struct_t
                 + "\".");
     }
 
+std::cerr << "returning the field alright...\n";
     return f;
 }
 
@@ -708,10 +714,13 @@ void structure::set_integer(std::string const & field_name, int64_t value)
 
 uint64_t structure::get_uinteger(std::string const & field_name) const
 {
+std::cerr << "get uinteger for [" << field_name << "]\n";
     auto f(get_field(field_name));
 
+std::cerr << "  verify size [" << field_name << "]\n";
     verify_size(f->f_description->f_type, f->f_size);
 
+std::cerr << "  check type [" << field_name << "]\n";
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
@@ -732,9 +741,12 @@ uint64_t structure::get_uinteger(std::string const & field_name) const
 
     case struct_type_t::STRUCT_TYPE_BITS32:
     case struct_type_t::STRUCT_TYPE_UINT32:
+    case struct_type_t::STRUCT_TYPE_VERSION:
         {
             uint32_t value(0);
+std::cerr << "  pread UINT32 [" << field_name << "]\n";
             f_buffer->pread(&value, sizeof(value), f->f_offset);
+std::cerr << "  read [" << value << "]\n";
             return value;
         }
 
@@ -770,6 +782,8 @@ uint64_t structure::get_uinteger(std::string const & field_name) const
                 + ", "
                 + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
                 + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_VERSION))
+                + ", "
                 + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
                 + ", "
                 + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_REFERENCE))
@@ -789,10 +803,13 @@ uint64_t structure::get_uinteger(std::string const & field_name) const
 
 void structure::set_uinteger(std::string const & field_name, uint64_t value)
 {
+std::cerr << "set uinteger for [" << field_name << "] -> " << value << "\n";
     auto f(get_field(field_name));
 
+std::cerr << "  verify size [" << field_name << "]\n";
     verify_size(f->f_description->f_type, f->f_size);
 
+std::cerr << "  check type [" << field_name << "]\n";
     switch(f->f_description->f_type)
     {
     case struct_type_t::STRUCT_TYPE_BITS8:
@@ -813,6 +830,7 @@ void structure::set_uinteger(std::string const & field_name, uint64_t value)
 
     case struct_type_t::STRUCT_TYPE_BITS32:
     case struct_type_t::STRUCT_TYPE_UINT32:
+    case struct_type_t::STRUCT_TYPE_VERSION:
         {
             uint32_t v(value);
             f_buffer->pwrite(&v, sizeof(v), f->f_offset);
@@ -828,6 +846,7 @@ void structure::set_uinteger(std::string const & field_name, uint64_t value)
     case struct_type_t::STRUCT_TYPE_USTIME:
         {
             uint64_t v(value);
+std::cerr << "  pread UINT64 [" << field_name << "]\n";
             f_buffer->pwrite(&v, sizeof(v), f->f_offset);
         }
         return;
@@ -850,6 +869,8 @@ void structure::set_uinteger(std::string const & field_name, uint64_t value)
                 + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT16))
                 + ", "
                 + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT32))
+                + ", "
+                + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_VERSION))
                 + ", "
                 + std::to_string(static_cast<int>(struct_type_t::STRUCT_TYPE_UINT64))
                 + ", "
@@ -1669,11 +1690,13 @@ void structure::parse() const
 
 uint64_t structure::parse_descriptions(uint64_t offset) const
 {
+std::cerr << "parse structure vs buffer with offset: " << offset << "\n";
     for(struct_description_t const * def(f_descriptions);
         def->f_type != struct_type_t::STRUCT_TYPE_END;
         ++def)
     {
         std::string field_name(def->f_field_name);
+std::cerr << "checking field \"" << field_name << "\" type " << static_cast<int>(def->f_type) << "\n";
 
         field_t::pointer_t f(std::make_shared<field_t>());
         f->f_description = def;
@@ -1911,6 +1934,7 @@ uint64_t structure::parse_descriptions(uint64_t offset) const
 
         }
 
+std::cerr << "check field offset vs size " << offset << " / " << f_buffer->size() << "\n";
         if(f_buffer->count_buffers() != 0
         && offset > f_buffer->size())
         {

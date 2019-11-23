@@ -52,6 +52,7 @@ DECLARE_EXCEPTION(snapdatabase_error, column_not_found);
 DECLARE_EXCEPTION(snapdatabase_error, field_not_found);
 DECLARE_EXCEPTION(snapdatabase_error, file_not_found);
 DECLARE_EXCEPTION(snapdatabase_error, file_not_opened);
+DECLARE_EXCEPTION(snapdatabase_error, invalid_entity);
 DECLARE_EXCEPTION(snapdatabase_error, invalid_number);
 DECLARE_EXCEPTION(snapdatabase_error, invalid_parameter);
 DECLARE_EXCEPTION(snapdatabase_error, invalid_size);

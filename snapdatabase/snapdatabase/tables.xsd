@@ -249,15 +249,18 @@
     <xs:annotation>
       <xs:documentation>
         The model of a table defines how the table is going to be used so
-        we can optimize its definition.
+        we can optimize its definition. The default is "content" if not
+        specified.
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
+      <xs:enumeration value="content"/> <!-- this is the default -->
       <xs:enumeration value="data"/>
-      <xs:enumeration value="content"/>
       <xs:enumeration value="log"/>
       <xs:enumeration value="queue"/>
       <xs:enumeration value="session"/>
+      <xs:enumeration value="sequential"/>
+      <xs:enumeration value="tree"/>
     </xs:restriction>
   </xs:simpleType>
 

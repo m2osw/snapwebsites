@@ -59,8 +59,11 @@ enum class model_t
     TABLE_MODEL_QUEUE,
     TABLE_MODEL_SEQUENCIAL,
     TABLE_MODEL_SESSION,
-    TABLE_MODEL_TREE
+    TABLE_MODEL_TREE,
+
+    TABLE_MODEL_DEFAULT = TABLE_MODEL_CONTENT
 };
+
 
 
 model_t             name_to_model(std::string const & name);
@@ -194,14 +197,12 @@ private:
 
 
 class schema_table
-    : protected std::enable_shared_from_this<schema_table>
+    : public std::enable_shared_from_this<schema_table>
 {
 public:
     typedef std::shared_ptr<schema_table>   pointer_t;
 
-                                            schema_table(xml_node::pointer_t x);
-                                            schema_table(virtual_buffer::pointer_t b);
-
+    void                                    from_xml(xml_node::pointer_t x);
     void                                    load_extension(xml_node::pointer_t e);
 
     void                                    from_binary(virtual_buffer::pointer_t b);
@@ -219,13 +220,14 @@ public:
     schema_column::map_by_name_t            columns_by_name() const;
 
     std::string                             description() const;
+    std::uint32_t                           block_size() const;
 
 private:
     version_t                               f_version = version_t();
     std::string                             f_name = std::string();
     flags_t                                 f_flags = flags_t();
     model_t                                 f_model = model_t::TABLE_MODEL_CONTENT;
-    uint32_t                                f_block_size = 0;
+    std::uint32_t                           f_block_size = 0;
     column_ids_t                            f_row_key = column_ids_t();
     schema_secondary_index::vector_t        f_secondary_indexes = schema_secondary_index::vector_t();
     schema_complex_type::map_t              f_complex_types = schema_complex_type::map_t();

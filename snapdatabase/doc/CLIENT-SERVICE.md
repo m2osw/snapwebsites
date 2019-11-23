@@ -108,8 +108,8 @@ getting information about tables, etc. all will be done under the hood.
 ### C++ Functions
 
 At this level, all the commands we can send are C++ functions. We also
-support callbacks through the Event Dispatcher library and by using
-the `LISTEN` command.
+support callbacks (what is called Triggers in SQL) through the Event
+Dispatcher library and by using the `LISTEN` command.
 
 The following commands are specific to a table. We handle one row at
 a time. We do not give access to a per cell basis like in Cassandra.
@@ -117,6 +117,12 @@ a time. We do not give access to a per cell basis like in Cassandra.
 Note: to handle really large data, use a "file" table (or maybe call
 it "blob") and save the large cells there and a reference in your
 rows.
+
+**Note:** This is similar to an SQL `CREATE TRIGGER`, only our events
+only occur when data changes and on a per row basis. We'll still offer
+a `BEFORE` and `AFTER` capability. The `BEFORE` will have the ability
+to modify the data before it gets inserted or updated and the `AFTER`
+can change the data before it gets sent to the client.
 
 #### The `blob` Value
 

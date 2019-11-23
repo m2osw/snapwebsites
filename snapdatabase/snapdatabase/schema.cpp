@@ -40,6 +40,7 @@
 
 // C++ lib
 //
+#include    <iostream>
 #include    <type_traits>
 
 
@@ -262,6 +263,7 @@ model_and_name_t g_model_and_name[] =
 {
     MODEL_AND_NAME(CONTENT),
     MODEL_AND_NAME(DATA),
+    MODEL_AND_NAME(DEFAULT),
     MODEL_AND_NAME(LOG),
     MODEL_AND_NAME(QUEUE),
     MODEL_AND_NAME(SEQUENCIAL),
@@ -293,6 +295,11 @@ model_t name_to_model(std::string const & name)
     }
 #endif
 
+    if(name.empty())
+    {
+        return model_t::TABLE_MODEL_DEFAULT;
+    }
+
     std::string const uc(boost::algorithm::to_upper_copy(name));
 
     int i(0);
@@ -321,9 +328,9 @@ model_t name_to_model(std::string const & name)
         << "\" for your table. Please check the spelling. The name is case insensitive."
         << SNAP_LOG_SEND;
 
-    // "content" is a safe default so return that in this case
+    // return the default, this is just a warning
     //
-    return model_t::TABLE_MODEL_CONTENT;
+    return model_t::TABLE_MODEL_DEFAULT;
 }
 
 
@@ -501,7 +508,7 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
         }
         else if(child->tag_name() == "external")
         {
-            f_internal_size_limit = convert_to_int(child->text(), 32);
+            f_internal_size_limit = convert_to_int(child->text(), 32, unit_t::UNIT_SIZE);
         }
         else if(child->tag_name() == "min-value")
         {
@@ -720,7 +727,7 @@ void schema_secondary_index::add_column_id(column_id_t id)
 
 
 
-schema_table::schema_table(xml_node::pointer_t x)
+void schema_table::from_xml(xml_node::pointer_t x)
 {
     if(x->tag_name() != "table")
     {
@@ -771,24 +778,26 @@ schema_table::schema_table(xml_node::pointer_t x)
 
     // 1. fully parse the complex types on the first iteration
     //
+std::cerr << "schema: parse complex types\n";
     for(auto child(x->first_child()); child != nullptr; child = child->next())
     {
         if(child->tag_name() == "block-size")
         {
             f_block_size = convert_to_uint(child->text(), 32);
 
-            size_t const page_size(dbfile::get_system_page_size());
-            if((f_block_size % page_size) != 0)
-            {
-                throw invalid_xml(
-                          "Table \""
-                        + f_name
-                        + "\" is not compatible, block size "
-                        + std::to_string(f_block_size)
-                        + " is not supported because it is not an exact multiple of "
-                        + std::to_string(page_size)
-                        + ".");
-            }
+            // TBD--we adjust the size in dbfile
+            //size_t const page_size(dbfile::get_system_page_size());
+            //if((f_block_size % page_size) != 0)
+            //{
+            //    throw invalid_xml(
+            //              "Table \""
+            //            + f_name
+            //            + "\" is not compatible, block size "
+            //            + std::to_string(f_block_size)
+            //            + " is not supported because it is not an exact multiple of "
+            //            + std::to_string(page_size)
+            //            + ".");
+            //}
         }
         else if(child->tag_name() == "description")
         {
@@ -831,6 +840,7 @@ schema_table::schema_table(xml_node::pointer_t x)
     // 2. parse the columns
     //
     //column_id_t col_id(1); -- TBD
+std::cerr << "schema: parse columns\n";
     for(auto child : schemata)
     {
         for(auto column(child->first_child());
@@ -864,6 +874,7 @@ schema_table::schema_table(xml_node::pointer_t x)
     advgetopt::string_list_t row_key_names;
     advgetopt::split_string(row_key_name, row_key_names, {","});
 
+std::cerr << "schema: parse key names\n";
     for(auto n : row_key_names)
     {
         schema_column::pointer_t c(column(n));
@@ -883,6 +894,7 @@ schema_table::schema_table(xml_node::pointer_t x)
 
     // 4. the secondary indexes are transformed to array of columns
     //
+std::cerr << "schema: secondary indexes\n";
     for(auto si : secondary_indexes)
     {
         schema_secondary_index::pointer_t index(std::make_shared<schema_secondary_index>());
@@ -932,12 +944,6 @@ schema_table::schema_table(xml_node::pointer_t x)
 
         f_secondary_indexes.push_back(index);
     }
-}
-
-
-schema_table::schema_table(virtual_buffer::pointer_t b)
-{
-    from_binary(b);
 }
 
 
@@ -1196,6 +1202,12 @@ schema_column::map_by_id_t schema_table::columns_by_id() const
 std::string schema_table::description() const
 {
     return f_description;
+}
+
+
+std::uint32_t schema_table::block_size() const
+{
+    return f_block_size;
 }
 
 

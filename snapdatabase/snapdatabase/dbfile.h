@@ -58,7 +58,7 @@ typedef std::shared_ptr<table>  table_pointer_t;
 
 
 class dbfile
-    : protected std::enable_shared_from_this<dbfile>
+    : public std::enable_shared_from_this<dbfile>
 {
 public:
     typedef std::shared_ptr<dbfile>             pointer_t;
@@ -83,6 +83,7 @@ public:
     dbtype_t                get_type() const;
     data_t                  data(reference_t offset);
     void                    release_data(data_t data);
+    void                    sync(data_t data, bool immediate);
     size_t                  get_size() const;
     reference_t             append_free_block(reference_t const previous_block_offset);
 

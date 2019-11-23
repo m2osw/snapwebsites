@@ -700,7 +700,7 @@ rows to a newer schema.
         . sparse (bit 1)
     - `block_size` (`uint32_t`)
     - `model` (`uint8_t`)
-        . content
+        . content (this is the default is not defined)
         . data
         . log
         . queue (a.k.a. journal)

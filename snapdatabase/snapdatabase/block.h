@@ -48,13 +48,14 @@ typedef std::shared_ptr<structure>  structure_pointer_t;
 
 
 class block
-    : protected std::enable_shared_from_this<block>
+    : public std::enable_shared_from_this<block>
 {
 public:
     typedef std::shared_ptr<block>              pointer_t;
     typedef std::map<reference_t, pointer_t>    map_t;
 
                                 block(block const & rhs) = delete;
+                                ~block();
 
     block &                     operator = (block const & rhs) = delete;
 
@@ -68,8 +69,10 @@ public:
     dbtype_t                    get_dbtype() const;
     void                        set_dbtype(dbtype_t type);
     reference_t                 get_offset() const;
+    void                        set_data(data_t data);
     data_t                      data(reference_t offset = 0);
     const_data_t                data(reference_t offset = 0) const;
+    void                        sync(bool immediate);
 
 protected:
                                 block(dbfile::pointer_t f, reference_t offset);

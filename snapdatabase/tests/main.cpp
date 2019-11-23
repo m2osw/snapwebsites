@@ -1,47 +1,179 @@
-/*
- * Copyright (c) 2006-2019  Made to Order Software Corp.  All Rights Reserved
- *
- * https://snapwebsites.org/project/snaplogger
- * contact@m2osw.com
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+// Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/snapdatabase
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 // Tell catch we want it to add the runner code in this file.
 #define CATCH_CONFIG_RUNNER
 
 // self
 //
-#include "main.h"
+#include    "main.h"
 
 
 // snapdatabase lib
 //
-#include <snapdatabase/version.h>
+#include    <snapdatabase/version.h>
 
 
 // libexcept lib
 //
-#include <libexcept/exception.h>
+#include    <libexcept/exception.h>
+
+
+// snaplogger lib
+//
+#include    <snaplogger/logger.h>
+
+
+// snapdev lib
+//
+#include    <snapdev/not_used.h>
 
 
 // C++ lib
 //
-#include <sstream>
+#include    <fstream>
 
 
+// C lib
+//
+#include    <sys/stat.h>
+#include    <sys/types.h>
+
+
+
+namespace SNAP_CATCH2_NAMESPACE
+{
+
+
+
+std::string                 g_tmp_dir;
+
+
+std::string setup_context(std::string const & sub_path, std::vector<std::string> const & xmls)
+{
+    std::string path(g_tmp_dir + "/" + sub_path);
+
+    if(mkdir(path.c_str(), 0700) != 0)
+    {
+        if(errno != EEXIST)
+        {
+            CATCH_REQUIRE(!"could not create context path");
+            return std::string();
+        }
+    }
+
+    if(mkdir((path + "/tables").c_str(), 0700) != 0)
+    {
+        if(errno != EEXIST)
+        {
+            CATCH_REQUIRE(!"could not create table path");
+            return std::string();
+        }
+    }
+
+    if(mkdir((path + "/database").c_str(), 0700) != 0)
+    {
+        if(errno != EEXIST)
+        {
+            CATCH_REQUIRE(!"could not create database path");
+            return std::string();
+        }
+    }
+
+    for(auto x : xmls)
+    {
+        char const * s(x.c_str());
+        CATCH_REQUIRE((s[0] == '<'
+                    && s[1] == '!'
+                    && s[2] == '-'
+                    && s[3] == '-'
+                    && s[4] == ' '
+                    && s[5] == 'n'
+                    && s[6] == 'a'
+                    && s[7] == 'm'
+                    && s[8] == 'e'
+                    && s[9] == '='));
+        s += 10;
+        char const * e(s);
+        while(*e != ' ')
+        {
+            ++e;
+        }
+        std::string const name(s, e - s);
+        std::ofstream o(path + "/tables/" + name + ".xml");
+        o << x;
+    }
+
+    return path;
+}
+
+
+Catch::clara::Parser add_command_line_options(Catch::clara::Parser const & cli)
+{
+    return cli
+         | Catch::clara::Opt(SNAP_CATCH2_NAMESPACE::g_tmp_dir, "tmp")
+              ["-T"]["--tmp"]
+              ("a path to a temporary directory used by the tests.");
+}
+
+
+void init_callback()
+{
+    libexcept::set_collect_stack(false);
+}
+
+
+int init_tests(Catch::Session & session)
+{
+    snap::NOTUSED(session);
+
+    if(g_tmp_dir.find_first_of("'\"") != std::string::npos)
+    {
+        std::cerr << "error: the path to the temporary directory cannot include single (') or double (\") quotes."
+                  << std::endl;
+        return 1;
+    }
+
+    std::string cmd("rm -rf \"");
+    cmd += g_tmp_dir;
+    cmd += '"';
+    snap::NOTUSED(system(cmd.c_str()));
+
+    if(mkdir(g_tmp_dir.c_str(), 0700) != 0)
+    {
+        perror(("could not create directory \"" + g_tmp_dir + "\"").c_str());
+        return 1;
+    }
+
+    snaplogger::logger::pointer_t l(snaplogger::logger::get_instance());
+    l->add_console_appender();
+    l->set_severity(snaplogger::severity_t::SEVERITY_ALL);
+
+    SNAP_LOG_ERROR
+        << "This is an error through the logger..."
+        << SNAP_LOG_SEND;
+
+    return 0;
+}
+
+
+}
 
 
 
@@ -52,7 +184,9 @@ int main(int argc, char * argv[])
             , SNAPDATABASE_VERSION_STRING
             , argc
             , argv
-            , []() { libexcept::set_collect_stack(false); }
+            , SNAP_CATCH2_NAMESPACE::init_callback
+            , SNAP_CATCH2_NAMESPACE::add_command_line_options
+            , SNAP_CATCH2_NAMESPACE::init_tests
         );
 }
 
