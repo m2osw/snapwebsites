@@ -20,15 +20,16 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief Script handling file header.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * The script feature is used to handle data transformation and filtering
+ * for secondary filters (primarily).
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/database/row.h"
+#include    "snapdatabase/data/virtual_buffer.h"
 
 
 
@@ -36,29 +37,9 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
-{
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
-};
 
-
-class error
-{
-public:
-    typedef std::shared_ptr<error>  pointer_t;
-
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
-
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
-
-private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
-};
+buffer_t        compile_script(std::string const & script);
+buffer_t        execute_script(buffer_t compiled_script, row::pointer_t row);
 
 
 

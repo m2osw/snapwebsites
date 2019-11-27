@@ -20,15 +20,15 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief Block representing free space that can be allocated.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * This block is a _free_ blok meaning that it is not current used for
+ * anything. It is part of the list of free blocks (linked list).
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/data/structure.h"
 
 
 
@@ -36,28 +36,22 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
-{
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
-};
 
+class table;
+typedef std::shared_ptr<table>      table_pointer_t;
 
-class error
+class block_free_block
+    : public block
 {
 public:
-    typedef std::shared_ptr<error>  pointer_t;
+    typedef std::shared_ptr<block_free_block>       pointer_t;
 
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
+                                block_free_block(dbfile::pointer_t f, reference_t offset);
 
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
+    reference_t                 get_next_free_block() const;
+    void                        set_next_free_block(reference_t offset);
 
 private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
 };
 
 

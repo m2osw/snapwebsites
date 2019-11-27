@@ -25,7 +25,7 @@
 // snaplogger lib
 //
 #include    <snapdatabase/exception.h>
-#include    <snapdatabase/convert.h>
+#include    <snapdatabase/data/convert.h>
 
 
 // C++ lib

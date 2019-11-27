@@ -24,7 +24,7 @@
 
 // snaplogger lib
 //
-#include    <snapdatabase/context.h>
+#include    <snapdatabase/database/context.h>
 
 
 // advgetopt lib

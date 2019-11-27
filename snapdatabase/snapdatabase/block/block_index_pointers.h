@@ -20,15 +20,13 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief Block representing the database file header.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/data/structure.h"
 
 
 
@@ -36,28 +34,17 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
-{
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
-};
 
-
-class error
+class block_index_pointers
+    : public block
 {
 public:
-    typedef std::shared_ptr<error>  pointer_t;
+    typedef std::shared_ptr<block_index_pointers>       pointer_t;
 
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
+                                block_index_pointers(dbfile::pointer_t f, reference_t offset);
 
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
 
 private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
 };
 
 

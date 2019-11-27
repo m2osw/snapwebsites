@@ -20,15 +20,24 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief This file is used to generate a Bloom Filter.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * The Bloom Filter is an external file because it would otherwise require
+ * many linked blocks and that would not be efficient at all. Also this
+ * will simplify the code used to grow the size over time for tables
+ * that require it.
+ *
+ * The class defines how the data is organized in the file. The first
+ * 1Kb are used to define the table and the rest is the actual
+ * Bloom Filter. In most case, we will lazily load the file using
+ * mmap() against the entire file.
+ *
+ * A Bloom Filter
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/data/structure.h"
 
 
 
@@ -36,28 +45,17 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
-{
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
-};
 
-
-class error
+class file_bloom_filter
+    : public block
 {
 public:
-    typedef std::shared_ptr<error>  pointer_t;
+    typedef std::shared_ptr<file_bloom_filter>       pointer_t;
 
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
+                                file_bloom_filter(dbfile::pointer_t f, reference_t offset);
 
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
 
 private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
 };
 
 

@@ -20,15 +20,17 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief Block representing the schema.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * This block is used to represent the schema of the table. If the schema
+ * is pretty large, multiple blocks can be chained together. The schema
+ * itself is defined in the schema.cpp/h file.
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/data/structure.h"
+
 
 
 
@@ -36,28 +38,25 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
-{
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
-};
 
-
-class error
+class block_schema
+    : public block
 {
 public:
-    typedef std::shared_ptr<error>  pointer_t;
+    typedef std::shared_ptr<block_schema>       pointer_t;
 
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
+                                block_schema(dbfile::pointer_t f, reference_t offset);
 
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
+    size_t                      get_structure_size();
+    uint32_t                    get_size();
+    void                        set_size(uint32_t size);
+    reference_t                 get_next_schema_block();
+    void                        set_next_schema_block(reference_t offset);
+
+    virtual_buffer::pointer_t   get_schema() const;
+    void                        set_schema(virtual_buffer::pointer_t schema);
 
 private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
 };
 
 

@@ -16,19 +16,23 @@
 // You should have received a copy of the GNU General Public License along
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#pragma once
 
 
 /** \file
- * \brief Database file header.
+ * \brief Database file implementation.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * Each table uses one or more files. Each file is handled by a dbfile
+ * object and a corresponding set of blocks.
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/file/file_bloom_filter.h"
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
@@ -36,29 +40,25 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
+
+// 'BLMF'
+constexpr struct_description_t g_bloom_filter_description[] =
 {
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
+    define_description(
+          FieldName("magic")    // dbtype_t = BLMF
+        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
+    ),
+    end_descriptions()
 };
 
 
-class error
+
+
+file_bloom_filter::file_bloom_filter(dbfile::pointer_t f, reference_t offset)
+    : block(f, offset)
 {
-public:
-    typedef std::shared_ptr<error>  pointer_t;
-
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
-
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
-
-private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
-};
+    f_structure = std::make_shared<structure>(g_bloom_filter_description);
+}
 
 
 

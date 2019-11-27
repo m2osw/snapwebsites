@@ -20,15 +20,14 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief Block representing actual data.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * This block is where we save the actual data.
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/data/schema.h"
 
 
 
@@ -36,28 +35,20 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
-{
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
-};
 
 
-class error
+class block_data
+    : public block
 {
 public:
-    typedef std::shared_ptr<error>  pointer_t;
+    typedef std::shared_ptr<block_data>       pointer_t;
 
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
+                                block_data(dbfile::pointer_t f, reference_t offset);
 
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
+    static uint32_t             block_total_space(table_pointer_t t);
 
 private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
+    schema_table::pointer_t     f_schema = schema_table::pointer_t();
 };
 
 

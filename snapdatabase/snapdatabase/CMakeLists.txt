@@ -30,42 +30,46 @@ configure_file(
 )
 
 add_library(${PROJECT_NAME} SHARED
-    add128.s
-    add256.s
-    add512.s
-    sub128.s
-    sub256.s
-    sub512.s
+    bigint/add128.s
+    bigint/add256.s
+    bigint/add512.s
+    bigint/sub128.s
+    bigint/sub256.s
+    bigint/sub512.s
+    bigint/bigint.cpp
 
-    bigint.cpp
-    block_blob.cpp
-    block.cpp
-    block_data.cpp
-    block_entry_index.cpp
-    block_free_block.cpp
-    block_free_space.cpp
-    block_index_pointers.cpp
-    block_indirect_index.cpp
-    block_schema.cpp
-    block_secondary_index.cpp
-    block_top_index.cpp
-    cell.cpp
-    context.cpp
-    convert.cpp
-    dbfile.cpp
+    block/block_blob.cpp
+    block/block.cpp
+    block/block_data.cpp
+    block/block_entry_index.cpp
+    block/block_free_block.cpp
+    block/block_free_space.cpp
+    block/block_index_pointers.cpp
+    block/block_indirect_index.cpp
+    block/block_schema.cpp
+    block/block_secondary_index.cpp
+    block/block_top_index.cpp
+
+    file/file_bloom_filter.cpp
+    file/file_external_index.cpp
+    file/file_snap_database_table.cpp
+    file/hash.cpp
+
+    database/context.cpp
+    database/table.cpp
+    database/row.cpp
+    database/cell.cpp
+
+    data/dbfile.cpp
+    data/convert.cpp
+    data/schema.cpp
+    data/script.cpp
+    data/structure.cpp
+    data/virtual_buffer.cpp
+    data/xml.cpp
+
     error.cpp
-    file_bloom_filter.cpp
-    file_external_index.cpp
-    file_snap_database_table.cpp
-    hash.cpp
-    row.cpp
-    schema.cpp
-    script.cpp
-    structure.cpp
-    table.cpp
     version.cpp
-    virtual_buffer.cpp
-    xml.cpp
 )
 
 include_directories(
@@ -127,37 +131,80 @@ install(
 
 install(
     FILES
-        bigint.h
-        block_blob.h
-        block_data.h
-        block_entry_index.h
-        block_free_block.h
-        block_free_space.h
-        block.h
-        block_index_pointers.h
-        block_indirect_index.h
-        block_schema.h
-        block_secondary_index.h
-        block_top_index.h
-        cell.h
-        consistency.h
-        context.h
-        convert.h
-        dbfile.h
-        dbtype.h
-        error.h
+        bigint/bigint.h
+
+    DESTINATION
+        include/snapdatabase/bigint
+)
+
+install(
+    FILES
+        block/block_blob.h
+        block/block_data.h
+        block/block_entry_index.h
+        block/block_free_block.h
+        block/block_free_space.h
+        block/block.h
+        block/block_index_pointers.h
+        block/block_indirect_index.h
+        block/block_schema.h
+        block/block_secondary_index.h
+        block/block_top_index.h
+
+    DESTINATION
+        include/snapdatabase/block
+)
+
+install(
+    FILES
+        data/dbfile.h
+        data/dbtype.h
+        data/convert.h
+        data/schema.h
+        data/script.h
+        data/structure.h
+        data/virtual_buffer.h
+        data/xml.h
+
+    DESTINATION
+        include/snapdatabase/data
+)
+
+install(
+    FILES
+        database/cell.h
+        database/context.h
+        database/row.h
+        database/table.h
+
+    DESTINATION
+        include/snapdatabase/database
+)
+
+install(
+    FILES
+        file/file_bloom_filter.h
+        file/file_external_index.h
+        file/file_snap_database_table.h
+        file/hash.h
+
+    DESTINATION
+        include/snapdatabase/file
+)
+
+install(
+    FILES
+        network/consistency.h
+
+    DESTINATION
+        include/snapdatabase/network
+)
+
+install(
+    FILES
         exception.h
-        file_bloom_filter.h
-        file_external_index.h
-        file_snap_database_table.h
-        hash.h
-        row.h
-        schema.h
-        structure.h
-        table.h
+        error.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
-        virtual_buffer.h
-        xml.h
 
     DESTINATION
         include/snapdatabase

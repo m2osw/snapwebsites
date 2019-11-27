@@ -20,15 +20,15 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief Convert file header.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * The convert code is used to transform data from text to binary and vice
+ * versa.
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/data/structure.h"
 
 
 
@@ -36,29 +36,19 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
+
+enum class unit_t
 {
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
+    UNIT_NONE,
+    UNIT_SIZE
 };
 
 
-class error
-{
-public:
-    typedef std::shared_ptr<error>  pointer_t;
+int64_t convert_to_int(std::string const & value, size_t max_size, unit_t unit = unit_t::UNIT_NONE);
+uint64_t convert_to_uint(std::string const & value, size_t max_size, unit_t unit = unit_t::UNIT_NONE);
 
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
-
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
-
-private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
-};
+buffer_t string_to_typed_buffer(struct_type_t type, std::string const & value);
+std::string typed_buffer_to_string(struct_type_t type, buffer_t value);
 
 
 

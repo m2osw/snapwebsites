@@ -20,15 +20,16 @@
 
 
 /** \file
- * \brief Database file header.
+ * \brief Block representing a blob of data.
  *
- * The block base class handles the loading of the block in memory using
- * mmap() and gives information such as its type and location.
+ * The _blob part_ of a row is that part that does not get indexed or
+ * queried in any way other than the whole at once. It is used whenever
+ * it is too large to fit in a `DATA` block.
  */
 
-// lib snapdatabase
+// self
 //
-#include    "snapdatabase/database/context.h"
+#include    "snapdatabase/data/structure.h"
 
 
 
@@ -36,29 +37,22 @@ namespace snapdatabase
 {
 
 
-enum error_code_t
-{
-    ERROR_CODE_NO_ERROR,
-    ERROR_CODE_INVALID_XML,
-};
-
-
-class error
+class block_blob
+    : public block
 {
 public:
-    typedef std::shared_ptr<error>  pointer_t;
+    typedef std::shared_ptr<block_blob>       pointer_t;
 
-                                    error(
-                                          error_code_t code
-                                        , std::string const & message);
+                                block_blob(dbfile::pointer_t f, reference_t offset);
 
-    error_code_t                    get_error_code() const;
-    std::string                     get_error_message() const;
+    uint32_t                    get_size();
+    void                        set_size(uint32_t size);
+    reference_t                 get_next_blob();
+    void                        set_next_blob(reference_t offset);
 
 private:
-    error_code_t                    f_error_code = error_code_t::ERROR_CODE_NO_ERROR;
-    std::string                     f_message = std::string();
 };
+
 
 
 

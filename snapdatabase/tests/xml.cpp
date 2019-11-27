@@ -25,7 +25,7 @@
 // snaplogger lib
 //
 #include    <snapdatabase/exception.h>
-#include    <snapdatabase/xml.h>
+#include    <snapdatabase/data/xml.h>
 
 
 // C++ lib
