@@ -32,6 +32,11 @@
 #include    "snapdatabase/database/table.h"
 
 
+// C++ lib
+//
+#include    <iostream>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -122,6 +127,12 @@ virtual_buffer::pointer_t block_schema::get_schema() const
 void block_schema::set_schema(virtual_buffer::pointer_t schema)
 {
     reference_t const offset(f_structure->get_size());
+#ifdef _DEBUG
+    if(offset == 0)
+    {
+        throw snapdatabase_logic_error("the structure of the block_schema block cannot be dynamic.");
+    }
+#endif
     uint32_t const size_per_page(get_table()->get_page_size() - offset);
 
     uint32_t remaining_size(schema->size());
@@ -130,7 +141,7 @@ void block_schema::set_schema(virtual_buffer::pointer_t schema)
     {
         data_t d(s->data());
         uint32_t const size(std::min(size_per_page, remaining_size));
-        schema->pwrite(d + offset, size, pos);
+        schema->pread(d + offset, size, pos);
         s->set_size(size);
 
         pos += size;

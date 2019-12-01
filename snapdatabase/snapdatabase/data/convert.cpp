@@ -900,9 +900,6 @@ buffer_t string_to_typed_buffer(struct_type_t type, std::string const & value)
     case struct_type_t::STRUCT_TYPE_USTIME:
         return string_to_unix_time(value, 1000000);
 
-    case struct_type_t::STRUCT_TYPE_CSTRING:
-        return cstring_to_buffer(value);
-
     case struct_type_t::STRUCT_TYPE_P8STRING:
         return string_to_buffer(value, 1);
 
@@ -1009,9 +1006,6 @@ std::string typed_buffer_to_string(struct_type_t type, buffer_t value, int base)
 
     case struct_type_t::STRUCT_TYPE_USTIME:
         return unix_time_to_string(value, 1000000);
-
-    case struct_type_t::STRUCT_TYPE_CSTRING:
-        return buffer_to_cstring(value);
 
     case struct_type_t::STRUCT_TYPE_P8STRING:
         return buffer_to_string(value, 1);

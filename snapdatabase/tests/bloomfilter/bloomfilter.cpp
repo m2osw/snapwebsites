@@ -154,7 +154,7 @@ void verify()
 {
     int count(0);
     int errcnt(0);
-    for(auto d : g_data)
+    for(auto const & d : g_data)
     {
         if(count % 1000000 == 999999)
         {

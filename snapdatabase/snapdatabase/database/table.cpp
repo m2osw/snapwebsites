@@ -165,15 +165,13 @@ std::cerr << "table: get def...\n";
     {
         // no schema defined yet, just save ours and we're all good
         //
-std::cerr << "table: save schema...\n";
+std::cerr << "table: create schm...\n";
+        f_schema_table->assign_column_ids();
         block_schema::pointer_t schm(
                 std::static_pointer_cast<block_schema>(
                         allocate_new_block(dbtype_t::BLOCK_TYPE_SCHEMA)));
-std::cerr << "table: get schema in binary...\n";
         virtual_buffer::pointer_t bin_schema(f_schema_table->to_binary());
-std::cerr << "table: got bin_schema...\n";
         schm->set_schema(bin_schema);
-std::cerr << "table: set_schema()...\n";
     }
     else
     {
@@ -267,6 +265,31 @@ size_t table_impl::get_page_size() const
 
 block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
 {
+std::cerr << "table: -- get block(" << offset << ")\n";
+    auto it(f_blocks.find(offset));
+    if(it != f_blocks.end())
+    {
+        if(type == it->second->get_dbtype())
+        {
+std::cerr << "table: -- found block(" << offset << ")\n";
+            return it->second;
+        }
+        // TBD: I think only FREE blocks can be replaced by something else
+        //      and vice versa or we've got a bug on our hands
+        //
+        if(type != dbtype_t::BLOCK_TYPE_FREE_BLOCK
+        && it->second->get_dbtype() != dbtype_t::BLOCK_TYPE_FREE_BLOCK)
+        {
+            throw snapdatabase_logic_error(
+                      "allocate_block() called a non-free block type trying to allocate a non-free block ("
+                    + std::to_string(static_cast<int>(type))
+                    + "). You can go from a free to non-free and non-free to free, but not the opposite.");
+        }
+std::cerr << "table: -- found block(" << offset << ") but it's the wrong type, replacing!\n";
+        //it->second->replacing(); -- this won't work right at this time TODO...
+        f_blocks.erase(it);
+    }
+
     block::pointer_t b;
     switch(type)
     {
@@ -295,7 +318,9 @@ block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
         break;
 
     case dbtype_t::BLOCK_TYPE_FREE_BLOCK:
-        throw snapdatabase_logic_error("You can't allocate a Free Block with allocate_block()");
+        //throw snapdatabase_logic_error("You can't allocate a Free Block with allocate_block()");
+        b = std::make_shared<block_free_block>(f_dbfile, offset);
+        break;
 
     case dbtype_t::BLOCK_TYPE_FREE_SPACE:
         b = std::make_shared<block_free_space>(f_dbfile, offset);
@@ -329,12 +354,17 @@ block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
 
     }
 
-std::cerr << "got new block, set table\n";
     b->set_table(f_table->get_pointer());
-std::cerr << "got new block, set type\n";
     b->set_dbtype(type);
-std::cerr << "got new block, set structure info with size: " << f_dbfile->get_page_size() << "\n";
     b->get_structure()->set_block(b, f_dbfile->get_page_size());
+    b->set_data(f_dbfile->data(offset));
+
+    f_context->limit_allocated_memory();
+
+    // we add this block to the list of blocks only after the call to
+    // limit the allocated memory
+    //
+    f_blocks[offset] = b;
 
 std::cerr << "return new block\n";
     return b;
@@ -343,14 +373,6 @@ std::cerr << "return new block\n";
 
 block::pointer_t table_impl::get_block(reference_t offset)
 {
-std::cerr << "table: -- get block(" << offset << ")\n";
-    auto it(f_blocks.find(offset));
-    if(it != f_blocks.end())
-    {
-std::cerr << "table: -- found block(" << offset << ")\n";
-        return it->second;
-    }
-
 std::cerr << "table: -- get block() file size unless offset == 0...\n";
     if(offset != 0
     && offset >= f_dbfile->get_size())
@@ -365,15 +387,7 @@ std::cerr << "table: -- PTR " << reinterpret_cast<void *>(d)
                     << " -- " << static_cast<int>(type) << "\n";
 
 std::cerr << "table: -- calling allocate block()\n";
-    block::pointer_t b(allocate_block(type, offset));
-    b->set_data(d);
-
-std::cerr << "table: -- save block and return\n";
-    f_blocks[offset] = b;
-
-    f_context->limit_allocated_memory();
-
-    return b;
+    return allocate_block(type, offset);
 }
 
 
@@ -455,20 +469,7 @@ std::cerr << "table: got offset: " << offset << "\n";
         }
         else
         {
-            //block_free_block::pointer_t header(std::static_pointer_cast<block_free_block>(get_block(offset)));
-auto it(f_blocks.find(offset));
-if(it != f_blocks.end())
-{
-std::cerr << "table: FREE block is recorded in f_blocks...\n";
-}
-            block_free_block::pointer_t p(std::make_shared<block_free_block>(f_dbfile, offset));
-
-std::cerr << " -- got new block, set table\n";
-            p->set_table(f_table->get_pointer());
-std::cerr << " -- got new block, set type\n";
-            p->set_dbtype(type);
-std::cerr << " -- got new block, set structure info with size: " << f_dbfile->get_page_size() << "\n";
-            p->get_structure()->set_block(p, f_dbfile->get_page_size());
+            block_free_block::pointer_t p(std::static_pointer_cast<block_free_block>(get_block(offset)));
 
 std::cerr << "table: retrieve next block offset...\n";
 reference_t const o(p->get_next_free_block());
@@ -481,13 +482,7 @@ std::cerr << "table: offset saved?\n";
     // this should probably use a factory for better extendability
     // but at this time we don't need such at all
     //
-    block::pointer_t b(allocate_block(type, offset));
-    f_blocks[offset] = b;
-
-    f_context->limit_allocated_memory();
-
-std::cerr << "we got our NEW block!\n";
-    return b;
+    return allocate_block(type, offset);
 }
 
 

@@ -75,7 +75,7 @@ buffer_t row::to_binary() const
     table::pointer_t t(f_table.lock());
     schema_column::map_by_id_t columns(t->columns_by_id());
 
-    for(auto c : f_cells)
+    for(auto const & c : f_cells)
     {
         schema_column::pointer_t schema(c.second->schema());
 
@@ -231,14 +231,6 @@ buffer_t row::to_binary() const
                 value.f_float = c.second->get_float128();
                 push_uint64(value.f_int[0]);
                 push_uint64(value.f_int[1]);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_CSTRING:
-            {
-                std::string const value(c.second->get_string());
-                uint8_t const * s(reinterpret_cast<uint8_t const *>(value.c_str()));
-                result.insert(result.end(), s, s + value.length() + 1);
             }
             break;
 
@@ -549,24 +541,6 @@ void row::from_binary(buffer_t const & blob)
             {
                 uint64_t const value[2] = { get_uint64(), get_uint64() };
                 v->set_float128(*reinterpret_cast<long double const *>(value));
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_CSTRING:
-            {
-                size_t const start(pos);
-                uint8_t const * e(blob.data() + start);
-                while(*e != '\0')
-                {
-                    ++pos;
-                    if(pos >= blob.size())
-                    {
-                        throw unexpected_eof("blob too small for this string.");
-                    }
-                    ++e;
-                }
-                v->set_string(std::string(blob.data() + start, e));
-                ++pos;  // skip the '\0'
             }
             break;
 

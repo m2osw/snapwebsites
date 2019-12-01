@@ -44,7 +44,9 @@ if( Catch2_FOUND )
 
         context.cpp
         convert.cpp
+        structure.cpp
         version.cpp
+        virtual_buffer.cpp
         xml.cpp
     )
 

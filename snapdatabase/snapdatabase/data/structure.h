@@ -130,7 +130,7 @@ struct version_t
 
     std::uint16_t   get_major() const           { return f_major; }
     void            set_major(uint16_t major)   { f_major = major; }
-    std::uint16_t   get_minor() const           { return f_major; }
+    std::uint16_t   get_minor() const           { return f_minor; }
     void            set_minor(uint16_t minor)   { f_minor = minor; }
 
     bool            operator == (version_t const & rhs)
@@ -164,6 +164,7 @@ struct version_t
                             || (f_major == rhs.f_major && f_minor >= rhs.f_minor);
                     }
 
+private:
     uint16_t        f_major = 0;
     uint16_t        f_minor = 0;
 };
@@ -327,7 +328,6 @@ enum class struct_type_t : uint16_t
     STRUCT_TYPE_MSTIME,             // UINT64 time in milliseconds
     STRUCT_TYPE_USTIME,             // UINT64 time in microseconds
 
-    STRUCT_TYPE_CSTRING,            // string is null terminated
     STRUCT_TYPE_P8STRING,           // UINT8 for size
     STRUCT_TYPE_P16STRING,          // UINT16 for size
     STRUCT_TYPE_P32STRING,          // UINT32 for size
@@ -596,27 +596,29 @@ struct field_t
     typedef std::shared_ptr<field_t>        pointer_t;
     typedef std::map<std::string, pointer_t> map_t;
 
-    static constexpr uint32_t               FIELD_FLAG_VARIABLE_SIZE    = 0x0001;
+    static constexpr std::uint32_t          FIELD_FLAG_VARIABLE_SIZE    = 0x0001;
 
-    uint32_t                                size() const;
+    std::uint32_t                           size() const;
     structure_pointer_t                     operator [] (int idx);
 
     struct_description_t const *            f_description = nullptr;
-    uint32_t                                f_size = 0;
-    uint32_t                                f_flags = 0;
-    uint64_t                                f_offset = 0;
+    std::uint32_t                           f_size = 0;
+    std::uint32_t                           f_flags = 0;
+    std::uint64_t                           f_offset = 0;
     structure_vector_t                      f_sub_structures = structure_vector_t();    // for ARRAY# and STRUCTURE
     flag_definition::map_t                  f_flag_definitions = flag_definition::map_t(); // for BIT representing flags
 };
 
 
 class structure
+    : public std::enable_shared_from_this<structure>
 {
 public:
     typedef std::shared_ptr<structure>      pointer_t;
+    typedef std::weak_ptr<structure>        weak_pointer_t;
     typedef std::vector<pointer_t>          vector_t;
 
-                                            structure(struct_description_t const * descriptions);
+                                            structure(struct_description_t const * descriptions, pointer_t parent = pointer_t());
                                             structure(structure const & rhs) = delete;
 
     structure &                             operator = (structure const & rhs) = delete;
@@ -624,10 +626,11 @@ public:
     void                                    set_block(
                                                   block::pointer_t b
                                                 , std::uint64_t size);
+    void                                    init_buffer();
     void                                    set_virtual_buffer(
                                                   virtual_buffer::pointer_t buffer
                                                 , uint64_t start_offset);
-    virtual_buffer::pointer_t               get_virtual_buffer(uint64_t & start_offset) const;
+    virtual_buffer::pointer_t               get_virtual_buffer(reference_t & start_offset) const;
 
     size_t                                  get_size() const;
     size_t                                  get_current_size() const;
@@ -637,14 +640,14 @@ public:
                                                 , struct_type_t type = struct_type_t::STRUCT_TYPE_END) const;
 
     // bits, int/uint, all sizes up to 64 bits, reference
-    int64_t                                 get_integer(std::string const & field_name) const;
-    void                                    set_integer(std::string const & field_name, int64_t value);
+    std::int64_t                            get_integer(std::string const & field_name) const;
+    void                                    set_integer(std::string const & field_name, std::int64_t value);
 
-    uint64_t                                get_uinteger(std::string const & field_name) const;
-    void                                    set_uinteger(std::string const & field_name, uint64_t value);
+    std::uint64_t                           get_uinteger(std::string const & field_name) const;
+    void                                    set_uinteger(std::string const & field_name, std::uint64_t value);
 
     uint64_t                                get_bits(std::string const & flag_name) const;
-    void                                    set_bits(std::string const & flag_name, uint64_t value);
+    void                                    set_bits(std::string const & flag_name, std::uint64_t value);
 
     // bits, int/uint, all sizes up to 512 bits
     int512_t                                get_large_integer(std::string const & field_name) const;
@@ -677,12 +680,18 @@ public:
     void                                    set_buffer(std::string const & field_name, buffer_t const & value);
 
 private:
-    void                                    parse() const;
-    uint64_t                                parse_descriptions(uint64_t offset) const;
+    std::uint64_t                           parse() const;
+    std::uint64_t                           parse_descriptions(std::uint64_t offset) const;
+    void                                    adjust_offsets(
+                                                      std::uint64_t offset_cutoff
+                                                    , std::uint32_t old_size
+                                                    , std::uint32_t new_size);
 
     struct_description_t const *            f_descriptions = nullptr;
+    weak_pointer_t                          f_parent = weak_pointer_t();
     virtual_buffer::pointer_t               f_buffer = virtual_buffer::pointer_t();
-    uint64_t                                f_start_offset = 0;
+    reference_t                             f_start_offset = 0;
+    mutable std::uint64_t                   f_original_size = 0;
     field_t::map_t                          f_fields_by_name = field_t::map_t();
 };
 

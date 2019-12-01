@@ -96,7 +96,7 @@ std::string setup_context(std::string const & sub_path, std::vector<std::string>
         }
     }
 
-    for(auto x : xmls)
+    for(auto const & x : xmls)
     {
         char const * s(x.c_str());
         CATCH_REQUIRE((s[0] == '<'

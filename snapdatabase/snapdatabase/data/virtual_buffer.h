@@ -72,7 +72,7 @@ public:
     bool                                is_data_available(std::uint64_t size, std::uint64_t offset) const;
 
     int                                 pread(void * buf, std::uint64_t size, std::uint64_t offset, bool full = true) const;
-    int                                 pwrite(void const * buf, std::uint64_t size, std::uint64_t offset, bool allow_growth = true);
+    int                                 pwrite(void const * buf, std::uint64_t size, std::uint64_t offset, bool allow_growth = false);
     int                                 pinsert(void const * buf, std::uint64_t size, std::uint64_t offset);
     int                                 perase(std::uint64_t size, std::uint64_t offset);
 
@@ -94,6 +94,8 @@ private:
     std::uint64_t                       f_total_size = 0;
     bool                                f_modified = false;
 };
+
+std::ostream & operator << (std::ostream & out, virtual_buffer const & v);
 
 
 

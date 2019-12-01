@@ -67,7 +67,6 @@ namespace
 
 
 
-
 struct_description_t g_column_description[] =
 {
     define_description(
@@ -160,11 +159,6 @@ struct_description_t g_table_secondary_index[] =
 
 
 
-constexpr flags_t                       TABLE_FLAG_TEMPORARY    = 0x0001;
-constexpr flags_t                       TABLE_FLAG_SPARSE       = 0x0002;
-constexpr flags_t                       TABLE_FLAG_SECURE       = 0x0004;
-
-constexpr flags_t                       TABLE_FLAG_DROP         = 0x80000000;   // NEVER SAVED, used internally only
 
 struct_description_t g_table_description[] =
 {
@@ -544,14 +538,27 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
 }
 
 
-schema_column::schema_column(schema_table::pointer_t table, structure::pointer_t const & s)
+schema_column::schema_column(schema_table::pointer_t table, structure::pointer_t s)
     : f_schema_table(table)
 {
     from_structure(s);
 }
 
 
-void schema_column::from_structure(structure::pointer_t const & s)
+schema_column::schema_column(
+              schema_table_pointer_t table
+            , std::string name
+            , struct_type_t type
+            , flag32_t flags)
+    : f_name(name)
+    , f_type(type)
+    , f_flags(flags)
+    , f_schema_table(table)
+{
+}
+
+
+void schema_column::from_structure(structure::pointer_t s)
 {
     auto const large_uint(s->get_large_uinteger("hash"));
     f_hash[0] = large_uint.f_value[0];
@@ -582,6 +589,20 @@ column_id_t schema_column::column_id() const
 }
 
 
+void schema_column::set_column_id(column_id_t id)
+{
+    if(f_column_id != COLUMN_NULL)
+    {
+        throw id_already_assigned(
+                  "This column already has an identifier ("
+                + std::to_string(static_cast<int>(f_column_id))
+                + "). You can't assigned it another one.");
+    }
+
+    f_column_id = id;
+}
+
+
 void schema_column::hash(uint64_t & h0, uint64_t & h1) const
 {
     h0 = f_hash[0];
@@ -601,7 +622,7 @@ struct_type_t schema_column::type() const
 }
 
 
-flags_t schema_column::flags() const
+flag32_t schema_column::flags() const
 {
     return f_flags;
 }
@@ -737,6 +758,10 @@ void schema_table::from_xml(xml_node::pointer_t x)
                 + "\" is not acceptable.");
     }
 
+    // start at version 1.0
+    //
+    f_version.set_major(1);
+
     f_name = x->attribute("name");
     if(!validate_name(f_name))
     {
@@ -837,11 +862,61 @@ std::cerr << "schema: parse complex types\n";
         }
     }
 
-    // 2. parse the columns
+    // 2. add system columns and parse user defined columns
     //
     //column_id_t col_id(1); -- TBD
+std::cerr << "schema: add system columns\n";
+
+    // object identifier -- to place the rows in our indirect index
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_oid"
+                    , struct_type_t::STRUCT_TYPE_UINT64
+                    , COLUMN_FLAG_REQUIRED | COLUMN_FLAG_SYSTEM));
+
+        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // date when the row was created
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_created_on"
+                    , struct_type_t::STRUCT_TYPE_USTIME
+                    , COLUMN_FLAG_SYSTEM));
+
+        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // when the row was last updated
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_last_updated"
+                    , struct_type_t::STRUCT_TYPE_USTIME
+                    , COLUMN_FLAG_REQUIRED | COLUMN_FLAG_SYSTEM));
+
+        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // the date when it gets deleted automatically
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_delete_on"
+                    , struct_type_t::STRUCT_TYPE_USTIME
+                    , COLUMN_FLAG_SYSTEM));
+
+        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
 std::cerr << "schema: parse columns\n";
-    for(auto child : schemata)
+    for(auto const & child : schemata)
     {
         for(auto column(child->first_child());
             column != nullptr;
@@ -858,7 +933,7 @@ std::cerr << "schema: parse columns\n";
                         + "\" defined twice.");
             }
 
-            f_columns_by_id[c->column_id()] = c;
+            //f_columns_by_id[c->column_id()] = c;
             f_columns_by_name[c->name()] = c;
             //++col_id; -- TBD
         }
@@ -875,7 +950,7 @@ std::cerr << "schema: parse columns\n";
     advgetopt::split_string(row_key_name, row_key_names, {","});
 
 std::cerr << "schema: parse key names\n";
-    for(auto n : row_key_names)
+    for(auto const & n : row_key_names)
     {
         schema_column::pointer_t c(column(n));
         if(c == nullptr)
@@ -895,7 +970,7 @@ std::cerr << "schema: parse key names\n";
     // 4. the secondary indexes are transformed to array of columns
     //
 std::cerr << "schema: secondary indexes\n";
-    for(auto si : secondary_indexes)
+    for(auto const & si : secondary_indexes)
     {
         schema_secondary_index::pointer_t index(std::make_shared<schema_secondary_index>());
         index->set_index_name(si->attribute("name"));
@@ -925,7 +1000,7 @@ std::cerr << "schema: secondary indexes\n";
                 , column_names
                 , {","});
 
-        for(auto n : column_names)
+        for(auto const & n : column_names)
         {
             schema_column::pointer_t c(column(n));
             if(c == nullptr)
@@ -953,7 +1028,7 @@ void schema_table::load_extension(xml_node::pointer_t e)
     // the right way of assigning the ids
     //
     column_id_t col_id(0);
-    for(auto c : f_columns_by_id)
+    for(auto const & c : f_columns_by_id)
     {
         if(c.second->column_id() > col_id)
         {
@@ -1001,17 +1076,17 @@ void schema_table::load_extension(xml_node::pointer_t e)
 
 void schema_table::from_binary(virtual_buffer::pointer_t b)
 {
-    structure s(g_table_description);
+    structure::pointer_t s(std::make_shared<structure>(g_table_description));
     
-    s.set_virtual_buffer(b, 0);
+    s->set_virtual_buffer(b, 0);
 
-    f_version = s.get_uinteger("version");
-    f_name = s.get_string("name");
-    f_flags = s.get_uinteger("flags");
-    f_model = static_cast<model_t>(s.get_uinteger("model"));
+    f_version = s->get_uinteger("version");
+    f_name = s->get_string("name");
+    f_flags = s->get_uinteger("flags");
+    f_model = static_cast<model_t>(s->get_uinteger("model"));
 
     {
-        auto const field(s.get_field("row_key"));
+        auto const field(s->get_field("row_key"));
         auto const max(field->size());
         for(std::remove_const<decltype(max)>::type idx(0); idx < max; ++idx)
         {
@@ -1020,7 +1095,7 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
     }
 
     {
-        auto const field(s.get_field("secondary_indexes"));
+        auto const field(s->get_field("secondary_indexes"));
         auto const max(field->size());
         for(std::remove_const<decltype(max)>::type idx(0); idx < max; ++idx)
         {
@@ -1040,11 +1115,19 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
     }
 
     {
-        auto const field(s.get_field("columns"));
+        auto field(s->get_field("columns"));
         auto const max(field->size());
         for(std::remove_const<decltype(max)>::type idx(0); idx < max; ++idx)
         {
             schema_column::pointer_t column(std::make_shared<schema_column>(shared_from_this(), (*field)[idx]));
+            if(column->column_id() != 0)
+            {
+                throw id_missing(
+                      "loaded column \""
+                    + column->name()
+                    + "\" from the database and its column identifier is 0.");
+            }
+
             f_columns_by_name[column->name()] = column;
             f_columns_by_id[column->column_id()] = column;
         }
@@ -1054,34 +1137,43 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
 
 virtual_buffer::pointer_t schema_table::to_binary() const
 {
-std::cerr << "creating a binary schema from a schema_table and its chlidren\n";
-    structure s(g_table_description);
+std::cerr << "creating a binary schema from a schema_table and its children\n";
+    structure::pointer_t s(std::make_shared<structure>(g_table_description));
+    s->init_buffer();
+    s->set_uinteger("version", f_version.to_binary());
+    s->set_string("name", f_name);
+    s->set_uinteger("flags", f_flags);
+    s->set_uinteger("model", static_cast<uint8_t>(f_model));
 
-    s.set_uinteger("version", f_version.to_binary());
-    s.set_string("name", f_name);
-    s.set_uinteger("flags", f_flags);
-    s.set_uinteger("model", static_cast<uint8_t>(f_model));
+{
+std::cerr << "-------------------------------------------- HEADER?\n";
+reference_t offset;
+std::cerr << *s->get_virtual_buffer(offset);
+std::cerr << "--------------------------------------------\n";
+}
 
-std::cerr << "   + row_key\n";
+std::cerr << "   + row_key " << f_row_key.size() << "\n";
     {
         structure::vector_t v;
         auto const max(f_row_key.size());
         for(std::remove_const<decltype(max)>::type i(0); i < max; ++i)
         {
             structure::pointer_t column_id_structure(std::make_shared<structure>(g_table_column_reference));
+            column_id_structure->init_buffer();
             column_id_structure->set_uinteger("column_id", f_row_key[i]);
             v.push_back(column_id_structure);
         }
-        s.set_array("row_key", v);
+        s->set_array("row_key", v);
     }
 
-std::cerr << "   + secondary indexes\n";
+std::cerr << "   + secondary indexes " << f_secondary_indexes.size() << "\n";
     {
         structure::vector_t v;
         auto const max(f_secondary_indexes.size());
         for(std::remove_const<decltype(max)>::type i(0); i < max; ++i)
         {
             structure::pointer_t secondary_index_structure(std::make_shared<structure>(g_table_secondary_index));
+            secondary_index_structure->init_buffer();
             secondary_index_structure->set_string("name", f_secondary_indexes[i]->get_index_name());
 
             structure::vector_t c;
@@ -1089,6 +1181,7 @@ std::cerr << "   + secondary indexes\n";
             for(std::remove_const<decltype(max)>::type j(0); j < jmax; ++j)
             {
                 structure::pointer_t column_id_structure(std::make_shared<structure>(g_table_column_reference));
+                column_id_structure->init_buffer();
                 column_id_structure->set_uinteger("column_id", f_secondary_indexes[i]->get_column_id(j));
                 c.push_back(column_id_structure);
             }
@@ -1098,15 +1191,17 @@ std::cerr << "   + secondary indexes\n";
             v.push_back(secondary_index_structure);
         }
 
-        s.set_array("secondary_indexes", v);
+        s->set_array("secondary_indexes", v);
     }
 
-std::cerr << "   + columns\n";
+std::cerr << "   + columns " << f_columns_by_name.size() << "/" << f_columns_by_id.size() << "\n";
     {
         structure::vector_t v;
-        for(auto col : f_columns_by_id)
+        for(auto const & col : f_columns_by_id)
         {
             structure::pointer_t column_description(std::make_shared<structure>(g_column_description));
+            column_description->init_buffer();
+std::cerr << "   -> save one column first\n";
             column_description->set_string("name", col.second->name());
             uint512_t hash;
             col.second->hash(hash.f_value[0], hash.f_value[1]);
@@ -1123,14 +1218,15 @@ std::cerr << "   + columns\n";
             column_description->set_buffer("validation", col.second->validation());
             v.push_back(column_description);
         }
-        s.set_array("columns", v);
+std::cerr << "   -> save columns now\n";
+        s->set_array("columns", v);
     }
 
     // we know it is zero so we ignore that one anyay
     //
 std::cerr << "   + convert structure to virtual buffer\n";
     uint64_t start_offset(0);
-    return s.get_virtual_buffer(start_offset);
+    return s->get_virtual_buffer(start_offset);
 }
 
 
@@ -1167,6 +1263,23 @@ bool schema_table::is_secure() const
 column_ids_t schema_table::row_key() const
 {
     return f_row_key;
+}
+
+
+void schema_table::assign_column_ids()
+{
+    if(!f_columns_by_id.empty())
+    {
+        return;
+    }
+
+    column_id_t id(1);
+    for(auto c : f_columns_by_name)
+    {
+        c.second->set_column_id(id);
+        f_columns_by_id[id] = c.second;
+        ++id;
+    }
 }
 
 

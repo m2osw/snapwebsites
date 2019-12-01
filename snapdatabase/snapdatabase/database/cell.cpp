@@ -622,8 +622,7 @@ void cell::set_version(version_t value)
 
 std::string cell::get_string() const
 {
-    if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_CSTRING
-    || f_schema_column->type() != struct_type_t::STRUCT_TYPE_P8STRING
+    if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_P8STRING
     || f_schema_column->type() != struct_type_t::STRUCT_TYPE_P16STRING
     || f_schema_column->type() != struct_type_t::STRUCT_TYPE_P32STRING)
     {
@@ -638,8 +637,7 @@ std::string cell::get_string() const
 
 void cell::set_string(std::string const & value)
 {
-    if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_CSTRING
-    || f_schema_column->type() != struct_type_t::STRUCT_TYPE_P8STRING
+    if(f_schema_column->type() != struct_type_t::STRUCT_TYPE_P8STRING
     || f_schema_column->type() != struct_type_t::STRUCT_TYPE_P16STRING
     || f_schema_column->type() != struct_type_t::STRUCT_TYPE_P32STRING)
     {

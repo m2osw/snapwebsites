@@ -166,7 +166,7 @@
       way we can use different keys for different set of data: user data,
       financial data, AI data, etc.
 
-      The <external> tag of a column defines a size which is used to limited
+      The <external> tag of a column defines a size which is used to limit
       the data saved in the main table. If the user data is larger than this
       amount, then the data is to be saved in a separate file instead of the
       main table. (TBD: should that be a table or even context parameter

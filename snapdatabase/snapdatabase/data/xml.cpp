@@ -930,7 +930,7 @@ std::ostream & operator << (std::ostream & out, xml_node const & n)
 {
     out << '<';
     out << n.tag_name();
-    for(auto a : n.all_attributes())
+    for(auto const & a : n.all_attributes())
     {
         out << a.first
             << "=\""

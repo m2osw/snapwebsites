@@ -290,13 +290,10 @@ int dbfile::open_file()
 
         file_snap_database_table::pointer_t sdbt(std::static_pointer_cast<file_snap_database_table>(
                     f_table->allocate_new_block(dbtype_t::FILE_TYPE_SNAP_DATABASE_TABLE)));
-std::cerr << "We got our SDBT file! " << reinterpret_cast<void *>(sdbt.get()) << "\n";
+
         sdbt->set_first_free_block(page_size);
-std::cerr << "  now set block size\n";
         sdbt->set_block_size(page_size);
-std::cerr << "  now set version\n";
         sdbt->set_version(v);
-std::cerr << "  now sync. the blok\n";
         sdbt->sync(false);
     }
 
@@ -426,6 +423,14 @@ reference_t dbfile::append_free_block(reference_t const previous_block_offset)
         //
         std::vector<uint8_t> zeroes(get_page_size() - sizeof(magic) - sizeof(previous_block_offset));
         write_data(zeroes.data(), zeroes.size());
+    }
+    else
+    {
+        // this is what makes the file sparse
+        //
+        // but only when `one get_page_size() > get_system_page_size()`
+        //
+        ftruncate(f_fd, p + get_page_size());
     }
 
     return p;

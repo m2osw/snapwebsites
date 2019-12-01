@@ -67,7 +67,7 @@ knwow whether it is affected by those two numbers.
 * Indirect Index (`INDR`/`TIND`)
 
 To allow for changes in the data location, we use a two layered indexing
-method. Each row is assigned an identifier (OID). That identifier is
+mechanism. Each row is assigned an identifier (OID). That identifier is
 incremented starting at 1. Knowing the number of pointers per page and
 the current number of levels (the `TIND` includes that level), we can
 immediately calculate where the pointer is located and load the exact
@@ -1005,7 +1005,7 @@ The fields of the Top Index Block are as follow:
 
     These 16 bytes are repeated up to the end of the block.
 
-    _Note: the size of the key is no much of a problem for a Murmur hash,
+    _Note: the size of the key is not much of a problem for a Murmur hash,
     however, for a key which is user defined strings or random binary,
     it will certainly have unwanted side effects if too short._
 

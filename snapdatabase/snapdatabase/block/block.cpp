@@ -59,7 +59,8 @@ namespace
 {
 
 
-constexpr char const * g_errmsg = "block::~block() called with an f_data pointer, but f_table == nullptr.";
+constexpr char const * g_errmsg_table = "block::~block() called with an f_data pointer, but f_table == nullptr.";
+constexpr char const * g_errmsg_exception = "block::~block() tried to release the f_data by it threw an exception.";
 
 
 }
@@ -80,9 +81,9 @@ block::~block()
         if(f_table == nullptr)
         {
             SNAP_LOG_FATAL
-                << g_errmsg
+                << g_errmsg_table
                 << SNAP_LOG_SEND;
-            std::cerr << g_errmsg << std::endl;
+            std::cerr << g_errmsg_table << std::endl;
             std::terminate();
         }
 
@@ -94,13 +95,13 @@ block::~block()
         catch(page_not_found const & e)
         {
             SNAP_LOG_FATAL
-                << g_errmsg
+                << g_errmsg_exception
                 << " ("
                 << e.what()
                 << ")."
                 << SNAP_LOG_SEND;
             std::cerr
-                << g_errmsg
+                << g_errmsg_exception
                 << " ("
                 << e.what()
                 << ")."

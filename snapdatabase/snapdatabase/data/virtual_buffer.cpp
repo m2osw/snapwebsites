@@ -34,6 +34,12 @@
 #include    "snapdatabase/exception.h"
 
 
+// C++ lib
+//
+#include    <iomanip>
+#include    <iostream>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -112,19 +118,28 @@ bool virtual_buffer::is_data_available(std::uint64_t size, std::uint64_t offset)
 
 int virtual_buffer::pread(void * buf, std::uint64_t size, std::uint64_t offset, bool full) const
 {
+    if(size == 0)
+    {
+        return 0;
+    }
+
     if(full
     && !is_data_available(size, offset))
     {
         throw invalid_size(
-                "Not enough data to process virtual buffer pread(). Read "
-                + std::to_string(offset)
-                + " bytes, "
+                "Not enough data to read from virtual buffer. Requested to read "
                 + std::to_string(size)
-                + " still missing.");
+                + " bytes at "
+                + std::to_string(offset)
+                + ", when the buffer is "
+                + std::to_string(f_total_size)
+                + " bytes total (missing: "
+                + std::to_string((offset + size) - f_total_size)
+                + " bytes).");
     }
 
     std::uint64_t bytes_read(0);
-    for(auto b : f_buffers)
+    for(auto const & b : f_buffers)
     {
         if(offset >= b.f_size)
         {
@@ -153,6 +168,8 @@ int virtual_buffer::pread(void * buf, std::uint64_t size, std::uint64_t offset, 
                 return bytes_read;
             }
 
+            buf = reinterpret_cast<char *>(buf) + sz;
+
             offset = 0;
         }
     }
@@ -163,6 +180,11 @@ int virtual_buffer::pread(void * buf, std::uint64_t size, std::uint64_t offset, 
 
 int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t offset, bool allow_growth)
 {
+    if(size == 0)
+    {
+        return 0;
+    }
+
     if(!allow_growth
     && !is_data_available(offset, size))
     {
@@ -179,7 +201,15 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
     std::uint8_t const * in(reinterpret_cast<std::uint8_t const *>(buf));
     std::uint64_t bytes_written(0);
 
-    for(auto b : f_buffers)
+    auto check_modified = [&]()
+        {
+            if(!f_modified && bytes_written != 0)
+            {
+                f_modified = true;
+            }
+        };
+
+    for(auto & b : f_buffers)
     {
         if(offset >= b.f_size)
         {
@@ -205,7 +235,7 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
 
             if(size == 0)
             {
-                f_modified = bytes_written != 0;
+                check_modified();
                 return bytes_written;
             }
 
@@ -219,11 +249,12 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
     //
     if(size == 0)
     {
-        f_modified = bytes_written != 0;
+        check_modified();
         return bytes_written;
     }
 
-    if(f_buffers.back().f_block == nullptr)
+    if(!f_buffers.empty()
+    && f_buffers.back().f_block == nullptr)
     {
         std::uint64_t const available(f_buffers.back().f_data.capacity() - f_buffers.back().f_size);
         if(available > 0)
@@ -237,7 +268,7 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
 
             if(size == 0)
             {
-                f_modified = bytes_written != 0;
+                check_modified();
                 return bytes_written;
             }
 
@@ -260,7 +291,8 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
     //      (or use a hint / user settings / stats / ...)
     //
     vbuf_t append;
-    append.f_data.resize((size + 4095) & -4096);
+    append.f_data.reserve((size + 4095) & -4096);
+    append.f_data.resize(size);
     append.f_size = size;
 
     memcpy(append.f_data.data(), in, size);
@@ -270,7 +302,7 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
     bytes_written += size;
     f_total_size += size;
 
-    f_modified = bytes_written != 0;
+    check_modified();
     return bytes_written;
 }
 
@@ -289,10 +321,10 @@ int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t 
         return pwrite(buf, size, offset, true);
     }
 
+    std::uint8_t const * in(reinterpret_cast<std::uint8_t const *>(buf));
+
     // insert has to happen... search the buffer where it will happen
     //
-    std::uint8_t const * in(reinterpret_cast<std::uint8_t const *>(buf));
-    //for(auto b : f_buffers)
     for(auto b(f_buffers.begin()); b != f_buffers.end(); ++b)
     {
         if(offset >= b->f_size)
@@ -325,6 +357,7 @@ int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t 
             else
             {
                 b->f_data.insert(b->f_data.begin() + offset, in, in + size);
+                b->f_size += size;
             }
             f_total_size += size;
             f_modified = true;
@@ -467,6 +500,45 @@ int virtual_buffer::perase(std::uint64_t size, std::uint64_t offset)
 
     f_modified = bytes_erased != 0;
     return bytes_erased;
+}
+
+
+std::ostream & operator << (std::ostream & out, virtual_buffer const & v)
+{
+    // using a separate stringstream makes it more multi-threading impervious
+    // (because flags are not shared well otherwise)
+    //
+    std::stringstream ss;
+
+    ss << std::hex << std::setfill('0');
+
+    char const * newline("");
+    std::uint64_t sz(v.size());
+    for(reference_t p(0); p < sz; ++p)
+    {
+        if(p % 16 == 0)
+        {
+            if(sz > 65536)
+            {
+                ss << newline << std::setw(8) << p << ": ";
+            }
+            else
+            {
+                ss << newline << std::setw(4) << p << ": ";
+            }
+            newline = "\n";
+        }
+
+        char c;
+        if(v.pread(&c, 1, p) != 1)
+        {
+            throw io_error("Expected to read 1 more byte from virtual buffer.");
+        }
+
+        ss << " " << std::setw(2) << static_cast<int>(c);
+    }
+    ss << std::endl;
+    return out << ss.str();
 }
 
 

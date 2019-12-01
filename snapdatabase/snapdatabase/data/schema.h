@@ -69,8 +69,18 @@ enum class model_t
 model_t             name_to_model(std::string const & name);
 
 
-constexpr flag64_t                          SCHEMA_FLAG_TEMPORARY               = 1LL << 0;
-constexpr flag64_t                          SCHEMA_FLAG_DROP                    = 1LL << 1;
+// SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
+constexpr flag64_t                          TABLE_FLAG_TEMPORARY    = (1LL << 0);
+constexpr flag64_t                          TABLE_FLAG_SPARSE       = (1LL << 1);
+constexpr flag64_t                          TABLE_FLAG_SECURE       = (1LL << 2);
+
+// NEVER SAVED, used internally only
+constexpr flag64_t                          TABLE_FLAG_DROP         = (1LL << 63);
+
+
+// Special values
+constexpr column_id_t                       COLUMN_NULL = 0;
+
 
 // SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
 constexpr flag32_t                          COLUMN_FLAG_LIMITED                 = (1LL << 0);
@@ -81,7 +91,10 @@ constexpr flag32_t                          COLUMN_FLAG_BOUNDS                  
 constexpr flag32_t                          COLUMN_FLAG_LENGTH                  = (1LL << 5);
 constexpr flag32_t                          COLUMN_FLAG_VALIDATION              = (1LL << 6);
 constexpr flag32_t                          COLUMN_FLAG_BLOB                    = (1LL << 7);
+constexpr flag32_t                          COLUMN_FLAG_SYSTEM                  = (1LL << 8);
 
+
+// SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
 constexpr flag32_t                          SECONDARY_INDEX_FLAG_DISTRIBUTED    = (1LL << 0);
 
 
@@ -128,17 +141,23 @@ public:
     typedef std::map<std::string, pointer_t>    map_by_name_t;
 
                                             schema_column(schema_table_pointer_t table, xml_node::pointer_t x);
-                                            schema_column(schema_table_pointer_t table, structure::pointer_t const & s);
+                                            schema_column(schema_table_pointer_t table, structure::pointer_t s);
+                                            schema_column(
+                                                      schema_table_pointer_t table
+                                                    , std::string name
+                                                    , struct_type_t type
+                                                    , flag32_t flags);
 
-    void                                    from_structure(structure::pointer_t const & s);
+    void                                    from_structure(structure::pointer_t s);
 
     schema_table_pointer_t                  table() const;
 
-    void                                    hash(uint64_t & h0, uint64_t & h1) const;
+    void                                    hash(std::uint64_t & h0, std::uint64_t & h1) const;
     std::string                             name() const;
     column_id_t                             column_id() const;
+    void                                    set_column_id(column_id_t id);
     struct_type_t                           type() const;
-    flags_t                                 flags() const;
+    flag32_t                                flags() const;
     std::string                             encrypt_key_name() const;
     buffer_t                                default_value() const;
     buffer_t                                minimum_value() const;
@@ -148,13 +167,13 @@ public:
     buffer_t                                validation() const;
 
 private:
-    uint64_t                                f_hash[2] = { 0ULL, 0ULL };
+    std::uint64_t                           f_hash[2] = { 0ULL, 0ULL };
     std::string                             f_name = std::string();
     column_id_t                             f_column_id = column_id_t();
     struct_type_t                           f_type = struct_type_t();
-    flags_t                                 f_flags = flags_t();
+    flag32_t                                f_flags = flag32_t();
     std::string                             f_encrypt_key_name = std::string();
-    int32_t                                 f_internal_size_limit = -1; // -1 = no limit; if size > f_internal_size_limit, save in external file
+    std::int32_t                            f_internal_size_limit = -1; // -1 = no limit; if size > f_internal_size_limit, save in external file
     buffer_t                                f_default_value = buffer_t();
     buffer_t                                f_minimum_value = buffer_t();
     buffer_t                                f_maximum_value = buffer_t();
@@ -190,7 +209,7 @@ public:
 private:
     std::string                             f_index_name = std::string();
     column_ids_t                            f_column_ids = column_ids_t();
-    flags_t                                 f_flags = flags_t();
+    flag64_t                                f_flags = flag64_t();
 };
 
 
@@ -214,6 +233,7 @@ public:
     bool                                    is_sparse() const;
     bool                                    is_secure() const;
     column_ids_t                            row_key() const;
+    void                                    assign_column_ids();
     schema_column::pointer_t                column(std::string const & name) const;
     schema_column::pointer_t                column(column_id_t id) const;
     schema_column::map_by_id_t              columns_by_id() const;
@@ -225,7 +245,7 @@ public:
 private:
     version_t                               f_version = version_t();
     std::string                             f_name = std::string();
-    flags_t                                 f_flags = flags_t();
+    flag64_t                                f_flags = flag64_t();
     model_t                                 f_model = model_t::TABLE_MODEL_CONTENT;
     std::uint32_t                           f_block_size = 0;
     column_ids_t                            f_row_key = column_ids_t();

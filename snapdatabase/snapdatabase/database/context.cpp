@@ -170,7 +170,7 @@ std::cerr << "schema dirs = " << max << "?\n";
         // TODO: this is perfect for workers to distribute the load on many
         //       threads (and then the creation/loading of each table)
         //
-        for(auto filename : list)
+        for(auto const & filename : list)
         {
             xml x(filename);
 std::cerr << "parsed [" << filename << "]\n";
@@ -276,7 +276,7 @@ std::cerr << "table extensions...\n";
         << " XML schema extensions."
         << SNAP_LOG_SEND;
 
-    for(auto e : table_extensions)
+    for(auto const & e : table_extensions)
     {
         std::string const name(e->attribute("name"));
         table::pointer_t t(get_table(name));
@@ -299,7 +299,7 @@ std::cerr << "table extensions...\n";
         << SNAP_LOG_SEND;
 
 std::cerr << "verify schemata...\n";
-    for(auto t : f_tables)
+    for(auto & t : f_tables)
     {
         t.second->verify_schema();
     }

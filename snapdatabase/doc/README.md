@@ -13,7 +13,7 @@ Important parts of Cassandra that we are using:
      it should be, it is not there yet... so that makes for a rather
      complicated algorithm to re-distribute the data quicly
 
-     (Note: this hashing method is based on an indexed sequantial
+     (Note: this hashing method is based on an indexed sequential
      exploit which is well known to DBMS implementers)
 
  * Replication capability having data sent to several nodes for "backup"

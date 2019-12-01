@@ -141,7 +141,7 @@ buffer_t execute_script(buffer_t compiled_script, row::pointer_t row)
         // TODO: transform the entire row in script variables
         snap::snap_expr::variable_t::variable_map_t variables;
         cell::map_t cells(row->cells());
-        for(auto c : cells)
+        for(auto const & c : cells)
         {
             schema_column::pointer_t schema(c.second->schema());
             snap::snap_expr::variable_t v(QString::fromUtf8(schema->name().c_str()));
@@ -259,7 +259,6 @@ buffer_t execute_script(buffer_t compiled_script, row::pointer_t row)
                 v.set_value(static_cast<double>(c.second->get_float128()));
                 break;
 
-            case struct_type_t::STRUCT_TYPE_CSTRING:
             case struct_type_t::STRUCT_TYPE_P8STRING:
             case struct_type_t::STRUCT_TYPE_P16STRING:
             case struct_type_t::STRUCT_TYPE_P32STRING:

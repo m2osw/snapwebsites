@@ -22,7 +22,7 @@
 #include    "main.h"
 
 
-// snaplogger lib
+// snapdatabase lib
 //
 #include    <snapdatabase/database/context.h>
 
@@ -43,7 +43,7 @@ CATCH_TEST_CASE("Context", "[centext]")
                 {
                     "<!-- name=simple-context -->"
                     "<context>"
-                      "<table name='foo'>" // model="..." row-key="..." drop="..." temporary="..." sparse="..." secure="...">
+                      "<table name='foo' sparse='sparse'>" // model="..." row-key="..." drop="..." temporary="..." sparse="..." secure="...">
                         "<block-size>4096</block-size>"
                         "<description>Create a Context</description>"
                         "<schema>"
