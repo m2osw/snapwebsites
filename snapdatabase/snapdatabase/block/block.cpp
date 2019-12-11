@@ -151,7 +151,10 @@ void block::set_dbtype(dbtype_t type)
     // TODO: add verifications (i.e. go from FREE to any or any to FREE
     //       and maybe a few others)
     //
-    *reinterpret_cast<dbtype_t *>(data(0)) = type;
+    if(*reinterpret_cast<dbtype_t *>(data(0)) != type)
+    {
+        *reinterpret_cast<dbtype_t *>(data(0)) = type;
+    }
 }
 
 
@@ -175,7 +178,8 @@ data_t block::data(reference_t offset)
 {
     if(f_data == nullptr)
     {
-        f_data = get_table()->get_dbfile()->data(f_offset);
+        //f_data = get_table()->get_dbfile()->data(f_offset);
+        throw snapdatabase_logic_error("block::data() called before set_data().");
     }
 
     return f_data + (offset % get_table()->get_page_size());
@@ -186,7 +190,8 @@ const_data_t block::data(reference_t offset) const
 {
     if(f_data == nullptr)
     {
-        f_data = get_table()->get_dbfile()->data(f_offset);
+        //f_data = get_table()->get_dbfile()->data(f_offset);
+        throw snapdatabase_logic_error("block::data() called before set_data().");
     }
 
     return f_data + (offset % get_table()->get_page_size());

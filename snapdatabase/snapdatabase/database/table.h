@@ -92,6 +92,7 @@ public:
     size_t                                      get_page_size() const; // size of one block in bytes including the magic
     block_pointer_t                             get_block(reference_t offset);
     block_pointer_t                             allocate_new_block(dbtype_t type);
+    void                                        free_block(block_pointer_t block, bool clear_block = true);
     bool                                        verify_schema();
 
 private:

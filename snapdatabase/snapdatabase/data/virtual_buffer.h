@@ -69,7 +69,7 @@ public:
     bool                                modified() const;
     std::size_t                         count_buffers() const;
     std::uint64_t                       size() const;
-    bool                                is_data_available(std::uint64_t size, std::uint64_t offset) const;
+    bool                                is_data_available(std::uint64_t offset, std::uint64_t size) const;
 
     int                                 pread(void * buf, std::uint64_t size, std::uint64_t offset, bool full = true) const;
     int                                 pwrite(void const * buf, std::uint64_t size, std::uint64_t offset, bool allow_growth = false);

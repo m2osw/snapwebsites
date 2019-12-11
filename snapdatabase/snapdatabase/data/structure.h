@@ -43,7 +43,7 @@
 
 // snapdev lib
 //
-#include    <snapdev/not_used.h>
+#include    <snapdev/init_structure.h>
 
 
 // C++ lib
@@ -64,17 +64,26 @@ constexpr   std::uint16_t                   STRUCTURE_VERSION_MINOR = 1;
 typedef uint64_t                        flags_t;
 
 
-struct version_t
-{
-    constexpr       version_t(version_t const & v)
-                        : f_major(v.f_major)
-                        , f_minor(v.f_minor)
-                    {
-                    }
 
+
+
+
+
+
+
+
+class version_t
+{
+public:
     constexpr       version_t()
                         : f_major(0)
                         , f_minor(0)
+                    {
+                    }
+
+    constexpr       version_t(version_t const & v)
+                        : f_major(v.f_major)
+                        , f_minor(v.f_minor)
                     {
                     }
 
@@ -133,6 +142,9 @@ struct version_t
     std::uint16_t   get_minor() const           { return f_minor; }
     void            set_minor(uint16_t minor)   { f_minor = minor; }
 
+    void            next_branch()               { ++f_major; f_minor = 0; }
+    void            next_revision()             { ++f_minor; }
+
     bool            operator == (version_t const & rhs)
                     {
                         return f_major == rhs.f_major
@@ -178,11 +190,11 @@ struct min_max_version_t
                     {
                     }
 
-    version_t       min() const { return f_min_version; }
-    version_t       max() const { return f_max_version; }
+    constexpr version_t       min() const { return f_min_version; }
+    constexpr version_t       max() const { return f_max_version; }
 
-    version_t       f_min_version = version_t();
-    version_t       f_max_version = version_t();
+    version_t const f_min_version = version_t();
+    version_t const f_max_version = version_t();
 };
 
 
@@ -280,8 +292,8 @@ enum class struct_type_t : uint16_t
     STRUCT_TYPE_VOID,
 
     // bits are used as flags or numbers that can use less than 8 bit
-    // (i.e. 3 bits can be enough in many cases); the field name
-    // defines all the flags and their size with:
+    // (i.e. 3 bits can be enough in many cases); each name defines
+    // the bit field and its size like so:
     //
     //      <general-name>=<name1>:<size1>/<name2>:<size2>/...
     //
@@ -289,9 +301,7 @@ enum class struct_type_t : uint16_t
     // here; a field that gets removed can have its name removed and its
     // size is kept; this is the equivalent of a pad in the bit field
     //
-    // the `<general-name>` is often set to "flags"; it is actually
-    // mandatory if you want to use the `STRUCT_DESCRIPTION_FLAG_OPTIONAL`
-    // feature where a field exists only if a corresponding flag is set
+    // the `<general-name>` is often set to "flags"
     //
     // this is very much an equivalent to bit fields in C/C++
     //
@@ -352,11 +362,14 @@ enum class struct_type_t : uint16_t
 };
 
 
+
+
 constexpr struct_type_t             INVALID_STRUCT_TYPE(static_cast<struct_type_t>(-1));
 
 constexpr ssize_t                   INVALID_SIZE = -1;
 constexpr ssize_t                   VARIABLE_SIZE = -2;
 
+std::string                         to_string(struct_type_t const & type);
 struct_type_t                       name_to_struct_type(std::string const & type_name);
 
 
@@ -374,143 +387,107 @@ struct struct_description_t
     char const * const                      f_field_name = nullptr;
     struct_type_t const                     f_type = struct_type_t::STRUCT_TYPE_VOID;
     struct_description_flags_t const        f_flags = 0;
+    char const * const                      f_default_value = nullptr;
     version_t const                         f_min_version = version_t();
     version_t const                         f_max_version = version_t();
     struct_description_t const * const      f_sub_description = nullptr;       // i.e. for an array, the type of the items
 };
 
 
-template<typename T>
-class DescriptionValue
-{
-public:
-    typedef T   value_t;
-
-    constexpr DescriptionValue<T>(T const v)
-        : f_value(v)
-    {
-    }
-
-    constexpr value_t get() const
-    {
-        return f_value;
-    }
-
-private:
-    value_t     f_value;
-};
-
-
 class FieldName
-    : public DescriptionValue<char const *>
+    : public snap::StructureValue<char const *>
 {
 public:
     constexpr FieldName()
-        : DescriptionValue<char const *>(nullptr)
+        : snap::StructureValue<char const *>(nullptr)
     {
     }
 
     constexpr FieldName(char const * name)
-        : DescriptionValue<char const *>(name)
+        : snap::StructureValue<char const *>(name)
     {
     }
 };
 
 
 class FieldType
-    : public DescriptionValue<struct_type_t>
+    : public snap::StructureValue<struct_type_t>
 {
 public:
     constexpr FieldType()
-        : DescriptionValue<struct_type_t>(struct_type_t::STRUCT_TYPE_END)
+        : snap::StructureValue<struct_type_t>(struct_type_t::STRUCT_TYPE_END)
     {
     }
 
     constexpr FieldType(struct_type_t type)
-        : DescriptionValue<struct_type_t>(type)
+        : snap::StructureValue<struct_type_t>(type)
     {
     }
 };
 
 
 class FieldFlags
-    : public DescriptionValue<struct_description_flags_t>
+    : public snap::StructureValue<struct_description_flags_t>
 {
 public:
     constexpr FieldFlags()
-        : DescriptionValue<struct_description_flags_t>(STRUCT_DESCRIPTION_FLAG_NONE)
+        : snap::StructureValue<struct_description_flags_t>(STRUCT_DESCRIPTION_FLAG_NONE)
     {
     }
 
     constexpr FieldFlags(struct_description_flags_t flags)
-        : DescriptionValue<struct_description_flags_t>(flags)
+        : snap::StructureValue<struct_description_flags_t>(flags)
     {
     }
 };
 
 
-class FieldOptionalField
-    : public DescriptionValue<struct_description_flags_t>
+class FieldDefaultValue
+    : public snap::StructureValue<char const *>
 {
 public:
-    constexpr FieldOptionalField()
-        : DescriptionValue<struct_description_flags_t>(STRUCT_DESCRIPTION_FLAG_NONE)
+    constexpr FieldDefaultValue()
+        : snap::StructureValue<char const *>(nullptr)
     {
     }
 
-    constexpr FieldOptionalField(int flag)
-        : DescriptionValue<struct_description_flags_t>(static_cast<struct_description_flags_t>(FlagPosition(flag) | STRUCT_DESCRIPTION_FLAG_OPTIONAL))
+    constexpr FieldDefaultValue(char const * default_value)
+        : snap::StructureValue<char const *>(default_value)
     {
     }
 };
 
 
 class FieldVersion
-    : public DescriptionValue<min_max_version_t>
+    : public snap::StructureValue<min_max_version_t>
 {
 public:
     constexpr FieldVersion()
-        : DescriptionValue<min_max_version_t>(min_max_version_t())
+        : snap::StructureValue<min_max_version_t>(min_max_version_t())
     {
     }
 
     constexpr FieldVersion(int min_major, int min_minor, int max_major, int max_minor)
-        : DescriptionValue<min_max_version_t>(min_max_version_t(min_major, min_minor, max_major, max_minor))
+        : snap::StructureValue<min_max_version_t>(min_max_version_t(min_major, min_minor, max_major, max_minor))
     {
     }
 };
 
 
 class FieldSubDescription
-    : public DescriptionValue<struct_description_t const *>
+    : public snap::StructureValue<struct_description_t const *>
 {
 public:
     constexpr FieldSubDescription()
-        : DescriptionValue<struct_description_t const *>(nullptr)
+        : snap::StructureValue<struct_description_t const *>(nullptr)
     {
     }
 
     constexpr FieldSubDescription(struct_description_t const * sub_description)
-        : DescriptionValue<struct_description_t const *>(sub_description)
+        : snap::StructureValue<struct_description_t const *>(sub_description)
     {
     }
 };
-
-
-template<typename T, typename F, class ...ARGS>
-constexpr typename std::enable_if<std::is_same<T, F>::value, typename T::value_t>::type find_option(F first, ARGS ...args)
-{
-    snap::NOTUSED(args...);
-    return first.get();
-}
-
-
-template<typename T, typename F, class ...ARGS>
-constexpr typename std::enable_if<!std::is_same<T, F>::value, typename T::value_t>::type find_option(F first, ARGS ...args)
-{
-    snap::NOTUSED(first);
-    return find_option<T>(args...);
-}
 
 
 template<class ...ARGS>
@@ -520,14 +497,14 @@ constexpr struct_description_t define_description(ARGS ...args)
 #pragma GCC diagnostic ignored "-Wpedantic"
     struct_description_t s =
     {
-        .f_field_name =          find_option<FieldName          >(args...),        // no default, mandatory
-        .f_type =                find_option<FieldType          >(args...),        // no default, mandatory
+        .f_field_name =          snap::find_field<FieldName          >(args...),        // no default, mandatory
+        .f_type =                snap::find_field<FieldType          >(args...),        // no default, mandatory
         .f_flags =               static_cast<struct_description_flags_t>(
-                                    find_option<FieldFlags         >(args..., FieldFlags())
-                                        | find_option<FieldOptionalField>(args..., FieldOptionalField())),
-        .f_min_version =         0, //find_option<FieldVersion       >(args..., FieldVersion()).min(),
-        .f_max_version =         65535, //find_option<FieldVersion       >(args..., FieldVersion()).max(),
-        .f_sub_description =     find_option<FieldSubDescription>(args..., FieldSubDescription()),
+                                    snap::find_field<FieldFlags         >(args..., FieldFlags())),
+        .f_default_value =       snap::find_field<FieldDefaultValue  >(args..., FieldDefaultValue()),
+        .f_min_version =         snap::find_field<FieldVersion       >(args..., FieldVersion()).min(),
+        .f_max_version =         snap::find_field<FieldVersion       >(args..., FieldVersion()).max(),
+        .f_sub_description =     snap::find_field<FieldSubDescription>(args..., FieldSubDescription()),
     };
 #pragma GCC diagnostic pop
 
@@ -554,6 +531,83 @@ constexpr struct_description_t end_descriptions()
             , FieldType(struct_type_t::STRUCT_TYPE_END)
         );
 }
+
+
+
+struct descriptions_by_version_t
+{
+    version_t                       f_version = version_t();
+    struct_description_t const *    f_description = nullptr;
+};
+
+
+
+class DescriptionVersion
+    : public snap::StructureValue<version_t>
+{
+public:
+    constexpr DescriptionVersion()
+        : snap::StructureValue<version_t>(version_t())
+    {
+    }
+
+    constexpr DescriptionVersion(int major, int minor)
+        : snap::StructureValue<version_t>(version_t(major, minor))
+    {
+    }
+};
+
+
+class DescriptionDescription
+    : public snap::StructureValue<struct_description_t const *>
+{
+public:
+    constexpr DescriptionDescription()
+        : snap::StructureValue<struct_description_t const *>(nullptr)
+    {
+    }
+
+    constexpr DescriptionDescription(struct_description_t const * description)
+        : snap::StructureValue<struct_description_t const *>(description)
+    {
+    }
+};
+
+
+template<class ...ARGS>
+constexpr descriptions_by_version_t define_description_by_version(ARGS ...args)
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    descriptions_by_version_t d =
+    {
+        .f_version =         snap::find_field<DescriptionVersion       >(args...),         // no default, mandatory
+        .f_description =     snap::find_field<DescriptionDescription   >(args...),         // no default, mandatory
+    };
+#pragma GCC diagnostic pop
+
+    // TODO: once possible (C++17/20?) add verification tests here
+
+    // whether a sub-description is allowed or not varies depending on the type
+    //if((f_description == nullptr) ^ f_version.zero())
+    //{
+    //     throw ...
+    //}
+
+    return d;
+}
+
+
+constexpr descriptions_by_version_t end_descriptions_by_version()
+{
+    return define_description_by_version(
+              DescriptionVersion(0, 0)
+            , DescriptionDescription(nullptr)
+        );
+}
+
+
+
 
 
 
@@ -591,16 +645,53 @@ class structure;
 typedef std::shared_ptr<structure>          structure_pointer_t;
 typedef std::vector<structure_pointer_t>    structure_vector_t;
 
-struct field_t
+class field_t
+    : public std::enable_shared_from_this<field_t>
 {
+public:
     typedef std::shared_ptr<field_t>        pointer_t;
+    typedef std::weak_ptr<field_t>          weak_pointer_t;
     typedef std::map<std::string, pointer_t> map_t;
 
     static constexpr std::uint32_t          FIELD_FLAG_VARIABLE_SIZE    = 0x0001;
 
-    std::uint32_t                           size() const;
-    structure_pointer_t                     operator [] (int idx);
+                                            field_t(struct_description_t const * description);
+                                            field_t(field_t const & rhs) = delete;
+                                            ~field_t();
 
+    field_t                                 operator = (field_t const & rhs) = delete;
+
+    struct_description_t const *            description() const;
+    pointer_t                               next() const;
+    void                                    set_next(pointer_t next);
+    pointer_t                               previous() const;
+    void                                    set_previous(pointer_t previous);
+    pointer_t                               first() const;
+    pointer_t                               last() const;
+    struct_type_t                           type() const;
+    ssize_t                                 type_field_size() const;
+    std::string                             field_name() const;
+    std::string                             new_name() const; // for RENAMED fields
+    std::uint32_t                           size() const;
+    void                                    set_size(std::uint32_t size);
+    bool                                    has_flags(std::uint32_t flags) const;
+    std::uint32_t                           flags() const;
+    void                                    set_flags(std::uint32_t flags);
+    void                                    add_flags(std::uint32_t flags);
+    void                                    clear_flags(std::uint32_t flags);
+    flag_definition const *                 find_flag_definition(std::string const & name) const;
+    void                                    add_flag_definition(std::string const & name, flag_definition const & bits);
+    std::uint64_t                           offset() const;
+    void                                    set_offset(std::uint64_t offset);
+    void                                    adjust_offset(std::int64_t adjust);
+    structure_vector_t const &              sub_structures() const;
+    structure_vector_t &                    sub_structures();
+    structure_pointer_t                     operator [] (int idx) const;
+    void                                    set_sub_structures(structure_vector_t const & v);
+
+private:
+    weak_pointer_t                          f_next = weak_pointer_t();
+    weak_pointer_t                          f_previous = weak_pointer_t();
     struct_description_t const *            f_description = nullptr;
     std::uint32_t                           f_size = 0;
     std::uint32_t                           f_flags = 0;
@@ -635,6 +726,7 @@ public:
     size_t                                  get_size() const;
     size_t                                  get_current_size() const;
 
+    pointer_t                               parent() const;
     field_t::pointer_t                      get_field(
                                                   std::string const & field_name
                                                 , struct_type_t type = struct_type_t::STRUCT_TYPE_END) const;
@@ -674,18 +766,21 @@ public:
     void                                    set_structure(std::string const & field_name, structure::pointer_t & value);
 
     structure::vector_t                     get_array(std::string const & field_name) const;
+    structure::pointer_t                    new_array_item(std::string const & field_name);
     void                                    set_array(std::string const & field_name, structure::vector_t const & value);
 
     buffer_t                                get_buffer(std::string const & field_name) const;
     void                                    set_buffer(std::string const & field_name, buffer_t const & value);
 
+    //void                                    adjust_all_offsets(std::int64_t adjust);
+    void                                    adjust_offsets(
+                                                      reference_t offset_cutoff
+                                                    , std::int64_t diff);
+
 private:
     std::uint64_t                           parse() const;
     std::uint64_t                           parse_descriptions(std::uint64_t offset) const;
-    void                                    adjust_offsets(
-                                                      std::uint64_t offset_cutoff
-                                                    , std::uint32_t old_size
-                                                    , std::uint32_t new_size);
+    void                                    verify_buffer_size();
 
     struct_description_t const *            f_descriptions = nullptr;
     weak_pointer_t                          f_parent = weak_pointer_t();

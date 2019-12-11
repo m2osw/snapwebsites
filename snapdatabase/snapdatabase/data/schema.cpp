@@ -86,43 +86,36 @@ struct_description_t g_column_description[] =
         , FieldType(struct_type_t::STRUCT_TYPE_UINT16)
     ),
     define_description(
-          FieldName("flags=limited/required/encrypt/default_value/bounds/length/validation")
+          FieldName("flags=limited/required/blob/system/revision_type:2")
         , FieldType(struct_type_t::STRUCT_TYPE_BITS32)
     ),
     define_description(
           FieldName("encrypt_key_name")
         , FieldType(struct_type_t::STRUCT_TYPE_P16STRING)
-        , FieldOptionalField(COLUMN_FLAG_ENCRYPT)
     ),
     define_description(
           FieldName("default_value")
         , FieldType(struct_type_t::STRUCT_TYPE_BUFFER32)
-        , FieldOptionalField(COLUMN_FLAG_DEFAULT_VALUE)
     ),
     define_description(
           FieldName("minimum_value")
         , FieldType(struct_type_t::STRUCT_TYPE_BUFFER32)
-        , FieldOptionalField(COLUMN_FLAG_BOUNDS)
     ),
     define_description(
           FieldName("maximum_value")
         , FieldType(struct_type_t::STRUCT_TYPE_BUFFER32)
-        , FieldOptionalField(COLUMN_FLAG_BOUNDS)
     ),
     define_description(
           FieldName("minimum_length")
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-        , FieldOptionalField(COLUMN_FLAG_LENGTH)
     ),
     define_description(
           FieldName("maximum_length")
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-        , FieldOptionalField(COLUMN_FLAG_LENGTH)
     ),
     define_description(
           FieldName("validation")
         , FieldType(struct_type_t::STRUCT_TYPE_BUFFER32)
-        , FieldOptionalField(COLUMN_FLAG_VALIDATION)
     ),
     end_descriptions()
 };
@@ -514,11 +507,11 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
         }
         else if(child->tag_name() == "min-length")
         {
-            f_minimum_length = string_to_typed_buffer(f_type, child->text());
+            f_minimum_length = convert_to_uint(child->text(), 32);
         }
         else if(child->tag_name() == "max-length")
         {
-            f_maximum_length = string_to_typed_buffer(f_type, child->text());
+            f_maximum_length = convert_to_uint(child->text(), 32);
         }
         else if(child->tag_name() == "validation")
         {
@@ -571,8 +564,8 @@ void schema_column::from_structure(structure::pointer_t s)
     f_default_value = s->get_buffer("default_value");
     f_minimum_value = s->get_buffer("minimum_value");
     f_maximum_value = s->get_buffer("maximum_value");
-    f_minimum_length = s->get_buffer("minimum_length");
-    f_maximum_length = s->get_buffer("maximum_length");
+    f_minimum_length = s->get_uinteger("minimum_length");
+    f_maximum_length = s->get_uinteger("maximum_length");
     f_validation = s->get_buffer("validation");
 }
 
@@ -652,13 +645,13 @@ buffer_t schema_column::maximum_value() const
 }
 
 
-buffer_t schema_column::minimum_length() const
+std::uint32_t schema_column::minimum_length() const
 {
     return f_minimum_length;
 }
 
 
-buffer_t schema_column::maximum_length() const
+std::uint32_t schema_column::maximum_length() const
 {
     return f_maximum_length;
 }
@@ -909,6 +902,63 @@ std::cerr << "schema: add system columns\n";
                       shared_from_this()
                     , "_delete_on"
                     , struct_type_t::STRUCT_TYPE_USTIME
+                    , COLUMN_FLAG_SYSTEM));
+
+        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // ID of user who created this row
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_created_by"
+                    , struct_type_t::STRUCT_TYPE_UINT64
+                    , COLUMN_FLAG_SYSTEM));
+
+        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // ID of user who last updated this row
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_updated_by"
+                    , struct_type_t::STRUCT_TYPE_UINT64
+                    , COLUMN_FLAG_SYSTEM));
+
+        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // ID of user who deleted this row
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_deleted_by"
+                    , struct_type_t::STRUCT_TYPE_UINT64
+                    , COLUMN_FLAG_SYSTEM));
+
+        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // version of this row (TBD TBD TBD)
+    //
+    // how this will be implemented is not clear at this point--it will
+    // only be for the `content` table; the version itself would not be
+    // saved as a column per se, instead it would be a form of sub-index
+    // where the version is ignored for fields that are marked `global`,
+    // only the `major` part is used for fields marked as `branch`, and
+    // both, `major` and `minor` are used for fields marked as
+    // `revision`... as far as the client is concerned, though, it look
+    // like we have a full version column.
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_version"
+                    , struct_type_t::STRUCT_TYPE_VERSION
                     , COLUMN_FLAG_SYSTEM));
 
         //f_columns_by_id[c->column_id()] = c;
@@ -1196,30 +1246,39 @@ std::cerr << "   + secondary indexes " << f_secondary_indexes.size() << "\n";
 
 std::cerr << "   + columns " << f_columns_by_name.size() << "/" << f_columns_by_id.size() << "\n";
     {
-        structure::vector_t v;
         for(auto const & col : f_columns_by_id)
         {
-            structure::pointer_t column_description(std::make_shared<structure>(g_column_description));
-            column_description->init_buffer();
-std::cerr << "   -> save one column first\n";
+std::cerr << "----------------------------\n"
+          << "   -> get one column pointer\n";
+            structure::pointer_t column_description(s->new_array_item("columns"));
+            //column_description->init_buffer();
+std::cerr << "   -> save one column first [" << col.second->name() << "]\n";
             column_description->set_string("name", col.second->name());
             uint512_t hash;
+std::cerr << "   -> column hash\n";
             col.second->hash(hash.f_value[0], hash.f_value[1]);
             column_description->set_large_uinteger("hash", hash);
+std::cerr << "   -> column column_id\n";
             column_description->set_uinteger("column_id", col.second->column_id());
+std::cerr << "   -> column type\n";
             column_description->set_uinteger("type", static_cast<uint16_t>(col.second->type()));
+std::cerr << "   -> column flags\n";
             column_description->set_uinteger("flags", col.second->flags());
+std::cerr << "   -> column encrypt\n";
             column_description->set_string("encrypt_key_name", col.second->encrypt_key_name());
+std::cerr << "   -> column default\n";
             column_description->set_buffer("default_value", col.second->default_value());
+std::cerr << "   -> column min\n";
             column_description->set_buffer("minimum_value", col.second->minimum_value());
+std::cerr << "   -> column max\n";
             column_description->set_buffer("maximum_value", col.second->maximum_value());
-            column_description->set_buffer("minimum_length", col.second->minimum_length());
-            column_description->set_buffer("maximum_length", col.second->maximum_length());
+std::cerr << "   -> column min len: " << col.second->minimum_length() << "\n";
+            column_description->set_uinteger("minimum_length", col.second->minimum_length());
+std::cerr << "   -> column max len: " << col.second->maximum_length() << "\n";
+            column_description->set_uinteger("maximum_length", col.second->maximum_length());
+std::cerr << "   -> column valid\n";
             column_description->set_buffer("validation", col.second->validation());
-            v.push_back(column_description);
         }
-std::cerr << "   -> save columns now\n";
-        s->set_array("columns", v);
     }
 
     // we know it is zero so we ignore that one anyay

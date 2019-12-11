@@ -99,6 +99,7 @@ public:
     block::pointer_t                            allocate_block(dbtype_t type, reference_t offset);
     block::pointer_t                            get_block(reference_t offset);
     block::pointer_t                            allocate_new_block(dbtype_t type);
+    void                                        free_block(block::pointer_t block, bool clear_block);
     bool                                        verify_schema();
 
 private:
@@ -355,9 +356,9 @@ std::cerr << "table: -- found block(" << offset << ") but it's the wrong type, r
     }
 
     b->set_table(f_table->get_pointer());
-    b->set_dbtype(type);
-    b->get_structure()->set_block(b, f_dbfile->get_page_size());
     b->set_data(f_dbfile->data(offset));
+    b->get_structure()->set_block(b, f_dbfile->get_page_size());
+    b->set_dbtype(type);
 
     f_context->limit_allocated_memory();
 
@@ -384,7 +385,8 @@ std::cerr << "table: get data is the problem!\n";
     data_t d(f_dbfile->data(offset));
     dbtype_t const type(*reinterpret_cast<dbtype_t const *>(d));
 std::cerr << "table: -- PTR " << reinterpret_cast<void *>(d)
-                    << " -- " << static_cast<int>(type) << "\n";
+                    << " -- " << static_cast<int>(type)
+                    << "\n";
 
 std::cerr << "table: -- calling allocate block()\n";
     return allocate_block(type, offset);
@@ -418,14 +420,14 @@ block::pointer_t table_impl::allocate_new_block(dbtype_t type)
 
         // this is a new file, create 16 `FREE` blocks
         //
-        f_dbfile->append_free_block(0);
+        f_dbfile->append_free_block(NULL_FILE_ADDR);
         size_t const page_size(f_dbfile->get_page_size());
         reference_t next(page_size * 2);
         for(int idx(0); idx < 14; ++idx, next += page_size)
         {
             f_dbfile->append_free_block(next);
         }
-        f_dbfile->append_free_block(0);
+        f_dbfile->append_free_block(NULL_FILE_ADDR);
 
         // offset is already 0
     }
@@ -453,9 +455,9 @@ std::cerr << "table: try to get header with get_block(0)\n";
 std::cerr << "table: get first free block\n";
         offset = header->get_first_free_block();
 std::cerr << "table: got offset: " << offset << "\n";
-        if(offset == 0)
+        if(offset == NULL_FILE_ADDR)
         {
-            offset = f_dbfile->append_free_block(0);
+            offset = f_dbfile->append_free_block(NULL_FILE_ADDR);
 
             size_t const page_size(f_dbfile->get_page_size());
             reference_t next(offset + page_size * 2);
@@ -463,7 +465,7 @@ std::cerr << "table: got offset: " << offset << "\n";
             {
                 f_dbfile->append_free_block(next);
             }
-            f_dbfile->append_free_block(0);
+            f_dbfile->append_free_block(NULL_FILE_ADDR);
 
             header->set_first_free_block(offset + page_size);
         }
@@ -483,6 +485,29 @@ std::cerr << "table: offset saved?\n";
     // but at this time we don't need such at all
     //
     return allocate_block(type, offset);
+}
+
+
+void table_impl::free_block(block::pointer_t block, bool clear_block)
+{
+    if(block == nullptr)
+    {
+        return;
+    }
+
+    reference_t const offset(block->get_offset());
+    block_free_block::pointer_t p(std::static_pointer_cast<block_free_block>(
+            allocate_block(dbtype_t::BLOCK_TYPE_FREE_BLOCK, offset)));
+
+    if(clear_block)
+    {
+        p->clear_block();
+    }
+
+    file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
+    reference_t const next_offset(header->get_first_free_block());
+    p->set_next_free_block(next_offset);
+    header->set_first_free_block(offset);
 }
 
 
@@ -607,6 +632,12 @@ block::pointer_t table::get_block(reference_t offset)
 block::pointer_t table::allocate_new_block(dbtype_t type)
 {
     return f_impl->allocate_new_block(type);
+}
+
+
+void table::free_block(block::pointer_t block, bool clear_block)
+{
+    return f_impl->free_block(block, clear_block);
 }
 
 

@@ -83,15 +83,17 @@ constexpr column_id_t                       COLUMN_NULL = 0;
 
 
 // SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
-constexpr flag32_t                          COLUMN_FLAG_LIMITED                 = (1LL << 0);
-constexpr flag32_t                          COLUMN_FLAG_REQUIRED                = (1LL << 1);
-constexpr flag32_t                          COLUMN_FLAG_ENCRYPT                 = (1LL << 2);
-constexpr flag32_t                          COLUMN_FLAG_DEFAULT_VALUE           = (1LL << 3);
-constexpr flag32_t                          COLUMN_FLAG_BOUNDS                  = (1LL << 4);
-constexpr flag32_t                          COLUMN_FLAG_LENGTH                  = (1LL << 5);
-constexpr flag32_t                          COLUMN_FLAG_VALIDATION              = (1LL << 6);
-constexpr flag32_t                          COLUMN_FLAG_BLOB                    = (1LL << 7);
-constexpr flag32_t                          COLUMN_FLAG_SYSTEM                  = (1LL << 8);
+constexpr flag32_t                          COLUMN_FLAG_LIMITED                 = (1ULL << 0);
+constexpr flag32_t                          COLUMN_FLAG_REQUIRED                = (1ULL << 1);
+constexpr flag32_t                          COLUMN_FLAG_BLOB                    = (1ULL << 2);
+constexpr flag32_t                          COLUMN_FLAG_SYSTEM                  = (1ULL << 3);
+constexpr flag32_t                          COLUMN_FLAG_REVISION_TYPE           = (3ULL << 4);   // TWO BITS (see COLUMN_REVISION_TYPE_...)
+
+// Revision Types (after the shift, TBD: should we keep the shift?)
+constexpr flag32_t                          COLUMN_REVISION_TYPE_GLOBAL         = 0;
+constexpr flag32_t                          COLUMN_REVISION_TYPE_BRANCH         = 1;
+constexpr flag32_t                          COLUMN_REVISION_TYPE_REVISION       = 2;
+//constexpr flag32_t                          COLUMN_REVISION_TYPE_unused         = 3; -- current unused
 
 
 // SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
@@ -162,8 +164,8 @@ public:
     buffer_t                                default_value() const;
     buffer_t                                minimum_value() const;
     buffer_t                                maximum_value() const;
-    buffer_t                                minimum_length() const;
-    buffer_t                                maximum_length() const;
+    std::uint32_t                           minimum_length() const;
+    std::uint32_t                           maximum_length() const;
     buffer_t                                validation() const;
 
 private:
@@ -177,8 +179,8 @@ private:
     buffer_t                                f_default_value = buffer_t();
     buffer_t                                f_minimum_value = buffer_t();
     buffer_t                                f_maximum_value = buffer_t();
-    buffer_t                                f_minimum_length = buffer_t();
-    buffer_t                                f_maximum_length = buffer_t();
+    std::uint32_t                           f_minimum_length = 0;
+    std::uint32_t                           f_maximum_length = 0;
     buffer_t                                f_validation = buffer_t();
 
     // not saved on disk

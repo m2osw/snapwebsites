@@ -725,19 +725,16 @@ rows to a newer schema.
             + column flags (`uint32_t`)
                 > limited (0x0001)
                 > required (0x0002)
-                > encrypt (0x0004)
-                > default (0x0008)
-                > bounds (0x0010)
-                > length limits (0x0020)
-                > validation (0x0040)
-                > revision_type (0x0180)    0- global, 1- branch, 2- revision, 3- TBD
-            + encrypt key name (`p16-string`, optional, see flags)
-            + default value (see column type, optional, see flags)
-            + minimum value (see column type, optional, see flags)
-            + maximum value (see column type, optional, see flags)
-            + minimum length (`uint32_t`, optional, see flags)
-            + maximum length (`uint32_t`, optional, see flags)
-            + validation (`"compiled script"`, optional, see flags)
+                > blob (0x0004)
+                > system (0x0008)
+                > revision_type (0x0030)    0- global, 1- branch, 2- revision, 3- TBD
+            + encrypt key name (`p16-string`)
+            + default value (see column type)
+            + minimum value (see column type)
+            + maximum value (see column type)
+            + minimum length (`uint32_t`)
+            + maximum length (`uint32_t`)
+            + validation (`"compiled script"`)
 
 All strings are P-Strings with a 16 bit size. The following data is 8 bytes
 aligned so we can access 64 bit numbers as is.
@@ -757,6 +754,29 @@ one system block). This option is not recommended since it may generate
 problems at the time a `FREE` block is required and it was not yet
 allocated. (That being said, if the list of free blocks is empty, we
 have a similar situation...)
+
+The `revision_type` mini-field defines what part of the version affects the
+field. In our content table, part of the data is versioned meaning that older
+versions remain accessible as newer versions get added. The version is defined
+as two numbers: `major` and `minor`. The `major` number is set to `0` when
+default data is loaded in a column (i.e. it represents "system data"). The
+minor revision is incremented each time new data gets added to a column
+supporting the minor version. Here are the existing three modes:
+
+ * `global` -- such fields ignore the version information; it gets defined
+   once and overwritten on a write;
+ * `branch` -- fields set as `branch` have distinct values for each `major`
+   revision; so we get one value for revision `0`, one value for revision
+   `1`, etc.; this is primarily used for links between pages;
+ * `revision` -- fields set as `revision` have distinct values for ech and
+   every version, whether the `major` or the `minor` changes; this is used
+   for the actual user content such as the title, body, author, etc.
+
+In terms of implementation, we may use the index (see Indexing) to implement
+it. This is still TBD at this point. But for sure that way we can get all
+the data in one place and as far as the client is concerned, it's reading
+and writing data to one table, you are just required to include the version
+information in your commands so it works with such a table.
 
 See also libsnapwebsites/src/snapwebsites/tables.xsd
 

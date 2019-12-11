@@ -50,6 +50,7 @@ public:
 
     reference_t                 get_next_free_block() const;
     void                        set_next_free_block(reference_t offset);
+    void                        clear_block();
 
 private:
 };

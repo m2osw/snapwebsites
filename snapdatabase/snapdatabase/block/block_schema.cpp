@@ -52,10 +52,6 @@ namespace snapdatabase
 constexpr struct_description_t g_block_schema[] =
 {
     define_description(
-          FieldName("magic")    // dbtype_t = SCHM
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-    ),
-    define_description(
           FieldName("size")
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
     ),
@@ -133,27 +129,46 @@ void block_schema::set_schema(virtual_buffer::pointer_t schema)
         throw snapdatabase_logic_error("the structure of the block_schema block cannot be dynamic.");
     }
 #endif
-    uint32_t const size_per_page(get_table()->get_page_size() - offset);
+    std::uint32_t const size_per_page(get_table()->get_page_size() - offset);
 
-    uint32_t remaining_size(schema->size());
+    std::uint32_t remaining_size(schema->size());
     block_schema * s(this);
-    for(uint32_t pos(0);;)
+    for(std::uint32_t pos(0);;)
     {
         data_t d(s->data());
-        uint32_t const size(std::min(size_per_page, remaining_size));
+        std::uint32_t const size(std::min(size_per_page, remaining_size));
         schema->pread(d + offset, size, pos);
         s->set_size(size);
+
+        reference_t next(s->get_next_schema_block());
 
         pos += size;
         remaining_size -= size;
         if(remaining_size == 0)
         {
+            s->set_next_schema_block(NULL_FILE_ADDR);
             s->sync(false);
+
+            // free any "next" block (happens when a schema shrinks)
+            //
+            while(next != NULL_FILE_ADDR)
+            {
+                block_schema::pointer_t next_schema(std::static_pointer_cast<block_schema>(get_table()->get_block(next)));
+                if(next_schema == nullptr)
+                {
+                    throw snapdatabase_logic_error(
+                              "reading of the next schema block at "
+                            + std::to_string(next)
+                            + " failed.");
+                }
+                next = next_schema->get_next_schema_block();
+                get_table()->free_block(next_schema, false);
+            }
+
             break;
         }
 
-        reference_t next(s->get_next_schema_block());
-        if(next == 0)
+        if(next == NULL_FILE_ADDR)
         {
             // create a new block and link it
             //
@@ -167,7 +182,10 @@ void block_schema::set_schema(virtual_buffer::pointer_t schema)
             block_schema::pointer_t next_schema(std::static_pointer_cast<block_schema>(get_table()->get_block(next)));
             if(next_schema == nullptr)
             {
-                throw snapdatabase_logic_error("block_schema::get_schema() failed reading the list of blocks.");
+                throw snapdatabase_logic_error(
+                          "reading of the next schema block at "
+                        + std::to_string(next)
+                        + " failed.");
             }
 
             s->sync(false);

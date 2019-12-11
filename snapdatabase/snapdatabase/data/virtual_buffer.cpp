@@ -110,8 +110,9 @@ std::uint64_t virtual_buffer::size() const
 }
 
 
-bool virtual_buffer::is_data_available(std::uint64_t size, std::uint64_t offset) const
+bool virtual_buffer::is_data_available(std::uint64_t offset, std::uint64_t size) const
 {
+std::cerr << "verify data buffer size " << offset << " + " << size << " <= " << f_total_size << "\n";
     return offset + size <= f_total_size;
 }
 
@@ -124,7 +125,7 @@ int virtual_buffer::pread(void * buf, std::uint64_t size, std::uint64_t offset, 
     }
 
     if(full
-    && !is_data_available(size, offset))
+    && !is_data_available(offset, size))
     {
         throw invalid_size(
                 "Not enough data to read from virtual buffer. Requested to read "
@@ -189,7 +190,7 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
     && !is_data_available(offset, size))
     {
         throw invalid_size(
-                "Not enough space to write to virtual buffer. Requested to write "
+                  "Not enough space to write to virtual buffer. Requested to write "
                 + std::to_string(size)
                 + " bytes at "
                 + std::to_string(offset)
@@ -209,11 +210,13 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
             }
         };
 
+std::cerr << "pwrite() buffers " << f_buffers.size() << " starting offset -> " << offset << " total size " << f_total_size << "\n";
     for(auto & b : f_buffers)
     {
         if(offset >= b.f_size)
         {
             offset -= b.f_size;
+std::cerr << "pwrite() buffer size = " << b.f_size << " new offset -> " << offset << "\n";
         }
         else
         {
@@ -253,6 +256,7 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
         return bytes_written;
     }
 
+std::cerr << "*** pwrite() appending or inserting?\n";
     if(!f_buffers.empty()
     && f_buffers.back().f_block == nullptr)
     {
@@ -264,6 +268,8 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
             memcpy(f_buffers.back().f_data.data() + f_buffers.back().f_size, in, sz);
             size -= sz;
             bytes_written += sz;
+std::cerr << "*** pwrite() resized data vector by " << sz << " bytes for offset " << offset << "\n";
+            f_buffers.back().f_size += sz;
             f_total_size += sz;
 
             if(size == 0)
@@ -299,6 +305,7 @@ int virtual_buffer::pwrite(void const * buf, std::uint64_t size, std::uint64_t o
 
     f_buffers.push_back(append);
 
+std::cerr << "*** pwrite() appended " << size << " bytes\n";
     bytes_written += size;
     f_total_size += size;
 
@@ -316,8 +323,10 @@ int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t 
         return 0;
     }
 
+std::cerr << "pinsert(buf, " << size << ", " << offset << ") against " << f_buffers.size() << " buffers\n";
     if(offset >= f_total_size)
     {
+std::cerr << "pinsert() called with offset >= f_total_size so use pwrite() to append...\n";
         return pwrite(buf, size, offset, true);
     }
 
@@ -330,11 +339,13 @@ int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t 
         if(offset >= b->f_size)
         {
             offset -= b->f_size;
+std::cerr << "pinsert() -- skip buffer of " << b->f_size << " bytes (offset: " << offset << ")\n";
         }
         else
         {
             if(b->f_block != nullptr)
             {
+std::cerr << "pinsert: we got a block in pinsert() ?! \n";
                 // if inserting within a block, we have to break the block
                 // in two
                 {
@@ -357,10 +368,12 @@ int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t 
             else
             {
                 b->f_data.insert(b->f_data.begin() + offset, in, in + size);
+std::cerr << "pinsert: data size = " << b->f_data.size() << "\n";
                 b->f_size += size;
             }
             f_total_size += size;
             f_modified = true;
+std::cerr << "pinsert: total size = " << f_total_size << "\n";
             return size;
         }
     }
@@ -372,10 +385,12 @@ int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t 
         if(!f_buffers.empty()
         && f_buffers.back().f_block == nullptr)
         {
+std::cerr << "pinsert: inserting at the end because last buffer is not a block\n";
             f_buffers.back().f_data.insert(f_buffers.back().f_data.end(), in, in + size);
         }
         else
         {
+std::cerr << "pinsert: appending a new buffer?!\n";
             vbuf_t append;
             append.f_size = size;
             memcpy(append.f_data.data(), in, size);
@@ -386,12 +401,16 @@ int virtual_buffer::pinsert(void const * buf, std::uint64_t size, std::uint64_t 
         return size;
     }
 
-    throw snapdatabase_logic_error("Reached the end of the pinsert() function. It should never happen.");
+    throw snapdatabase_logic_error(
+              "Reached the end of the pinsert() function. Offset should be 0, it is "
+            + std::to_string(offset)
+            + " instead, which should never happen.");
 }
 
 
 int virtual_buffer::perase(std::uint64_t size, std::uint64_t offset)
 {
+std::cerr << "perase() called?! " << size << " at " << offset << "\n";
     if(size == 0)
     {
         return 0;
