@@ -70,10 +70,6 @@ namespace
 struct_description_t g_column_description[] =
 {
     define_description(
-          FieldName("hash")
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT128)
-    ),
-    define_description(
           FieldName("name")
         , FieldType(struct_type_t::STRUCT_TYPE_P8STRING)
     ),
@@ -140,7 +136,6 @@ struct_description_t g_table_secondary_index[] =
     define_description(
           FieldName("flags=distributed")
         , FieldType(struct_type_t::STRUCT_TYPE_BITS32)
-        , FieldSubDescription(g_table_column_reference)
     ),
     define_description(
           FieldName("columns")
@@ -156,8 +151,12 @@ struct_description_t g_table_secondary_index[] =
 struct_description_t g_table_description[] =
 {
     define_description(
-          FieldName("version")
+          FieldName("schema_version")
         , FieldType(struct_type_t::STRUCT_TYPE_VERSION)
+    ),
+    define_description(
+          FieldName("added_on")
+        , FieldType(struct_type_t::STRUCT_TYPE_TIME)
     ),
     define_description(
           FieldName("name")
@@ -470,6 +469,9 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
     f_flags = 0;
     if(x->attribute("limited") == "limited")
     {
+        // limit display of this column by default because it could be really
+        // large
+        //
         f_flags |= COLUMN_FLAG_LIMITED;
     }
     if(x->attribute("required") == "required")
@@ -553,9 +555,6 @@ schema_column::schema_column(
 
 void schema_column::from_structure(structure::pointer_t s)
 {
-    auto const large_uint(s->get_large_uinteger("hash"));
-    f_hash[0] = large_uint.f_value[0];
-    f_hash[1] = large_uint.f_value[1];
     f_name = s->get_string("name");
     f_column_id = s->get_uinteger("column_id");
     f_type = static_cast<struct_type_t>(s->get_uinteger("type"));
@@ -567,6 +566,83 @@ void schema_column::from_structure(structure::pointer_t s)
     f_minimum_length = s->get_uinteger("minimum_length");
     f_maximum_length = s->get_uinteger("maximum_length");
     f_validation = s->get_buffer("validation");
+}
+
+
+compare_t schema_column::compare(schema_column const & rhs) const
+{
+    compare_t result(compare_t::COMPARE_SCHEMA_EQUAL);
+
+    if(f_name != rhs.f_name)
+    {
+        throw snapdatabase_logic_error(
+                  "the schema_column::compare() function can only be called"
+                  " with two columns having the same name. You called it"
+                  " with a column named \""
+                + f_name
+                + "\" and the other \""
+                + rhs.f_name
+                + "\".");
+    }
+
+    //f_column_id -- these are adjusted accordingly on a merge
+
+    if(f_type != rhs.f_type)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    // the LIMITED flag is just a display flag, it's really not important
+    // still request for an update if changed by end user
+    //
+    if((f_flags & ~COLUMN_FLAG_LIMITED) != (rhs.f_flags & ~COLUMN_FLAG_LIMITED))
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+    if(f_flags != rhs.f_flags)
+    {
+        result = compare_t::COMPARE_SCHEMA_UPDATE;
+    }
+
+    if(f_encrypt_key_name != rhs.f_encrypt_key_name)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_default_value != rhs.f_default_value)
+    {
+        result = compare_t::COMPARE_SCHEMA_UPDATE;
+    }
+
+    if(f_minimum_value != rhs.f_minimum_value)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_maximum_value != rhs.f_maximum_value)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_minimum_length != rhs.f_minimum_length)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_maximum_length != rhs.f_maximum_length)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    // we can't do much better here, unfortunately
+    // but if the script changes many things can be affected
+    //
+    if(f_validation != rhs.f_validation)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    return result;
 }
 
 
@@ -593,13 +669,6 @@ void schema_column::set_column_id(column_id_t id)
     }
 
     f_column_id = id;
-}
-
-
-void schema_column::hash(uint64_t & h0, uint64_t & h1) const
-{
-    h0 = f_hash[0];
-    h1 = f_hash[1];
 }
 
 
@@ -672,6 +741,36 @@ buffer_t schema_column::validation() const
 
 
 
+
+
+compare_t schema_secondary_index::compare(schema_secondary_index const & rhs) const
+{
+    compare_t result(compare_t::COMPARE_SCHEMA_EQUAL);
+
+    if(f_index_name != rhs.f_index_name)
+    {
+        throw snapdatabase_logic_error(
+                  "the schema_secondary_index::compare() function can only be"
+                  " called with two secondary indexes having the same name."
+                  " You called it with a column named \""
+                + f_index_name
+                + "\" and the other \""
+                + rhs.f_index_name
+                + "\".");
+    }
+
+    if(f_column_ids != rhs.f_column_ids)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_flags != rhs.f_flags)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    return result;
+}
 
 
 std::string schema_secondary_index::get_index_name() const
@@ -796,7 +895,6 @@ void schema_table::from_xml(xml_node::pointer_t x)
 
     // 1. fully parse the complex types on the first iteration
     //
-std::cerr << "schema: parse complex types\n";
     for(auto child(x->first_child()); child != nullptr; child = child->next())
     {
         if(child->tag_name() == "block-size")
@@ -858,7 +956,6 @@ std::cerr << "schema: parse complex types\n";
     // 2. add system columns and parse user defined columns
     //
     //column_id_t col_id(1); -- TBD
-std::cerr << "schema: add system columns\n";
 
     // object identifier -- to place the rows in our indirect index
     {
@@ -900,7 +997,7 @@ std::cerr << "schema: add system columns\n";
     {
         auto c(std::make_shared<schema_column>(
                       shared_from_this()
-                    , "_delete_on"
+                    , "_deleted_on"
                     , struct_type_t::STRUCT_TYPE_USTIME
                     , COLUMN_FLAG_SYSTEM));
 
@@ -965,7 +1062,6 @@ std::cerr << "schema: add system columns\n";
         f_columns_by_name[c->name()] = c;
     }
 
-std::cerr << "schema: parse columns\n";
     for(auto const & child : schemata)
     {
         for(auto column(child->first_child());
@@ -999,7 +1095,6 @@ std::cerr << "schema: parse columns\n";
     advgetopt::string_list_t row_key_names;
     advgetopt::split_string(row_key_name, row_key_names, {","});
 
-std::cerr << "schema: parse key names\n";
     for(auto const & n : row_key_names)
     {
         schema_column::pointer_t c(column(n));
@@ -1019,7 +1114,6 @@ std::cerr << "schema: parse key names\n";
 
     // 4. the secondary indexes are transformed to array of columns
     //
-std::cerr << "schema: secondary indexes\n";
     for(auto const & si : secondary_indexes)
     {
         schema_secondary_index::pointer_t index(std::make_shared<schema_secondary_index>());
@@ -1067,7 +1161,7 @@ std::cerr << "schema: secondary indexes\n";
             index->add_column_id(c->column_id());
         }
 
-        f_secondary_indexes.push_back(index);
+        f_secondary_indexes[index->get_index_name()] = index;
     }
 }
 
@@ -1124,16 +1218,168 @@ void schema_table::load_extension(xml_node::pointer_t e)
 }
 
 
+/** \brief Compare two schema tables.
+ *
+ * This operator let you know whether two schema descriptions are considered
+ * equal or not.
+ *
+ * The compare ignores some fields and flags because equality implies that
+ * the content of the table, as in the data being inserted, selected,
+ * updated, and deleted is not going to be different between the two
+ * different schema_table descriptions. However, we still want to overwrite
+ * the newest version with the new version if it has some differences.
+ *
+ * The return value tells you whether some differences
+ * (COMPARE_SCHEMA_UPDATE), or important changes (COMPARE_SCHEMA_DIFFER)
+ * where found. If the schemas as the exact same, then the function says
+ * they are equal (COMPARE_SCHEMA_EQUAL). Note that in most cases, we expect
+ * the function to return COMPARE_SCHEMA_EQUAL since schemata should rarely
+ * change.
+ *
+ * \param[in] rhs  The righ hand side to compare this schema.
+ *
+ * \return One of the compare_t enumeration values.
+ */
+compare_t schema_table::compare(schema_table const & rhs) const
+{
+    compare_t result(compare_t::COMPARE_SCHEMA_EQUAL);
+
+    //f_version -- we calculate the version
+    //f_added_on -- this is dynamically assigned on creation
+
+    if(f_name != rhs.f_name)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_flags != rhs.f_flags)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_model != rhs.f_model)
+    {
+        result = compare_t::COMPARE_SCHEMA_UPDATE;
+    }
+
+    if(f_block_size != rhs.f_block_size)
+    {
+        throw id_missing(
+              "Block size cannot currently be changed. Please restore to "
+            + std::to_string(f_block_size)
+            + " instead of "
+            + std::to_string(rhs.f_block_size)
+            + ".");
+    }
+
+    if(f_row_key != rhs.f_row_key)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    for(schema_secondary_index::map_t::const_iterator
+            it(f_secondary_indexes.cbegin());
+            it != f_secondary_indexes.cend();
+            ++it)
+    {
+        schema_secondary_index::pointer_t rhs_secondary_index(rhs.secondary_index(it->first));
+        if(rhs_secondary_index == nullptr)
+        {
+            return compare_t::COMPARE_SCHEMA_DIFFER;
+        }
+        compare_t const r(it->second->compare(*rhs_secondary_index));
+        if(r == compare_t::COMPARE_SCHEMA_DIFFER)
+        {
+            return compare_t::COMPARE_SCHEMA_DIFFER;
+        }
+        if(r == compare_t::COMPARE_SCHEMA_UPDATE)
+        {
+            result = compare_t::COMPARE_SCHEMA_UPDATE;
+        }
+    }
+
+    // loop through the RHS in case we removed a secondary index
+    //
+    for(schema_secondary_index::map_t::const_iterator
+            it(rhs.f_secondary_indexes.cbegin());
+            it != rhs.f_secondary_indexes.cend();
+            ++it)
+    {
+        if(secondary_index(it->first) == nullptr)
+        {
+            return compare_t::COMPARE_SCHEMA_DIFFER;
+        }
+    }
+
+    //f_complex_types -- no need to compare those, they are used and forgotten
+
+    //f_columns_by_id -- we only have to compare one map
+    //                   and at this point f_columns_by_id is expected to be
+    //                   empty still
+    //
+    for(schema_column::map_by_name_t::const_iterator
+            it(f_columns_by_name.cbegin());
+            it != f_columns_by_name.cend();
+            ++it)
+    {
+        schema_column::pointer_t rhs_column(rhs.column(it->first));
+        if(rhs_column == nullptr)
+        {
+            // we could not find that column in the other schema,
+            // so it's different
+            //
+            // TODO: make sure "renamed" columns are handled properly
+            //       once we add that feature
+            //
+            return compare_t::COMPARE_SCHEMA_DIFFER;
+        }
+        compare_t r(it->second->compare(*rhs_column));
+        if(r == compare_t::COMPARE_SCHEMA_DIFFER)
+        {
+            return compare_t::COMPARE_SCHEMA_DIFFER;
+        }
+        if(r == compare_t::COMPARE_SCHEMA_UPDATE)
+        {
+            result = compare_t::COMPARE_SCHEMA_UPDATE;
+        }
+    }
+
+    // loop through the RHS in case we removed a column
+    //
+    for(schema_column::map_by_name_t::const_iterator
+            it(rhs.f_columns_by_name.cbegin());
+            it != rhs.f_columns_by_name.cend();
+            ++it)
+    {
+        if(column(it->first) == nullptr)
+        {
+            // we could not find that column in the new schema,
+            // so it's different
+            //
+            // TODO: make sure "renamed" columns are handled properly
+            //       once we add that feature
+            //
+            return compare_t::COMPARE_SCHEMA_DIFFER;
+        }
+    }
+
+    //f_description -- totally ignored; that's just noise
+
+    return result;
+}
+
+
 void schema_table::from_binary(virtual_buffer::pointer_t b)
 {
     structure::pointer_t s(std::make_shared<structure>(g_table_description));
-    
+
     s->set_virtual_buffer(b, 0);
 
-    f_version = s->get_uinteger("version");
-    f_name = s->get_string("name");
-    f_flags = s->get_uinteger("flags");
-    f_model = static_cast<model_t>(s->get_uinteger("model"));
+    f_version  = s->get_uinteger("schema_version");
+    f_added_on = s->get_uinteger("added_on");
+    f_name     = s->get_string("name");
+    f_flags    = s->get_uinteger("flags");
+    f_model    = static_cast<model_t>(s->get_uinteger("model"));
 
     {
         auto const field(s->get_field("row_key"));
@@ -1160,7 +1406,7 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
                 secondary_index->add_column_id((*field)[idx]->get_uinteger("column_id"));
             }
 
-            f_secondary_indexes.push_back(secondary_index);
+            f_secondary_indexes[secondary_index->get_index_name()] = secondary_index;
         }
     }
 
@@ -1187,22 +1433,14 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
 
 virtual_buffer::pointer_t schema_table::to_binary() const
 {
-std::cerr << "creating a binary schema from a schema_table and its children\n";
     structure::pointer_t s(std::make_shared<structure>(g_table_description));
     s->init_buffer();
-    s->set_uinteger("version", f_version.to_binary());
+    s->set_uinteger("schema_version", f_version.to_binary());
+    s->set_uinteger("added_on", f_added_on);
     s->set_string("name", f_name);
     s->set_uinteger("flags", f_flags);
     s->set_uinteger("model", static_cast<uint8_t>(f_model));
 
-{
-std::cerr << "-------------------------------------------- HEADER?\n";
-reference_t offset;
-std::cerr << *s->get_virtual_buffer(offset);
-std::cerr << "--------------------------------------------\n";
-}
-
-std::cerr << "   + row_key " << f_row_key.size() << "\n";
     {
         structure::vector_t v;
         auto const max(f_row_key.size());
@@ -1216,23 +1454,23 @@ std::cerr << "   + row_key " << f_row_key.size() << "\n";
         s->set_array("row_key", v);
     }
 
-std::cerr << "   + secondary indexes " << f_secondary_indexes.size() << "\n";
     {
         structure::vector_t v;
-        auto const max(f_secondary_indexes.size());
-        for(std::remove_const<decltype(max)>::type i(0); i < max; ++i)
+        for(auto it(f_secondary_indexes.cbegin());
+                 it != f_secondary_indexes.cend();
+                 ++it)
         {
             structure::pointer_t secondary_index_structure(std::make_shared<structure>(g_table_secondary_index));
             secondary_index_structure->init_buffer();
-            secondary_index_structure->set_string("name", f_secondary_indexes[i]->get_index_name());
+            secondary_index_structure->set_string("name", it->second->get_index_name());
 
             structure::vector_t c;
-            auto const jmax(f_secondary_indexes[i]->get_column_count());
-            for(std::remove_const<decltype(max)>::type j(0); j < jmax; ++j)
+            auto const jmax(it->second->get_column_count());
+            for(std::remove_const<decltype(jmax)>::type j(0); j < jmax; ++j)
             {
                 structure::pointer_t column_id_structure(std::make_shared<structure>(g_table_column_reference));
                 column_id_structure->init_buffer();
-                column_id_structure->set_uinteger("column_id", f_secondary_indexes[i]->get_column_id(j));
+                column_id_structure->set_uinteger("column_id", it->second->get_column_id(j));
                 c.push_back(column_id_structure);
             }
 
@@ -1244,54 +1482,40 @@ std::cerr << "   + secondary indexes " << f_secondary_indexes.size() << "\n";
         s->set_array("secondary_indexes", v);
     }
 
-std::cerr << "   + columns " << f_columns_by_name.size() << "/" << f_columns_by_id.size() << "\n";
     {
         for(auto const & col : f_columns_by_id)
         {
-std::cerr << "----------------------------\n"
-          << "   -> get one column pointer\n";
             structure::pointer_t column_description(s->new_array_item("columns"));
-            //column_description->init_buffer();
-std::cerr << "   -> save one column first [" << col.second->name() << "]\n";
             column_description->set_string("name", col.second->name());
-            uint512_t hash;
-std::cerr << "   -> column hash\n";
-            col.second->hash(hash.f_value[0], hash.f_value[1]);
-            column_description->set_large_uinteger("hash", hash);
-std::cerr << "   -> column column_id\n";
             column_description->set_uinteger("column_id", col.second->column_id());
-std::cerr << "   -> column type\n";
             column_description->set_uinteger("type", static_cast<uint16_t>(col.second->type()));
-std::cerr << "   -> column flags\n";
             column_description->set_uinteger("flags", col.second->flags());
-std::cerr << "   -> column encrypt\n";
             column_description->set_string("encrypt_key_name", col.second->encrypt_key_name());
-std::cerr << "   -> column default\n";
             column_description->set_buffer("default_value", col.second->default_value());
-std::cerr << "   -> column min\n";
             column_description->set_buffer("minimum_value", col.second->minimum_value());
-std::cerr << "   -> column max\n";
             column_description->set_buffer("maximum_value", col.second->maximum_value());
-std::cerr << "   -> column min len: " << col.second->minimum_length() << "\n";
             column_description->set_uinteger("minimum_length", col.second->minimum_length());
-std::cerr << "   -> column max len: " << col.second->maximum_length() << "\n";
             column_description->set_uinteger("maximum_length", col.second->maximum_length());
-std::cerr << "   -> column valid\n";
             column_description->set_buffer("validation", col.second->validation());
         }
     }
 
     // we know it is zero so we ignore that one anyay
     //
-std::cerr << "   + convert structure to virtual buffer\n";
     uint64_t start_offset(0);
     return s->get_virtual_buffer(start_offset);
 }
 
 
-version_t schema_table::version() const
+version_t schema_table::schema_version() const
 {
     return f_version;
+}
+
+
+time_t schema_table::added_on() const
+{
+    return f_added_on;
 }
 
 
@@ -1364,15 +1588,27 @@ schema_column::pointer_t schema_table::column(column_id_t id) const
 }
 
 
+schema_column::map_by_id_t schema_table::columns_by_id() const
+{
+    return f_columns_by_id;
+}
+
+
 schema_column::map_by_name_t schema_table::columns_by_name() const
 {
     return f_columns_by_name;
 }
 
 
-schema_column::map_by_id_t schema_table::columns_by_id() const
+schema_secondary_index::pointer_t schema_table::secondary_index(std::string const & name) const
 {
-    return f_columns_by_id;
+    auto const & it(f_secondary_indexes.find(name));
+    if(it != f_secondary_indexes.end())
+    {
+        return it->second;
+    }
+
+    return schema_secondary_index::pointer_t();
 }
 
 

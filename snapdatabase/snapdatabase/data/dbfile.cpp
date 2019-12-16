@@ -131,6 +131,12 @@ dbfile::~dbfile()
 }
 
 
+std::string dbfile::get_fullname() const
+{
+    return f_fullname;
+}
+
+
 void dbfile::set_table(table::pointer_t t)
 {
     f_table = t;
@@ -293,7 +299,7 @@ int dbfile::open_file()
 
         sdbt->set_first_free_block(page_size);
         sdbt->set_block_size(page_size);
-        sdbt->set_version(v);
+        sdbt->set_file_version(v);
         sdbt->sync(false);
     }
 
@@ -334,9 +340,9 @@ data_t dbfile::data(reference_t offset)
                 + ".");
     }
 
-    f_pages.insert(page_bimap_t::value_type(offset, ptr));
+    f_pages.insert(page_bimap_t::value_type(page_start, ptr));
 
-    return ptr;
+    return ptr + page_offset;
 }
 
 
@@ -370,8 +376,6 @@ void dbfile::sync(data_t data, bool immediate)
     msync(reinterpret_cast<data_t>(page_ptr)
         , sz
         , (immediate ? MS_SYNC : MS_ASYNC) | MS_INVALIDATE);
-
-std::cerr << "(and sync-ed)\n";
 }
 
 
@@ -414,8 +418,11 @@ reference_t dbfile::append_free_block(reference_t const previous_block_offset)
                 + "\".");
     }
 
-    dbtype_t magic(dbtype_t::BLOCK_TYPE_FREE_BLOCK);
+    dbtype_t const magic(dbtype_t::BLOCK_TYPE_FREE_BLOCK);
     write_data(&magic, sizeof(magic));
+    version_t const version(0, 1);
+    auto const v(version.to_binary());
+    write_data(&v, sizeof(v));
     write_data(&previous_block_offset, sizeof(previous_block_offset));
     if(!f_sparse_file)
     {
@@ -428,7 +435,8 @@ reference_t dbfile::append_free_block(reference_t const previous_block_offset)
     {
         // this is what makes the file sparse
         //
-        // but only when `one get_page_size() > get_system_page_size()`
+        // (note that really happens only when
+        // `get_page_size() > get_system_page_size()`)
         //
         ftruncate(f_fd, p + get_page_size());
     }
@@ -467,7 +475,7 @@ void dbfile::write_data(void const * ptr, size_t size)
 }
 
 
-std::string dbtype_to_string(dbtype_t type)
+std::string to_string(dbtype_t type)
 {
     switch(type)
     {

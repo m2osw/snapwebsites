@@ -64,9 +64,16 @@ enum class model_t
     TABLE_MODEL_DEFAULT = TABLE_MODEL_CONTENT
 };
 
-
-
 model_t             name_to_model(std::string const & name);
+
+
+enum compare_t
+{
+    COMPARE_SCHEMA_EQUAL,
+    COMPARE_SCHEMA_UPDATE,
+    COMPARE_SCHEMA_DIFFER
+};
+
 
 
 // SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
@@ -151,10 +158,10 @@ public:
                                                     , flag32_t flags);
 
     void                                    from_structure(structure::pointer_t s);
+    compare_t                               compare(schema_column const & rhs) const;
 
     schema_table_pointer_t                  table() const;
 
-    void                                    hash(std::uint64_t & h0, std::uint64_t & h1) const;
     std::string                             name() const;
     column_id_t                             column_id() const;
     void                                    set_column_id(column_id_t id);
@@ -169,7 +176,6 @@ public:
     buffer_t                                validation() const;
 
 private:
-    std::uint64_t                           f_hash[2] = { 0ULL, 0ULL };
     std::string                             f_name = std::string();
     column_id_t                             f_column_id = column_id_t();
     struct_type_t                           f_type = struct_type_t();
@@ -196,7 +202,9 @@ class schema_secondary_index
 {
 public:
     typedef std::shared_ptr<schema_secondary_index> pointer_t;
-    typedef std::vector<pointer_t>                  vector_t;
+    typedef std::map<std::string, pointer_t>        map_t;
+
+    compare_t                               compare(schema_secondary_index const & rhs) const;
 
     std::string                             get_index_name() const;
     void                                    set_index_name(std::string const & index_name);
@@ -225,11 +233,13 @@ public:
 
     void                                    from_xml(xml_node::pointer_t x);
     void                                    load_extension(xml_node::pointer_t e);
+    compare_t                               compare(schema_table const & rhs) const;
 
     void                                    from_binary(virtual_buffer::pointer_t b);
     virtual_buffer::pointer_t               to_binary() const;
 
-    version_t                               version() const;
+    version_t                               schema_version() const;
+    time_t                                  added_on() const;
     std::string                             name() const;
     model_t                                 model() const;
     bool                                    is_sparse() const;
@@ -240,18 +250,20 @@ public:
     schema_column::pointer_t                column(column_id_t id) const;
     schema_column::map_by_id_t              columns_by_id() const;
     schema_column::map_by_name_t            columns_by_name() const;
+    schema_secondary_index::pointer_t       secondary_index(std::string const & name) const;
 
     std::string                             description() const;
     std::uint32_t                           block_size() const;
 
 private:
     version_t                               f_version = version_t();
+    time_t                                  f_added_on = time(nullptr);
     std::string                             f_name = std::string();
     flag64_t                                f_flags = flag64_t();
     model_t                                 f_model = model_t::TABLE_MODEL_CONTENT;
     std::uint32_t                           f_block_size = 0;
     column_ids_t                            f_row_key = column_ids_t();
-    schema_secondary_index::vector_t        f_secondary_indexes = schema_secondary_index::vector_t();
+    schema_secondary_index::map_t           f_secondary_indexes = schema_secondary_index::map_t();
     schema_complex_type::map_t              f_complex_types = schema_complex_type::map_t();
     schema_column::map_by_name_t            f_columns_by_name = schema_column::map_by_name_t();
     schema_column::map_by_id_t              f_columns_by_id = schema_column::map_by_id_t();

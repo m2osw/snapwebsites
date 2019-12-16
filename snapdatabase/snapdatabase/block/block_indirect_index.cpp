@@ -29,6 +29,8 @@
 //
 #include    "snapdatabase/block/block_indirect_index.h"
 
+#include    "snapdatabase/block/block_header.h"
+
 
 // last include
 //
@@ -41,12 +43,18 @@ namespace snapdatabase
 
 
 
-// 'INDR'
-struct_description_t g_indirect_index_description[] =
+namespace
+{
+
+
+
+// 'INDR' -- indirect index
+struct_description_t g_description[] =
 {
     define_description(
-          FieldName("magic")    // dbtype_t = INDR
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
+          FieldName("header")
+        , FieldType(struct_type_t::STRUCT_TYPE_STRUCTURE)
+        , FieldSubDescription(detail::g_block_header)
     ),
     define_description(
           FieldName("size")
@@ -60,11 +68,25 @@ struct_description_t g_indirect_index_description[] =
 };
 
 
+constexpr descriptions_by_version_t const g_descriptions_by_version[] =
+{
+    define_description_by_version(
+        DescriptionVersion(0, 1),
+        DescriptionDescription(g_description)
+    ),
+    end_descriptions_by_version()
+};
+
+
+
+}
+// no name namespace
+
+
 
 block_indirect_index::block_indirect_index(dbfile::pointer_t f, reference_t offset)
-    : block(f, offset)
+    : block(g_descriptions_by_version, f, offset)
 {
-    f_structure = std::make_shared<structure>(g_indirect_index_description);
 }
 
 

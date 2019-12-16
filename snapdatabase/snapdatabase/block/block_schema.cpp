@@ -29,6 +29,7 @@
 //
 #include    "snapdatabase/block/block_schema.h"
 
+#include    "snapdatabase/block/block_header.h"
 #include    "snapdatabase/database/table.h"
 
 
@@ -48,9 +49,19 @@ namespace snapdatabase
 
 
 
-// 'SCHM'
-constexpr struct_description_t g_block_schema[] =
+namespace
 {
+
+
+
+// 'SCHM'
+constexpr struct_description_t g_description[] =
+{
+    define_description(
+          FieldName("header")
+        , FieldType(struct_type_t::STRUCT_TYPE_STRUCTURE)
+        , FieldSubDescription(detail::g_block_header)
+    ),
     define_description(
           FieldName("size")
         , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
@@ -63,11 +74,25 @@ constexpr struct_description_t g_block_schema[] =
 };
 
 
+constexpr descriptions_by_version_t const g_descriptions_by_version[] =
+{
+    define_description_by_version(
+        DescriptionVersion(0, 1),
+        DescriptionDescription(g_description)
+    ),
+    end_descriptions_by_version()
+};
+
+
+
+}
+// no name namespace
+
+
 
 block_schema::block_schema(dbfile::pointer_t f, reference_t offset)
-    : block(f, offset)
+    : block(g_descriptions_by_version, f, offset)
 {
-    f_structure = std::make_shared<structure>(g_block_schema);
 }
 
 

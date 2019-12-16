@@ -108,7 +108,6 @@ context_impl::~context_impl()
 
 void context_impl::initialize()
 {
-std::cerr << "init context?\n";
     f_path = f_opts->get_string("context");
 
     SNAP_LOG_NOTICE
@@ -139,7 +138,6 @@ std::cerr << "init context?\n";
         << " XML schemata."
         << SNAP_LOG_SEND;
 
-std::cerr << "schema dirs = " << max << "?\n";
     for(size_t idx(0); idx < max; ++idx)
     {
         std::string const path(f_opts->get_string("table_schema_path", idx));
@@ -173,7 +171,6 @@ std::cerr << "schema dirs = " << max << "?\n";
         for(auto const & filename : list)
         {
             xml x(filename);
-std::cerr << "parsed [" << filename << "]\n";
 
             xml_node::pointer_t root(x.root());
             if(root == nullptr)
@@ -199,7 +196,6 @@ std::cerr << "parsed [" << filename << "]\n";
                 continue;
             }
 
-std::cerr << "complex types...\n";
             xml_node::map_t complex_types;
             for(auto child(root->first_child()); child != nullptr; child = child->next())
             {
@@ -228,17 +224,13 @@ std::cerr << "complex types...\n";
                 }
             }
 
-std::cerr << "tables...\n";
             for(auto child(root->first_child()); child != nullptr; child = child->next())
             {
                 if(child->tag_name() == "table")
                 {
-std::cerr << "create table...\n";
                     table::pointer_t t(std::make_shared<table>(f_context, child, complex_types));
-std::cerr << "got table [" << t->name() << "]...\n";
                     f_tables[t->name()] = t;
 
-std::cerr << "attach dbfile to table [" << t->name() << "]...\n";
                     dbfile::pointer_t dbfile(t->get_dbfile());
                     dbfile->set_table(t);
                     dbfile->set_sparse(t->is_sparse());
@@ -269,7 +261,6 @@ std::cerr << "attach dbfile to table [" << t->name() << "]...\n";
         }
     }
 
-std::cerr << "table extensions...\n";
     SNAP_LOG_NOTICE
         << "Adding "
         << table_extensions.size()
@@ -298,13 +289,10 @@ std::cerr << "table extensions...\n";
         << " table schemata."
         << SNAP_LOG_SEND;
 
-std::cerr << "verify schemata...\n";
     for(auto & t : f_tables)
     {
         t.second->verify_schema();
     }
-
-std::cerr << "context ready...\n";
 
     SNAP_LOG_INFORMATION
         << "Context \""
@@ -357,11 +345,8 @@ context::~context()
 
 context::pointer_t context::get_context(advgetopt::getopt::pointer_t opts)
 {
-std::cerr << "context: create\n";
     pointer_t c(new context(opts));
-std::cerr << "context: initialize\n";
     c->initialize();
-std::cerr << "context: ready to return\n";
     return c;
 }
 

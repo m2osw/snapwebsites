@@ -38,6 +38,7 @@
 #include    "snapdatabase/block/block_entry_index.h"
 #include    "snapdatabase/block/block_free_block.h"
 #include    "snapdatabase/block/block_free_space.h"
+#include    "snapdatabase/block/block_header.h"
 #include    "snapdatabase/block/block_index_pointers.h"
 #include    "snapdatabase/block/block_indirect_index.h"
 #include    "snapdatabase/block/block_secondary_index.h"
@@ -68,6 +69,12 @@ namespace detail
 {
 
 
+
+
+
+
+
+
 class table_impl
 {
 public:
@@ -96,13 +103,14 @@ public:
     std::string                                 description() const;
     size_t                                      get_size() const;
     size_t                                      get_page_size() const;
-    block::pointer_t                            allocate_block(dbtype_t type, reference_t offset);
     block::pointer_t                            get_block(reference_t offset);
     block::pointer_t                            allocate_new_block(dbtype_t type);
     void                                        free_block(block::pointer_t block, bool clear_block);
     bool                                        verify_schema();
 
 private:
+    block::pointer_t                            allocate_block(dbtype_t type, reference_t offset);
+
     context *                                   f_context = nullptr;
     table *                                     f_table = nullptr;
     schema_table::pointer_t                     f_schema_table = schema_table::pointer_t();
@@ -122,13 +130,8 @@ table_impl::table_impl(
     , f_schema_table(std::make_shared<schema_table>())
     , f_complex_types(complex_types)
 {
-std::cerr << "--- table init schema:\n";
     f_schema_table->from_xml(x);
-
-std::cerr << "--- table init dbfile:\n";
     f_dbfile = std::make_shared<dbfile>(c->get_path(), f_schema_table->name(), "main");
-std::cerr << "--- table init complex types:\n";
-
     f_dbfile->set_page_size(f_schema_table->block_size());
 }
 
@@ -155,18 +158,15 @@ bool table_impl::verify_schema()
     // older version, use that specific schema until they get updated to the
     // new format.)
     //
-std::cerr << "table: load SDBT...\n";
     file_snap_database_table::pointer_t sdbt(
             std::static_pointer_cast<file_snap_database_table>(
                         get_block(0)));
 
-std::cerr << "table: get def...\n";
     reference_t const schema_offset(sdbt->get_table_definition());
     if(schema_offset == 0)
     {
         // no schema defined yet, just save ours and we're all good
         //
-std::cerr << "table: create schm...\n";
         f_schema_table->assign_column_ids();
         block_schema::pointer_t schm(
                 std::static_pointer_cast<block_schema>(
@@ -179,7 +179,24 @@ std::cerr << "table: create schm...\n";
         // load the binary schema (it may reside on multiple blocks and we
         // have to read the entire schema at once)
         //
-std::cerr << "table: verify schema...\n";
+std::cerr << "table: TODO verify schema...\n";
+        block_schema::pointer_t schm(std::static_pointer_cast<block_schema>(get_block(schema_offset)));
+std::cerr << "table: get schema in a buffer...\n";
+        virtual_buffer::pointer_t current_schema_data(schm->get_schema());
+std::cerr << "table: get a schema table object...\n";
+        schema_table::pointer_t current_schema_table(std::make_shared<schema_table>());
+std::cerr << "table: buffer to schema structures...\n";
+        current_schema_table->from_binary(current_schema_data);
+std::cerr << "table: now compare...\n";
+        compare_t const c(current_schema_table->compare(*f_schema_table));
+        if(c == compare_t::COMPARE_SCHEMA_UPDATE)
+        {
+            virtual_buffer::pointer_t bin_schema(f_schema_table->to_binary());
+            schm->set_schema(bin_schema);
+        }
+        else if(c == compare_t::COMPARE_SCHEMA_DIFFER)
+        {
+        }
     }
 
     return true;
@@ -188,7 +205,7 @@ std::cerr << "table: verify schema...\n";
 
 version_t table_impl::version() const
 {
-    return f_schema_table->version();
+    return f_schema_table->schema_version();
 }
 
 
@@ -266,13 +283,11 @@ size_t table_impl::get_page_size() const
 
 block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
 {
-std::cerr << "table: -- get block(" << offset << ")\n";
     auto it(f_blocks.find(offset));
     if(it != f_blocks.end())
     {
         if(type == it->second->get_dbtype())
         {
-std::cerr << "table: -- found block(" << offset << ")\n";
             return it->second;
         }
         // TBD: I think only FREE blocks can be replaced by something else
@@ -286,7 +301,6 @@ std::cerr << "table: -- found block(" << offset << ")\n";
                     + std::to_string(static_cast<int>(type))
                     + "). You can go from a free to non-free and non-free to free, but not the opposite.");
         }
-std::cerr << "table: -- found block(" << offset << ") but it's the wrong type, replacing!\n";
         //it->second->replacing(); -- this won't work right at this time TODO...
         f_blocks.erase(it);
     }
@@ -357,7 +371,7 @@ std::cerr << "table: -- found block(" << offset << ") but it's the wrong type, r
 
     b->set_table(f_table->get_pointer());
     b->set_data(f_dbfile->data(offset));
-    b->get_structure()->set_block(b, f_dbfile->get_page_size());
+    b->get_structure()->set_block(b, 0, f_dbfile->get_page_size());
     b->set_dbtype(type);
 
     f_context->limit_allocated_memory();
@@ -367,29 +381,44 @@ std::cerr << "table: -- found block(" << offset << ") but it's the wrong type, r
     //
     f_blocks[offset] = b;
 
-std::cerr << "return new block\n";
     return b;
 }
 
 
 block::pointer_t table_impl::get_block(reference_t offset)
 {
-std::cerr << "table: -- get block() file size unless offset == 0...\n";
     if(offset != 0
     && offset >= f_dbfile->get_size())
     {
         throw snapdatabase_logic_error("Requested a block with an offset >= to the existing file size.");
     }
 
-std::cerr << "table: get data is the problem!\n";
+    structure::pointer_t s(std::make_shared<structure>(g_block_header));
     data_t d(f_dbfile->data(offset));
-    dbtype_t const type(*reinterpret_cast<dbtype_t const *>(d));
-std::cerr << "table: -- PTR " << reinterpret_cast<void *>(d)
-                    << " -- " << static_cast<int>(type)
-                    << "\n";
+    virtual_buffer::pointer_t header(std::make_shared<virtual_buffer>());
+#ifdef _DEBUG
+    if(s->get_size() != BLOCK_HEADER_SIZE)
+    {
+        throw snapdatabase_logic_error("sizeof(g_block_header) != BLOCK_HEADER_SIZE");
+    }
+#endif
+    header->pwrite(d, s->get_size(), 0, true);
+    s->set_virtual_buffer(header, 0);
+    dbtype_t const type(static_cast<dbtype_t>(s->get_uinteger("magic")));
+    //version_t const version(s->get_uinteger("version"));
 
-std::cerr << "table: -- calling allocate block()\n";
-    return allocate_block(type, offset);
+    block::pointer_t b(allocate_block(type, offset));
+
+    // this last call is used to convert the binary data from the
+    // file version to the latest running version; the result will
+    // be saved back in the block so that way the conversion doesn't
+    // happen over and over again; if the version is already up to
+    // date, then nothing happens
+    //
+    b->from_current_file_version();
+
+    return b;
+
 }
 
 
@@ -413,7 +442,7 @@ block::pointer_t table_impl::allocate_new_block(dbtype_t type)
         default:
             throw snapdatabase_logic_error(
                       "a new file can't be created with type \""
-                    + dbtype_to_string(type)
+                    + to_string(type)
                     + "\".");
 
         }
@@ -440,7 +469,7 @@ block::pointer_t table_impl::allocate_new_block(dbtype_t type)
         case dbtype_t::FILE_TYPE_BLOOM_FILTER:
             throw snapdatabase_logic_error(
                       "a file type such as \""
-                    + dbtype_to_string(type)
+                    + to_string(type)
                     + "\" is only for when you create a file.");
 
         default:
@@ -450,11 +479,8 @@ block::pointer_t table_impl::allocate_new_block(dbtype_t type)
 
         // get next free block from the header
         //
-std::cerr << "table: try to get header with get_block(0)\n";
         file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
-std::cerr << "table: get first free block\n";
         offset = header->get_first_free_block();
-std::cerr << "table: got offset: " << offset << "\n";
         if(offset == NULL_FILE_ADDR)
         {
             offset = f_dbfile->append_free_block(NULL_FILE_ADDR);
@@ -472,19 +498,16 @@ std::cerr << "table: got offset: " << offset << "\n";
         else
         {
             block_free_block::pointer_t p(std::static_pointer_cast<block_free_block>(get_block(offset)));
-
-std::cerr << "table: retrieve next block offset...\n";
-reference_t const o(p->get_next_free_block());
-std::cerr << "table: save offset of next free block: " << o << "\n";
             header->set_first_free_block(p->get_next_free_block());
-std::cerr << "table: offset saved?\n";
         }
     }
 
     // this should probably use a factory for better extendability
     // but at this time we don't need such at all
     //
-    return allocate_block(type, offset);
+    block::pointer_t b(allocate_block(type, offset));
+    b->set_structure_version();
+    return b;
 }
 
 

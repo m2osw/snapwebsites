@@ -124,11 +124,8 @@ CATCH_TEST_CASE("Context", "[centext]")
         int const argc(sizeof(cargv) / sizeof(cargv[0]) - 1);
         char ** argv = const_cast<char **>(cargv);
 
-std::cerr << "just before creating opt\n";
         advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options_environment, argc, argv));
-std::cerr << "just before creating context\n";
         snapdatabase::context::pointer_t context(snapdatabase::context::get_context(opt));
-std::cerr << "got the context now!\n";
     }
     CATCH_END_SECTION()
 }

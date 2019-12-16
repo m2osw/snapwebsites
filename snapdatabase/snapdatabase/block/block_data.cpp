@@ -29,7 +29,9 @@
 //
 #include    "snapdatabase/block/block_data.h"
 
+#include    "snapdatabase/block/block_header.h"
 #include    "snapdatabase/database/table.h"
+
 
 // last include
 //
@@ -47,22 +49,39 @@ namespace detail
 }
 
 
+namespace
+{
+
 
 // 'DATA'
-constexpr struct_description_t g_data_description[] =
+constexpr struct_description_t const g_description[] =
 {
     define_description(
-          FieldName("magic")    // dbtype_t = DATA
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
+          FieldName("header")
+        , FieldType(struct_type_t::STRUCT_TYPE_STRUCTURE)
+        , FieldSubDescription(detail::g_block_header)
     ),
     end_descriptions()
 };
 
 
-block_data::block_data(dbfile::pointer_t f, reference_t offset)
-    : block(f, offset)
+constexpr descriptions_by_version_t const g_descriptions_by_version[] =
 {
-    f_structure = std::make_shared<structure>(g_data_description);
+    define_description_by_version(
+        DescriptionVersion(0, 1),
+        DescriptionDescription(g_description)
+    ),
+    end_descriptions_by_version()
+};
+
+
+}
+// no name namespace
+
+
+block_data::block_data(dbfile::pointer_t f, reference_t offset)
+    : block(g_descriptions_by_version, f, offset)
+{
 }
 
 

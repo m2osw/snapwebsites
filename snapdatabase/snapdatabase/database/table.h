@@ -51,8 +51,10 @@ namespace snapdatabase
 namespace detail
 {
 class table_impl;
-}
+} // detail namespace
 
+
+constexpr size_t const                          BLOCK_HEADER_SIZE = 4 + 4;  // magic + version (32 bits each)
 
 class context;
 class dbfile;

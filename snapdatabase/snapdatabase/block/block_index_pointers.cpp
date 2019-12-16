@@ -29,6 +29,8 @@
 //
 #include    "snapdatabase/block/block_index_pointers.h"
 
+#include    "snapdatabase/block/block_header.h"
+
 
 // last include
 //
@@ -41,21 +43,43 @@ namespace snapdatabase
 
 
 
-// 'IDXP'
-constexpr struct_description_t g_index_pointers_description[] =
+namespace
+{
+
+
+
+// 'IDXP' -- index pointers
+constexpr struct_description_t g_description[] =
 {
     define_description(
-          FieldName("magic")    // dbtype_t = IDXP
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
+          FieldName("header")
+        , FieldType(struct_type_t::STRUCT_TYPE_STRUCTURE)
+        , FieldSubDescription(detail::g_block_header)
     ),
     end_descriptions()
 };
 
 
-block_index_pointers::block_index_pointers(dbfile::pointer_t f, reference_t offset)
-    : block(f, offset)
+constexpr descriptions_by_version_t const g_descriptions_by_version[] =
 {
-    f_structure = std::make_shared<structure>(g_index_pointers_description);
+    define_description_by_version(
+        DescriptionVersion(0, 1),
+        DescriptionDescription(g_description)
+    ),
+    end_descriptions_by_version()
+};
+
+
+
+}
+// no name namespace
+
+
+
+
+block_index_pointers::block_index_pointers(dbfile::pointer_t f, reference_t offset)
+    : block(g_descriptions_by_version, f, offset)
+{
 }
 
 

@@ -96,6 +96,162 @@ constexpr snapdatabase::struct_description_t g_description2[] =
 // no name namespace
 
 
+CATCH_TEST_CASE("Structure Valid Version", "[structure] [version]")
+{
+    CATCH_START_SECTION("version conversion")
+    {
+        for(int n(0); n < 100; ++n)
+        {
+            int const major_version(rand() & 0xFFFF);
+            int const minor_version(rand() & 0xFFFF);
+
+            uint32_t const binary((major_version << 16) + minor_version);
+
+            snapdatabase::version_t v1(major_version, minor_version);
+            CATCH_REQUIRE(v1.get_major() == major_version);
+            CATCH_REQUIRE(v1.get_minor() == minor_version);
+            CATCH_REQUIRE(v1.to_binary() == binary);
+
+            snapdatabase::version_t v2;
+            CATCH_REQUIRE(v2.get_major() == 0);
+            CATCH_REQUIRE(v2.get_minor() == 0);
+            CATCH_REQUIRE(v2.is_null());
+            CATCH_REQUIRE(v2 != v1);
+            v2.from_binary(binary);
+            CATCH_REQUIRE(v2.get_major() == major_version);
+            CATCH_REQUIRE(v2.get_minor() == minor_version);
+            CATCH_REQUIRE(v2.to_binary() == binary);
+            CATCH_REQUIRE(v2 == v1);
+
+            v2.next_revision();
+
+            if(minor_version == 0xFFFF)
+            {
+                CATCH_REQUIRE(v2.get_major() == major_version + 1);
+                CATCH_REQUIRE(v2.get_minor() == 0);
+            }
+            else
+            {
+                CATCH_REQUIRE(v2.get_major() == major_version);
+                CATCH_REQUIRE(v2.get_minor() == minor_version + 1);
+            }
+
+            v2 = v1;
+            int const new_major_version(rand() & 0xFFFF);
+            v2.set_major(new_major_version);
+            CATCH_REQUIRE(v2.get_major() == new_major_version);
+            CATCH_REQUIRE(v2.get_minor() == minor_version);
+            CATCH_REQUIRE(v2 != v1);
+
+            int const new_minor_version(rand() & 0xFFFF);
+            v2.set_minor(new_minor_version);
+            CATCH_REQUIRE(v2.get_major() == new_major_version);
+            CATCH_REQUIRE(v2.get_minor() == new_minor_version);
+            CATCH_REQUIRE(v2 != v1);
+
+            v2 = v1;
+            CATCH_REQUIRE(v2.get_major() == major_version);
+            CATCH_REQUIRE(v2.get_minor() == minor_version);
+            CATCH_REQUIRE(v2.to_binary() == binary);
+            CATCH_REQUIRE(v2 == v1);
+
+            snapdatabase::version_t v3(v1);
+            CATCH_REQUIRE_FALSE(v3.is_null());
+            CATCH_REQUIRE(v3.get_major() == major_version);
+            CATCH_REQUIRE(v3.get_minor() == minor_version);
+            CATCH_REQUIRE(v3.to_binary() == binary);
+            CATCH_REQUIRE(v3 == v1);
+            CATCH_REQUIRE_FALSE(v3 > v1);
+            CATCH_REQUIRE(v3 >= v1);
+            CATCH_REQUIRE_FALSE(v3 < v1);
+            CATCH_REQUIRE(v3 <= v1);
+
+            std::string v3_str(v3.to_string());
+            std::string version_str;
+            version_str += std::to_string(major_version);
+            version_str += '.';
+            version_str += std::to_string(minor_version);
+            CATCH_REQUIRE(v3_str == version_str);
+
+            v3.next_branch();
+            CATCH_REQUIRE(v3.get_major() == major_version + 1);
+            CATCH_REQUIRE(v3.get_minor() == 0);
+            CATCH_REQUIRE(v3.to_binary() == ((major_version + 1) << 16));
+        }
+    }
+    CATCH_END_SECTION()
+}
+
+CATCH_TEST_CASE("Structure Overflown Version", "[structure] [version]")
+{
+    CATCH_START_SECTION("version overflow")
+    {
+        for(int n(0); n < 100; ++n)
+        {
+            int major_version(0);
+            int minor_version(0);
+            do
+            {
+                major_version = rand() ^ rand() * 65536;
+                minor_version = rand() ^ rand() * 65536;
+            }
+            while(major_version < 65536
+               && minor_version < 65536);
+
+            CATCH_REQUIRE_THROWS_MATCHES(
+                      snapdatabase::version_t(major_version, minor_version)
+                    , snapdatabase::invalid_parameter
+                    , Catch::Matchers::ExceptionMessage(
+                              "snapdatabase_error: major/minor version must be between 0 and 65535 inclusive, "
+                            + std::to_string(major_version)
+                            + "."
+                            + std::to_string(minor_version)
+                            + " is incorrect."));
+        }
+    }
+    CATCH_END_SECTION()
+}
+
+CATCH_TEST_CASE("Structure Overflow Version", "[structure] [version]")
+{
+    CATCH_START_SECTION("version compare")
+    {
+        for(int n(0); n < 100; ++n)
+        {
+            int major_version(rand() & 0xFFFF);
+            int minor_version(rand() & 0xFFFF);
+            int major_version2(rand() & 0xFFFF);
+            while(major_version == major_version2)
+            {
+                major_version2 = rand() & 0xFFFF;
+            }
+
+            snapdatabase::version_t v1(major_version, minor_version);
+            snapdatabase::version_t v2(major_version2, minor_version);
+            if(major_version < major_version2)
+            {
+                CATCH_REQUIRE_FALSE(v1 == v2);
+                CATCH_REQUIRE(v1 != v2);
+                CATCH_REQUIRE(v1 < v2);
+                CATCH_REQUIRE(v1 <= v2);
+                CATCH_REQUIRE(v2 > v1);
+                CATCH_REQUIRE(v2 >= v1);
+            }
+            else
+            {
+                CATCH_REQUIRE_FALSE(v1 == v2);
+                CATCH_REQUIRE(v1 != v2);
+                CATCH_REQUIRE(v1 > v2);
+                CATCH_REQUIRE(v1 >= v2);
+                CATCH_REQUIRE(v2 < v1);
+                CATCH_REQUIRE(v2 <= v1);
+            }
+        }
+    }
+    CATCH_END_SECTION()
+}
+
+
 CATCH_TEST_CASE("Structure", "[structure]")
 {
     CATCH_START_SECTION("simple structure")
@@ -131,7 +287,6 @@ CATCH_TEST_CASE("Structure", "[structure]")
         snapdatabase::structure::pointer_t description(std::make_shared<snapdatabase::structure>(g_description2));
 
         description->init_buffer();
-std::cerr << "TEST: size = " << description->get_current_size() << "\n";
 
         description->set_uinteger("magic", static_cast<uint32_t>(snapdatabase::dbtype_t::BLOCK_TYPE_DATA));
 
@@ -140,7 +295,6 @@ std::cerr << "TEST: size = " << description->get_current_size() << "\n";
 
         std::string const name("this is the name we want to include here");
         description->set_string("name", name);
-std::cerr << "TEST: after name size = " << description->get_current_size() << "\n";
 
         uint64_t size(1LL << 53);
         description->set_uinteger("size", size);

@@ -29,6 +29,13 @@
 //
 #include    "snapdatabase/file/file_snap_database_table.h"
 
+#include    "snapdatabase/block/block_header.h"
+
+
+// C++ lib
+//
+#include    <iostream>
+
 
 // last include
 //
@@ -47,15 +54,21 @@ namespace detail
 
 
 
-// 'SDBT'
-constexpr struct_description_t g_snap_database_table_description[] =
+namespace
+{
+
+
+
+// 'SDBT' -- snapdatabase file
+constexpr struct_description_t g_description[] =
 {
     define_description(
-          FieldName("magic")    // dbtype_t = SDBT
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
+          FieldName("header")
+        , FieldType(struct_type_t::STRUCT_TYPE_STRUCTURE)
+        , FieldSubDescription(detail::g_block_header)
     ),
     define_description(
-          FieldName("version")
+          FieldName("file_version")
         , FieldType(struct_type_t::STRUCT_TYPE_VERSION)
     ),
     define_description(
@@ -119,6 +132,21 @@ constexpr struct_description_t g_snap_database_table_description[] =
 };
 
 
+constexpr descriptions_by_version_t const g_descriptions_by_version[] =
+{
+    define_description_by_version(
+        DescriptionVersion(0, 1),
+        DescriptionDescription(g_description)
+    ),
+    end_descriptions_by_version()
+};
+
+
+
+}
+// no name namespace
+
+
 
 
 
@@ -127,21 +155,21 @@ constexpr struct_description_t g_snap_database_table_description[] =
 
 
 file_snap_database_table::file_snap_database_table(dbfile::pointer_t f, reference_t offset)
-    : block(f, offset)
+    : block(g_descriptions_by_version, f, offset)
 {
-    f_structure = std::make_shared<structure>(g_snap_database_table_description);
+std::cerr << "--- the file_snap_database_table offset = " << offset << "\n";
 }
 
 
-version_t file_snap_database_table::get_version() const
+version_t file_snap_database_table::get_file_version() const
 {
-    return static_cast<version_t>(static_cast<uint32_t>(f_structure->get_uinteger("version")));
+    return static_cast<version_t>(static_cast<uint32_t>(f_structure->get_uinteger("file_version")));
 }
 
 
-void file_snap_database_table::set_version(version_t v)
+void file_snap_database_table::set_file_version(version_t v)
 {
-    f_structure->set_uinteger("version", v.to_binary());
+    f_structure->set_uinteger("file_version", v.to_binary());
 }
 
 

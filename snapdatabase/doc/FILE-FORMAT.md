@@ -283,21 +283,67 @@ get the data updated:
 
 We want to use several types of blocks to maintain the database:
 
+### Block Header (all blocks)
+
+Absolutely all blocks, including _file blocks_ (i.e. block with offset 0),
+start with the exact same header defined here. The most important part for
+us is to be capable of upgrading files whenever we update our table
+structures. For that to happen easily, we use a version on a per block
+basis. This helps in various ways, especially, it helps with the fact
+that we do not upgrade an entire file if only a few block types were updated.
+Also, the way we implemented it, we do not even have to do the update up
+until the time you actually read that block for the first time since the
+upgrade. This may have a small speed impact but in comparison to having
+to upgrade humongous files all at once, it will be mostly transparent.
+
+The _Block Header_ gets referenced as the very first field of all the other
+blocks. In our structures, it is called `header`.
+
+The header has the following fields at the moment:
+
+* Magic (Type: `dbtype_t`)
+
+    The _Magic_ field is a field of 4 bytes that represent the type of
+    the block using letters (a la IFF, PNG, and some other such formats).
+    This means it easy to look at a file with a binary editor and very
+    easily see what the block is about
+
+    All _Magic_ types use 4 bytes, although the last few could be set to
+    '\0' it is rare if ever used that way.
+
+* Structure Version (Type: `version_t`)
+
+    The version of this block's structure on disk. This allows us to parse
+    the block data using the correct structure.
+
+    **WARNING:** This is not the data in the rows. The structures are the
+    meta data we use to know what is in the various blocks. These structures
+    will probably rarely change, but when they do they are very likely going
+    to be incompatible with older versions. To ease upgrades (not downgrades)
+    we want to have a version in each block allow us a very precise way to
+    move the data forward to our newest version. Note that contrary to the
+    number of schema (see `SCHM` and `SCHL`) which can grow and shrink over
+    time, all the old structures will be kept so any older version can be
+    upgraded (okay, after some time, we may force you to upgrade to an
+    intermediate version or dump your data and re-upload it to the database;
+    after a long time, we would otherwise have too many structure descriptions
+    in our files...)
+
+
 ### Header (`SDBT`)
 
 The header defines where the other blocks are and includes the bloom filter
 data.
 
-* Magic (`SDBT`, Type: `dbtype_t`)
+* Block Header (Type: _complex_)
 
-    The magic word of the block and also the entire file since it
-    appears at the very beginning of the file.
+    The block header.
 
-* Version (`uint16_t:uint16_t`)
+* Version (Type: `version_t`)
 
-    The version of this table
+    The version of this table.
 
-* Block Size (`uint32_t`)
+* Block Size (Type: `uint32_t`)
 
     The size of one block in bytes. By default we use 4Kb, but some tables
     may defined a larger size such as 64Kb. It will depend on the size of
@@ -305,11 +351,18 @@ data.
     going to be inserted is a good idea, but there are trade offs too (i.e.
     we do not want 1Mb blocks for indexes, for example).
 
-* Table Definition (`reference`)
+* Table Definition (Type: `reference_t`)
 
     A pointer to the full schema definition which appears in another
     block. It is the parsed data from the XML file defining a table
     in binary form that we can load and use immediately.
+
+    The reference may point to a `SCHM` (Schema) or a `SCHL` (Schema List)
+    block. The `SCHL` is used when more than one schema is used in this
+    file. This is important when you upgrade your table schema. It will
+    upgrade all the rows in the background with a low priority so as to
+    avoid preventing rows from being insert, selected, updated, deleted
+    by clients. See the `SCHL` for additional details about this.
 
     We have to have our own definition so if the user makes a modification to
     the XML file that was first used to declare this table, we can easily
@@ -325,13 +378,19 @@ data.
     keep a copy of each one in our database.
 
     When updates occur in the Schema, we can handle them by keeping a copy of
-    the old schema and then _know_ whether a row is schema version 1, version 2,
-    etc.
+    the old schema (see `SCHL`) and then _know_ whether a row is schema
+    version 1, version 2, etc.
 
     > _Note: to avoid having to add anything more to every single one of our rows
     > we actually timestamp the schema versions. Since we always have a date in
     > each one of our rows, we know which one to keep and also that date can be
     > used to find which schema was used to save that row._
+
+    WRONG: We can't use a date. That's not enough to allow for a full upgrade
+    on the spot which we probably want to do because otherwise we could end
+    up with a ton of schemata and that's definitely not something we want in
+    any table (i.e. with just a date, we have to hope that each row gets
+    update _at some point_ to fix its schema).
 
     This means we do not have to do anything to the existing table at all.
     Instead, we view rows using the old schema as _read-only_. If a write
@@ -372,14 +431,14 @@ data.
     once when we can do it incrementally (or even not at all if the data
     is pretty much considered immutable).
 
-* First Free Block (`reference`)
+* First Free Block (Type: `reference_t`)
 
     This field holds a reference to the first `FREE` block. This block
     is available to be used as any block. If all free blocks were used
     then this parameter is 0. For more details see the Free Block
     definition.
 
-* Table Expiration Date (`time_t`)
+* Table Expiration Date (Type: `time_t`)
 
     **TBD:** do we really want to support temporary tables? It's often used
     in SQL, but here, maybe we could instead look into having a feature
@@ -406,7 +465,7 @@ data.
     when the table times out and gets deleted. Note that once a table
     has expired, any access to that table fail with an error.
 
-* Indirect Index (`reference`)
+* Indirect Index (Type: `reference`)
 
     A pointer to an `INDR` block or, once the first `INDR` is full, to
     a `TIND` block.
@@ -438,7 +497,7 @@ data.
     free list is empty or not. If not, use that OID, if it is empty allocate
     a new OID. This means the row OIDs get reused.
 
-* Last OID (`uint64_t`)
+* Last OID (Type: `uint64_t`)
 
     The last OID that was used. If 0, then no rows were allocated yet. This
     value is used to allow for the `INDR` blocks.
@@ -450,7 +509,7 @@ data.
     with exactly the same data, the OID is likely going to be different
     because the data would have been inserted in a different order.
 
-* First Free OID (`uint64_t`)
+* First Free OID (Type: `uint64_t`)
 
     Whenever we add a new row we assign an identifier to that row. That
     identifier is used everywhere that row gets referenced. The Indirect Index
@@ -464,7 +523,7 @@ data.
     This feature doesn't get used if the file does not require an indirect
     index.
 
-* First Compactable Block (`reference`)
+* First Compactable Block (Type: `reference_t`)
 
     Whenever a DELETE happens in a block, we are likely to have the ability
     to _compact_ that block to save space. That block is therefore added here.
@@ -490,7 +549,7 @@ data.
     We still can have an audit process which verifies that a block is as
     expected and that could be one of the elements to verify.
 
-* Process Compactable Block (`reference`)
+* Process Compactable Block (Type: `reference_t`)
 
     The block being processed by the compaction service. As mentioned in
     the First Compactable Block, it may take time for the process
@@ -498,23 +557,23 @@ data.
     information if we quit (or worse, crash) which the compaction is
     going on.
 
-* Top Key Index Block (`reference`)
+* Top Key Index Block (Type: `reference_t`)
 
     Pointer to the first B+tree Primary Index block.
 
-* First Block with Free Space (`reference`)
+* First Block with Free Space (Type: `reference_t`)
 
     This reference points to a set of references arranged by the amount
     of space available in a block (`FSPC`). This gives us the ability to
     go directly to a block that can hold a new key being inserted (or
     an old key being updated and that grew).
 
-* Blobs with Free Space (`reference`)
+* Blobs with Free Space (Type: `reference_t`)
 
     This reference points to a block of references used to define blobs
     with space still available (`FSPC`).
 
-* Expiration Index Block (`reference`)
+* Expiration Index Block (Type: `reference_t`)
 
     Pointer to the first B+tree index block with rows having an
     Expiration Date are sorted by that date. Note that we only allow
@@ -534,7 +593,7 @@ data.
     are sure that all the data you want to expire at a given date
     all expire simultaneously._
 
-* Secondary Index Blocks (`reference`)
+* Secondary Index Blocks (Type: `reference_t`)
 
     A pointer to a block representing a list of secondary indexes. These
     include the name of the indexes and a pointer to the actual index
@@ -558,7 +617,7 @@ data.
     indexes when it could be one single virtual column in the Content
     table. This is exciting.
 
-* Tree Index Block (`reference`)
+* Tree Index Block (Type: `reference_t`)
 
     For the Tree table, we want to be able to select the direct children
     of a page. So we want to have a table with a specialized index where
@@ -574,7 +633,7 @@ data.
     with a path. Then we can simply remove one segment from the path to
     find the parent and save this new row OID/pointer as a child.
 
-* Deleted Rows (`uint64_t`)
+* Deleted Rows (Type: `uint64_t`)
 
     Note: by default we use a Counting Bloom Filter which means that
     we can delete rows. However, if a counter reaches the maximum (which
@@ -596,7 +655,7 @@ data.
     we clear the bloom filter and copy this counter to the the Last 
     Bloom Filter Regeneration Counter.
 
-* Bloom Filter Flags (`uint32_t`)
+* Bloom Filter Flags (Type: `uint32_t`)
 
     This bloom filter flags define whether and how the bloom filter is
     to be used. The flags are:
@@ -612,12 +671,12 @@ data.
 
     - bits: just use bits; it makes the filter smaller; useful for
       tables which do not delete very many rows over time; note that
-      replacing a row does not mean deleting because the key remains
-      the same
+      replacing/updating a row does not mean deleting because the key
+      remains the same
 
     - counters: use one byte per entry which gets increased when a match
       is found and decreases when we remove a row; useful for tables
-      where many rows get removed all the time
+      where many rows get deleted all the time
 
 
 ### Free Block (`FREE`)
@@ -676,6 +735,10 @@ rows to a newer schema.
 
     The magic word.
 
+* Version (Type: `version_t`)
+
+    The version of this structure.
+
 * Size (Type: `uint32_t`)
 
     The size of this schema blob.
@@ -685,7 +748,7 @@ rows to a newer schema.
     If the schema is larger than one block, this is the next part. Before
     we transform the schema to C++ objects, we read all the parts.
 
-* Schema (Type: complex--a.k.a. blob)
+* Schema (Type: _complex_--a.k.a. blob)
 
     This block is a structure describing the table and the columns
     as per the tables.xsd information. Only this is a binary version
@@ -779,6 +842,65 @@ and writing data to one table, you are just required to include the version
 information in your commands so it works with such a table.
 
 See also libsnapwebsites/src/snapwebsites/tables.xsd
+
+
+### Schema List Block (`SCHL`)
+
+When updateing the schema, the system does not immediately go through the
+entire file to update it. Instead, it saves the different versions of the
+schema and let a background process work on the schema update. This means
+reading a row may require access to an older version of the schema. To
+allow for such, we have one block that lists of the `SCHM` blocks with
+all the old versions.
+
+Once the background process updating the table went through the entire
+database, the old schema gets removed since it would not be necessay any
+more.
+
+**IMPORTANT NOTE:** The process has to include all the incoming rows and
+we now that we are 100% done only after all the computers in the cluster
+all agree on the latest schema. Until then, we may still receive data from
+other computers with the _wrong_ format (old schema).
+
+**Note 2:** New rows always make use of the newest version of the schema even
+if they were sent using an older version (i.e. a front end was not yet fully
+updated and had to send us a few rows of data...)
+
+**Note 3:** If this table gets full and the user requests for yet another
+new schema, the request _fails_. More specifically, the front end of the
+process will be blocked until the backend is done with with older schemata.
+At this point, we do not foresee this to ever happen since the minimum size
+of a page is 4Kb and that means some 2,000 changes in a row to reach the
+limit.
+
+**Note 4:** When you first create a table, no `SCHL` block is used. We
+directly use an `SCHM` block. The `SCHL` gets used one an old schema needs
+to be referenced. Once all old schemata were worked on and the list is just
+and only the current schema, again the `SCHL` gets removed and the file
+header points directly to the `SCHM`.
+
+
+* Block Header (`SCHL`, Type: `dbtype_t`)
+
+    The magic and version of this array.
+
+* Schema Array (Type: `array16`)
+
+    This field is repeated for each schema changes that happened so far
+    and are still not fully updated by our background process. The array
+    is used to very quickly find the schema by version (i.e. it is an
+    index of the existing schema).
+
+    * Schema Version (Type: `version_t`)
+
+        The version of this schema reference.
+
+        The entries are sorted by version in descending order so that way
+        the very first entry is the newest schema.
+
+    * Schema (Type: `reference_t`)
+
+        A reference to the `SCHM` block with the actual schema.
 
 
 ### Free Space Block (`FSPC`)
@@ -1183,7 +1305,7 @@ one row at a time...
     Again, we either stop once we found the first match or when we
     reached `LIMIT` rows.
 
-* Index (Type: Complex, see below)
+* Index (Type: _complex_, see below)
 
     This is the actual index which gives us a complete key (compared to a
     `TIDX` which may shorten the key) so we can be sure to read the correct

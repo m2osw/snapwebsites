@@ -43,8 +43,13 @@ namespace snapdatabase
 class table;
 typedef std::shared_ptr<table>      table_pointer_t;
 
+class version_t;
+
+struct descriptions_by_version_t;
+
 class structure;
 typedef std::shared_ptr<structure>  structure_pointer_t;
+
 
 
 class block
@@ -59,30 +64,33 @@ public:
 
     block &                     operator = (block const & rhs) = delete;
 
-    //static pointer_t            create_block(dbfile::pointer_t f, reference_t offset);
-    //static pointer_t            create_block(dbfile::pointer_t f, dbtype_t type);
-
     table_pointer_t             get_table() const;
     void                        set_table(table_pointer_t table);
     structure_pointer_t         get_structure() const;
+    structure_pointer_t         get_structure(version_t version) const;
 
     dbtype_t                    get_dbtype() const;
     void                        set_dbtype(dbtype_t type);
+    version_t                   get_structure_version() const;
+    void                        set_structure_version();
     reference_t                 get_offset() const;
     void                        set_data(data_t data);
     data_t                      data(reference_t offset = 0);
     const_data_t                data(reference_t offset = 0) const;
     void                        sync(bool immediate);
 
+    void                        from_current_file_version();
+
 protected:
-                                block(dbfile::pointer_t f, reference_t offset);
+                                block(descriptions_by_version_t const * structure_descriptions, dbfile::pointer_t f, reference_t offset);
 
     table_pointer_t             f_table = table_pointer_t();
     dbfile::pointer_t           f_file = dbfile::pointer_t();
-    structure_pointer_t         f_structure = structure_pointer_t();
+    descriptions_by_version_t const *
+                                f_structure_descriptions = nullptr;
+    structure_pointer_t         f_structure = structure_pointer_t();        // newest version (i.e. max(version) from all available descriptions)
     reference_t                 f_offset = reference_t();
 
-    dbtype_t                    f_dbtype = dbtype_t::BLOCK_TYPE_FREE_BLOCK;
     mutable data_t              f_data = nullptr;
 };
 

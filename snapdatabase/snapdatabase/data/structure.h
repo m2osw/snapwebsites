@@ -126,7 +126,7 @@ public:
 
     std::uint32_t   to_binary() const
                     {
-                        return (static_cast<std::uint32_t>(f_major) << 16) + static_cast<uint32_t>(f_minor);
+                        return (static_cast<std::uint32_t>(f_major) << 16) + static_cast<std::uint32_t>(f_minor);
                     }
 
     void            from_binary(std::uint32_t v)
@@ -143,34 +143,34 @@ public:
     void            set_minor(uint16_t minor)   { f_minor = minor; }
 
     void            next_branch()               { ++f_major; f_minor = 0; }
-    void            next_revision()             { ++f_minor; }
+    void            next_revision()             { ++f_minor; if(f_minor == 0) ++f_major; }
 
-    bool            operator == (version_t const & rhs)
+    bool            operator == (version_t const & rhs) const
                     {
                         return f_major == rhs.f_major
                             && f_minor == rhs.f_minor;
                     }
-    bool            operator != (version_t const & rhs)
+    bool            operator != (version_t const & rhs) const
                     {
                         return f_major != rhs.f_major
                             || f_minor != rhs.f_minor;
                     }
-    bool            operator < (version_t const & rhs)
+    bool            operator < (version_t const & rhs) const
                     {
                         return f_major < rhs.f_major
                             || (f_major == rhs.f_major && f_minor < rhs.f_minor);
                     }
-    bool            operator <= (version_t const & rhs)
+    bool            operator <= (version_t const & rhs) const
                     {
                         return f_major < rhs.f_major
                             || (f_major == rhs.f_major && f_minor <= rhs.f_minor);
                     }
-    bool            operator > (version_t const & rhs)
+    bool            operator > (version_t const & rhs) const
                     {
                         return f_major > rhs.f_major
                             || (f_major == rhs.f_major && f_minor > rhs.f_minor);
                     }
-    bool            operator >= (version_t const & rhs)
+    bool            operator >= (version_t const & rhs) const
                     {
                         return f_major > rhs.f_major
                             || (f_major == rhs.f_major && f_minor >= rhs.f_minor);
@@ -588,7 +588,7 @@ constexpr descriptions_by_version_t define_description_by_version(ARGS ...args)
 
     // TODO: once possible (C++17/20?) add verification tests here
 
-    // whether a sub-description is allowed or not varies depending on the type
+    // either both are null or both are defined
     //if((f_description == nullptr) ^ f_version.zero())
     //{
     //     throw ...
@@ -614,7 +614,8 @@ constexpr descriptions_by_version_t end_descriptions_by_version()
 class flag_definition
 {
 public:
-    typedef std::map<std::string, flag_definition>      map_t;
+    typedef std::shared_ptr<flag_definition>    pointer_t;
+    typedef std::map<std::string, pointer_t>    map_t;
 
                             flag_definition();
                             flag_definition(
@@ -679,8 +680,8 @@ public:
     void                                    set_flags(std::uint32_t flags);
     void                                    add_flags(std::uint32_t flags);
     void                                    clear_flags(std::uint32_t flags);
-    flag_definition const *                 find_flag_definition(std::string const & name) const;
-    void                                    add_flag_definition(std::string const & name, flag_definition const & bits);
+    flag_definition::pointer_t              find_flag_definition(std::string const & name) const;
+    void                                    add_flag_definition(std::string const & name, flag_definition::pointer_t bits);
     std::uint64_t                           offset() const;
     void                                    set_offset(std::uint64_t offset);
     void                                    adjust_offset(std::int64_t adjust);
@@ -716,11 +717,12 @@ public:
 
     void                                    set_block(
                                                   block::pointer_t b
+                                                , std::uint64_t offset
                                                 , std::uint64_t size);
     void                                    init_buffer();
     void                                    set_virtual_buffer(
                                                   virtual_buffer::pointer_t buffer
-                                                , uint64_t start_offset);
+                                                , std::uint64_t start_offset);
     virtual_buffer::pointer_t               get_virtual_buffer(reference_t & start_offset) const;
 
     size_t                                  get_size() const;
@@ -730,6 +732,9 @@ public:
     field_t::pointer_t                      get_field(
                                                   std::string const & field_name
                                                 , struct_type_t type = struct_type_t::STRUCT_TYPE_END) const;
+    flag_definition::pointer_t              get_flag(
+                                                  std::string const & flag_name
+                                                , field_t::pointer_t & f) const;
 
     // bits, int/uint, all sizes up to 64 bits, reference
     std::int64_t                            get_integer(std::string const & field_name) const;
@@ -772,7 +777,6 @@ public:
     buffer_t                                get_buffer(std::string const & field_name) const;
     void                                    set_buffer(std::string const & field_name, buffer_t const & value);
 
-    //void                                    adjust_all_offsets(std::int64_t adjust);
     void                                    adjust_offsets(
                                                       reference_t offset_cutoff
                                                     , std::int64_t diff);
@@ -781,6 +785,7 @@ private:
     std::uint64_t                           parse() const;
     std::uint64_t                           parse_descriptions(std::uint64_t offset) const;
     void                                    verify_buffer_size();
+    field_t::pointer_t                      find_field(std::string const & field_name);
 
     struct_description_t const *            f_descriptions = nullptr;
     weak_pointer_t                          f_parent = weak_pointer_t();
@@ -789,6 +794,10 @@ private:
     mutable std::uint64_t                   f_original_size = 0;
     field_t::map_t                          f_fields_by_name = field_t::map_t();
 };
+
+
+
+std::ostream & operator << (std::ostream & out, version_t const & v);
 
 
 

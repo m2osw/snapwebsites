@@ -30,8 +30,8 @@
 #include    "snapdatabase/block/block.h"
 
 #include    "snapdatabase/exception.h"
-#include    "snapdatabase/data/structure.h"
 #include    "snapdatabase/database/table.h"
+#include    "snapdatabase/data/structure.h"
 
 
 // snaplogger lib
@@ -67,10 +67,43 @@ constexpr char const * g_errmsg_exception = "block::~block() tried to release th
 
 
 
-block::block(dbfile::pointer_t f, reference_t offset)
+block::block(descriptions_by_version_t const * structure_descriptions, dbfile::pointer_t f, reference_t offset)
     : f_file(f)
+    , f_structure_descriptions(structure_descriptions)
     , f_offset(offset)
 {
+#ifdef _DEBUG
+    // verify that the versions are in order
+    //
+    descriptions_by_version_t const * p(nullptr);
+    descriptions_by_version_t const * d = f_structure_descriptions;
+    for(; d->f_description != nullptr; ++d)
+    {
+        if(p != nullptr)
+        {
+            if(p->f_version <= d->f_version)
+            {
+                throw snapdatabase_logic_error(
+                          "The versions in a structure definition array must be in order ("
+                        + p->f_version.to_string()
+                        + " <= "
+                        + d->f_version.to_string()
+                        + " when it should be '>').");
+            }
+        }
+        p = d;
+    }
+    if(d == f_structure_descriptions)
+    {
+        throw snapdatabase_logic_error("The array of structure descriptions cannot be empty.");
+    }
+#endif
+
+    // create the structure we want to use in memory
+    //
+    // this may not be the one used when loading data from a file.
+    //
+    f_structure = std::make_shared<structure>(f_structure_descriptions->f_description);
 }
 
 
@@ -140,9 +173,30 @@ structure::pointer_t block::get_structure() const
 }
 
 
+structure::pointer_t block::get_structure(version_t version) const
+{
+    for(descriptions_by_version_t const * d = f_structure_descriptions;
+                                          d->f_description != nullptr;
+                                          ++d)
+    {
+        if(d->f_version == version)
+        {
+            return std::make_shared<structure>(f_structure_descriptions->f_description);
+        }
+    }
+
+    throw snapdatabase_logic_error(
+              "Block of type \""
+            + to_string(get_dbtype())
+            + "\" has no structure version "
+            + version.to_string()
+            + ".");
+}
+
+
 dbtype_t block::get_dbtype() const
 {
-    return f_dbtype;
+    return *reinterpret_cast<dbtype_t const *>(data(0));
 }
 
 
@@ -154,6 +208,23 @@ void block::set_dbtype(dbtype_t type)
     if(*reinterpret_cast<dbtype_t *>(data(0)) != type)
     {
         *reinterpret_cast<dbtype_t *>(data(0)) = type;
+    }
+}
+
+
+version_t block::get_structure_version() const
+{
+    return version_t(static_cast<std::uint32_t>(f_structure->get_uinteger("header.version")));
+}
+
+
+void block::set_structure_version()
+{
+    // avoid a write if not required
+    //
+    if(get_structure_version() != f_structure_descriptions->f_version)
+    {
+        f_structure->set_uinteger("header.version", f_structure_descriptions->f_version.to_binary());
     }
 }
 
@@ -202,6 +273,21 @@ void block::sync(bool immediate)
 {
     get_table()->get_dbfile()->sync(f_data, immediate);
 }
+
+
+void block::from_current_file_version()
+{
+    version_t current_version(get_structure_version());
+    if(f_structure_descriptions->f_version == current_version)
+    {
+        // same version, no conversion necessary
+        //
+        return;
+    }
+
+    throw snapdatabase_logic_error("from_current_file_version() not fully implemented yet.");
+}
+
 
 
 } // namespace snapdatabase

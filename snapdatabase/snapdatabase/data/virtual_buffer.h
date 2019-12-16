@@ -95,6 +95,8 @@ private:
     bool                                f_modified = false;
 };
 
+
+
 std::ostream & operator << (std::ostream & out, virtual_buffer const & v);
 
 

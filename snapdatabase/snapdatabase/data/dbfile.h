@@ -71,6 +71,7 @@ public:
 
     dbfile &                operator = (dbfile const & rhs) = delete;
 
+    std::string             get_fullname() const;
     void                    set_table(table_pointer_t t);
     table_pointer_t         get_table() const;
     void                    close();

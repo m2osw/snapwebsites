@@ -30,6 +30,7 @@
 #include    "snapdatabase/block/block_free_space.h"
 
 #include    "snapdatabase/block/block_data.h"
+#include    "snapdatabase/block/block_header.h"
 #include    "snapdatabase/data/dbfile.h"
 #include    "snapdatabase/data/dbtype.h"
 #include    "snapdatabase/database/table.h"
@@ -46,6 +47,7 @@
 
 namespace snapdatabase
 {
+
 
 
 
@@ -115,28 +117,6 @@ static_assert(FREE_SPACE_SIZE_MULTIPLE >= sizeof(free_space_link_t)
             , "FREE_SPACE_SIZE_MULTIPLE must be at least equal to sizeof(fre_space_link_t)");
 
 
-
-// 'FSPC'
-constexpr struct_description_t g_free_space_description[] =
-{
-    define_description(
-          FieldName("magic")    // dbtype_t = FSPC
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-    ),
-    // TBD: it may be useful to determine a minimum size larger than
-    //      sizeof(free_space_link_t) for some tables and use that to
-    //      make sure we don't break blocks to sizes smaller than that
-    //define_description(
-    //      FieldName("minimum_size")
-    //    , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-    //),
-    // the following is an aligned array of references
-    //define_description(
-    //      FieldName("free_space")
-    //    , FieldType(struct_type_t::STRUCT_TYPE_UINT128)
-    //),
-    end_descriptions()
-};
 
 
 
@@ -479,13 +459,56 @@ void block_free_space_impl::release_space(reference_t offset)
 
 
 
+namespace
+{
+
+
+
+// 'FSPC'
+constexpr struct_description_t g_description[] =
+{
+    define_description(
+          FieldName("header")
+        , FieldType(struct_type_t::STRUCT_TYPE_STRUCTURE)
+        , FieldSubDescription(detail::g_block_header)
+    ),
+    // TBD: it may be useful to determine a minimum size larger than
+    //      sizeof(free_space_link_t) for some tables and use that to
+    //      make sure we don't break blocks to sizes smaller than that
+    //define_description(
+    //      FieldName("minimum_size")
+    //    , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
+    //),
+    // the following is an aligned array of references
+    //define_description(
+    //      FieldName("free_space")
+    //    , FieldType(struct_type_t::STRUCT_TYPE_UINT128)
+    //),
+    end_descriptions()
+};
+
+
+constexpr descriptions_by_version_t const g_descriptions_by_version[] =
+{
+    define_description_by_version(
+        DescriptionVersion(0, 1),
+        DescriptionDescription(g_description)
+    ),
+    end_descriptions_by_version()
+};
+
+
+
+}
+// no name namespace
+
+
 
 
 block_free_space::block_free_space(dbfile::pointer_t f, reference_t offset)
-    : block(f, offset)
+    : block(g_descriptions_by_version, f, offset)
     , f_impl(std::make_unique<detail::block_free_space_impl>(*this))
 {
-    f_structure = std::make_shared<structure>(detail::g_free_space_description);
 }
 
 

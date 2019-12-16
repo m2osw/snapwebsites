@@ -208,31 +208,6 @@ void verify_size(struct_type_t type, size_t size)
 
 
 
-
-// all blocks start with this header which defines the block type
-// and its version;
-//
-// the version allows us to read old versions without special handling
-// written by hand each time; instead we get structures just like the
-// normal structure, only that older version may include additional or
-// less fields than the new version; the system will convert the old
-// version to the new version automatically and if a change is made,
-// it gets saved (otherwise the change only happens in memory)
-//
-constexpr struct_description_t g_block_schema_magic[] =
-{
-    define_description(
-          FieldName("magic")    // dbtype_t such as SDBT, BLOB, SCHM
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
-    ),
-    define_description(
-          FieldName("version")  // this is the version of this block's structure NOT THE VERSION OF THE SCHEMA (nor the version of the database)
-        , FieldType(struct_type_t::STRUCT_TYPE_VERSION)
-    ),
-    end_descriptions()
-};
-
-
 }
 // no name namespace
 
@@ -574,21 +549,22 @@ void field_t::clear_flags(std::uint32_t flags)
 }
 
 
-flag_definition const * field_t::find_flag_definition(std::string const & name) const
+flag_definition::pointer_t field_t::find_flag_definition(std::string const & name) const
 {
     auto const & flag(f_flag_definitions.find(name));
-    if(flag != f_flag_definitions.end())
+    if(flag == f_flag_definitions.end())
     {
-        // found it!
-        //
-        return &flag->second;
+        throw field_not_found(
+                  "Flag named \""
+                + name
+                + "\", not found.");
     }
 
-    return nullptr;
+    return flag->second;
 }
 
 
-void field_t::add_flag_definition(std::string const & name, flag_definition const & bits)
+void field_t::add_flag_definition(std::string const & name, flag_definition::pointer_t bits)
 {
     f_flag_definitions[name] = bits;
 }
@@ -658,9 +634,9 @@ structure::structure(struct_description_t const * descriptions, pointer_t parent
 }
 
 
-void structure::set_block(block::pointer_t b, std::uint64_t size)
+void structure::set_block(block::pointer_t b, std::uint64_t offset, std::uint64_t size)
 {
-    f_buffer = std::make_shared<virtual_buffer>(b, 0, size);
+    f_buffer = std::make_shared<virtual_buffer>(b, offset, size);
 }
 
 
@@ -671,7 +647,6 @@ void structure::init_buffer()
 
     size_t const size(parse());
 
-std::cerr << "--- calculated size is " << size << "...\n";
     buffer_t d(size);
     f_buffer->pwrite(d.data(), size, 0, true);
 
@@ -835,50 +810,134 @@ field_t::pointer_t structure::get_field(std::string const & field_name, struct_t
 {
     if(f_buffer == nullptr)
     {
-libexcept::stack_trace_t stack(libexcept::collect_stack_trace_with_line_numbers(libexcept::STACK_TRACE_DEPTH * 2));
-for(auto const & s : stack)
-{
-std::cerr << "get_field() -- " << s << "\n";
-}
         throw field_not_found(
                   "Trying to access a structure field when the f_buffer"
                   " pointer is still null.");
+    }
+
+    if(field_name.empty())
+    {
+        throw snapdatabase_logic_error(
+                  "Called get_field() with an empty field name.");
     }
 
     // make sure we've parsed the descriptions
     //
     parse();
 
+    structure::pointer_t s(const_cast<structure *>(this)->shared_from_this());
+    field_t::pointer_t f(nullptr);
+    char const * n(field_name.c_str());
+    for(;;)
+    {
+        // Note: at this time we do not support accessing arrays (i.e. having
+        // '[<index>]') because I don't see the point since indexes need to
+        // be dynamic pretty much 100% of the time
+        //
+        char const * e(n);
+        while(*e != '.' && *e != '\0')
+        {
+            ++e;
+        }
+        std::string const sub_field_name(n, e - n);
+        f = s->find_field(sub_field_name);
+        if(f == nullptr)
+        {
+            throw field_not_found(
+                      "This description does not include field named \""
+                    + field_name
+                    + "\".");
+        }
+        if(*e == '\0')
+        {
+            if(type != struct_type_t::STRUCT_TYPE_END
+            && f->type() != type)
+            {
+                throw type_mismatch(
+                          "This field type is \""
+                        + to_string(f->type())
+                        + "\" but we expected \""
+                        + to_string(type)
+                        + "\".");
+            }
+
+            return f;
+        }
+
+        if(f->description()->f_type != struct_type_t::STRUCT_TYPE_STRUCTURE)
+        {
+            throw type_mismatch(
+                      "Field \""
+                    + sub_field_name
+                    + "\" is not of type structure so you can't get a"
+                      " sub-field (i.e. have a perio in the name).");
+        }
+
+        if(f->sub_structures().size() != 1)
+        {
+            throw invalid_size(
+                      "A structure requires a sub_structure vector of size 1 (got "
+                    + std::to_string(f->sub_structures().size())
+                    + " instead).");
+        }
+
+        s = (*f)[0];
+        n = e + 1;  // +1 to skip the '.'
+    }
+}
+
+
+flag_definition::pointer_t structure::get_flag(std::string const & flag_name, field_t::pointer_t & f) const
+{
+    char const * s(flag_name.c_str());
+    char const * e(s + flag_name.length());
+    while(e > s && e[-1] != '.')
+    {
+        --e;
+    }
+    if(e == s)
+    {
+        throw field_not_found(
+                  "Flag named \""
+                + flag_name
+                + "\" must at least include a field name and a flag name.");
+    }
+
+    std::string const field_name(s, e - s);
+    f = get_field(field_name);
+
+    // bit fields have sub-names we can check for `field_name`
+    //
+    switch(f->type())
+    {
+    case struct_type_t::STRUCT_TYPE_BITS8:
+    case struct_type_t::STRUCT_TYPE_BITS16:
+    case struct_type_t::STRUCT_TYPE_BITS32:
+    case struct_type_t::STRUCT_TYPE_BITS64:
+    case struct_type_t::STRUCT_TYPE_BITS128:
+    case struct_type_t::STRUCT_TYPE_BITS256:
+    case struct_type_t::STRUCT_TYPE_BITS512:
+        return f->find_flag_definition(e);
+
+    default:
+        // incorrect type
+        //
+        throw field_not_found(
+                  "Expected a field of type BITS<size> for flag named \""
+                + flag_name
+                + "\". Got a "
+                + to_string(f->type())
+                + " instead.");
+
+    }
+}
+
+
+field_t::pointer_t structure::find_field(std::string const & field_name)
+{
     auto field(f_fields_by_name.find(field_name));
     if(field == f_fields_by_name.end())
     {
-        // bit fields have sub-names we can check for `field_name`
-        //
-        for(auto const & f : f_fields_by_name)
-        {
-            switch(f.second->type())
-            {
-            case struct_type_t::STRUCT_TYPE_BITS8:
-            case struct_type_t::STRUCT_TYPE_BITS16:
-            case struct_type_t::STRUCT_TYPE_BITS32:
-            case struct_type_t::STRUCT_TYPE_BITS64:
-            case struct_type_t::STRUCT_TYPE_BITS128:
-            case struct_type_t::STRUCT_TYPE_BITS256:
-            case struct_type_t::STRUCT_TYPE_BITS512:
-                if(f.second->find_flag_definition(field_name) != nullptr)
-                {
-                    // found it!
-                    //
-                    return f.second;
-                }
-                break;
-
-            default:
-                // miss
-                break;
-
-            }
-        }
 
         // we can't return a field and yet it is mandatory, throw an error
         // (if we change a description to still include old fields, we need
@@ -907,6 +966,7 @@ std::cerr << "get_field() -- " << s << "\n";
         f = field->second;
 
         // let programmers know that the old name is deprecated
+        //
         SNAP_LOG_DEBUG
             << "Deprecated field name \""
             << field_name
@@ -914,17 +974,6 @@ std::cerr << "get_field() -- " << s << "\n";
             << new_name
             << "\". Please change your code to use the new name."
             << SNAP_LOG_SEND;
-    }
-
-    if(type != struct_type_t::STRUCT_TYPE_END
-    && f->type() != type)
-    {
-        throw type_mismatch(
-                  "This field type is \""
-                + to_string(f->type())
-                + "\" but we expected \""
-                + to_string(type)
-                + "\".");
     }
 
     return f;
@@ -1149,7 +1198,6 @@ void structure::set_uinteger(std::string const & field_name, uint64_t value)
     case struct_type_t::STRUCT_TYPE_VERSION:
         {
             uint32_t const v(value);
-std::cerr << "saving UINT32 with " << v << " at " << f->offset() << "\n";
             f_buffer->pwrite(&v, sizeof(v), f->offset());
         }
         return;
@@ -1205,23 +1253,7 @@ std::cerr << "saving UINT32 with " << v << " at " << f->offset() << "\n";
 uint64_t structure::get_bits(std::string const & flag_name) const
 {
     field_t::pointer_t f;
-    flag_definition const * flag(nullptr);
-    for(auto const & field : f_fields_by_name)
-    {
-        flag = field.second->find_flag_definition(flag_name);
-        if(flag != nullptr)
-        {
-            f = field.second;
-            break;
-        }
-    }
-    if(flag == nullptr)
-    {
-        throw type_mismatch(
-                  "get_bits() called with flag name \""
-                + flag_name
-                + "\" which has no flag definitions...");
-    }
+    flag_definition::pointer_t flag(get_flag(flag_name, f));
 
     verify_size(f->type(), f->size());
 
@@ -1276,23 +1308,7 @@ uint64_t structure::get_bits(std::string const & flag_name) const
 void structure::set_bits(std::string const & flag_name, uint64_t value)
 {
     field_t::pointer_t f;
-    flag_definition const * flag(nullptr);
-    for(auto const & field : f_fields_by_name)
-    {
-        flag = field.second->find_flag_definition(flag_name);
-        if(flag != nullptr)
-        {
-            f = field.second;
-            break;
-        }
-    }
-    if(flag == nullptr)
-    {
-        throw type_mismatch(
-                  "get_bits() called with flag name \""
-                + flag_name
-                + "\" which has no flag definitions...");
-    }
+    flag_definition::pointer_t flag(get_flag(flag_name, f));
 
     verify_size(f->type(), f->size());
 
@@ -1749,11 +1765,6 @@ void structure::set_string(std::string const & field_name, std::string const & v
     //
     uint32_t length(0);
     f_buffer->pread(&length, field_size, f->offset());
-std::cerr << "string: Got the string size from the file: "
-        << std::to_string(length)
-        << " vs expected: "
-        << std::to_string(f->size())
-        << " (and field_size = " << field_size << ")\n";
     if(length != f->size())
     {
         // TODO: handle the difference (i.e. enlarge/shrink)
@@ -1778,29 +1789,23 @@ std::cerr << "string: Got the string size from the file: "
                 + ").");
     }
 
-std::cerr << "string: Size of [" << value << "] verified, it fits (" << std::to_string(size) << " < " << std::to_string(max_size) << ")\n";
     if(size == length)
     {
         // just do a write of the string
         // (the size remains the same)
         //
-std::cerr << "string: direct copy... " << length << "\n";
         f_buffer->pwrite(value.data(), size, f->offset() + field_size);
     }
     else if(size > length)
     {
-std::cerr << "string: use the insert... " << length << "\n";
         f_buffer->pwrite(&size, field_size, f->offset());
         f_buffer->pwrite(value.data(), length, f->offset() + field_size);
-std::cerr << "string:  -- add " << (size - length) << "\n";
         f_buffer->pinsert(value.data() + length, size - length, f->offset() + field_size + length);
     }
     else //if(size < length)
     {
-std::cerr << "string: use the erase... " << length << "\n";
         f_buffer->pwrite(&size, field_size, f->offset());
         f_buffer->pwrite(value.data(), size, f->offset() + field_size);
-std::cerr << "string:  -- sub " << (size - length) << "\n";
         f_buffer->perase(length - size, f->offset() + field_size + size);
     }
 
@@ -1868,16 +1873,8 @@ structure::vector_t structure::get_array(std::string const & field_name) const
 
 structure::pointer_t structure::new_array_item(std::string const & field_name)
 {
-std::cerr << ">>> new_array_item() \"" << field_name << "\".\n";
     auto f(get_field(field_name));
 
-std::cerr << ">>> new_array_item() read size -- existing size: "
-            << get_current_size()
-            << " vs "
-            << f_buffer->size()
-            << " / start offset "
-            << f->offset()
-            << "\n";
     uint64_t size(0);
     uint64_t max(0);
     switch(f->type())
@@ -1916,7 +1913,6 @@ std::cerr << ">>> new_array_item() read size -- existing size: "
                 + " items.");
     }
 
-std::cerr << ">>> new_array_item() next item\n";
     reference_t offset(0);
     field_t::pointer_t n(f->next());
     if(n == nullptr)
@@ -1937,20 +1933,16 @@ std::cerr << ">>> new_array_item() next item\n";
     // that new buffer and that is knonwn only after the parse() function
     // returns)
     //
-std::cerr << ">>> new_array_item() get description (offset = " << offset << ")\n";
     structure::pointer_t s(std::make_shared<structure>(f->description()->f_sub_description, shared_from_this()));
-std::cerr << ">>> new_array_item() parse description\n";
     reference_t const new_offset(s->parse_descriptions(offset));
 
     // now add the buffer area for that new sub-structure
     //
     size_t const add(s->get_current_size());
-std::cerr << ">>> new_array_item() insert buffer -> " << add << " vs " << (new_offset - offset) << " vs " << f_buffer->size() << "\n";
     std::vector<std::uint8_t> value(add, 0);
     f_buffer->pinsert(value.data(), add, offset);
     s->set_virtual_buffer(f_buffer, offset);
 
-std::cerr << ">>> new_array_item() save new size (" << f_buffer->size() << ")\n";
     // increment the array counter and save it
     //
     switch(f->type())
@@ -1977,23 +1969,12 @@ std::cerr << ">>> new_array_item() save new size (" << f_buffer->size() << ")\n"
     {
     }
 
-std::cerr << ">>> new_array_item() adjust offset\n";
     adjust_offsets(offset, new_offset - offset);
 
     // WARNING: for the adjust_offsets() to work properly we MUST have this
     //          push_back() after it; otherwise the sub-fields would also
     //          get moved
-std::cerr << ">>> new_array_item() push result\n";
     f->sub_structures().push_back(s);
-
-{
-size_t final_size(get_current_size());
-std::cerr << ">>> new_array_item() "
-            << final_size
-            << " vs "
-            << f_buffer->size()
-            << " done\n";
-}
 
     verify_buffer_size();
 
@@ -2095,7 +2076,6 @@ void structure::set_buffer(std::string const & field_name, buffer_t const & valu
                 + ".");
     }
 
-std::cerr << ">>> set_buffer()? " << f->size() << " -- " << size << "\n";
     if(f->size() > size)
     {
         // existing buffer too large, make it the right size (smaller)
@@ -2136,7 +2116,6 @@ std::cerr << ">>> set_buffer()? " << f->size() << " -- " << size << "\n";
 
         f_buffer->pinsert(value.data() + f->size(), size - f->size(), f->offset() + field_size + f->size());
 
-std::cerr << ">>> Added size - f->size() (" << size - f->size() << ") bytes... total = " << size << "\n";
         f->set_size(size);
     }
     else
@@ -2144,7 +2123,6 @@ std::cerr << ">>> Added size - f->size() (" << size - f->size() << ") bytes... t
         // same size, just overwrite
         //
         f_buffer->pwrite(value.data(), size, f->offset() + field_size);
-std::cerr << ">>> set_buffer()? " << f_buffer->size() << "\n";
     }
 }
 
@@ -2499,7 +2477,7 @@ std::uint64_t structure::parse_descriptions(std::uint64_t offset) const
                             }
                         }
                     }
-                    flag_definition bits(field_name, flag_name, bit_pos, size);
+                    flag_definition::pointer_t bits(std::make_shared<flag_definition>(field_name, flag_name, bit_pos, size));
                     f->add_flag_definition(flag_name, bits);
 
                     bit_pos += size;
@@ -2523,7 +2501,6 @@ void structure::adjust_offsets(reference_t offset_cutoff, std::int64_t diff)
 {
     if(diff == 0)
     {
-std::cerr << "  ... diff == 0, so adjust not applied\n";
         return;
     }
 
@@ -2534,9 +2511,7 @@ std::cerr << "  ... diff == 0, so adjust not applied\n";
     pointer_t s(shared_from_this());
     for(;;)
     {
-std::cerr << "lock weak ptr for diff  " << diff << " \n";
         pointer_t p(s->f_parent.lock());
-std::cerr << "got ptr locked? \n";
         if(p == nullptr)
         {
             break;
@@ -2576,11 +2551,6 @@ void structure::verify_buffer_size()
         for(s = shared_from_this(); s->parent() != nullptr; s = s->parent());
         if(f_buffer->size() != s->get_current_size())
         {
-libexcept::stack_trace_t stack(libexcept::collect_stack_trace_with_line_numbers(libexcept::STACK_TRACE_DEPTH * 2));
-for(auto const & l : stack)
-{
-std::cerr << "get_field() -- " << l << "\n";
-}
             throw snapdatabase_logic_error(
                     "Buffer ("
                     + std::to_string(f_buffer->size())
@@ -2590,6 +2560,13 @@ std::cerr << "get_field() -- " << l << "\n";
         }
     }
 #endif
+}
+
+
+
+std::ostream & operator << (std::ostream & out, version_t const & v)
+{
+    return out << v.to_string();
 }
 
 

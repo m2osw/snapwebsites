@@ -101,8 +101,8 @@ public:
 
                                 file_snap_database_table(dbfile::pointer_t f, reference_t offset);
 
-    version_t                   get_version() const;
-    void                        set_version(version_t v);
+    version_t                   get_file_version() const;
+    void                        set_file_version(version_t v);
     reference_t                 get_first_free_block() const;
     void                        set_first_free_block(reference_t offset);
     reference_t                 get_table_definition() const;

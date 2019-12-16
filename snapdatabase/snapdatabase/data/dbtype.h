@@ -62,7 +62,7 @@ enum class dbtype_t : std::uint32_t
     BLOCK_TYPE_TOP_INDEX            = DBTYPE_NAME("TIDX"),
 };
 
-std::string                         dbtype_to_string(dbtype_t type);
+std::string                         to_string(dbtype_t type);
 
 
 
