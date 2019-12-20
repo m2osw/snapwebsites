@@ -72,8 +72,7 @@ public:
 
                                                 table(
                                                       context * c
-                                                    , xml_node::pointer_t x
-                                                    , xml_node::map_t complex_types);
+                                                    , xml_node::pointer_t x);
 
     void                                        load_extension(xml_node::pointer_t e);
 

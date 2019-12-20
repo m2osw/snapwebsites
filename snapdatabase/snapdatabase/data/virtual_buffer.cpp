@@ -534,8 +534,8 @@ std::ostream & operator << (std::ostream & out, virtual_buffer const & v)
             newline = "\n";
         }
 
-        char c;
-        if(v.pread(&c, 1, p) != 1)
+        std::uint8_t c;
+        if(v.pread(&c, sizeof(c), p) != 1)
         {
             throw io_error("Expected to read 1 more byte from virtual buffer.");
         }

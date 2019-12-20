@@ -73,7 +73,7 @@ CATCH_TEST_CASE("Context", "[centext]")
             };
 
         std::string const created(SNAP_CATCH2_NAMESPACE::setup_context("simple-context", simple_context));
-        CATCH_REQUIRE(!created.empty());
+        CATCH_REQUIRE_FALSE(created.empty());
         if(created.empty())
         {
             return;
@@ -97,7 +97,7 @@ CATCH_TEST_CASE("Context", "[centext]")
                               advgetopt::GETOPT_FLAG_GROUP_OPTIONS
                             , advgetopt::GETOPT_FLAG_REQUIRED
                             , advgetopt::GETOPT_FLAG_MULTIPLE>())
-                , advgetopt::Help("path to the list of table schemas is mandatory")
+                , advgetopt::Help("path to the list of table schemata is mandatory")
             ),
             advgetopt::end_options()
         };
@@ -125,7 +125,18 @@ CATCH_TEST_CASE("Context", "[centext]")
         char ** argv = const_cast<char **>(cargv);
 
         advgetopt::getopt::pointer_t opt(std::make_shared<advgetopt::getopt>(options_environment, argc, argv));
-        snapdatabase::context::pointer_t context(snapdatabase::context::get_context(opt));
+        snapdatabase::context::pointer_t context(snapdatabase::context::create_context(opt));
+
+        // make sure to reset before creating a new version otherwise
+        // we would have two contexts open simultaneously
+        //
+        context.reset();
+
+        // try again, this time we hit the schema compare functionality
+        // (i.e. the file already exists)
+        //
+        context = snapdatabase::context::create_context(opt);
+        context.reset();
     }
     CATCH_END_SECTION()
 }

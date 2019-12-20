@@ -128,8 +128,7 @@ virtual_buffer::pointer_t block_schema::get_schema() const
     block_schema::pointer_t s(std::static_pointer_cast<block_schema>(const_cast<block_schema *>(this)->shared_from_this()));
     for(;;)
     {
-        block::pointer_t block_ptr(s);
-        result->add_buffer(block_ptr, offset, s->get_size());
+        result->add_buffer(s, offset, s->get_size());
         reference_t next(s->get_next_schema_block());
         if(next == 0)
         {

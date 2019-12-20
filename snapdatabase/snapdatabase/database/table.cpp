@@ -81,8 +81,7 @@ public:
                                                 table_impl(
                                                       context * c
                                                     , table * t
-                                                    , xml_node::pointer_t x
-                                                    , xml_node::map_t complex_types);
+                                                    , xml_node::pointer_t x);
                                                 table_impl(table_impl const & rhs) = delete;
 
     table_impl                                  operator = (table_impl const & rhs) = delete;
@@ -115,7 +114,6 @@ private:
     table *                                     f_table = nullptr;
     schema_table::pointer_t                     f_schema_table = schema_table::pointer_t();
     dbfile::pointer_t                           f_dbfile = dbfile::pointer_t();
-    xml_node::map_t                             f_complex_types = xml_node::map_t();
     block::map_t                                f_blocks = block::map_t();
 };
 
@@ -123,12 +121,10 @@ private:
 table_impl::table_impl(
           context * c
         , table * t
-        , xml_node::pointer_t x
-        , xml_node::map_t complex_types)
+        , xml_node::pointer_t x)
     : f_context(c)
     , f_table(t)
     , f_schema_table(std::make_shared<schema_table>())
-    , f_complex_types(complex_types)
 {
     f_schema_table->from_xml(x);
     f_dbfile = std::make_shared<dbfile>(c->get_path(), f_schema_table->name(), "main");
@@ -173,6 +169,9 @@ bool table_impl::verify_schema()
                         allocate_new_block(dbtype_t::BLOCK_TYPE_SCHEMA)));
         virtual_buffer::pointer_t bin_schema(f_schema_table->to_binary());
         schm->set_schema(bin_schema);
+
+        sdbt->set_table_definition(schm->get_offset());
+        sdbt->sync(true);
     }
     else
     {
@@ -543,9 +542,8 @@ void table_impl::free_block(block::pointer_t block, bool clear_block)
 
 table::table(
           context * c
-        , xml_node::pointer_t x
-        , xml_node::map_t complex_types)
-    : f_impl(std::make_shared<detail::table_impl>(c, this, x, complex_types))
+        , xml_node::pointer_t x)
+    : f_impl(std::make_shared<detail::table_impl>(c, this, x))
 {
 }
 

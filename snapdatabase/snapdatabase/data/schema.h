@@ -111,7 +111,9 @@ constexpr flag32_t                          SECONDARY_INDEX_FLAG_DISTRIBUTED    
 class schema_complex_type
 {
 public:
-    typedef std::map<std::string, schema_complex_type>
+    typedef std::shared_ptr<schema_complex_type>
+                                            pointer_t;
+    typedef std::map<std::string, pointer_t>
                                             map_t;
 
                                             schema_complex_type();
@@ -231,6 +233,8 @@ class schema_table
 public:
     typedef std::shared_ptr<schema_table>   pointer_t;
 
+                                            schema_table();
+
     void                                    from_xml(xml_node::pointer_t x);
     void                                    load_extension(xml_node::pointer_t e);
     compare_t                               compare(schema_table const & rhs) const;
@@ -251,6 +255,7 @@ public:
     schema_column::map_by_id_t              columns_by_id() const;
     schema_column::map_by_name_t            columns_by_name() const;
     schema_secondary_index::pointer_t       secondary_index(std::string const & name) const;
+    schema_complex_type::pointer_t          complex_type(std::string const & name) const;
 
     std::string                             description() const;
     std::uint32_t                           block_size() const;

@@ -366,7 +366,7 @@ schema_complex_type::schema_complex_type(xml_node::pointer_t x)
                 throw invalid_xml(
                           "Found unknown type \""
                         + child->text()
-                        + "\" in your complex type definition.");
+                        + "\" in your complex type definition (we do not currently support complex types within other complex types).");
             }
             last_type = ct.f_type;
 
@@ -455,15 +455,30 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
                 + "\" is not a valid column name.");
     }
 
-    f_type = name_to_struct_type(x->attribute("type"));
+    std::string const & type_name(x->attribute("type"));
+    f_type = name_to_struct_type(type_name);
     if(f_type == INVALID_STRUCT_TYPE)
     {
-        // TODO: search for complex type first
+        schema_complex_type::pointer_t ct(table->complex_type(type_name));
+        if(ct == nullptr)
+        {
+            throw invalid_xml(
+                      "Found unknown type \""
+                    + x->attribute("type")
+                    + "\" in your \""
+                    + f_name
+                    + "\" column definition.");
+        }
+
+        // TODO: actually implement the complex type
+        //       (at this time I'm thinking that the way to do it is
+        //       to create one column per complex type column with the
+        //       name defined as `<foo>.<blah>`--however, we may also
+        //       want to keep the data in a single column and use
+        //       the complex type to read/write it)
         //
-        throw invalid_xml(
-                  "Found unknown type \""
-                + x->attribute("type")
-                + "\" in your column definition.");
+        throw snapdatabase_not_yet_implemented(
+                "full support for complex types not yet implemented");
     }
 
     f_flags = 0;
@@ -838,6 +853,10 @@ void schema_secondary_index::add_column_id(column_id_t id)
 
 
 
+schema_table::schema_table()
+{
+    f_block_size = dbfile::get_system_page_size();
+}
 
 
 void schema_table::from_xml(xml_node::pointer_t x)
@@ -936,8 +955,27 @@ void schema_table::from_xml(xml_node::pointer_t x)
         }
         else if(child->tag_name() == "complex-type")
         {
-            schema_complex_type ct(child);
-            f_complex_types[ct.name()] = ct;
+            schema_complex_type::pointer_t ct(std::make_shared<schema_complex_type>(child));
+            if(name_to_struct_type(ct->name()) != INVALID_STRUCT_TYPE)
+            {
+                SNAP_LOG_WARNING
+                    << "The name of a complex type cannot be the name of a system type. \""
+                    << ct->name()
+                    << "\" is not acceptable."
+                    << SNAP_LOG_SEND;
+            }
+            else if(f_complex_types.find(ct->name()) != f_complex_types.end())
+            {
+                SNAP_LOG_WARNING
+                    << "The complex type named \""
+                    << ct->name()
+                    << "\" is defined twice. Only the very first intance is used."
+                    << SNAP_LOG_SEND;
+            }
+            else
+            {
+                f_complex_types[ct->name()] = ct;
+            }
         }
         else
         {
@@ -1416,7 +1454,7 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
         for(std::remove_const<decltype(max)>::type idx(0); idx < max; ++idx)
         {
             schema_column::pointer_t column(std::make_shared<schema_column>(shared_from_this(), (*field)[idx]));
-            if(column->column_id() != 0)
+            if(column->column_id() == 0)
             {
                 throw id_missing(
                       "loaded column \""
@@ -1609,6 +1647,18 @@ schema_secondary_index::pointer_t schema_table::secondary_index(std::string cons
     }
 
     return schema_secondary_index::pointer_t();
+}
+
+
+schema_complex_type::pointer_t schema_table::complex_type(std::string const & name) const
+{
+    auto const & it(f_complex_types.find(name));
+    if(it != f_complex_types.end())
+    {
+        return it->second;
+    }
+
+    return schema_complex_type::pointer_t();
 }
 
 

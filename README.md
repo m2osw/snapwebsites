@@ -437,16 +437,48 @@ cluster in a GUI. It lets you access the fields as Snap! manages
 them, making it easy to edit some values for test purposes.
 
 
-## snapdatabase
+## [snapdatabase](https://snapwebsites.org/project/snapdatabase)
 
-This is just documentation at the moment. The idea would be to create
-our own database system specifically tailored to our needs instead of
-using a more broad system like Cassandra. Especially now that Cassandra
-imposses the use of CQL. Maybe one day.
+This project is ultimately expected to replace Cassandra. At the moment
+we only use it for journals such as when a change that requires work from
+the backends is made. Cassandra is totally awful with such journaling so
+we instead created our tables.
 
-Another issue with Cassandra (or ScyllaDB) is that it does not manage
-complex indexes like Snap! requires. We'd want our `snapdatabase` to
-be capable of that feat directly within the cluster.
+There is quite a bit of documentation. The main idea of this project is
+to create a database system that is at the same time allowing horizontal
+growth (a la Cassandra, by distributing the data between computers) and
+allowing for the database to handle all the nitty gritty which Cassandra
+doesn't handle such as complex secondary indexes and full on transactions
+(i.e equivalent to a `BEGIN; INSERT/UPDATE/DEETE; COMMIT/ROLLBACK;` block).
+
+In regard to indexes, we have documentation for four different types:
+
+* OID indexes, each row is given an ID and sorted in the database in that
+  way; most tables (all for now) make use of it; it allows for an indirection
+  so other indexes can reference the OID and not the data directly allowing
+  for the data to move about when being updated;
+
+* Primary Index, all rows also have a primary index; this is the same as we
+  have in Cassandra, except that our system is capable to automatically
+  concatenate multiple columns to for the primary index (the latest Cassandra
+  does so too);
+
+* Secondary Indexes, a set of rows (filtered with an equivalent to a `WHERE`
+  clause) are sorted using a different set of columns (`ORDER BY ...`);
+
+* Tree Index, a table which has a Primary Key representing a path (`/a/b/c/...`)
+  can be sorted using a tree index; the path can be anything which forms a
+  tree and the separator does not have to be the slash character;
+
+Having those indexes directly defined in our database will improve the speed
+by a large magnitude. The latest method I use is to build a table with a
+specific primary key which I have to be build using multiple columns. The
+equivaluent of a pre-calculated `WHERE` clause. This works and is really fast,
+however, it has one drawback: it's not all manage with a single transaction
+mechanism. In other words, I may save data in the content table, then try
+to create the index for that new content and that part fails. This can mean
+the database gets out of sync. and we don't really know it. Another point
+which this database implementation will look into preventing.
 
 
 # Tracking Delay of loading a binary under Linux

@@ -63,7 +63,7 @@ public:
 
                                             ~context();
 
-    static pointer_t                        get_context(advgetopt::getopt::pointer_t opts);
+    static pointer_t                        create_context(advgetopt::getopt::pointer_t opts);
 
     void                                    initialize();
     table::pointer_t                        get_table(std::string const & name) const;

@@ -41,6 +41,7 @@ namespace snapdatabase
 
 
 DECLARE_LOGIC_ERROR(snapdatabase_logic_error);
+DECLARE_LOGIC_ERROR(snapdatabase_not_yet_implemented);
 
 DECLARE_OUT_OF_RANGE(snapdatabase_out_of_range);
 

@@ -1965,10 +1965,6 @@ structure::pointer_t structure::new_array_item(std::string const & field_name)
 
     }
 
-    if(new_offset - offset != add)
-    {
-    }
-
     adjust_offsets(offset, new_offset - offset);
 
     // WARNING: for the adjust_offsets() to work properly we MUST have this
@@ -2084,7 +2080,12 @@ void structure::set_buffer(std::string const & field_name, buffer_t const & valu
 
         f_buffer->pwrite(&size, field_size, f->offset());
         f_buffer->pwrite(value.data(), size, f->offset() + field_size);
+
+        std::int64_t const adjust(size - f->size());
+
         f->set_size(size);
+
+        adjust_offsets(f->offset(), adjust);
     }
     else if(f->size() < size)
     {
@@ -2116,7 +2117,11 @@ void structure::set_buffer(std::string const & field_name, buffer_t const & valu
 
         f_buffer->pinsert(value.data() + f->size(), size - f->size(), f->offset() + field_size + f->size());
 
+        std::int64_t const adjust(size - f->size());
+
         f->set_size(size);
+
+        adjust_offsets(f->offset(), adjust);
     }
     else
     {
@@ -2250,41 +2255,43 @@ std::uint64_t structure::parse_descriptions(std::uint64_t offset) const
         case struct_type_t::STRUCT_TYPE_P8STRING:
         case struct_type_t::STRUCT_TYPE_BUFFER8:
             f->add_flags(field_t::FIELD_FLAG_VARIABLE_SIZE);
-            offset += 1;
             if(f_buffer != nullptr
             && f_buffer->count_buffers() != 0)
             {
                 uint8_t sz;
-                f_buffer->pread(&sz, 1, offset);
+                f_buffer->pread(&sz, sizeof(sz), offset);
                 f->set_size(sz);
+                offset += sz;
             }
+            offset += 1;
             break;
 
         case struct_type_t::STRUCT_TYPE_P16STRING:
         case struct_type_t::STRUCT_TYPE_BUFFER16:
             f->add_flags(field_t::FIELD_FLAG_VARIABLE_SIZE);
-            offset +=  2;
             if(f_buffer != nullptr
             && f_buffer->count_buffers() != 0)
             {
                 uint16_t sz;
-                f_buffer->pread(&sz, 2, offset);
+                f_buffer->pread(&sz, sizeof(sz), offset);
                 f->set_size(sz);
+                offset += sz;
             }
+            offset +=  2;
             break;
 
         case struct_type_t::STRUCT_TYPE_P32STRING:
         case struct_type_t::STRUCT_TYPE_BUFFER32:
             f->add_flags(field_t::FIELD_FLAG_VARIABLE_SIZE);
-            offset += 4;
             if(f_buffer != nullptr
             && f_buffer->count_buffers() != 0)
             {
                 uint32_t sz;
-                f_buffer->pread(&sz, 4, offset);
+                f_buffer->pread(&sz, sizeof(sz), offset);
                 f->set_size(sz);
                 offset += sz;
             }
+            offset += 4;
             break;
 
         case struct_type_t::STRUCT_TYPE_STRUCTURE:
@@ -2302,14 +2309,14 @@ std::uint64_t structure::parse_descriptions(std::uint64_t offset) const
             // here f_size is a count, not a byte size
             //
             f->add_flags(field_t::FIELD_FLAG_VARIABLE_SIZE);
-            offset += 1;
             if(f_buffer != nullptr
             && f_buffer->count_buffers() != 0)
             {
                 uint8_t sz;
-                f_buffer->pread(&sz, 1, offset);
+                f_buffer->pread(&sz, sizeof(sz), offset);
                 f->set_size(sz);
             }
+            offset += 1;
             has_sub_defs = true;
             break;
 
@@ -2317,14 +2324,14 @@ std::uint64_t structure::parse_descriptions(std::uint64_t offset) const
             // here f_size is a count, not a byte size
             //
             f->add_flags(field_t::FIELD_FLAG_VARIABLE_SIZE);
-            offset += 2;
             if(f_buffer != nullptr
             && f_buffer->count_buffers() != 0)
             {
                 uint16_t sz;
-                f_buffer->pread(&sz, 1, offset);
+                f_buffer->pread(&sz, sizeof(sz), offset);
                 f->set_size(sz);
             }
+            offset += 2;
             has_sub_defs = true;
             break;
 
@@ -2332,14 +2339,14 @@ std::uint64_t structure::parse_descriptions(std::uint64_t offset) const
             // here f_size is a count, not a byte size
             //
             f->add_flags(field_t::FIELD_FLAG_VARIABLE_SIZE);
-            offset += 4;
             if(f_buffer != nullptr
             && f_buffer->count_buffers() != 0)
             {
                 uint32_t sz;
-                f_buffer->pread(&sz, 4, offset);
+                f_buffer->pread(&sz, sizeof(sz), offset);
                 f->set_size(sz);
             }
+            offset += 4;
             has_sub_defs = true;
             break;
 

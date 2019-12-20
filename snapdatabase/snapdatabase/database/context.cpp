@@ -52,6 +52,14 @@
 #include    <deque>
 
 
+// C lib
+//
+#include    <sys/types.h>
+#include    <sys/stat.h>
+#include    <unistd.h>
+#include    <fcntl.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -196,39 +204,11 @@ void context_impl::initialize()
                 continue;
             }
 
-            xml_node::map_t complex_types;
-            for(auto child(root->first_child()); child != nullptr; child = child->next())
-            {
-                if(child->tag_name() == "complex-type")
-                {
-                    std::string const name(child->attribute("name"));
-                    if(name_to_struct_type(name) != INVALID_STRUCT_TYPE)
-                    {
-                        SNAP_LOG_WARNING
-                            << "The name of a complex type cannot be the name of a system type. \""
-                            << name
-                            << "\" is not acceptable."
-                            << SNAP_LOG_SEND;
-                        continue;
-                    }
-                    if(complex_types.find(name) != complex_types.end())
-                    {
-                        SNAP_LOG_WARNING
-                            << "The complex type named \""
-                            << name
-                            << "\" is defined twice. Only the very first intance is used."
-                            << SNAP_LOG_SEND;
-                        continue;
-                    }
-                    complex_types[name] = child;
-                }
-            }
-
             for(auto child(root->first_child()); child != nullptr; child = child->next())
             {
                 if(child->tag_name() == "table")
                 {
-                    table::pointer_t t(std::make_shared<table>(f_context, child, complex_types));
+                    table::pointer_t t(std::make_shared<table>(f_context, child));
                     f_tables[t->name()] = t;
 
                     dbfile::pointer_t dbfile(t->get_dbfile());
@@ -286,7 +266,9 @@ void context_impl::initialize()
     SNAP_LOG_NOTICE
         << "Verify "
         << f_tables.size()
-        << " table schemata."
+        << " table schema"
+        << (f_tables.size() == 1 ? "" : "ta")
+        << "."
         << SNAP_LOG_SEND;
 
     for(auto & t : f_tables)
@@ -343,7 +325,7 @@ context::~context()
 }
 
 
-context::pointer_t context::get_context(advgetopt::getopt::pointer_t opts)
+context::pointer_t context::create_context(advgetopt::getopt::pointer_t opts)
 {
     pointer_t c(new context(opts));
     c->initialize();
