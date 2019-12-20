@@ -178,15 +178,10 @@ bool table_impl::verify_schema()
         // load the binary schema (it may reside on multiple blocks and we
         // have to read the entire schema at once)
         //
-std::cerr << "table: TODO verify schema...\n";
         block_schema::pointer_t schm(std::static_pointer_cast<block_schema>(get_block(schema_offset)));
-std::cerr << "table: get schema in a buffer...\n";
         virtual_buffer::pointer_t current_schema_data(schm->get_schema());
-std::cerr << "table: get a schema table object...\n";
         schema_table::pointer_t current_schema_table(std::make_shared<schema_table>());
-std::cerr << "table: buffer to schema structures...\n";
         current_schema_table->from_binary(current_schema_data);
-std::cerr << "table: now compare...\n";
         compare_t const c(current_schema_table->compare(*f_schema_table));
         if(c == compare_t::COMPARE_SCHEMA_UPDATE)
         {
@@ -195,7 +190,10 @@ std::cerr << "table: now compare...\n";
         }
         else if(c == compare_t::COMPARE_SCHEMA_DIFFER)
         {
+std::cerr << "table: TODO: schemata differ...\n";
+throw snapdatabase_not_yet_implemented("differing schemata not handled yet");
         }
+        // else -- this table schema did not change
     }
 
     return true;

@@ -157,7 +157,6 @@ constexpr descriptions_by_version_t const g_descriptions_by_version[] =
 file_snap_database_table::file_snap_database_table(dbfile::pointer_t f, reference_t offset)
     : block(g_descriptions_by_version, f, offset)
 {
-std::cerr << "--- the file_snap_database_table offset = " << offset << "\n";
 }
 
 
