@@ -81,7 +81,8 @@ public:
                                                 table_impl(
                                                       context * c
                                                     , table * t
-                                                    , xml_node::pointer_t x);
+                                                    , xml_node::pointer_t x
+                                                    , schema_complex_type::map_pointer_t complex_types);
                                                 table_impl(table_impl const & rhs) = delete;
 
     table_impl                                  operator = (table_impl const & rhs) = delete;
@@ -121,11 +122,13 @@ private:
 table_impl::table_impl(
           context * c
         , table * t
-        , xml_node::pointer_t x)
+        , xml_node::pointer_t x
+        , schema_complex_type::map_pointer_t complex_types)
     : f_context(c)
     , f_table(t)
     , f_schema_table(std::make_shared<schema_table>())
 {
+    f_schema_table->set_complex_types(complex_types);
     f_schema_table->from_xml(x);
     f_dbfile = std::make_shared<dbfile>(c->get_path(), f_schema_table->name(), "main");
     f_dbfile->set_page_size(f_schema_table->block_size());
@@ -164,6 +167,7 @@ bool table_impl::verify_schema()
         // no schema defined yet, just save ours and we're all good
         //
         f_schema_table->assign_column_ids();
+
         block_schema::pointer_t schm(
                 std::static_pointer_cast<block_schema>(
                         allocate_new_block(dbtype_t::BLOCK_TYPE_SCHEMA)));
@@ -182,6 +186,9 @@ bool table_impl::verify_schema()
         virtual_buffer::pointer_t current_schema_data(schm->get_schema());
         schema_table::pointer_t current_schema_table(std::make_shared<schema_table>());
         current_schema_table->from_binary(current_schema_data);
+
+        f_schema_table->assign_column_ids(current_schema_table);
+
         compare_t const c(current_schema_table->compare(*f_schema_table));
         if(c == compare_t::COMPARE_SCHEMA_UPDATE)
         {
@@ -540,8 +547,9 @@ void table_impl::free_block(block::pointer_t block, bool clear_block)
 
 table::table(
           context * c
-        , xml_node::pointer_t x)
-    : f_impl(std::make_shared<detail::table_impl>(c, this, x))
+        , xml_node::pointer_t x
+        , schema_complex_type::map_pointer_t complex_types)
+    : f_impl(std::make_shared<detail::table_impl>(c, this, x, complex_types))
 {
 }
 

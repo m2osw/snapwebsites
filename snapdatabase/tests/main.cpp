@@ -116,8 +116,20 @@ std::string setup_context(std::string const & sub_path, std::vector<std::string>
             ++e;
         }
         std::string const name(s, e - s);
-        std::ofstream o(path + "/tables/" + name + ".xml");
-        o << x;
+
+        std::string const filename(path + "/tables/" + name + ".xml");
+        {
+            std::ofstream o(filename);
+            o << x;
+        }
+
+        // the table.xsd must pass so we can make sure that our tests make
+        // use of up to date XML code and that table.xsd is also up to date
+        //
+        std::string const verify_table("xmllint --noout --nonet --schema snapdatabase/snapdatabase/data/tables.xsd " + filename);
+        std::cout << "running: " << verify_table << std::endl;
+        int const r(system(verify_table.c_str()));
+        CATCH_REQUIRE(r != 0);
     }
 
     return path;

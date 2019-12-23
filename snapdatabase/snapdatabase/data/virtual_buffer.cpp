@@ -517,12 +517,29 @@ std::ostream & operator << (std::ostream & out, virtual_buffer const & v)
 
     ss << std::hex << std::setfill('0');
 
+    uint8_t buf[16];
     char const * newline("");
     std::uint64_t sz(v.size());
-    for(snapdatabase::reference_t p(0); p < sz; ++p)
+    snapdatabase::reference_t p(0);
+    for(; p < sz; ++p)
     {
         if(p % 16 == 0)
         {
+            if(*newline != '\0')
+            {
+                ss << "  ";
+                for(snapdatabase::reference_t offset(0); offset < 16; ++offset)
+                {
+                    if(buf[offset] >= ' ' && buf[offset] < 0x7F)
+                    {
+                        ss << static_cast<char>(buf[offset]);
+                    }
+                    else
+                    {
+                        ss << '.';
+                    }
+                }
+            }
             if(sz > 65536)
             {
                 ss << newline << std::setw(8) << p << ": ";
@@ -539,9 +556,33 @@ std::ostream & operator << (std::ostream & out, virtual_buffer const & v)
         {
             throw io_error("Expected to read 1 more byte from virtual buffer.");
         }
+        buf[p % 16] = c;
 
         ss << " " << std::setw(2) << static_cast<int>(c);
     }
+
+    snapdatabase::reference_t q(p % 16);
+    if(q != 0)
+    {
+        for(snapdatabase::reference_t r(q); r < 16; ++r)
+        {
+            ss << "   ";
+        }
+
+        ss << "  ";
+        for(snapdatabase::reference_t offset(0); offset < q; ++offset)
+        {
+            if(buf[offset] >= ' ' && buf[offset] < 0x7F)
+            {
+                ss << static_cast<char>(buf[offset]);
+            }
+            else
+            {
+                ss << '.';
+            }
+        }
+    }
+
     ss << std::endl;
     return out << ss.str();
 }

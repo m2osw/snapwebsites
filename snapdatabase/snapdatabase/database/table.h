@@ -72,7 +72,8 @@ public:
 
                                                 table(
                                                       context * c
-                                                    , xml_node::pointer_t x);
+                                                    , xml_node::pointer_t x
+                                                    , schema_complex_type::map_pointer_t complex_types);
 
     void                                        load_extension(xml_node::pointer_t e);
 

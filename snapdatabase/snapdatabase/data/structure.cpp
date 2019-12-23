@@ -870,7 +870,7 @@ field_t::pointer_t structure::get_field(std::string const & field_name, struct_t
                       "Field \""
                     + sub_field_name
                     + "\" is not of type structure so you can't get a"
-                      " sub-field (i.e. have a perio in the name).");
+                      " sub-field (i.e. have a period in the name).");
         }
 
         if(f->sub_structures().size() != 1)
@@ -938,7 +938,6 @@ field_t::pointer_t structure::find_field(std::string const & field_name)
     auto field(f_fields_by_name.find(field_name));
     if(field == f_fields_by_name.end())
     {
-
         // we can't return a field and yet it is mandatory, throw an error
         // (if we change a description to still include old fields, we need
         // to have a way to point to the new field--see the RENAMED flag).
@@ -1939,6 +1938,17 @@ structure::pointer_t structure::new_array_item(std::string const & field_name)
     // now add the buffer area for that new sub-structure
     //
     size_t const add(s->get_current_size());
+#ifdef _DEBUG
+    if(add != new_offset - offset)
+    {
+        throw snapdatabase_logic_error(
+                  "Sub-structure says its size is "
+                + std::to_string(add)
+                + " but the offsets say it's "
+                + std::to_string(new_offset - offset)
+                + ".");
+    }
+#endif
     std::vector<std::uint8_t> value(add, 0);
     f_buffer->pinsert(value.data(), add, offset);
     s->set_virtual_buffer(f_buffer, offset);
@@ -1965,7 +1975,7 @@ structure::pointer_t structure::new_array_item(std::string const & field_name)
 
     }
 
-    adjust_offsets(offset, new_offset - offset);
+    adjust_offsets(f->offset(), new_offset - offset);
 
     // WARNING: for the adjust_offsets() to work properly we MUST have this
     //          push_back() after it; otherwise the sub-fields would also
@@ -2562,7 +2572,7 @@ void structure::verify_buffer_size()
                     "Buffer ("
                     + std::to_string(f_buffer->size())
                     + ") and current ("
-                    + std::to_string(get_current_size())
+                    + std::to_string(s->get_current_size())
                     + ") sizes do not match.");
         }
     }

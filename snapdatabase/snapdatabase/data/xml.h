@@ -93,6 +93,8 @@ class xml
 {
 public:
     typedef std::shared_ptr<xml>    pointer_t;
+    typedef std::map<std::string, pointer_t>
+                                    map_t;
 
                                     xml(std::string const & filename);
 

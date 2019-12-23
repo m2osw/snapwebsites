@@ -81,23 +81,24 @@ namespace detail
 class context_impl
 {
 public:
-                                    context_impl(context *c, advgetopt::getopt::pointer_t opts);
-                                    context_impl(context_impl const & rhs) = delete;
-                                    ~context_impl();
+                                        context_impl(context *c, advgetopt::getopt::pointer_t opts);
+                                        context_impl(context_impl const & rhs) = delete;
+                                        ~context_impl();
 
-    context_impl &                  operator = (context_impl const & rhs) = delete;
+    context_impl &                      operator = (context_impl const & rhs) = delete;
 
-    void                            initialize();
-    table::pointer_t                get_table(std::string const & name) const;
-    table::map_t                    list_tables() const;
-    std::string                     get_path() const;
+    void                                initialize();
+    table::pointer_t                    get_table(std::string const & name) const;
+    table::map_t                        list_tables() const;
+    std::string                         get_path() const;
 
 private:
-    context *                       f_context = nullptr;
-    advgetopt::getopt::pointer_t    f_opts = advgetopt::getopt::pointer_t();
-    std::string                     f_path = std::string();
-    int                             f_lock = -1;        // TODO: lock the context so only one snapdatabasedaemon can run against it
-    table::map_t                    f_tables = table::map_t();
+    context *                           f_context = nullptr;
+    advgetopt::getopt::pointer_t        f_opts = advgetopt::getopt::pointer_t();
+    std::string                         f_path = std::string();
+    int                                 f_lock = -1;        // TODO: lock the context so only one snapdatabasedaemon can run against it
+    table::map_t                        f_tables = table::map_t();
+    schema_complex_type::map_pointer_t  f_complex_types = schema_complex_type::map_pointer_t();
 };
 //#pragma GCC diagnostic pop
 
@@ -146,6 +147,15 @@ void context_impl::initialize()
         << " XML schemata."
         << SNAP_LOG_SEND;
 
+    // TODO: this is perfect for workers to distribute the load on many
+    //       threads (and then the creation/loading of each table)
+    //
+
+    xml::map_t xml_files;
+
+    // the first loop goes through all the files
+    // it reads the XML and parses the complex types
+    //
     for(size_t idx(0); idx < max; ++idx)
     {
         std::string const path(f_opts->get_string("table_schema_path", idx));
@@ -173,20 +183,17 @@ void context_impl::initialize()
             continue;
         }
 
-        // TODO: this is perfect for workers to distribute the load on many
-        //       threads (and then the creation/loading of each table)
-        //
         for(auto const & filename : list)
         {
-            xml x(filename);
+            xml::pointer_t x(std::make_shared<xml>(filename));
+            xml_files[filename] = x;
 
-            xml_node::pointer_t root(x.root());
+            xml_node::pointer_t root(x->root());
             if(root == nullptr)
             {
                 SNAP_LOG_WARNING
-                    << "Problem reading table schema \""
                     << filename
-                    << "\" is not acceptable."
+                    << ": Problem reading table schema. The file will be ignored."
                     << SNAP_LOG_SEND;
                 continue;
             }
@@ -195,48 +202,82 @@ void context_impl::initialize()
             && root->tag_name() != "context")
             {
                 SNAP_LOG_WARNING
-                    << "Table \""
                     << filename
-                    << "\" schema must be a \"keyspaces\" or \"context\". \""
+                    << ": XML table declarations must be a \"keyspaces\" or \"context\". \""
                     << root->tag_name()
                     << "\" is not acceptable."
                     << SNAP_LOG_SEND;
                 continue;
             }
 
+            // complex types are defined outside of tables which allows us
+            // to use the same complex types in different tables
+            //
             for(auto child(root->first_child()); child != nullptr; child = child->next())
             {
-                if(child->tag_name() == "table")
+                if(child->tag_name() == "complex-type")
                 {
-                    table::pointer_t t(std::make_shared<table>(f_context, child));
-                    f_tables[t->name()] = t;
+                    std::string const name(child->attribute("name"));
+                    if(name_to_struct_type(name) != INVALID_STRUCT_TYPE)
+                    {
+                        SNAP_LOG_WARNING
+                            << filename
+                            << ": The name of a complex type cannot be the name of a system type. \""
+                            << name
+                            << "\" is not acceptable."
+                            << SNAP_LOG_SEND;
+                        continue;
+                    }
+                    if(f_complex_types->find(name) != f_complex_types->end())
+                    {
+                        SNAP_LOG_WARNING
+                            << filename
+                            << ": The complex type named \""
+                            << name
+                            << "\" is defined twice. Only the very first instance is used."
+                            << SNAP_LOG_SEND;
+                        continue;
+                    }
+                    (*f_complex_types)[name] = std::make_shared<schema_complex_type>(child);
+                }
+            }
+        }
+    }
 
-                    dbfile::pointer_t dbfile(t->get_dbfile());
-                    dbfile->set_table(t);
-                    dbfile->set_sparse(t->is_sparse());
-                }
-                else if(child->tag_name() == "table-extension")
-                {
-                    // we collect those and process them in a second
-                    // pass after we loaded all the XML files because
-                    // otherwise the table may still be missing
-                    //
-                    table_extensions.push_back(child);
-                }
-                else if(child->tag_name() == "complex-type")
-                {
-                    // already worked on; ignore in this loop
-                }
-                else
-                {
-                    // generate an error for unknown tags or ignore?
-                    //
-                    SNAP_LOG_WARNING
-                        << "Unknown tag \""
-                        << child->tag_name()
-                        << "\" within a <context> tag ignored."
-                        << SNAP_LOG_SEND;
-                }
+    for(auto const & x : xml_files)
+    {
+        for(auto child(x.second->root()->first_child()); child != nullptr; child = child->next())
+        {
+            if(child->tag_name() == "table")
+            {
+                table::pointer_t t(std::make_shared<table>(f_context, child, f_complex_types));
+                f_tables[t->name()] = t;
+
+                dbfile::pointer_t dbfile(t->get_dbfile());
+                dbfile->set_table(t);
+                dbfile->set_sparse(t->is_sparse());
+            }
+            else if(child->tag_name() == "table-extension")
+            {
+                // we collect those and process them in a second
+                // pass after we loaded all the XML files because
+                // otherwise the table may still be missing
+                //
+                table_extensions.push_back(child);
+            }
+            else if(child->tag_name() == "complex-type")
+            {
+                // already worked on; ignore in this loop
+            }
+            else
+            {
+                // generate an error for unknown tags or ignore?
+                //
+                SNAP_LOG_WARNING
+                    << "Unknown tag \""
+                    << child->tag_name()
+                    << "\" within a <context> tag ignored."
+                    << SNAP_LOG_SEND;
             }
         }
     }

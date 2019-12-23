@@ -43,7 +43,7 @@ CATCH_TEST_CASE("Context", "[centext]")
                 {
                     "<!-- name=simple-context -->"
                     "<context>"
-                      "<table name='foo' sparse='sparse'>" // model="..." row-key="..." drop="..." temporary="..." sparse="..." secure="...">
+                      "<table name='foo' sparse='sparse' model='queue' row-key='c2,c1'>" // drop="..." temporary="..." secure="...">
                         "<block-size>4096</block-size>"
                         "<description>Create a Context</description>"
                         "<schema>"
@@ -66,7 +66,28 @@ CATCH_TEST_CASE("Context", "[centext]")
                             "<min-length>5</min-length>"
                             "<max-length>25</max-length>"
                           "</column>"
+                          "<column name='c3' type='uint64'>" // limited="..." encrypt="..." required="..." blob="...">
+                            "<description>column 3</description>"
+                            "<default>0</default>"
+                          "</column>"
                         "</schema>"
+                        "<secondary-index name='created_on'>"
+                          "<order>"
+                            "<column-name name='_created_on' direction='desc'/>"
+                            "<column-name name='c2'>c2 * 16 + rand() % 16</column-name>"
+                            "<column-name name='c1' not-null='not-null'/>"
+                          "</order>"
+                          "<filter>c3 > 100</filter>"
+                        "</secondary-index>"
+                        "<secondary-index name='priority'>"
+                          "<order>"
+                            "<column-name name='c3'/>"
+                            "<column-name name='_created_on' direction='desc'>_created_on + c2</column-name>"
+                            "<column-name name='_deleted_on' not-null='null'/>"
+                          "</order>"
+                          "<selector type='children'>blog</selector>"
+                          "<filter>c3 > 100</filter>"
+                        "</secondary-index>"
                       "</table>"
                     "</context>"
                 }
@@ -136,6 +157,13 @@ CATCH_TEST_CASE("Context", "[centext]")
         // (i.e. the file already exists)
         //
         context = snapdatabase::context::create_context(opt);
+
+        snapdatabase::table::pointer_t table(context->get_table("wrong_name"));
+        CATCH_REQUIRE(table == nullptr);
+
+        table = context->get_table("foo");
+        CATCH_REQUIRE(table != nullptr);
+
         context.reset();
     }
     CATCH_END_SECTION()

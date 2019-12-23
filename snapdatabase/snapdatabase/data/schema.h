@@ -34,6 +34,11 @@
 #include    "snapdatabase/data/xml.h"
 
 
+// advgetopt lib
+//
+#include    <advgetopt/advgetopt.h>
+
+
 
 namespace snapdatabase
 {
@@ -100,7 +105,12 @@ constexpr flag32_t                          COLUMN_FLAG_REVISION_TYPE           
 constexpr flag32_t                          COLUMN_REVISION_TYPE_GLOBAL         = 0;
 constexpr flag32_t                          COLUMN_REVISION_TYPE_BRANCH         = 1;
 constexpr flag32_t                          COLUMN_REVISION_TYPE_REVISION       = 2;
-//constexpr flag32_t                          COLUMN_REVISION_TYPE_unused         = 3; -- current unused
+//constexpr flag32_t                          COLUMN_REVISION_TYPE_unused         = 3; -- currently unused
+
+
+// SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
+constexpr flag32_t                          SCHEMA_SORT_COLUMN_DESCENDING       = (1LL << 0);
+constexpr flag32_t                          SCHEMA_SORT_COLUMN_NOT_NULL         = (1LL << 1);
 
 
 // SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
@@ -115,6 +125,7 @@ public:
                                             pointer_t;
     typedef std::map<std::string, pointer_t>
                                             map_t;
+    typedef std::shared_ptr<map_t>          map_pointer_t;
 
                                             schema_complex_type();
                                             schema_complex_type(xml_node::pointer_t x);
@@ -200,28 +211,68 @@ private:
 
 
 
+class schema_sort_column
+{
+public:
+    typedef std::shared_ptr<schema_sort_column>
+                                            pointer_t;
+    typedef std::vector<pointer_t>          vector_t;
+
+    void                                    from_xml(xml_node::pointer_t sc);
+
+    compare_t                               compare(schema_sort_column const & rhs) const;
+
+    std::string                             get_column_name() const;
+    column_id_t                             get_column_id() const;
+    void                                    set_column_id(column_id_t column_id);
+    flag32_t                                get_flags() const;
+    void                                    set_flags(flag32_t flags);
+    bool                                    is_ascending() const;
+    bool                                    accept_null_columns() const;
+    buffer_t                                get_function() const;
+    void                                    set_function(buffer_t const & function);
+
+private:
+    std::string                             f_column_name = std::string();
+    column_id_t                             f_column_id = column_id_t();
+    flag32_t                                f_flags = 0;
+    buffer_t                                f_function = buffer_t();
+};
+
+
 class schema_secondary_index
 {
 public:
-    typedef std::shared_ptr<schema_secondary_index> pointer_t;
-    typedef std::map<std::string, pointer_t>        map_t;
+    typedef std::shared_ptr<schema_secondary_index>
+                                            pointer_t;
+    typedef std::map<std::string, pointer_t>
+                                            map_t;
+
+    void                                    from_xml(xml_node::pointer_t sc);
 
     compare_t                               compare(schema_secondary_index const & rhs) const;
 
     std::string                             get_index_name() const;
     void                                    set_index_name(std::string const & index_name);
 
+    flag32_t                                get_flags() const;
+    void                                    set_flags(flag32_t flags);
     bool                                    get_distributed_index() const;
     void                                    set_distributed_index(bool distributed);
 
-    size_t                                  get_column_count();
-    column_id_t                             get_column_id(int idx);
-    void                                    add_column_id(column_id_t id);
+    size_t                                  get_column_count() const;
+    //advgetopt::string_list_t const &        get_sort_columns() const;
+    schema_sort_column::pointer_t           get_sort_column(int idx) const;
+    void                                    add_sort_column(schema_sort_column::pointer_t sc);
+
+    buffer_t                                get_filter() const;
+    void                                    set_filter(buffer_t const & filter);
 
 private:
     std::string                             f_index_name = std::string();
-    column_ids_t                            f_column_ids = column_ids_t();
-    flag64_t                                f_flags = flag64_t();
+    schema_sort_column::vector_t            f_sort_columns = schema_sort_column::vector_t();
+    buffer_t                                f_filter = buffer_t();
+    flag32_t                                f_flags = flag32_t();
 };
 
 
@@ -234,6 +285,8 @@ public:
     typedef std::shared_ptr<schema_table>   pointer_t;
 
                                             schema_table();
+
+    void                                    set_complex_types(schema_complex_type::map_pointer_t complex_types);
 
     void                                    from_xml(xml_node::pointer_t x);
     void                                    load_extension(xml_node::pointer_t e);
@@ -249,7 +302,7 @@ public:
     bool                                    is_sparse() const;
     bool                                    is_secure() const;
     column_ids_t                            row_key() const;
-    void                                    assign_column_ids();
+    void                                    assign_column_ids(pointer_t existing_schema = pointer_t());
     schema_column::pointer_t                column(std::string const & name) const;
     schema_column::pointer_t                column(column_id_t id) const;
     schema_column::map_by_id_t              columns_by_id() const;
@@ -261,15 +314,16 @@ public:
     std::uint32_t                           block_size() const;
 
 private:
+    schema_complex_type::map_pointer_t      f_complex_types = schema_complex_type::map_pointer_t();
     version_t                               f_version = version_t();
     time_t                                  f_added_on = time(nullptr);
     std::string                             f_name = std::string();
     flag64_t                                f_flags = flag64_t();
     model_t                                 f_model = model_t::TABLE_MODEL_CONTENT;
     std::uint32_t                           f_block_size = 0;
+    advgetopt::string_list_t                f_row_key_names = advgetopt::string_list_t();
     column_ids_t                            f_row_key = column_ids_t();
     schema_secondary_index::map_t           f_secondary_indexes = schema_secondary_index::map_t();
-    schema_complex_type::map_t              f_complex_types = schema_complex_type::map_t();
     schema_column::map_by_name_t            f_columns_by_name = schema_column::map_by_name_t();
     schema_column::map_by_id_t              f_columns_by_id = schema_column::map_by_id_t();
 

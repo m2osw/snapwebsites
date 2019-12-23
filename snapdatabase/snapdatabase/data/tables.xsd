@@ -46,14 +46,16 @@
                   <validation>...</validation>
                 </column>
               </schema>
-              <secondary-index name="...">
-                ...(list of column names)...
+              <secondary-index name="..." distributed="distributed">
+                <order>
+                  <column-name name="..." direction="asc|desc" not-null="not-null">filter</column-name>
+                  ...(additional column definitions)...
+                </order>
+                <filter>
+                  ...(code used to filter the data)...
+                </filter>
               </secondary-index>
             </table>
-            <complex-type name="...">
-              <type name="...">type name</type>
-              ...
-            </complex-type>
             <table-extension name="..."> <!-- see SNAP-294 -->
               <schema>
                 <column name="..." type="..." limited="..." ...>
@@ -61,6 +63,10 @@
                 </column>
               </schema>
             </table-extension>
+            <complex-type name="...">
+              <type name="...">type name</type>
+              ...
+            </complex-type>
             ...
           </context>
 
@@ -107,8 +113,8 @@
                 "branch", and "revision", all in one for our _special case_)
 
       The <table row-key="..."> attribute defines the list of columns used
-      to build the primary key. You can use the <secondary-key> tag to
-      define other keys which is useful to (1) filter data and (2) have
+      to build the primary key. You can use the <secondary-index> tag to
+      define other keys, which is useful to (1) filter data and (2) have
       advanced sorting capabilities.
 
       The <table drop="drop"> attribute is used to mark a table that needs to
@@ -204,7 +210,22 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <xs:simpleType name="column_type">
+  <xs:simpleType name="comma-separated-names">
+    <xs:annotation>
+      <xs:documentation>
+        A valid list of names composed of letters, digits, and underscores
+        and separated by commas.
+        Names can't start with a digit.
+        The number of spaces and commas between each name is not restricted,
+        but you must have at least one comma.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z_][a-zA-Z0-9_]*( *,[ ,]*[a-zA-Z_][a-zA-Z0-9_]*)*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="column-type">
     <xs:annotation>
       <xs:documentation>
         The name of a basic type we allow in our data.
@@ -264,6 +285,20 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="distributed">
+    <xs:annotation>
+      <xs:documentation>
+        The distributed flag is used to determine how the secondary index
+        is to be distributed. Tables are otherwise automatically distributed.
+        The default is "distributed" since it makes the most sense.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="distributed"/>
+      <xs:enumeration value="one-instance"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="drop">
     <xs:annotation>
       <xs:documentation>
@@ -276,6 +311,31 @@
     </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="drop"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="direction">
+    <xs:annotation>
+      <xs:documentation>
+        The sort direction of a column in a secondary index.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="asc"/>
+      <xs:enumeration value="ascending"/>
+      <xs:enumeration value="desc"/>
+      <xs:enumeration value="descending"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="not-null">
+    <xs:annotation>
+      <xs:documentation>
+        If the column is null, do not include it in this secondary index.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="not-null"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -337,6 +397,46 @@
     <xs:attribute name="href" type="xs:string"/>
   </xs:complexType>
 
+  <xs:simpleType name="temporary">
+    <xs:annotation>
+      <xs:documentation>
+        Tables can be marked as temporary, which means that they get deleted
+        when you release the context.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="temporary"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="sparse">
+    <xs:annotation>
+      <xs:documentation>
+        A table can be marked as being sparse which means blocks with just
+        zeroes may not _physically_ exist on disk. So it saves space on your
+        hard drive. This may be treshenous too as you add more data you may
+        think you have enough space but you may not... At the same time, some
+        blocks will never be used 100% so having a sparse file ligitimately
+        saves you space for those blocks.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="sparse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="secure">
+    <xs:annotation>
+      <xs:documentation>
+        Whether the table is considered to hold secure data. If so, a delete
+        on a row clears the column's data with all zeroes.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="secure"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <xs:annotation>
     <xs:documentation>
@@ -366,15 +466,14 @@
     </xs:documentation>
   </xs:annotation>
 
-  <xs:element name="temporary" type="empty"/>
   <xs:element name="block-size" type="xs:integer"/>
   <xs:element name="description" type="html"/>
-  <xs:element name="default" type="html"/>
-  <xs:element name="min-value" type="xs:integer"/>
-  <xs:element name="max-value" type="xs:integer"/>
+  <xs:element name="default" type="xs:string"/>
+  <xs:element name="min-value" type="xs:string"/>
+  <xs:element name="max-value" type="xs:string"/>
   <xs:element name="min-length" type="xs:integer"/>
   <xs:element name="max-length" type="xs:integer"/>
-  <xs:element name="validation" type="html"/>
+  <xs:element name="validation" type="xs:string"/>
 
   <xs:element name="column">
     <xs:complexType>
@@ -388,7 +487,7 @@
         <xs:element ref="validation" minOccurs="0" maxOccurs="1"/> <!-- i.e. "isbn", "email", "domain", "/<regex>/", etc. -->
       </xs:choice>
       <xs:attribute name="name" type="name" use="required"/>
-      <xs:attribute name="type" type="column_type"/>
+      <xs:attribute name="type" type="column-type"/>
       <xs:attribute name="limited" type="limited"/>
       <xs:attribute name="encrypt" type="name"/> <!-- name of the key used to encrypt this column -->
       <!-- the value can be set to null unless required="required" -->
@@ -405,20 +504,47 @@
     </xs:complexType>
   </xs:element>
 
+  <!-- the column name is defined in the attribute, the text inside
+       the tag is a script (optional) to transform the column to
+       a different value to be used in the ordering process
+       (i.e. instead of sorting by 'c', we sort by 'f(c)'; the cool
+       part is that you can use any column in the function) -->
+  <xs:element name="column-name">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="name" type="name" use="required"/>
+          <xs:attribute name="direction" type="direction"/>
+          <xs:attribute name="not-null" type="not-null"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="filter" type="xs:string"/>
+
+  <xs:element name="order">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="column-name"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="secondary-index">
     <xs:complexType>
       <xs:choice minOccurs="1" maxOccurs="unbounded">
-        <xs:element ref="column_names"/>
+        <xs:element ref="filter" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="order" minOccurs="1" maxOccurs="1"/>
       </xs:choice>
-      <xs:attribute name="name" type="name"/>
-      <xs:attribute name="distributed" type="name"/> <!-- default is "distributed" -->
+      <xs:attribute name="name" type="name" use="required"/>
+      <xs:attribute name="distributed" type="distributed"/> <!-- default is "distributed" -->
     </xs:complexType>
   </xs:element>
 
   <xs:element name="table">
     <xs:complexType>
       <xs:choice minOccurs="1" maxOccurs="unbounded">
-        <xs:element ref="temporary"/>
         <xs:element ref="block-size"/>
         <xs:element ref="description"/>
         <xs:element ref="schema"/>
@@ -427,6 +553,9 @@
       <xs:attribute name="name" type="name" use="required"/>
       <xs:attribute name="model" type="model"/> <!-- default is "data" -->
       <xs:attribute name="drop" type="drop"/>
+      <xs:attribute name="temporary" type="temporary"/>
+      <xs:attribute name="sparse" type="sparse"/>
+      <xs:attribute name="secure" type="secure"/>
     </xs:complexType>
   </xs:element>
 
@@ -441,8 +570,6 @@
   </xs:element>
 
   <xs:element name="type" type="xs:string"/>
-
-  <xs:element name="column_names" type="xs:string"/>
 
   <xs:element name="value">
     <xs:complexType>

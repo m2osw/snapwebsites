@@ -117,11 +117,29 @@ struct_description_t g_column_description[] =
 };
 
 
-struct_description_t g_table_column_reference[] =
+struct_description_t g_column_reference[] =
 {
     define_description(
           FieldName("column_id")
         , FieldType(struct_type_t::STRUCT_TYPE_UINT16)
+    ),
+    end_descriptions()
+};
+
+
+struct_description_t g_sort_column[] =
+{
+    define_description(
+          FieldName("column_id")
+        , FieldType(struct_type_t::STRUCT_TYPE_UINT16)
+    ),
+    define_description(
+          FieldName("flags=descending/not_null")
+        , FieldType(struct_type_t::STRUCT_TYPE_BITS32)
+    ),
+    define_description(
+          FieldName("function")
+        , FieldType(struct_type_t::STRUCT_TYPE_BUFFER32)
     ),
     end_descriptions()
 };
@@ -138,9 +156,13 @@ struct_description_t g_table_secondary_index[] =
         , FieldType(struct_type_t::STRUCT_TYPE_BITS32)
     ),
     define_description(
-          FieldName("columns")
+          FieldName("sort_columns")
         , FieldType(struct_type_t::STRUCT_TYPE_ARRAY16)
-        , FieldSubDescription(g_table_column_reference)
+        , FieldSubDescription(g_sort_column)
+    ),
+    define_description(
+          FieldName("filter")
+        , FieldType(struct_type_t::STRUCT_TYPE_BUFFER32)
     ),
     end_descriptions()
 };
@@ -177,7 +199,7 @@ struct_description_t g_table_description[] =
     define_description(
           FieldName("row_key")
         , FieldType(struct_type_t::STRUCT_TYPE_ARRAY16)
-        , FieldSubDescription(g_table_column_reference)
+        , FieldSubDescription(g_column_reference)
     ),
     define_description(
           FieldName("secondary_indexes")
@@ -532,7 +554,15 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
         }
         else if(child->tag_name() == "validation")
         {
-            f_validation = compile_script(child->text());
+            std::string const code(child->text());
+            if(!code.empty())
+            {
+                f_validation = compile_script(code);
+            }
+            else
+            {
+                f_validation.clear();
+            }
         }
         else
         {
@@ -758,6 +788,206 @@ buffer_t schema_column::validation() const
 
 
 
+void schema_sort_column::from_xml(xml_node::pointer_t sc)
+{
+    f_column_name = sc->attribute("name");
+    if(f_column_name.empty())
+    {
+        throw invalid_xml(
+                  "Sort column in a secondary index must have a name attribute.");
+    }
+
+    std::string const direction(sc->attribute("direction"));
+    if(direction == "desc"
+    || direction == "descending")
+    {
+        f_flags |= SCHEMA_SORT_COLUMN_DESCENDING;
+    }
+    else
+    {
+        f_flags &= ~SCHEMA_SORT_COLUMN_DESCENDING;
+    }
+
+    if(sc->attribute("not-null") == "not-null")
+    {
+        f_flags |= SCHEMA_SORT_COLUMN_NOT_NULL;
+    }
+    else
+    {
+        f_flags &= ~SCHEMA_SORT_COLUMN_NOT_NULL;
+    }
+
+    std::string const code(sc->text());
+    if(!code.empty())
+    {
+        f_function = compile_script(code);
+    }
+    else
+    {
+        f_function.clear();
+    }
+}
+
+
+compare_t schema_sort_column::compare(schema_sort_column const & rhs) const
+{
+    compare_t result(compare_t::COMPARE_SCHEMA_EQUAL);
+
+    // ignore those, it doesn't get saved, the binary version has an empty
+    // name (you can get the name using the column identifier instead
+    //if(f_column_name != rhs.f_column_name)
+    //{
+    //    return compare_t::COMPARE_SCHEMA_DIFFER;
+    //}
+
+    if(f_column_id != rhs.f_column_id)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_flags != rhs.f_flags)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_function != rhs.f_function)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    return result;
+}
+
+
+std::string schema_sort_column::get_column_name() const
+{
+    return f_column_name;
+}
+
+
+column_id_t schema_sort_column::get_column_id() const
+{
+    return f_column_id;
+}
+
+
+void schema_sort_column::set_column_id(column_id_t column_id)
+{
+    f_column_id = column_id;
+}
+
+
+flag32_t schema_sort_column::get_flags() const
+{
+    return f_flags;
+}
+
+
+void schema_sort_column::set_flags(flag32_t flags)
+{
+    f_flags = flags;
+}
+
+
+bool schema_sort_column::is_ascending() const
+{
+    return (f_flags & SCHEMA_SORT_COLUMN_DESCENDING) == 0;
+}
+
+
+bool schema_sort_column::accept_null_columns() const
+{
+    return (f_flags & SCHEMA_SORT_COLUMN_NOT_NULL) == 0;
+}
+
+
+buffer_t schema_sort_column::get_function() const
+{
+    return f_function;
+}
+
+
+void schema_sort_column::set_function(buffer_t const & function)
+{
+    f_function = function;
+}
+
+
+
+
+
+
+void schema_secondary_index::from_xml(xml_node::pointer_t si)
+{
+    f_index_name = si->attribute("name");
+
+    std::string const distributed(si->attribute("distributed"));
+    if(distributed.empty() || distributed == "distributed")
+    {
+        f_flags |= SECONDARY_INDEX_FLAG_DISTRIBUTED;
+    }
+    else if(distributed == "one-instance")
+    {
+        f_flags &= ~SECONDARY_INDEX_FLAG_DISTRIBUTED;
+    }
+    else
+    {
+        SNAP_LOG_WARNING
+            << "Unknown distributed attribute value \""
+            << distributed
+            << "\" within a <secondary-index> tag ignored."
+            << SNAP_LOG_SEND;
+
+        // use the default when invalid
+        //
+        f_flags |= SECONDARY_INDEX_FLAG_DISTRIBUTED;
+    }
+
+    for(auto child(si->first_child());
+        child != nullptr;
+        child = child->next())
+    {
+        if(child->tag_name() == "order")
+        {
+            for(auto column_names(child->first_child());
+                column_names != nullptr;
+                column_names = column_names->next())
+            {
+                if(column_names->tag_name() == "column-name")
+                {
+                    schema_sort_column::pointer_t sort_column(std::make_shared<schema_sort_column>());
+                    sort_column->from_xml(column_names);
+                    f_sort_columns.push_back(sort_column); // vector because these are sorted by user
+
+                    //std::string const name(sort_column->get_name());
+                    //if(f_columns_by_name.find(name()) != f_columns_by_name.end())
+                    //{
+                    //    throw invalid_xml(
+                    //              "Column \""
+                    //            + c->name()
+                    //            + "\" not found in index \"");
+                    //            + f_index_name
+                    //            + "\"."
+                    //}
+                }
+            }
+        }
+        else if(child->tag_name() == "filter")
+        {
+            std::string const code(child->text());
+            if(!code.empty())
+            {
+                f_filter = compile_script(code);
+            }
+            else
+            {
+                f_filter.clear();
+            }
+        }
+    }
+}
+
+
 compare_t schema_secondary_index::compare(schema_secondary_index const & rhs) const
 {
     compare_t result(compare_t::COMPARE_SCHEMA_EQUAL);
@@ -774,7 +1004,27 @@ compare_t schema_secondary_index::compare(schema_secondary_index const & rhs) co
                 + "\".");
     }
 
-    if(f_column_ids != rhs.f_column_ids)
+    size_t const lhs_max(get_column_count());
+    size_t const rhs_max(rhs.get_column_count());
+    if(lhs_max != rhs_max)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    for(size_t idx(0); idx < lhs_max; ++idx)
+    {
+        compare_t const sc_compare(f_sort_columns[idx]->compare(*rhs.f_sort_columns[idx]));
+        if(sc_compare == compare_t::COMPARE_SCHEMA_DIFFER)
+        {
+            return compare_t::COMPARE_SCHEMA_DIFFER;
+        }
+        else if(sc_compare == compare_t::COMPARE_SCHEMA_UPDATE)
+        {
+            result = compare_t::COMPARE_SCHEMA_UPDATE;
+        }
+    }
+
+    if(f_filter != rhs.f_filter)
     {
         return compare_t::COMPARE_SCHEMA_DIFFER;
     }
@@ -800,6 +1050,18 @@ void schema_secondary_index::set_index_name(std::string const & index_name)
 }
 
 
+flag32_t schema_secondary_index::get_flags() const
+{
+    return f_flags;
+}
+
+
+void schema_secondary_index::set_flags(flag32_t flags)
+{
+    f_flags = flags;
+}
+
+
 bool schema_secondary_index::get_distributed_index() const
 {
     return (f_flags & SECONDARY_INDEX_FLAG_DISTRIBUTED) != 0;
@@ -819,30 +1081,46 @@ void schema_secondary_index::set_distributed_index(bool distributed)
 }
 
 
-size_t schema_secondary_index::get_column_count()
+size_t schema_secondary_index::get_column_count() const
 {
-    return f_column_ids.size();
+    return f_sort_columns.size();
 }
 
 
-column_id_t schema_secondary_index::get_column_id(int idx)
+schema_sort_column::pointer_t schema_secondary_index::get_sort_column(int idx) const
 {
-    if(static_cast<size_t>(idx) >= f_column_ids.size())
+    if(static_cast<size_t>(idx) >= f_sort_columns.size())
     {
         throw snapdatabase_out_of_range(
                   "Index ("
                 + std::to_string(idx)
-                + ") is too large to pick a column identifier.");
+                + ") is too large to pick a sort column from secondary index \""
+                + f_index_name
+                + "\".");
     }
 
-    return f_column_ids[idx];
+    return f_sort_columns[idx];
 }
 
 
-void schema_secondary_index::add_column_id(column_id_t id)
+void schema_secondary_index::add_sort_column(schema_sort_column::pointer_t sc)
 {
-    f_column_ids.push_back(id);
+    f_sort_columns.push_back(sc);
 }
+
+
+buffer_t schema_secondary_index::get_filter() const
+{
+    return f_filter;
+}
+
+
+void schema_secondary_index::set_filter(buffer_t const & filter)
+{
+    f_filter = filter;
+}
+
+
 
 
 
@@ -856,6 +1134,12 @@ void schema_secondary_index::add_column_id(column_id_t id)
 schema_table::schema_table()
 {
     f_block_size = dbfile::get_system_page_size();
+}
+
+
+void schema_table::set_complex_types(schema_complex_type::map_pointer_t complex_types)
+{
+    f_complex_types = complex_types;
 }
 
 
@@ -952,30 +1236,6 @@ void schema_table::from_xml(xml_node::pointer_t x)
         else if(child->tag_name() == "secondary-index")
         {
             secondary_indexes.push_back(child);
-        }
-        else if(child->tag_name() == "complex-type")
-        {
-            schema_complex_type::pointer_t ct(std::make_shared<schema_complex_type>(child));
-            if(name_to_struct_type(ct->name()) != INVALID_STRUCT_TYPE)
-            {
-                SNAP_LOG_WARNING
-                    << "The name of a complex type cannot be the name of a system type. \""
-                    << ct->name()
-                    << "\" is not acceptable."
-                    << SNAP_LOG_SEND;
-            }
-            else if(f_complex_types.find(ct->name()) != f_complex_types.end())
-            {
-                SNAP_LOG_WARNING
-                    << "The complex type named \""
-                    << ct->name()
-                    << "\" is defined twice. Only the very first intance is used."
-                    << SNAP_LOG_SEND;
-            }
-            else
-            {
-                f_complex_types[ct->name()] = ct;
-            }
         }
         else
         {
@@ -1100,13 +1360,17 @@ void schema_table::from_xml(xml_node::pointer_t x)
         f_columns_by_name[c->name()] = c;
     }
 
+    // Note: we need all the columns and eventually the schema from the
+    //       existing table before we can assign the column identifiers;
+    //       see the assign_column_ids() function for details
+    //
     for(auto const & child : schemata)
     {
         for(auto column(child->first_child());
             column != nullptr;
             column = column->next())
         {
-            auto c(std::make_shared<schema_column>(shared_from_this(), column)); // TBD: + col_id?
+            auto c(std::make_shared<schema_column>(shared_from_this(), column));
             if(f_columns_by_name.find(c->name()) != f_columns_by_name.end())
             {
                 throw invalid_xml(
@@ -1117,9 +1381,7 @@ void schema_table::from_xml(xml_node::pointer_t x)
                         + "\" defined twice.");
             }
 
-            //f_columns_by_id[c->column_id()] = c;
             f_columns_by_name[c->name()] = c;
-            //++col_id; -- TBD
         }
     }
 
@@ -1129,76 +1391,14 @@ void schema_table::from_xml(xml_node::pointer_t x)
     // by commas
     //
     std::string row_key_name(x->attribute("row-key"));
-
-    advgetopt::string_list_t row_key_names;
-    advgetopt::split_string(row_key_name, row_key_names, {","});
-
-    for(auto const & n : row_key_names)
-    {
-        schema_column::pointer_t c(column(n));
-        if(c == nullptr)
-        {
-            throw invalid_xml(
-                      "A column referenced in the row-key attribute of table \""
-                    + f_name
-                    + "\" must exist. We could not find \""
-                    + f_name
-                    + "."
-                    + n
-                    + "\".");
-        }
-        f_row_key.push_back(c->column_id());
-    }
+    advgetopt::split_string(row_key_name, f_row_key_names, {","});
 
     // 4. the secondary indexes are transformed to array of columns
     //
     for(auto const & si : secondary_indexes)
     {
         schema_secondary_index::pointer_t index(std::make_shared<schema_secondary_index>());
-        index->set_index_name(si->attribute("name"));
-
-        std::string const distributed(si->attribute("distributed"));
-        if(distributed.empty() || distributed == "distributed")
-        {
-            index->set_distributed_index(true);
-        }
-        else if(distributed == "one-instance")
-        {
-            index->set_distributed_index(false);
-        }
-        else
-        {
-            SNAP_LOG_WARNING
-                << "Unknown distributed attribute value \""
-                << distributed
-                << "\" within a <secondary-index> tag ignored."
-                << SNAP_LOG_SEND;
-        }
-
-        std::string const columns(si->text());
-        advgetopt::string_list_t column_names;
-        advgetopt::split_string(
-                  columns
-                , column_names
-                , {","});
-
-        for(auto const & n : column_names)
-        {
-            schema_column::pointer_t c(column(n));
-            if(c == nullptr)
-            {
-                throw invalid_xml(
-                          "A column referenced in the secondary-index of table \""
-                        + f_name
-                        + "\" must exist. We could not find \""
-                        + f_name
-                        + "."
-                        + n
-                        + "\".");
-            }
-            index->add_column_id(c->column_id());
-        }
-
+        index->from_xml(si);
         f_secondary_indexes[index->get_index_name()] = index;
     }
 }
@@ -1349,8 +1549,6 @@ compare_t schema_table::compare(schema_table const & rhs) const
         }
     }
 
-    //f_complex_types -- no need to compare those, they are used and forgotten
-
     //f_columns_by_id -- we only have to compare one map
     //                   and at this point f_columns_by_id is expected to be
     //                   empty still
@@ -1436,13 +1634,20 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
             schema_secondary_index::pointer_t secondary_index(std::make_shared<schema_secondary_index>());
 
             secondary_index->set_index_name((*field)[idx]->get_string("name"));
+            secondary_index->set_flags((*field)[idx]->get_uinteger("flags"));
 
-            auto const columns_field((*field)[idx]->get_field("columns"));
+            auto const columns_field((*field)[idx]->get_field("sort_columns"));
             auto const columns_max(columns_field->size());
             for(std::remove_const<decltype(columns_max)>::type j(0); j < columns_max; ++j)
             {
-                secondary_index->add_column_id((*field)[idx]->get_uinteger("column_id"));
+                schema_sort_column::pointer_t sc(std::make_shared<schema_sort_column>());
+                sc->set_column_id((*columns_field)[j]->get_uinteger("column_id"));
+                sc->set_flags((*columns_field)[j]->get_uinteger("flags"));
+                sc->set_function((*columns_field)[j]->get_buffer("function"));
+                secondary_index->add_sort_column(sc);
             }
+
+            secondary_index->set_filter((*field)[idx]->get_buffer("filter"));
 
             f_secondary_indexes[secondary_index->get_index_name()] = secondary_index;
         }
@@ -1477,47 +1682,38 @@ virtual_buffer::pointer_t schema_table::to_binary() const
     s->set_uinteger("added_on", f_added_on);
     s->set_string("name", f_name);
     s->set_uinteger("flags", f_flags);
+    s->set_uinteger("block_size", f_block_size);
     s->set_uinteger("model", static_cast<uint8_t>(f_model));
 
     {
-        structure::vector_t v;
         auto const max(f_row_key.size());
         for(std::remove_const<decltype(max)>::type i(0); i < max; ++i)
         {
-            structure::pointer_t column_id_structure(std::make_shared<structure>(g_table_column_reference));
-            column_id_structure->init_buffer();
+            structure::pointer_t column_id_structure(s->new_array_item("row_key"));
             column_id_structure->set_uinteger("column_id", f_row_key[i]);
-            v.push_back(column_id_structure);
         }
-        s->set_array("row_key", v);
     }
 
     {
-        structure::vector_t v;
         for(auto it(f_secondary_indexes.cbegin());
                  it != f_secondary_indexes.cend();
                  ++it)
         {
-            structure::pointer_t secondary_index_structure(std::make_shared<structure>(g_table_secondary_index));
-            secondary_index_structure->init_buffer();
+            structure::pointer_t secondary_index_structure(s->new_array_item("secondary_indexes"));
             secondary_index_structure->set_string("name", it->second->get_index_name());
+            secondary_index_structure->set_uinteger("flags", it->second->get_flags());
+            secondary_index_structure->set_buffer("filter", it->second->get_filter());
 
-            structure::vector_t c;
             auto const jmax(it->second->get_column_count());
             for(std::remove_const<decltype(jmax)>::type j(0); j < jmax; ++j)
             {
-                structure::pointer_t column_id_structure(std::make_shared<structure>(g_table_column_reference));
-                column_id_structure->init_buffer();
-                column_id_structure->set_uinteger("column_id", it->second->get_column_id(j));
-                c.push_back(column_id_structure);
+                structure::pointer_t sort_column_structure(secondary_index_structure->new_array_item("sort_columns"));
+                schema_sort_column::pointer_t sc(it->second->get_sort_column(j));
+                sort_column_structure->set_uinteger("column_id", sc->get_column_id());
+                sort_column_structure->set_uinteger("flags", sc->get_flags());
+                sort_column_structure->set_buffer("function", sc->get_function());
             }
-
-            secondary_index_structure->set_array("columns", c);
-
-            v.push_back(secondary_index_structure);
         }
-
-        s->set_array("secondary_indexes", v);
     }
 
     {
@@ -1587,19 +1783,128 @@ column_ids_t schema_table::row_key() const
 }
 
 
-void schema_table::assign_column_ids()
+void schema_table::assign_column_ids(schema_table::pointer_t existing_schema)
 {
     if(!f_columns_by_id.empty())
     {
         return;
     }
 
+    // if we have an existing schema, the same columns must be given the
+    // exact same identifier or else it would all break
+    //
+    if(existing_schema != nullptr)
+    {
+        for(auto c : f_columns_by_name)
+        {
+            if(c.second->column_id() != 0)
+            {
+                throw snapdatabase_logic_error(
+                          "Column \""
+                        + f_name
+                        + "."
+                        + c.second->name()
+                        + "\" was already given an identifier: "
+                        + std::to_string(static_cast<int>(c.second->column_id()))
+                        + ".");
+            }
+
+            schema_column::pointer_t e(existing_schema->column(c.first));
+            if(e != nullptr)
+            {
+                // keep the same identifier as in the source schema
+                //
+                c.second->set_column_id(e->column_id());
+                f_columns_by_id[e->column_id()] = c.second;
+            }
+        }
+    }
+
+    // in case new columns were added, we want to give them a new identifier
+    // also in case old columns were removed, we can reuse their identifier
+    //
+    // Note: that works because each row has a reference to to the schema
+    //       that was used when we created it and that means the column
+    //       identifiers will be attached to the correct column
+    //
     column_id_t id(1);
     for(auto c : f_columns_by_name)
     {
+        if(c.second->column_id() != 0)
+        {
+            continue;
+        }
+
+        while(f_columns_by_id.find(id) != f_columns_by_id.end())
+        {
+            ++id;
+        }
+
         c.second->set_column_id(id);
         f_columns_by_id[id] = c.second;
         ++id;
+    }
+
+    // the identifiers can now be used to define the row keys
+    //
+    for(auto const & n : f_row_key_names)
+    {
+        schema_column::pointer_t c(column(n));
+        if(c == nullptr)
+        {
+            throw invalid_xml(
+                      "A column referenced in the row-key attribute of table \""
+                    + f_name
+                    + "\" must exist. We could not find \""
+                    + f_name
+                    + "."
+                    + n
+                    + "\".");
+        }
+        if(c->column_id() == 0)
+        {
+            throw snapdatabase_logic_error(
+                      "Somehow column \""
+                    + f_name
+                    + "."
+                    + n
+                    + "\" still has no identifier.");
+        }
+        f_row_key.push_back(c->column_id());
+    }
+
+    // and the secondary indexes can also be defined
+    //
+    for(auto const & index : f_secondary_indexes)
+    {
+        size_t const max(index.second->get_column_count());
+        for(size_t idx(0); idx < max; ++idx)
+        {
+            schema_sort_column::pointer_t sc(index.second->get_sort_column(idx));
+            std::string const n(sc->get_column_name());
+            schema_column::pointer_t c(column(n));
+            if(c == nullptr)
+            {
+                throw invalid_xml(
+                          "A column referenced in the secondary-index of table \""
+                        + f_name
+                        + "\" must exist. We could not find \""
+                        + f_name
+                        + "."
+                        + n
+                        + "\".");
+            }
+            if(c->column_id() == 0)
+            {
+                throw snapdatabase_logic_error(
+                          "Somehow column \""
+                        + f_name
+                        + "."
+                        + n
+                        + "\" still has no identifier.");
+            }
+            sc->set_column_id(c->column_id());
+        }
     }
 }
 
@@ -1652,8 +1957,8 @@ schema_secondary_index::pointer_t schema_table::secondary_index(std::string cons
 
 schema_complex_type::pointer_t schema_table::complex_type(std::string const & name) const
 {
-    auto const & it(f_complex_types.find(name));
-    if(it != f_complex_types.end())
+    auto const & it(f_complex_types->find(name));
+    if(it != f_complex_types->end())
     {
         return it->second;
     }
