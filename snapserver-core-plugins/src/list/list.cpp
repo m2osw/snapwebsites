@@ -3066,7 +3066,7 @@ int list::send_data_to_journal()
  * \li descendants -- children, children of children, etc. of the list itself
  * \li descendants=path -- descendants starting at the specified path
  * \li public -- use the list of public pages (a shortcut for
- *               type=types/taxonomy/system/content-types/page/public
+ *               type=types/taxonomy/system/content-types/page/public)
  * \li type=cpath -- pages of that the specified type as a canonicalized path
  * \li hand-picked=path-list -- a hand defined list of paths that represent
  *                              the pages to put in the list, the cpaths are
