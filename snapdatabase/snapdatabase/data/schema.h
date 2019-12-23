@@ -112,9 +112,13 @@ constexpr flag32_t                          COLUMN_REVISION_TYPE_REVISION       
 constexpr flag32_t                          SCHEMA_SORT_COLUMN_DESCENDING       = (1LL << 0);
 constexpr flag32_t                          SCHEMA_SORT_COLUMN_NOT_NULL         = (1LL << 1);
 
+constexpr std::uint32_t                     SCHEMA_SORT_COLUMN_DEFAULT_LENGTH = 256UL;
+
 
 // SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
 constexpr flag32_t                          SECONDARY_INDEX_FLAG_DISTRIBUTED    = (1LL << 0);
+
+
 
 
 
@@ -229,6 +233,8 @@ public:
     void                                    set_flags(flag32_t flags);
     bool                                    is_ascending() const;
     bool                                    accept_null_columns() const;
+    std::uint32_t                           get_length() const;
+    void                                    set_length(std::uint32_t length);
     buffer_t                                get_function() const;
     void                                    set_function(buffer_t const & function);
 
@@ -236,6 +242,7 @@ private:
     std::string                             f_column_name = std::string();
     column_id_t                             f_column_id = column_id_t();
     flag32_t                                f_flags = 0;
+    std::uint32_t                           f_length = SCHEMA_SORT_COLUMN_DEFAULT_LENGTH;
     buffer_t                                f_function = buffer_t();
 };
 
@@ -314,6 +321,9 @@ public:
     std::uint32_t                           block_size() const;
 
 private:
+    void                                    process_columns(xml_node::pointer_t column_definitions);
+    void                                    process_secondary_indexes(xml_node::deque_t secondary_indexes);
+
     schema_complex_type::map_pointer_t      f_complex_types = schema_complex_type::map_pointer_t();
     version_t                               f_version = version_t();
     time_t                                  f_added_on = time(nullptr);

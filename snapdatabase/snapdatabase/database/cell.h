@@ -54,29 +54,32 @@ public:
     bool                                        is_void() const;
     void                                        set_void();
 
-    int8_t                                      get_int8() const;
-    void                                        set_int8(int8_t value);
+    std::uint64_t                               get_oid() const;
+    void                                        set_oid(std::uint64_t value);
 
-    uint8_t                                     get_uint8() const;
-    void                                        set_uint8(uint8_t value);
+    std::int8_t                                 get_int8() const;
+    void                                        set_int8(std::int8_t value);
 
-    int16_t                                     get_int16() const;
-    void                                        set_int16(int16_t value);
+    std::uint8_t                                get_uint8() const;
+    void                                        set_uint8(std::uint8_t value);
 
-    uint16_t                                    get_uint16() const;
-    void                                        set_uint16(uint16_t value);
+    std::int16_t                                get_int16() const;
+    void                                        set_int16(std::int16_t value);
 
-    int32_t                                     get_int32() const;
-    void                                        set_int32(int32_t value);
+    std::uint16_t                               get_uint16() const;
+    void                                        set_uint16(std::uint16_t value);
 
-    uint32_t                                    get_uint32() const;
-    void                                        set_uint32(uint32_t value);
+    std::int32_t                                get_int32() const;
+    void                                        set_int32(std::int32_t value);
 
-    int64_t                                     get_int64() const;
-    void                                        set_int64(int64_t value);
+    std::uint32_t                               get_uint32() const;
+    void                                        set_uint32(std::uint32_t value);
 
-    uint64_t                                    get_uint64() const;
-    void                                        set_uint64(uint64_t value);
+    std::int64_t                                get_int64() const;
+    void                                        set_int64(std::int64_t value);
+
+    std::uint64_t                               get_uint64() const;
+    void                                        set_uint64(std::uint64_t value);
 
     int512_t                                    get_int128() const;
     void                                        set_int128(int512_t value);
@@ -96,6 +99,15 @@ public:
     uint512_t                                   get_uint512() const;
     void                                        set_uint512(uint512_t value);
 
+    std::uint64_t                               get_time() const;
+    void                                        set_time(std::uint64_t value);
+
+    std::uint64_t                               get_time_ms() const;
+    void                                        set_time_ms(std::uint64_t value);
+
+    std::uint64_t                               get_time_us() const;
+    void                                        set_time_us(std::uint64_t value);
+
     float                                       get_float32() const;
     void                                        set_float32(float value);
 
@@ -112,6 +124,10 @@ public:
     void                                        set_string(std::string const & value);
 
 private:
+    void                                        set_integer(std::int64_t value);
+    void                                        set_uinteger(std::uint64_t value);
+    void                                        verify_cell_type(std::vector<struct_type_t> const & expected) const;
+
     schema_column::pointer_t                    f_schema_column = schema_column::pointer_t();
     uint512_t                                   f_integer = uint512_t();
     long double                                 f_float_value = 0.0L;

@@ -160,7 +160,20 @@ void context_impl::initialize()
     {
         std::string const path(f_opts->get_string("table_schema_path", idx));
 
-        snap::glob_to_list<std::deque<std::string>> list;
+        // WARNING: we use an std::set<> for the list of filenames so that
+        //          way they get sorted in a way which will not change
+        //          between runs; we ignore some definitions, such as a
+        //          second definition of a column, and by making sure we
+        //          always load things in the same order, we limit the number
+        //          of potential problems
+        //
+        //          note that if you add/remove columns with the same name
+        //          then the order will change and the existing tables may
+        //          not be 100% compatible with the new data (the system
+        //          will automatically convert the data, but you may have
+        //          surprises...)
+        //
+        snap::glob_to_list<std::set<std::string>> list;
         if(!list.read_path<
                   snap::glob_to_list_flag_t::GLOB_FLAG_ONLY_DIRECTORIES
                 , snap::glob_to_list_flag_t::GLOB_FLAG_TILDE>(path + "/*.xml"))

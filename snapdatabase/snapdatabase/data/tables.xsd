@@ -233,10 +233,19 @@
     </xs:annotation>
     <xs:restriction base="xs:string">
       <!-- text -->
-      <xs:enumeration value="string"/>
+      <xs:enumeration value="string"/>  <!-- internally "string32" -->
 
       <!-- blobs -->
-      <xs:enumeration value="binary"/>  <!-- was "hexarray" -->
+      <xs:enumeration value="binary"/>  <!-- internally "buffer32" -->
+
+      <!-- flags -->
+      <xs:enumeration value="bits8"/>
+      <xs:enumeration value="bits16"/>
+      <xs:enumeration value="bits32"/>
+      <xs:enumeration value="bits64"/>
+      <xs:enumeration value="bits128"/>
+      <xs:enumeration value="bits256"/>
+      <xs:enumeration value="bits512"/>
 
       <!-- integers -->
       <xs:enumeration value="int8"/>
@@ -247,17 +256,27 @@
       <xs:enumeration value="uint32"/>
       <xs:enumeration value="int64"/>
       <xs:enumeration value="uint64"/>
+      <xs:enumeration value="int128"/>
+      <xs:enumeration value="uint128"/>
+      <xs:enumeration value="int256"/>
+      <xs:enumeration value="uint256"/>
+      <xs:enumeration value="int512"/>
+      <xs:enumeration value="uint512"/>
+
+      <xs:enumeration value="oid"/>
 
       <!-- floating point -->
       <xs:enumeration value="float32"/>
       <xs:enumeration value="float64"/>
+      <xs:enumeration value="float128"/>
 
       <!-- date/time -->
       <xs:enumeration value="time_microseconds"/>
+      <xs:enumeration value="time_milliseconds"/>
       <xs:enumeration value="time_seconds"/>
 
-      <!-- specialized -->
-      <xs:enumeration value="enumaration"/>
+      <!-- specialized TBD -->
+      <!-- xs:enumeration value="enumaration"/ -->
 
       <!-- CT_secure_value == -1 (not checked), 0 (not secure), 1 (secure) -->
       <!-- CT_status_value == 0 (unknown), 1 (create), 2 (normal), 3 (hidden), 4 (moved), 5 (deleted) -->
@@ -336,6 +355,7 @@
     </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="not-null"/>
+      <xs:enumeration value="null"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -468,6 +488,7 @@
 
   <xs:element name="block-size" type="xs:integer"/>
   <xs:element name="description" type="html"/>
+  <xs:element name="external" type="xs:string"/> <!-- TODO: add support for float + unit -->
   <xs:element name="default" type="xs:string"/>
   <xs:element name="min-value" type="xs:string"/>
   <xs:element name="max-value" type="xs:string"/>
@@ -479,6 +500,7 @@
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="description" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="external" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="default" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="min-value" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="max-value" minOccurs="0" maxOccurs="1"/>
@@ -504,18 +526,30 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- the column name is defined in the attribute, the text inside
-       the tag is a script (optional) to transform the column to
-       a different value to be used in the ordering process
-       (i.e. instead of sorting by 'c', we sort by 'f(c)'; the cool
-       part is that you can use any column in the function) -->
   <xs:element name="column-name">
+    <xs:annotation>
+      <xs:documentation>
+         The column name is defined as an attribute, the text inside
+         the tag is a script (optional) to transform the column to
+         a different value to be used in the ordering process
+         (i.e. instead of sorting by 'c', we sort by 'f(c)'; the cool
+         part here is that you the function has access to all the columns).
+
+         The length attribute is used to limit the size of the column
+         in the index. Pretty much all database systems limit the size
+         of a text column to around 1024 characters or less. Since we
+         accept buffers of any size, it is quite important that we also
+         have a limit. Our default is 256 because it's already way more
+         than required 99% of the time.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:string">
           <xs:attribute name="name" type="name" use="required"/>
           <xs:attribute name="direction" type="direction"/>
           <xs:attribute name="not-null" type="not-null"/>
+          <xs:attribute name="length" type="xs:integer"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -552,6 +586,7 @@
       </xs:choice>
       <xs:attribute name="name" type="name" use="required"/>
       <xs:attribute name="model" type="model"/> <!-- default is "data" -->
+      <xs:attribute name="row-key" type="comma-separated-names" use="required"/>
       <xs:attribute name="drop" type="drop"/>
       <xs:attribute name="temporary" type="temporary"/>
       <xs:attribute name="sparse" type="sparse"/>
@@ -562,8 +597,8 @@
   <xs:element name="table-extension">
     <xs:complexType>
       <xs:choice minOccurs="1" maxOccurs="unbounded">
-        <xs:element ref="description"/>
         <xs:element ref="schema"/>
+        <xs:element ref="secondary-index"/>
       </xs:choice>
       <xs:attribute name="name" type="name" use="required"/>
     </xs:complexType>
@@ -601,7 +636,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="keyspace">
+  <xs:element name="context">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="table" minOccurs="0" maxOccurs="unbounded"/>

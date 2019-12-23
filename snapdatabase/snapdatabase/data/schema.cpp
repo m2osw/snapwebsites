@@ -138,6 +138,10 @@ struct_description_t g_sort_column[] =
         , FieldType(struct_type_t::STRUCT_TYPE_BITS32)
     ),
     define_description(
+          FieldName("length")
+        , FieldType(struct_type_t::STRUCT_TYPE_UINT32)
+    ),
+    define_description(
           FieldName("function")
         , FieldType(struct_type_t::STRUCT_TYPE_BUFFER32)
     ),
@@ -376,7 +380,7 @@ schema_complex_type::schema_complex_type(xml_node::pointer_t x)
             if(last_type == struct_type_t::STRUCT_TYPE_END)
             {
                 throw invalid_xml(
-                          "The complex type was already ended with an explicit END. You can have additional types after that. Yet \""
+                          "The complex type was already ended with an explicit END. You cannot have additional types after that. Yet \""
                         + child->text()
                         + "\" was found after the END.");
             }
@@ -826,6 +830,26 @@ void schema_sort_column::from_xml(xml_node::pointer_t sc)
     {
         f_function.clear();
     }
+
+    std::string const length(sc->attribute("length"));
+    if(!length.empty())
+    {
+        f_length = convert_to_uint(length, 32);
+        if(f_length <= 0)
+        {
+            SNAP_LOG_WARNING
+                << "The length of a sort column must be at least 1. "
+                << f_length
+                << "\" is not acceptable."
+                << SNAP_LOG_SEND;
+
+            f_length = SCHEMA_SORT_COLUMN_DEFAULT_LENGTH;
+        }
+    }
+    else
+    {
+        f_length = SCHEMA_SORT_COLUMN_DEFAULT_LENGTH;
+    }
 }
 
 
@@ -846,6 +870,11 @@ compare_t schema_sort_column::compare(schema_sort_column const & rhs) const
     }
 
     if(f_flags != rhs.f_flags)
+    {
+        return compare_t::COMPARE_SCHEMA_DIFFER;
+    }
+
+    if(f_length != rhs.f_length)
     {
         return compare_t::COMPARE_SCHEMA_DIFFER;
     }
@@ -898,6 +927,18 @@ bool schema_sort_column::is_ascending() const
 bool schema_sort_column::accept_null_columns() const
 {
     return (f_flags & SCHEMA_SORT_COLUMN_NOT_NULL) == 0;
+}
+
+
+std::uint32_t schema_sort_column::get_length() const
+{
+    return f_length;
+}
+
+
+void schema_sort_column::set_length(std::uint32_t length)
+{
+    f_length = length;
 }
 
 
@@ -1196,7 +1237,10 @@ void schema_table::from_xml(xml_node::pointer_t x)
 
     f_model = name_to_model(x->attribute("model"));
 
-    // 1. fully parse the complex types on the first iteration
+    // 1. look for block-size, description, schema, and secondary-index tags
+    //
+    // here we only process the block-size and description
+    // the other tags, we just keep a list of them and manage them later
     //
     for(auto child(x->first_child()); child != nullptr; child = child->next())
     {
@@ -1251,19 +1295,28 @@ void schema_table::from_xml(xml_node::pointer_t x)
         }
     }
 
-    // 2. add system columns and parse user defined columns
+    // 2. add system columns
     //
-    //column_id_t col_id(1); -- TBD
 
     // object identifier -- to place the rows in our indirect index
     {
         auto c(std::make_shared<schema_column>(
                       shared_from_this()
                     , "_oid"
-                    , struct_type_t::STRUCT_TYPE_UINT64
+                    , struct_type_t::STRUCT_TYPE_OID
                     , COLUMN_FLAG_REQUIRED | COLUMN_FLAG_SYSTEM));
 
-        //f_columns_by_id[c->column_id()] = c;
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // schema version -- to know which schema to use to read the data
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_schema_version"
+                    , struct_type_t::STRUCT_TYPE_VERSION
+                    , COLUMN_FLAG_REQUIRED | COLUMN_FLAG_SYSTEM));
+
         f_columns_by_name[c->name()] = c;
     }
 
@@ -1275,7 +1328,6 @@ void schema_table::from_xml(xml_node::pointer_t x)
                     , struct_type_t::STRUCT_TYPE_USTIME
                     , COLUMN_FLAG_SYSTEM));
 
-        //f_columns_by_id[c->column_id()] = c;
         f_columns_by_name[c->name()] = c;
     }
 
@@ -1287,7 +1339,6 @@ void schema_table::from_xml(xml_node::pointer_t x)
                     , struct_type_t::STRUCT_TYPE_USTIME
                     , COLUMN_FLAG_REQUIRED | COLUMN_FLAG_SYSTEM));
 
-        //f_columns_by_id[c->column_id()] = c;
         f_columns_by_name[c->name()] = c;
     }
 
@@ -1299,7 +1350,6 @@ void schema_table::from_xml(xml_node::pointer_t x)
                     , struct_type_t::STRUCT_TYPE_USTIME
                     , COLUMN_FLAG_SYSTEM));
 
-        //f_columns_by_id[c->column_id()] = c;
         f_columns_by_name[c->name()] = c;
     }
 
@@ -1311,7 +1361,6 @@ void schema_table::from_xml(xml_node::pointer_t x)
                     , struct_type_t::STRUCT_TYPE_UINT64
                     , COLUMN_FLAG_SYSTEM));
 
-        //f_columns_by_id[c->column_id()] = c;
         f_columns_by_name[c->name()] = c;
     }
 
@@ -1323,7 +1372,6 @@ void schema_table::from_xml(xml_node::pointer_t x)
                     , struct_type_t::STRUCT_TYPE_UINT64
                     , COLUMN_FLAG_SYSTEM));
 
-        //f_columns_by_id[c->column_id()] = c;
         f_columns_by_name[c->name()] = c;
     }
 
@@ -1335,11 +1383,10 @@ void schema_table::from_xml(xml_node::pointer_t x)
                     , struct_type_t::STRUCT_TYPE_UINT64
                     , COLUMN_FLAG_SYSTEM));
 
-        //f_columns_by_id[c->column_id()] = c;
         f_columns_by_name[c->name()] = c;
     }
 
-    // version of this row (TBD TBD TBD)
+    // version of the data in this row (TBD TBD TBD)
     //
     // how this will be implemented is not clear at this point--it will
     // only be for the `content` table; the version itself would not be
@@ -1356,9 +1403,11 @@ void schema_table::from_xml(xml_node::pointer_t x)
                     , struct_type_t::STRUCT_TYPE_VERSION
                     , COLUMN_FLAG_SYSTEM));
 
-        //f_columns_by_id[c->column_id()] = c;
         f_columns_by_name[c->name()] = c;
     }
+
+    // 3. parse user columns
+    //
 
     // Note: we need all the columns and eventually the schema from the
     //       existing table before we can assign the column identifiers;
@@ -1366,26 +1415,10 @@ void schema_table::from_xml(xml_node::pointer_t x)
     //
     for(auto const & child : schemata)
     {
-        for(auto column(child->first_child());
-            column != nullptr;
-            column = column->next())
-        {
-            auto c(std::make_shared<schema_column>(shared_from_this(), column));
-            if(f_columns_by_name.find(c->name()) != f_columns_by_name.end())
-            {
-                throw invalid_xml(
-                          "Column \""
-                        + f_name
-                        + "."
-                        + c->name()
-                        + "\" defined twice.");
-            }
-
-            f_columns_by_name[c->name()] = c;
-        }
+        process_columns(child);
     }
 
-    // 3. the row-key is transformed in an array of column identifiers
+    // 4. the row-key is transformed in an array of column names
     //
     // the parameter in the XML is a string of column names separated
     // by commas
@@ -1393,55 +1426,26 @@ void schema_table::from_xml(xml_node::pointer_t x)
     std::string row_key_name(x->attribute("row-key"));
     advgetopt::split_string(row_key_name, f_row_key_names, {","});
 
-    // 4. the secondary indexes are transformed to array of columns
+    // 5. handle the secondary indexes
     //
-    for(auto const & si : secondary_indexes)
-    {
-        schema_secondary_index::pointer_t index(std::make_shared<schema_secondary_index>());
-        index->from_xml(si);
-        f_secondary_indexes[index->get_index_name()] = index;
-    }
+    process_secondary_indexes(secondary_indexes);
 }
 
 
 void schema_table::load_extension(xml_node::pointer_t e)
 {
-    // determine the largest column identifier, but really this is not
-    // the right way of assigning the ids
-    //
-    column_id_t col_id(0);
-    for(auto const & c : f_columns_by_id)
-    {
-        if(c.second->column_id() > col_id)
-        {
-            col_id = c.second->column_id();
-        }
-    }
-    ++col_id;
+    xml_node::deque_t secondary_indexes;
 
     for(auto child(e->first_child()); child != nullptr; child = child->next())
     {
         if(child->tag_name() == "schema")
         {
-            // TODO: move to sub-function & make sure we do not get duplicates
-            for(auto column(child->first_child());
-                column != nullptr;
-                column = column->next())
-            {
-                auto c(std::make_shared<schema_column>(shared_from_this(), column));
-                f_columns_by_id[c->column_id()] = c;
-                f_columns_by_name[c->name()] = c;
-                ++col_id;
-            }
+            process_columns(child);
         }
-        // TODO: once we have a better handle on column identifiers?
-        //else if(child->tag_name() == "secondary-index")
-        //{
-        //    secondary_index_t si;
-        //    si.f_name = child->attribute("name");
-        //    si.f_columns = child->attribute("columns");
-        //    secondary_indexes.push_back(si);
-        //}
+        else if(child->tag_name() == "secondary-index")
+        {
+            secondary_indexes.push_back(child);
+        }
         else
         {
             // generate an error for unknown tags or ignore?
@@ -1452,6 +1456,42 @@ void schema_table::load_extension(xml_node::pointer_t e)
                 << "\" within a <table-extension> tag ignored."
                 << SNAP_LOG_SEND;
         }
+    }
+
+    process_secondary_indexes(secondary_indexes);
+}
+
+
+void schema_table::process_columns(xml_node::pointer_t column_definitions)
+{
+    for(auto column(column_definitions->first_child());
+        column != nullptr;
+        column = column->next())
+    {
+        auto c(std::make_shared<schema_column>(shared_from_this(), column));
+        if(f_columns_by_name.find(c->name()) != f_columns_by_name.end())
+        {
+            SNAP_LOG_WARNING
+                << "Column \""
+                << f_name
+                << '.'
+                << c->name()
+                << "\" defined twice. Second definition ignored."
+                << SNAP_LOG_SEND;
+            continue;
+        }
+        f_columns_by_name[c->name()] = c;
+    }
+}
+
+
+void schema_table::process_secondary_indexes(xml_node::deque_t secondary_indexes)
+{
+    for(auto const & si : secondary_indexes)
+    {
+        schema_secondary_index::pointer_t index(std::make_shared<schema_secondary_index>());
+        index->from_xml(si);
+        f_secondary_indexes[index->get_index_name()] = index;
     }
 }
 
@@ -1643,6 +1683,7 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
                 schema_sort_column::pointer_t sc(std::make_shared<schema_sort_column>());
                 sc->set_column_id((*columns_field)[j]->get_uinteger("column_id"));
                 sc->set_flags((*columns_field)[j]->get_uinteger("flags"));
+                sc->set_length((*columns_field)[j]->get_uinteger("length"));
                 sc->set_function((*columns_field)[j]->get_buffer("function"));
                 secondary_index->add_sort_column(sc);
             }
@@ -1711,6 +1752,7 @@ virtual_buffer::pointer_t schema_table::to_binary() const
                 schema_sort_column::pointer_t sc(it->second->get_sort_column(j));
                 sort_column_structure->set_uinteger("column_id", sc->get_column_id());
                 sort_column_structure->set_uinteger("flags", sc->get_flags());
+                sort_column_structure->set_uinteger("length", sc->get_length());
                 sort_column_structure->set_buffer("function", sc->get_function());
             }
         }

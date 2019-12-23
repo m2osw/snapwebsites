@@ -129,7 +129,7 @@ std::string setup_context(std::string const & sub_path, std::vector<std::string>
         std::string const verify_table("xmllint --noout --nonet --schema snapdatabase/snapdatabase/data/tables.xsd " + filename);
         std::cout << "running: " << verify_table << std::endl;
         int const r(system(verify_table.c_str()));
-        CATCH_REQUIRE(r != 0);
+        CATCH_REQUIRE(r == 0);
     }
 
     return path;
