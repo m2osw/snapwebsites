@@ -354,7 +354,7 @@ listdata_connection::listdata_connection(QString const & list_data_path)
     f_keep_hour2 = f_end_hour;
     f_hour       = (f_end_hour + 1) % 24;
 
-    // we want to always timeout so that way we can process the next
+    // we want to timeout so that way we can move forward
     //
     set_timeout_date(now + g_listdata_timeout * 1000000LL);
 
@@ -605,13 +605,13 @@ void listdata_connection::process_data(QString const & acknowledgement_id)
             return;
         }
 
-        std::string empty(f_pos - f_start, '\n');
         if(lseek(f_fd, f_start, SEEK_SET) != static_cast<off_t>(f_start))
         {
             SNAP_LOG_ERROR("could not seek to overwrite message.");
             mark_done();
             return;
         }
+        std::string const empty(f_pos - f_start, '\n');
         if(::write(f_fd, empty.c_str(), empty.length()) != static_cast<ssize_t>(empty.length()))
         {
             SNAP_LOG_ERROR("could not overwrite message properly.");
@@ -704,11 +704,6 @@ void listdata_connection::process_data(QString const & acknowledgement_id)
             }
 
             ssize_t const l(lseek(f_fd, 0, SEEK_END));
-            if(l == -1)
-            {
-                SNAP_LOG_WARNING("could not seek to the end of the file \"")(f_filename)("\"");
-                continue;
-            }
 
             // we can lose the lock because the other processes just do an append
             // so we do not need any more protection here (we needed it to
@@ -721,6 +716,14 @@ void listdata_connection::process_data(QString const & acknowledgement_id)
             if(flock(f_fd, LOCK_UN) != 0)
             {
                 SNAP_LOG_INFO("could not unlock file \"")(f_filename)("\" after reading message");
+            }
+
+            // did the lseek() fail?
+            //
+            if(l == -1)
+            {
+                SNAP_LOG_WARNING("could not seek to the end of the file \"")(f_filename)("\"");
+                continue;
             }
 
             if(lseek(f_fd, 0, SEEK_SET) == -1)
