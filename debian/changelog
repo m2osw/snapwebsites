@@ -2,6 +2,11 @@ snapwebsites (1.8.5.0~xenial) xenial; urgency=high
 
   * Added the snaplogger and cppthread as dependencies (for snapdatabase).
   * Added the snapdatabase project to handle journals.
+  * Applied a fix to the snaplistd which would not properly reply when an
+    error occurred. This may fix the problems we see where once in a while
+    the list mechanism breaks.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 11 Jan 2020 22:11:56 -0700
 
 snapwebsites (1.8.4.0~xenial) xenial; urgency=high
 

@@ -758,6 +758,7 @@ void snaplistd::list_data(snap::snap_communicator_message const & message)
     //
     snap::snap_communicator_message reply;
     reply.set_command("LISTDATAFAILED");
+    reply.reply_to(message);
     reply.add_parameter("listdata_id", message.get_parameter("listdata_id"));
     f_messenger->send_message(reply);
 }
