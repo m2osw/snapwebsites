@@ -1370,7 +1370,7 @@ void snaplock::msg_cluster_up(snap::snap_communicator_message & message)
 
     SNAP_LOG_INFO("cluster is up with ")
                  (f_neighbors_count)
-                 (" neightbors, attempt an election then check for leaders by sending a LOCKSTARTED message.");
+                 (" neighbors, attempt an election then check for leaders by sending a LOCKSTARTED message.");
 
     election_status();
 
