@@ -743,7 +743,7 @@ void snaplistd::list_data(snap::snap_communicator_message const & message)
             return;
         }
 
-        // if not commiting, then true a rollback() and ignore the
+        // if not committing, then send a rollback() and ignore the
         // result since it's not useful
         //
         if(!QSqlDatabase::database().rollback())
