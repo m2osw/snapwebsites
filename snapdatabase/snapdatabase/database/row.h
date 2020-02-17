@@ -49,17 +49,30 @@ namespace snapdatabase
 
 
 class row
+    : public std::enable_shared_from_this<row>
 {
 public:
     typedef std::shared_ptr<row>                pointer_t;
-    typedef std::map<std::string, pointer_t>    map_t;
+    typedef std::vector<pointer_t>              vector_t;
 
                                                 row(table::pointer_t t);
+
+    table::pointer_t                            get_table() const;
 
     buffer_t                                    to_binary() const;
     void                                        from_binary(buffer_t const & blob);
 
+    cell::pointer_t                             get_cell(column_id_t const & column_id, bool create);
+    cell::pointer_t                             get_cell(std::string const & column_name, bool create);
+    void                                        delete_cell(column_id_t const & column_id);
+    void                                        delete_cell(std::string const & column_name);
     cell::map_t                                 cells() const;
+
+    bool                                        commit();
+    bool                                        insert();
+    bool                                        update();
+
+    void                                        generate_mumur3(buffer_t & murmur3, version_t version = version_t(), std::string const language = std::string());
 
 private:
     table::weak_pointer_t                       f_table = table::weak_pointer_t();

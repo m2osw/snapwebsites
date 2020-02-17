@@ -91,6 +91,9 @@ public:
     table::pointer_t                    get_table(std::string const & name) const;
     table::map_t                        list_tables() const;
     std::string                         get_path() const;
+    size_t                              get_config_size(std::string const & name) const;
+    std::string                         get_config_string(std::string const & name, int idx) const;
+    long                                get_config_long(std::string const & name, int idx) const;
 
 private:
     context *                           f_context = nullptr;
@@ -327,7 +330,7 @@ void context_impl::initialize()
 
     for(auto & t : f_tables)
     {
-        t.second->verify_schema();
+        t.second->get_schema();
     }
 
     SNAP_LOG_INFORMATION
@@ -359,6 +362,35 @@ table::map_t context_impl::list_tables() const
 std::string context_impl::get_path() const
 {
     return f_path;
+}
+
+
+size_t context_impl::get_config_size(std::string const & name) const
+{
+    return f_opts->size(name);
+}
+
+
+/** \brief Retrieve a .conf file parameter.
+ *
+ * This function is used to access a parameter in the configuration file.
+ * For example, we retrieve the murmur3 seed from that file. This way each
+ * installation can make use of a different value.
+ *
+ * \param[in] name  The name of the parameter to retrieve.
+ * \param[in] idx  The index to the data to retrieve.
+ *
+ * \return The parameter's value as a string.
+ */
+std::string context_impl::get_config_string(std::string const & name, int idx) const
+{
+    return f_opts->get_string(name, idx);
+}
+
+
+long context_impl::get_config_long(std::string const & name, int idx) const
+{
+    return f_opts->get_long(name, idx);
 }
 
 
@@ -422,6 +454,24 @@ std::string context::get_path() const
  */
 void context::limit_allocated_memory()
 {
+}
+
+
+size_t context::get_config_size(std::string const & name) const
+{
+    return f_impl->get_config_size(name);
+}
+
+
+std::string context::get_config_string(std::string const & name, int idx) const
+{
+    return f_impl->get_config_string(name, idx);
+}
+
+
+long context::get_config_long(std::string const & name, int idx) const
+{
+    return f_impl->get_config_long(name, idx);
 }
 
 

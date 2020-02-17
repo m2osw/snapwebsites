@@ -20,7 +20,7 @@
 
 
 /** \file
- * \brief Convert file header.
+ * \brief Convert XML file data.
  *
  * The convert code is used to transform data from text to binary and vice
  * versa.
@@ -48,7 +48,7 @@ int64_t convert_to_int(std::string const & value, size_t max_size, unit_t unit =
 uint64_t convert_to_uint(std::string const & value, size_t max_size, unit_t unit = unit_t::UNIT_NONE);
 
 buffer_t string_to_typed_buffer(struct_type_t type, std::string const & value);
-std::string typed_buffer_to_string(struct_type_t type, buffer_t value);
+std::string typed_buffer_to_string(struct_type_t type, buffer_t value, int base);
 
 
 

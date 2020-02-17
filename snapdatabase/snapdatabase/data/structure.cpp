@@ -162,8 +162,8 @@ constexpr field_sizes_t const g_struct_type_sizes[] =
     [static_cast<int>(struct_type_t::STRUCT_TYPE_FLOAT128)]     = { sizeof(long double),    0 },
     [static_cast<int>(struct_type_t::STRUCT_TYPE_VERSION)]      = { sizeof(uint32_t),       0 },
     [static_cast<int>(struct_type_t::STRUCT_TYPE_TIME)]         = { sizeof(time_t),         0 },
-    [static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME)]       = { sizeof(uint64_t),       0 },
-    [static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME)]       = { sizeof(uint64_t),       0 },
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_MSTIME)]       = { sizeof(int64_t),        0 },
+    [static_cast<int>(struct_type_t::STRUCT_TYPE_USTIME)]       = { sizeof(int64_t),        0 },
     [static_cast<int>(struct_type_t::STRUCT_TYPE_P8STRING)]     = { VARIABLE_SIZE,          1 },
     [static_cast<int>(struct_type_t::STRUCT_TYPE_P16STRING)]    = { VARIABLE_SIZE,          2 },
     [static_cast<int>(struct_type_t::STRUCT_TYPE_P32STRING)]    = { VARIABLE_SIZE,          4 },
@@ -278,6 +278,66 @@ struct_type_t name_to_struct_type(std::string const & type_name)
     }
 
     return INVALID_STRUCT_TYPE;
+}
+
+
+/** \brief Check whether \p type represents a fixed size type.
+ *
+ * This function returns true if the the \p type parameter represents a
+ * type which will never change in size. However, a row can still change
+ * in size even if all of its columns habe fixed since most columns are
+ * optional (which saves space if you do not include them).
+ *
+ * So we do not offer a way to determine whether a schema is fixed or not
+ * because some of the system columns are optional and as such it means
+ * that all tables have rows of varying sizes even if your own columns are
+ * all marked as mandatory and are of fixed size.
+ *
+ * \return true if the type represents a fixed size.
+ */
+bool type_with_fixed_size(struct_type_t type)
+{
+    switch(type)
+    {
+    case struct_type_t::STRUCT_TYPE_END:
+    case struct_type_t::STRUCT_TYPE_VOID:
+    case struct_type_t::STRUCT_TYPE_BITS8:
+    case struct_type_t::STRUCT_TYPE_BITS16:
+    case struct_type_t::STRUCT_TYPE_BITS32:
+    case struct_type_t::STRUCT_TYPE_BITS64:
+    case struct_type_t::STRUCT_TYPE_BITS128:
+    case struct_type_t::STRUCT_TYPE_BITS256:
+    case struct_type_t::STRUCT_TYPE_BITS512:
+    case struct_type_t::STRUCT_TYPE_INT8:
+    case struct_type_t::STRUCT_TYPE_UINT8:
+    case struct_type_t::STRUCT_TYPE_INT16:
+    case struct_type_t::STRUCT_TYPE_UINT16:
+    case struct_type_t::STRUCT_TYPE_INT32:
+    case struct_type_t::STRUCT_TYPE_UINT32:
+    case struct_type_t::STRUCT_TYPE_INT64:
+    case struct_type_t::STRUCT_TYPE_UINT64:
+    case struct_type_t::STRUCT_TYPE_INT128:
+    case struct_type_t::STRUCT_TYPE_UINT128:
+    case struct_type_t::STRUCT_TYPE_INT256:
+    case struct_type_t::STRUCT_TYPE_UINT256:
+    case struct_type_t::STRUCT_TYPE_INT512:
+    case struct_type_t::STRUCT_TYPE_UINT512:
+    case struct_type_t::STRUCT_TYPE_FLOAT32:
+    case struct_type_t::STRUCT_TYPE_FLOAT64:
+    case struct_type_t::STRUCT_TYPE_FLOAT128:
+    case struct_type_t::STRUCT_TYPE_VERSION:
+    case struct_type_t::STRUCT_TYPE_TIME:
+    case struct_type_t::STRUCT_TYPE_MSTIME:
+    case struct_type_t::STRUCT_TYPE_USTIME:
+    case struct_type_t::STRUCT_TYPE_REFERENCE:
+    case struct_type_t::STRUCT_TYPE_OID:
+    case struct_type_t::STRUCT_TYPE_RENAMED:
+        return true;
+
+    default:
+        return false;
+
+    }
 }
 
 
@@ -1009,6 +1069,9 @@ int64_t structure::get_integer(std::string const & field_name) const
         }
 
     case struct_type_t::STRUCT_TYPE_INT64:
+    case struct_type_t::STRUCT_TYPE_TIME:
+    case struct_type_t::STRUCT_TYPE_MSTIME:
+    case struct_type_t::STRUCT_TYPE_USTIME:
         {
             int64_t value(0);
             f_buffer->pread(&value, sizeof(value), f->offset());
@@ -1027,6 +1090,12 @@ int64_t structure::get_integer(std::string const & field_name) const
                 + to_string(struct_type_t::STRUCT_TYPE_INT32)
                 + ", "
                 + to_string(struct_type_t::STRUCT_TYPE_INT64)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_TIME)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_MSTIME)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_USTIME)
                 + "\".");
 
     }
@@ -1063,6 +1132,9 @@ void structure::set_integer(std::string const & field_name, int64_t value)
         return;
 
     case struct_type_t::STRUCT_TYPE_INT64:
+    case struct_type_t::STRUCT_TYPE_TIME:
+    case struct_type_t::STRUCT_TYPE_MSTIME:
+    case struct_type_t::STRUCT_TYPE_USTIME:
         f_buffer->pwrite(&value, sizeof(value), f->offset());
         return;
 
@@ -1078,6 +1150,12 @@ void structure::set_integer(std::string const & field_name, int64_t value)
                 + to_string(struct_type_t::STRUCT_TYPE_INT32)
                 + ", "
                 + to_string(struct_type_t::STRUCT_TYPE_INT64)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_TIME)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_MSTIME)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_USTIME)
                 + "\".");
 
     }
@@ -1121,9 +1199,6 @@ uint64_t structure::get_uinteger(std::string const & field_name) const
     case struct_type_t::STRUCT_TYPE_UINT64:
     case struct_type_t::STRUCT_TYPE_REFERENCE:
     case struct_type_t::STRUCT_TYPE_OID:
-    case struct_type_t::STRUCT_TYPE_TIME:
-    case struct_type_t::STRUCT_TYPE_MSTIME:
-    case struct_type_t::STRUCT_TYPE_USTIME:
         {
             uint64_t value(0);
             f_buffer->pread(&value, sizeof(value), f->offset());
@@ -1156,12 +1231,6 @@ uint64_t structure::get_uinteger(std::string const & field_name) const
                 + to_string(struct_type_t::STRUCT_TYPE_REFERENCE)
                 + ", "
                 + to_string(struct_type_t::STRUCT_TYPE_OID)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_TIME)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_MSTIME)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_USTIME)
                 + "\".");
 
     }
@@ -1205,9 +1274,6 @@ void structure::set_uinteger(std::string const & field_name, uint64_t value)
     case struct_type_t::STRUCT_TYPE_UINT64:
     case struct_type_t::STRUCT_TYPE_REFERENCE:
     case struct_type_t::STRUCT_TYPE_OID:
-    case struct_type_t::STRUCT_TYPE_TIME:
-    case struct_type_t::STRUCT_TYPE_MSTIME:
-    case struct_type_t::STRUCT_TYPE_USTIME:
         f_buffer->pwrite(&value, sizeof(value), f->offset());
         return;
 
@@ -1237,12 +1303,6 @@ void structure::set_uinteger(std::string const & field_name, uint64_t value)
                 + to_string(struct_type_t::STRUCT_TYPE_REFERENCE)
                 + ", "
                 + to_string(struct_type_t::STRUCT_TYPE_OID)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_TIME)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_MSTIME)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_USTIME)
                 + "\".");
 
     }
@@ -1390,6 +1450,9 @@ sign_extend_64bit:
         goto sign_extend_64bit;
 
     case struct_type_t::STRUCT_TYPE_INT64:
+    case struct_type_t::STRUCT_TYPE_TIME:
+    case struct_type_t::STRUCT_TYPE_MSTIME:
+    case struct_type_t::STRUCT_TYPE_USTIME:
         f_buffer->pread(&result.f_value, sizeof(int64_t), f->offset());
         result.f_value[0] = static_cast<int64_t>(result.f_value[0]); // sign extend
         goto sign_extend_64bit;
@@ -1440,6 +1503,12 @@ sign_extend_64bit:
                 + to_string(struct_type_t::STRUCT_TYPE_INT256)
                 + ", "
                 + to_string(struct_type_t::STRUCT_TYPE_INT512)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_TIME)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_MSTIME)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_USTIME)
                 + "\".");
 
     }
@@ -1458,6 +1527,9 @@ void structure::set_large_integer(std::string const & field_name, int512_t value
     case struct_type_t::STRUCT_TYPE_INT16:
     case struct_type_t::STRUCT_TYPE_INT32:
     case struct_type_t::STRUCT_TYPE_INT64:
+    case struct_type_t::STRUCT_TYPE_TIME:
+    case struct_type_t::STRUCT_TYPE_MSTIME:
+    case struct_type_t::STRUCT_TYPE_USTIME:
     case struct_type_t::STRUCT_TYPE_INT128:
     case struct_type_t::STRUCT_TYPE_INT256:
     case struct_type_t::STRUCT_TYPE_INT512:
@@ -1482,6 +1554,12 @@ void structure::set_large_integer(std::string const & field_name, int512_t value
                 + to_string(struct_type_t::STRUCT_TYPE_INT256)
                 + ", "
                 + to_string(struct_type_t::STRUCT_TYPE_INT512)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_TIME)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_MSTIME)
+                + ", "
+                + to_string(struct_type_t::STRUCT_TYPE_USTIME)
                 + "\".");
 
     }
@@ -1507,9 +1585,6 @@ uint512_t structure::get_large_uinteger(std::string const & field_name) const
     case struct_type_t::STRUCT_TYPE_UINT64:
     case struct_type_t::STRUCT_TYPE_REFERENCE:
     case struct_type_t::STRUCT_TYPE_OID:
-    case struct_type_t::STRUCT_TYPE_TIME:
-    case struct_type_t::STRUCT_TYPE_MSTIME:
-    case struct_type_t::STRUCT_TYPE_USTIME:
     case struct_type_t::STRUCT_TYPE_UINT128:
     case struct_type_t::STRUCT_TYPE_UINT256:
     case struct_type_t::STRUCT_TYPE_UINT512:
@@ -1546,12 +1621,6 @@ uint512_t structure::get_large_uinteger(std::string const & field_name) const
                 + to_string(struct_type_t::STRUCT_TYPE_REFERENCE)
                 + ", "
                 + to_string(struct_type_t::STRUCT_TYPE_OID)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_TIME)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_MSTIME)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_USTIME)
                 + "\".");
 
     }
@@ -1581,9 +1650,6 @@ void structure::set_large_uinteger(std::string const & field_name, uint512_t val
     case struct_type_t::STRUCT_TYPE_UINT512:
     case struct_type_t::STRUCT_TYPE_REFERENCE:
     case struct_type_t::STRUCT_TYPE_OID:
-    case struct_type_t::STRUCT_TYPE_TIME:
-    case struct_type_t::STRUCT_TYPE_MSTIME:
-    case struct_type_t::STRUCT_TYPE_USTIME:
         f_buffer->pwrite(value.f_value, f->size(), f->offset());
         break;
 
@@ -1617,12 +1683,6 @@ void structure::set_large_uinteger(std::string const & field_name, uint512_t val
                 + to_string(struct_type_t::STRUCT_TYPE_REFERENCE)
                 + ", "
                 + to_string(struct_type_t::STRUCT_TYPE_OID)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_TIME)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_MSTIME)
-                + ", "
-                + to_string(struct_type_t::STRUCT_TYPE_USTIME)
                 + "\".");
 
     }

@@ -140,10 +140,10 @@ reference_t block_top_index::find_index(buffer_t key) const
 {
     // the start offset is 1 x structure + alignment
     //
-    uint32_t offset(f_structure->get_size() + sizeof(reference_t) - 1);
+    std::uint32_t offset(f_structure->get_size() + sizeof(reference_t) - 1);
     offset = offset - offset % sizeof(reference_t);
 
-    std::uint8_t const * buffer(data());
+    std::uint8_t const * buffer(data() + offset);
     std::uint32_t const count(get_count());
     std::uint32_t const size(get_size());
     int i(0);
@@ -169,15 +169,8 @@ reference_t block_top_index::find_index(buffer_t key) const
 
     // TBD: save current position close to point where we can do an insertion
 
-    return 0;
+    return NULL_FILE_ADDR;
 }
-
-
-
-
-
-
-
 
 
 

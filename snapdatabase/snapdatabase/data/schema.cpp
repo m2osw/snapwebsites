@@ -23,6 +23,29 @@
  *
  * Each table uses one or more files. Each file is handled by a dbfile
  * object and a corresponding set of blocks.
+ *
+ * \todo
+ * The `version` field is not going to be cross instance compatible.
+ * Any new instance of a database file gets a schema with version 1.0.
+ * That version increases as modifications to the schema are being applied
+ * (for example, as you add a new plugin to the Snap! environment of a
+ * website, the content table is likely to be updated and get a newer
+ * version).
+ * \todo
+ * The problem with this mechanism is that the exact same schema on two
+ * different nodes will not always have the same version. If you create
+ * a new node when another has a schema version 1.15, then the new node
+ * gets the same schema, but the version is set to 1.0.
+ * \todo
+ * On day to day matters, this has no bearing, but it could be really
+ * confusing to administrators. There are two possible solutions: have
+ * the version assigned using communication and use the latest version
+ * for that table, latest version across your entire set of nodes.
+ * The other, which is much easier as it requires no inter-node
+ * communication, is to calculate an MD5 sum of the schema. As long as
+ * thjat calculation doesn't change across versions of Snap! Database
+ * then we're all good (but I don't think we can ever guarantee such
+ * a thing, so that solution becomes complicated in that sense).
  */
 
 // self
@@ -64,6 +87,8 @@ namespace
 {
 
 
+
+std::string             g_expiration_date = "expiration_date";
 
 
 
@@ -260,6 +285,70 @@ bool validate_name(std::string const & name, size_t max_length = 255)
 
 }
 // no name namespace
+
+
+
+index_type_t index_name_to_index_type(std::string const & name)
+{
+    if(name.empty())
+    {
+        return index_type_t::INDEX_TYPE_INVALID;
+    }
+
+    switch(name[0])
+    {
+    case 'e':
+        if(name == "expiration")
+        {
+            return index_type_t::INDEX_TYPE_EXPIRATION;
+        }
+        break;
+
+    case 'i':
+        if(name == "indirect")
+        {
+            return index_type_t::INDEX_TYPE_INDIRECT;
+        }
+        break;
+
+    case 'p':
+        if(name == "primary")
+        {
+            return index_type_t::INDEX_TYPE_PRIMARY;
+        }
+        break;
+
+    case 't':
+        if(name == "tree")
+        {
+            return index_type_t::INDEX_TYPE_TREE;
+        }
+        break;
+
+    }
+
+    return validate_name(name)
+                ? index_type_t::INDEX_TYPE_SECONDARY
+                : index_type_t::INDEX_TYPE_INVALID;
+}
+
+
+std::string index_type_to_index_name(index_type_t type)
+{
+    switch(type)
+    {
+    case index_type_t::INDEX_TYPE_INDIRECT:   return "indirect";
+    case index_type_t::INDEX_TYPE_PRIMARY:    return "primary";
+    case index_type_t::INDEX_TYPE_EXPIRATION: return "expiration";
+    case index_type_t::INDEX_TYPE_TREE:       return "tree";
+    case index_type_t::INDEX_TYPE_INVALID:    break;
+    case index_type_t::INDEX_TYPE_SECONDARY:  break;
+    }
+
+    // not a system type, return an empty string even for the secondary type
+    //
+    return std::string();
+}
 
 
 
@@ -507,6 +596,27 @@ schema_column::schema_column(schema_table::pointer_t table, xml_node::pointer_t 
                 "full support for complex types not yet implemented");
     }
 
+    // if the user defined an expiration date column, make sure it uses
+    // the correct type otherwise that's a bug and it needs to be fixed
+    //
+    if(is_expiration_date_column())
+    {
+        switch(f_type)
+        {
+        case struct_type_t::STRUCT_TYPE_TIME:
+        case struct_type_t::STRUCT_TYPE_MSTIME:
+        case struct_type_t::STRUCT_TYPE_USTIME:
+            break;
+
+        default:
+            throw type_mismatch(
+                    "the \"expiration_date\" column must be assigned a  valid time type (TIME, MSTIME, USTIME), "
+                  + to_string(f_type)
+                  + " is not valid.");
+
+        }
+    }
+
     f_flags = 0;
     if(x->attribute("limited") == "limited")
     {
@@ -615,6 +725,19 @@ void schema_column::from_structure(structure::pointer_t s)
     f_minimum_length = s->get_uinteger("minimum_length");
     f_maximum_length = s->get_uinteger("maximum_length");
     f_validation = s->get_buffer("validation");
+}
+
+
+/** \brief Return true if this column represents the "expiration_date" column.
+ *
+ * This function checks the name of the column. If the name is
+ * "expiration_date", then the function returns true.
+ *
+ * \return true when the column name is "expiration_date".
+ */
+bool schema_column::is_expiration_date_column() const
+{
+    return f_name == g_expiration_date;
 }
 
 
@@ -962,6 +1085,30 @@ void schema_secondary_index::from_xml(xml_node::pointer_t si)
 {
     f_index_name = si->attribute("name");
 
+    index_type_t const type(index_name_to_index_type(f_index_name));
+    switch(type)
+    {
+    case index_type_t::INDEX_TYPE_SECONDARY:
+        break;
+
+    case index_type_t::INDEX_TYPE_INVALID:
+        throw invalid_xml(
+                  "\""
+                + f_index_name
+                + "\" is not a valid secondary index name.");
+
+    default:
+        // this is very important since we will not otherwise notice
+        // the duplication and it would break the rest of the database
+        // functionality
+        //
+        throw invalid_xml(
+                  "\""
+                + f_index_name
+                + "\" is a reserved index name, which can't be used as a secondary index name.");
+
+    }
+
     std::string const distributed(si->attribute("distributed"));
     if(distributed.empty() || distributed == "distributed")
     {
@@ -1217,11 +1364,6 @@ void schema_table::from_xml(xml_node::pointer_t x)
         return;
     }
 
-    if(x->attribute("temporary") == "temporary")
-    {
-        f_flags |= TABLE_FLAG_TEMPORARY;
-    }
-
     if(x->attribute("sparse") == "sparse")
     {
         f_flags |= TABLE_FLAG_SPARSE;
@@ -1230,6 +1372,35 @@ void schema_table::from_xml(xml_node::pointer_t x)
     if(x->attribute("secure") == "secure")
     {
         f_flags |= TABLE_FLAG_SECURE;
+    }
+
+    std::string const track(x->attribute("track"));
+    advgetopt::string_list_t track_flags;
+    advgetopt::split_string(track, track_flags, {","});
+    for(auto tf : track_flags)
+    {
+        if(tf == "create")
+        {
+            f_flags |= TABLE_FLAG_TRACK_CREATE;
+        }
+        else if(tf == "update")
+        {
+            f_flags |= TABLE_FLAG_TRACK_UPDATE;
+        }
+        else if(tf == "delete")
+        {
+            f_flags |= TABLE_FLAG_TRACK_DELETE;
+        }
+        else
+        {
+            SNAP_LOG_WARNING
+                << "Unknown track flag \""
+                << tf
+                << "\" within <table name=\""
+                << f_name
+                << "\" track=\"...\" ...> tag."
+                << SNAP_LOG_SEND;
+        }
     }
 
     xml_node::deque_t schemata;
@@ -1298,23 +1469,30 @@ void schema_table::from_xml(xml_node::pointer_t x)
     // 2. add system columns
     //
 
+    // schema version -- to know which schema to use to read the data
+    //
+    // this one is managed as a very special case instead; the version
+    // is saved as the first 4 bytes of any one row; plus on a read we
+    // always auto-convert the data to the latest schema version so
+    // having such a column would not be useful (i.e. it would always
+    // be the exact same value as far as the end user is concerned)
+    //
+    //{
+    //    auto c(std::make_shared<schema_column>(
+    //                  shared_from_this()
+    //                , "_schema_version"
+    //                , struct_type_t::STRUCT_TYPE_VERSION
+    //                , COLUMN_FLAG_REQUIRED | COLUMN_FLAG_SYSTEM));
+    //
+    //    f_columns_by_name[c->name()] = c;
+    //}
+
     // object identifier -- to place the rows in our indirect index
     {
         auto c(std::make_shared<schema_column>(
                       shared_from_this()
                     , "_oid"
                     , struct_type_t::STRUCT_TYPE_OID
-                    , COLUMN_FLAG_REQUIRED | COLUMN_FLAG_SYSTEM));
-
-        f_columns_by_name[c->name()] = c;
-    }
-
-    // schema version -- to know which schema to use to read the data
-    {
-        auto c(std::make_shared<schema_column>(
-                      shared_from_this()
-                    , "_schema_version"
-                    , struct_type_t::STRUCT_TYPE_VERSION
                     , COLUMN_FLAG_REQUIRED | COLUMN_FLAG_SYSTEM));
 
         f_columns_by_name[c->name()] = c;
@@ -1368,7 +1546,7 @@ void schema_table::from_xml(xml_node::pointer_t x)
     {
         auto c(std::make_shared<schema_column>(
                       shared_from_this()
-                    , "_updated_by"
+                    , "_last_updated_by"
                     , struct_type_t::STRUCT_TYPE_UINT64
                     , COLUMN_FLAG_SYSTEM));
 
@@ -1386,16 +1564,94 @@ void schema_table::from_xml(xml_node::pointer_t x)
         f_columns_by_name[c->name()] = c;
     }
 
-    // version of the data in this row (TBD TBD TBD)
+    // version of the data in this row
     //
-    // how this will be implemented is not clear at this point--it will
-    // only be for the `content` table; the version itself would not be
-    // saved as a column per se, instead it would be a form of sub-index
-    // where the version is ignored for fields that are marked `global`,
-    // only the `major` part is used for fields marked as `branch`, and
-    // both, `major` and `minor` are used for fields marked as
-    // `revision`... as far as the client is concerned, though, it look
-    // like we have a full version column.
+    // --------------------------------------------------------- resume -----
+    //
+    // The implementation is most TBD TBD TBD still. The following is my
+    // current talk about it. However, I think I got most of it laid out
+    // as I think it will be easiest: use the version + language to generate
+    // keys in separate branch and revision specific indexes, which is very
+    // similar to what I've done in Cassandra. We also probably need two
+    // fields: one to read a specific version and one to write a revision
+    // which would get automatically updated to a new branch and/or revision.
+    //
+    // See also:
+    // void row::generate_mumur3(buffer_t & murmur3, version_t version, std::string const language);
+    //
+    // ------------------------------------------------ long discussion -----
+    //
+    // How this will be implemented is not clear at this point--it will
+    // only be for the `content` table (Note: in our Cassandra implementation
+    // we had a `content`, a `branch` and a `revision` table);
+    //
+    // The version itself would not be saved as a column per se, instead
+    // it would be a form of sub-index where the type of column defines
+    // how a read is handle based on the version:
+    //
+    // `global` -- the version is ignored for all global fields
+    // `branch` -- the fields are assigned the `major` version; so when the
+    // version is 1.1 or 1.100, the data returned is the same; however, you
+    // have two separate values for versions 1.55 and 3.2
+    // `revision` -- the fields are assigned the full version
+    // (`major.minor`); each piece of data depends 100% on the version
+    //
+    // So on a `commit()`, global fields are always overwritten, branches
+    // are overwritten on a per `major` version and revisions only on a
+    // per `major.minor` version.
+    //
+    // As far as the client is concerned, though, such rows have a version
+    // column which clearly defines each column's value
+    //
+    // The `_version` in a row can be set to an existing version in the row.
+    // If not defined, then no branch or revision are created at all. If
+    // set to version `0.0`, then that means create a new revision in the
+    // latest existing branch (i.e. no revision 0 exists, it's either `0.1`
+    // or undefined). At this point, I do not have a good idea to also force
+    // the creation of a new branch, unless we convert this field to a string.
+    // Then we can use all sorts of characters for the purpose (which means
+    // we may want two fields--one for write as a string and one for read):
+    //
+    // 1. `*.1` -- create a new branch with a first revision 1
+    // 2. `L.*` -- create a new revision in the [L]atest branch
+    // 3. `L.L` -- overwrite/update the latest branch and revision fields
+    // 4. `0.*` -- create a new revision in specified branch (here branch `0`)
+    //
+    // **IMPORTANT:** The revision also makes use of a language. If the
+    // "_language" column is not defined, then use "xx" as the default.
+    //
+    // Implementation Ideas: (right now I think #3 is what we must use)
+    //
+    // 1. add the major version along the column ID when saving a branch
+    //    value (ID:major:value); in effect we end up with many more columns
+    //    for the one same row, only we just read those that have a major
+    //    that matches the `_version` field; similarly, the revision is
+    //    defined as column ID, major, minor (ID:major:minor:value)
+    // 2. the row has a `reference_t` to a "branch array"; that array is
+    //    a set of `reference_t` that point to all the columns specific to
+    //    that branch, the `major` version is the index in that table (we
+    //    have a map, though (`major => reference_t`) so that way older
+    //    branches can be deleted if/when necessary; the revisions would be
+    //    managed in a similar way; the main row has a reference to an array
+    //    which has a map defined as `major:minor:language => reference_t`
+    //    and the reference points to all the columns assigned that specific
+    //    revision
+    // 3. full fledge indexes which make use of the row key + major version
+    //    for branches and row key + major + minor version + language for
+    //    revision and add two more indexes in our headers just for those two;
+    //    NOTE: with a full fledge index we can distribute the data
+    //    between computers; whether we want to do that is still TBD
+    //
+    // The main problem with (1) is that one row will grow tremendously and
+    // that will probably be impossible to manage after a while (on reads as
+    // well as cheer size of the row). (2) is great although it certainly
+    // requires a lot more specialized management to maintain the arrays.
+    // (3) is probably the best since we should be able to reuse much of the
+    // code handling indexes which will just be the standard row key plus
+    // the necessary version info (major or major:minor). This is what we
+    // have in Cassandra although we have to manually handle all the revisions
+    // in our Snap! code.
+    //
     {
         auto c(std::make_shared<schema_column>(
                       shared_from_this()
@@ -1405,6 +1661,69 @@ void schema_table::from_xml(xml_node::pointer_t x)
 
         f_columns_by_name[c->name()] = c;
     }
+
+    // language code used in the "body", "title", etc.
+    //
+    // By default, we use a 2 letter code ISO-639-1 code, but this field
+    // allows for any ISO encoding such as "en-us" and any macro language.
+    // The low level system implementation doesn't care and won't verify
+    // that the language is valid. We offer higher level functions to do
+    // so if you'd like to verify before letting a user select a language.
+    //
+    // Use "xx" for an entry in a table that uses languages but does not
+    // require one. Not defining the field means that no language is
+    // specified. The system will automatically use "xx" for revisions.
+    //
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_language"
+                    , struct_type_t::STRUCT_TYPE_P8STRING
+                    , COLUMN_FLAG_SYSTEM));
+
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // current revision
+    //
+    // this is another entry in link with the branch/revision concept, we
+    // need to display a page, we need to have a current version to display
+    // that page; problem here is we need one such version per language
+    //
+    // in the old Cassandra database we also have a latest version, which
+    // is also per language; this latest version gets used to create new
+    // revisions effectively
+    //
+    // finally, we had a 'last edited version' because if you were to edit
+    // and not save your editing, we wanted to save a version of the page
+    // attached to your user and that was a form of "floating" version
+    // (i.e. it was not yet assigned a full version/language pair)
+    //
+    // for now I leave this at that, but I think we'll need several more
+    // fields to manage the whole set of possibilities (although things
+    // such as the last edited page is per user so we can't just have one
+    // field? well... maybe we track the last 100 edits and delete anything
+    // that's too old and was not properly saved after that) -- the editing
+    // versions can be called "draft"; which could also make use of the
+    // language field to distinguish them: "<major>.<minor>::<language>-draft"
+    //
+    {
+        auto c(std::make_shared<schema_column>(
+                      shared_from_this()
+                    , "_current_version"
+                    , struct_type_t::STRUCT_TYPE_VERSION
+                    , COLUMN_FLAG_SYSTEM));
+
+        f_columns_by_name[c->name()] = c;
+    }
+
+    // "_expiration_date" -- we actually do not need an expiration date
+    // column, the user can create his own "expiration_date" column which
+    // will automatically get picked up by the system; i.e. rows with
+    // a column with that name will automatically be added to the expiration
+    // index, nothing more to do and the programmer has the ability to choose
+    // the precision and what the value should be (it's just like a standard
+    // column) -- see is_expiration_date_column()
 
     // 3. parse user columns
     //
@@ -1423,8 +1742,15 @@ void schema_table::from_xml(xml_node::pointer_t x)
     // the parameter in the XML is a string of column names separated
     // by commas
     //
-    std::string row_key_name(x->attribute("row-key"));
+    std::string const row_key_name(x->attribute("row-key"));
     advgetopt::split_string(row_key_name, f_row_key_names, {","});
+    if(f_row_key_names.empty())
+    {
+        throw invalid_xml(
+                  "A table schema must have a \"row-key\". \""
+                + f_name
+                + "\" is not acceptable.");
+    }
 
     // 5. handle the secondary indexes
     //
@@ -1652,7 +1978,7 @@ void schema_table::from_binary(virtual_buffer::pointer_t b)
     s->set_virtual_buffer(b, 0);
 
     f_version  = s->get_uinteger("schema_version");
-    f_added_on = s->get_uinteger("added_on");
+    f_added_on = s->get_integer("added_on");
     f_name     = s->get_string("name");
     f_flags    = s->get_uinteger("flags");
     f_model    = static_cast<model_t>(s->get_uinteger("model"));
@@ -1720,7 +2046,7 @@ virtual_buffer::pointer_t schema_table::to_binary() const
     structure::pointer_t s(std::make_shared<structure>(g_table_description));
     s->init_buffer();
     s->set_uinteger("schema_version", f_version.to_binary());
-    s->set_uinteger("added_on", f_added_on);
+    s->set_integer("added_on", f_added_on);
     s->set_string("name", f_name);
     s->set_uinteger("flags", f_flags);
     s->set_uinteger("block_size", f_block_size);
@@ -1789,6 +2115,27 @@ version_t schema_table::schema_version() const
 }
 
 
+/** \brief Set the version of the schema.
+ *
+ * This function is used only internally to set the version of the schema.
+ * By default, all schemata are assigned version 1.0 on a read. However,
+ * it may later be determined that this is an updated version of the
+ * schema for a given table. In that case, the table will know what its
+ * current version is (i.e. the latest version of the schema in that
+ * table). Using that version + 1 is going to determine the new schema
+ * version for this table and that's what gets assigned here.
+ *
+ * There are no other reasons to set the schema version. So you most
+ * certainly never ever need to call this function ever.
+ *
+ * \param[in] version  The new schema version.
+ */
+void schema_table::set_schema_version(version_t version)
+{
+    f_version = version;
+}
+
+
 time_t schema_table::added_on() const
 {
     return f_added_on;
@@ -1816,6 +2163,24 @@ bool schema_table::is_sparse() const
 bool schema_table::is_secure() const
 {
     return (f_flags & TABLE_FLAG_SECURE) != 0;
+}
+
+
+bool schema_table::track_create() const
+{
+    return (f_flags & TABLE_FLAG_TRACK_CREATE) != 0;
+}
+
+
+bool schema_table::track_update() const
+{
+    return (f_flags & TABLE_FLAG_TRACK_UPDATE) != 0;
+}
+
+
+bool schema_table::track_delete() const
+{
+    return (f_flags & TABLE_FLAG_TRACK_DELETE) != 0;
 }
 
 
@@ -1891,6 +2256,13 @@ void schema_table::assign_column_ids(schema_table::pointer_t existing_schema)
     //
     for(auto const & n : f_row_key_names)
     {
+        if(n == g_oid_column)
+        {
+            throw invalid_xml(
+                      "The \""
+                    + n
+                    + "\" column is not acceptable for the primary key since you have no control over its value.");
+        }
         schema_column::pointer_t c(column(n));
         if(c == nullptr)
         {
@@ -1948,6 +2320,30 @@ void schema_table::assign_column_ids(schema_table::pointer_t existing_schema)
             sc->set_column_id(c->column_id());
         }
     }
+}
+
+
+/** \brief Whether this schema includes an expiration date.
+ *
+ * The "expiration_date" column is used to expire a row. If the date in that
+ * column is less than `now` then the row is considered expired. The row will
+ * not be returned to you and will eventually get removed from the database
+ * by one of our backend processes.
+ *
+ * The "expiration_date" is optional and in most cases not defined. This
+ * function returns true if that table has that column.
+ *
+ * \return true if the table has an expiration date column.
+ */
+bool schema_table::has_expiration_date_column() const
+{
+    return f_columns_by_name.find(g_expiration_date) != f_columns_by_name.end();
+}
+
+
+schema_column::pointer_t schema_table::expiration_date_column() const
+{
+    return column(g_expiration_date);
 }
 
 
@@ -2020,6 +2416,24 @@ std::uint32_t schema_table::block_size() const
     return f_block_size;
 }
 
+
+void schema_table::schema_offset(reference_t offset)
+{
+    f_schema_offset = offset;
+}
+
+
+reference_t schema_table::schema_offset() const
+{
+    return f_schema_offset;
+}
+
+
+
+std::string const & expiration_date_column_name()
+{
+    return g_expiration_date;
+}
 
 
 } // namespace snapdatabase

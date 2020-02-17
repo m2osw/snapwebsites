@@ -20,15 +20,14 @@
 
 
 /** \file
- * \brief Block representing free space that can be allocated.
+ * \brief Block representing the database file header.
  *
- * This block is a _free_ blok meaning that it is not current used for
- * anything. It is part of the list of free blocks (linked list).
  */
 
 // self
 //
-#include    "snapdatabase/data/structure.h"
+//#include    "snapdatabase/data/structure.h"
+#include    "snapdatabase/data/schema.h"
 
 
 
@@ -37,19 +36,19 @@ namespace snapdatabase
 
 
 
-class table;
-typedef std::shared_ptr<table>      table_pointer_t;
-
-class block_free_block
+class block_schema_list
     : public block
 {
 public:
-    typedef std::shared_ptr<block_free_block>       pointer_t;
+    typedef std::shared_ptr<block_schema_list>       pointer_t;
 
-                                block_free_block(dbfile::pointer_t f, reference_t offset);
+                                block_schema_list(dbfile::pointer_t f, reference_t offset);
 
-    reference_t                 get_next_free_block() const;
-    void                        set_next_free_block(reference_t offset);
+    uint32_t                    get_count() const;
+    void                        set_count(uint32_t id);
+
+    reference_t                 get_schema(version_t const & version) const;
+    void                        add_schema(schema_table::pointer_t schema);
 
 private:
 };

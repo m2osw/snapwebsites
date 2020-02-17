@@ -70,6 +70,9 @@ public:
     table::map_t                            list_tables() const;
     std::string                             get_path() const;
     void                                    limit_allocated_memory();
+    size_t                                  get_config_size(std::string const & name) const;
+    std::string                             get_config_string(std::string const & name, int idx) const;
+    long                                    get_config_long(std::string const & name, int idx) const;
 
 private:
                                             context(advgetopt::getopt::pointer_t opts);

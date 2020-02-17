@@ -20,13 +20,28 @@
 
 
 /** \file
- * \brief Block representing the database file header.
+ * \brief Block representing the top indirect index.
  *
+ * Each row is assigned an Object Identifier (OID). That OID is used to
+ * find the row in the table file using a straight forward index (i.e.
+ * no search involved, it's an array).
+ *
+ * The Indirect Index blocks represent a lower level index which includes
+ * the offset to the data in the file. When more rows than can fit in one
+ * array are created, additional block levels are created. Those are called
+ * Top Indirect Indexes and this block represents such.
+ *
+ * Pointers from a Top Indirect Index may pointer to other Top Indirect
+ * Index blocks or to an Indirect Index block. The total number of rows
+ * determines the level, however, it is not practical to use that number
+ * as it can change under our feet. Instead we use a level in the Top
+ * Indirect Blocks. That levels defines how many blocks are held in this
+ * block and the blocks below this block.
  */
 
 // self
 //
-#include    "snapdatabase/data/structure.h"
+#include    "snapdatabase/block/block_indirect_index.h"
 
 
 
@@ -35,39 +50,26 @@ namespace snapdatabase
 
 
 
-/** \brief Address used to represent a missing address.
- *
- * Whenever accessing a reference with an out of bounds index (OID), the
- * get_reference() may return a FILE_ADDR_MISSING (depending on the
- * \p must_exist flag).
- *
- * When this happens, the caller can react by adding a new block as
- * required.
- *
- * \todo
- * If required in blocks other than the (top) indirect index, move this
- * to the structure.h along the reference_t and NULL_FILE_ADDR definition.
- */
-constexpr reference_t           MISSING_FILE_ADDR = static_cast<reference_t>(1);
-
-
-class block_indirect_index
+class block_top_indirect_index
     : public block
 {
 public:
-    typedef std::shared_ptr<block_indirect_index>
+    typedef std::shared_ptr<block_top_indirect_index>
                                 pointer_t;
 
-                                block_indirect_index(dbfile::pointer_t f, reference_t offset);
+                                block_top_indirect_index(dbfile::pointer_t f, reference_t offset);
 
     static size_t               get_start_offset();
     size_t                      get_max_count() const;
+
+    std::uint8_t                get_block_level() const;
+    void                        set_block_level(std::uint8_t block_level);
 
     reference_t                 get_reference(oid_t & id, bool must_exist) const;
     void                        set_reference(oid_t & id, reference_t offset);
 
 private:
-    std::uint64_t               get_position(oid_t id, reference_t const * & refs) const;
+    std::uint64_t               get_position(oid_t & id, reference_t const * & refs) const;
 
     mutable std::uint32_t       f_start_offset = 0;
     mutable size_t              f_count = 0;

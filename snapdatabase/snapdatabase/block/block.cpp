@@ -194,6 +194,21 @@ structure::pointer_t block::get_structure(version_t version) const
 }
 
 
+void block::clear_block()
+{
+    reference_t const offset(f_structure->get_size());
+#ifdef _DEBUG
+    if(offset == 0)
+    {
+        throw snapdatabase_logic_error("the structure of the block_free_block block cannot be dynamic.");
+    }
+#endif
+    std::uint32_t const page_size(get_table()->get_page_size() - offset);
+
+    memset(data(offset), 0, page_size);
+}
+
+
 dbtype_t block::get_dbtype() const
 {
     return *reinterpret_cast<dbtype_t const *>(data(0));

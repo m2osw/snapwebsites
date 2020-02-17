@@ -19,10 +19,12 @@
 
 
 /** \file
- * \brief Database file implementation.
+ * \brief Block Entry Index implementation.
  *
- * Each table uses one or more files. Each file is handled by a dbfile
- * object and a corresponding set of blocks.
+ * The data is indexed using a Block Entry Index as the bottom block. This
+ * is the block which includes the remainder of the key and then a pointer
+ * to the actual data or to an `IDXP` if the entry points to multiple
+ * rows (i.e. secondary index allowing duplicates).
  */
 
 // self

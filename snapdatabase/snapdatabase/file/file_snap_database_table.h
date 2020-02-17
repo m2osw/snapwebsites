@@ -42,9 +42,18 @@ namespace snapdatabase
  * We want to support multiple implementations to help with the ignorance
  * of what is best.
  *
+ * Note that a useful Bloom Filter needs to have a size of at least about
+ * 8 times larger than the total number of rows in your table. So they do
+ * tend to get pretty large. A table that grows to 1 million rows requires
+ * 8 Mb of data. If we use `N` buffers, then you get a number around 56 Mb
+ * to 184 Mb of data. Also, growing the size of the Bloom Filter requires
+ * us to recalculate all of the hashes for all the rows.
+ *
  * * None
  *
- *     Means that no Bloom Filter is used (good for _tiny_ tables).
+ *     Means that no Bloom Filter is used (good for _tiny_ tables--here tiny
+ *     means a size such that all the OIDs can fit in one block or even two
+ *     levels: about 250,000 rows with 4Kb blocks)
  *
  * * One
  *
@@ -66,14 +75,14 @@ namespace snapdatabase
  *     Means that the filter is just bits: 0 no luck, 1 row exists.
  *
  *     As a result, this Bloom Filters are not good with tables where
- *     many deletion occur because ultimately you get so many false
+ *     many deletions occur because ultimately you get so many false
  *     positives that the filter could just be ignored. To fix the
  *     problem you have to regenerate the Bloom Filter from scratch.
  *
  * * Counters
  *
  *     Means that we use 8 bits and count how many rows make use
- *     of that bit. That way we can decrement the counter later when
+ *     of that hash. That way we can decrement the counter later when
  *     the row gets deleted. So this is best for tables that have many
  *     deletes.
  *
@@ -103,12 +112,38 @@ public:
 
     version_t                   get_file_version() const;
     void                        set_file_version(version_t v);
-    reference_t                 get_first_free_block() const;
-    void                        set_first_free_block(reference_t offset);
-    reference_t                 get_table_definition() const;
-    void                        set_table_definition(reference_t offset);
     uint32_t                    get_block_size() const;
     void                        set_block_size(uint32_t size);
+    reference_t                 get_table_definition() const;
+    void                        set_table_definition(reference_t offset);
+    reference_t                 get_first_free_block() const;
+    void                        set_first_free_block(reference_t offset);
+    reference_t                 get_indirect_index() const;
+    void                        set_indirect_index(reference_t offset);
+    oid_t                       get_last_oid() const;
+    void                        set_last_oid(oid_t oid);
+    oid_t                       get_first_free_oid() const;
+    void                        set_first_free_oid(oid_t oid);
+    oid_t                       get_update_last_oid() const;
+    void                        set_update_last_oid(oid_t oid);
+    oid_t                       get_update_oid() const;
+    void                        set_update_oid(oid_t oid);
+    reference_t                 get_blobs_with_free_space() const;
+    void                        set_blobs_with_free_space(reference_t reference);
+    reference_t                 get_first_compactable_block() const;
+    void                        set_first_compactable_block(reference_t reference);
+    reference_t                 get_top_key_index_block() const;
+    void                        set_top_key_index_block(reference_t reference);
+    reference_t                 get_expiration_index_block() const;
+    void                        set_expiration_index_block(reference_t reference);
+    reference_t                 get_secondary_index_block() const;
+    void                        set_secondary_index_block(reference_t reference);
+    reference_t                 get_tree_index_block() const;
+    void                        set_tree_index_block(reference_t reference);
+    reference_t                 get_deleted_rows() const;
+    void                        set_deleted_rows(reference_t reference);
+    reference_t                 get_bloom_filter_flags() const;
+    void                        set_bloom_filter_flags(flags_t flags);
 
 private:
     //schema_table::pointer_t     f_schema = schema_table::pointer_t();

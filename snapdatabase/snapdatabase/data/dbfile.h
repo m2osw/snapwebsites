@@ -47,14 +47,19 @@ namespace snapdatabase
 
 
 
-typedef uint64_t            reference_t;
-typedef uint8_t *           data_t;
-typedef uint8_t const *     const_data_t;
+typedef uint64_t                    reference_t;
+typedef std::vector<reference_t>    reference_vector_t;
+typedef uint64_t                    oid_t;
+typedef uint8_t *                   data_t;
+typedef uint8_t const *             const_data_t;
 
-constexpr reference_t       NULL_FILE_ADDR = static_cast<reference_t>(0);
+constexpr reference_t               NULL_FILE_ADDR = static_cast<reference_t>(0);
 
 class table;
-typedef std::shared_ptr<table>  table_pointer_t;
+typedef std::shared_ptr<table>      table_pointer_t;
+
+
+static_assert(sizeof(reference_t) == sizeof(oid_t), "the OID and references must fit in each other's variables");
 
 
 class dbfile

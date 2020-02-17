@@ -68,6 +68,7 @@ public:
     void                        set_table(table_pointer_t table);
     structure_pointer_t         get_structure() const;
     structure_pointer_t         get_structure(version_t version) const;
+    void                        clear_block();
 
     dbtype_t                    get_dbtype() const;
     void                        set_dbtype(dbtype_t type);
@@ -84,7 +85,7 @@ public:
 protected:
                                 block(descriptions_by_version_t const * structure_descriptions, dbfile::pointer_t f, reference_t offset);
 
-    table_pointer_t             f_table = table_pointer_t();
+    table_pointer_t             f_table = table_pointer_t(); // TODO: we probably need a weak pointer here
     dbfile::pointer_t           f_file = dbfile::pointer_t();
     descriptions_by_version_t const *
                                 f_structure_descriptions = nullptr;

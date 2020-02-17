@@ -40,16 +40,36 @@ namespace snapdatabase
 {
 
 
+// all of the following columns are recognized by the system
+// you are free to read any one of them, you can write to some of them
+//
+constexpr char const *                          g_oid_column                = "oid";
+constexpr char const *                          g_expiration_date_column    = "expiration_date";
+
+
+std::uint8_t  read_uint8(buffer_t const & buffer, size_t & pos);
+std::uint16_t read_be_uint16(buffer_t const & buffer, size_t & pos);
+std::uint32_t read_be_uint32(buffer_t const & buffer, size_t & pos);
+std::uint64_t read_be_uint64(buffer_t const & buffer, size_t & pos);
+
+void push_uint8(buffer_t & buffer, uint8_t value);
+void push_be_uint16(buffer_t & buffer, uint16_t value);
+void push_be_uint32(buffer_t & buffer, uint32_t value);
+void push_be_uint64(buffer_t & buffer, uint64_t value);
+
+
 
 class cell
 {
 public:
     typedef std::shared_ptr<cell>               pointer_t;
-    typedef std::map<std::string, pointer_t>    map_t;
+    typedef std::map<column_id_t, pointer_t>    map_t;
 
                                                 cell(schema_column::pointer_t t);
 
     schema_column::pointer_t                    schema() const;
+    struct_type_t                               type() const;
+    bool                                        has_fixed_type() const;
 
     bool                                        is_void() const;
     void                                        set_void();
@@ -122,6 +142,14 @@ public:
 
     std::string                                 get_string() const;
     void                                        set_string(std::string const & value);
+
+    void                                        column_id_to_binary(buffer_t & buffer) const;
+    static column_id_t                          column_id_from_binary(buffer_t const & buffer, size_t & pos);
+
+    void                                        value_to_binary(buffer_t & buffer) const;
+    void                                        value_from_binary(buffer_t const & buffer, size_t & pos);
+
+    void                                        copy_from(cell const & source);
 
 private:
     void                                        set_integer(std::int64_t value);

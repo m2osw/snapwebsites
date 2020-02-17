@@ -41,16 +41,17 @@ class block_free_space_impl;
 }
 
 
-// bits 0 to 7 are reserved by the block_free_space
-constexpr uint32_t              ALLOCATED_SPACE_FLAG_MOVED      = 0x000100;
-constexpr uint32_t              ALLOCATED_SPACE_FLAG_DELETED    = 0x000200;
+// bits 0 to 3 are reserved by the block_free_space (also right now we only use 0x01)
+//
+constexpr std::uint8_t          ALLOCATED_SPACE_FLAG_MOVED      = 0x10;
+constexpr std::uint8_t          ALLOCATED_SPACE_FLAG_DELETED    = 0x20;
 
 
 struct free_space_t
 {
     block::pointer_t            f_block = block::pointer_t();
     reference_t                 f_reference = 0;
-    uint32_t                    f_size = 0;
+    std::uint32_t               f_size = 0;
 };
 
 
@@ -63,12 +64,12 @@ public:
                                 block_free_space(dbfile::pointer_t f, reference_t offset);
                                 ~block_free_space();
 
-    free_space_t                get_free_space(uint32_t minimum_size);
+    free_space_t                get_free_space(std::uint32_t minimum_size);
     void                        release_space(reference_t offset);
 
-    static bool                 get_flag(data_t ptr, uint32_t flag);
-    static void                 set_flag(data_t ptr, uint32_t flag);
-    static void                 clear_flag(data_t ptr, uint32_t flag);
+    static bool                 get_flag(data_t ptr, std::uint8_t flag);
+    static void                 set_flag(data_t ptr, std::uint8_t flag);
+    static void                 clear_flag(data_t ptr, std::uint8_t flag);
 
 private:
     std::unique_ptr<detail::block_free_space_impl>

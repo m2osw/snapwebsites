@@ -85,9 +85,15 @@ block_data::block_data(dbfile::pointer_t f, reference_t offset)
 }
 
 
-uint32_t block_data::block_total_space(table_pointer_t t)
+std::uint8_t * block_data::data_start()
 {
-    return t->get_page_size() - sizeof(uint32_t);
+    return data() + HEADER_SIZE;
+}
+
+
+std::uint32_t block_data::block_total_space(table::pointer_t t)
+{
+    return t->get_page_size() - HEADER_SIZE;
 }
 
 

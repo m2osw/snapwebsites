@@ -20,10 +20,10 @@
 
 
 /** \file
- * \brief Block representing free space that can be allocated.
+ * \brief Block representing the Primary Key top index.
  *
- * This block is a _free_ blok meaning that it is not current used for
- * anything. It is part of the list of free blocks (linked list).
+ * The primary key makes use of a first index table to cut down the size
+ * of the search by roughly 1/256th.
  */
 
 // self
@@ -37,19 +37,18 @@ namespace snapdatabase
 
 
 
-class table;
-typedef std::shared_ptr<table>      table_pointer_t;
-
-class block_free_block
+class block_primary_index
     : public block
 {
 public:
-    typedef std::shared_ptr<block_free_block>       pointer_t;
+    typedef std::shared_ptr<block_primary_index>       pointer_t;
 
-                                block_free_block(dbfile::pointer_t f, reference_t offset);
+                                block_primary_index(dbfile::pointer_t f, reference_t offset);
 
-    reference_t                 get_next_free_block() const;
-    void                        set_next_free_block(reference_t offset);
+    uint8_t                     get_size() const;
+    void                        set_size(uint8_t size);
+    void                        set_max_size();
+    reference_t                 find_index(buffer_t key) const;
 
 private:
 };

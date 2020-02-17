@@ -95,7 +95,7 @@ public:
                         || minor < 0 || minor >= 65536)
                         {
                             throw invalid_parameter(
-                                    "major/minor version must be between 0 and 65535 inclusive, "
+                                      "major/minor version must be between 0 and 65535 inclusive, "
                                     + std::to_string(major)
                                     + "."
                                     + std::to_string(minor)
@@ -202,7 +202,7 @@ struct min_max_version_t
 
 
 
-constexpr int FlagPosition(flags_t const flag)
+constexpr int flag_position(flags_t const flag)
 {
     switch(flag)
     {
@@ -285,6 +285,11 @@ constexpr int FlagPosition(flags_t const flag)
  * It is only part of the description structures. However, the type of a
  * field in a table has its type defined in the schema (it's not repeated
  * in each cell, though. That would be too heavy!)
+ *
+ * \todo
+ * If it can help, consider supporting `CHAR(<size>)` which would allow us
+ * to have strings with a fixed size (the result being that we'd then have
+ * a table with a fixed size schema which can help in all sorts of ways).
  */
 enum class struct_type_t : uint16_t
 {
@@ -371,6 +376,7 @@ constexpr ssize_t                   VARIABLE_SIZE = -2;
 
 std::string                         to_string(struct_type_t const & type);
 struct_type_t                       name_to_struct_type(std::string const & type_name);
+bool                                type_with_fixed_size(struct_type_t type);
 
 
 

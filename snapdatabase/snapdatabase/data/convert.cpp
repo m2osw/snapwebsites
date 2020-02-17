@@ -501,6 +501,8 @@ buffer_t string_to_integer(std::string const & value, size_t max_size)
 
 std::string integer_to_string(buffer_t value, int bytes_for_size, int base)
 {
+    // WARNING: this first test is only working on little endian computers
+    //
     if(static_cast<int8_t>(value.data()[value.size() - 1]) < 0)
     {
         // TODO: this is a tad bit ugly... (i.e. triple memcpy()!!!)

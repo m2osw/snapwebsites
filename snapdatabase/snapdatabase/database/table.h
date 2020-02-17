@@ -40,6 +40,7 @@
 //
 #include    "snapdatabase/data/schema.h"
 #include    "snapdatabase/data/xml.h"
+#include    "snapdatabase/database/cursor.h"
 
 
 
@@ -54,6 +55,7 @@ class table_impl;
 } // detail namespace
 
 
+
 constexpr size_t const                          BLOCK_HEADER_SIZE = 4 + 4;  // magic + version (32 bits each)
 
 class context;
@@ -61,6 +63,8 @@ class dbfile;
 typedef std::shared_ptr<dbfile>                 dbfile_pointer_t;
 class block;
 typedef std::shared_ptr<block>                  block_pointer_t;
+
+
 
 class table
     : public std::enable_shared_from_this<table>
@@ -75,29 +79,47 @@ public:
                                                     , xml_node::pointer_t x
                                                     , schema_complex_type::map_pointer_t complex_types);
 
-    void                                        load_extension(xml_node::pointer_t e);
-
+    pointer_t                                   get_pointer() const;
     pointer_t                                   get_pointer();
     dbfile_pointer_t                            get_dbfile() const;
-    version_t                                   version() const;
+
+    // schema management
+    //
+    void                                        load_extension(xml_node::pointer_t e);
+    version_t                                   schema_version() const;
     std::string                                 name() const;
     model_t                                     model() const;
     column_ids_t                                row_key() const;
-    schema_column::pointer_t                    column(std::string const & name) const;
-    schema_column::pointer_t                    column(column_id_t id) const;
-    schema_column::map_by_id_t                  columns_by_id() const;
-    schema_column::map_by_name_t                columns_by_name() const;
+    schema_column::pointer_t                    column(std::string const & name, version_t const & version = version_t()) const;
+    schema_column::pointer_t                    column(column_id_t id, version_t const & version = version_t()) const;
+    schema_column::map_by_id_t                  columns_by_id(version_t const & version = version_t()) const;
+    schema_column::map_by_name_t                columns_by_name(version_t const & version = version_t()) const;
     bool                                        is_sparse() const;
     bool                                        is_secure() const;
     std::string                                 description() const;
     size_t                                      get_size() const; // total size of the file right now
     size_t                                      get_page_size() const; // size of one block in bytes including the magic
+    schema_table::pointer_t                     get_schema(version_t const & version = version_t());
+
+    // block management
+    //
     block_pointer_t                             get_block(reference_t offset);
     block_pointer_t                             allocate_new_block(dbtype_t type);
     void                                        free_block(block_pointer_t block, bool clear_block = true);
-    bool                                        verify_schema();
+
+    // row management
+    //
+    row_pointer_t                               row_new() const;
+    cursor::pointer_t                           row_select(conditions const & cond);
+    bool                                        row_commit(row_pointer_t row);
+    bool                                        row_insert(row_pointer_t row);
+    bool                                        row_update(row_pointer_t row);
 
 private:
+    friend cursor;
+
+    void                                        read_rows(cursor::pointer_t cursor);
+
     std::shared_ptr<detail::table_impl>         f_impl;
 };
 

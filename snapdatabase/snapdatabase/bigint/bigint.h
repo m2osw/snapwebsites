@@ -46,6 +46,23 @@ namespace snapdatabase
 
 
 
+constexpr std::uint64_t round_down(std::uint64_t value, std::uint64_t multiple)
+{
+    return value - value % multiple;
+}
+
+
+constexpr std::uint64_t round_up(std::uint64_t value, std::uint64_t multiple)
+{
+    std::uint64_t adjusted(value + multiple - 1);
+    return round_down(adjusted, multiple);
+}
+
+
+constexpr std::uint64_t divide_rounded_up(std::uint64_t value, std::uint64_t multiple)
+{
+    return (value + multiple - 1) / multiple;
+}
 
 
 void                                add128(std::uint64_t * dst, std::uint64_t const * src);

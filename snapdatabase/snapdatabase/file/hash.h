@@ -47,20 +47,20 @@ typedef std::uint32_t       hash_t;
 class hash
 {
 public:
-                            hash(hash_t seed);
-                            hash(hash const & rhs) = delete;
+                                    hash(hash_t seed);
+                                    hash(hash const & rhs) = delete;
 
-    hash &                  operator = (hash const & rhs) = delete;
+    hash &                          operator = (hash const & rhs) = delete;
 
-    void                    add(std::uint8_t const * v, std::size_t size);
-    hash_t                  get() const;
+    void                            add(std::uint8_t const * v, std::size_t size);
+    hash_t                          get() const;
 
 private:
-    hash_t                  get_byte() const;
-    hash_t                  peek_byte(int pos) const;
-    std::size_t             size() const;
-    void                    get_64bits(hash_t & v1, hash_t & v2);
-    void                    peek_64bits(hash_t & v1, hash_t & v2) const;
+    hash_t                          get_byte() const;
+    hash_t                          peek_byte(int pos) const;
+    std::size_t                     size() const;
+    void                            get_64bits(hash_t & v1, hash_t & v2);
+    void                            peek_64bits(hash_t & v1, hash_t & v2) const;
 
     hash_t                          f_hash = 0;
     mutable std::uint8_t const *    f_buffer = nullptr;

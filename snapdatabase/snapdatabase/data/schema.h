@@ -45,14 +45,14 @@ namespace snapdatabase
 
 
 
-//typedef uint64_t                        block_ref_t;
-//typedef uint8_t                         flag8_t;
-//typedef uint16_t                        flag16_t;
-typedef uint32_t                        flag32_t;       // look into not using these, instead use the structure directly
-typedef uint64_t                        flag64_t;
-
-typedef uint16_t                        column_id_t;
+typedef std::uint32_t                   flag32_t;       // look into not using these, instead use the structure directly
+typedef std::uint64_t                   flag64_t;
+typedef std::uint16_t                   column_id_t;
 typedef std::vector<column_id_t>        column_ids_t;
+
+
+
+std::string const &                     expiration_date_column_name();
 
 
 
@@ -82,12 +82,14 @@ enum compare_t
 
 
 // SAVED IN FILE, DO NOT CHANGE BIT LOCATIONS
-constexpr flag64_t                          TABLE_FLAG_TEMPORARY    = (1LL << 0);
-constexpr flag64_t                          TABLE_FLAG_SPARSE       = (1LL << 1);
-constexpr flag64_t                          TABLE_FLAG_SECURE       = (1LL << 2);
+constexpr flag64_t                          TABLE_FLAG_SECURE       = (1ULL << 0);
+constexpr flag64_t                          TABLE_FLAG_SPARSE       = (1ULL << 1);
+constexpr flag64_t                          TABLE_FLAG_TRACK_CREATE = (1ULL << 2);
+constexpr flag64_t                          TABLE_FLAG_TRACK_UPDATE = (1ULL << 3);
+constexpr flag64_t                          TABLE_FLAG_TRACK_DELETE = (1ULL << 4);
 
 // NEVER SAVED, used internally only
-constexpr flag64_t                          TABLE_FLAG_DROP         = (1LL << 63);
+constexpr flag64_t                          TABLE_FLAG_DROP         = (1ULL << 63);
 
 
 // Special values
@@ -119,6 +121,19 @@ constexpr std::uint32_t                     SCHEMA_SORT_COLUMN_DEFAULT_LENGTH = 
 constexpr flag32_t                          SECONDARY_INDEX_FLAG_DISTRIBUTED    = (1LL << 0);
 
 
+enum index_type_t
+{
+    INDEX_TYPE_INVALID = -1,
+
+    INDEX_TYPE_SECONDARY,                   // this must be a secondary index
+    INDEX_TYPE_INDIRECT,                    // indirect index, based on OID
+    INDEX_TYPE_PRIMARY,                     // primary index, using primary key
+    INDEX_TYPE_EXPIRATION,                  // expiration index (TBD)
+    INDEX_TYPE_TREE                         // tree index, based on a path
+};
+
+index_type_t                                index_name_to_index_type(std::string const & name);
+std::string                                 index_type_to_index_name(index_type_t type);
 
 
 
@@ -175,6 +190,7 @@ public:
                                                     , flag32_t flags);
 
     void                                    from_structure(structure::pointer_t s);
+    bool                                    is_expiration_date_column() const;
     compare_t                               compare(schema_column const & rhs) const;
 
     schema_table_pointer_t                  table() const;
@@ -290,6 +306,8 @@ class schema_table
 {
 public:
     typedef std::shared_ptr<schema_table>   pointer_t;
+    typedef std::map<std::uint32_t, pointer_t>
+                                            map_by_version_t;
 
                                             schema_table();
 
@@ -303,13 +321,19 @@ public:
     virtual_buffer::pointer_t               to_binary() const;
 
     version_t                               schema_version() const;
+    void                                    set_schema_version(version_t version);
     time_t                                  added_on() const;
     std::string                             name() const;
     model_t                                 model() const;
     bool                                    is_sparse() const;
     bool                                    is_secure() const;
+    bool                                    track_create() const;
+    bool                                    track_update() const;
+    bool                                    track_delete() const;
     column_ids_t                            row_key() const;
     void                                    assign_column_ids(pointer_t existing_schema = pointer_t());
+    bool                                    has_expiration_date_column() const;
+    schema_column::pointer_t                expiration_date_column() const;
     schema_column::pointer_t                column(std::string const & name) const;
     schema_column::pointer_t                column(column_id_t id) const;
     schema_column::map_by_id_t              columns_by_id() const;
@@ -319,6 +343,9 @@ public:
 
     std::string                             description() const;
     std::uint32_t                           block_size() const;
+
+    void                                    schema_offset(reference_t offset);
+    reference_t                             schema_offset() const;
 
 private:
     void                                    process_columns(xml_node::pointer_t column_definitions);
@@ -340,6 +367,10 @@ private:
     // not saved in database, only in XML
     //
     std::string                             f_description = std::string();
+
+    // only memory parameters
+    //
+    reference_t                             f_schema_offset = NULL_FILE_ADDR;
 };
 
 

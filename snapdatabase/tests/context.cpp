@@ -25,6 +25,8 @@
 // snapdatabase lib
 //
 #include    <snapdatabase/database/context.h>
+#include    <snapdatabase/database/row.h>
+//#include    <snapdatabase/database/context.h>
 
 
 // advgetopt lib
@@ -85,7 +87,7 @@ CATCH_TEST_CASE("Context", "[centext]")
                             "<column-name name='_created_on' direction='desc'>_created_on + c2</column-name>\n"
                             "<column-name name='_deleted_on' not-null='null'/>\n"
                           "</order>\n"
-                          "<filter>c3 > 100</filter>\n"
+                          "<filter>c3 &gt; 100</filter>\n"
                         "</secondary-index>\n"
                       "</table>\n"
                     "</context>\n"
@@ -162,6 +164,27 @@ CATCH_TEST_CASE("Context", "[centext]")
 
         table = context->get_table("foo");
         CATCH_REQUIRE(table != nullptr);
+
+        for(int count(0); count < 580; ++count)
+        {
+            snapdatabase::row::pointer_t row(table->row_new());
+
+            snapdatabase::cell::pointer_t c1(row->get_cell("c1", true));
+            std::uint16_t const c1_value(rand() & 0xFFFF);
+            c1->set_uint16(c1_value);
+
+            snapdatabase::cell::pointer_t c2(row->get_cell("c2", true));
+            std::int16_t const c2_value(rand() & 0xFFFF);
+            c2->set_int16(c2_value);
+
+            snapdatabase::cell::pointer_t c3(row->get_cell("c3", true));
+            uint64_t c3_value(static_cast<std::uint64_t>(rand()) ^ (static_cast<std::uint64_t>(rand()) << 32));
+            c3_value &= -256;
+            c3_value |= count + 1;
+            c3->set_uint64(c3_value);
+
+            table->row_insert(row);
+        }
 
         context.reset();
     }

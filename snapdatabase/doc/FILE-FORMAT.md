@@ -66,43 +66,94 @@ knwow whether it is affected by those two numbers.
 
 * Indirect Index (`INDR`/`TIND`)
 
-To allow for changes in the data location, we use a two layered indexing
-mechanism. Each row is assigned an identifier (OID). That identifier is
-incremented starting at 1. Knowing the number of pointers per page and
-the current number of levels (the `TIND` includes that level), we can
-immediately calculate where the pointer is located and load the exact
-page at once.
+    To allow for changes in the data location, we use a two layered indexing
+    mechanism. Each row is assigned an identifier (OID). That identifier is
+    incremented starting at 1. Knowing the number of pointers per page and
+    the current number of levels (the `TIND` includes that level), we can
+    immediately calculate where the pointer is located and load the exact
+    page at once.
 
-Note: we can't safely expose this identifier because when a row gets
-deleted its OID gets reassigned to another row.
+    Note: we can't safely expose this identifier because when a row gets
+    deleted its OID gets reassigned to another row.
 
-* Primary Index
+* Primary Index (`PIDX`/`TIDX`/`EIDX`)
 
-We primarily use B-trees in our implementation.
+    We primarily use B+trees in our implementation.
 
-Cassandra uses LSMtree
-instead. LSMtree has the advantage of offering a very fast write mechanism.
-We want to look into using a level 0 LSMtree which spans between the
-_commitlog_ (incoming data saved in our temporary journal) and the commited
-data.
+    However, the Primary Index uses the `PIDX` first (level 0), which is
+    an index using the last byte of our key to very quickly go to level 1.
+    (We could use more than 8 bits if we use blocks of more than 4Kb)
+    This is done this way because the top bytes are used to determine
+    which computers in the cluster should receive the data. So these top
+    bytes are not going to be as random as the bottom bytes.
 
-* Tree Index
+    TODO: the `PIDX` table wastes 50% of the block because of its header
+    inside the block. We want to look into having a way to avoid that huge
+    waste. That could be done by defining the type for the block when
+    allocating it. (i.e. the primary index must have `TIDX` entries anyway,
+    and any child to a `TIDX` must be either another `TIDX` or a `PIDX` and
+    we can define that by checking the `TIDX` level).
 
-We also have a special case of a Direct Tree to support searches on a path
-organized in a _perfect tree_ (perfect as in any child always has a parent
-page). This will allow us to access the data by path and to assign any page
-to any point in a path (to make it easy to move the page to a new location
-and even duplicate the same page under multiple paths).
+    Note: at this point the `PIDX` is not mandatory.
 
-The primary index makes use of a Murmur3 hash to transform the key to a
-value which is exactly 128 bits. This is very useful to better partition
-the data (grow horizontally). However, it's not as useful for secondary
-indexes that require a specific sort order.
+    Cassandra uses LSMtree instead. LSMtree has the advantage of offering
+    a very fast write mechanism. We want to look into using a level 0
+    LSMtree which spans between the _commitlog_ (incoming data saved in our
+    temporary journal) and the commited data.
 
-Note: Cassandra's first solution was to use column names. These were sorted
-(in binary by default). However, that meant it wasn't distributed. Later
-Cassandra added Secondary Indexes which they implemented so they would be
-distributed.
+* Branch Index (`TIDX`/`EIDX`)
+
+    Similar to the Primary Index, except that this includes a major version
+    number in the key. (i.e. use the schema primary key + version.major).
+    This is used to save branch specific data in a row.
+
+    **IMPORTANT NOTE:** In our Snap! implementation, the branch also includes
+    a language.
+
+    See talk about the `_version` field in
+    snapdatabase/snapdatabase/data/schema.cpp
+
+* Revision Index (`TIDX`/`EIDX`)
+
+    Similar to the Primary Index, except that this includes the major and
+    the minor version numbers in the key. (i.e. use the schema primary key
+    + version.major + version.minor). This is used to save the revision
+    specific data in a row.
+
+    **IMPORTANT NOTE:** In our Snap! implementation, the revisions also
+    includes a language.
+
+    See talk about the `_version` field in
+    snapdatabase/snapdatabase/data/schema.cpp
+
+* Expiration Index (`TIDX`/`EIDX`)
+
+    This index is used to track when a row is going to expire. The system
+    has to automatically delete rows that expire. This index is used to
+    know of all the rows with an `expiration_date` column and delete it
+    as required.
+
+    The index uses the `expiration_date` in incrementing order. The type of
+    the column much represent a date. The precision is left to the database
+    administrator.
+
+* Tree Index (`TIDX`/`EIDX`)
+
+    We also have a special case of a Direct Tree to support searches on a path
+    organized in a _perfect tree_ (perfect as in any child always has a parent
+    page). This will allow us to access the data by path and to assign any page
+    to any point in a path (to make it easy to move the page to a new location
+    and even duplicate the same page under multiple paths).
+
+    The primary index makes use of a Murmur3 hash to transform the key to a
+    value which is exactly 128 bits. This is very useful to better partition
+    the data (grow horizontally). However, it's not as useful for secondary
+    indexes that require a specific sort order.
+
+    Note: Cassandra's first solution was to use column names. These were sorted
+    (in binary by default). However, that meant it wasn't distributed. Later
+    Cassandra added Secondary Indexes which they implemented so they would be
+    distributed.
 
 ### Data
 
@@ -177,9 +228,13 @@ with the B+tree and basic key/data plus a pointer to the blob.
 
 * Solution 2. Use `INDR` to for Compaction Feature
 
+    (Note: my first implementation will forcibly include an `INDR`
+    and `TIND` once the first `INDR` is full; but later versions should
+    support not having the indirect indexes.)
+
     This solution makes it easier to allow for the compaction feature.
-    All the tables, except the `INDR`, make use of a row number and the
-    `INDR` is used to convert that number in a pointer in the data table.
+    All the tables, except the `INDR`, make use of a row number (OID) and
+    the `INDR` is used to convert that number in a pointer in the data table.
 
         +------------------+     +------------------+
         |                  |     |                  |
@@ -325,9 +380,9 @@ The header has the following fields at the moment:
     number of schema (see `SCHM` and `SCHL`) which can grow and shrink over
     time, all the old structures will be kept so any older version can be
     upgraded (okay, after some time, we may force you to upgrade to an
-    intermediate version or dump your data and re-upload it to the database;
-    after a long time, we would otherwise have too many structure descriptions
-    in our files...)
+    intermediate version or dump your data and re-upload it to a newer version
+    of the database; after a long time, we would otherwise have too many
+    structure descriptions in our files...)
 
 
 ### Header (`SDBT`)
@@ -442,7 +497,7 @@ data.
 
     **TBD:** do we really want to support temporary tables? It's often used
     in SQL, but here, maybe we could instead look into having a feature
-    to create memory tables instead. That way it can be made non-block
+    to create memory tables. That way it can be made non-block
     based. i.e. the whole set of the data can be kept in maps (using a
     boost multi-index map). Especially, **we do not have a way to create
     a table dynamically**. Only tables which have an XML definition in the
@@ -465,7 +520,7 @@ data.
     when the table times out and gets deleted. Note that once a table
     has expired, any access to that table fail with an error.
 
-* Indirect Index (Type: `reference`)
+* Indirect Index (Type: `reference_t`)
 
     A pointer to an `INDR` block or, once the first `INDR` is full, to
     a `TIND` block.
@@ -484,7 +539,9 @@ data.
     Note: this imposes an OID on each row. This means we need a lock of
     the file first block and incrementing the OID each time a new row
     gets added to the database. If we also implement the free list, we
-    get a similar lock to manage that list.
+    get a similar lock to manage that list. Keep in mind also that the
+    OID is specific to one database file. On a replicat, the same row
+    is very likely to have a different OID.
 
     The row itself does not need to save the OID although it is useful for
     the compaction process. If we accept a _slow_ compaction process, we
@@ -497,7 +554,7 @@ data.
     free list is empty or not. If not, use that OID, if it is empty allocate
     a new OID. This means the row OIDs get reused.
 
-* Last OID (Type: `uint64_t`)
+* Last OID (Type: `oid_t`)
 
     The last OID that was used. If 0, then no rows were allocated yet. This
     value is used to allow for the `INDR` blocks.
@@ -509,7 +566,7 @@ data.
     with exactly the same data, the OID is likely going to be different
     because the data would have been inserted in a different order.
 
-* First Free OID (Type: `uint64_t`)
+* First Free OID (Type: `oid_t`)
 
     Whenever we add a new row we assign an identifier to that row. That
     identifier is used everywhere that row gets referenced. The Indirect Index
@@ -522,6 +579,26 @@ data.
 
     This feature doesn't get used if the file does not require an indirect
     index.
+
+* Update Last OID (Type: `oid_t`)
+
+    The OID of the last row the background process has to read to have
+    the entire database updated. The current OID to update is defined
+    in the "Update OID" field. Once that field reaches (is equal to)
+    the "Update Last OID" value, then the entire database was updated
+    to the latest version of the schema.
+
+* Update OID (Type: `oid_t`)
+
+    The OID of the last row the background process used to update a table.
+
+    Whenever you make changes to your table, it is required to go through
+    the entire set of rows in that table to update them to the latest schema.
+    The process runs in the background allowing for what looks like an instant
+    change to the schema (i.e. the database runs as if nothing had changed).
+
+    This OID is kept in the database so it can be interrupted and restarted
+    any number of times.
 
 * First Compactable Block (Type: `reference_t`)
 
@@ -561,37 +638,39 @@ data.
 
     Pointer to the first B+tree Primary Index block.
 
-* First Block with Free Space (Type: `reference_t`)
+    The top block is a `PIDX` which we index using the "some" byte of the
+    Murmur3 hash. The next block is a `TIDX` and/or `EIDX`.
 
-    This reference points to a set of references arranged by the amount
-    of space available in a block (`FSPC`). This gives us the ability to
-    go directly to a block that can hold a new key being inserted (or
-    an old key being updated and that grew).
+* Top Branch Index Block (Type: `reference_t`)
+
+    Pointer to the first B+tree Branch Index Block.
+
+    The branch index block is used to track branches. This may be a Murmur3
+    or we may want to change that to a secondary type of index. The key is
+    the same as the Top Key Index Block plus the major version number.
+
+* Top Revision Index Block (Type: `reference_t`)
+
+    Pointer to the first B+tree Revision Index Block.
+
+    The revision index block is used to track revisions. This may be a Murmur3
+    or we may want to change that to a secondary type of index. The key is
+    the same as the Top Key Index Block plus the major & minor version numbers
+    and the language.
 
 * Blobs with Free Space (Type: `reference_t`)
 
     This reference points to a block of references used to define blobs
-    with space still available (`FSPC`).
+    with space still available where we can save rows (`FSPC`).
 
 * Expiration Index Block (Type: `reference_t`)
 
-    Pointer to the first B+tree index block with rows having an
-    Expiration Date are sorted by that date. Note that we only allow
-    one entry per row. If a cell within a row has an Expiration Date
-    then we still add this as if the row had that expiration and when
-    it expires, we just remove the cell. That should be more than
-    fast enough.
+    Pointer to the first B+tree index (TIDX/EIDX) block with rows having
+    an `expiration_date` column. The index sorts the rows by that date.
+    We do not support an expiration date on a per cell basis.
 
-    If multiple cells and the row all have an Expiration Date, then we
-    use the smallest one as the key to add this row to the Expiration Index.
-
-    _Note: In Cassandra, this feature uses a TTL. However, a TTL is
-    definitely annoying in this case since it can change depending on
-    the creation date and we do not want our threshold date to change
-    that way. Instead, if you want to extend the lifetime of a piece
-    of data, you have to update its Expiration Date. Plus this way you
-    are sure that all the data you want to expire at a given date
-    all expire simultaneously._
+    The `expiration_date` column must be of a type representing time.
+    Any precision of the time type is supported, whatever their precision.
 
 * Secondary Index Blocks (Type: `reference_t`)
 
@@ -688,7 +767,7 @@ add it to the linked list of `FREE` blocks.
 
     The magic word.
 
-* Next Free Block (`reference`)
+* Next Free Block (`reference_t`)
 
     A reference to the next free block or 0.
 
@@ -743,7 +822,7 @@ rows to a newer schema.
 
     The size of this schema blob.
 
-* Next Block (`reference`)
+* Next Block (`reference_t`)
 
     If the schema is larger than one block, this is the next part. Before
     we transform the schema to C++ objects, we read all the parts.
@@ -759,8 +838,11 @@ rows to a newer schema.
     - `version` (`uint16_t:uint16_t`)
     - `table_name` (`p8-string`)
     - `flags` (`uint64_t`)
-        . temporary (bit 0)
+        . secure (bit 0)
         . sparse (bit 1)
+        . track create (bit 2)
+        . track update (bit 3)
+        . track delete (bit 4)
     - `block_size` (`uint32_t`)
     - `model` (`uint8_t`)
         . content (this is the default is not defined)
@@ -810,13 +892,30 @@ reuse it, One way would be to have counters, but that starts to be really
 heavy (i.e. count all the columns added and removed over time so once the
 old column's counter goes to 0 we can reuse that slot.
 
+When the secure flag is set, the table is considered to include many
+security related data which need to be erased on a delete. The idea is
+to clear the data once not necessary anymore to reduce the potential for
+data leakage as much as possible.
+
 When the sparse flag is set, we allow sparse files. Instead of writing
 full blocks when allocating the file we use lseek() which may end up
 generating a sparse file (if your blocks are larger than the size of
 one system block). This option is not recommended since it may generate
 problems at the time a `FREE` block is required and it was not yet
 allocated. (That being said, if the list of free blocks is empty, we
-have a similar situation...)
+have a similar situation even in non-sparse files...)
+
+When the track flags are set, the corresponding columns are managed by the
+system. The global `_created_on` column, like the `_oid` column, is always
+set. By not tracking all the events, you often avoid having to reallocate
+a new location for the row as it is not unlikely to grow (i.e. adding new
+columns means that the row becomes wider). We could allocate all of those
+columns on creation, but in most tables the tracking information is never
+used so we avoid having it and save a lot of space.
+
+Note that the `_created_by`, `_last_updated_by`, and `_deleted_by` are
+created only if you set those values. The low level database system has
+no user concept.
 
 The `revision_type` mini-field defines what part of the version affects the
 field. In our content table, part of the data is versioned meaning that older
@@ -831,9 +930,9 @@ supporting the minor version. Here are the existing three modes:
  * `branch` -- fields set as `branch` have distinct values for each `major`
    revision; so we get one value for revision `0`, one value for revision
    `1`, etc.; this is primarily used for links between pages;
- * `revision` -- fields set as `revision` have distinct values for ech and
-   every version, whether the `major` or the `minor` changes; this is used
-   for the actual user content such as the title, body, author, etc.
+ * `revision` -- fields set as `revision` have distinct values for each and
+   every version, whether the `major` or the `minor` version changes; this
+   is used for the actual user content such as the title, body, author, etc.
 
 In terms of implementation, we may use the index (see Indexing) to implement
 it. This is still TBD at this point. But for sure that way we can get all
@@ -846,11 +945,11 @@ See also libsnapwebsites/src/snapwebsites/tables.xsd
 
 ### Schema List Block (`SCHL`)
 
-When updateing the schema, the system does not immediately go through the
+When updating the schema, the system does not immediately go through the
 entire file to update it. Instead, it saves the different versions of the
 schema and let a background process work on the schema update. This means
 reading a row may require access to an older version of the schema. To
-allow for such, we have one block that lists of the `SCHM` blocks with
+allow for such, the database uses one block listing the `SCHM` blocks with
 all the old versions.
 
 Once the background process updating the table went through the entire
@@ -889,7 +988,7 @@ header points directly to the `SCHM`.
     This field is repeated for each schema changes that happened so far
     and are still not fully updated by our background process. The array
     is used to very quickly find the schema by version (i.e. it is an
-    index of the existing schema).
+    index of the existing schemata sorted by version).
 
     * Schema Version (Type: `version_t`)
 
@@ -906,7 +1005,7 @@ header points directly to the `SCHM`.
 ### Free Space Block (`FSPC`)
 
 Whenever a block of data gets used we write some data to it and the rest of
-the space is "free space". That "free space" is connected to a Free Space
+the space is "free space". That "free space" is added to a Free Space
 Block so we can very quickly find the block with enough space to save the
 next incoming blob of data.
 
@@ -914,18 +1013,41 @@ next incoming blob of data.
 
     The magic word.
 
-* Free Space (Type: `reference`, Alignment: `sizeof(reference_t) * 2`)
+* Free Space (Type: `reference_t`, Alignment: `sizeof(reference_t) * 2`)
 
-    This is an array of references to blocks with free space. These
-    blocks include a next reference (i.e. it is a linked list of such
-    free spaces).
+    This block is an array of references to `DATA` blocks with free space.
+    The index of the array represents a size available in that `DATA`
+    block.
+
+    The array has a single reference for a given size. That reference
+    points to a `DATA` block where the first 8 bytes represent the next
+    free space with that size (i.e. a linked list).
+
+    Why does it work?
+    
+    (1) The size of a block, `DATA` or `FPSC`, is the same. The minimum
+    size of a Blob of Data in the `DATA` block is at least going to be:
+
+        version_t       (4 bytes)       _a.k.a. schema version_
+        column_id_t     (2 bytes)
+        int64_t         (8 bytes)       "_oid"
+        column_id_t     (2 bytes)
+        int64_t         (8 bytes)       "_created_on"
+        column_id_t     (2 bytes)
+        int8_t          (1+ bytes)      _user defined column_
+
+                Total: 27+ bytes minimum
+
+    in other words, we can very easily have a `reference_t` to another
+    blob of free space.
+
+    (2) The minimum size of a block also means that index 0 and 1 are not
+    required in our array. This leaves space for our header (Magic field).
+
 
     We always allocate a bare minimum of 16 bytes which allows us to have
-    an 8 bytes reference So this array is one pointer per possible size which
-    is a multiple of the minimum size we'd allocate for a row.
-
-    (The minimum of 64 bytes is likely going to be _much more_ but that's
-    the system requirement.)
+    an 8 bytes reference. So this array is one pointer per possible size
+    which is a multiple of the minimum size we'd allocate for a row.
 
     The reference for case 0 an 1 are not defined in the Free Space array.
     Each reference represent a space with a multiple of 8 bytes. In other
@@ -1009,9 +1131,9 @@ Say one `INDR` supports 500 blocks. A `TIND` at level 0 supports 500 x 500
 
     This is an array of pointers to `TIND` or `INDR` tables.
 
-    Because of the way the level works, when level is zero, the pointers
-    point to an `INDR` block. When the level is larger than zero, the
-    pointers point to a `TIND`.
+    Because of the way the level works, when Block Level is zero, the
+    pointers point to an `INDR` block. When the level is larger than zero,
+    the pointers point to a `TIND`.
 
 
 ### Indirect Data Rows (`INDR`, for easy compaction)
@@ -1044,7 +1166,7 @@ The block is pretty simple:
 
     The number of pointers.
 
-* Pointers (Type: `reference`)
+* Pointers (Type: `reference_t`)
 
     An array of pointers to the data.
 
@@ -1115,6 +1237,35 @@ index. With an `INDR` block, we instead of "one" small impact on each
 access.
 
 
+### Primary Index Block (`PIDX`)
+
+The top Primary Index Block uses the last bytes of the Murmur3 hash to
+immediately jump to a `TIDX` or `EIDX` block.
+
+The number of bits used from the Murmur3 hash depends on the size of your
+blocks. With a 4Kb block, we use 8 bits. The math goes something like this:
+
+    bits = log_2(size - sizeof(block-header))
+
+The size of the block header is probably very small (under 64 bytes) but
+that's enough to prevent us from using 512 entry in a 4Kb block. Each
+entry is a `reference_t` which is a 64 bit address.
+
+* Header (`PIDX`, Type: `char[4]`)
+
+    The header indicating a Primary Index.
+
+* Size (Type: `uint8_t`)
+
+    The number of bits used from the hash. At this time this is always set
+    to 8. Later we may want to support adjusting the size when we support
+    blocks larger than 4Kb.
+
+* Index (Type: `reference_t[256]`)
+
+    The index is 256 references to `TIDX` or `EIDX` blocks.
+
+
 ### Top Index Block (`TIDX`)
 
 A Top index block represents a B+tree index.
@@ -1123,13 +1274,13 @@ _Note: for the Key Index, the first B+tree level is actually a direct
 map using the first N bits of the Murmur code. So that way we can
 very quickly go to the second level (avoid one binary search).
 This is likely to be parsed and limited since it's already cut down
-by partitioning those keys._
+by partitioning those keys over the cluster._
 
 The fields of the Top Index Block are as follow:
 
 * Header (`TIDX`, Type: `char[4]`)
 
-    The header indicated a Primary Index.
+    The header indicated a Top Index.
 
 * Count (Type: `uint32_t`)
 
@@ -1137,7 +1288,11 @@ The fields of the Top Index Block are as follow:
 
 * Size (Type: `uint32_t`)
 
-    The size of one index entry (so we can change the size of the key).
+    The size of one index entry
+    
+    Having a size allows us to support keys of variable sizes and therefore
+    we can reuse the same type of blocks for all our indexes that make use
+    of a B+tree type of index.
 
 * Index (Type: `char[8]` [key], `uint64_t` [pointer])
 
@@ -1211,11 +1366,11 @@ this table.
 
     The total number of rows indexed by this secondary index.
 
-* Top Secondary Index Block (`reference`)
+* Top Secondary Index Block (`reference_t`)
 
     The pointer to the top index block for this secondary index.
 
-* First Secondary Index Block with Free Space (`reference`)
+* First Secondary Index Block with Free Space (`reference_t`)
 
     Pointer to the first B+tree index block with space available.
 
@@ -1266,12 +1421,12 @@ possible.
 
 ### Entry Index Block (`EIDX`)
 
-An Entry Index records a longer key for the index so we have much less
-false positive. If we still want to have indexes that are allocated
+An Entry Index records a longer key for the index so we have many less
+false positives. If we still want to have indexes that are allocated
 as an array, then we still need to limit the size of the data. That
 being said, we should have enough to hit most of it if possible.
 Especially for the primary index, we want to have the full key (which
-is the Murmur hash). Otherwise we'd end up having to scan the data
+is the Murmur3 hash). Otherwise we'd end up having to scan the data
 one row at a time...
 
 * Header (`EIDX`, Type: `dbtype_t`)
@@ -1291,13 +1446,13 @@ one row at a time...
 
     The size of one index.
 
-* Next (Type: `reference`)
+* Next (Type: `reference_t`)
 
     A pointer to the next `EIDX`. This is used whenever we do a SELECT of
     may rows. We start from the first match and then go on to the last
     entry that still matches or the `LIMIT` is reached.
 
-* Previous (Type: `reference`)
+* Previous (Type: `reference_t`)
 
     To easily maintain a `Next` field, we need a `Previous` field too.
     Also this is useful if we support the `DESC` feature in which case
@@ -1331,8 +1486,8 @@ one row at a time...
     - Flags (`uint8_t`)
       - Flag: Key is Complete (0x01); which means we do not have to compare
         again once we access the data
-    - Pointer to `DATA` or row ID in `INDR` (Type: `reference` or `uint64_t`)
-    - Index Identifier (Type: `reference`)
+    - Pointer to `DATA` or row ID in `INDR` (Type: `reference_t` or `oid_t`)
+    - Index Identifier (Type: `reference_t`)
     - Key Data (Actual data or an offset to the data because it varies in
       size; the size would appear in the destination as in an ARRAY16)
 
@@ -1341,7 +1496,7 @@ one row at a time...
     index is not required to be unique.
 
     **NOTE:** There is a _right balance_ between functionality and efficiency.
-    In most cases, I prefere functionality. However, having really long
+    In most cases, I prefer functionality. However, having really long
     indexes is likely to very much impair your index. We want to support
     a hard coded limited in length at which point the key itself gets moved
     to a BLOB. At that point, the index is likely going to be _rather slow_.
@@ -1361,7 +1516,7 @@ one row at a time...
 
 The Index Pointer Block is an extension for secondary indexes that match
 many entries. One such block is used as an offload of the Index field of
-a Secondary Index.
+a Secondary Index (see `EIDX`).
 
 * Magic (`IDXP`, Type: `dbtype_t`)
 
@@ -1370,11 +1525,11 @@ a Secondary Index.
 Since it is very likely that such blocks would just have one or two offloaded
 pointers for a given index, we manage vectors with these items:
 
-* Index Identifier (`reference`)
+* Index Identifier (`reference_t`)
 
     A number that clearly defines which index entry this data is for.
 
-* Next Index Pointers Block (`reference`)
+* Next Index Pointers Block (`reference_t`)
 
     A pointer to another Index Pointers Block in case this one was not enough
     to manage all the pointers for this index.
@@ -1384,7 +1539,7 @@ pointers for a given index, we manage vectors with these items:
     (i.e. avoid one block access if we can instead have the entire list
     in a single block).
 
-* Array of Pointers (`array32` of `reference`)
+* Array of Pointers (`array32` of `reference_t`)
 
     The actual offloaded references.
 
@@ -1469,7 +1624,7 @@ The block still has a header:
     The number of bytes saved in this block. It may be the entire block
     (outside of the header, of course).
 
-* Next Blob (Type: `reference`)
+* Next Blob (Type: `reference_t`)
 
     A pointer to the following block where the blob continues.
 
@@ -1602,7 +1757,7 @@ The contexts are managed by the cluster object. There is only one cluster.
 ## File Management
 
 The table manages the files. It knows how the data is spread among files.
-For example, it will know whether the primary and second indexes are to
+For example, it will know whether the primary and secondary indexes are to
 be saved in separate files or are found clusted in the data file.
 
 When we need to access some data, we want to make it as simple as possible

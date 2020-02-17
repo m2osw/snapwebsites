@@ -101,11 +101,31 @@ constexpr struct_description_t g_description[] =
         , FieldType(struct_type_t::STRUCT_TYPE_OID)
     ),
     define_description(
+          FieldName("update_last_oid")
+        , FieldType(struct_type_t::STRUCT_TYPE_OID)
+    ),
+    define_description(
+          FieldName("update_oid")
+        , FieldType(struct_type_t::STRUCT_TYPE_OID)
+    ),
+    define_description(
+          FieldName("blobs_with_free_space")
+        , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
+    ),
+    define_description(
           FieldName("first_compactable_block")
         , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
     define_description(
           FieldName("top_key_index_block")
+        , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
+    ),
+    define_description(
+          FieldName("top_branch_index_block")
+        , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
+    ),
+    define_description(
+          FieldName("top_revision_index_block")
         , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
     define_description(
@@ -178,9 +198,9 @@ uint32_t file_snap_database_table::get_block_size() const
 }
 
 
-void file_snap_database_table::set_block_size(uint32_t offset)
+void file_snap_database_table::set_block_size(uint32_t size)
 {
-    f_structure->set_uinteger("block_size", offset);
+    f_structure->set_uinteger("block_size", size);
 }
 
 
@@ -205,6 +225,162 @@ reference_t file_snap_database_table::get_first_free_block() const
 void file_snap_database_table::set_first_free_block(reference_t offset)
 {
     f_structure->set_uinteger("first_free_block", offset);
+}
+
+
+reference_t file_snap_database_table::get_indirect_index() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("indirect_index"));
+}
+
+
+void file_snap_database_table::set_indirect_index(reference_t reference)
+{
+    f_structure->set_uinteger("indirect_index", reference);
+}
+
+
+oid_t file_snap_database_table::get_last_oid() const
+{
+    return static_cast<oid_t>(f_structure->get_uinteger("last_oid"));
+}
+
+
+void file_snap_database_table::set_last_oid(oid_t oid)
+{
+    f_structure->set_uinteger("last_oid", oid);
+}
+
+
+oid_t file_snap_database_table::get_first_free_oid() const
+{
+    return static_cast<oid_t>(f_structure->get_uinteger("first_free_oid"));
+}
+
+
+void file_snap_database_table::set_first_free_oid(oid_t oid)
+{
+    f_structure->set_uinteger("first_free_oid", oid);
+}
+
+
+oid_t file_snap_database_table::get_update_last_oid() const
+{
+    return static_cast<oid_t>(f_structure->get_uinteger("update_last_oid"));
+}
+
+
+void file_snap_database_table::set_update_last_oid(oid_t oid)
+{
+    f_structure->set_uinteger("update_last_oid", oid);
+}
+
+
+oid_t file_snap_database_table::get_update_oid() const
+{
+    return static_cast<oid_t>(f_structure->get_uinteger("update_oid"));
+}
+
+
+void file_snap_database_table::set_update_oid(oid_t oid)
+{
+    f_structure->set_uinteger("update_oid", oid);
+}
+
+
+reference_t file_snap_database_table::get_blobs_with_free_space() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("blobs_with_free_space"));
+}
+
+
+void file_snap_database_table::set_blobs_with_free_space(reference_t reference)
+{
+    f_structure->set_uinteger("blobs_with_free_space", reference);
+}
+
+
+reference_t file_snap_database_table::get_first_compactable_block() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("first_compactable_block"));
+}
+
+
+void file_snap_database_table::set_first_compactable_block(reference_t reference)
+{
+    f_structure->set_uinteger("first_compactable_block", reference);
+}
+
+
+reference_t file_snap_database_table::get_top_key_index_block() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("top_key_index_block"));
+}
+
+
+void file_snap_database_table::set_top_key_index_block(reference_t reference)
+{
+    f_structure->set_uinteger("top_key_index_block", reference);
+}
+
+
+reference_t file_snap_database_table::get_expiration_index_block() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("expiration_index_block"));
+}
+
+
+void file_snap_database_table::set_expiration_index_block(reference_t reference)
+{
+    f_structure->set_uinteger("expiration_index_block", reference);
+}
+
+
+reference_t file_snap_database_table::get_secondary_index_block() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("secondary_index_block"));
+}
+
+
+void file_snap_database_table::set_secondary_index_block(reference_t reference)
+{
+    f_structure->set_uinteger("secondary_index_block", reference);
+}
+
+
+reference_t file_snap_database_table::get_tree_index_block() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("tree_index_block"));
+}
+
+
+void file_snap_database_table::set_tree_index_block(reference_t reference)
+{
+    f_structure->set_uinteger("tree_index_block", reference);
+}
+
+
+reference_t file_snap_database_table::get_deleted_rows() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("deleted_rows"));
+}
+
+
+void file_snap_database_table::set_deleted_rows(reference_t reference)
+{
+    f_structure->set_uinteger("deleted_rows", reference);
+}
+
+
+reference_t file_snap_database_table::get_bloom_filter_flags() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("bloom_filter_flags"));
+}
+
+
+void file_snap_database_table::set_bloom_filter_flags(flags_t flags)
+{
+    f_structure->set_uinteger("bloom_filter_flags", flags);
 }
 
 

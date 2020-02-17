@@ -30,6 +30,11 @@
 #include    "snapdatabase/database/row.h"
 
 
+// murmur3 lib
+//
+#include    <murmur3/murmur3.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -41,9 +46,43 @@ namespace snapdatabase
 
 
 
+namespace
+{
+
+
+
+/** \brief The seed used to generate murmur3 keys.
+ *
+ * We need to use one specific seed to generate all our mumur3 keys. This
+ * one is defined here and used by the table to generate the keys for
+ * your tables.
+ *
+ * The ability to change the seed is not currently offered because
+ *
+ * 1. It is unlikely a necessity
+ * 2. The exact same seed must be used on all computers in your cluster
+ * 3. If you lose the seed, you lose access to your data (you need to
+ *    re-insert it with the new seed)
+ *
+ * So at this point I have it hard coded.
+ */
+std::uint32_t   g_murmur3_seed = 0x6BC4A931;
+
+
+
+} // no name namespace
+
+
+
 row::row(table::pointer_t t)
     : f_table(t)
 {
+}
+
+
+table::pointer_t row::get_table() const
+{
+    return f_table.lock();
 }
 
 
@@ -51,263 +90,33 @@ buffer_t row::to_binary() const
 {
     buffer_t result;
 
-    auto push_uint8 = [&](uint8_t value)
-        {
-            result.push_back(value);
-        };
+    // save the schema version first to make sure we can extract the
+    // data whatever the version
+    //
+    table::pointer_t t(get_table());
+    push_be_uint32(result, t->schema_version().to_binary());
 
-    auto push_uint16 = [&](uint16_t value)
-        {
-            result.push_back(value >> 0);
-            result.push_back(value >> 8);
-        };
-
-    auto push_uint32 = [&](uint32_t value)
-        {
-            result.push_back(value);
-        };
-
-    auto push_uint64 = [&](uint64_t value)
-        {
-            result.push_back(value);
-        };
-
-    table::pointer_t t(f_table.lock());
-    schema_column::map_by_id_t columns(t->columns_by_id());
-
+    // TODO: have several loops:
+    //
+    //    1. columns that are needed by filters
+    //    2. data that we want to compress
+    //    3. data that we want to encrypt
+    //
+    // Ultimately, filters should work against any columns, but speed wise
+    // it's just not good if compressed and/or encrypted;
+    //
     for(auto const & c : f_cells)
     {
-        schema_column::pointer_t schema(c.second->schema());
+        c.second->column_id_to_binary(result);
+        c.second->value_to_binary(result);
+    }
 
-        column_id_t const id(schema->column_id());
-        push_uint16(id);
-
-        switch(schema->type())
-        {
-        case struct_type_t::STRUCT_TYPE_VOID:
-            snap::NOTUSED(c.second->is_void());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS8:
-        case struct_type_t::STRUCT_TYPE_UINT8:
-            push_uint8(c.second->get_uint8());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT8:
-            push_uint8(c.second->get_int8());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS16:
-        case struct_type_t::STRUCT_TYPE_UINT16:
-            push_uint16(c.second->get_uint16());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT16:
-            push_uint16(c.second->get_int16());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS32:
-        case struct_type_t::STRUCT_TYPE_UINT32:
-        case struct_type_t::STRUCT_TYPE_VERSION:
-            push_uint32(c.second->get_uint32());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT32:
-            push_uint32(c.second->get_int32());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS64:
-        case struct_type_t::STRUCT_TYPE_UINT64:
-        case struct_type_t::STRUCT_TYPE_REFERENCE:
-        case struct_type_t::STRUCT_TYPE_OID:
-        case struct_type_t::STRUCT_TYPE_TIME:
-        case struct_type_t::STRUCT_TYPE_MSTIME:
-        case struct_type_t::STRUCT_TYPE_USTIME:
-            push_uint64(c.second->get_uint64());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT64:
-            push_uint64(c.second->get_int64());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS128:
-        case struct_type_t::STRUCT_TYPE_UINT128:
-            {
-                uint512_t const value(c.second->get_uint128());
-                push_uint64(value.f_value[0]);
-                push_uint64(value.f_value[1]);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT128:
-            {
-                int512_t const value(c.second->get_int128());
-                push_uint64(value.f_value[0]);
-                push_uint64(value.f_value[1]);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS256:
-        case struct_type_t::STRUCT_TYPE_UINT256:
-            {
-                uint512_t const value(c.second->get_uint256());
-                push_uint64(value.f_value[0]);
-                push_uint64(value.f_value[1]);
-                push_uint64(value.f_value[2]);
-                push_uint64(value.f_value[3]);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT256:
-            {
-                int512_t const value(c.second->get_int256());
-                push_uint64(value.f_value[0]);
-                push_uint64(value.f_value[1]);
-                push_uint64(value.f_value[2]);
-                push_uint64(value.f_value[3]);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS512:
-        case struct_type_t::STRUCT_TYPE_UINT512:
-            {
-                uint512_t const value(c.second->get_uint512());
-                push_uint64(value.f_value[0]);
-                push_uint64(value.f_value[1]);
-                push_uint64(value.f_value[2]);
-                push_uint64(value.f_value[3]);
-                push_uint64(value.f_value[4]);
-                push_uint64(value.f_value[5]);
-                push_uint64(value.f_value[6]);
-                push_uint64(value.f_value[7]);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT512:
-            {
-                int512_t const value(c.second->get_int512());
-                push_uint64(value.f_value[0]);
-                push_uint64(value.f_value[1]);
-                push_uint64(value.f_value[2]);
-                push_uint64(value.f_value[3]);
-                push_uint64(value.f_value[4]);
-                push_uint64(value.f_value[5]);
-                push_uint64(value.f_value[6]);
-                push_uint64(value.f_value[7]);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_FLOAT32:
-            {
-                union fi {
-                    uint32_t    f_int = 0;
-                    float       f_float;
-                };
-                fi value;
-                value.f_float = c.second->get_float32();
-                push_uint32(value.f_int);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_FLOAT64:
-            {
-                union fi {
-                    uint64_t    f_int = 0;
-                    double      f_float;
-                };
-                fi value;
-                value.f_float = c.second->get_float64();
-                push_uint64(value.f_int);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_FLOAT128:
-            {
-                union fi {
-                    uint64_t        f_int[2] = { 0, 0 };
-                    long double     f_float;
-                };
-                fi value;
-                value.f_float = c.second->get_float128();
-                push_uint64(value.f_int[0]);
-                push_uint64(value.f_int[1]);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_P8STRING:
-            {
-                std::string const value(c.second->get_string());
-                if(value.length() > 255)
-                {
-                    throw out_of_bounds(
-                              "string to long for a P8STRING (max: 255, actually: "
-                            + std::to_string(value.length())
-                            + ").");
-                }
-                push_uint8(value.length());
-                if(!value.empty())
-                {
-                    uint8_t const * s(reinterpret_cast<uint8_t const *>(value.c_str()));
-                    result.insert(result.end(), s, s + value.length());
-                }
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_P16STRING:
-            {
-                std::string const value(c.second->get_string());
-                if(value.length() > 65535)
-                {
-                    throw out_of_bounds(
-                              "string to long for a P16STRING (max: 64Kb, actually: "
-                            + std::to_string(value.length())
-                            + ").");
-                }
-                uint16_t const size(static_cast<uint16_t>(value.length()));
-                push_uint16(size);
-                if(size > 0)
-                {
-                    uint8_t const * s(reinterpret_cast<uint8_t const *>(value.c_str()));
-                    result.insert(result.end(), s, s + size);
-                }
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_P32STRING:
-            {
-                std::string const value(c.second->get_string());
-                if(value.length() > 65535)
-                {
-                    throw out_of_bounds(
-                              "string to long for a P32STRING (max: 4Gb, actually: "
-                            + std::to_string(value.length())
-                            + ").");
-                }
-                uint32_t const size(static_cast<uint32_t>(value.length()));
-                push_uint32(size);
-                if(size > 0)
-                {
-                    uint8_t const * s(reinterpret_cast<uint8_t const *>(value.c_str()));
-                    result.insert(result.end(), s, s + size);
-                }
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_STRUCTURE:
-        case struct_type_t::STRUCT_TYPE_ARRAY8:
-        case struct_type_t::STRUCT_TYPE_ARRAY16:
-        case struct_type_t::STRUCT_TYPE_ARRAY32:
-        case struct_type_t::STRUCT_TYPE_BUFFER8:
-        case struct_type_t::STRUCT_TYPE_BUFFER16:
-        case struct_type_t::STRUCT_TYPE_BUFFER32:
-        case struct_type_t::STRUCT_TYPE_END:
-        case struct_type_t::STRUCT_TYPE_RENAMED:
-            throw type_mismatch(
-                      "Unexpected type ("
-                    + std::to_string(static_cast<int>(schema->type()))
-                    + ") to convert a cell from binary.");
-
-        }
+    if(result.size() > std::numeric_limits<std::uint32_t>::max())
+    {
+        // TODO: we need to add support for large rows (i.e. using the
+        //       `BLOB` block or external file)
+        //
+        throw invalid_size("size of row too large");
     }
 
     return result;
@@ -317,308 +126,128 @@ buffer_t row::to_binary() const
 void row::from_binary(buffer_t const & blob)
 {
     table::pointer_t t(f_table.lock());
-    schema_column::map_by_id_t columns(t->columns_by_id());
     size_t pos(0);
-
-    auto get_uint8 = [&]()
-        {
-            if(pos + 1 > blob.size())
-            {
-                throw unexpected_eof("blob too small for a [u]int8_t.");
-            }
-
-            uint8_t const value(blob[pos]);
-            pos += 1;
-            return value;
-        };
-
-    auto get_uint16 = [&]()
-        {
-            if(pos + 2 > blob.size())
-            {
-                throw unexpected_eof("blob too small for a [u]int16_t.");
-            }
-
-            uint16_t const value((static_cast<uint16_t>(blob[pos + 0]) <<  0)
-                               + (static_cast<uint16_t>(blob[pos + 1]) <<  8));
-            pos += 2;
-            return value;
-        };
-
-    auto get_uint32 = [&]()
-        {
-            if(pos + 4 > blob.size())
-            {
-                throw unexpected_eof("blob too small for a [u]int32_t.");
-            }
-
-            uint32_t const value((static_cast<uint32_t>(blob[pos + 0]) <<  0)
-                               + (static_cast<uint32_t>(blob[pos + 1]) <<  8)
-                               + (static_cast<uint32_t>(blob[pos + 2]) << 16)
-                               + (static_cast<uint32_t>(blob[pos + 3]) << 24));
-            pos += 4;
-            return value;
-        };
-
-    auto get_uint64 = [&]()
-        {
-            if(pos + 8 > blob.size())
-            {
-                throw unexpected_eof("blob too small for a [u]int64_t.");
-            }
-
-            uint64_t const value((static_cast<uint64_t>(blob[pos + 0]) <<  0)
-                               + (static_cast<uint64_t>(blob[pos + 1]) <<  8)
-                               + (static_cast<uint64_t>(blob[pos + 2]) << 16)
-                               + (static_cast<uint64_t>(blob[pos + 3]) << 24)
-                               + (static_cast<uint64_t>(blob[pos + 4]) << 32)
-                               + (static_cast<uint64_t>(blob[pos + 5]) << 40)
-                               + (static_cast<uint64_t>(blob[pos + 6]) << 48)
-                               + (static_cast<uint64_t>(blob[pos + 7]) << 56));
-            pos += 8;
-            return value;
-        };
-
-    while(pos < blob.size())
+    version_t const version(read_be_uint32(blob, pos));
+    if(version != t->schema_version())
     {
-        column_id_t const id(get_uint16());
-        auto it(columns.find(id));
-        if(it == columns.end())
+        // the schema changed, make sure to
+        //
+        // read & convert the old row
+        //    AND
+        // save the new version of the row to the database
+        //
+        while(pos < blob.size())
         {
-            throw column_not_found(
-                    "column with identifier "
-                    + std::to_string(static_cast<int>(id))
-                    + " not found.");
+            column_id_t const column_id(cell::column_id_from_binary(blob, pos));
+            schema_column::pointer_t exist_schema(t->column(column_id, version));
+            cell::pointer_t c(std::make_shared<cell>(exist_schema));
+            c->value_from_binary(blob, pos); // we MUST read or skip that data, so make sure to do that
+
+            schema_column::pointer_t current_schema(t->column(exist_schema->name()));
+            if(current_schema != nullptr)
+            {
+                cell::pointer_t cell(get_cell(column_id, true));
+                cell->copy_from(*c);
+            }
+            //else -- instead of a useless call to c->value_from_binary() we should also have a c->skip_binary_value()
         }
-
-        cell::pointer_t v(std::make_shared<cell>(it->second));
-        switch(it->second->type())
-        {
-        case struct_type_t::STRUCT_TYPE_VOID:
-            v->set_void();
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS8:
-        case struct_type_t::STRUCT_TYPE_UINT8:
-            v->set_uint8(get_uint8());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT8:
-            v->set_int8(get_uint8());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS16:
-        case struct_type_t::STRUCT_TYPE_UINT16:
-            v->set_uint16(get_uint16());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT16:
-            v->set_int16(get_uint16());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS32:
-        case struct_type_t::STRUCT_TYPE_UINT32:
-        case struct_type_t::STRUCT_TYPE_VERSION:
-            v->set_uint32(get_uint32());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT32:
-            v->set_int32(get_uint32());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS64:
-        case struct_type_t::STRUCT_TYPE_UINT64:
-        case struct_type_t::STRUCT_TYPE_REFERENCE:
-        case struct_type_t::STRUCT_TYPE_OID:
-        case struct_type_t::STRUCT_TYPE_TIME:
-        case struct_type_t::STRUCT_TYPE_MSTIME:
-        case struct_type_t::STRUCT_TYPE_USTIME:
-            v->set_uint64(get_uint64());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT64:
-            v->set_int64(get_uint64());
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS128:
-        case struct_type_t::STRUCT_TYPE_UINT128:
-            {
-                uint512_t value;
-                value.f_value[0] = get_uint64();
-                value.f_value[1] = get_uint64();
-                v->set_uint128(value);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT128:
-            {
-                int512_t value;
-                value.f_value[0] = get_uint64();
-                value.f_value[1] = get_uint64();
-                value.f_value[2] = static_cast<int64_t>(value.f_value[1]) < 0 ? -1 : 0;
-                value.f_value[3] = value.f_value[2];
-                value.f_value[4] = value.f_value[2];
-                value.f_value[5] = value.f_value[2];
-                value.f_value[6] = value.f_value[2];
-                value.f_high_value = value.f_value[2];
-                v->set_int128(value);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS256:
-        case struct_type_t::STRUCT_TYPE_UINT256:
-            {
-                uint512_t value;
-                value.f_value[0] = get_uint64();
-                value.f_value[1] = get_uint64();
-                value.f_value[2] = get_uint64();
-                value.f_value[3] = get_uint64();
-                v->set_uint256(value);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT256:
-            {
-                int512_t value;
-                value.f_value[0] = get_uint64();
-                value.f_value[1] = get_uint64();
-                value.f_value[2] = get_uint64();
-                value.f_value[3] = get_uint64();
-                value.f_value[4] = static_cast<int64_t>(value.f_value[3]) < 0 ? -1 : 0;
-                value.f_value[5] = value.f_value[4];
-                value.f_value[6] = value.f_value[4];
-                value.f_high_value = value.f_value[4];
-                v->set_int256(value);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_BITS512:
-        case struct_type_t::STRUCT_TYPE_UINT512:
-            {
-                uint512_t value;
-                value.f_value[0] = get_uint64();
-                value.f_value[1] = get_uint64();
-                value.f_value[2] = get_uint64();
-                value.f_value[3] = get_uint64();
-                value.f_value[4] = get_uint64();
-                value.f_value[5] = get_uint64();
-                value.f_value[6] = get_uint64();
-                value.f_value[7] = get_uint64();
-                v->set_uint512(value);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_INT512:
-            {
-                int512_t value;
-                value.f_value[0] = get_uint64();
-                value.f_value[1] = get_uint64();
-                value.f_value[2] = get_uint64();
-                value.f_value[3] = get_uint64();
-                value.f_value[4] = get_uint64();
-                value.f_value[5] = get_uint64();
-                value.f_value[6] = get_uint64();
-                value.f_value[7] = get_uint64();
-                v->set_int512(value);
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_FLOAT32:
-            {
-                uint32_t const value(get_uint32());
-                v->set_float32(*reinterpret_cast<float const *>(&value));
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_FLOAT64:
-            {
-                uint64_t const value(get_uint64());
-                v->set_float64(*reinterpret_cast<double const *>(&value));
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_FLOAT128:
-            {
-                uint64_t const value[2] = { get_uint64(), get_uint64() };
-                v->set_float128(*reinterpret_cast<long double const *>(value));
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_P8STRING:
-            {
-                if(pos >= blob.size())
-                {
-                    throw unexpected_eof("blob too small for this string.");
-                }
-
-                uint8_t const size(get_uint8());
-
-                if(pos + size > blob.size())
-                {
-                    throw unexpected_eof("blob too small for this string.");
-                }
-
-                v->set_string(std::string(blob.data() + pos, blob.data() + pos + size));
-                pos += size;
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_P16STRING:
-            {
-                if(pos >= blob.size())
-                {
-                    throw unexpected_eof("blob too small for this string.");
-                }
-
-                uint16_t const size(get_uint16());
-
-                if(pos + size > blob.size())
-                {
-                    throw unexpected_eof("blob too small for this string.");
-                }
-
-                v->set_string(std::string(blob.data() + pos, blob.data() + pos + size));
-                pos += size;
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_P32STRING:
-            {
-                if(pos >= blob.size())
-                {
-                    throw unexpected_eof("blob too small for this string.");
-                }
-
-                uint32_t const size(get_uint32());
-
-                if(pos + size > blob.size())
-                {
-                    throw unexpected_eof("blob too small for this string.");
-                }
-
-                v->set_string(std::string(blob.data() + pos, blob.data() + pos + size));
-                pos += size;
-            }
-            break;
-
-        case struct_type_t::STRUCT_TYPE_STRUCTURE:
-        case struct_type_t::STRUCT_TYPE_ARRAY8:
-        case struct_type_t::STRUCT_TYPE_ARRAY16:
-        case struct_type_t::STRUCT_TYPE_ARRAY32:
-        case struct_type_t::STRUCT_TYPE_BUFFER8:
-        case struct_type_t::STRUCT_TYPE_BUFFER16:
-        case struct_type_t::STRUCT_TYPE_BUFFER32:
-        case struct_type_t::STRUCT_TYPE_END:
-        case struct_type_t::STRUCT_TYPE_RENAMED:
-            throw type_mismatch(
-                      "Unexpected type ("
-                    + std::to_string(static_cast<int>(it->second->type()))
-                    + ") to convert a cell from binary.");
-
-        }
-
-        f_cells[it->second->name()] = v;
     }
+    else
+    {
+        while(pos < blob.size())
+        {
+            column_id_t const column_id(cell::column_id_from_binary(blob, pos));
+            cell::pointer_t cell(get_cell(column_id, true));
+            cell->value_from_binary(blob, pos);
+        }
+    }
+}
+
+
+cell::pointer_t row::get_cell(column_id_t const & column_id, bool create)
+{
+    auto it(f_cells.find(column_id));
+    if(it != f_cells.end())
+    {
+            return it->second;
+    }
+
+    schema_column::pointer_t column(get_table()->column(column_id));
+    if(column == nullptr)
+    {
+        throw column_not_found(
+                  "Column with identifier \""
+                + std::to_string(static_cast<int>(column_id))
+                + "\" does not exist in \""
+                + get_table()->name()
+                + "\".");
+    }
+
+    if(!create)
+    {
+        return cell::pointer_t();
+    }
+
+    cell::pointer_t c(std::make_shared<cell>(column));
+    f_cells[column_id] = c;
+    return c;
+}
+
+
+cell::pointer_t row::get_cell(std::string const & column_name, bool create)
+{
+    schema_column::pointer_t column(get_table()->column(column_name));
+    if(column == nullptr)
+    {
+        throw column_not_found(
+                  "Column \""
+                + column_name
+                + "\" does not exist in \""
+                + get_table()->name()
+                + "\".");
+    }
+
+    auto it(f_cells.find(column->column_id()));
+    if(it != f_cells.end())
+    {
+            return it->second;
+    }
+
+    if(!create)
+    {
+        return cell::pointer_t();
+    }
+
+    cell::pointer_t c(std::make_shared<cell>(column));
+    f_cells[column->column_id()] = c;
+    return c;
+}
+
+
+void row::delete_cell(column_id_t const & column_id)
+{
+    auto it(f_cells.find(column_id));
+    if(it != f_cells.end())
+    {
+        f_cells.erase(it);
+    }
+}
+
+
+void row::delete_cell(std::string const & column_name)
+{
+    schema_column::pointer_t column(get_table()->column(column_name));
+    if(column == nullptr)
+    {
+        throw column_not_found(
+                  "Column \""
+                + column_name
+                + "\" does not exist in \""
+                + get_table()->name()
+                + "\".");
+    }
+
+    delete_cell(column->column_id());
 }
 
 
@@ -627,6 +256,128 @@ cell::map_t row::cells() const
     return f_cells;
 }
 
+
+bool row::commit()
+{
+    return get_table()->row_commit(shared_from_this());
+}
+
+
+bool row::insert()
+{
+    return get_table()->row_insert(shared_from_this());
+}
+
+
+bool row::update()
+{
+    return get_table()->row_update(shared_from_this());
+}
+
+
+/** \brief Generate a key used to index a row.
+ *
+ * This function generates the murmur3 key used to index the primary row.
+ * This key is a Murmur hash version 3. The first \em few bits are used
+ * to define which computer receives the row. The remainder are used to
+ * index the data in a table on one of those computers.
+ *
+ * The function is capable of generating the key for a branch or a revision.
+ * For a branch, define the version so it is not `0.0` so `is_null()` returns
+ * false. For a revision, set the version and the language. If you have an
+ * entry without a language, use "xx" as the language (i.e. language neutral).
+ *
+ * \li (1) version.is_null(), global
+ * \li (2) !version.is_null(), language.empty(), branch
+ * \li (3) !version.is_null(), !language.empty(), revision
+ *
+ * \attention
+ * The key on the client side never specify the version or language. Those
+ * are used internally when the database system needs to know exactly which
+ * data is required.
+ *
+ * \attention
+ * In Cassandra we were able to go through the list of branches and revisions
+ * (with a SELECT) and we may also want to be able to do that here in which
+ * case those keys would not be murmur3 keys. Instead we'd use a secondary
+ * index which uses non-hashed keys. Especially, we need to be able to find
+ * the latest of each revision based on the language. Not only that, we may
+ * need to find the latest version in language "en" or the languages available
+ * at this version (i.e. that would require us to have multiple secondary
+ * indexes for revisions). We could of course use both: have the murmur3 to
+ * create the rows and also have secondary indexes to do sorted searches of
+ * revisions.
+ *
+ * \param[in] murmur3  The buffer where the hash gets saved.
+ * \param[in] version  The branch & revision version.
+ * \param[in] language  The language of the revision.
+ */
+void row::generate_mumur3(buffer_t & murmur3, version_t version, std::string const language)
+{
+    // get the data from the columns used to access the primary key index
+    //
+    buffer_t key;
+    table::pointer_t table(get_table());
+    column_ids_t const ids(table->row_key());
+    bool add_separator(false);
+    for(auto id : ids)
+    {
+        cell::pointer_t const cell(get_cell(id, false));
+        if(cell == nullptr)
+        {
+            // TBD: these columns are all required otherwise we would not be
+            // able to calculate the primary key; that being said, later
+            // maybe we could support a default in a primary key column
+            //
+            throw column_not_found(
+                      "Column with ID #"
+                    + table->column(id, false)->name()
+                    + " is not set, but it is mandatory to search the primary key of table \""
+                    + table->name()
+                    + "\".");
+        }
+
+        if(add_separator)
+        {
+            // we add the separator only if necessary (i.e. when more data
+            // follows that column)
+            //
+            push_uint8(key, 255);
+        }
+        cell->value_to_binary(key);
+        add_separator = !cell->has_fixed_type();
+    }
+    if(!version.is_null())
+    {
+        // at least we have a branch, maybe a revision too
+        //
+        if(add_separator)
+        {
+            push_uint8(key, 255);
+        }
+        push_be_uint16(key, version.get_major());
+        //add_separator = false;
+
+        if(!language.empty())
+        {
+            // we also have a revision
+            //
+            push_be_uint16(key, version.get_minor());
+
+            uint8_t const * s(reinterpret_cast<uint8_t const *>(language.c_str()));
+            key.insert(key.end(), s, s + language.length());
+            //add_separator = true;
+        }
+    }
+
+    // make sure it's the correct size
+    //
+    murmur3.resize(16);
+
+    // generate the actual murmur version 3
+    //
+    MurmurHash3_x64_128(key.data(), key.size(), g_murmur3_seed, murmur3.data());
+}
 
 
 } // namespace snapdatabase

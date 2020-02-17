@@ -43,9 +43,13 @@ class block_data
 public:
     typedef std::shared_ptr<block_data>       pointer_t;
 
+    static constexpr std::uint32_t
+                                HEADER_SIZE = round_up(sizeof(std::uint32_t) + sizeof(version_t), sizeof(reference_t));
+
                                 block_data(dbfile::pointer_t f, reference_t offset);
 
-    static uint32_t             block_total_space(table_pointer_t t);
+    std::uint8_t *              data_start();
+    static std::uint32_t        block_total_space(table_pointer_t t);
 
 private:
     schema_table::pointer_t     f_schema = schema_table::pointer_t();

@@ -300,6 +300,7 @@ int dbfile::open_file()
         sdbt->set_first_free_block(page_size);
         sdbt->set_block_size(page_size);
         sdbt->set_file_version(v);
+        sdbt->set_last_oid(1);
         sdbt->sync(false);
     }
 
@@ -512,14 +513,23 @@ std::string to_string(dbtype_t type)
     case dbtype_t::BLOCK_TYPE_INDIRECT_INDEX:
         return std::string("Indirect Index Block (INDR)");
 
+    case dbtype_t::BLOCK_TYPE_PRIMARY_INDEX:
+        return std::string("Primary Index Block (PIDX)");
+
     case dbtype_t::BLOCK_TYPE_SECONDARY_INDEX:
         return std::string("Secondary Index Block (SIDX)");
 
     case dbtype_t::BLOCK_TYPE_SCHEMA:
         return std::string("Schema Block (SCHM)");
 
+    case dbtype_t::BLOCK_TYPE_SCHEMA_LIST:
+        return std::string("Schema List Block (SCHL)");
+
     case dbtype_t::BLOCK_TYPE_TOP_INDEX:
         return std::string("Top Index Block (TIDX)");
+
+    case dbtype_t::BLOCK_TYPE_TOP_INDIRECT_INDEX:
+        return std::string("Top Indirect Index Block (TIND)");
 
     }
 

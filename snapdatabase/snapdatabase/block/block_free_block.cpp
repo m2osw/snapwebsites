@@ -102,21 +102,6 @@ void block_free_block::set_next_free_block(reference_t offset)
 }
 
 
-void block_free_block::clear_block()
-{
-    reference_t const offset(f_structure->get_size());
-#ifdef _DEBUG
-    if(offset == 0)
-    {
-        throw snapdatabase_logic_error("the structure of the block_free_block block cannot be dynamic.");
-    }
-#endif
-    std::uint32_t const page_size(get_table()->get_page_size() - offset);
-
-    memset(data(offset), 0, page_size);
-}
-
-
 
 } // namespace snapdatabase
 // vim: ts=4 sw=4 et

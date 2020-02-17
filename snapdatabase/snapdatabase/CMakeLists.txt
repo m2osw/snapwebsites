@@ -46,16 +46,21 @@ add_library(${PROJECT_NAME} SHARED
     block/block_free_space.cpp
     block/block_index_pointers.cpp
     block/block_indirect_index.cpp
+    block/block_primary_index.cpp
     block/block_schema.cpp
+    block/block_schema_list.cpp
     block/block_secondary_index.cpp
     block/block_top_index.cpp
+    block/block_top_indirect_index.cpp
 
     file/file_bloom_filter.cpp
     file/file_external_index.cpp
     file/file_snap_database_table.cpp
     file/hash.cpp
 
+    database/conditions.cpp
     database/context.cpp
+    database/cursor.cpp
     database/table.cpp
     database/row.cpp
     database/cell.cpp
@@ -77,6 +82,7 @@ include_directories(
     ${CPPTHREAD_INCLUDE_DIRS}
     ${LIBEXCEPT_INCLUDE_DIRS}
     ${LIBUFTF8_INCLUDE_DIRS}
+    ${MURMUR3_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -88,6 +94,7 @@ target_link_libraries(${PROJECT_NAME}
     ${LIBEXCEPT_LIBRARIES}
     ${LIBUFTF8_LIBRARIES}
     ${LOG4CPLUS_LIBRARIES}
+    ${MURMUR3_LIBRARIES}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

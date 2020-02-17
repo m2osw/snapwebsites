@@ -30,6 +30,7 @@
 #include    "snapdatabase/database/table.h"
 
 #include    "snapdatabase/database/context.h"
+#include    "snapdatabase/database/row.h"
 
 // all the blocks since we create them here
 //
@@ -41,12 +42,25 @@
 #include    "snapdatabase/block/block_header.h"
 #include    "snapdatabase/block/block_index_pointers.h"
 #include    "snapdatabase/block/block_indirect_index.h"
+#include    "snapdatabase/block/block_primary_index.h"
 #include    "snapdatabase/block/block_secondary_index.h"
 #include    "snapdatabase/block/block_schema.h"
+#include    "snapdatabase/block/block_schema_list.h"
 #include    "snapdatabase/block/block_top_index.h"
+#include    "snapdatabase/block/block_top_indirect_index.h"
 #include    "snapdatabase/file/file_bloom_filter.h"
 #include    "snapdatabase/file/file_external_index.h"
 #include    "snapdatabase/file/file_snap_database_table.h"
+
+
+// snapwebsites lib
+//
+#include    <snapwebsites/snap_child.h>
+
+
+// snapdev lib
+//
+#include    <snapdev/not_used.h>
 
 
 // C++ lib
@@ -73,6 +87,103 @@ namespace detail
 
 
 
+class cursor_state
+{
+public:
+    typedef std::shared_ptr<cursor_state>   pointer_t;
+
+                                        cursor_state(index_type_t index_type, schema_secondary_index::pointer_t secondary_index);
+
+    index_type_t                        get_index_type() const;
+    schema_secondary_index::pointer_t   get_secondary_index() const;
+
+    size_t                              get_index_position() const;
+    void                                set_index_position(size_t position);
+
+    reference_vector_t &                get_row_references();
+
+private:
+    index_type_t                        f_index_type = index_type_t::INDEX_TYPE_INVALID;
+    schema_secondary_index::pointer_t   f_secondary_index = schema_secondary_index::pointer_t();
+    reference_vector_t                  f_row_references = reference_vector_t();        // i.e. OIDs to the rows
+    size_t                              f_index_position = 0;       // position within the index at end of a read
+};
+
+
+cursor_state::cursor_state(index_type_t index_type, schema_secondary_index::pointer_t secondary_index)
+    : f_index_type(index_type)
+    , f_secondary_index(secondary_index)
+{
+}
+
+
+index_type_t cursor_state::get_index_type() const
+{
+    return f_index_type;
+}
+
+
+schema_secondary_index::pointer_t cursor_state::get_secondary_index() const
+{
+    return f_secondary_index;
+}
+
+
+size_t cursor_state::get_index_position() const
+{
+    return f_index_position;
+}
+
+
+void cursor_state::set_index_position(size_t position)
+{
+    f_index_position = position;
+}
+
+
+reference_vector_t & cursor_state::get_row_references()
+{
+    return f_row_references;
+}
+
+
+
+struct cursor_data
+{
+                                        cursor_data(
+                                                  cursor::pointer_t cursor
+                                                , cursor_state::pointer_t state
+                                                , row::vector_t & rows);
+
+    cursor::pointer_t                   f_cursor;
+    cursor_state::pointer_t             f_state;
+    row::vector_t &                     f_rows;
+};
+
+
+cursor_data::cursor_data(
+          cursor::pointer_t cursor
+        , cursor_state::pointer_t state
+        , row::vector_t & rows)
+    : f_cursor(cursor)
+    , f_state(state)
+    , f_rows(rows)
+{
+}
+
+
+
+
+
+
+
+enum class commit_mode_t
+{
+    COMMIT_MODE_COMMIT,        // insert or update, fails only on errors
+    COMMIT_MODE_INSERT,        // fails if it already exists
+    COMMIT_MODE_UPDATE         // fails if it doesn't exists yet
+};
+
 
 
 class table_impl
@@ -90,30 +201,43 @@ public:
     void                                        load_extension(xml_node::pointer_t e);
 
     dbfile::pointer_t                           get_dbfile() const;
-    version_t                                   version() const;
-    bool                                        is_secure() const;
+    version_t                                   schema_version() const;
     bool                                        is_sparse() const;
+    bool                                        is_secure() const;
     std::string                                 name() const;
     model_t                                     model() const;
     column_ids_t                                row_key() const;
-    schema_column::pointer_t                    column(std::string const & name) const;
-    schema_column::pointer_t                    column(column_id_t id) const;
-    schema_column::map_by_id_t                  columns_by_id() const;
-    schema_column::map_by_name_t                columns_by_name() const;
+    schema_column::pointer_t                    column(std::string const & name, version_t const & version) const;
+    schema_column::pointer_t                    column(column_id_t id, version_t const & version) const;
+    schema_column::map_by_id_t                  columns_by_id(version_t const & version) const;
+    schema_column::map_by_name_t                columns_by_name(version_t const & version) const;
     std::string                                 description() const;
     size_t                                      get_size() const;
     size_t                                      get_page_size() const;
     block::pointer_t                            get_block(reference_t offset);
     block::pointer_t                            allocate_new_block(dbtype_t type);
     void                                        free_block(block::pointer_t block, bool clear_block);
-    bool                                        verify_schema();
+    schema_table::pointer_t                     get_schema(version_t const & version);
+    schema_secondary_index::pointer_t           secondary_index(std::string const & name) const;
+    bool                                        row_commit(row_pointer_t row, commit_mode_t mode);
+    void                                        row_insert(row::pointer_t row_data);
+    void                                        row_update(row::pointer_t row_data);
+    void                                        read_rows(cursor_data & data);
 
 private:
     block::pointer_t                            allocate_block(dbtype_t type, reference_t offset);
+    void                                        start_update_process(bool restart);
+
+    void                                        read_secondary(cursor_data & data);
+    void                                        read_indirect(cursor_data & data);
+    void                                        read_primary(cursor_data & data);
+    void                                        read_expiration(cursor_data & data);
+    void                                        read_tree(cursor_data & data);
 
     context *                                   f_context = nullptr;
     table *                                     f_table = nullptr;
     schema_table::pointer_t                     f_schema_table = schema_table::pointer_t();
+    schema_table::map_by_version_t              f_schema_table_by_version = schema_table::map_by_version_t();
     dbfile::pointer_t                           f_dbfile = dbfile::pointer_t();
     block::map_t                                f_blocks = block::map_t();
 };
@@ -147,24 +271,53 @@ dbfile::pointer_t table_impl::get_dbfile() const
 }
 
 
-bool table_impl::verify_schema()
+schema_table::pointer_t table_impl::get_schema(version_t const & version)
 {
-    // load schema from dbfile (if present) and then compare against schema
-    // from XML; if different increase version, save new version in file and
-    // start process to update the table existing data; once the update is
-    // done, we can remove the old schema from the file (i.e. any new writes
-    // always use the newest version of the schema; the rows that use an
-    // older version, use that specific schema until they get updated to the
-    // new format.)
+    // the very first time `get_schema()` is called, `version` must be
+    // set to `0.0` (a.k.a. `version_t()`) which is how the latest schema
+    // gets added to the table if necessary
+    //
+    if(f_schema_table_by_version.empty()
+    && version != version_t())
+    {
+        throw snapdatabase_logic_error(
+                    "table_impl::get_schema() called with a version other"
+                    " than 0.0 when the table is not properly setup yet.");
+    }
+
+    // it's very costly to load a schema so we cache them
+    // they are read-only anyway so they are never going to change
+    // once loaded in our cache
+    //
+    auto const it(f_schema_table_by_version.find(version.to_binary()));
+    if(it != f_schema_table_by_version.end())
+    {
+        return it->second;
+    }
+
+    // check for an existing schema in the table file
     //
     file_snap_database_table::pointer_t sdbt(
             std::static_pointer_cast<file_snap_database_table>(
                         get_block(0)));
-
-    reference_t const schema_offset(sdbt->get_table_definition());
-    if(schema_offset == 0)
+    reference_t schema_offset(sdbt->get_table_definition());
+    if(schema_offset == NULL_FILE_ADDR)
     {
+        if(version != version_t()
+        || !f_schema_table_by_version.empty())
+        {
+            // this is probably a logic error
+            //
+            throw schema_not_found(
+                      "get_schema() did not find any schema; so definitely no schema with version "
+                    + version.to_string()
+                    + ".");
+        }
+
         // no schema defined yet, just save ours and we're all good
+        //
+        // note that the version is 1.0 by default and we do not have
+        // to change it in this case (it is the expected version)
         //
         f_schema_table->assign_column_ids();
 
@@ -176,52 +329,136 @@ bool table_impl::verify_schema()
 
         sdbt->set_table_definition(schm->get_offset());
         sdbt->sync(true);
+
+        f_schema_table_by_version[f_schema_table->schema_version().to_binary()] = f_schema_table;
+
+        return f_schema_table;
     }
-    else
+
+    // there is at least one schema, load it
+    //
+    block_schema_list::pointer_t schl;
+    block::pointer_t block(get_block(schema_offset));
+    if(block->get_dbtype() == dbtype_t::BLOCK_TYPE_SCHEMA_LIST)
     {
-        // load the binary schema (it may reside on multiple blocks and we
-        // have to read the entire schema at once)
+        // we have a list of schemata in this table, search for the one
+        // with `version`; if `version` is `0.0` then the very first one
+        // will be returned (i.e. the current one)
         //
-        block_schema::pointer_t schm(std::static_pointer_cast<block_schema>(get_block(schema_offset)));
-        virtual_buffer::pointer_t current_schema_data(schm->get_schema());
-        schema_table::pointer_t current_schema_table(std::make_shared<schema_table>());
-        current_schema_table->from_binary(current_schema_data);
+        schl = std::static_pointer_cast<block_schema_list>(block);
+        schema_offset = schl->get_schema(version);
+        if(schema_offset == NULL_FILE_ADDR)
+        {
+            throw schema_not_found(
+                      "get_schema() did not find a schema with version "
+                    + version.to_string()
+                    + ".");
+        }
+        block = get_block(schema_offset);
+    }
 
-        f_schema_table->assign_column_ids(current_schema_table);
+    block_schema::pointer_t schm(std::static_pointer_cast<block_schema>(block));
+    virtual_buffer::pointer_t schema_data(schm->get_schema());
+    schema_table::pointer_t schema(std::make_shared<schema_table>());
+    schema->from_binary(schema_data);
+    schema->schema_offset(schema_offset);
 
-        compare_t const c(current_schema_table->compare(*f_schema_table));
+    if(f_schema_table_by_version.empty())
+    {
+        if(version != version_t())
+        {
+            // this is probably a logic error since we should not be
+            // here if the `version` parameter is not `0.0`
+            //
+            throw schema_not_found(
+                      "schema version "
+                    + version.to_string()
+                    + " not found.");
+        }
+
+        // still empty which means it's the first call and we need to
+        // compare `f_schema_table` with `schema` to see whether it is
+        // the same or not, if not, we want to add the `f_schema_table`
+        // and start the background process to update the table schema
+        //
+        f_schema_table->assign_column_ids(schema);
+
+        bool restart(false);
+        compare_t const c(schema->compare(*f_schema_table));
         if(c == compare_t::COMPARE_SCHEMA_UPDATE)
         {
+            // this is a simple update (i.e. the description changed and
+            // we do not have to update all the rows)
+            //
             virtual_buffer::pointer_t bin_schema(f_schema_table->to_binary());
             schm->set_schema(bin_schema);
         }
         else if(c == compare_t::COMPARE_SCHEMA_DIFFER)
         {
-std::cerr << "table: TODO: schemata differ...\n";
-throw snapdatabase_not_yet_implemented("differing schemata not handled yet");
+            if(schl == nullptr)
+            {
+                // create a BlockSchemaList
+                //
+                schl = std::static_pointer_cast<block_schema_list>(
+                                allocate_new_block(dbtype_t::BLOCK_TYPE_SCHEMA_LIST));
+                schl->add_schema(schema);
+
+                sdbt->set_table_definition(schl->get_offset());
+                sdbt->sync(true);
+            }
+
+            schm = std::static_pointer_cast<block_schema>(
+                            allocate_new_block(dbtype_t::BLOCK_TYPE_SCHEMA));
+            virtual_buffer::pointer_t bin_schema(f_schema_table->to_binary());
+            schm->set_schema(bin_schema);
+            f_schema_table->schema_offset(schm->get_offset());
+
+            schl->add_schema(f_schema_table);
+            schl->sync(true);
+            restart = true;
+
+            // `schema` is different from `f_schema_table` so cache it too
+            //
+            f_schema_table_by_version[schema->schema_version().to_binary()] = schema;
         }
         // else -- this table schema did not change
+
+        f_schema_table_by_version[f_schema_table->schema_version().to_binary()] = f_schema_table;
+
+        if(schl != nullptr)
+        {
+            start_update_process(restart);
+        }
+
+        return f_schema_table;
     }
 
-    return true;
+    f_schema_table_by_version[schema->schema_version().to_binary()] = schema;
+    return schema;
 }
 
 
-version_t table_impl::version() const
+schema_secondary_index::pointer_t table_impl::secondary_index(std::string const & name) const
+{
+    return f_schema_table->secondary_index(name);
+}
+
+
+version_t table_impl::schema_version() const
 {
     return f_schema_table->schema_version();
-}
-
-
-bool table_impl::is_secure() const
-{
-    return f_schema_table->is_secure();
 }
 
 
 bool table_impl::is_sparse() const
 {
     return f_schema_table->is_sparse();
+}
+
+
+bool table_impl::is_secure() const
+{
+    return f_schema_table->is_secure();
 }
 
 
@@ -243,27 +480,27 @@ column_ids_t table_impl::row_key() const
 }
 
 
-schema_column::pointer_t table_impl::column(std::string const & name) const
+schema_column::pointer_t table_impl::column(std::string const & name, version_t const & version) const
 {
-    return f_schema_table->column(name);
+    return const_cast<table_impl *>(this)->get_schema(version)->column(name);
 }
 
 
-schema_column::pointer_t table_impl::column(column_id_t id) const
+schema_column::pointer_t table_impl::column(column_id_t id, version_t const & version) const
 {
-    return f_schema_table->column(id);
+    return const_cast<table_impl *>(this)->get_schema(version)->column(id);
 }
 
 
-schema_column::map_by_id_t table_impl::columns_by_id() const
+schema_column::map_by_id_t table_impl::columns_by_id(version_t const & version) const
 {
-    return f_schema_table->columns_by_id();
+    return const_cast<table_impl *>(this)->get_schema(version)->columns_by_id();
 }
 
 
-schema_column::map_by_name_t table_impl::columns_by_name() const
+schema_column::map_by_name_t table_impl::columns_by_name(version_t const & version) const
 {
-    return f_schema_table->columns_by_name();
+    return const_cast<table_impl *>(this)->get_schema(version)->columns_by_name();
 }
 
 
@@ -302,8 +539,8 @@ block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
         {
             throw snapdatabase_logic_error(
                       "allocate_block() called a non-free block type trying to allocate a non-free block ("
-                    + std::to_string(static_cast<int>(type))
-                    + "). You can go from a free to non-free and non-free to free, but not the opposite.");
+                    + to_string(type)
+                    + "). You can go from a free to non-free and non-free to free only.");
         }
         //it->second->replacing(); -- this won't work right at this time TODO...
         f_blocks.erase(it);
@@ -365,17 +602,21 @@ block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
         b = std::make_shared<block_top_index>(f_dbfile, offset);
         break;
 
+    case dbtype_t::BLOCK_TYPE_TOP_INDIRECT_INDEX:
+        b = std::make_shared<block_top_indirect_index>(f_dbfile, offset);
+        break;
+
     default:
         throw snapdatabase_logic_error(
                   "allocate_block() called with an unknown dbtype_t value ("
-                + std::to_string(static_cast<int>(type))
+                + to_string(type)
                 + ").");
 
     }
 
     b->set_table(f_table->get_pointer());
     b->set_data(f_dbfile->data(offset));
-    b->get_structure()->set_block(b, 0, f_dbfile->get_page_size());
+    b->get_structure()->set_block(b, 0, get_page_size());
     b->set_dbtype(type);
 
     f_context->limit_allocated_memory();
@@ -386,6 +627,91 @@ block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
     f_blocks[offset] = b;
 
     return b;
+}
+
+
+/** \brief Process the database to update to the latest schema.
+ *
+ * One big problem with databases is to update their schema. In our
+ * system, you can update the schema _at any time_ and continue to
+ * run as if nothing had happened (that is, the update itself is
+ * close to instantaneous).
+ *
+ * The update process happens dynamically and using this background
+ * update process. The dynamic part happens because when reading a
+ * row, we auto-update it to the latest version. So any future SELECT
+ * and UPDATE will automatically see the new schema.
+ *
+ * The background update process actually makes use of the dynamic
+ * update by doing a `SELECT * FROM \<table>` to read the entire
+ * table once, but without a `LOCK` a standard system would impose.
+ * (this runs in the background with the lowest possible priority
+ * so it does not take any time).
+ *
+ * The process can be stopped when the database stops. It will
+ * automatically restart when the database is brought back up.
+ *
+ * The update process algorithm goes like this:
+ *
+ * 1. set `update_last_oid` to `last_oid`
+ * 2. set `update_oid` to 1
+ * 3. read row at `update_oid`
+ * 4. increment `update_oid`
+ * 5. if `update_oid < update_last_iod` go to (3)
+ * 6. remove the BlockSchemaList
+ *
+ * Note that the rows get automatically fixed as we read them, so
+ * reading a row (as in (3) above) is enough to fix it. Saving the
+ * current `last_iod` in `update_last_iod` allows us to avoid having
+ * to check new rows that anyway were created with the newer schema.
+ *
+ * Step (6) is our signal that the process is done. i.e. when we still
+ * have a BlockSchemaList block on a restart of the database system,
+ * we call the start_update_process() to finish up any previous updates
+ * (or restart with new updates if we just had yet another change).
+ *
+ * \param[in] restart  Whether to restart from the beginning.
+ */
+void table_impl::start_update_process(bool restart)
+{
+    // Note: at this point this should only get called on startup
+    //       so there should be no need to check whether the process
+    //       was already started or not
+    //
+    if(restart)
+    {
+        file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
+        header->set_update_oid(1);
+        header->set_update_last_oid(header->get_last_oid());
+    }
+
+    // TODO: implement the update background process; this runs a thread
+    //       which works on updating the database until all the rows are
+    //       using the latest schema version; at that point, the process
+    //       removes the BlockSchemaList and keep only the latest schema
+    //       in the header
+    //
+    // WARNING: in order for us to allow for a strong priority where
+    //          this background process runs only if time allows, the
+    //          best for us is to have a thread pool and post job
+    //          requests that are prioritized; frontend requests get
+    //          a really high priority and background requests very
+    //          low ones;
+
+    // see the snap_thread_pool for how we want to implement this
+
+    // TODO: add a function to only read the version of the schema of a
+    //       row so as to make this process as performent as possible
+    //
+    // Note: since any access to existing data will auto-update rows that
+    //       are using an older schema, the counter will likely be wrong
+    //       and we'll reach the end of the database before the counter
+    //       reaches 0, but that's as well, we still will have worked out
+    //       on the entire database (it would also be possible to let this
+    //       process know that a certain row was fixed, but that's complex
+    //       and probably not that useful; TBD)
+    //
+
 }
 
 
@@ -511,6 +837,13 @@ block::pointer_t table_impl::allocate_new_block(dbtype_t type)
     //
     block::pointer_t b(allocate_block(type, offset));
     b->set_structure_version();
+
+    // TODO: determine whether we want to clear the whole block or just
+    //       remove the "next block" pointer and always clear on a free;
+    //       it would probably be cleaner to do it on a free
+    //
+    b->clear_block();
+
     return b;
 }
 
@@ -538,10 +871,392 @@ void table_impl::free_block(block::pointer_t block, bool clear_block)
 }
 
 
+bool table_impl::row_commit(row::pointer_t row_data, commit_mode_t mode)
+{
+    conditions cond;
+    cond.set_columns({"_oid"});
+    cond.set_key("primary", row_data, row::pointer_t());
+    cursor::pointer_t cur(f_table->row_select(cond));
+
+    row::pointer_t r(cur->next_row());
+    if(r == nullptr)
+    {
+        if(mode == commit_mode_t::COMMIT_MODE_UPDATE)
+        {
+            throw row_not_found(
+                      "Row with key \""
+                    + std::string("...")
+                    + "\" was not found so it can't be updated.");
+        }
+
+        row_insert(row_data);
+    }
+    else
+    {
+        if(mode == commit_mode_t::COMMIT_MODE_INSERT)
+        {
+            throw row_already_exists(
+                      "Row with key \""
+                    + std::string("...")
+                    + "\" already exists so it can't be inserted.");
+        }
+
+        row_update(row_data);
+    }
+
+    return true;
+}
+
+
+/** \brief Insert a new row.
+ *
+ * This is an internal function which the table_impl uses to insert a new
+ * row.
+ *
+ * \note
+ * The row_commit() is called first and determines whether to call
+ * insert or update or generate an error.
+ *
+ * \param[in] row_data  The row to be inserted.
+ */
+void table_impl::row_insert(row::pointer_t row_data)
+{
+    // if inserting, we first need to allocation this row's OID
+    //
+    file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
+    oid_t oid(header->get_first_free_oid());
+    bool const must_exist(oid != 0);
+    if(!must_exist)
+    {
+        // no free OID, generate a new one
+        //
+        oid = header->get_last_oid();
+        header->set_last_oid(oid + 1);
+    }
+
+    // found a free OID, go to it in the indirect table and replace
+    // the first free OID with the one in that table (i.e. unlink
+    // `oid` from the list)
+    //
+    oid_t position_oid(oid);
+    block_indirect_index::pointer_t indr;
+    reference_t offset(header->get_indirect_index());
+    if(offset == NULL_FILE_ADDR)
+    {
+        // the very first time we'll hit a null
+        //
+        if(oid != 1)
+        {
+            throw snapdatabase_logic_error("the indirect index offset is null but the first OID is not 1.");
+        }
+        indr = std::static_pointer_cast<block_indirect_index>(
+                        allocate_new_block(dbtype_t::BLOCK_TYPE_INDIRECT_INDEX));
+
+        header->set_indirect_index(indr->get_offset());
+    }
+    else
+    {
+        block_top_indirect_index::pointer_t parent_tind;
+        reference_t parent_offset(offset);
+        block::pointer_t block(get_block(offset));
+        while(block->get_dbtype() == dbtype_t::BLOCK_TYPE_TOP_INDIRECT_INDEX)
+        {
+            block_top_indirect_index::pointer_t tind(std::static_pointer_cast<block_top_indirect_index>(block));
+            oid_t const save_oid(position_oid);
+            offset = tind->get_reference(position_oid, must_exist);
+            if(offset == NULL_FILE_ADDR)
+            {
+                // no child exists yet, create an INDR
+                //
+                indr = std::static_pointer_cast<block_indirect_index>(
+                                allocate_new_block(dbtype_t::BLOCK_TYPE_INDIRECT_INDEX));
+                position_oid = save_oid;
+                tind->set_reference(position_oid, indr->get_offset());
+                break;
+            }
+
+            if(offset == MISSING_FILE_ADDR)
+            {
+                if(tind->get_block_level() >= 255)
+                {
+                    throw out_of_bounds("too many block levels.");
+                }
+
+                block_top_indirect_index::pointer_t top_tind(
+                            std::static_pointer_cast<block_top_indirect_index>(
+                                allocate_new_block(dbtype_t::BLOCK_TYPE_TOP_INDIRECT_INDEX)));
+                top_tind->set_block_level(tind->get_block_level() + 1);
+
+                if(parent_tind != nullptr)
+                {
+                    // we overflowed an intermediate entry we have to
+                    // add an intermediate (the `top_tind` is actually
+                    // an intermediate) so we need to add a link in the
+                    // parent to this new `TIND`
+                    //
+                    position_oid = save_oid;
+                    parent_tind->set_reference(position_oid, parent_offset);
+                }
+
+                position_oid = save_oid - 1;
+                top_tind->set_reference(position_oid, tind->get_offset());
+
+                indr = std::static_pointer_cast<block_indirect_index>(
+                                allocate_new_block(dbtype_t::BLOCK_TYPE_INDIRECT_INDEX));
+                position_oid = save_oid;
+                top_tind->set_reference(position_oid, indr->get_offset());
+                break;
+            }
+
+            parent_tind = tind;
+            parent_offset = offset;
+            block = get_block(parent_offset);
+        }
+
+        if(indr == nullptr)
+        {
+            if(block->get_dbtype() != dbtype_t::BLOCK_TYPE_INDIRECT_INDEX)
+            {
+                throw type_mismatch(
+                          "expected block of type INDIRECT INDEX (INDR) (got \""
+                        + to_string(block->get_dbtype())
+                        + "\" instead).");
+            }
+            indr = std::static_pointer_cast<block_indirect_index>(block);
+            if(position_oid > indr->get_max_count())
+            {
+                oid_t const save_oid(position_oid);
+
+                // that `INDR` is full, create a new top `TIND`
+                //
+                block_top_indirect_index::pointer_t top_tind(
+                            std::static_pointer_cast<block_top_indirect_index>(
+                                allocate_new_block(dbtype_t::BLOCK_TYPE_TOP_INDIRECT_INDEX)));
+                if(parent_tind == nullptr)
+                {
+                    top_tind->set_block_level(1);
+                }
+                else
+                {
+                    top_tind->set_block_level(parent_tind->get_block_level() + 1);
+                }
+
+                position_oid = save_oid - 1;
+                top_tind->set_reference(position_oid, block->get_offset());
+
+                indr = std::static_pointer_cast<block_indirect_index>(
+                                allocate_new_block(dbtype_t::BLOCK_TYPE_INDIRECT_INDEX));
+                position_oid = save_oid;
+                top_tind->set_reference(position_oid, indr->get_offset());
+
+                header->set_indirect_index(top_tind->get_offset());
+            }
+        }
+    }
+
+    // we always overwrite the _oid, actually the user should never set
+    // this column directly
+    //
+    cell::pointer_t oid_cell(row_data->get_cell("_oid", true));
+    oid_cell->set_oid(oid);
+
+    block_free_space::pointer_t fspc;
+    reference_t fspc_offset(header->get_blobs_with_free_space());
+    if(fspc_offset == NULL_FILE_ADDR)
+    {
+        // not yet allocated, create a Free Space block
+        //
+        fspc = std::static_pointer_cast<block_free_space>(
+                        allocate_new_block(dbtype_t::BLOCK_TYPE_FREE_SPACE));
+
+        header->set_blobs_with_free_space(fspc->get_offset());
+    }
+    else
+    {
+        fspc = std::static_pointer_cast<block_free_space>(get_block(fspc_offset));
+
+        assert(fspc->get_dbtype() == dbtype_t::BLOCK_TYPE_FREE_SPACE);
+    }
+
+    buffer_t const blob(row_data->to_binary());
+
+    free_space_t free_space(fspc->get_free_space(blob.size()));
+
+    assert(free_space.f_size >= blob.size());
+
+    memcpy(free_space.f_block->data(free_space.f_reference), blob.data(), blob.size());
+    indr->set_reference(position_oid, free_space.f_reference);
+}
+
+
+void table_impl::row_update(row::pointer_t row_data)
+{
+snap::NOTUSED(row_data);
+}
+
+
+void table_impl::read_rows(cursor_data & data)
+{
+    switch(data.f_state->get_index_type())
+    {
+    case index_type_t::INDEX_TYPE_SECONDARY:
+        read_secondary(data);
+        break;
+
+    case index_type_t::INDEX_TYPE_INDIRECT:
+        read_indirect(data);
+        break;
+
+    case index_type_t::INDEX_TYPE_PRIMARY:
+        read_primary(data);
+        break;
+
+    case index_type_t::INDEX_TYPE_EXPIRATION:
+        read_expiration(data);
+        break;
+
+    case index_type_t::INDEX_TYPE_TREE:
+        read_tree(data);
+        break;
+
+    default:
+        throw snapdatabase_logic_error("unexpected index type in read_rows().");
+
+    }
+}
+
+
+void table_impl::read_secondary(cursor_data & data)
+{
+snap::NOTUSED(data);
+std::cerr << "table: TODO implement read secondary...\n";
+throw snapdatabase_not_yet_implemented("table: TODO implement read secondary");
+}
+
+
+void table_impl::read_indirect(cursor_data & data)
+{
+    file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
+    reference_t tref(header->get_indirect_index());
+    if(tref == NULL_FILE_ADDR)
+    {
+        // we have nothing here
+        // (happens until we do some commit)
+        //
+        return;
+    }
+
+snap::NOTUSED(data);
+std::cerr << "table: TODO implement read indirect...\n";
+throw snapdatabase_not_yet_implemented("table: TODO implement read indirect");
+}
+
+
+void table_impl::read_primary(cursor_data & data)
+{
+    file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
+    reference_t ref(header->get_top_key_index_block());
+    if(ref == NULL_FILE_ADDR)
+    {
+        // we have nothing here
+        // (happens until we do some commit)
+        //
+        return;
+    }
+
+    // the primary key is "special" in that we get the content of the
+    // columns and then calculate the murmur value; the murmur is what's
+    // used as the key, not the content of the columns
+    //
+    conditions const & cond(data.f_cursor->get_conditions());
+    row::pointer_t cond_row(cond.get_min_key());
+    buffer_t murmur(16);
+    cond_row->generate_mumur3(murmur);
+
+    block::pointer_t block(get_block(ref));
+
+    // we may have one `PIDX`
+    //
+    if(block->get_dbtype() == dbtype_t::BLOCK_TYPE_PRIMARY_INDEX)
+    {
+        // we expect the top block to be a primary index, we'll see whether
+        // it will make sense to not have that one in some cases (i.e. a
+        // journal probably doesn't need that feature); so we make it
+        // optional and accept to directly jump to the TIDX or EIDX
+        // blocks.
+        //
+        block_primary_index::pointer_t primary_index(std::static_pointer_cast<block_primary_index>(block));
+        ref = primary_index->find_index(murmur);
+        if(ref == NULL_FILE_ADDR)
+        {
+            // no such entry, "SELECT" returns an empty list
+            //
+            return;
+        }
+        block = get_block(ref);
+    }
+
+    // we can have any number of `TIDX`
+    //
+    while(block->get_dbtype() == dbtype_t::BLOCK_TYPE_TOP_INDEX)
+    {
+        // we have a top index
+        //
+        block_top_index::pointer_t top_index(std::static_pointer_cast<block_top_index>(block));
+        ref = top_index->find_index(murmur);
+        if(ref == NULL_FILE_ADDR)
+        {
+            // no such entry, "SELECT" returns an empty list
+            //
+            return;
+        }
+        block = get_block(ref);
+    }
+
+    if(block->get_dbtype() != dbtype_t::BLOCK_TYPE_ENTRY_INDEX)
+    {
+        throw type_mismatch(
+                  "Found unexpected block of type \""
+                + to_string(block->get_dbtype())
+                + "\". Expected an  \""
+                + to_string(dbtype_t::BLOCK_TYPE_ENTRY_INDEX)
+                + "\".");
+    }
+
+    //block_top_index::pointer_t top_index(std::static_pointer_cast<block_top_index>());
+    //reference_t tref(header->get_top_key_index_block());
+
+std::cerr << "table: TODO implement read primary...\n";
+throw snapdatabase_not_yet_implemented("table: TODO implement read primary");
+}
+
+
+void table_impl::read_expiration(cursor_data & data)
+{
+snap::NOTUSED(data);
+std::cerr << "table: TODO implement read expiration...\n";
+throw snapdatabase_not_yet_implemented("table: TODO implement read expiration");
+}
+
+
+void table_impl::read_tree(cursor_data & data)
+{
+snap::NOTUSED(data);
+std::cerr << "table: TODO implement read tree...\n";
+throw snapdatabase_not_yet_implemented("table: TODO implement read tree");
+}
+
+
+
+
 
 
 
 } // namespace detail
+
+
+
+
 
 
 
@@ -551,6 +1266,12 @@ table::table(
         , schema_complex_type::map_pointer_t complex_types)
     : f_impl(std::make_shared<detail::table_impl>(c, this, x, complex_types))
 {
+}
+
+
+table::pointer_t table::get_pointer() const
+{
+    return const_cast<table *>(this)->shared_from_this();
 }
 
 
@@ -572,9 +1293,9 @@ dbfile::pointer_t table::get_dbfile() const
 }
 
 
-version_t table::version() const
+version_t table::schema_version() const
 {
-    return f_impl->version();
+    return f_impl->schema_version();
 }
 
 
@@ -596,39 +1317,39 @@ column_ids_t table::row_key() const
 }
 
 
-schema_column::pointer_t table::column(std::string const & name) const
+schema_column::pointer_t table::column(std::string const & name, version_t const & version) const
 {
-    return f_impl->column(name);
+    return f_impl->column(name, version);
 }
 
 
-schema_column::pointer_t table::column(column_id_t id) const
+schema_column::pointer_t table::column(column_id_t id, version_t const & version) const
 {
-    return f_impl->column(id);
+    return f_impl->column(id, version);
 }
 
 
-schema_column::map_by_id_t table::columns_by_id() const
+schema_column::map_by_id_t table::columns_by_id(version_t const & version) const
 {
-    return f_impl->columns_by_id();
+    return f_impl->columns_by_id(version);
 }
 
 
-schema_column::map_by_name_t table::columns_by_name() const
+schema_column::map_by_name_t table::columns_by_name(version_t const & version) const
 {
-    return f_impl->columns_by_name();
-}
-
-
-bool table::is_secure() const
-{
-    return f_impl->is_secure();
+    return f_impl->columns_by_name(version);
 }
 
 
 bool table::is_sparse() const
 {
     return f_impl->is_sparse();
+}
+
+
+bool table::is_secure() const
+{
+    return f_impl->is_secure();
 }
 
 
@@ -668,10 +1389,85 @@ void table::free_block(block::pointer_t block, bool clear_block)
 }
 
 
-bool table::verify_schema()
+schema_table::pointer_t table::get_schema(version_t const & version)
 {
-    return f_impl->verify_schema();
+    return f_impl->get_schema(version);
 }
+
+
+row::pointer_t table::row_new() const
+{
+    row::pointer_t row(std::make_shared<row>(get_pointer()));
+
+    // save the date the row was created on
+    //
+    cell::pointer_t created_on(row->get_cell("_created_on", true));
+    std::int64_t const created_on_value(snap::snap_child::get_current_date());
+    created_on->set_time_us(created_on_value);
+
+    return row;
+}
+
+
+cursor::pointer_t table::row_select(conditions const & cond)
+{
+    // verify that the index name is acceptable
+    //
+    std::string const & index_name(cond.get_index_name());
+
+    index_type_t index_type(index_name_to_index_type(index_name));
+    if(index_type == index_type_t::INDEX_TYPE_INVALID)
+    {
+        throw invalid_name(
+                  "\""
+                + index_name
+                + "\" is not a valid index name.");
+    }
+
+    schema_secondary_index::pointer_t secondary_index;
+    if(index_type == index_type_t::INDEX_TYPE_SECONDARY)
+    {
+        secondary_index = f_impl->secondary_index(index_name);
+        if(secondary_index == nullptr)
+        {
+            throw invalid_name(
+                      "\""
+                    + index_name
+                    + "\" is not a known system or secondary index in table \""
+                    + name()
+                    + "\".");
+        }
+    }
+
+    detail::cursor_state::pointer_t state(std::make_shared<detail::cursor_state>(index_type, secondary_index));
+    return std::make_shared<cursor>(get_pointer(), state, cond);
+}
+
+
+bool table::row_commit(row_pointer_t row)
+{
+    return f_impl->row_commit(row, detail::commit_mode_t::COMMIT_MODE_COMMIT);
+}
+
+
+bool table::row_insert(row_pointer_t row)
+{
+    return f_impl->row_commit(row, detail::commit_mode_t::COMMIT_MODE_INSERT);
+}
+
+
+bool table::row_update(row_pointer_t row)
+{
+    return f_impl->row_commit(row, detail::commit_mode_t::COMMIT_MODE_UPDATE);
+}
+
+
+void table::read_rows(cursor::pointer_t cursor)
+{
+    detail::cursor_data data(cursor, cursor->get_state(), cursor->get_rows());
+    f_impl->read_rows(data);
+}
+
 
 
 } // namespace snapdatabase

@@ -19,10 +19,16 @@
 
 
 /** \file
- * \brief Database file implementation.
+ * \brief Index Pointer block implementation.
  *
- * Each table uses one or more files. Each file is handled by a dbfile
- * object and a corresponding set of blocks.
+ * In a secondary index, one key match may not be unique. When that happens,
+ * the list of rows that match the secondary index is listed in an
+ * Index Pointer block. The address in the `EIDX` points to an array of
+ * a list of pointers (`oid_t`, really).
+ *
+ * \todo
+ * Determine how to properly grow such lists because that's not too easy
+ * in the way it is defined now.
  */
 
 // self

@@ -57,9 +57,12 @@ enum class dbtype_t : std::uint32_t
     BLOCK_TYPE_FREE_SPACE           = DBTYPE_NAME("FSPC"),
     BLOCK_TYPE_INDEX_POINTERS       = DBTYPE_NAME("IDXP"),
     BLOCK_TYPE_INDIRECT_INDEX       = DBTYPE_NAME("INDR"),
+    BLOCK_TYPE_PRIMARY_INDEX        = DBTYPE_NAME("PIDX"),
     BLOCK_TYPE_SECONDARY_INDEX      = DBTYPE_NAME("SIDX"),
     BLOCK_TYPE_SCHEMA               = DBTYPE_NAME("SCHM"),
+    BLOCK_TYPE_SCHEMA_LIST          = DBTYPE_NAME("SCHL"),
     BLOCK_TYPE_TOP_INDEX            = DBTYPE_NAME("TIDX"),
+    BLOCK_TYPE_TOP_INDIRECT_INDEX   = DBTYPE_NAME("TIND"),
 };
 
 std::string                         to_string(dbtype_t type);
