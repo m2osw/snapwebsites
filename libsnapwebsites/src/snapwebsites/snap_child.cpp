@@ -2530,6 +2530,8 @@ snap_child::~snap_child()
  *
  * This function does not modify the start date of the current process.
  *
+ * \return The current date, right now.
+ *
  * \sa init_start_date()
  * \sa get_start_date()
  * \sa get_start_time()
