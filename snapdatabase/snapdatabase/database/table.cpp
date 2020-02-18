@@ -939,6 +939,7 @@ void table_impl::row_insert(row::pointer_t row_data)
     // `oid` from the list)
     //
     oid_t position_oid(oid);
+    oid_t parent_oid(oid);
     block_indirect_index::pointer_t indr;
     reference_t offset(header->get_indirect_index());
     if(offset == NULL_FILE_ADDR)
@@ -994,8 +995,12 @@ void table_impl::row_insert(row::pointer_t row_data)
                     // an intermediate) so we need to add a link in the
                     // parent to this new `TIND`
                     //
-                    position_oid = save_oid;
+                    position_oid = parent_oid;
                     parent_tind->set_reference(position_oid, parent_offset);
+                }
+                else
+                {
+                    header->set_indirect_index(top_tind->get_offset());
                 }
 
                 position_oid = save_oid - 1;
@@ -1010,6 +1015,7 @@ void table_impl::row_insert(row::pointer_t row_data)
 
             parent_tind = tind;
             parent_offset = offset;
+            parent_oid = save_oid;
             block = get_block(parent_offset);
         }
 
@@ -1035,10 +1041,42 @@ void table_impl::row_insert(row::pointer_t row_data)
                 if(parent_tind == nullptr)
                 {
                     top_tind->set_block_level(1);
+
+                    header->set_indirect_index(top_tind->get_offset());
                 }
                 else
                 {
-                    top_tind->set_block_level(parent_tind->get_block_level() + 1);
+                    std::uint8_t block_level(parent_tind->get_block_level());
+                    if(block_level <= 1)
+                    {
+                        throw snapdatabase_logic_error(
+                                  "parent_tind block level is "
+                                + std::to_string(static_cast<int>(parent_tind->get_block_level()))
+                                + " which is not valid here, it is expected to be at least 2.");
+                    }
+
+                    // we may have many levels, we need to create them all
+                    // in this case (we may later ameliorate our algorithm
+                    // to avoid this early cascade...)
+                    //
+                    position_oid = parent_oid;
+                    for(;;)
+                    {
+                        --block_level;
+                        top_tind->set_block_level(block_level);
+
+                        parent_tind->set_reference(position_oid, top_tind->get_offset());
+
+                        if(block_level <= 1)
+                        {
+                            break;
+                        }
+
+                        parent_tind = top_tind;
+
+                        top_tind = std::static_pointer_cast<block_top_indirect_index>(
+                                allocate_new_block(dbtype_t::BLOCK_TYPE_TOP_INDIRECT_INDEX));
+                    }
                 }
 
                 position_oid = save_oid - 1;
@@ -1048,8 +1086,6 @@ void table_impl::row_insert(row::pointer_t row_data)
                                 allocate_new_block(dbtype_t::BLOCK_TYPE_INDIRECT_INDEX));
                 position_oid = save_oid;
                 top_tind->set_reference(position_oid, indr->get_offset());
-
-                header->set_indirect_index(top_tind->get_offset());
             }
         }
     }

@@ -143,6 +143,10 @@ size_t block_top_indirect_index::get_max_count() const
         f_count = available_size / sizeof(reference_t);
     }
 
+// useful to quickly test the allocation of TIND and INDR
+// but make sure to do the ssame in block_indirect_index::get_max_count()
+//return 8;
+
     return f_count;
 }
 
@@ -190,7 +194,7 @@ reference_t block_top_indirect_index::get_reference(oid_t & id, bool must_exist)
     {
         if(must_exist)
         {
-            throw snapdatabase_logic_error("somehow a Top Indirect Index position is out of bounds calling set_reference().");
+            throw snapdatabase_logic_error("somehow a Top Indirect Index position is out of bounds calling get_reference().");
         }
         return MISSING_FILE_ADDR;
     }

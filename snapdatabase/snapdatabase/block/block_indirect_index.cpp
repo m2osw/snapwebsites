@@ -123,6 +123,10 @@ size_t block_indirect_index::get_max_count() const
         f_count = available_size / sizeof(reference_t);
     }
 
+// useful to quickly test the allocation of TIND and INDR
+// but make sure to do the ssame in block_top_indirect_index::get_max_count()
+//return 8;
+
     return f_count;
 }
 
@@ -202,7 +206,6 @@ std::uint64_t block_indirect_index::get_position(oid_t id, reference_t const * &
     }
 
     refs = reinterpret_cast<reference_t const *>(data(f_start_offset));
-std::cerr << "save PTR at " << refs + position << " <- " << position << " (" << id << ")\n";
     return position;
 }
 
