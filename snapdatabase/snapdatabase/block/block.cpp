@@ -203,9 +203,9 @@ void block::clear_block()
         throw snapdatabase_logic_error("the structure of the block_free_block block cannot be dynamic.");
     }
 #endif
-    std::uint32_t const page_size(get_table()->get_page_size() - offset);
+    std::uint32_t const data_size(get_table()->get_page_size() - offset);
 
-    memset(data(offset), 0, page_size);
+    memset(data(offset), 0, data_size);
 }
 
 
@@ -223,6 +223,11 @@ void block::set_dbtype(dbtype_t type)
     if(*reinterpret_cast<dbtype_t *>(data(0)) != type)
     {
         *reinterpret_cast<dbtype_t *>(data(0)) = type;
+
+        reference_t const size(f_structure->get_size());
+        memset(data(sizeof(dbtype_t))
+             , 0
+             , size - sizeof(dbtype_t));
     }
 }
 

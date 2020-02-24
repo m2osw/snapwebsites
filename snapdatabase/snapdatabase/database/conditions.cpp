@@ -135,6 +135,25 @@ row::pointer_t conditions::get_max_key() const
 }
 
 
+buffer_t const & conditions::get_murmur_key() const
+{
+    if(f_min_key == nullptr)
+    {
+        throw snapdatabase_logic_error(
+                    "the conditions::get_murmur_key() can only be used if"
+                    " the minimum key is defined.");
+    }
+
+    if(f_murmur_key.empty())
+    {
+        f_murmur_key.resize(16);
+        f_min_key->generate_mumur3(f_murmur_key);
+    }
+
+    return f_murmur_key;
+}
+
+
 void conditions::set_filter(row::pointer_t min_key, row::pointer_t max_key)
 {
     f_min_filter = min_key;

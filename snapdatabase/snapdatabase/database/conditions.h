@@ -27,6 +27,10 @@
  * SQL SELECT statement.
  */
 
+// self
+//
+#include    "snapdatabase/data/virtual_buffer.h"
+
 
 // C++ lib
 //
@@ -110,6 +114,7 @@ public:
     std::string const &                         get_index_name() const;
     row_pointer_t                               get_min_key() const;
     row_pointer_t                               get_max_key() const;
+    buffer_t const &                            get_murmur_key() const;
 
     void                                        set_filter(row_pointer_t min_key, row_pointer_t max_key);
     row_pointer_t                               get_min_filter() const;
@@ -131,6 +136,7 @@ private:
     row_pointer_t                               f_max_key = row_pointer_t();
     row_pointer_t                               f_min_filter = row_pointer_t();
     row_pointer_t                               f_max_filter = row_pointer_t();
+    mutable buffer_t                            f_murmur_key = buffer_t();
     null_mode_t                                 f_null_mode = null_mode_t::NULL_MODE_SORTED;
     bool                                        f_reverse = false;
 };

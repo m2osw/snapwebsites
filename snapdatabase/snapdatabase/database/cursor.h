@@ -65,6 +65,7 @@ public:
     bool                                        empty() const;
     bool                                        complete() const;
     void                                        rewind();
+    size_t                                      get_position() const;
     row_pointer_t                               next_row();
     row_pointer_t                               previous_row();
 
@@ -72,12 +73,13 @@ public:
     void                                        set_cache(bool cache = true);
     bool                                        forget(row_pointer_t row);
 
-private:
-    friend table;
-
+    // the following functions are considered private, only use them inside
+    // the library; they may change or even be removed at any time
+    //
     detail::cursor_state_pointer_t              get_state();
     row_vector_t &                              get_rows();
 
+private:
     table_pointer_t                             f_table;
     detail::cursor_state_pointer_t              f_cursor_state = detail::cursor_state_pointer_t();
     conditions const                            f_conditions;

@@ -45,10 +45,11 @@ public:
 
                                 block_primary_index(dbfile::pointer_t f, reference_t offset);
 
-    uint8_t                     get_size() const;
-    void                        set_size(uint8_t size);
-    void                        set_max_size();
-    reference_t                 find_index(buffer_t key) const;
+    std::uint8_t                get_size() const;
+    std::uint32_t               key_to_index(buffer_t key) const;
+
+    reference_t                 get_top_index(buffer_t const & key) const;
+    void                        set_top_index(buffer_t const & key, reference_t offset);
 
 private:
 };

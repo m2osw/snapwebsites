@@ -34,6 +34,9 @@ namespace snapdatabase
 {
 
 
+constexpr std::uint8_t      ENTRY_INDEX_FLAG_COMPLETE = 0x01;
+constexpr std::uint8_t      ENTRY_INDEX_FLAG_MULTIPLE = 0x02;   // the reference is to an IDXP
+
 
 class block_entry_index
     : public block
@@ -43,16 +46,22 @@ public:
 
                                 block_entry_index(dbfile::pointer_t f, reference_t offset);
 
-    uint32_t                    get_count() const;
-    void                        set_count(uint32_t count);
-    uint32_t                    get_size() const;
-    void                        set_size(uint32_t size);
+    std::uint32_t               get_count() const;
+    void                        set_count(std::uint32_t count);
+    std::uint32_t               get_size() const;
+    void                        set_size(std::uint32_t size);
+    void                        set_key_size(std::uint32_t size);
     reference_t                 get_next() const;
     void                        set_next(reference_t offset);
     reference_t                 get_previous() const;
     void                        set_previous(reference_t offset);
 
+    oid_t                       find_entry(buffer_t const & key) const;
+    std::uint32_t               get_position() const;
+    void                        add_entry(buffer_t const & key, oid_t position_oid, std::int32_t close_position = -1);
+
 private:
+    mutable std::uint32_t       f_position = 0;
 };
 
 

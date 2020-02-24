@@ -67,9 +67,10 @@ public:
     free_space_t                get_free_space(std::uint32_t minimum_size);
     void                        release_space(reference_t offset);
 
-    static bool                 get_flag(data_t ptr, std::uint8_t flag);
+    static bool                 get_flag(const_data_t ptr, std::uint8_t flag);
     static void                 set_flag(data_t ptr, std::uint8_t flag);
     static void                 clear_flag(data_t ptr, std::uint8_t flag);
+    static std::uint32_t        get_size(const_data_t ptr);
 
 private:
     std::unique_ptr<detail::block_free_space_impl>

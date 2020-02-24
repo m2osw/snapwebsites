@@ -43,13 +43,16 @@ public:
 
                                 block_top_index(dbfile::pointer_t f, reference_t offset);
 
-    uint32_t                    get_count() const;
-    void                        set_count(uint32_t id);
-    uint32_t                    get_size() const;
-    void                        set_size(uint32_t size);
+    std::uint32_t               get_count() const;
+    void                        set_count(std::uint32_t id);
+    std::uint32_t               get_size() const;
+    void                        set_size(std::uint32_t size);
+
     reference_t                 find_index(buffer_t key) const;
+    std::uint32_t               get_position() const;
 
 private:
+    mutable std::uint32_t       f_position = 0;
 };
 
 

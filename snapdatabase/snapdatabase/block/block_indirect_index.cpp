@@ -158,7 +158,7 @@ reference_t block_indirect_index::get_reference(oid_t & id, bool must_exist) con
     {
         if(must_exist)
         {
-            throw snapdatabase_logic_error("somehow a Indirect Index position is out of bounds.");
+            throw snapdatabase_logic_error("somehow an Indirect Index position is out of bounds.");
         }
         return MISSING_FILE_ADDR;
     }

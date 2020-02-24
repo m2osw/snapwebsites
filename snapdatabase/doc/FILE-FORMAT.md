@@ -55,76 +55,97 @@ acknowledge that the write occurred safely.
 
 #### Indexing
 
-TODO: Look into supporting Branches and Revisions straight in here because
-having to maintain 3 tables (4 if we had the tree...) is complex in the
-client's code, better have all of that here where we can make it very
-effective. It seems to me that we can have a form of sub-indexing where
-the OID is the main reference to the data and that OID gives us access
-to the version which further manages pointers to the revisioned data.
-Columns are given a sub-type of "global", "branch", or "revision" to
-knwow whether it is affected by those two numbers.
-
 * Indirect Index (`INDR`/`TIND`)
 
-    To allow for changes in the data location, we use a two layered indexing
-    mechanism. Each row is assigned an identifier (OID). That identifier is
-    incremented starting at 1. Knowing the number of pointers per page and
-    the current number of levels (the `TIND` includes that level), we can
-    immediately calculate where the pointer is located and load the exact
-    page at once.
+    To allow for changes in the location of the data, we use a two layered
+    index mechanism. Each row is assigned an identifier (OID). That identifier
+    is incremented on each INSERT and starts at 1. Knowing the number of
+    pointers per page and the current number of levels (the `TIND` includes
+    that level; the `INDR` level is always 0 so we don't include a field for
+    that one), we can immediately calculate where the pointer is located and
+    load the exact page at once.
 
-    Note: we can't safely expose this identifier because when a row gets
-    deleted its OID gets reassigned to another row.
+    Note: we can't safely expose this identifier because (1) when a row gets
+    deleted its OID gets reassigned to another row; (2) the OIDs are specific
+    to the table instantiation on a certain machine, so the same table on
+    several different machines may have  different OIDs for the same rows.
 
 * Primary Index (`PIDX`/`TIDX`/`EIDX`)
 
-    We primarily use B+trees in our implementation.
+    We primarily use B+tree indexes, however, the Primary Index first uses
+    the `PIDX` (the highest level), which is an index using the last bits
+    of our key to very quickly go to the next level (a `TIDX`).
 
-    However, the Primary Index uses the `PIDX` first (level 0), which is
-    an index using the last byte of our key to very quickly go to level 1.
-    (We could use more than 8 bits if we use blocks of more than 4Kb)
-    This is done this way because the top bytes are used to determine
-    which computers in the cluster should receive the data. So these top
-    bytes are not going to be as random as the bottom bytes.
-
-    TODO: the `PIDX` table wastes 50% of the block because of its header
-    inside the block. We want to look into having a way to avoid that huge
-    waste. That could be done by defining the type for the block when
-    allocating it. (i.e. the primary index must have `TIDX` entries anyway,
-    and any child to a `TIDX` must be either another `TIDX` or a `PIDX` and
-    we can define that by checking the `TIDX` level).
-
-    Note: at this point the `PIDX` is not mandatory.
+    This index uses the lower bits because the top bits are used to
+    determine the computers in the cluster receiving the data (i.e.
+    partitioning). So on a server in such a cluster the top bits are
+    not going to be as random as the bottom bits.
 
     Cassandra uses LSMtree instead. LSMtree has the advantage of offering
     a very fast write mechanism. We want to look into using a level 0
     LSMtree which spans between the _commitlog_ (incoming data saved in our
     temporary journal) and the commited data.
 
-* Branch Index (`TIDX`/`EIDX`)
+        +--------------------+
+        |                    |  For the Primary Index, here we include the
+        |    Entry Index     |  whole key (128 bits); for Secondary Indexes
+        |     (EIDX)         |  we use n bytes as defined by the user
+        +--------------------+
+                 ^
+                 |
+        +--------+-----------+
+        |                    |  Include n bytes of key in an array so we can
+        |     Top Index      |  do a simple binary search
+        |     (TIDX)         |
+        +--------------------+
+                 ^
+                 |
+        +--------+-----------+
+        |                    |  Use lower n bits of key as an index
+        |   Primary Index    |
+        |     (PIDX)         |
+        +--------------------+
 
-    Similar to the Primary Index, except that this includes a major version
-    number in the key. (i.e. use the schema primary key + version.major).
-    This is used to save branch specific data in a row.
+* Branch Index (`PIDX`/`TIDX`/`EIDX`)
 
-    **IMPORTANT NOTE:** In our Snap! implementation, the branch also includes
-    a language.
+    Similar to the Primary Index, except that the major version number gets
+    added at the end of the key:
+
+        row_key + "::" + version.major
+
+    This is used to save branch specific data in a row. Here the version is
+    the version of the row, not the version of the database, schema, etc.
+    (since each row also gets assigned a schema version, watchout!)
 
     See talk about the `_version` field in
     snapdatabase/snapdatabase/data/schema.cpp
 
-* Revision Index (`TIDX`/`EIDX`)
+    IMPORTANT NOTE: If we decide to use a secondary index instead of the
+    Murmur3 value, then we would not use the `PIDX` block. For branches
+    it may not be too important, but if we want to find the list of the
+    last five versions in a branch, that not going to be possible with
+    a Murmur3 key.
+
+* Revision Index (`PIDX`/`TIDX`/`EIDX`)
 
     Similar to the Primary Index, except that this includes the major and
-    the minor version numbers in the key. (i.e. use the schema primary key
-    + version.major + version.minor). This is used to save the revision
-    specific data in a row.
+    the minor version numbers in the key and the language.
 
-    **IMPORTANT NOTE:** In our Snap! implementation, the revisions also
-    includes a language.
+        row_key + "::" + version.major + version.minor + language
+
+    Note: internally, we use 0xFF as the separator.
+
+    This is used to save the revision specific data in a row. This is the
+    data which changes whenever a person edits a page (the title, body,
+    tags, date of the modification, etc.)
 
     See talk about the `_version` field in
     snapdatabase/snapdatabase/data/schema.cpp
+
+    IMPORTANT NOTE: If we decide to use a secondary index instead of the
+    Murmur3 value, then we would not use the `PIDX` block. However, I think
+    that we are very likely to want to read the versions in order because
+    that way we can let the user choose the one he wants to display now.
 
 * Expiration Index (`TIDX`/`EIDX`)
 
@@ -154,6 +175,7 @@ knwow whether it is affected by those two numbers.
     (in binary by default). However, that meant it wasn't distributed. Later
     Cassandra added Secondary Indexes which they implemented so they would be
     distributed.
+
 
 ### Data
 
@@ -387,8 +409,7 @@ The header has the following fields at the moment:
 
 ### Header (`SDBT`)
 
-The header defines where the other blocks are and includes the bloom filter
-data.
+The header defines where and how to find the other blocks and files.
 
 * Block Header (Type: _complex_)
 
@@ -634,12 +655,21 @@ data.
     information if we quit (or worse, crash) which the compaction is
     going on.
 
-* Top Key Index Block (Type: `reference_t`)
+* Top Primary Index Block (Type: `reference_t`)
 
-    Pointer to the first B+tree Primary Index block.
+    Pointer to the first B+tree Primary Index block (well, except that the
+    `PIDX` is not a B+tree index, but well).
 
-    The top block is a `PIDX` which we index using the "some" byte of the
-    Murmur3 hash. The next block is a `TIDX` and/or `EIDX`.
+* Top Primary Index Reference Zero (Type: `oid_t`)
+
+    The `PIDX` block uses all the space available and when the key ends with
+    all zeroes, we end up with an invalid offset (because the block includes
+    a header at that position) so instead we save that reference at here.
+
+    This is a very special case indeed! However, it's much more effective
+    since we can use one extra bit of data from the key in the `PIDX` and
+    that means we save 50% of that space and we still have plenty of room
+    in the header.
 
 * Top Branch Index Block (Type: `reference_t`)
 
@@ -677,8 +707,8 @@ data.
     A pointer to a block representing a list of secondary indexes. These
     include the name of the indexes and a pointer to the actual index
     and the number of rows in that index (it is here because the `TIND`
-    is also used by the `PRIMARY KEY` which dos not require that number
-    and also when a new level is create the `TIND` can become a child
+    is also used by the `PRIMARY KEY` which does not require that number
+    and also when a new level is created the `TIND` can become a child
     of another `TIND`).
 
     Add support for a `reverse()` function so we can use the reversed
@@ -688,7 +718,7 @@ data.
     than duplicating a column.
 
     Like with VIEWs, though, we could have calculated columns (these are
-    often called virtual column). So query the `eman` column could run a
+    often called virtual columns). So query the `eman` column could run a
     function which returns `reverse(name)`. We already make use of such
     a feature for indexes to inverse `time_us_t` fields and sort these
     columns in DESC order (i.e. `9223372036854775807 - created_on`).
@@ -742,7 +772,10 @@ data.
     - algorithm: 4 bits defining the algorithm to use to generate the
       bloom filter.
 
-    - renewing: if set, the bloom filter is being regenerated.
+    - renewing: if set, the bloom filter is being regenerated; this means
+      writes will send the data to two bloom filters and reads can use the
+      old table, albeit may get more false positive than you'd really like
+      to get (but the new table returns false negatives until complete)
 
     The currently defined algorithms are:
 
@@ -750,12 +783,15 @@ data.
 
     - bits: just use bits; it makes the filter smaller; useful for
       tables which do not delete very many rows over time; note that
-      replacing/updating a row does not mean deleting because the key
-      remains the same
+      for the primary index replacing and updating rows does not mean
+      deleting because the key remains the same; however, for secondary
+      indexes using other columns than the primary key columns, those
+      will possibly have problems with updates
 
     - counters: use one byte per entry which gets increased when a match
-      is found and decreases when we remove a row; useful for tables
-      where many rows get deleted all the time
+      is found and decreased when we remove a row; useful for tables
+      where many rows get deleted all the time (the decrement is not
+      performed if the counter is at 255)
 
 
 ### Free Block (`FREE`)
@@ -1239,31 +1275,32 @@ access.
 
 ### Primary Index Block (`PIDX`)
 
-The top Primary Index Block uses the last bytes of the Murmur3 hash to
+The very top Primary Index Block uses the last bits of the Murmur3 hash to
 immediately jump to a `TIDX` or `EIDX` block.
 
 The number of bits used from the Murmur3 hash depends on the size of your
-blocks. With a 4Kb block, we use 8 bits. The math goes something like this:
+blocks (page size). With a 4Kb block, we use 9 bits. The math goes something
+like this:
 
-    bits = log_2(size - sizeof(block-header))
+    bits = log(page_size / sizeof(reference_t)) / log(2)
 
-The size of the block header is probably very small (under 64 bytes) but
-that's enough to prevent us from using 512 entry in a 4Kb block. Each
-entry is a `reference_t` which is a 64 bit address.
+It is expected that the size of the `PIDX` block header will remain under or
+equal to `sizeof(reference_t)` which means that the reference for offset 0
+can't be saved here. Instead it gets saved in the header (see field
+"Top Primary Index Reference Zero").
 
-* Header (`PIDX`, Type: `char[4]`)
+* Header (`PIDX`, Type: `dbtype_t`)
 
     The header indicating a Primary Index.
 
-* Size (Type: `uint8_t`)
+* Index (Type: `reference_t[bits]`)
 
-    The number of bits used from the hash. At this time this is always set
-    to 8. Later we may want to support adjusting the size when we support
-    blocks larger than 4Kb.
+    The index is `bits` references to `TIDX` or `EIDX` blocks. When we
+    first add a new row, we use an `EIDX` block. Once that block is full,
+    we add a `TIDX` and distribute the entries between the various blocks.
 
-* Index (Type: `reference_t[256]`)
-
-    The index is 256 references to `TIDX` or `EIDX` blocks.
+    Note: this is not an array because the number of indexes is not saved
+    here. We save it in the header along the first `reference_t` field.
 
 
 ### Top Index Block (`TIDX`)
@@ -1278,7 +1315,7 @@ by partitioning those keys over the cluster._
 
 The fields of the Top Index Block are as follow:
 
-* Header (`TIDX`, Type: `char[4]`)
+* Header (`TIDX`, Type: `dbtype_t`)
 
     The header indicated a Top Index.
 
@@ -1349,18 +1386,38 @@ The Secondary Index blocks are used to give us a pointer to a Top Index
 Block used to sort the elements present in that Secondary Index Block.
 
 The definition of the secondary index is found in the XML file defining
-this table.
+this table. That definition stays in the schema (`SCHM`).
 
 * Header (`SIDX`, Type: `dbtype_t`)
 
     The block magic.
 
-* Secondary Index Identifier (Type: `uint32_t`)
+* Next Secondary Index (Type: `reference_t`)
+
+    One 4Kb block supports about 170 secondary indexes so it is very unlikely
+    that we would ever have to use this field. However, we do not want to
+    limit the number of secondary indexes so we allow for a linked list.
+    The indexes remain sorted so we can quickly know whether it is present
+    in a page or not.
+
+Each Secondary Index is defined by the following set of fields defined in an
+array (16 bit size is enough):
+
+* Secondary Index Identifier (Type: `uint16_t`)
 
     This secondary index identifier. As we parse the XML data, we
     assign an identifier to each secondary index. This is that
     identifier referencing the second index definition found in the
     Table Schema.
+
+* Bloom Filter Flags (`uint32_t`)
+
+    If set to 0, it is assumed that the primary bloom filter can be used
+    (i.e. all or nearly all the rows will be found in this secondary index).
+
+    When set to another value, this means this secondary index uses that
+    other bloom filter because it is very likely to ignore many rows so we
+    should have many less bits set for this index than the primary index.
 
 * Number of Rows (`uint64_t`)
 
@@ -1369,27 +1426,6 @@ this table.
 * Top Secondary Index Block (`reference_t`)
 
     The pointer to the top index block for this secondary index.
-
-* First Secondary Index Block with Free Space (`reference_t`)
-
-    Pointer to the first B+tree index block with space available.
-
-    TBD: Is that necessary at all? B-trees are managed by searching the rows
-    and placing new rows where there is around the location where it needs to
-    go (i.e. because it's sorted) This was probably as I was thinking about
-    it.
-
-* Bloom Filter Flags (`uint32_t`)
-
-    The bloom filter of the primary filter can be used by secondary indexes
-    as long as these are used as filters only and thus the key remains the
-    same. In that case, the algorithm is set to "none" here. When the
-    secondary index has a different key (i.e. it is used to sort the
-    rows in a different order, possibly also filtering out some or even
-    many rows).
-
-Fields Name to First Secondary Index Block are repeated for each secondary
-index.
 
 Note: to support our new "indexes" table, we would instead need a
 special case where the `"start_key"` is used so we can have a
@@ -1444,7 +1480,7 @@ one row at a time...
 
 * Size (Type: `uint32_t`)
 
-    The size of one index.
+    The size of the key in one index.
 
 * Next (Type: `reference_t`)
 
@@ -1483,17 +1519,19 @@ one row at a time...
     To the minimum, one index entry includes flags, the key and a pointer
     to the actual data.
 
-    - Flags (`uint8_t`)
+    - Flags (Type: `uint8_t`)
       - Flag: Key is Complete (0x01); which means we do not have to compare
-        again once we access the data
-    - Pointer to `DATA` or row ID in `INDR` (Type: `reference_t` or `oid_t`)
-    - Index Identifier (Type: `reference_t`)
+        again once we access the row data
+    - Row ID (`INDR`, Type: `oid_t`) or Index Pointer (`IDXP`, Type:
+      `reference_t`)
     - Key Data (Actual data or an offset to the data because it varies in
       size; the size would appear in the destination as in an ARRAY16)
 
     The Index Identifier (`IDXP`) is used when one key matches multiple
     rows. This happens when dealing with secondary indexes where the
-    index is not required to be unique.
+    index is not required to be unique. We use a flag to know whether the
+    offset is to an `INDR` or an `IDXP` although just reading the block
+    is enough to determine that, obviously.
 
     **NOTE:** There is a _right balance_ between functionality and efficiency.
     In most cases, I prefer functionality. However, having really long

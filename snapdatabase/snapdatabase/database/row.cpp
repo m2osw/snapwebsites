@@ -35,6 +35,11 @@
 #include    <murmur3/murmur3.h>
 
 
+// C++ lib
+//
+#include    <iostream>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -123,6 +128,23 @@ buffer_t row::to_binary() const
 }
 
 
+/** \brief Transform a blob into a set of cells in a row.
+ *
+ * This function transforms the specified \p blob in a set of cells in this
+ * row.
+ *
+ * \todo
+ * We need to consider looking into not defining all the cells if the user
+ * only asked for a few of them. This may actually be a feature to implement
+ * in the to_binary() function. In any even if the SELECT only requests
+ * column "A" then we should only return that one column and not all of them.
+ * This will save us a lot of bandwidth, but it also means that the row is
+ * incomplete and can't be written back to the database. So we have to have
+ * a form of special case. (We also want to support updates without all the
+ * data available in the row; i.e. with parts only available on disk...)
+ *
+ * \param[in] blob  The blob to extract to this row object.
+ */
 void row::from_binary(buffer_t const & blob)
 {
     table::pointer_t t(f_table.lock());
@@ -140,6 +162,17 @@ void row::from_binary(buffer_t const & blob)
         {
             column_id_t const column_id(cell::column_id_from_binary(blob, pos));
             schema_column::pointer_t exist_schema(t->column(column_id, version));
+            if(exist_schema == nullptr)
+            {
+                throw column_not_found(
+                          "Column with identifier "
+                        + std::to_string(static_cast<int>(column_id))
+                        + " does not exist in \""
+                        + get_table()->name()
+                        + "\" schema version "
+                        + version.to_string()
+                        + " (from_binary).");
+            }
             cell::pointer_t c(std::make_shared<cell>(exist_schema));
             c->value_from_binary(blob, pos); // we MUST read or skip that data, so make sure to do that
 
@@ -154,9 +187,17 @@ void row::from_binary(buffer_t const & blob)
     }
     else
     {
-        while(pos < blob.size())
+        while(pos + sizeof(std::uint16_t) <= blob.size())
         {
             column_id_t const column_id(cell::column_id_from_binary(blob, pos));
+            if(column_id == 0)
+            {
+                // this happens because we align the data (although we may
+                // not want to do that?)
+                break;
+            }
+
+std::cerr << "READ COLUMN DATA... pos = " << pos << " vs " << blob.size() << " column ID " << column_id << "\n";
             cell::pointer_t cell(get_cell(column_id, true));
             cell->value_from_binary(blob, pos);
         }
@@ -176,11 +217,11 @@ cell::pointer_t row::get_cell(column_id_t const & column_id, bool create)
     if(column == nullptr)
     {
         throw column_not_found(
-                  "Column with identifier \""
+                  "Column with identifier "
                 + std::to_string(static_cast<int>(column_id))
-                + "\" does not exist in \""
+                + " does not exist in \""
                 + get_table()->name()
-                + "\".");
+                + "\" (get_cell).");
     }
 
     if(!create)

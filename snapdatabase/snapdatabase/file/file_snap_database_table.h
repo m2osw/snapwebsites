@@ -132,8 +132,10 @@ public:
     void                        set_blobs_with_free_space(reference_t reference);
     reference_t                 get_first_compactable_block() const;
     void                        set_first_compactable_block(reference_t reference);
-    reference_t                 get_top_key_index_block() const;
-    void                        set_top_key_index_block(reference_t reference);
+    reference_t                 get_primary_index_block() const;
+    void                        set_primary_index_block(reference_t reference);
+    reference_t                 get_primary_index_reference_zero() const;
+    void                        set_primary_index_reference_zero(reference_t reference);
     reference_t                 get_expiration_index_block() const;
     void                        set_expiration_index_block(reference_t reference);
     reference_t                 get_secondary_index_block() const;

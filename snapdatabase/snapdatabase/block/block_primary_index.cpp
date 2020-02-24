@@ -22,35 +22,41 @@
  * \brief Block Primary Index implementation.
  *
  * The Primary Index is used to very quickly kill one layer in our search
- * without doing a search. Instead this index makes use of the last byte
- * of the Murmur3 hash to pick a block reference to use to do the search
- * of the data by primary key.
+ * without doing a search. Instead this index makes use of the last few
+ * bits of the Murmur3 hash to instantly pick a block reference to use to
+ * do the search of the data by primary key.
  *
- * In other words, this feature cuts down the search by a factor 256. To
- * search 1 million items using a binary search, you need 20 iterations
- * (assuming all one million items are in one table ready to be searched).
- *
- * When using the Primary Index, we cut down the 1 million by 256 (roughly)
- * which means we have to search about 3,900 items, which reduces the
- * binary search iterations to about 12.
+ * In other words, this feature cuts down the search by a factor equal to
+ * the number of `reference_t` we can fit in one block. To give you an idea,
+ * searching among one million items using a binary search, you need up to 20
+ * iterations (assuming all one million items are in one table ready to be
+ * searched). When using the Primary Index, we cut down the 1 million by 
+ * at least 512 (when your block is 4Kb which is the smallest possible)
+ * which means we end up having to search about 1,954 items, which reduces
+ * the binary search iterations to about 11.
  *
  * Obviously, in our case we use blocks so the search uses a B+tree and
  * it can take time to load said blocks, the number of items per block
  * defines a level which varies, etc. so the number of iterations can
  * vary wildly.
  *
- * On small tables, this step can be made optional. However, adding this
- * block later means having to rebuild the entire Primary Index.
+ * \note
+ * We use pages that have a size which is a multiple of the system page
+ * size (so a power of 2) but with the header it breaks the possibility
+ * to use the entire page. For this one (`PIDX`), it would be a
+ * particularly bad one since we would waste 50% of the page. Since we
+ * have a single one of those pages (there is only one primary index)
+ * we save index zero in the header instead. That way the header is still
+ * in the block and we still support 100% of the alloted space.
+ * \note
+ * If we want to support multiple Primary Indexes (i.e. for the Branch and
+ * the Revision sub-indexes) then we probably want to look into an easy way
+ * to get the "Reference Zero". Right now it's hard coded to only get the
+ * primary key "Reference Zero".
  *
  * \todo
- * We use pages that have a size multiple of the system page size (small
- * or huge) but with the header it often breaks the possibility to use
- * the entire page. For this one (`PIDX`), it is a particularly bad hit
- * since we waste 50% of the page, which I think is really bad. I want
- * to find a way to change that which I think would be to define the
- * header in another location (or not have a header for these pages;
- * it is useful to allocate them in memory, but we can always have an
- * exception here and there, that's what software is good at...)
+ * On small tables, this step can be made optional. However, adding this
+ * block later means having to rebuild the entire Primary Index.
  */
 
 // self
@@ -59,6 +65,17 @@
 
 #include    "snapdatabase/block/block_header.h"
 #include    "snapdatabase/database/table.h"
+#include    "snapdatabase/file/file_snap_database_table.h"
+
+
+// snapdev lib
+//
+#include    <snapdev/log2.h>
+
+
+// C++ lib
+//
+#include    <iostream>
 
 
 // last include
@@ -87,11 +104,7 @@ constexpr struct_description_t g_description[] =
         , FieldType(struct_type_t::STRUCT_TYPE_STRUCTURE)
         , FieldSubDescription(detail::g_block_header)
     ),
-    define_description(
-          FieldName("size")
-        , FieldType(struct_type_t::STRUCT_TYPE_UINT8)
-    ),
-    // we manage the array by hand, it's easier
+    // all the space gets used, no room for an array here
     //define_description(
     //      FieldName("index")
     //    , FieldType(struct_type_t::STRUCT_TYPE_ARRAY32)
@@ -124,68 +137,21 @@ block_primary_index::block_primary_index(dbfile::pointer_t f, reference_t offset
 }
 
 
-uint8_t block_primary_index::get_size() const
+std::uint8_t block_primary_index::get_size() const
 {
-    return static_cast<uint32_t>(f_structure->get_uinteger("size"));
+    // this is calculate in memory and the snap::log2() is just two or three
+    // assembly instructions so it's dead fast (it's inline).
+    //
+    return static_cast<std::uint8_t>(std::min(snap::log2(f_table->get_page_size()) - snap::log2(sizeof(reference_t)), 32));
 }
 
 
-void block_primary_index::set_size(uint8_t size)
-{
-    if(size > 32)
-    {
-        throw out_of_bounds(
-              "Size "
-            + std::to_string(static_cast<int>(size))
-            + " is too large for the Primary Index (PIDX).");
-    }
-
-    f_structure->set_uinteger("size", size);
-}
-
-
-/** \brief Assign the maximum size the current page size allows us to use.
- *
- * This function allows you to assign the maximum possible size to this
- * index. This is the best way to assign the value. The minimum is 8
- * since we limit the block size to 4Kb minimum. The maximum, assuming
- * 2Mb pages, is 20 bits.
- */
-void block_primary_index::set_max_size()
-{
-    // calculate the maximum number of bits that can be used
-    // and assign it to the block
-    //
-    //    floor(log(page_size - sizeof(header)) / log(2))
-    //
-    // the size (page_size - sizeof(header)) is further made a multiple of
-    // sizeof(reference_t), just in case
-    //
-    size_t const page_size(f_table->get_page_size());
-    std::uint32_t const header_size(round_up(f_structure->get_size(), sizeof(reference_t)));
-    double bits(floor(log(static_cast<double>(page_size - header_size)) / log(2.0)));
-
-    // the number of bits will further be clamped to the size of the key
-    // but our size uses 8 bits so we want to make sure we do not have
-    // an overflow; that being said, we use 32 bits numbers to do our
-    // sub-key generation so we clamp to 32 bits which represents a page
-    // of 4Gb which I don't think anyone would ever want to use!
-    //
-    if(bits > 32.0)
-    {
-        bits = 32.0;
-    }
-
-    set_size(static_cast<std::uint8_t>(bits));
-}
-
-
-reference_t block_primary_index::find_index(buffer_t key) const
+std::uint32_t block_primary_index::key_to_index(buffer_t key) const
 {
     // retrieve `size` bits from the end of key
     //
     // note: at this time we conside that the maximum number of bits
-    // is going to be 20, so we can use 32 bit numbers
+    //       is going to be 20, so we can use 32 bit numbers
     //
     std::uint8_t const size(get_size());
     std::uint32_t bytes(divide_rounded_up(size, 8));
@@ -204,14 +170,45 @@ reference_t block_primary_index::find_index(buffer_t key) const
         shift += 8;
     }
 
-    std::uint32_t mask(-1);
+    std::uint32_t mask(static_cast<std::uint32_t>(-1));
     mask <<= size;
-    k &= ~mask;
+    return k & ~mask;
+}
 
-    std::uint32_t const offset(round_up(f_structure->get_size(), sizeof(reference_t)));
 
-    std::uint8_t const * buffer(data() + offset);
-    return reinterpret_cast<reference_t const *>(buffer)[k];
+reference_t block_primary_index::get_top_index(buffer_t const & key) const
+{
+    std::uint32_t const k(key_to_index(key));
+    if(k == 0)
+    {
+        // this position is where we have the header and version for this
+        // block so we have to use a different location, we use the header
+        //
+        file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_table()->get_block(0)));
+        return header->get_primary_index_reference_zero();
+    }
+    else
+    {
+        return reinterpret_cast<reference_t const *>(data())[k];
+    }
+}
+
+
+void block_primary_index::set_top_index(buffer_t const & key, reference_t offset)
+{
+    std::uint32_t const k(key_to_index(key));
+    if(k == 0)
+    {
+        // this position is where we have the header and version for this
+        // block so we have to use a different location, we use the header
+        //
+        file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_table()->get_block(0)));
+        header->set_primary_index_reference_zero(offset);
+    }
+    else
+    {
+        reinterpret_cast<reference_t *>(data())[k] = offset;
+    }
 }
 
 

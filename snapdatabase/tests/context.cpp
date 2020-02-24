@@ -165,8 +165,20 @@ CATCH_TEST_CASE("Context", "[centext]")
         table = context->get_table("foo");
         CATCH_REQUIRE(table != nullptr);
 
-        for(int count(0); count < 580; ++count)
+        struct row_data_t
         {
+            typedef std::vector<row_data_t> vector_t;
+
+            std::uint16_t       f_c1 = 0;
+            std::int16_t        f_c2 = 0;
+            std::uint64_t       f_c3 = 0;
+        };
+        row_data_t::vector_t row_data;
+
+        //for(int count(0); count < 580; ++count)
+        for(int count(0); count < 163; ++count)
+        {
+std::cerr << "+++ row count = " << count << "\n";
             snapdatabase::row::pointer_t row(table->row_new());
 
             snapdatabase::cell::pointer_t c1(row->get_cell("c1", true));
@@ -178,12 +190,71 @@ CATCH_TEST_CASE("Context", "[centext]")
             c2->set_int16(c2_value);
 
             snapdatabase::cell::pointer_t c3(row->get_cell("c3", true));
-            uint64_t c3_value(static_cast<std::uint64_t>(rand()) ^ (static_cast<std::uint64_t>(rand()) << 32));
+            std::uint64_t c3_value(static_cast<std::uint64_t>(rand()) ^ (static_cast<std::uint64_t>(rand()) << 32));
             c3_value &= -256;
             c3_value |= count + 1;
             c3->set_uint64(c3_value);
 
+            row_data_t data;
+            data.f_c1 = c1_value;
+            data.f_c2 = c2_value;
+            data.f_c3 = c3_value;
+            row_data.push_back(data);
+
             table->row_insert(row);
+
+            // now verify that this and all the previous inserts worked
+            // and all the data is still accessible
+            //
+            // the indexes vector is used to search for each row in a
+            // random order instead of first to last
+            //
+            std::vector<int> indexes;
+            for(size_t p(0); p < row_data.size(); ++p)
+            {
+                indexes.push_back(p);
+            }
+            for(size_t p(0); p < row_data.size(); ++p)
+            {
+                size_t const q(rand() % row_data.size());
+                std::swap(indexes[p], indexes[q]);
+            }
+            for(size_t p(0); p < row_data.size(); ++p)
+            {
+                row_data_t & d(row_data[indexes[p]]);
+
+                snapdatabase::conditions cond;
+                cond.set_columns({"c1", "c2", "c3"});
+                snapdatabase::row::pointer_t key(table->row_new());
+                snapdatabase::cell::pointer_t c2_key(key->get_cell("c2", true));
+                c2_key->set_int16(d.f_c2);
+                snapdatabase::cell::pointer_t c1_key(key->get_cell("c1", true));
+                c1_key->set_uint16(d.f_c1);
+                cond.set_key("primary", key, snapdatabase::row::pointer_t());
+
+std::cerr << "---------------------- READ ROW\n";
+                snapdatabase::cursor::pointer_t cursor(table->row_select(cond));
+                snapdatabase::row::pointer_t r(cursor->next_row());
+                CATCH_REQUIRE(r != nullptr);
+                snapdatabase::cell::pointer_t c1_data(r->get_cell("c1", false));
+                CATCH_REQUIRE(c1_data != nullptr);
+                CATCH_REQUIRE(c1_data->get_uint16() == d.f_c1);
+                snapdatabase::cell::pointer_t c2_data(r->get_cell("c2", false));
+                CATCH_REQUIRE(c2_data != nullptr);
+                CATCH_REQUIRE(c2_data->get_int16() == d.f_c2);
+                snapdatabase::cell::pointer_t c3_data(r->get_cell("c3", false));
+                CATCH_REQUIRE(c3_data != nullptr);
+                CATCH_REQUIRE(c3_data->get_uint64() == d.f_c3);
+
+                // only one primary row with a specific key
+                //
+std::cerr << "---------------------- VERIFY UNIQUE ROW\n";
+                int const max(rand() % 3 + 1);
+                for(int i(0); i < max; ++i)
+                {
+                    CATCH_REQUIRE(cursor->next_row() == nullptr);
+                }
+            }
         }
 
         context.reset();

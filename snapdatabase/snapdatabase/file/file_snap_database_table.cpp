@@ -117,14 +117,18 @@ constexpr struct_description_t g_description[] =
         , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
     define_description(
-          FieldName("top_key_index_block")
+          FieldName("primary_index_block")
         , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
     define_description(
+          FieldName("primary_index_reference_zero")
+        , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
+    ),
+    define_description( // likely to point to a secondary index (TBD)
           FieldName("top_branch_index_block")
         , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
-    define_description(
+    define_description( // likely to point to a secondary index (TBD)
           FieldName("top_revision_index_block")
         , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
     ),
@@ -312,15 +316,27 @@ void file_snap_database_table::set_first_compactable_block(reference_t reference
 }
 
 
-reference_t file_snap_database_table::get_top_key_index_block() const
+reference_t file_snap_database_table::get_primary_index_block() const
 {
-    return static_cast<reference_t>(f_structure->get_uinteger("top_key_index_block"));
+    return static_cast<reference_t>(f_structure->get_uinteger("primary_index_block"));
 }
 
 
-void file_snap_database_table::set_top_key_index_block(reference_t reference)
+void file_snap_database_table::set_primary_index_block(reference_t reference)
 {
-    f_structure->set_uinteger("top_key_index_block", reference);
+    f_structure->set_uinteger("primary_index_block", reference);
+}
+
+
+reference_t file_snap_database_table::get_primary_index_reference_zero() const
+{
+    return static_cast<reference_t>(f_structure->get_uinteger("primary_index_reference_zero"));
+}
+
+
+void file_snap_database_table::set_primary_index_reference_zero(reference_t reference)
+{
+    f_structure->set_uinteger("primary_index_reference_zero", reference);
 }
 
 

@@ -60,8 +60,8 @@ std::uint16_t read_be_uint16(buffer_t const & buffer, size_t & pos)
 {
     pos += sizeof(std::uint16_t);
 
-    return (static_cast<uint16_t>(buffer[pos - 2]) << 8)
-         | (static_cast<uint16_t>(buffer[pos - 1]) << 0);
+    return (static_cast<std::uint16_t>(buffer[pos - 2]) << 8)
+         | (static_cast<std::uint16_t>(buffer[pos - 1]) << 0);
 }
 
 
@@ -69,10 +69,10 @@ std::uint32_t read_be_uint32(buffer_t const & buffer, size_t & pos)
 {
     pos += sizeof(std::uint32_t);
 
-    return (static_cast<uint32_t>(buffer[pos - 4]) << 24)
-         + (static_cast<uint32_t>(buffer[pos - 3]) << 16)
-         + (static_cast<uint32_t>(buffer[pos - 2]) <<  8)
-         + (static_cast<uint32_t>(buffer[pos - 1]) <<  0);
+    return (static_cast<std::uint32_t>(buffer[pos - 4]) << 24)
+         + (static_cast<std::uint32_t>(buffer[pos - 3]) << 16)
+         + (static_cast<std::uint32_t>(buffer[pos - 2]) <<  8)
+         + (static_cast<std::uint32_t>(buffer[pos - 1]) <<  0);
 }
 
 
@@ -80,14 +80,14 @@ std::uint64_t read_be_uint64(buffer_t const & buffer, size_t & pos)
 {
     pos += sizeof(std::uint64_t);
 
-    return (static_cast<uint64_t>(buffer[pos - 8]) << 56)
-         + (static_cast<uint64_t>(buffer[pos - 7]) << 48)
-         + (static_cast<uint64_t>(buffer[pos - 6]) << 40)
-         + (static_cast<uint64_t>(buffer[pos - 5]) << 32)
-         + (static_cast<uint64_t>(buffer[pos - 4]) << 24)
-         + (static_cast<uint64_t>(buffer[pos - 3]) << 16)
-         + (static_cast<uint64_t>(buffer[pos - 2]) <<  8)
-         + (static_cast<uint64_t>(buffer[pos - 1]) <<  0);
+    return (static_cast<std::uint64_t>(buffer[pos - 8]) << 56)
+         + (static_cast<std::uint64_t>(buffer[pos - 7]) << 48)
+         + (static_cast<std::uint64_t>(buffer[pos - 6]) << 40)
+         + (static_cast<std::uint64_t>(buffer[pos - 5]) << 32)
+         + (static_cast<std::uint64_t>(buffer[pos - 4]) << 24)
+         + (static_cast<std::uint64_t>(buffer[pos - 3]) << 16)
+         + (static_cast<std::uint64_t>(buffer[pos - 2]) <<  8)
+         + (static_cast<std::uint64_t>(buffer[pos - 1]) <<  0);
 }
 
 

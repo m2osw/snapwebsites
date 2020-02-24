@@ -125,19 +125,37 @@ static_assert((SPACE_BITS + FLAGS_BITS) == 32);
 //
 constexpr std::uint32_t     FREE_SPACE_FLAG_ALLOCATED = 0x01;
 
-// right now we need sizes of up to 2Mb so we have 24 bits for the size
-// (we really only need 18 of the 24, but we do not need more than 2 bits
-// for the flags, so I think we'll be okay for a while)
-//
-// using only 32 bits here saves us 4 bytes / row of data
-//
-// \note
-// The "... = 0" is only available on C++20 so we'll have to uncomment that
-// once we're on Ubuntu 2020 and the compile works as expected.
-//
-// Right now the code never creates such a structure, it only casts a pointer
-// to an existing location which would not benefit from these initializers.
-//
+/** \brief Free space meta data.
+ *
+ * This meta data defines (1) the size of the free or allocated block of
+ * data and a few flags defining what the data represents.
+ *
+ * \li FREE_SPACE_FLAG_ALLOCATED -- when this flag is set, this block of
+ * data is allocated. When not set, it is a free block of data.
+ * \li ALLOCATED_SPACE_FLAG_MOVED -- the data was moved, the blob includes
+ * the location of where the data was moved; this happens when we do not
+ * update the OID in the indirect index immediately and instead just allocate
+ * a new entry.
+ * \li ALLOCATED_SPACE_FLAG_DELETED -- in some cases we want to delete rows
+ * and keep their data (i.e. move rows to a trashcan); in those cases, we
+ * use this flag.
+ *
+ * \note
+ * Right now we support page sizes of up to 2Mb so having 24 bits for the
+ * size of a block of data is enough (at this time we really only need
+ * 18 of the 24, but we do not need more than 3 out of 8 bits for the flags).
+ * \note
+ * Also using only 32 bits for the meta data saves us 4 bytes for every
+ * single row of data.
+ *
+ * \note
+ * The "... = 0" is only available on C++20 so we'll have to uncomment that
+ * once we're on Ubuntu 2020 and the compile works as expected.
+ * \note
+ * Also the code never creates such a structure. It only casts a pointer to
+ * an existing location on disk (which we mmap() in memory). In other words,
+ * we would not benefit from these initializers anyway.
+ */
 struct free_space_meta_t
 {
     std::uint32_t       f_size : SPACE_BITS /* = 0 */;
@@ -162,7 +180,7 @@ static_assert(sizeof(free_space_link_t) % sizeof(reference_t) == 0
             , "the free_soace_link_t structure must have a size which is a multiple of sizeof(reference_t)");
 
 
-constexpr uint32_t      FREE_SPACE_SIZE_MULTIPLE = sizeof(reference_t) * 4;
+constexpr std::uint32_t FREE_SPACE_SIZE_MULTIPLE = sizeof(reference_t) * 4;
 
 static_assert(FREE_SPACE_SIZE_MULTIPLE >= sizeof(free_space_link_t)
             , "FREE_SPACE_SIZE_MULTIPLE must be at least equal to sizeof(fre_space_link_t)");
@@ -650,9 +668,9 @@ void block_free_space::release_space(reference_t offset)
 }
 
 
-bool block_free_space::get_flag(data_t ptr, std::uint8_t flag)
+bool block_free_space::get_flag(const_data_t ptr, std::uint8_t flag)
 {
-    detail::free_space_meta_t * meta(reinterpret_cast<detail::free_space_meta_t *>(ptr) - 1);
+    detail::free_space_meta_t const * meta(reinterpret_cast<detail::free_space_meta_t const *>(ptr) - 1);
     return (meta->f_flags & flag) != 0;
 }
 
@@ -668,6 +686,13 @@ void block_free_space::clear_flag(data_t ptr, std::uint8_t flag)
 {
     detail::free_space_meta_t * meta(reinterpret_cast<detail::free_space_meta_t *>(ptr) - 1);
     meta->f_flags &= ~flag;
+}
+
+
+std::uint32_t block_free_space::get_size(const_data_t ptr)
+{
+    detail::free_space_meta_t const * meta(reinterpret_cast<detail::free_space_meta_t const *>(ptr) - 1);
+    return meta->f_size;
 }
 
 

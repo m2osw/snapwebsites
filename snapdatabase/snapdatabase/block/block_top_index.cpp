@@ -43,12 +43,12 @@ namespace snapdatabase
 
 
 // We don't want to do that because each key would have a size which means
-// we'd waste a lot of space
+// we'd waste a lot of space; instead we have one size in the header
 //
 //struct_description_t g_index_description[] =
 //{
 //    define_description(
-//          FieldName("pointer")
+//          FieldName("reference")
 //        , FieldType(struct_type_t::STRUCT_TYPE_REFERENCE)
 //    ),
 //    define_description(
@@ -82,7 +82,7 @@ constexpr struct_description_t g_description[] =
     ),
     //define_description(
     //      FieldName("indexes")
-    //    , FieldType(struct_type_t::STRUCT_TYPE_ARRAY32)
+    //    , FieldType(struct_type_t::STRUCT_TYPE_ARRAY32) -- we use "count" for the size
     //    , FieldDescription(g_index_description)
     //),
     end_descriptions()
@@ -112,64 +112,84 @@ block_top_index::block_top_index(dbfile::pointer_t f, reference_t offset)
 }
 
 
-uint32_t block_top_index::get_count() const
+std::uint32_t block_top_index::get_count() const
 {
-    return static_cast<uint32_t>(f_structure->get_uinteger("count"));
+    return static_cast<std::uint32_t>(f_structure->get_uinteger("count"));
 }
 
 
-void block_top_index::set_count(uint32_t id)
+void block_top_index::set_count(std::uint32_t id)
 {
     f_structure->set_uinteger("count", id);
 }
 
 
-uint32_t block_top_index::get_size() const
+// IMPORTANT: size includes the entire index (reference_t + index data)
+//
+std::uint32_t block_top_index::get_size() const
 {
-    return static_cast<uint32_t>(f_structure->get_uinteger("size"));
+    return static_cast<std::uint32_t>(f_structure->get_uinteger("size"));
 }
 
 
-void block_top_index::set_size(uint32_t size)
+void block_top_index::set_size(std::uint32_t size)
 {
+    // size can be really anything, we don't try to align anything
+    //
     f_structure->set_uinteger("size", size);
 }
 
 
 reference_t block_top_index::find_index(buffer_t key) const
 {
-    // the start offset is 1 x structure + alignment
+    // the start offset is just after the structure
+    // no alignment requirements since we use memcmp() and memcpy()
+    // and that way the size can be anything
     //
-    std::uint32_t offset(f_structure->get_size() + sizeof(reference_t) - 1);
-    offset = offset - offset % sizeof(reference_t);
-
-    std::uint8_t const * buffer(data() + offset);
+    // WARNING: keep in mind that the number of bytes we save in the
+    //          top indexes may be shorter than the number of bytes
+    //          in the key and in that case
+    //
+    //          TBD -- this may be totally wrong, we should be between
+    //          this and the next top index entry really which could be
+    //          a lot more (?!?)
+    //
+    std::uint8_t const * buffer(data(f_structure->get_size()));
     std::uint32_t const count(get_count());
     std::uint32_t const size(get_size());
-    int i(0);
-    int j(count);
+    std::uint32_t const length(std::min(key.size(), size - sizeof(reference_t)));
+    std::uint32_t i(0);
+    std::uint32_t j(count);
     while(i < j)
     {
-        int const p((j - i) / 2 + i);
-        uint8_t const * ptr(buffer + p * size);
-        int const r(memcmp(ptr + sizeof(reference_t), key.data(), size));
+        f_position = (j - i) / 2 + i;
+        std::uint8_t const * ptr(buffer + f_position * size);
+        int const r(memcmp(ptr + sizeof(reference_t), key.data(), length));
         if(r < 0)
         {
-            i = p + 1;
+            i = f_position + 1;
         }
         else if(r > 0)
         {
-            j = p;
+            j = f_position;
         }
         else
         {
-            return * reinterpret_cast<reference_t const *>(ptr);
+            reference_t aligned_reference(0);
+            memcpy(&aligned_reference, ptr, sizeof(reference_t));
+            return aligned_reference;
         }
     }
 
     // TBD: save current position close to point where we can do an insertion
 
     return NULL_FILE_ADDR;
+}
+
+
+std::uint32_t block_top_index::get_position() const
+{
+    return f_position;
 }
 
 

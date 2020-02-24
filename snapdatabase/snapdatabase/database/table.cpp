@@ -92,21 +92,27 @@ class cursor_state
 public:
     typedef std::shared_ptr<cursor_state>   pointer_t;
 
+    struct index_reference_t
+    {
+        typedef std::vector<index_reference_t>
+                                            vector_t;
+
+        reference_t                         f_row_reference = NULL_FILE_ADDR;
+        std::uint32_t                       f_index_position = 0;       // position within the index at end of a read
+    };
+
                                         cursor_state(index_type_t index_type, schema_secondary_index::pointer_t secondary_index);
 
     index_type_t                        get_index_type() const;
     schema_secondary_index::pointer_t   get_secondary_index() const;
 
-    size_t                              get_index_position() const;
-    void                                set_index_position(size_t position);
-
-    reference_vector_t &                get_row_references();
+    index_reference_t::vector_t const & get_index_references() const;
+    void                                add_index_reference(index_reference_t const & position);
 
 private:
     index_type_t                        f_index_type = index_type_t::INDEX_TYPE_INVALID;
     schema_secondary_index::pointer_t   f_secondary_index = schema_secondary_index::pointer_t();
-    reference_vector_t                  f_row_references = reference_vector_t();        // i.e. OIDs to the rows
-    size_t                              f_index_position = 0;       // position within the index at end of a read
+    index_reference_t::vector_t         f_row_references = index_reference_t::vector_t();
 };
 
 
@@ -129,22 +135,19 @@ schema_secondary_index::pointer_t cursor_state::get_secondary_index() const
 }
 
 
-size_t cursor_state::get_index_position() const
-{
-    return f_index_position;
-}
-
-
-void cursor_state::set_index_position(size_t position)
-{
-    f_index_position = position;
-}
-
-
-reference_vector_t & cursor_state::get_row_references()
+cursor_state::index_reference_t::vector_t const & cursor_state::get_index_references() const
 {
     return f_row_references;
 }
+
+
+void cursor_state::add_index_reference(index_reference_t const & position)
+{
+    f_row_references.push_back(position);
+}
+
+
+
 
 
 
@@ -220,13 +223,17 @@ public:
     schema_table::pointer_t                     get_schema(version_t const & version);
     schema_secondary_index::pointer_t           secondary_index(std::string const & name) const;
     bool                                        row_commit(row_pointer_t row, commit_mode_t mode);
-    void                                        row_insert(row::pointer_t row_data);
-    void                                        row_update(row::pointer_t row_data);
+    void                                        row_insert(row::pointer_t row_data, cursor::pointer_t cur);
+    void                                        row_update(row::pointer_t row_data, cursor::pointer_t cur);
+    block_primary_index::pointer_t              get_primary_index_block(bool create);
     void                                        read_rows(cursor_data & data);
 
 private:
     block::pointer_t                            allocate_block(dbtype_t type, reference_t offset);
     void                                        start_update_process(bool restart);
+    reference_t                                 get_indirect_reference(oid_t oid);
+    row::pointer_t                              get_indirect_row(oid_t oid);
+    row::pointer_t                              get_row(reference_t row_reference);
 
     void                                        read_secondary(cursor_data & data);
     void                                        read_indirect(cursor_data & data);
@@ -590,6 +597,10 @@ block::pointer_t table_impl::allocate_block(dbtype_t type, reference_t offset)
         b = std::make_shared<block_indirect_index>(f_dbfile, offset);
         break;
 
+    case dbtype_t::BLOCK_TYPE_PRIMARY_INDEX:
+        b = std::make_shared<block_primary_index>(f_dbfile, offset);
+        break;
+
     case dbtype_t::BLOCK_TYPE_SECONDARY_INDEX:
         b = std::make_shared<block_secondary_index>(f_dbfile, offset);
         break;
@@ -889,7 +900,7 @@ bool table_impl::row_commit(row::pointer_t row_data, commit_mode_t mode)
                     + "\" was not found so it can't be updated.");
         }
 
-        row_insert(row_data);
+        row_insert(row_data, cur);
     }
     else
     {
@@ -901,7 +912,7 @@ bool table_impl::row_commit(row::pointer_t row_data, commit_mode_t mode)
                     + "\" already exists so it can't be inserted.");
         }
 
-        row_update(row_data);
+        row_update(row_data, cur);
     }
 
     return true;
@@ -919,7 +930,7 @@ bool table_impl::row_commit(row::pointer_t row_data, commit_mode_t mode)
  *
  * \param[in] row_data  The row to be inserted.
  */
-void table_impl::row_insert(row::pointer_t row_data)
+void table_impl::row_insert(row::pointer_t row_data, cursor::pointer_t cur)
 {
     // if inserting, we first need to allocation this row's OID
     //
@@ -1122,12 +1133,158 @@ void table_impl::row_insert(row::pointer_t row_data)
 
     memcpy(free_space.f_block->data(free_space.f_reference), blob.data(), blob.size());
     indr->set_reference(position_oid, free_space.f_reference);
+
+    cursor_state::index_reference_t::vector_t index_references(cur->get_state()->get_index_references());
+    if(index_references.empty())
+    {
+        // this happens when we have a branch new table
+        //
+        block_primary_index::pointer_t primary_index(get_primary_index_block(true));
+
+        conditions const & cond(cur->get_conditions());
+        buffer_t const & key(cond.get_murmur_key());
+
+        block_entry_index::pointer_t entry_index(std::static_pointer_cast<block_entry_index>(
+                        allocate_new_block(dbtype_t::BLOCK_TYPE_ENTRY_INDEX)));
+
+        // a murmur key is 16 bytes
+        //
+        entry_index->set_key_size(16);
+
+        entry_index->add_entry(key, position_oid);
+
+std::cerr << "set_top_index() -- " << static_cast<int>(key[14]) << " " << static_cast<int>(key[15]) << "\n";
+        primary_index->set_top_index(key, entry_index->get_offset());
+    }
+    else
+    {
+throw snapdatabase_not_yet_implemented("table: TODO implement insert close to existing entry");
+    }
 }
 
 
-void table_impl::row_update(row::pointer_t row_data)
+void table_impl::row_update(row::pointer_t row_data, cursor::pointer_t cur)
 {
-snap::NOTUSED(row_data);
+// 'cur' has the OID which we can use to find the data (we will also save
+// the exact location so we don't have to search again)
+snap::NOTUSED(row_data, cur);
+}
+
+
+block_primary_index::pointer_t table_impl::get_primary_index_block(bool create)
+{
+    block_primary_index::pointer_t primary_index;
+
+    file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
+    reference_t const index_block_offset(header->get_primary_index_block());
+    if(index_block_offset == NULL_FILE_ADDR)
+    {
+        if(create)
+        {
+            primary_index = std::static_pointer_cast<block_primary_index>(
+                        allocate_new_block(dbtype_t::BLOCK_TYPE_PRIMARY_INDEX));
+
+            header->set_primary_index_block(primary_index->get_offset());
+        }
+    }
+    else
+    {
+        primary_index = std::static_pointer_cast<block_primary_index>(get_block(index_block_offset));
+    }
+
+    return primary_index;
+}
+
+
+/** \brief Retrieve the reference to a row.
+ *
+ * This function searches for a row by OID.
+ *
+ * \warning
+ * This function is considered internal because it does not implement a
+ * way to determine whether the OID points to an actual row or was released.
+ * The only way to know whether it was released would be to go through the
+ * list of OIDs which would be really slow. (TODO: implement such a function
+ * for debug purposes)
+ *
+ * \exception snapdatabase_logic_error
+ * The function must be called with a valid OID. If that OID cannot be found
+ * in the database, then a logic error is returned. This is because this
+ * function is not to be used to dynamically search for a row, which is not
+ * currently doable on the indirect index (because some of the entries may
+ * be Free OIDs and not existing OIDs). This is also why the row_insert()
+ * implements its own search which is capable of properly finding a free
+ * spot.
+ *
+ * \param[in] oid  The OID of an existing row.
+ *
+ * \return The reference to a row or NULL_FILE_ADDR.
+ */
+reference_t table_impl::get_indirect_reference(oid_t oid)
+{
+    // search for a row using its OID
+    //
+    // TODO: we probably want to keep track of all the blocks we handle here
+    //       so the insert and update functions can make use of them; right
+    //       now each OID accessor is optimized but that means we end up doing
+    //       the search multiple times
+    //
+    file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
+    reference_t offset(header->get_indirect_index());
+    if(offset == NULL_FILE_ADDR)
+    {
+        throw snapdatabase_logic_error("somehow the get_indirect_reference() was called when no row exists.");
+    }
+
+    block::pointer_t block;
+    for(;;)
+    {
+        block = get_block(offset);
+        if(block->get_dbtype() != dbtype_t::BLOCK_TYPE_TOP_INDIRECT_INDEX)
+        {
+            break;
+        }
+        block_top_indirect_index::pointer_t tind(std::static_pointer_cast<block_top_indirect_index>(block));
+        offset = tind->get_reference(oid, true);
+        if(offset == NULL_FILE_ADDR)
+        {
+            throw snapdatabase_logic_error("somehow the get_indirect_reference() was called with a still unused OID.");
+        }
+    }
+
+    if(block->get_dbtype() != dbtype_t::BLOCK_TYPE_INDIRECT_INDEX)
+    {
+        throw type_mismatch(
+                  "expected block of type INDIRECT INDEX (INDR), got \""
+                + to_string(block->get_dbtype())
+                + "\" instead.");
+    }
+
+    block_indirect_index::pointer_t indr(std::static_pointer_cast<block_indirect_index>(block));
+    return indr->get_reference(oid, true);
+}
+
+
+row::pointer_t table_impl::get_indirect_row(oid_t oid)
+{
+    return get_row(get_indirect_reference(oid));
+}
+
+
+row::pointer_t table_impl::get_row(reference_t row_reference)
+{
+    block_data::pointer_t data(std::static_pointer_cast<block_data>(get_block(row_reference)));
+    const_data_t ptr(data->data(row_reference));
+    std::uint32_t const size(block_free_space::get_size(ptr));
+    row::pointer_t row(std::make_shared<row>(f_table->get_pointer()));
+
+    // TODO: rework the from_binary() to access the ptr/size pair instead
+    //       so we can avoid one copy
+    //
+    buffer_t const blob(ptr, ptr + size);
+    row->from_binary(blob);
+
+    return row;
 }
 
 
@@ -1190,13 +1347,21 @@ throw snapdatabase_not_yet_implemented("table: TODO implement read indirect");
 
 void table_impl::read_primary(cursor_data & data)
 {
-    file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
-    reference_t ref(header->get_top_key_index_block());
-    if(ref == NULL_FILE_ADDR)
+    // the primary index has a single position at position 0
+    //
+std::cerr << "the position is: " << data.f_cursor->get_position() << "\n";
+    if(data.f_cursor->get_position() > 0)
+    {
+        return;
+    }
+
+    block_primary_index::pointer_t primary_index(get_primary_index_block(false));
+    if(primary_index == nullptr)
     {
         // we have nothing here
         // (happens until we do some commit)
         //
+std::cerr << "read_primary: no primary index block!?\n";
         return;
     }
 
@@ -1205,45 +1370,42 @@ void table_impl::read_primary(cursor_data & data)
     // used as the key, not the content of the columns
     //
     conditions const & cond(data.f_cursor->get_conditions());
-    row::pointer_t cond_row(cond.get_min_key());
-    buffer_t murmur(16);
-    cond_row->generate_mumur3(murmur);
-
-    block::pointer_t block(get_block(ref));
+    buffer_t const & key(cond.get_murmur_key());
+std::cerr << "read primary with \"set_top_index()\" -- " << static_cast<int>(key[14]) << " " << static_cast<int>(key[15]) << "\n";
 
     // we may have one `PIDX`
     //
-    if(block->get_dbtype() == dbtype_t::BLOCK_TYPE_PRIMARY_INDEX)
+    // TODO: consider making the primary index optional
+    //
+    reference_t ref(primary_index->get_top_index(key));
+    if(ref == NULL_FILE_ADDR)
     {
-        // we expect the top block to be a primary index, we'll see whether
-        // it will make sense to not have that one in some cases (i.e. a
-        // journal probably doesn't need that feature); so we make it
-        // optional and accept to directly jump to the TIDX or EIDX
-        // blocks.
+        // no such entry, "SELECT" returns an empty list
         //
-        block_primary_index::pointer_t primary_index(std::static_pointer_cast<block_primary_index>(block));
-        ref = primary_index->find_index(murmur);
-        if(ref == NULL_FILE_ADDR)
-        {
-            // no such entry, "SELECT" returns an empty list
-            //
-            return;
-        }
-        block = get_block(ref);
+std::cerr << "read_primary: no top index reference!?\n";
+        return;
     }
+    block::pointer_t block(get_block(ref));
 
-    // we can have any number of `TIDX`
+    // we can have any number of `TIDX` or directly an `EIDX`
     //
     while(block->get_dbtype() == dbtype_t::BLOCK_TYPE_TOP_INDEX)
     {
         // we have a top index
         //
         block_top_index::pointer_t top_index(std::static_pointer_cast<block_top_index>(block));
-        ref = top_index->find_index(murmur);
+        ref = top_index->find_index(key);
+        cursor_state::index_reference_t idx_ref = {
+              ref
+            , top_index->get_position()
+        };
+std::cerr << "read_primary: found a top index!?\n";
+        data.f_state->add_index_reference(idx_ref);
         if(ref == NULL_FILE_ADDR)
         {
             // no such entry, "SELECT" returns an empty list
             //
+std::cerr << "read_primary: top index has null reference!?\n";
             return;
         }
         block = get_block(ref);
@@ -1259,11 +1421,20 @@ void table_impl::read_primary(cursor_data & data)
                 + "\".");
     }
 
-    //block_top_index::pointer_t top_index(std::static_pointer_cast<block_top_index>());
-    //reference_t tref(header->get_top_key_index_block());
+    block_entry_index::pointer_t entry_index(std::static_pointer_cast<block_entry_index>(block));
+    oid_t const oid(entry_index->find_entry(key));
+    if(oid == NULL_FILE_ADDR)
+    {
+std::cerr << "read_primary: indirect index has null reference!?\n";
+        return;
+    }
 
-std::cerr << "table: TODO implement read primary...\n";
-throw snapdatabase_not_yet_implemented("table: TODO implement read primary");
+std::cerr << "read_primary: reading row!?\n";
+    row::pointer_t r(get_indirect_row(oid));
+    data.f_rows.push_back(r);
+
+//std::cerr << "table: TODO implement read primary...\n";
+//throw snapdatabase_not_yet_implemented("table: TODO implement read primary");
 }
 
 

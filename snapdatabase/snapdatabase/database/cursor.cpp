@@ -114,8 +114,16 @@ void cursor::rewind()
 }
 
 
+size_t cursor::get_position() const
+{
+std::cerr << "position global = " << f_global_position << " local = " << f_local_position << "\n";
+    return f_global_position + f_local_position;
+}
+
+
 row::pointer_t cursor::next_row()
 {
+std::cerr << "get next row: " << f_local_position << " vs " << f_rows.size() << " cache " << f_cache << "\n";
     if(f_local_position >= f_rows.size())
     {
         if(f_complete)
@@ -128,9 +136,9 @@ row::pointer_t cursor::next_row()
         if(!f_cache)
         {
             f_multiple_pages = true;
+            f_global_position += f_rows.size();
             f_rows.clear();
             f_local_position = 0;
-            f_global_position += f_conditions.get_count();
         }
 
         f_table->read_rows(shared_from_this());
