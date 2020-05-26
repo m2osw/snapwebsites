@@ -63,7 +63,7 @@ const QChar cell_predicate::first_char = QChar('\0');
  * \note
  * This character can also be used in row predicates.
  */
-const QChar cell_predicate::last_char = QChar(L'\uFFFD');
+const QChar cell_predicate::last_char = QChar(static_cast<uint>(L'\uFFFD'));
 
 
 /// \brief Cell predicate query handlers
