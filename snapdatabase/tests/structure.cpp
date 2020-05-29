@@ -176,7 +176,7 @@ CATCH_TEST_CASE("Structure Valid Version", "[structure] [version]")
             v3.next_branch();
             CATCH_REQUIRE(v3.get_major() == major_version + 1);
             CATCH_REQUIRE(v3.get_minor() == 0);
-            CATCH_REQUIRE(v3.to_binary() == ((major_version + 1) << 16));
+            CATCH_REQUIRE(v3.to_binary() == static_cast<uint32_t>((major_version + 1) << 16));
         }
     }
     CATCH_END_SECTION()
