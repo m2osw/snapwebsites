@@ -21,6 +21,6 @@ sizes() {
 
 #
 # To reverse the sort, use 2nr instead of just 2n
-sizes | sort -k 2n
+sizes | sort -k 2n | column -t
 
 # vim: ts=2 sw=2 et
