@@ -1,14 +1,11 @@
 /*
- * Text:
- *      libsnapwebsites/tools/snapimg.cpp
- *
  * Description:
  *      Get image information and display that on the screen. This is mainly
  *      a test of our image library although it can, of course, be used for
  *      any other purpose.
  *
  * License:
- *      Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2013-2020  Made to Order Software Corp.  All Rights Reserved
  * 
  *      https://snapwebsites.org/
  *      contact@m2osw.com
@@ -78,27 +75,28 @@ advgetopt::option const g_options[] =
 // until we have C++20 remove warnings this way
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-    advgetopt::options_environment const g_options_environment =
-    {
-        .f_project_name = "snapwebsites",
-        .f_options = g_options,
-        .f_options_files_directory = nullptr,
-        .f_environment_variable_name = nullptr,
-        .f_configuration_files = nullptr,
-        .f_configuration_filename = nullptr,
-        .f_configuration_directories = nullptr,
-        .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
-        .f_help_header = "Usage: %p [-<opt>] <filename> ...\n"
-                         "where -<opt> is one or more of:",
+advgetopt::options_environment const g_options_environment =
+{
+    .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
+    .f_options = g_options,
+    .f_options_files_directory = nullptr,
+    .f_environment_variable_name = nullptr,
+    .f_configuration_files = nullptr,
+    .f_configuration_filename = nullptr,
+    .f_configuration_directories = nullptr,
+    .f_environment_flags = advgetopt::GETOPT_ENVIRONMENT_FLAG_PROCESS_SYSTEM_PARAMETERS,
+    .f_help_header = "Usage: %p [-<opt>] <filename> ...\n"
+                     "where -<opt> is one or more of:",
     .f_help_footer = "%c",
     .f_version = SNAPWEBSITES_VERSION_STRING,
     .f_license = "GPL v2",
     .f_copyright = "Copyright (c) 2013-"
-                   BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
-                   " by Made to Order Software Corporation -- All Rights Reserved",
-        //.f_build_date = UTC_BUILD_DATE,
-        //.f_build_time = UTC_BUILD_TIME
-    };
+               BOOST_PP_STRINGIZE(UTC_BUILD_YEAR)
+               " by Made to Order Software Corporation -- All Rights Reserved",
+    //.f_build_date = UTC_BUILD_DATE,
+    //.f_build_time = UTC_BUILD_TIME
+};
 #pragma GCC diagnostic pop
 
 

@@ -1,5 +1,5 @@
 // Snap Websites Server -- snap websites CGI function
-// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2011-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -198,6 +198,7 @@ constexpr char const * const g_configuration_files[]
 advgetopt::options_environment const g_snapcgi_options_environment =
 {
     .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
     .f_options = g_snapcgi_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPCGI_OPTIONS",

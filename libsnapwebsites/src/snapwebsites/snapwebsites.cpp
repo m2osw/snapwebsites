@@ -1,5 +1,5 @@
 // Snap Websites Server -- snap websites server
-// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2011-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
 // contact@m2osw.com
@@ -490,6 +490,7 @@ advgetopt::option const g_snapserver_options[] =
 advgetopt::options_environment g_snapserver_options_environment =
 {
     .f_project_name = "snapwebsites",       // this does NOT vary depending on your program, all writable files are under snapwebsites.d/...
+    .f_group_name = nullptr,
     .f_options = g_snapserver_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPSERVER_OPTIONS",

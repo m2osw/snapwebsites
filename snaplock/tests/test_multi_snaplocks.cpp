@@ -1,7 +1,4 @@
 /*
- * Text:
- *      snaplock/tests/test_multi_snaplocks.cpp
- *
  * Description:
  *      Test "any" number of snaplock/snapcommunicator combo on a single
  *      computer.
@@ -31,7 +28,7 @@
  *      signal will not happen right away...
  *
  * License:
- *      Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2013-2020  Made to Order Software Corp.  All Rights Reserved
  * 
  *      https://snapwebsites.org/
  *      contact@m2osw.com
@@ -163,6 +160,7 @@ advgetopt::option const g_options[] =
 advgetopt::options_environment const g_options_environment =
 {
     .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPLOCK_TEST_OPTIONS",

@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# Simple script to count the number of hits against the unwanted chain
+# This does not clear the list, it just counts and output the sum
+
+sudo iptables -L unwanted -nvx \
+	| tail -n+3 \
+	| awk 'BEGIN{sum=0} / /{ sum=sum+$1 } END{print sum}'
+

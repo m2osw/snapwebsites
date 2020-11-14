@@ -1,5 +1,5 @@
 // Snap Websites Server -- command line tool to raise a snap flag
-// Copyright (c) 2018-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2018-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -171,6 +171,7 @@ advgetopt::group_description const g_group_descriptions[] =
 advgetopt::options_environment const g_options_environment =
 {
     .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
     .f_options = g_command_line_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = nullptr,

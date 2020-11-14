@@ -1,5 +1,5 @@
 // Snap Websites Server -- firewall handling by snap
-// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2011-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -96,6 +96,7 @@ advgetopt::option const g_options[] =
 advgetopt::options_environment const g_options_environment =
 {
     .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPRESETFAIL2BAN_OPTIONS",

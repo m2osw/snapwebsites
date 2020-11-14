@@ -1,7 +1,4 @@
 /*
- * Text:
- *      snapdb/src/snapdb.cpp
- *
  * Description:
  *      Reads and describes a Snap database. This ease checking out the
  *      current content of the database as the cassandra-cli tends to
@@ -11,7 +8,7 @@
  *      easy practical way which this tool offers.
  *
  * License:
- *      Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2012-2020  Made to Order Software Corp.  All Rights Reserved
  *
  *      https://snapwebsites.org/
  *      contact@m2osw.com
@@ -238,6 +235,7 @@ const advgetopt::option g_options[] =
 advgetopt::options_environment const g_options_environment =
 {
     .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPDB_OPTIONS",

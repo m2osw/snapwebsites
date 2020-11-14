@@ -1,7 +1,4 @@
 /*
- * Text:
- *      snaplog/src/snaplog.cpp
- *
  * Description:
  *      Logger for the Snap! system. This service uses snapcommunicator to
  *      listen to all "SNAPLOG" messages. It records each message into a MySQL
@@ -9,7 +6,7 @@
  *      the admin.
  *
  * License:
- *      Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2016-2020  Made to Order Software Corp.  All Rights Reserved
  *
  *      https://snapwebsites.org/
  *      contact@m2osw.com
@@ -114,6 +111,7 @@ const advgetopt::option g_options[] =
 advgetopt::options_environment const g_options_environment =
 {
     .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPLOG_OPTIONS",

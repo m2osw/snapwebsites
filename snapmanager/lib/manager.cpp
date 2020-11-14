@@ -1,5 +1,5 @@
 // Snap Websites Server -- snap manager CGI, daemon, library, plugins
-// Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2016-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -165,6 +165,7 @@ advgetopt::option const g_manager_options[] =
 advgetopt::options_environment const g_manager_options_environment =
 {
     .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
     .f_options = g_manager_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPMANAGER_OPTIONS",

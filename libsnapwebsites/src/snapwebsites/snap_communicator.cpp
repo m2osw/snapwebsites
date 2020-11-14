@@ -1,5 +1,5 @@
 // Snap Communicator -- classes to ease handling communication between processes
-// Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2012-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -2900,6 +2900,8 @@ snap_communicator::snap_signal::snap_signal(int posix_signal)
     f_socket = signalfd(-1, &set, SFD_NONBLOCK | SFD_CLOEXEC);
     if(f_socket == -1)
     {
+        sigprocmask(SIG_UNBLOCK, &set, nullptr);
+
         int const e(errno);
         SNAP_LOG_ERROR("signalfd() failed to create a signal listener for signal ")(f_signal)(" (errno: ")(e)(" -- ")(strerror(e))(")");
         throw snap_communicator_runtime_error("signalfd() failed to create a signal listener.");

@@ -1,7 +1,4 @@
 /*
- * Text:
- *      snapdbproxy/src/snapdbproxy.cpp
- *
  * Description:
  *      Proxy database access for two main reasons:
  *
@@ -14,7 +11,7 @@
  *         uses fork() to create the snap_child processes.)
  *
  * License:
- *      Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2016-2020  Made to Order Software Corp.  All Rights Reserved
  *
  *      https://snapwebsites.org/
  *      contact@m2osw.com
@@ -120,6 +117,7 @@ const advgetopt::option g_options[] =
 advgetopt::options_environment const g_options_environment =
 {
     .f_project_name = "snapwebsites",
+    .f_group_name = nullptr,
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPDBPROXY_OPTIONS",

@@ -19,6 +19,7 @@ debian/tmp/usr/share/snapwebsites/fail2ban/snap-apache-unwanted-filter.conf     
 debian/tmp/usr/share/snapwebsites/fail2ban/snap-firewall-action.conf              usr/share/snapwebsites/fail2ban
 debian/tmp/usr/share/snapwebsites/fail2ban/snap-iptables-filter.conf              usr/share/snapwebsites/fail2ban
 debian/tmp/usr/share/snapwebsites/fail2ban/snap-jail.conf                         usr/share/snapwebsites/fail2ban
+debian/tmp/usr/share/snapwebsites/fail2ban/snap-named-fast-request-filter.conf    usr/share/snapwebsites/fail2ban
 debian/tmp/usr/share/snapwebsites/fail2ban/snap-recidive-jail.conf                usr/share/snapwebsites/fail2ban
 snapfirewall/conf/snapfirewall.properties                                         etc/snapwebsites/logger/
 snapfirewall/conf/snapfirewall.conf                                               etc/snapwebsites/
@@ -38,6 +39,7 @@ snapfirewall/conf/snap-apache-proxy-filter.conf                                 
 snapfirewall/conf/snap-apache-timeout-filter.conf                                 etc/fail2ban/filter.d/
 snapfirewall/conf/snap-apache-unwanted-filter.conf                                etc/fail2ban/filter.d/
 snapfirewall/conf/snap-iptables-filter.conf                                       etc/fail2ban/filter.d/
+snapfirewall/conf/snap-named-fast-request-filter.conf                             etc/fail2ban/filter.d/
 snapfirewall/conf/snap-telnet-filter.conf                                         etc/fail2ban/filter.d/
 snapfirewall/conf/snap-apache-jail.conf                                           etc/fail2ban/jail.d/
 snapfirewall/conf/snap-jail.conf                                                  etc/fail2ban/jail.d/
