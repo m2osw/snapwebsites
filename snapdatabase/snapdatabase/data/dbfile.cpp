@@ -314,8 +314,8 @@ data_t dbfile::data(reference_t offset)
 
     size_t const sz(get_page_size());
 
-    reference_t page_offset(offset % sz);
-    reference_t page_start(offset - page_offset);
+    reference_t const page_offset(offset % sz);
+    reference_t const page_start(offset - page_offset);
 
     auto it(f_pages.left.find(page_start));
     if(it != f_pages.left.end())
@@ -323,9 +323,13 @@ data_t dbfile::data(reference_t offset)
         return it->second;
     }
 
+static int count(0);
+++count;
+std::cerr << ">>> data() calling mmap() for the " << count << " times\n";
+
     data_t ptr(reinterpret_cast<data_t>(mmap(
           nullptr
-        , get_page_size()
+        , sz
         , PROT_READ | PROT_WRITE
         , MAP_SHARED
         , fd
@@ -439,7 +443,17 @@ reference_t dbfile::append_free_block(reference_t const previous_block_offset)
         // (note that really happens only when
         // `get_page_size() > get_system_page_size()`)
         //
-        ftruncate(f_fd, p + get_page_size());
+        if(ftruncate(f_fd, p + get_page_size()) != 0)
+        {
+            int const e(errno);
+            close();
+            throw io_error(
+                  "System could not properly truncate the file \""
+                + f_filename
+                + "\" "
+                + std::to_string(e)
+                + ".");
+        }
     }
 
     return p;

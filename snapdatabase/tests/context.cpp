@@ -132,6 +132,7 @@ CATCH_TEST_CASE("Context", "[centext]")
         advgetopt::options_environment const options_environment =
         {
             .f_project_name = "database",
+            .f_group_name = nullptr,
             .f_options = options,
         };
 #pragma GCC diagnostic pop
@@ -175,8 +176,9 @@ CATCH_TEST_CASE("Context", "[centext]")
         };
         row_data_t::vector_t row_data;
 
-        //for(int count(0); count < 580; ++count)
-        for(int count(0); count < 163; ++count)
+        for(int count(0); count < 580; ++count)
+        //for(int count(0); count < 163; ++count)
+        //for(int count(0); count < 31; ++count)
         {
 std::cerr << "+++ row count = " << count << "\n";
             snapdatabase::row::pointer_t row(table->row_new());
@@ -201,6 +203,7 @@ std::cerr << "+++ row count = " << count << "\n";
             data.f_c3 = c3_value;
             row_data.push_back(data);
 
+std::cerr << "---------------------- INSERT ROW\n";
             table->row_insert(row);
 
             // now verify that this and all the previous inserts worked
@@ -219,6 +222,7 @@ std::cerr << "+++ row count = " << count << "\n";
                 size_t const q(rand() % row_data.size());
                 std::swap(indexes[p], indexes[q]);
             }
+std::cerr << "---------------------- VERIFY " << row_data.size() << " ROWS\n";
             for(size_t p(0); p < row_data.size(); ++p)
             {
                 row_data_t & d(row_data[indexes[p]]);
@@ -232,7 +236,7 @@ std::cerr << "+++ row count = " << count << "\n";
                 c1_key->set_uint16(d.f_c1);
                 cond.set_key("primary", key, snapdatabase::row::pointer_t());
 
-std::cerr << "---------------------- READ ROW\n";
+std::cerr << "---------------------- READ ROW: " << d.f_c2 << ", " << d.f_c1 << "\n";
                 snapdatabase::cursor::pointer_t cursor(table->row_select(cond));
                 snapdatabase::row::pointer_t r(cursor->next_row());
                 CATCH_REQUIRE(r != nullptr);

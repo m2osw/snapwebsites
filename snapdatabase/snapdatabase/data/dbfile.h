@@ -54,6 +54,7 @@ typedef uint8_t *                   data_t;
 typedef uint8_t const *             const_data_t;
 
 constexpr reference_t               NULL_FILE_ADDR = static_cast<reference_t>(0);
+constexpr oid_t                     NULL_OID = static_cast<oid_t>(0);
 
 class table;
 typedef std::shared_ptr<table>      table_pointer_t;

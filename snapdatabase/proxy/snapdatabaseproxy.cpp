@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2013-2020  Made to Order Software Corp.  All Rights Reserved
  *
  * https://snapwebsites.org/project/snapdatabase
  * contact@m2osw.com
@@ -323,6 +323,7 @@ advgetopt::group_description const g_group_descriptions[] =
 advgetopt::options_environment const g_options_environment =
 {
     .f_project_name = "snaplogger",
+    .f_group_name = nullptr,
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SHREDLOG",

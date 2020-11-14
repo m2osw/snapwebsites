@@ -1,4 +1,4 @@
-// Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2019-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/snapdatabase
 // contact@m2osw.com
@@ -213,6 +213,12 @@ std::cerr << "count == 0 -- entry block is empty?!\n";
         f_position = 0;
         return NULL_FILE_ADDR;
     }
+std::cerr << "key being sought -> ";
+for(int k(0); k < 16; ++k)
+{
+std::cerr << " " << std::hex << static_cast<int>(key[k]) << std::dec;
+}
+std::cerr << "\n";
 
     std::uint8_t const * buffer(data(f_structure->get_size()));
     std::uint32_t const size(get_size());
@@ -257,6 +263,7 @@ std::cerr << "   found it -> " << aligned_reference << "\n";
 
     // TBD: save current position close to point where we can do an insertion
 
+std::cerr << "--- NOT FOUND ---\n";
     return NULL_FILE_ADDR;
 }
 
@@ -294,7 +301,7 @@ void block_entry_index::add_entry(buffer_t const & key, oid_t position_oid, std:
     //
     std::uint8_t * buffer(data(f_structure->get_size()));
     std::uint32_t const count(get_count());
-std::cerr << "count = " << count << "?!?\n";
+std::cerr << "add_entry() starting with count = " << count << "and OID=" << position_oid << "\n";
     std::uint32_t const size(get_size());
     std::uint32_t const length(get_size() - sizeof(std::uint8_t) - sizeof(reference_t));
     std::uint32_t const min_length(std::min(length, static_cast<std::uint32_t>(key.size())));

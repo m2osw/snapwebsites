@@ -108,11 +108,17 @@ public:
 
     index_reference_t::vector_t const & get_index_references() const;
     void                                add_index_reference(index_reference_t const & position);
+    block_entry_index::pointer_t        get_entry_index() const;
+    void                                set_entry_index(block_entry_index::pointer_t entry_index);
+    std::uint32_t                       get_entry_index_close_position() const;
+    void                                set_entry_index_close_position(std::uint32_t position);
 
 private:
     index_type_t                        f_index_type = index_type_t::INDEX_TYPE_INVALID;
     schema_secondary_index::pointer_t   f_secondary_index = schema_secondary_index::pointer_t();
     index_reference_t::vector_t         f_row_references = index_reference_t::vector_t();
+    block_entry_index::pointer_t        f_entry_index = block_entry_index::pointer_t();
+    std::uint32_t                       f_entry_index_position = std::uint32_t(0);
 };
 
 
@@ -144,6 +150,30 @@ cursor_state::index_reference_t::vector_t const & cursor_state::get_index_refere
 void cursor_state::add_index_reference(index_reference_t const & position)
 {
     f_row_references.push_back(position);
+}
+
+
+block_entry_index::pointer_t cursor_state::get_entry_index() const
+{
+    return f_entry_index;
+}
+
+
+void cursor_state::set_entry_index(block_entry_index::pointer_t entry_index)
+{
+    f_entry_index = entry_index;
+}
+
+
+std::uint32_t cursor_state::get_entry_index_close_position() const
+{
+    return f_entry_index_position;
+}
+
+
+void cursor_state::set_entry_index_close_position(std::uint32_t position)
+{
+    f_entry_index_position = position;
 }
 
 
@@ -892,6 +922,7 @@ bool table_impl::row_commit(row::pointer_t row_data, commit_mode_t mode)
     row::pointer_t r(cur->next_row());
     if(r == nullptr)
     {
+std::cerr << "+++ mode = " << static_cast<int>(mode) << "\n";
         if(mode == commit_mode_t::COMMIT_MODE_UPDATE)
         {
             throw row_not_found(
@@ -900,6 +931,7 @@ bool table_impl::row_commit(row::pointer_t row_data, commit_mode_t mode)
                     + "\" was not found so it can't be updated.");
         }
 
+std::cerr << "+++ row_insert()\n";
         row_insert(row_data, cur);
     }
     else
@@ -936,7 +968,7 @@ void table_impl::row_insert(row::pointer_t row_data, cursor::pointer_t cur)
     //
     file_snap_database_table::pointer_t header(std::static_pointer_cast<file_snap_database_table>(get_block(0)));
     oid_t oid(header->get_first_free_oid());
-    bool const must_exist(oid != 0);
+    bool const must_exist(oid != NULL_OID);
     if(!must_exist)
     {
         // no free OID, generate a new one
@@ -953,6 +985,7 @@ void table_impl::row_insert(row::pointer_t row_data, cursor::pointer_t cur)
     oid_t parent_oid(oid);
     block_indirect_index::pointer_t indr;
     reference_t offset(header->get_indirect_index());
+std::cerr << "+++ GET INDIRECT INDEX: " << offset << " from " << oid << "\n";
     if(offset == NULL_FILE_ADDR)
     {
         // the very first time we'll hit a null
@@ -976,6 +1009,7 @@ void table_impl::row_insert(row::pointer_t row_data, cursor::pointer_t cur)
             block_top_indirect_index::pointer_t tind(std::static_pointer_cast<block_top_indirect_index>(block));
             oid_t const save_oid(position_oid);
             offset = tind->get_reference(position_oid, must_exist);
+std::cerr << "+++ GET REFERENCE FROM SUB-OID: " << offset << " from " << position_oid << "\n";
             if(offset == NULL_FILE_ADDR)
             {
                 // no child exists yet, create an INDR
@@ -1040,6 +1074,7 @@ void table_impl::row_insert(row::pointer_t row_data, cursor::pointer_t cur)
                         + "\" instead).");
             }
             indr = std::static_pointer_cast<block_indirect_index>(block);
+std::cerr << "+++ GOT AN EXISTING INDIRECT INDEX BLOCK! " << position_oid << " vs " << indr->get_max_count() << "\n";
             if(position_oid > indr->get_max_count())
             {
                 oid_t const save_oid(position_oid);
@@ -1134,25 +1169,37 @@ void table_impl::row_insert(row::pointer_t row_data, cursor::pointer_t cur)
     memcpy(free_space.f_block->data(free_space.f_reference), blob.data(), blob.size());
     indr->set_reference(position_oid, free_space.f_reference);
 
-    cursor_state::index_reference_t::vector_t index_references(cur->get_state()->get_index_references());
+    block_entry_index::pointer_t entry_index(cur->get_state()->get_entry_index());
+    if(entry_index != nullptr)
+    {
+        std::uint32_t const position(cur->get_state()->get_entry_index_close_position());
+        conditions const & cond(cur->get_conditions());
+        buffer_t const & key(cond.get_murmur_key());
+        entry_index->add_entry(key, oid, position);
+        return;
+    }
+
+    cursor_state::index_reference_t::vector_t const & index_references(cur->get_state()->get_index_references());
     if(index_references.empty())
     {
-        // this happens when we have a branch new table
+        // this happens when we have a brand new table
         //
         block_primary_index::pointer_t primary_index(get_primary_index_block(true));
 
         conditions const & cond(cur->get_conditions());
         buffer_t const & key(cond.get_murmur_key());
 
-        block_entry_index::pointer_t entry_index(std::static_pointer_cast<block_entry_index>(
-                        allocate_new_block(dbtype_t::BLOCK_TYPE_ENTRY_INDEX)));
+std::cerr << "+++ CREATE A NEW ENTRY INDEX THOUGH... (references is empty)\n";
+        entry_index = std::static_pointer_cast<block_entry_index>(
+                        allocate_new_block(dbtype_t::BLOCK_TYPE_ENTRY_INDEX));
 
         // a murmur key is 16 bytes
         //
         entry_index->set_key_size(16);
 
-        entry_index->add_entry(key, position_oid);
+        entry_index->add_entry(key, oid);
 
+// 1583048029
 std::cerr << "set_top_index() -- " << static_cast<int>(key[14]) << " " << static_cast<int>(key[15]) << "\n";
         primary_index->set_top_index(key, entry_index->get_offset());
     }
@@ -1389,8 +1436,10 @@ std::cerr << "read_primary: no top index reference!?\n";
 
     // we can have any number of `TIDX` or directly an `EIDX`
     //
+std::cerr << "read_primary: loop through top indexex if any!?\n";
     while(block->get_dbtype() == dbtype_t::BLOCK_TYPE_TOP_INDEX)
     {
+std::cerr << "read_primary: got at least one top indexex!\n";
         // we have a top index
         //
         block_top_index::pointer_t top_index(std::static_pointer_cast<block_top_index>(block));
@@ -1422,7 +1471,10 @@ std::cerr << "read_primary: top index has null reference!?\n";
     }
 
     block_entry_index::pointer_t entry_index(std::static_pointer_cast<block_entry_index>(block));
+    data.f_state->set_entry_index(entry_index);
+
     oid_t const oid(entry_index->find_entry(key));
+    data.f_state->set_entry_index_close_position(entry_index->get_position());
     if(oid == NULL_FILE_ADDR)
     {
 std::cerr << "read_primary: indirect index has null reference!?\n";
