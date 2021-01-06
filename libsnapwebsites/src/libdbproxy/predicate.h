@@ -131,7 +131,7 @@ class cell_range_predicate
 public:
     typedef std::shared_ptr<cell_range_predicate> pointer_t;
 
-                        cell_range_predicate() {}
+                        cell_range_predicate() noexcept {}
 
     const QByteArray&   startCellKey() const                        { return f_startCellKey;     }
     void                setStartCellKey(const char* cell_key)       { setStartCellKey(QByteArray(cell_key,qstrlen(cell_key))); }
