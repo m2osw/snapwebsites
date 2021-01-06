@@ -112,7 +112,7 @@ class cell_key_predicate
 public:
     typedef std::shared_ptr<cell_key_predicate> pointer_t;
 
-                        cell_key_predicate() {}
+                        cell_key_predicate() noexcept {}
 
     const QByteArray&   cellKey() const                        { return f_cellKey; }
     void                setCellKey(const QByteArray& cell_key) { f_cellKey = cell_key; }
