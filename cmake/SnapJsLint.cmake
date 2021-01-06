@@ -23,8 +23,18 @@ set( SNAP_JS_LINT TRUE )
 ################################################################################
 # Handle linting the javascript files...
 #
-find_program( BASH   bash    /bin     )
-find_program( JSLINT gjslint /usr/bin )
+find_program( BASH
+    NAMES bash
+    PATHS /bin
+    REQUIRED
+)
+
+find_program( JSLINT
+    NAMES closure-compiler gjslint
+    PATHS /usr/bin
+    REQUIRED
+)
+
 #
 # Disable:
 #   0002 -- Missing space before "("
@@ -33,6 +43,9 @@ find_program( JSLINT gjslint /usr/bin )
 #   0131 -- Single-quoted string preferred over double-quoted string.
 #
 set( OPTIONS "--disable 0002,0110,0120,0131 --jslint_error=blank_lines_at_top_level --jslint_error=unused_private_members" )
+if( JSLINT MATCHES "closure-compiler" )
+  set( OPTIONS "${OPTIONS} --jscomp_warning=lintChecks" )
+endif()
 
 set( js_lint_script ${CMAKE_BINARY_DIR}/do_js_lint.sh CACHE INTERNAL "JS lint script" FORCE )
 file( WRITE  ${js_lint_script} "#!${BASH}\n"                                                         )
