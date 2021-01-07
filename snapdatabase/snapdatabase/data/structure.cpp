@@ -30,6 +30,7 @@
 #include    "snapdatabase/data/structure.h"
 
 #include    "snapdatabase/data/convert.h"
+#include    "snapdatabase/arch_support.h"
 
 
 // snaplogger lib
@@ -1791,7 +1792,7 @@ std::string structure::get_string(std::string const & field_name) const
     }
 
     std::string result(length, '\0');
-    f_buffer->pread(result.data(), length, f->offset() + field_size);
+    f_buffer->pread(const_cast<char *>(result.data()), length, f->offset() + field_size);
     return result;
 }
 

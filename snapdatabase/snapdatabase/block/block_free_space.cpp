@@ -113,7 +113,8 @@ constexpr std::uint64_t     FREE_SPACE_JUMP     = sizeof(reference_t) * 32;
 #define                     SPACE_BITS      24
 #define                     FLAGS_BITS       8
 
-static_assert((SPACE_BITS + FLAGS_BITS) == 32);
+static_assert((SPACE_BITS + FLAGS_BITS) == 32
+            , "SPACE_BITS + FLAGS_BITS must be exactly 32 bits total");
 
 
 

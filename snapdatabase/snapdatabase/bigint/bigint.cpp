@@ -30,6 +30,7 @@
 #include    "snapdatabase/bigint/bigint.h"
 
 #include    "snapdatabase/exception.h"
+#include    "snapdatabase/arch_support.h"
 
 
 // C++ lib
