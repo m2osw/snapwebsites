@@ -93,7 +93,7 @@ public:
     static const QChar first_char;
     static const QChar last_char;
 
-                    cell_predicate() {}
+                    cell_predicate() noexcept {}
     virtual         ~cell_predicate() {}
 
 protected:
