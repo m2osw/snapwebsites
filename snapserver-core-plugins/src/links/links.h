@@ -206,13 +206,14 @@ private:
 
 
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnoexcept"
 class link_info_pair
 {
 public:
     typedef std::vector<link_info_pair>      vector_t;
 
-                                link_info_pair(link_info const & src, link_info const & dst) noexcept;
+                                link_info_pair(link_info const & src, link_info const & dst);
 
     link_info const &           source() const;
     link_info const &           destination() const;
@@ -221,6 +222,7 @@ private:
     link_info                   f_source = link_info();
     link_info                   f_destination = link_info();
 };
+#pragma GCC diagnostic pop
 
 
 

@@ -860,7 +860,7 @@ void link_info::verify_name(QString const & vname)
  * \param[in] src  The source to memorize.
  * \param[in] dst  The destination to memorize.
  */
-link_info_pair::link_info_pair(link_info const & src, link_info const & dst) noexcept
+link_info_pair::link_info_pair(link_info const & src, link_info const & dst)
     : f_source(src)
     , f_destination(dst)
 {
