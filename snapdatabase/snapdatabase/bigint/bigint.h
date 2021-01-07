@@ -83,6 +83,8 @@ struct int512_t
                                     int512_t(uint512_t const & rhs);
                                     int512_t(std::initializer_list<std::uint64_t> rhs);
 
+    int512_t &                      operator = (int512_t const & rhs) = default;
+
     bool                            is_positive() const { return f_high_value >= 0; }
     bool                            is_negative() const { return f_high_value < 0; }
 

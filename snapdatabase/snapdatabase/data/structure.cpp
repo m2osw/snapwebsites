@@ -132,7 +132,7 @@ struct field_sizes_t
 
 
 #pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wpedantic"
 constexpr field_sizes_t const g_struct_type_sizes[] =
 {
     [static_cast<int>(struct_type_t::STRUCT_TYPE_END)]          = { INVALID_SIZE,           0 },
