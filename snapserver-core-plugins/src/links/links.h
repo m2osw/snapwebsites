@@ -212,7 +212,7 @@ class link_info_pair
 public:
     typedef std::vector<link_info_pair>      vector_t;
 
-                                link_info_pair(link_info const & src, link_info const & dst);
+                                link_info_pair(link_info const & src, link_info const & dst) noexcept;
 
     link_info const &           source() const;
     link_info const &           destination() const;

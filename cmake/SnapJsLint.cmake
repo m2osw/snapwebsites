@@ -42,9 +42,14 @@ find_program( JSLINT
 #   0120 -- Binary operator should go on previous line "&&" 
 #   0131 -- Single-quoted string preferred over double-quoted string.
 #
-set( OPTIONS "--disable 0002,0110,0120,0131 --jslint_error=blank_lines_at_top_level --jslint_error=unused_private_members" )
+set( OPTIONS "" )
 if( JSLINT MATCHES "closure-compiler" )
-  set( OPTIONS "${OPTIONS} --jscomp_warning=lintChecks" )
+  # TODO: complete the list of command line options to better match our old
+  #       command line and catch as many issues as possible at compile time
+  #
+  set( OPTIONS "${OPTIONS} --jscomp_error=deprecated" )
+else()
+  set( OPTIONS "${OPTIONS} --disable 0002,0110,0120,0131 --jslint_error=blank_lines_at_top_level --jslint_error=unused_private_members" )
 endif()
 
 set( js_lint_script ${CMAKE_BINARY_DIR}/do_js_lint.sh CACHE INTERNAL "JS lint script" FORCE )
