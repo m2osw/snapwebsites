@@ -1,5 +1,5 @@
 // Snap Websites Server -- watchdog scripts
-// Copyright (c) 2018-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2018-2021  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
 // contact@m2osw.com
@@ -85,7 +85,7 @@ public:
                             watchscripts(watchscripts const & rhs) = delete;
     virtual                 ~watchscripts() override;
 
-    watchscripts            operator = (watchscripts const & rhs) = delete;
+    watchscripts &          operator = (watchscripts const & rhs) = delete;
 
     static watchscripts *   instance();
 

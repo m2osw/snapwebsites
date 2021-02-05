@@ -1,4 +1,4 @@
-// Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2019-2021  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/snapdatabase
 // contact@m2osw.com
@@ -666,7 +666,7 @@ public:
                                             field_t(field_t const & rhs) = delete;
                                             ~field_t();
 
-    field_t                                 operator = (field_t const & rhs) = delete;
+    field_t &                               operator = (field_t const & rhs) = delete;
 
     struct_description_t const *            description() const;
     pointer_t                               next() const;

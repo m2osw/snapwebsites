@@ -1,5 +1,5 @@
 // Snap Websites Server -- manage the snapwatchdog settings
-// Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2016-2021  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ public:
                             watchdog(watchdog const & rhs) = delete;
     virtual                 ~watchdog() override;
 
-    watchdog                operator = (watchdog const & rhs) = delete;
+    watchdog &              operator = (watchdog const & rhs) = delete;
 
     static watchdog *       instance();
 

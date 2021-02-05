@@ -7,7 +7,7 @@
  *      and only using a single computer.
  *
  * License:
- *      Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2013-2021  Made to Order Software Corp.  All Rights Reserved
  * 
  *      https://snapwebsites.org/
  *      contact@m2osw.com
@@ -346,7 +346,7 @@ public:
 
                                         start_timer(test_multi_snaplocks * test);
                                         start_timer(start_timer const & rhs) = delete;
-    start_timer                         operator = (start_timer const & rhs) = delete;
+    start_timer &                       operator = (start_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void                        process_timeout() override;
@@ -372,7 +372,7 @@ public:
 
                                         new_connection_timer(test_multi_snaplocks * test);
                                         new_connection_timer(new_connection_timer const & rhs) = delete;
-    new_connection_timer                operator = (new_connection_timer const & rhs) = delete;
+    new_connection_timer &              operator = (new_connection_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void                        process_timeout() override;
@@ -398,7 +398,7 @@ public:
 
                                         death_timer(test_multi_snaplocks * test);
                                         death_timer(death_timer const & rhs) = delete;
-    death_timer                         operator = (death_timer const & rhs) = delete;
+    death_timer &                       operator = (death_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void                        process_timeout() override;

@@ -1,5 +1,5 @@
 // Snap Websites Server -- links
-// Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2012-2021  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -246,7 +246,7 @@ public:
 
                     link_context(link_context const & rhs) = delete;
 
-    link_context    operator = (link_context const & rhs) = delete;
+    link_context &  operator = (link_context const & rhs) = delete;
 
     bool            next_link(link_info & info);
 
@@ -299,7 +299,7 @@ public:
                                     links(links const & rhs) = delete;
     virtual                         ~links();
 
-    links                           operator = (links const & rhs) = delete;
+    links &                         operator = (links const & rhs) = delete;
 
     static links *                  instance();
 

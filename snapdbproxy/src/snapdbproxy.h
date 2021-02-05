@@ -14,7 +14,7 @@
  *         uses fork() to create the snap_child processes.)
  *
  * License:
- *      Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+ *      Copyright (c) 2016-2021  Made to Order Software Corp.  All Rights Reserved
  *
  *      https://snapwebsites.org/
  *      contact@m2osw.com
@@ -161,7 +161,7 @@ public:
     }
 
     snapdbproxy_timer(snapdbproxy_timer const & rhs) = delete;
-    snapdbproxy_timer operator = (snapdbproxy_timer const & rhs) = delete;
+    snapdbproxy_timer & operator = (snapdbproxy_timer const & rhs) = delete;
 
     // snap::snap_communicator::snap_timer implementation
     virtual void process_timeout() override;

@@ -1,5 +1,5 @@
 // Snap Websites Server -- manage the snapserver settings
-// Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2016-2021  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ public:
                             snapserver_manager(snapserver_manager const & rhs) = delete;
     virtual                 ~snapserver_manager() override;
 
-    snapserver_manager      operator = (snapserver_manager const & rhs) = delete;
+    snapserver_manager &    operator = (snapserver_manager const & rhs) = delete;
 
     static snapserver_manager * instance();
 

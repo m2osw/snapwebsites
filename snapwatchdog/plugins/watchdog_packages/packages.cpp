@@ -1,5 +1,5 @@
 // Snap Websites Server -- watchdog packages
-// Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2013-2021  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_PACKAGE_CONFLICTS_...");
+        throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_PACKAGES_...");
 
     }
     NOTREACHED();

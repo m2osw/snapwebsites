@@ -1,5 +1,5 @@
 // Snap Websites Server -- path handling
-// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ public:
                         dynamic_plugin_t() {}
                         dynamic_plugin_t(dynamic_plugin_t const & rhs) = delete;
 
-    dynamic_plugin_t    operator = (dynamic_plugin_t const & rhs) = delete;
+    dynamic_plugin_t &  operator = (dynamic_plugin_t const & rhs) = delete;
 
     plugins::plugin *   get_plugin() const { return f_plugin; }
     void                set_plugin(plugins::plugin * p);

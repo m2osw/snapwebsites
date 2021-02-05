@@ -5,8 +5,9 @@ snapwebsites (1.8.5.0~xenial) xenial; urgency=high
   * Applied a fix to the snaplistd which would not properly reply when an
     error occurred. This may fix the problems we see where once in a while
     the list mechanism breaks.
+  * Fixed a few assignments that were missing the '&'.
 
- -- Alexis Wilke <alexis@m2osw.com>  Sat, 11 Jan 2020 22:11:56 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 04 Feb 2021 16:21:12 -0800
 
 snapwebsites (1.8.4.0~xenial) xenial; urgency=high
 

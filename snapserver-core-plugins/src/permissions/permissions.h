@@ -1,5 +1,5 @@
 // Snap Websites Server -- manage permissions for users, forms, etc.
-// Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2013-2021  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -149,7 +149,7 @@ public:
 
     private:
                                 sets_t(sets_t const &) = delete;
-        sets_t                  operator = (sets_t const &) = delete;
+        sets_t &                operator = (sets_t const &) = delete;
 
         void                    get_cache_table();
 
