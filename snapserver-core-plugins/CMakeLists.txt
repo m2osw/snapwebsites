@@ -67,7 +67,6 @@ if( ${UUID} STREQUAL "UUID-NOTFOUND" )
 endif()
 
 find_program( ZIP zip               REQUIRED )
-find_program( CLOSURELINTER gjslint REQUIRED DOC "verify that Google JavaScript linter is installed: sudo apt-get install closure-linter" )
 
 if( "${XMLLINT_EXECUTABLE}" STREQUAL "XMLLINT_EXECUTABLE-NOTFOUND" )
     message( FATAL_ERROR "xmllint was not found, you need to install libxml2-utils" )

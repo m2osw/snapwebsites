@@ -30,7 +30,7 @@ find_program( BASH
 )
 
 find_program( JSLINT
-    NAMES closure-compiler gjslint
+    NAMES closure-compiler gjslint gjs
     PATHS /usr/bin
     REQUIRED
 )
@@ -44,12 +44,15 @@ find_program( JSLINT
 #
 set( OPTIONS "" )
 if( JSLINT MATCHES "closure-compiler" )
-  # TODO: complete the list of command line options to better match our old
-  #       command line and catch as many issues as possible at compile time
-  #
-  set( OPTIONS "${OPTIONS} --jscomp_error=deprecated" )
+    # TODO: complete the list of command line options to better match our old
+    #       command line and catch as many issues as possible at compile time
+    #
+    set( OPTIONS "${OPTIONS} --jscomp_error=deprecated" )
 else()
-  set( OPTIONS "${OPTIONS} --disable 0002,0110,0120,0131 --jslint_error=blank_lines_at_top_level --jslint_error=unused_private_members" )
+    set( OPTIONS "${OPTIONS} --disable 0002,0110,0120,0131 --jslint_error=blank_lines_at_top_level --jslint_error=unused_private_members" )
+    if( JSLINT MATCHES "gjs" )
+        set( OPTIONS "${OPTIONS} --jscomp_warning=lintChecks" )
+    endif()
 endif()
 
 set( js_lint_script ${CMAKE_BINARY_DIR}/do_js_lint.sh CACHE INTERNAL "JS lint script" FORCE )
