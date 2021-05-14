@@ -232,8 +232,8 @@ void antihammering::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(antihammering, "server", server, output_result, _1, _2);
-    SNAP_LISTEN(antihammering, "path", path::path, check_for_redirect, _1);
+    SNAP_LISTEN(antihammering, "server", server, output_result, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(antihammering, "path", path::path, check_for_redirect, boost::placeholders::_1);
 }
 
 

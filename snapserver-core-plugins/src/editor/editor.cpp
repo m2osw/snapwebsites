@@ -502,12 +502,12 @@ void editor::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(editor, "server", server,         process_post,              _1);
-    SNAP_LISTEN(editor, "layout", layout::layout, generate_header_content,   _1,  _2, _3);
-    SNAP_LISTEN(editor, "layout", layout::layout, generate_page_content,     _1,  _2, _3);
-    SNAP_LISTEN(editor, "layout", layout::layout, add_layout_from_resources, _1);
-    SNAP_LISTEN(editor, "form",   form::form,     validate_post_for_widget,  _1,  _2, _3,  _4, _5, _6);
-    SNAP_LISTEN(editor, "path",   path::path,     check_for_redirect,        _1);
+    SNAP_LISTEN(editor, "server", server,         process_post,              boost::placeholders::_1);
+    SNAP_LISTEN(editor, "layout", layout::layout, generate_header_content,   boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(editor, "layout", layout::layout, generate_page_content,     boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(editor, "layout", layout::layout, add_layout_from_resources, boost::placeholders::_1);
+    SNAP_LISTEN(editor, "form",   form::form,     validate_post_for_widget,  boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6);
+    SNAP_LISTEN(editor, "path",   path::path,     check_for_redirect,        boost::placeholders::_1);
 }
 
 

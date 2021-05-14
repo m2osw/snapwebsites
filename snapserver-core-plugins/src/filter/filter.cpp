@@ -309,7 +309,7 @@ void filter::bootstrap(::snap::snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(filter, "server", server, xss_filter, _1, _2, _3);
+    SNAP_LISTEN(filter, "server", server, xss_filter, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

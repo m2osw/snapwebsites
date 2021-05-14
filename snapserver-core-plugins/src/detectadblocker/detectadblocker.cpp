@@ -234,8 +234,8 @@ void detectadblocker::bootstrap(snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN0(detectadblocker, "server", server, detach_from_session);
-    //SNAP_LISTEN(detectadblocker, "path", path::path, can_handle_dynamic_path, _1, _2);
-    SNAP_LISTEN(detectadblocker, "layout", layout::layout, generate_header_content, _1, _2, _3);
+    //SNAP_LISTEN(detectadblocker, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(detectadblocker, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

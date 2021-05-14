@@ -218,8 +218,8 @@ void robotstxt::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(robotstxt, "layout", layout::layout, generate_header_content, _1, _2, _3);
-    SNAP_LISTEN(robotstxt, "layout", layout::layout, generate_page_content, _1, _2, _3);
+    SNAP_LISTEN(robotstxt, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(robotstxt, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

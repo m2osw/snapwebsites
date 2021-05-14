@@ -345,16 +345,16 @@ void images::bootstrap(snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN0(images, "server",   server,             attach_to_session);
-    SNAP_LISTEN(images,  "server",   server,             register_backend_cron,   _1);
-    SNAP_LISTEN(images,  "server",   server,             register_backend_action, _1);
-    SNAP_LISTEN(images,  "links",    links::links,       modified_link,           _1);
-    SNAP_LISTEN(images,  "path",     path::path,         can_handle_dynamic_path, _1,  _2);
-    SNAP_LISTEN(images,  "content",  content::content,   create_content,          _1,  _2,  _3);
-    SNAP_LISTEN(images,  "content",  content::content,   modified_content,        _1);
-    SNAP_LISTEN(images,  "listener", listener::listener, listener_check,          _1,  _2,  _3,  _4);
-    SNAP_LISTEN(images,  "versions", versions::versions, versions_libraries,      _1);
-    SNAP_LISTEN(images,  "filter",   filter::filter,     replace_token,           _1,  _2,  _3);
-    SNAP_LISTEN(images,  "filter",   filter::filter,     token_help,              _1);
+    SNAP_LISTEN(images,  "server",   server,             register_backend_cron,   boost::placeholders::_1);
+    SNAP_LISTEN(images,  "server",   server,             register_backend_action, boost::placeholders::_1);
+    SNAP_LISTEN(images,  "links",    links::links,       modified_link,           boost::placeholders::_1);
+    SNAP_LISTEN(images,  "path",     path::path,         can_handle_dynamic_path, boost::placeholders::_1,  boost::placeholders::_2);
+    SNAP_LISTEN(images,  "content",  content::content,   create_content,          boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3);
+    SNAP_LISTEN(images,  "content",  content::content,   modified_content,        boost::placeholders::_1);
+    SNAP_LISTEN(images,  "listener", listener::listener, listener_check,          boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3,  boost::placeholders::_4);
+    SNAP_LISTEN(images,  "versions", versions::versions, versions_libraries,      boost::placeholders::_1);
+    SNAP_LISTEN(images,  "filter",   filter::filter,     replace_token,           boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3);
+    SNAP_LISTEN(images,  "filter",   filter::filter,     token_help,              boost::placeholders::_1);
 }
 
 

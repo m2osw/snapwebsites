@@ -230,10 +230,10 @@ void form::bootstrap(::snap::snap_child *snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(form, "server", server, process_post, _1);
-    SNAP_LISTEN(form, "content", content::content, copy_branch_cells, _1, _2, _3);
-    SNAP_LISTEN(form, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(form, "layout", layout::layout, filtered_content, _1, _2, _3);
+    SNAP_LISTEN(form, "server", server, process_post, boost::placeholders::_1);
+    SNAP_LISTEN(form, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(form, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(form, "layout", layout::layout, filtered_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

@@ -236,7 +236,7 @@ void tracker::bootstrap(snap_child * snap)
 
     SNAP_LISTEN0(tracker, "server", server, attach_to_session);
     SNAP_LISTEN0(tracker, "server", server, detach_from_session);
-    SNAP_LISTEN(tracker, "server", server, register_backend_action, _1);
+    SNAP_LISTEN(tracker, "server", server, register_backend_action, boost::placeholders::_1);
 }
 
 

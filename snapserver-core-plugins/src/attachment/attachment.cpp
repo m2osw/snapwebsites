@@ -219,11 +219,11 @@ void attachment::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(attachment, "server", server, register_backend_action, _1);
-    SNAP_LISTEN(attachment, "path", path::path, can_handle_dynamic_path, _1, _2);
-    SNAP_LISTEN(attachment, "content", content::content, page_cloned, _1);
-    SNAP_LISTEN(attachment, "content", content::content, copy_branch_cells, _1, _2, _3);
-    SNAP_LISTEN(attachment, "permissions", permissions::permissions, permit_redirect_to_login_on_not_allowed, _1, _2);
+    SNAP_LISTEN(attachment, "server", server, register_backend_action, boost::placeholders::_1);
+    SNAP_LISTEN(attachment, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(attachment, "content", content::content, page_cloned, boost::placeholders::_1);
+    SNAP_LISTEN(attachment, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(attachment, "permissions", permissions::permissions, permit_redirect_to_login_on_not_allowed, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

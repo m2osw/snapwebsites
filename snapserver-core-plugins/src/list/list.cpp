@@ -2010,14 +2010,14 @@ void list::bootstrap(snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN0(list, "server", server, attach_to_session);
-    SNAP_LISTEN(list, "server", server, register_backend_cron, _1);
-    SNAP_LISTEN(list, "server", server, register_backend_action, _1);
-    SNAP_LISTEN(list, "content", content::content, create_content, _1, _2, _3);
-    SNAP_LISTEN(list, "content", content::content, modified_content, _1);
-    SNAP_LISTEN(list, "content", content::content, copy_branch_cells, _1, _2, _3);
-    SNAP_LISTEN(list, "links", links::links, modified_link, _1, _2);
-    SNAP_LISTEN(list, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(list, "filter", filter::filter, token_help, _1);
+    SNAP_LISTEN(list, "server", server, register_backend_cron, boost::placeholders::_1);
+    SNAP_LISTEN(list, "server", server, register_backend_action, boost::placeholders::_1);
+    SNAP_LISTEN(list, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(list, "content", content::content, modified_content, boost::placeholders::_1);
+    SNAP_LISTEN(list, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(list, "links", links::links, modified_link, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(list, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(list, "filter", filter::filter, token_help, boost::placeholders::_1);
 
     //SNAP_TEST_PLUGIN_SUITE_LISTEN(list);
 }

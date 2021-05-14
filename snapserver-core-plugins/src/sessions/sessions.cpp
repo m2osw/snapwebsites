@@ -1389,7 +1389,7 @@ void sessions::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(sessions, "server", server, table_is_accessible, _1, _2);
+    SNAP_LISTEN(sessions, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

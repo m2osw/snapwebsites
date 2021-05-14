@@ -174,8 +174,8 @@ void char_chart::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(char_chart, "path", path::path, can_handle_dynamic_path, _1, _2);
-    SNAP_LISTEN(char_chart, "sitemapxml", sitemapxml::sitemapxml, generate_sitemapxml, _1);
+    SNAP_LISTEN(char_chart, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(char_chart, "sitemapxml", sitemapxml::sitemapxml, generate_sitemapxml, boost::placeholders::_1);
 }
 
 

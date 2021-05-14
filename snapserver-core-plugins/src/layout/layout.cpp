@@ -156,9 +156,9 @@ void layout::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(layout, "server", server, load_file, _1, _2);
-    SNAP_LISTEN(layout, "server", server, improve_signature, _1, _2, _3);
-    SNAP_LISTEN(layout, "content", content::content, copy_branch_cells, _1, _2, _3);
+    SNAP_LISTEN(layout, "server", server, load_file, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(layout, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(layout, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

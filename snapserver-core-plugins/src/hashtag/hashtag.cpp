@@ -208,7 +208,7 @@ void hashtag::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(hashtag, "filter", filter::filter, filter_text, _1);
+    SNAP_LISTEN(hashtag, "filter", filter::filter, filter_text, boost::placeholders::_1);
 }
 
 

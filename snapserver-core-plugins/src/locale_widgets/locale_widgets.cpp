@@ -243,11 +243,11 @@ void locale_widgets::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, init_editor_widget, _1, _2, _3, _4, _5);
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, prepare_editor_form, _1);
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, string_to_value, _1);
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, value_to_string, _1);
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, validate_editor_post_for_widget, _1, _2, _3, _4, _5, _6, _7);
+    SNAP_LISTEN(locale_widgets, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SNAP_LISTEN(locale_widgets, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
+    SNAP_LISTEN(locale_widgets, "editor", editor::editor, string_to_value, boost::placeholders::_1);
+    SNAP_LISTEN(locale_widgets, "editor", editor::editor, value_to_string, boost::placeholders::_1);
+    SNAP_LISTEN(locale_widgets, "editor", editor::editor, validate_editor_post_for_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6, boost::placeholders::_7);
 }
 
 

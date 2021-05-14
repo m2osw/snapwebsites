@@ -705,16 +705,16 @@ void users::bootstrap(snap_child * snap)
     SNAP_LISTEN0 ( users, "server",  server,           process_cookies                     );
     SNAP_LISTEN0 ( users, "server",  server,           attach_to_session                   );
     SNAP_LISTEN0 ( users, "server",  server,           detach_from_session                 );
-    SNAP_LISTEN  ( users, "server",  server,           define_locales,          _1         );
-    SNAP_LISTEN  ( users, "server",  server,           improve_signature,       _1, _2, _3 );
-    SNAP_LISTEN  ( users, "server",  server,           table_is_accessible,     _1, _2     );
+    SNAP_LISTEN  ( users, "server",  server,           define_locales,          boost::placeholders::_1         );
+    SNAP_LISTEN  ( users, "server",  server,           improve_signature,       boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SNAP_LISTEN  ( users, "server",  server,           table_is_accessible,     boost::placeholders::_1, boost::placeholders::_2     );
     SNAP_LISTEN0 ( users, "locale",  locale::locale,   set_locale                          );
     SNAP_LISTEN0 ( users, "locale",  locale::locale,   set_timezone                        );
-    SNAP_LISTEN  ( users, "content", content::content, create_content,          _1, _2, _3 );
-    SNAP_LISTEN  ( users, "layout",  layout::layout,   generate_header_content, _1, _2, _3 );
-    SNAP_LISTEN  ( users, "layout",  layout::layout,   generate_page_content,   _1, _2, _3 );
-    SNAP_LISTEN  ( users, "filter",  filter::filter,   replace_token,           _1, _2, _3 );
-    SNAP_LISTEN  ( users, "filter",  filter::filter,   token_help,              _1         );
+    SNAP_LISTEN  ( users, "content", content::content, create_content,          boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SNAP_LISTEN  ( users, "layout",  layout::layout,   generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SNAP_LISTEN  ( users, "layout",  layout::layout,   generate_page_content,   boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SNAP_LISTEN  ( users, "filter",  filter::filter,   replace_token,           boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SNAP_LISTEN  ( users, "filter",  filter::filter,   token_help,              boost::placeholders::_1         );
 
     f_info.reset(new sessions::sessions::session_info);
 }

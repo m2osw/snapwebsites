@@ -274,10 +274,10 @@ void favicon::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(favicon, "server", server, improve_signature, _1, _2, _3);
-    SNAP_LISTEN(favicon, "layout", layout::layout, generate_header_content, _1, _2, _3);
-    SNAP_LISTEN(favicon, "layout", layout::layout, generate_page_content, _1, _2, _3);
-    SNAP_LISTEN(favicon, "path", path::path, can_handle_dynamic_path, _1, _2);
+    SNAP_LISTEN(favicon, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(favicon, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(favicon, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(favicon, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

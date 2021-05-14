@@ -244,8 +244,8 @@ void locale_settings::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(locale_settings, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(locale_settings, "filter", filter::filter, token_help, _1);
+    SNAP_LISTEN(locale_settings, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(locale_settings, "filter", filter::filter, token_help, boost::placeholders::_1);
 }
 
 

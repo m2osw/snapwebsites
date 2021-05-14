@@ -386,10 +386,10 @@ void sendmail::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(sendmail, "server", server, register_backend_cron, _1);
-    SNAP_LISTEN(sendmail, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(sendmail, "filter", filter::filter, token_help, _1);
-    SNAP_LISTEN(sendmail, "users", users::users, check_user_security, _1);
+    SNAP_LISTEN(sendmail, "server", server, register_backend_cron, boost::placeholders::_1);
+    SNAP_LISTEN(sendmail, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(sendmail, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SNAP_LISTEN(sendmail, "users", users::users, check_user_security, boost::placeholders::_1);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(sendmail);
 }

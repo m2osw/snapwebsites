@@ -215,7 +215,7 @@ void server_access::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(server_access, "server", server, output_result, _1, _2);
+    SNAP_LISTEN(server_access, "server", server, output_result, boost::placeholders::_1, boost::placeholders::_2);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(server_access);
 }

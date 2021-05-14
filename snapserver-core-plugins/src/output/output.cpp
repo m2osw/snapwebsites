@@ -221,10 +221,10 @@ void output::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(output, "user_status", server, user_status, _1, _2);
-    SNAP_LISTEN(output, "layout", layout::layout, generate_page_content, _1, _2, _3);
-    SNAP_LISTEN(output, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(output, "filter", filter::filter, token_help, _1);
+    SNAP_LISTEN(output, "user_status", server, user_status, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(output, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(output, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(output, "filter", filter::filter, token_help, boost::placeholders::_1);
 }
 
 

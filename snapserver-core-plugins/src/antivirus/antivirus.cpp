@@ -223,8 +223,8 @@ void antivirus::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(antivirus, "content", content::content, check_attachment_security, _1, _2, _3);
-    SNAP_LISTEN(antivirus, "versions", versions::versions, versions_tools, _1);
+    SNAP_LISTEN(antivirus, "content", content::content, check_attachment_security, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(antivirus, "versions", versions::versions, versions_tools, boost::placeholders::_1);
 }
 
 

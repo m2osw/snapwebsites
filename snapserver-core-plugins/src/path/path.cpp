@@ -418,8 +418,8 @@ void path::bootstrap(::snap::snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(path, "server", server, execute, _1);
-    SNAP_LISTEN(path, "server", server, improve_signature, _1, _2, _3);
+    SNAP_LISTEN(path, "server", server, execute, boost::placeholders::_1);
+    SNAP_LISTEN(path, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

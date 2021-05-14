@@ -480,7 +480,7 @@ void messages::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(messages, "user_status", server, user_status, _1, _2);
+    SNAP_LISTEN(messages, "user_status", server, user_status, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

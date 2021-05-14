@@ -324,10 +324,10 @@ void epayment_stripe::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(epayment_stripe, "server", server, table_is_accessible, _1, _2);
-    SNAP_LISTEN(epayment_stripe, "layout", layout::layout, generate_header_content, _1, _2, _3);
-    SNAP_LISTEN(epayment_stripe, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(epayment_stripe, "epayment", epayment::epayment, repeat_payment, _1, _2, _3);
+    SNAP_LISTEN(epayment_stripe, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(epayment_stripe, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(epayment_stripe, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(epayment_stripe, "epayment", epayment::epayment, repeat_payment, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

@@ -224,11 +224,11 @@ void info::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(info, "server", server, improve_signature, _1, _2, _3);
-    SNAP_LISTEN(info, "path", path::path, can_handle_dynamic_path, _1, _2);
-    SNAP_LISTEN(info, "layout", layout::layout, generate_page_content, _1, _2, _3);
-    SNAP_LISTEN(info, "editor", editor::editor, finish_editor_form_processing, _1, _2);
-    SNAP_LISTEN(info, "editor", editor::editor, init_editor_widget, _1, _2, _3, _4, _5);
+    SNAP_LISTEN(info, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(info, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(info, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(info, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(info, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(info);
 }

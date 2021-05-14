@@ -1530,14 +1530,14 @@ void permissions::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(permissions, "server", server, register_backend_action, _1);
-    SNAP_LISTEN(permissions, "server", server, add_snap_expr_functions, _1);
-    SNAP_LISTEN(permissions, "path", path::path, validate_action, _1, _2, _3);
-    SNAP_LISTEN(permissions, "path", path::path, access_allowed, _1, _2, _3, _4, _5);
-    SNAP_LISTEN(permissions, "path", path::path, check_for_redirect, _1);
-    SNAP_LISTEN(permissions, "users", users::users, user_verified, _1, _2);
-    SNAP_LISTEN(permissions, "layout", layout::layout, generate_header_content, _1, _2, _3);
-    SNAP_LISTEN(permissions, "links", links::links, modified_link, _1, _2);
+    SNAP_LISTEN(permissions, "server", server, register_backend_action, boost::placeholders::_1);
+    SNAP_LISTEN(permissions, "server", server, add_snap_expr_functions, boost::placeholders::_1);
+    SNAP_LISTEN(permissions, "path", path::path, validate_action, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(permissions, "path", path::path, access_allowed, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SNAP_LISTEN(permissions, "path", path::path, check_for_redirect, boost::placeholders::_1);
+    SNAP_LISTEN(permissions, "users", users::users, user_verified, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(permissions, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(permissions, "links", links::links, modified_link, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

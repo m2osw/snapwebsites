@@ -230,7 +230,7 @@ void sortable::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(sortable, "editor", editor::editor, prepare_editor_form, _1);
+    SNAP_LISTEN(sortable, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
 }
 
 

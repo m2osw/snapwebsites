@@ -176,7 +176,7 @@ void listener::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(listener, "server", server, process_post, _1);
+    SNAP_LISTEN(listener, "server", server, process_post, boost::placeholders::_1);
 }
 
 

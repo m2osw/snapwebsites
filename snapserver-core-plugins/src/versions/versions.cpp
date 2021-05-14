@@ -237,8 +237,8 @@ void versions::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(versions, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(versions, "filter", filter::filter, token_help, _1);
+    SNAP_LISTEN(versions, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(versions, "filter", filter::filter, token_help, boost::placeholders::_1);
 }
 
 

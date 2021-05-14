@@ -522,12 +522,12 @@ void ecommerce::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(ecommerce, "server", server, process_post, _1);
-    SNAP_LISTEN(ecommerce, "layout", layout::layout, generate_header_content, _1, _2, _3);
-    SNAP_LISTEN(ecommerce, "epayment", epayment::epayment, generate_invoice, _1, _2, _3);
-    SNAP_LISTEN(ecommerce, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(ecommerce, "filter", filter::filter, token_help, _1);
-    SNAP_LISTEN(ecommerce, "path", path::path, preprocess_path, _1, _2);
+    SNAP_LISTEN(ecommerce, "server", server, process_post, boost::placeholders::_1);
+    SNAP_LISTEN(ecommerce, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(ecommerce, "epayment", epayment::epayment, generate_invoice, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(ecommerce, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(ecommerce, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SNAP_LISTEN(ecommerce, "path", path::path, preprocess_path, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

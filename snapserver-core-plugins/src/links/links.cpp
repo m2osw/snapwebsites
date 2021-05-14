@@ -1403,8 +1403,8 @@ void links::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(links, "server", server, add_snap_expr_functions, _1);
-    SNAP_LISTEN(links, "server", server, register_backend_action, _1);
+    SNAP_LISTEN(links, "server", server, add_snap_expr_functions, boost::placeholders::_1);
+    SNAP_LISTEN(links, "server", server, register_backend_action, boost::placeholders::_1);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(links);
 }

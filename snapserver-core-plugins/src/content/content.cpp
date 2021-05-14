@@ -663,11 +663,11 @@ void content::bootstrap(snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN0(content, "server", server, save_content);
-    SNAP_LISTEN(content, "server", server, add_snap_expr_functions, _1);
-    SNAP_LISTEN(content, "server", server, register_backend_action, _1);
+    SNAP_LISTEN(content, "server", server, add_snap_expr_functions, boost::placeholders::_1);
+    SNAP_LISTEN(content, "server", server, register_backend_action, boost::placeholders::_1);
     SNAP_LISTEN0(content, "server", server, backend_process);
-    SNAP_LISTEN(content, "server", server, load_file, _1, _2);
-    SNAP_LISTEN(content, "server", server, table_is_accessible, _1, _2);
+    SNAP_LISTEN(content, "server", server, load_file, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(content, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(content);
 }

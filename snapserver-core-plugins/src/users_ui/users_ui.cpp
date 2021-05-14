@@ -319,13 +319,13 @@ void users_ui::bootstrap(::snap::snap_child * snap)
 
     SNAP_LISTEN0(users_ui, "server", server, attach_to_session);
     SNAP_LISTEN0(users_ui, "server", server, detach_from_session);
-    SNAP_LISTEN(users_ui, "path", path::path, can_handle_dynamic_path, _1, _2);
-    SNAP_LISTEN(users_ui, "path", path::path, check_for_redirect, _1);
-    SNAP_LISTEN(users_ui, "filter", filter::filter, replace_token, _1, _2, _3);
-    SNAP_LISTEN(users_ui, "filter", filter::filter, token_help, _1);
-    SNAP_LISTEN(users_ui, "editor", editor::editor, init_editor_widget, _1, _2, _3, _4, _5);
-    SNAP_LISTEN(users_ui, "editor", editor::editor, finish_editor_form_processing, _1, _2);
-    SNAP_LISTEN(users_ui, "editor", editor::editor, save_editor_fields, _1);
+    SNAP_LISTEN(users_ui, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(users_ui, "path", path::path, check_for_redirect, boost::placeholders::_1);
+    SNAP_LISTEN(users_ui, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(users_ui, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SNAP_LISTEN(users_ui, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SNAP_LISTEN(users_ui, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
+    SNAP_LISTEN(users_ui, "editor", editor::editor, save_editor_fields, boost::placeholders::_1);
 }
 
 

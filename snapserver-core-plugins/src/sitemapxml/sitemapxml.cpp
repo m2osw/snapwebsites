@@ -554,9 +554,9 @@ void sitemapxml::bootstrap(::snap::snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN0(sitemapxml, "server", server, backend_process);
-    SNAP_LISTEN(sitemapxml, "content", content::content, copy_branch_cells, _1, _2, _3);
-    SNAP_LISTEN(sitemapxml, "robotstxt", robotstxt::robotstxt, generate_robotstxt, _1);
-    SNAP_LISTEN(sitemapxml, "shorturl", shorturl::shorturl, allow_shorturl, _1, _2, _3, _4);
+    SNAP_LISTEN(sitemapxml, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(sitemapxml, "robotstxt", robotstxt::robotstxt, generate_robotstxt, boost::placeholders::_1);
+    SNAP_LISTEN(sitemapxml, "shorturl", shorturl::shorturl, allow_shorturl, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4);
 }
 
 

@@ -264,10 +264,10 @@ void shorturl::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(shorturl, "layout", layout::layout, generate_header_content, _1, _2, _3);
-    SNAP_LISTEN(shorturl, "content", content::content, create_content, _1, _2, _3);
-    SNAP_LISTEN(shorturl, "content", content::content, page_cloned, _1);
-    SNAP_LISTEN(shorturl, "path", path::path, check_for_redirect, _1);
+    SNAP_LISTEN(shorturl, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(shorturl, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(shorturl, "content", content::content, page_cloned, boost::placeholders::_1);
+    SNAP_LISTEN(shorturl, "path", path::path, check_for_redirect, boost::placeholders::_1);
 }
 
 

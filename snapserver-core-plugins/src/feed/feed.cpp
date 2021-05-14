@@ -274,7 +274,7 @@ void feed::bootstrap(snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN0(feed, "server", server, backend_process);
-    SNAP_LISTEN(feed, "layout", layout::layout, generate_page_content, _1, _2, _3);
+    SNAP_LISTEN(feed, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

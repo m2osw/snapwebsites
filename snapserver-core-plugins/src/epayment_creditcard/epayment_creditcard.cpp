@@ -255,9 +255,9 @@ void epayment_creditcard::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(epayment_creditcard, "server", server, process_post, _1);
-    SNAP_LISTEN(epayment_creditcard, "editor", editor::editor, dynamic_editor_widget, _1, _2, _3);
-    SNAP_LISTEN(epayment_creditcard, "editor", editor::editor, save_editor_fields, _1);
+    SNAP_LISTEN(epayment_creditcard, "server", server, process_post, boost::placeholders::_1);
+    SNAP_LISTEN(epayment_creditcard, "editor", editor::editor, dynamic_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SNAP_LISTEN(epayment_creditcard, "editor", editor::editor, save_editor_fields, boost::placeholders::_1);
 }
 
 

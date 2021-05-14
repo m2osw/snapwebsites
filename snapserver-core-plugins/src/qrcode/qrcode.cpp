@@ -278,7 +278,7 @@ void qrcode::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    SNAP_LISTEN(qrcode, "path", path::path, can_handle_dynamic_path, _1, _2);
+    SNAP_LISTEN(qrcode, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

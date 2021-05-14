@@ -254,11 +254,11 @@ void bookkeeping::bootstrap(snap_child * snap)
 {
     f_snap = snap;
 
-    //SNAP_LISTEN(bookkeeping, "server", server, improve_signature, _1, _2, _3);
-    //SNAP_LISTEN(bookkeeping, "path", path::path, can_handle_dynamic_path, _1, _2);
-    //SNAP_LISTEN(bookkeeping, "layout", layout::layout, generate_page_content, _1, _2, _3);
-    //SNAP_LISTEN(bookkeeping, "editor", editor::editor, finish_editor_form_processing, _1, _2);
-    //SNAP_LISTEN(bookkeeping, "editor", editor::editor, init_editor_widget, _1, _2, _3, _4, _5);
+    //SNAP_LISTEN(bookkeeping, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    //SNAP_LISTEN(bookkeeping, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    //SNAP_LISTEN(bookkeeping, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    //SNAP_LISTEN(bookkeeping, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
+    //SNAP_LISTEN(bookkeeping, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
 }
 
 
