@@ -39,7 +39,7 @@ if( NOT ImageMagick_FOUND )
     message( FATAL_ERROR "ImageMagic is required to build the image plugin" )
 endif()
 
-find_package( QREncode QUIET REQUIRED )
+find_package( LibQREncode QUIET REQUIRED )
 find_package( Qt5Core REQUIRED )
 
 include_directories(
