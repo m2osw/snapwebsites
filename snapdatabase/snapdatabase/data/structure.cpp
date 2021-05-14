@@ -33,6 +33,11 @@
 #include    "snapdatabase/arch_support.h"
 
 
+// advgetopt lib
+//
+#include    <advgetopt/validator.h>
+
+
 // snaplogger lib
 //
 #include    <snaplogger/message.h>
