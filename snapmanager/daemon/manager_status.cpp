@@ -40,6 +40,7 @@
 //
 #include <snapwebsites/log.h>
 #include <snapwebsites/process.h>
+#include <snapwebsites/qcompatibility.h>
 
 // C++ lib
 //
@@ -105,7 +106,7 @@ void manager_status::set_snapmanager_frontend(QString const & snapmanager_fronte
     // before the thread starts
     //snap::snap_thread::snap_lock guard(f_mutex);
 
-    f_snapmanager_frontend = snapmanager_frontend.split(",", QString::SkipEmptyParts);
+    f_snapmanager_frontend = snap::split_string(snapmanager_frontend, ',');
 
     std::for_each(
             f_snapmanager_frontend.begin(),

@@ -33,6 +33,7 @@
 #include "snapwebsites/mail_exchanger.h"
 #include "snapwebsites/mkgmtime.h"
 #include "snapwebsites/process.h"
+#include "snapwebsites/qcompatibility.h"
 #include "snapwebsites/qdomhelpers.h"
 #include "snapwebsites/qlockfile.h"
 #include "snapwebsites/snap_image.h"
@@ -3859,7 +3860,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 if(f_name == "HTTP_COOKIE")
                 {
                     // special case for cookies
-                    snap_string_list cookies(f_value.split(';', QString::SkipEmptyParts));
+                    snap_string_list cookies(split_string(f_value, ';'));
 #ifdef DEBUG
 //SNAP_LOG_TRACE(" HTTP_COOKIE = [\"")(f_value)("\"]");
 #endif
@@ -3867,7 +3868,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                     for(int i(0); i < max_strings; ++i)
                     {
                         QString const name_value(cookies[i]);
-                        snap_string_list nv(name_value.trimmed().split('=', QString::SkipEmptyParts));
+                        snap_string_list nv(split_string(name_value.trimmed(), '='));
                         if(nv.size() == 2)
                         {
                             // XXX check with other systems to see
@@ -7754,7 +7755,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
             need_cleanup = false;
         }
     }
-    snap_string_list list_of_plugins(site_plugins.split(',', QString::SkipEmptyParts));
+    snap_string_list list_of_plugins(split_string(site_plugins, ','));
 
     // clean up the list
     //

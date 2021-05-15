@@ -298,7 +298,7 @@ void disk::bootstrap(snap_child * snap)
 {
     f_snap = static_cast<watchdog_child *>(snap);
 
-    SNAP_LISTEN(disk, "server", watchdog_server, process_watch, _1);
+    SNAP_LISTEN(disk, "server", watchdog_server, process_watch, boost::placeholders::_1);
 }
 
 

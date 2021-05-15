@@ -188,7 +188,7 @@ void vpn::bootstrap(snap_child * snap)
         throw snap_logic_exception("snap pointer does not represent a valid manager object.");
     }
 
-    SNAP_LISTEN(vpn, "server", snap_manager::manager, retrieve_status, _1);
+    SNAP_LISTEN(vpn, "server", snap_manager::manager, retrieve_status, boost::placeholders::_1);
 }
 
 
@@ -548,7 +548,11 @@ bool vpn::apply_setting ( QString const & button_name
 
     if( field_name == CLIENT_CONFIG_NAME )
     {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        QProcess::execute( "systemctl", { "stop", "openvpn@client" });
+#else
         QProcess::execute( "systemctl stop openvpn@client" );
+#endif
 
         {
             QFile file( "/etc/openvpn/client.conf" );
@@ -564,8 +568,13 @@ bool vpn::apply_setting ( QString const & button_name
             out << new_value;
         }
 
-        QProcess::execute( "systemctl enable openvpn@client" );
-        QProcess::execute( "systemctl start openvpn@client" );
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        QProcess::execute("systemctl", { "enable", "openvpn@client" });
+        QProcess::execute("systemctl", { "start", "openvpn@client" });
+#else
+        QProcess::execute("systemctl enable openvpn@client");
+        QProcess::execute("systemctl start openvpn@client");
+#endif
 
         return true;
     }

@@ -221,7 +221,7 @@ void watchdog::bootstrap(snap_child * snap)
         throw snap_logic_exception("snap pointer does not represent a valid manager object.");
     }
 
-    SNAP_LISTEN(watchdog, "server", snap_manager::manager, retrieve_status, _1);
+    SNAP_LISTEN(watchdog, "server", snap_manager::manager, retrieve_status, boost::placeholders::_1);
 
     // we cannot use dynamic_cast<>() because it accesses the typeinfo of
     // snap_manager::manager_cgi which creates a linkage problem (i.e. when
@@ -236,7 +236,7 @@ void watchdog::bootstrap(snap_child * snap)
     std::string const type(f_snap->server_type());
     if(type == "manager_cgi")
     {
-        SNAP_LISTEN(watchdog, "server", snap_manager::manager_cgi, generate_content, _1, _2, _3, _4, _5);
+        SNAP_LISTEN(watchdog, "server", snap_manager::manager_cgi, generate_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
     }
 }
 

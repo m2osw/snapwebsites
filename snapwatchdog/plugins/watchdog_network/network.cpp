@@ -166,7 +166,7 @@ void network::bootstrap(snap_child * snap)
     f_snap = static_cast<watchdog_child *>(snap);
 
     SNAP_LISTEN0(network, "server", watchdog_server, init);
-    SNAP_LISTEN(network, "server", watchdog_server, process_watch, _1);
+    SNAP_LISTEN(network, "server", watchdog_server, process_watch, boost::placeholders::_1);
 }
 
 

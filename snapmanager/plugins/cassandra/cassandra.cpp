@@ -111,9 +111,18 @@ YAML::Node read_node_from_yaml()
 void write_node_to_yaml( const YAML::Node& node )
 {
     SNAP_LOG_TRACE("write_node_to_yaml()");
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    QLocale locale;
+#endif
     QString const header_comment(
             QString("Automatically generated file on '%1'. Do not modify!")
-            .arg( QDateTime::currentDateTime().toString( Qt::LocalDate ) ) );
+            .arg(
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+                  locale.toString(QDateTime::currentDateTime())
+#else
+                  QDateTime::currentDateTime().toString(Qt::LocalDate)
+#endif
+                                                            ));
 
     YAML::Emitter emitter;
     emitter.SetIndent( 4 );
@@ -346,10 +355,10 @@ void cassandra::bootstrap(snap_child * snap)
         throw snap_logic_exception("snap pointer does not represent a valid manager object.");
     }
 
-    SNAP_LISTEN  ( cassandra, "server", snap_manager::manager, retrieve_status,          _1     );
-    SNAP_LISTEN  ( cassandra, "server", snap_manager::manager, handle_affected_services, _1     );
-    SNAP_LISTEN  ( cassandra, "server", snap_manager::manager, add_plugin_commands,      _1     );
-    SNAP_LISTEN  ( cassandra, "server", snap_manager::manager, process_plugin_message,   _1, _2 );
+    SNAP_LISTEN  ( cassandra, "server", snap_manager::manager, retrieve_status,          boost::placeholders::_1     );
+    SNAP_LISTEN  ( cassandra, "server", snap_manager::manager, handle_affected_services, boost::placeholders::_1     );
+    SNAP_LISTEN  ( cassandra, "server", snap_manager::manager, add_plugin_commands,      boost::placeholders::_1     );
+    SNAP_LISTEN  ( cassandra, "server", snap_manager::manager, process_plugin_message,   boost::placeholders::_1, boost::placeholders::_2 );
     SNAP_LISTEN0 ( cassandra, "server", snap_manager::manager, communication_ready              );
 }
 

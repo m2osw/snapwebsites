@@ -254,7 +254,11 @@ qDebug() << "stringValue";
 QVariant QDomNodeModel::typedValue(const QXmlNodeModelIndex& ni) const
 {
 qDebug() << "Typed (hmmm?) value";
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    return QVariant::fromValue(stringValue(ni));
+#else
     return qVariantFromValue(stringValue(ni));
+#endif
 }
 
 QXmlNodeModelIndex QDomNodeModel::fromDomNode(const QDomNode& n) const

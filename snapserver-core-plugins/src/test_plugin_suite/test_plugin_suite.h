@@ -237,7 +237,7 @@ private:
  *                     a test suite.
  */
 #define SNAP_TEST_PLUGIN_SUITE_LISTEN(plugin_name) \
-    SNAP_LISTEN(plugin_name, "test_plugin_suite", test_plugin_suite::test_plugin_suite, list_tests, _1);
+    SNAP_LISTEN(plugin_name, "test_plugin_suite", test_plugin_suite::test_plugin_suite, list_tests, boost::placeholders::_1);
 
 
 #define SNAP_TEST_PLUGIN_SUITE_ASSERT(test) \

@@ -45,6 +45,7 @@
 #include <snapwebsites/file_content.h>
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/mkdir_p.h>
+#include <snapwebsites/qcompatibility.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_communicator.h>
 #include <snapwebsites/snap_uri.h>
@@ -452,7 +453,7 @@ bool manager_cgi::verify()
         addr::addr const remote_address(addr::string_to_addr(std::string(remote_addr) + ":80", std::string(), -1, "tcp"));
         std::string const client(f_config.has_parameter("clients") ? f_config["clients"] : std::string());
 
-        snap::snap_string_list const client_list(QString::fromUtf8(client.c_str()).split(',', QString::SkipEmptyParts));
+        snap::snap_string_list const client_list(snap::split_string(QString::fromUtf8(client.c_str()), ','));
         bool found(false);
         for(auto const & c : client_list)
         {

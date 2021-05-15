@@ -36,6 +36,7 @@
 #include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkgmtime.h>
+#include <snapwebsites/qcompatibility.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomreceiver.h>
 #include <snapwebsites/qdomxpath.h>
@@ -3889,7 +3890,7 @@ bool editor::validate_editor_post_for_widget_impl(
                 {
                     // the text may include allowed or forbidden TLDs
                     QString const uri_tlds(uri_tag.text());
-                    snap_string_list tld_list(uri_tlds.split(",", QString::SkipEmptyParts));
+                    snap_string_list tld_list(split_string(uri_tlds, ','));
                     bool const match(uri_tag.attribute("match") != "no");
                     snap_uri uri;
                     bool valid(uri.set_uri(value));
@@ -3954,7 +3955,7 @@ bool editor::validate_editor_post_for_widget_impl(
                 if(!extensions_tag.isNull())
                 {
                     QString const extensions(extensions_tag.text());
-                    snap_string_list ext_list(extensions.split(",", QString::SkipEmptyParts));
+                    snap_string_list ext_list(split_string(extensions, ','));
                     int const max_ext(ext_list.size());
                     QFileInfo const file_info(value);
                     QString const file_ext(file_info.suffix());

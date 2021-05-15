@@ -30,6 +30,7 @@
 #include <snapwebsites/glob_dir.h>
 #include <snapwebsites/loadavg.h>
 #include <snapwebsites/log.h>
+#include <snapwebsites/qcompatibility.h>
 #include <snapwebsites/snap_communicator.h>
 #include <snapwebsites/snapwebsites.h>
 
@@ -173,7 +174,7 @@ int64_t             g_broadcast_sequence = 0;
 
 sorted_list_of_strings_t canonicalize_services(QString const & services)
 {
-    snap::snap_string_list list(services.split(',', QString::SkipEmptyParts));
+    snap::snap_string_list list(snap::split_string(services, ','));
 
     // use a map to remove duplicates
     //
@@ -201,7 +202,7 @@ sorted_list_of_strings_t canonicalize_services(QString const & services)
 
 QString canonicalize_server_types(QString const & server_types)
 {
-    snap::snap_string_list list(server_types.split(',', QString::SkipEmptyParts));
+    snap::snap_string_list list(snap::split_string(server_types, ','));
 
     // use a map to remove duplicates
     //
@@ -4153,7 +4154,7 @@ void snap_communicator_server::broadcast_message(snap::snap_communicator_message
     snap::snap_string_list informed_neighbors_list;
     if(!informed_neighbors.isEmpty())
     {
-        informed_neighbors_list = informed_neighbors.split(',', QString::SkipEmptyParts);
+        informed_neighbors_list = snap::split_string(informed_neighbors, ',');
     }
 
     // we always broadcast to all local services
@@ -4873,7 +4874,7 @@ void snap_communicator_server::add_neighbors(QString const & new_neighbors)
     if(!new_neighbors.isEmpty())
     {
         bool changed(false);
-        snap::snap_string_list list(new_neighbors.split(',', QString::SkipEmptyParts));
+        snap::snap_string_list list(snap::split_string(new_neighbors, ','));
         for(auto const & s : list)
         {
             if(!f_all_neighbors.contains(s))

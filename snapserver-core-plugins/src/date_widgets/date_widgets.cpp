@@ -217,7 +217,7 @@ void date_widgets::bootstrap(snap_child * snap)
     SNAP_LISTEN(date_widgets, "editor", editor::editor, value_to_string, boost::placeholders::_1);
     SNAP_LISTEN(date_widgets, "editor", editor::editor, string_to_value, boost::placeholders::_1);
     SNAP_LISTEN(date_widgets, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
-    SNAP_LISTEN(date_widgets, "editor", editor::editor, validate_editor_post_for_widget, boost::placeholders::_1, _boost::placeholders::2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6, boost::placeholders::_7);
+    SNAP_LISTEN(date_widgets, "editor", editor::editor, validate_editor_post_for_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6, boost::placeholders::_7);
 }
 
 

@@ -36,6 +36,7 @@
 //
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/log.h>
+#include <snapwebsites/qcompatibility.h>
 #include <snapwebsites/qhtmlserializer.h>
 #include <snapwebsites/qxmlmessagehandler.h>
 #include <snapwebsites/xslt.h>
@@ -427,7 +428,7 @@ void test_plugin::on_replace_token(content::path_info_t & ipath, QDomDocument & 
                     // ignore the special name "all" (TBD)
                     existing_group_name = "";
                 }
-                snap_string_list const existing_segments(existing_group_name.split("::", QString::SkipEmptyParts));
+                snap_string_list const existing_segments(split_string(existing_group_name, "::"));
 
                 int const max_count(segments.size());
                 for(int j(existing_segments.size()); j < max_count; ++j)

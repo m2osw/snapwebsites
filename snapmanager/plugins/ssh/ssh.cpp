@@ -307,7 +307,7 @@ void ssh::bootstrap(snap_child * snap)
         throw snap_logic_exception("snap pointer does not represent a valid manager object.");
     }
 
-    SNAP_LISTEN(ssh, "server", snap_manager::manager, retrieve_status, _1);
+    SNAP_LISTEN(ssh, "server", snap_manager::manager, retrieve_status, boost::placeholders::_1);
 }
 
 

@@ -212,9 +212,9 @@ void self::bootstrap(snap_child * snap)
         throw snap_logic_exception("snap pointer does not represent a valid manager object.");
     }
 
-    SNAP_LISTEN  ( self, "server", snap_manager::manager, retrieve_status,          _1     );
-    SNAP_LISTEN  ( self, "server", snap_manager::manager, add_plugin_commands,      _1     );
-    SNAP_LISTEN  ( self, "server", snap_manager::manager, process_plugin_message,   _1, _2 );
+    SNAP_LISTEN  ( self, "server", snap_manager::manager, retrieve_status,          boost::placeholders::_1     );
+    SNAP_LISTEN  ( self, "server", snap_manager::manager, add_plugin_commands,      boost::placeholders::_1     );
+    SNAP_LISTEN  ( self, "server", snap_manager::manager, process_plugin_message,   boost::placeholders::_1, boost::placeholders::_2 );
 }
 
 

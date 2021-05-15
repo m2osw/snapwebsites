@@ -381,7 +381,7 @@ void password::bootstrap(snap_child * snap)
     f_snap = snap;
 
     SNAP_LISTEN(password, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
-    SNAP_LISTEN(password, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, _boost::placeholders::3, boost::placeholders::_4, boost::placeholders::_5);
+    SNAP_LISTEN(password, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
     SNAP_LISTEN(password, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
     SNAP_LISTEN(password, "users", users::users, check_user_security, boost::placeholders::_1);
     SNAP_LISTEN(password, "users", users::users, user_logged_in, boost::placeholders::_1);

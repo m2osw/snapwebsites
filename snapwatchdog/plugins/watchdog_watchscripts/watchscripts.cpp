@@ -205,7 +205,7 @@ void watchscripts::bootstrap(snap_child * snap)
 {
     f_snap = static_cast<watchdog_child *>(snap);
 
-    SNAP_LISTEN(watchscripts, "server", watchdog_server, process_watch, _1);
+    SNAP_LISTEN(watchscripts, "server", watchdog_server, process_watch, boost::placeholders::_1);
 
     f_watch_script_starter = [&]()
         {

@@ -26,6 +26,7 @@
 
 // snapwebsites lib
 //
+#include <snapwebsites/qcompatibility.h>
 #include "snapwebsites/qstring_stream.h"
 #include "snapwebsites/log.h"
 
@@ -1204,7 +1205,7 @@ void snap_uri::set_path(QString uri_path)
 
     // if the path starts with a '/' or includes a double '/'
     // within itself, it will be removed because of the SkipEmptyParts
-    snap_string_list p(uri_path.split('/', QString::SkipEmptyParts));
+    snap_string_list p(split_string(uri_path, '/'));
 
     // next we remove all ".." (and the previous part); if ".." was
     // at the start of the path, then an exception is raised
@@ -1554,7 +1555,7 @@ void snap_uri::unset_query_option(QString const& name)
  */
 void snap_uri::set_query_string(QString const & uri_query_string)
 {
-    snap_string_list const value_pairs(uri_query_string.split('&', QString::SkipEmptyParts));
+    snap_string_list const value_pairs(split_string(uri_query_string, '&'));
     for(snap_string_list::const_iterator it(value_pairs.begin());
                             it != value_pairs.end();
                             ++it)

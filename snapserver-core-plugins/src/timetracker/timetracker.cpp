@@ -242,7 +242,7 @@ void timetracker::bootstrap(snap_child * snap)
     SNAP_LISTEN(timetracker, "path", path::path, check_for_redirect, boost::placeholders::_1);
     SNAP_LISTEN(timetracker, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
     SNAP_LISTEN(timetracker, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(timetracker, "filter", filter::filter, token_help, _1);
+    SNAP_LISTEN(timetracker, "filter", filter::filter, token_help, boost::placeholders::_1);
     SNAP_LISTEN(timetracker, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
 }
 

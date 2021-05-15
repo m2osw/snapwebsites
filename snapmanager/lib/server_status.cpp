@@ -40,6 +40,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
+#include <snapwebsites/qcompatibility.h>
 #include <snapwebsites/snap_string_list.h>
 
 
@@ -338,7 +339,7 @@ bool server_status::from_string(QString const & status)
 {
     f_statuses.clear();
 
-    snap::snap_string_list const lines(status.split("\n", QString::SkipEmptyParts));
+    snap::snap_string_list const lines(snap::split_string(status, '\n'));
 
     for(auto const & l : lines)
     {

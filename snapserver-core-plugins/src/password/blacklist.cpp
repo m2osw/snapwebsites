@@ -29,6 +29,11 @@
 #include "password.h"
 
 
+// snapwebsites lib
+//
+#include <snapwebsites/qcompatibility.h>
+
+
 // Qt lib
 //
 #include <QRegExp>
@@ -119,7 +124,7 @@ size_t blacklist_t::passwords_skipped() const
 void blacklist_t::passwords_to_list(QString const & passwords)
 {
     QRegExp re("<br *\\/?>|\\n|\\r");
-    f_list = passwords.toLower().split(re, QString::SkipEmptyParts);
+    f_list = split_string(passwords.toLower(), re);
 }
 
 

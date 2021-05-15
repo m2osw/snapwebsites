@@ -51,6 +51,7 @@
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/flags.h>
 #include <snapwebsites/log.h>
+#include <snapwebsites/qcompatibility.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/snap_magic.h>
 #include <snapwebsites/snap_image.h>
@@ -3874,7 +3875,7 @@ void content::on_save_content()
         // first we need to remove the site key from the path
         //f_snap->trace("Generate missing parent links.\n");
         QString const path(d->f_path.mid(site_key.length()));
-        snap_string_list parts(path.split('/', QString::SkipEmptyParts));
+        snap_string_list parts(split_string(path, '/'));
         if(parts.count() > 0)
         {
             QString src(parts.join("/"));

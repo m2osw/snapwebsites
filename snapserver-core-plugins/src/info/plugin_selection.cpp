@@ -30,6 +30,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
+#include <snapwebsites/qcompatibility.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/xslt.h>
 
@@ -174,7 +175,7 @@ void info::init_plugin_selection_editor_widgets(content::path_info_t & ipath, QS
                 // /snap/dependencies/...
                 {
                     QDomElement value_tag(snap_dom::create_element(root, "dependencies"));
-                    snap_string_list deps(information.get_dependencies().split('|', QString::SkipEmptyParts));
+                    snap_string_list deps(split_string(information.get_dependencies(), '|'));
                     snap_dom::append_plain_text_to_node(value_tag, deps.join(","));
                 }
 
@@ -309,7 +310,7 @@ bool info::plugin_selection_on_path_execute(content::path_info_t & ipath)
         }
         if(!site_plugins.isEmpty())
         {
-            plugin_list = site_plugins.split(',');
+            plugin_list = split_string(site_plugins, ',');
 
             // this list may come from the snapserver.conf file so we
             // want to clean it up
@@ -333,7 +334,7 @@ bool info::plugin_selection_on_path_execute(content::path_info_t & ipath)
             //
             QString const plugin_name(function.mid(8));
             QString const plugins_paths( f_snap->get_server_parameter( snap::get_name(snap::name_t::SNAP_NAME_CORE_PARAM_PLUGINS_PATH) ) );
-            snap_string_list const paths( plugins_paths.split(':') );
+            snap_string_list const paths(split_string(plugins_paths, ':'));
             QString const filename(plugins::find_plugin_filename(paths, plugin_name));
             if(filename.isEmpty())
             {
@@ -467,7 +468,7 @@ bool info::install_plugin(snap_string_list & plugin_list, QString const & plugin
     try
     {
         plugins::plugin_info const information(plugins_paths, plugin_name);
-        snap_string_list deps(information.get_dependencies().split('|', QString::SkipEmptyParts));
+        snap_string_list deps(split_string(information.get_dependencies(), '|'));
         for(auto const & d : deps)
         {
             if(!plugin_list.contains(d))
@@ -502,7 +503,7 @@ bool info::uninstall_plugin(snap_string_list & plugin_list, QString const & plug
         for(auto const & n : plugin_names)
         {
             plugins::plugin * p(plugins::get_plugin(n));
-            snap_string_list const deps(p->dependencies().split('|', QString::SkipEmptyParts));
+            snap_string_list const deps(split_string(p->dependencies(), '|'));
             for(auto const & d : deps)
             {
                 if(d == plugin_name)

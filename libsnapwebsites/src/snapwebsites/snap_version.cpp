@@ -24,6 +24,7 @@
 // snapwebsites
 //
 #include "snapwebsites/minmax.h"
+#include "snapwebsites/qcompatibility.h"
 #include "snapwebsites/snap_string_list.h"
 
 
@@ -1382,7 +1383,7 @@ bool dependency::set_dependency(QString const& dependency_string)
             return false;
         }
         QString const version_list(d.mid(pos, end - pos));
-        snap_string_list version_strings(version_list.split(',', QString::SkipEmptyParts));
+        snap_string_list version_strings(split_string(version_list, ','));
         int const max_versions(version_strings.size());
         for(int i(0); i < max_versions; ++i)
         {
@@ -1568,7 +1569,7 @@ bool dependency::set_dependency(QString const& dependency_string)
             return false;
         }
         QString const browsers(d.mid(pos, end - pos));
-        snap_string_list const browser_list(browsers.split(',', QString::SkipEmptyParts));
+        snap_string_list const browser_list(split_string(browsers, ','));
         int const max_size(browser_list.size());
         for(int i(0); i < max_size; ++i)
         {

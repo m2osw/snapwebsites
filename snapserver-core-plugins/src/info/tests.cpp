@@ -29,6 +29,7 @@
 // snapwebsites lib
 //
 #include <snapwebsites/log.h>
+#include <snapwebsites/qcompatibility.h>
 
 
 // snapdev lib
@@ -75,7 +76,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(info, verify_core_dependencies)
             // are all in a well defined tree is a different test
             //
             plugins::plugin * p(plugins::get_plugin(name));
-            snap_string_list const deps(p->dependencies().split('|', QString::SkipEmptyParts));
+            snap_string_list const deps(split_string(p->dependencies(), '|'));
             for(auto const & d : deps)
             {
                 if(d == "server")
@@ -152,7 +153,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(info, verify_all_dependencies)
             // each one of them
             //
             plugins::plugin_info const information(plugins_paths, name);
-            snap_string_list const deps(information.get_dependencies().split('|', QString::SkipEmptyParts));
+            snap_string_list const deps(split_string(information.get_dependencies(), '|'));
             for(auto const & d : deps)
             {
                 recursive(plugins_paths, d, parents);

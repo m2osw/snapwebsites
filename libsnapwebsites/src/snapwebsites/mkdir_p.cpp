@@ -25,6 +25,7 @@
 //
 #include "snapwebsites/chownnm.h"
 #include "snapwebsites/log.h"
+#include "snapwebsites/qcompatibility.h"
 #include "snapwebsites/snap_exception.h"
 #include "snapwebsites/snap_string_list.h"
 
@@ -126,7 +127,7 @@ int mkdir_p(QString const & path
 {
     // we skip empty parts since "//" is the same as "/" in a Unix path.
     //
-    snap::snap_string_list segments(path.split('/', QString::SkipEmptyParts));
+    snap::snap_string_list segments(snap::split_string(path, '/'));
     if(segments.empty())
     {
         return 0;
