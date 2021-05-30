@@ -762,8 +762,8 @@ private:
         output("  /help or /? or ? or F1 key -- print this help screen");
         output("  /plain -- get a plain connection");
         output("  /quit -- leave snapmessage");
-        output("  /tcp -- send messages using our TCP connectionse");
-        output("  /udp -- send messages using our UDP connectionse");
+        output("  /tcp -- send messages using our TCP connections");
+        output("  /udp -- send messages using our UDP connections");
         output("  /ssl -- get an SSL connection");
         output("  F2 -- create a message in a popup window");
     }
