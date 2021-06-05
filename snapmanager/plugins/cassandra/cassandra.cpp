@@ -254,7 +254,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_CASSANDRA_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -332,7 +332,7 @@ QString cassandra::dependencies() const
  */
 int64_t cassandra::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -947,7 +947,7 @@ bool cassandra::display_value(QDomElement parent, snap_manager::status_t const &
  */
 bool cassandra::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
+    NOT_USED(old_or_installation_value);
 
     if( field_name == "restart_cassandra" )
     {
@@ -1128,7 +1128,7 @@ void cassandra::on_handle_affected_services(std::set<QString> & affected_service
         snap::process p("restart cassandra");
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command("snaprestartcassandra");
-        NOTUSED(p.run());           // errors are automatically logged by snap::process
+        NOT_USED(p.run());           // errors are automatically logged by snap::process
 
         restarted = true;
     }
@@ -1152,7 +1152,7 @@ void cassandra::on_handle_affected_services(std::set<QString> & affected_service
             p.set_command("systemctl");
             p.add_argument("reload");
             p.add_argument("cassandra");
-            NOTUSED(p.run());           // errors are automatically logged by snap::process
+            NOT_USED(p.run());           // errors are automatically logged by snap::process
         }
     }
 }
@@ -1558,7 +1558,7 @@ void import_server_key( QString const & msg_listen_address, QString const & key 
     snap::process p("restart cassandra");
     p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
     p.set_command("snaprestartcassandra");
-    NOTUSED(p.run());           // errors are automatically logged by snap::process
+    NOT_USED(p.run());           // errors are automatically logged by snap::process
 }
 
 }
@@ -1832,7 +1832,7 @@ void cassandra::join_cassandra_node(snap::snap_communicator_message const & mess
     snap::process p("join cassandra node");
     p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
     p.set_command(QString::fromUtf8(script_filename.c_str()));
-    NOTUSED(p.run());           // errors are automatically logged by snap::process
+    NOT_USED(p.run());           // errors are automatically logged by snap::process
 }
 
 

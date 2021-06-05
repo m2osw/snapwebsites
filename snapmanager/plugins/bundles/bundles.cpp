@@ -111,7 +111,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_BUNDLES_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -188,7 +188,7 @@ QString bundles::dependencies() const
  */
 int64_t bundles::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -718,7 +718,7 @@ bool bundles::apply_setting(QString const & button_name
         //       we do that for each service?) -- I may be able to use
         //       the snap::config interface to get to it?
         //
-        NOTUSED(f_snap->replace_configuration_value(g_configuration_fullname, field_name, value));
+        NOT_USED(f_snap->replace_configuration_value(g_configuration_fullname, field_name, value));
         return true;
     }
 
@@ -737,7 +737,7 @@ bool bundles::apply_setting(QString const & button_name
         //    return false;
         //}
         QByteArray values(old_or_installation_value.toUtf8());
-        NOTUSED(f_snap->installer(field_name, install ? "install" : "purge", values.data(), affected_services));
+        NOT_USED(f_snap->installer(field_name, install ? "install" : "purge", values.data(), affected_services));
         return true;
     }
 

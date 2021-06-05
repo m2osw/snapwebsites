@@ -74,7 +74,7 @@ SNAP_PLUGIN_START(output, 1, 0)
 //        throw snap_logic_exception("invalid name_t::SNAP_NAME_OUTPUT_...");
 //
 //    }
-//    NOTREACHED();
+//    NOT_REACHED();
 //}
 
 
@@ -202,7 +202,7 @@ int64_t output::do_update(int64_t last_updated)
  */
 void output::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 
@@ -273,7 +273,7 @@ bool output::on_path_execute(content::path_info_t & ipath)
 //                    "This page was deleted.",
 //                    QString("User accessed already deleted page \"%1\" with action \"delete\".")
 //                            .arg(ipath.get_key()));
-//NOTREACHED();
+//NOT_REACHED();
             messages::messages::instance()->set_info(
                 "Page Deleted",
                 QString("Page \"%1\" was successfully deleted.").arg(ipath.get_key())
@@ -296,7 +296,7 @@ bool output::on_path_execute(content::path_info_t & ipath)
                     "This page was deleted.",
                     QString("User accessed already deleted page \"%1\" with action \"delete\".")
                             .arg(ipath.get_key()));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // we did not handle the page, so return false
@@ -323,7 +323,7 @@ bool output::on_path_execute(content::path_info_t & ipath)
  */
 void output::on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOTUSED(page);
+    NOT_USED(page);
 
     content::content * content(content::content::instance());
     libdbproxy::table::pointer_t content_table(content->get_content_table());
@@ -469,7 +469,7 @@ void output::on_generate_main_content(content::path_info_t & ipath, QDomElement 
  */
 void output::on_generate_boxes_content(content::path_info_t & page_cpath, content::path_info_t & ipath, QDomElement & page, QDomElement & box)
 {
-    NOTUSED(page_cpath);
+    NOT_USED(page_cpath);
 
     on_generate_main_content(ipath, page, box);
 }
@@ -805,7 +805,7 @@ void output::on_generate_page_content(content::path_info_t & ipath, QDomElement 
  */
 void output::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(xml);
+    NOT_USED(xml);
 
     if(!token.is_namespace("content::"))
     {

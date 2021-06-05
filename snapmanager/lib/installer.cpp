@@ -509,7 +509,7 @@ bool manager::upgrader()
 
     exit(success ? 0 : 1);
 
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 #endif
 
     return true;
@@ -591,7 +591,7 @@ bool manager::installer(QString const & bundle_name
         // only installations offer variables at the moment
         //
         std::vector<std::string> variables;
-        snap::NOTUSED(snap::tokenize_string(variables, install_values, "\r\n", true, " "));
+        snap::NOT_USED(snap::tokenize_string(variables, install_values, "\r\n", true, " "));
         std::for_each(variables.begin(), variables.end(),
                     [&vars](auto const & v)
                     {
@@ -721,7 +721,7 @@ bool manager::installer(QString const & bundle_name
         QDomElement package_list(bundle_packages.at(0).toElement());
         std::string const list_of_packages(package_list.text().toUtf8().data());
         std::vector<std::string> packages;
-        snap::NOTUSED(snap::tokenize_string(packages, list_of_packages, ",", true, " "));
+        snap::NOT_USED(snap::tokenize_string(packages, list_of_packages, ",", true, " "));
         std::for_each(packages.begin(), packages.end(),
                 [=, &success](auto const & p)
                 {
@@ -865,7 +865,7 @@ void manager::reboot(bool reboot)
         drain.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         drain.set_command("/usr/bin/cass-stop");
         drain.add_argument(host);
-        snap::NOTUSED(drain.run());
+        snap::NOT_USED(drain.run());
     }
 
     // now do the shutdown
@@ -883,7 +883,7 @@ void manager::reboot(bool reboot)
     }
     p.add_argument("now");
     p.add_argument("Shutdown initiated by Snap! Manager Daemon");
-    snap::NOTUSED(p.run());
+    snap::NOT_USED(p.run());
 }
 
 
@@ -1179,8 +1179,8 @@ bool manager::replace_configuration_value(
         //       the field if it is found, and even only if the new
         //       value is not the exact same size
         //
-        snap::NOTUSED(lseek(fd, 0, SEEK_SET));
-        snap::NOTUSED(::ftruncate(fd, 0));
+        snap::NOT_USED(lseek(fd, 0, SEEK_SET));
+        snap::NOT_USED(::ftruncate(fd, 0));
 
         QByteArray const section_utf8(section.toUtf8());
         bool in_section(section.isEmpty());
@@ -1664,7 +1664,7 @@ void manager::service_apply_status(std::string const & service_name, service_sta
             else
             {
                 std::vector<std::string> wants;
-                snap::NOTUSED(snap::tokenize_string(wants, wanted_by, " ", true, " "));
+                snap::NOT_USED(snap::tokenize_string(wants, wanted_by, " ", true, " "));
                 for(auto const & w : wants)
                 {
                     systemctl("add-wants", QString::fromUtf8(w.c_str()), service);

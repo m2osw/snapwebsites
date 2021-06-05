@@ -733,7 +733,7 @@ snaplock::snaplock(int argc, char * argv[])
         std::cerr << "error: unexpected parameter found on snaplock daemon command line." << std::endl;
         std::cerr << f_opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 
     f_start_time = time(nullptr);
@@ -910,7 +910,7 @@ void snaplock::sighandler(int sig)
     // Exit with error status
     //
     ::exit(1);
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 
@@ -1352,7 +1352,7 @@ void snaplock::msg_list_tickets(snap::snap_communicator_message & message)
  */
 void snaplock::ready(snap::snap_communicator_message & message)
 {
-    snap::NOTUSED(message);
+    snap::NOT_USED(message);
 
     snap::snap_communicator_message clusterstatus_message;
     clusterstatus_message.set_command("CLUSTERSTATUS");
@@ -1378,7 +1378,7 @@ void snaplock::msg_cluster_up(snap::snap_communicator_message & message)
 
 void snaplock::msg_cluster_down(snap::snap_communicator_message & message)
 {
-    snap::NOTUSED(message);
+    snap::NOT_USED(message);
 
     // there is nothing to do here, when the cluster comes back up the
     // snapcommunicator will automatically send us a signal about it

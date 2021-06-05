@@ -86,7 +86,7 @@ const char * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_MESSAGES_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -461,7 +461,7 @@ QString messages::dependencies() const
  */
 int64_t messages::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 

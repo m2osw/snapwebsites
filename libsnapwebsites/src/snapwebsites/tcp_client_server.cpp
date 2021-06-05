@@ -136,7 +136,7 @@ void pthreads_thread_id(CRYPTO_THREADID * tid)
 {
     // on 19.04 the macro does not use tid
     //
-    snap::NOTUSED(tid);
+    snap::NOT_USED(tid);
 
     CRYPTO_THREADID_set_numeric(tid, static_cast<unsigned long>(pthread_self()));
 }
@@ -153,8 +153,7 @@ void pthreads_thread_id(CRYPTO_THREADID * tid)
  */
 void pthreads_locking_callback(int mode, int type, char const * file, int line)
 {
-    snap::NOTUSED(file);
-    snap::NOTUSED(line);
+    snap::NOT_USED(file, line);
 
     if(g_locks == nullptr)
     {
@@ -873,7 +872,7 @@ tcp_server::tcp_server(std::string const & addr, int port, int max_connections, 
         // if this fails, we ignore the error (TODO log an INFO message)
         int optval(1);
         socklen_t const optlen(sizeof(optval));
-        snap::NOTUSED(setsockopt(f_socket, SOL_SOCKET, SO_REUSEADDR, &optval, optlen));
+        snap::NOT_USED(setsockopt(f_socket, SOL_SOCKET, SO_REUSEADDR, &optval, optlen));
     }
 
     if(bind(f_socket, addr_info.get()->ai_addr, addr_info.get()->ai_addrlen) < 0)
@@ -1266,8 +1265,7 @@ void ssl_trace(
         SSL * ssl,
         void * userp)
 {
-    snap::NOTUSED(ssl);
-    snap::NOTUSED(userp);
+    snap::NOT_USED(ssl, userp);
 
     std::stringstream out;
     char const * msg_name;
@@ -2141,7 +2139,7 @@ int bio_client::get_client_port() const
         return -1;
 
     }
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 
@@ -2571,7 +2569,7 @@ bio_server::bio_server(addr::addr const & addr_port, int max_connections, bool r
             //          pointer and thus we have to make sure that we
             //          do not keep it in our unique_ptr<>().
             //
-            snap::NOTUSED(bio.release());
+            snap::NOT_USED(bio.release());
 
             // Actually call bind() and listen() on the socket
             //
@@ -2938,7 +2936,7 @@ bool is_ipv4(char const * ip)
 
     }
 
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 

@@ -93,7 +93,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_LINKS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -1333,7 +1333,7 @@ bool link_context::next_link(link_info & info)
                 return true;
             }
         }
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // end of list reached (or there was no such link to start with...)
@@ -1482,7 +1482,7 @@ QString links::dependencies() const
  */
 int64_t links::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -1566,8 +1566,7 @@ void links::init_tables()
  */
 bool links::modified_link_impl(link_info const & link, bool const created)
 {
-    NOTUSED(link);
-    NOTUSED(created);
+    NOT_USED(link, created);
     return f_snap->is_ready();
 }
 

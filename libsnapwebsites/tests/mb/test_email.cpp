@@ -88,7 +88,7 @@ void init_test()
         //
         std::cerr << "error:test_email: could not retrieve your $PATH environment variable." << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
     std::string path(sendmail_path);
     if(*p != '\0')
@@ -345,7 +345,7 @@ public:
 
     bool attachment_header(snap::email::attachment const & a, QCaseInsensitiveString const & name, QString const & value)
     {
-        snap::NOTUSED(a);
+        snap::NOT_USED(a);
         if(name == "Content-Type")
         {
             // the content-type gets changed because we have

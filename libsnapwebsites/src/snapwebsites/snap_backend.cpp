@@ -1063,7 +1063,7 @@ void snap_backend::run_backend()
         SNAP_LOG_FATAL("snap_backend::run_backend(): unknown exception caught!");
     }
     exit(1);
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -1243,7 +1243,7 @@ void snap_backend::process_tick()
                 {
                     SNAP_LOG_FATAL("snap_backend::process_tick(): The Snap! Lock daemon is not available.");
                     exit(1);
-                    snap::NOTREACHED();
+                    snap::NOT_REACHED();
                 }
 
                 // if we are connected to cassandra but are not marked ready
@@ -1253,7 +1253,7 @@ void snap_backend::process_tick()
                 {
                     SNAP_LOG_FATAL("snap_backend::process_tick(): The \"sites\" table does not even exist, we cannot yet run a backend action.");
                     exit(1);
-                    snap::NOTREACHED();
+                    snap::NOT_REACHED();
                 }
 
                 // The CRON behavior ends up here all the time because we
@@ -1266,7 +1266,7 @@ void snap_backend::process_tick()
                 {
                     SNAP_LOG_FATAL("snap_backend::process_tick(): We could not connect to snapdbproxy within 30 seconds.");
                     exit(1);
-                    snap::NOTREACHED();
+                    snap::NOT_REACHED();
                 }
             }
 
@@ -2406,7 +2406,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
             // (i.e. we are in the parent so the backend is quitting 100%)
             //
             exit(1);
-            NOTREACHED();
+            NOT_REACHED();
         }
         return true;
     }
@@ -2456,7 +2456,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
         {
             SNAP_LOG_FATAL("snap_backend::process_backend_uri() called with invalid URI: \"")(uri)("\", URI ignored.");
             exit(1);
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         // cassandra re-initialization
@@ -2468,13 +2468,13 @@ bool snap_backend::process_backend_uri(QString const & uri)
         f_sites_table.reset();
         f_backend_table.reset();
         f_cassandra.reset(); // here all the remaining libdbproxy objects should all get deleted
-        NOTUSED(connect_cassandra(true)); // since we pass 'true', the function either dies or returns true
+        NOT_USED(connect_cassandra(true)); // since we pass 'true', the function either dies or returns true
 
         if(!is_ready(uri))
         {
             SNAP_LOG_FATAL("snap_backend::process_backend_uri(): once prepared in the child, URI \"")(uri)("\" is not ready anymore.");
             exit(1);
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         // process the f_uri parameter
@@ -2486,7 +2486,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
         {
             SNAP_LOG_FATAL("snap_backend::process_backend_uri() called with incorrect URI: \"")(f_site_key)("\", expected \"")(f_original_site_key)("\".");
             exit(1);
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         init_plugins(true);
@@ -2544,7 +2544,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
                                   (namespace_name)
                                   ("\" installed.");
                     exit(1);
-                    NOTREACHED();
+                    NOT_REACHED();
                 }
                 else
                 {
@@ -2568,13 +2568,13 @@ bool snap_backend::process_backend_uri(QString const & uri)
                               (f_action)
                               ("\".");
                 exit(1);
-                NOTREACHED();
+                NOT_REACHED();
             }
         }
 
         // the child process is done successfully
         exit(0);
-        NOTREACHED();
+        NOT_REACHED();
     }
     catch( snap_exception const & except )
     {
@@ -2596,7 +2596,7 @@ bool snap_backend::process_backend_uri(QString const & uri)
     // the child process is done
     //
     exit(1);
-    NOTREACHED();
+    NOT_REACHED();
 
     // compiler expects a return
     //

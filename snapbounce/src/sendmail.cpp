@@ -1038,12 +1038,12 @@ int main(int argc, char * argv [])
         if(fd != nullptr)
         {
             std::string msg("args =\n");
-            snap::NOTUSED(write(fd.get(), msg.c_str(), msg.length()));
+            snap::NOT_USED(write(fd.get(), msg.c_str(), msg.length()));
 
             for(int idx(0); idx < argc; ++idx)
             {
                 msg = std::to_string(idx) + ". " + argv[idx] + "\n";
-                snap::NOTUSED(write(fd.get(), msg.c_str(), msg.length()));
+                snap::NOT_USED(write(fd.get(), msg.c_str(), msg.length()));
             }
         }
         else

@@ -153,7 +153,7 @@ void init_callback()
 
 int init_tests(Catch::Session & session)
 {
-    snap::NOTUSED(session);
+    snap::NOT_USED(session);
 
     if(g_tmp_dir.find_first_of("'\"") != std::string::npos)
     {
@@ -165,7 +165,7 @@ int init_tests(Catch::Session & session)
     std::string cmd("rm -rf \"");
     cmd += g_tmp_dir;
     cmd += '"';
-    snap::NOTUSED(system(cmd.c_str()));
+    snap::NOT_USED(system(cmd.c_str()));
 
     if(mkdir(g_tmp_dir.c_str(), 0700) != 0)
     {

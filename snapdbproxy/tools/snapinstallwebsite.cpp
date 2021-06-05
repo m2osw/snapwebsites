@@ -221,14 +221,14 @@ int main(int argc, char * argv[])
         {
             std::cout << opt.usage();
             exit(0);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         if(opt.is_defined("version"))
         {
             std::cout << SNAPDBPROXY_VERSION_STRING << std::endl;
             exit(0);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         if(!opt.is_defined("domain")
@@ -237,7 +237,7 @@ int main(int argc, char * argv[])
             std::cerr << "error: --domain and --port are both required." << std::endl;
             std::cerr << opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
             exit(1);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         SNAP_LOG_INFO("Get snapserver info.");
@@ -279,7 +279,7 @@ int main(int argc, char * argv[])
         {
             std::cerr << "error: domain cannot be empty and must be specified." << std::endl;
             exit(1);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         int const site_port(opt.get_long("port", 0, 0, 65535));
@@ -293,7 +293,7 @@ int main(int argc, char * argv[])
         {
             std::cerr << "error: --protocol is required if the port is not 80 or 443." << std::endl;
             exit(1);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         // extract the query string if there is one
@@ -331,7 +331,7 @@ int main(int argc, char * argv[])
         {
             SNAP_LOG_INFO("start_process() failed. Existing immediately.");
             exit(1);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         for(;;)

@@ -83,7 +83,7 @@ std::string generate_table_dir(std::string const & path, std::string const & tab
     struct stat s;
     if(::stat(dirname.c_str(), &s) != 0)
     {
-        snap::NOTUSED(mkdir(dirname.c_str(), S_IRWXU));
+        snap::NOT_USED(mkdir(dirname.c_str(), S_IRWXU));
 
         if(::stat(dirname.c_str(), &s) != 0)
         {

@@ -440,7 +440,7 @@ snapwebsites.EditorSelection =
                 return null;
             }
         }
-        //NOTREACHED
+        //NOT_REACHED
     },
 
     /** \brief Restore a selection previously saved with the saveSelection().

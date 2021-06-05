@@ -1108,12 +1108,12 @@ int manager_cgi::is_logged_in(std::string & request_method)
                 std::string const content(user_ref.get_content());
 
                 std::vector<std::string> lines;
-                snap::NOTUSED(snap::tokenize_string(lines, content, "\n", true, " "));
+                snap::NOT_USED(snap::tokenize_string(lines, content, "\n", true, " "));
 
                 for(auto line : lines)
                 {
                     std::vector<std::string> name_value;
-                    snap::NOTUSED(snap::tokenize_string(name_value, line, ":", false, " "));
+                    snap::NOT_USED(snap::tokenize_string(name_value, line, ":", false, " "));
                     if(name_value.size() != 2)
                     {
                         return error(
@@ -1368,14 +1368,14 @@ int manager_cgi::is_logged_in(std::string & request_method)
         // and if so, check whether the session is still valid
         //
         std::vector<std::string> cookies;
-        snap::NOTUSED(snap::tokenize_string(cookies, http_cookies, ";", true, " "));
+        snap::NOT_USED(snap::tokenize_string(cookies, http_cookies, ";", true, " "));
 
         // TBD: could we use the snap_uri() class to handle the raw cookie data?
 
         for(auto c : cookies)
         {
             std::vector<std::string> name_value;
-            snap::NOTUSED(snap::tokenize_string(name_value, c, "=", true, " "));
+            snap::NOT_USED(snap::tokenize_string(name_value, c, "=", true, " "));
             if(name_value.size() != 2)
             {
                 continue;
@@ -1413,7 +1413,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
                 // verify that it is hexadecimal, but we do not care about
                 // the binary code here
                 //
-                snap::NOTUSED(snap::hex_to_bin(attempt_session_id));
+                snap::NOT_USED(snap::hex_to_bin(attempt_session_id));
 
                 std::string const session_filename(get_session_path(false) + "/" + attempt_session_id + ".session");
                 snap::file_content session_data(session_filename);
@@ -1890,8 +1890,7 @@ SNAP_LOG_TRACE("msg.run() finished");
  */
 bool manager_cgi::generate_content_impl(QDomDocument doc, QDomElement root, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
 {
-    snap::NOTUSED(output);
-    snap::NOTUSED(uri);
+    snap::NOT_USED(output, uri);
 
     // is a host name specified?
     //
@@ -1935,8 +1934,7 @@ bool manager_cgi::generate_content_impl(QDomDocument doc, QDomElement root, QDom
 
 void manager_cgi::generate_content_done(QDomDocument doc, QDomElement root, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
 {
-    snap::NOTUSED(root);
-    snap::NOTUSED(menu);
+    snap::NOT_USED(root, menu);
 
     // did one of the plugins generate the output?
     // if so then we have nothing to do here

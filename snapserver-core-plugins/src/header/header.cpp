@@ -64,7 +64,7 @@ const char * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_HEADER_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 /** \brief Initialize the header plugin.
@@ -183,7 +183,7 @@ int64_t header::do_update(int64_t last_updated)
  */
 void header::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
     content::content::instance()->add_xml("header");
 }
 

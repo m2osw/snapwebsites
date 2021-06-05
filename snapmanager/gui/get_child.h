@@ -31,7 +31,7 @@ T *getChild(QWidget *parent, const char *name)
             QMessageBox msg(QMessageBox::Critical, "Internal Error", error, QMessageBox::Ok, parent);
             msg.exec();
             exit(1);
-            /*NOTREACHED*/
+            /*NOT_REACHED*/
     }
 
     return w;

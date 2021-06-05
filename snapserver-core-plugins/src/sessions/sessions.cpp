@@ -270,7 +270,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_SESSIONS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -1372,7 +1372,7 @@ int64_t sessions::do_update(int64_t last_updated)
  */
 void sessions::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -1417,7 +1417,7 @@ void sessions::bootstrap(snap_child * snap)
  */
 void sessions::clean_session_table(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     QString const used_up(get_name(name_t::SNAP_NAME_SESSIONS_USED_UP));
     QString const id(get_name(name_t::SNAP_NAME_SESSIONS_ID));

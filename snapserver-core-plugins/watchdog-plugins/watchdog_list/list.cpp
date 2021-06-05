@@ -78,7 +78,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_LIST_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -166,7 +166,7 @@ QString list::dependencies() const
  */
 int64_t list::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in watchdog
     SNAP_PLUGIN_UPDATE_EXIT();
@@ -608,7 +608,7 @@ void list::snaplist_database(QDomElement e)
                         snap_string_list const columns(rows[0].split('\t'));
                         if(columns.size() == 2)
                         {
-                            NOTUSED(columns[1].toLongLong(&has_new_checksum, 10));
+                            NOT_USED(columns[1].toLongLong(&has_new_checksum, 10));
                             if(!has_new_checksum)
                             {
                                 err_msg = "could not convert the column checksum to a number";

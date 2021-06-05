@@ -90,7 +90,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_VERSIONS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -220,7 +220,7 @@ int64_t versions::do_update(int64_t last_updated)
  */
 void versions::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -245,8 +245,7 @@ void versions::bootstrap(snap_child * snap)
 
 void versions::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(ipath);
-    NOTUSED(xml);
+    NOT_USED(ipath, xml);
 
     users::users * users_plugin(users::users::instance());
     users::users::user_info_t user_info( users_plugin->get_user_info() );

@@ -84,7 +84,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_APACHE2_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -162,7 +162,7 @@ QString apache2::dependencies() const
  */
 int64_t apache2::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -427,7 +427,7 @@ bool apache2::display_value(QDomElement parent, snap_manager::status_t const & s
  */
 bool apache2::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
+    NOT_USED(old_or_installation_value);
 
     // we support Save and Restore Default of the id_rsa.pub file
     //
@@ -642,7 +642,7 @@ void apache2::on_handle_affected_services(std::set<QString> & affected_services)
         p.set_command("systemctl");
         p.add_argument("restart");
         p.add_argument("apache2");
-        NOTUSED(p.run());           // errors are automatically logged by snap::process
+        NOT_USED(p.run());           // errors are automatically logged by snap::process
 
         restarted = true;
     }
@@ -666,7 +666,7 @@ void apache2::on_handle_affected_services(std::set<QString> & affected_services)
             p.set_command("systemctl");
             p.add_argument("reload");
             p.add_argument("apache2");
-            NOTUSED(p.run());           // errors are automatically logged by snap::process
+            NOT_USED(p.run());           // errors are automatically logged by snap::process
         }
     }
 }

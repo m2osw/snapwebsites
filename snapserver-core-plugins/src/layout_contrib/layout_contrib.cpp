@@ -56,7 +56,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_LAYOUT_CONTRIB_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -182,7 +182,7 @@ int64_t layout_contrib::do_update(int64_t last_updated)
  */
 void layout_contrib::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }

@@ -1,5 +1,5 @@
 // Snap Websites Server -- check the current status of the cluster
-// Copyright (c) 20192020  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2019-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -222,7 +222,7 @@ snapcluster::snapcluster(int argc, char * argv[])
     {
         f_opt.usage();
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 
     // --version
@@ -230,7 +230,7 @@ snapcluster::snapcluster(int argc, char * argv[])
     {
         std::cerr << SNAPCOMMUNICATOR_VERSION_STRING << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 
     add_snap_communicator_commands();
@@ -282,7 +282,7 @@ bool snapcluster::send_message(snap::snap_communicator_message const & message, 
 
 void snapcluster::ready(snap::snap_communicator_message & message)
 {
-    snap::NOTUSED(message);
+    snap::NOT_USED(message);
 
     snap::snap_communicator_message clusterstatus_message;
     clusterstatus_message.set_command("CLUSTERSTATUS");
@@ -293,7 +293,7 @@ void snapcluster::ready(snap::snap_communicator_message & message)
 
 void snapcluster::stop(bool quitting)
 {
-    snap::NOTUSED(quitting);
+    snap::NOT_USED(quitting);
 
     if(f_messenger != nullptr)
     {

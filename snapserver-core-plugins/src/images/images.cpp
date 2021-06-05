@@ -95,7 +95,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception(QString("invalid name_t::SNAP_NAME_OUTPUT_... (%1)").arg(static_cast<int>(name)));
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -455,7 +455,7 @@ int64_t images::do_update(int64_t last_updated)
  */
 void images::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -666,7 +666,7 @@ images::virtual_path_t images::check_virtual_path(content::path_info_t & ipath, 
 
 void images::on_listener_check(snap_uri const & uri, content::path_info_t & page_ipath, QDomDocument doc, QDomElement result)
 {
-    NOTUSED(uri);
+    NOT_USED(uri);
 
     path::dynamic_plugin_t info;
     switch(check_virtual_path(page_ipath, info))
@@ -749,7 +749,7 @@ bool images::on_path_execute(content::path_info_t & ipath)
                         .arg(field_name)
                         .arg(QString::fromLatin1(attachment_key.binaryValue().toHex()))
                         .arg(renamed));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     libdbproxy::table::pointer_t files_table(content::content::instance()->get_files_table());
@@ -762,7 +762,7 @@ bool images::on_path_execute(content::path_info_t & ipath)
                 QString("Could not find field \"%1\" of file \"%2\".")
                         .arg(content::get_name(content::name_t::SNAP_NAME_CONTENT_FILES_DATA))
                         .arg(QString::fromLatin1(attachment_key.binaryValue().toHex())));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     libdbproxy::row::pointer_t file_row(files_table->getRow(attachment_key.binaryValue()));
@@ -820,8 +820,7 @@ bool images::on_path_execute(content::path_info_t & ipath)
  */
 void images::on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type)
 {
-    NOTUSED(owner);
-    NOTUSED(type);
+    NOT_USED(owner, type);
 
     //
     // TODO: automate connections between new pages and image transformations
@@ -2497,8 +2496,7 @@ bool images::func_write(parameters_t & params)
 
 void images::on_replace_token( content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token )
 {
-    snap::NOTUSED(ipath);
-    snap::NOTUSED(xml);
+    NOT_USED(ipath, xml);
 
     if(!token.is_namespace("images::"))
     {

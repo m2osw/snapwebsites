@@ -224,8 +224,7 @@ public:
          */
         static match_t always_match(QString const & expr, snap_communicator_message & msg)
         {
-            NOTUSED(expr);
-            NOTUSED(msg);
+            NOT_USED(expr, msg);
             return match_t::MATCH_TRUE;
         }
 
@@ -242,8 +241,7 @@ public:
          */
         static match_t callback_match(QString const & expr, snap_communicator_message & msg)
         {
-            NOTUSED(expr);
-            NOTUSED(msg);
+            NOT_USED(expr, msg);
             return match_t::MATCH_CALLBACK;
         }
 

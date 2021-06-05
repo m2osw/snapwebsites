@@ -113,7 +113,7 @@ char const * get_name(name_t const name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_FORM_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 /** \brief Initialize the form plugin.
@@ -215,7 +215,7 @@ int64_t form::do_update(int64_t last_updated)
  */
 void form::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -916,7 +916,7 @@ void form::on_process_post(QString const & uri_path)
                     "Form Session Gone",
                     "It looks like you attempted to submit a form without first loading it.",
                     "User sent a form with a form session identifier that is not available.");
-        NOTREACHED();
+        NOT_REACHED();
         return;
 
     case sessions::sessions::session_info::session_info_type_t::SESSION_INFO_OUT_OF_DATE:
@@ -954,7 +954,7 @@ void form::on_process_post(QString const & uri_path)
                         .arg(cpath)
                         .arg(info.get_page_path())
                         .arg(info.get_object_path()));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // get the owner of this form (plugin name)
@@ -968,7 +968,7 @@ void form::on_process_post(QString const & uri_path)
                 "Forbidden",
                 "The request you just sent is not attached to a currently supported plugin. The plugin may have been uninstalled after you loaded the form.",
                 "Somehow the user posted a form that has a plugin name which is not currently loaded by this website.");
-        NOTREACHED();
+        NOT_REACHED();
     }
     form_post * const fp(dynamic_cast<form_post *>(p));
 
@@ -1228,7 +1228,7 @@ void form::on_process_post(QString const & uri_path)
                     snap_child::http_code_t::HTTP_CODE_SEE_OTHER,
                     "Sending you back to the page you are coming from.",
                     "We are trying to send the user back where he came from because the place we are in now is the box with the submitted form...");
-                NOTREACHED();
+                NOT_REACHED();
             }
         }
     }
@@ -2087,7 +2087,7 @@ void form::used_tab_id(int used)
  */
 void form::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(xml);
+    NOT_USED(xml);
 
     // a form::... token?
     if(!token.is_namespace("form::"))
@@ -2386,8 +2386,7 @@ QString form::get_source(QString const & owner, content::path_info_t & ipath)
  */
 void form::on_filtered_content(content::path_info_t & ipath, QDomDocument & doc, QString const & xsl)
 {
-    NOTUSED(ipath);
-    NOTUSED(xsl);
+    NOT_USED(ipath, xsl);
 
     if(f_form_initialized)
     {
@@ -2398,7 +2397,7 @@ void form::on_filtered_content(content::path_info_t & ipath, QDomDocument & doc,
 
 void form::on_copy_branch_cells(libdbproxy::cells& source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
-    NOTUSED(destination_branch);
+    NOT_USED(destination_branch);
 
     content::content::copy_branch_cells_as_is(source_cells, destination_row, get_name(name_t::SNAP_NAME_FORM_NAMESPACE));
 }

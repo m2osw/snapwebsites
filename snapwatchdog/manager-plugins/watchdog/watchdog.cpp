@@ -120,7 +120,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_WATCHDOG_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -198,7 +198,7 @@ QString watchdog::dependencies() const
  */
 int64_t watchdog::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -725,8 +725,7 @@ bool watchdog::display_value(QDomElement parent, snap_manager::status_t const & 
  */
 bool watchdog::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
-    NOTUSED(button_name);
+    NOT_USED(old_or_installation_value, button_name);
 
     bool const use_default_value(button_name == "restore_default");
 
@@ -983,9 +982,7 @@ void watchdog::get_plugin_names(QString plugin_filename, snap_string_list * avai
  */
 void watchdog::on_generate_content(QDomDocument doc, QDomElement root, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
 {
-    snap::NOTUSED(doc);
-    snap::NOTUSED(root);
-    snap::NOTUSED(output);
+    NOT_USED(doc, root, output);
 
     QString const host(uri.query_option("host"));
 

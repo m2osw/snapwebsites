@@ -137,7 +137,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_INDEX_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -1451,7 +1451,7 @@ int64_t index::do_update(int64_t last_updated)
  */
 void index::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -1553,8 +1553,7 @@ void index::on_generate_main_content(content::path_info_t & ipath, QDomElement &
  */
 void index::on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type)
 {
-    NOTUSED(owner);
-    NOTUSED(type);
+    NOT_USED(owner, type);
 
     on_modified_content(ipath); // same as on_modified_content()
 }
@@ -1571,7 +1570,7 @@ void index::on_create_content(content::path_info_t & ipath, QString const & owne
  */
 void index::on_modified_link(links::link_info const & link, bool const created)
 {
-    NOTUSED(created);
+    NOT_USED(created);
 
     content::path_info_t ipath;
     ipath.set_path(link.key());
@@ -2363,7 +2362,7 @@ index_record_vector_t index::read_index(
             }
         }
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -2844,7 +2843,7 @@ void index::reindex()
  */
 void index::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(xml);
+    NOT_USED(xml);
 
     // an index::... token?
     if(!token.is_namespace("index::"))
@@ -3014,7 +3013,7 @@ QString index::generate_index(
                     "Plugin Missing",
                     QString("Plugin \"%1\" does not know how to handle an index assigned to it.").arg(index_plugin->get_plugin_name()),
                     "index::generate_index() -- the \"index\" plugin does not derive from layout::layout_content.");
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         // IMPORTANT NOTE: We do not check the maximum with the count
@@ -3213,7 +3212,7 @@ QString index::generate_index(
 
 void index::on_generate_boxes_content(content::path_info_t & page_cpath, content::path_info_t & ipath, QDomElement & page, QDomElement & box)
 {
-    NOTUSED(page_cpath);
+    NOT_USED(page_cpath);
 
     output::output::instance()->on_generate_main_content(ipath, page, box);
 }
@@ -3221,7 +3220,7 @@ void index::on_generate_boxes_content(content::path_info_t & page_cpath, content
 
 void index::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
-    NOTUSED(destination_branch);
+    NOT_USED(destination_branch);
 
     libdbproxy::cells left_cells;
 

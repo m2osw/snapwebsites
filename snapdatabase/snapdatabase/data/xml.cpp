@@ -395,7 +395,7 @@ token_t xml_parser::get_token(bool parsing_attributes)
                     }
                     f_value += static_cast<char>(c);
                 }
-                snap::NOTREACHED();
+                snap::NOT_REACHED();
                 return token_t::TOK_PROCESSOR;
 
             case '!':

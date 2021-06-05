@@ -66,7 +66,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_TAXONOMY_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -181,7 +181,7 @@ int64_t taxonomy::do_update(int64_t last_updated)
  */
 void taxonomy::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -224,7 +224,7 @@ int64_t taxonomy::do_dynamic_update(int64_t last_updated)
  */
 void taxonomy::owner_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     libdbproxy::table::pointer_t content_table(content::content::instance()->get_content_table());
 
@@ -370,7 +370,7 @@ libdbproxy::value taxonomy::find_type_with(
 
         type_key = link_info.key();
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -433,7 +433,7 @@ content::path_info_t const & taxonomy::get_type_ipath() const
 
 void taxonomy::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
-    NOTUSED(destination_branch);
+    NOT_USED(destination_branch);
 
     content::content::copy_branch_cells_as_is(source_cells, destination_row, get_name(name_t::SNAP_NAME_TAXONOMY_NAMESPACE));
 }

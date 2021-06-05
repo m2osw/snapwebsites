@@ -275,7 +275,7 @@ private:
 snap_cgi::snap_cgi( int argc, char * argv[] )
     : f_opt(g_snapcgi_options_environment)
 {
-    snap::NOTUSED(argc);
+    snap::NOT_USED(argc);
 
     f_opt.parse_program_name(argv);
     f_opt.parse_configuration_files();
@@ -1590,7 +1590,7 @@ void snap_cgi::cache_data(char const * data, size_t size)
             //
             f_cache_file.reset();
             f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
-            snap::NOTUSED(delete_cache_file(f_cache_temporary_filename));
+            snap::NOT_USED(delete_cache_file(f_cache_temporary_filename));
         }
         return;
 
@@ -1890,7 +1890,7 @@ void snap_cgi::check_headers()
             // something failed, no caching
             //
             f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
-            snap::NOTUSED(delete_cache_file(f_cache_temporary_filename));
+            snap::NOT_USED(delete_cache_file(f_cache_temporary_filename));
         }
     }
 
@@ -1936,7 +1936,7 @@ void snap_cgi::temporary_to_permanent_cache()
     //
     if(r != 0)
     {
-        snap::NOTUSED(delete_cache_file(f_cache_temporary_filename));
+        snap::NOT_USED(delete_cache_file(f_cache_temporary_filename));
     }
 }
 
@@ -2049,7 +2049,7 @@ int main(int argc, char * argv[])
         std::cerr << "snap: exception: " << e.what() << std::endl;
         return 1;
     }
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 // vim: ts=4 sw=4 et

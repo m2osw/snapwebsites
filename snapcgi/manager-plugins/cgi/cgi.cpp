@@ -168,7 +168,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_CGI_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -246,7 +246,7 @@ QString cgi::dependencies() const
  */
 int64_t cgi::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -514,8 +514,7 @@ bool cgi::display_value(QDomElement parent, snap_manager::status_t const & s, sn
  */
 bool cgi::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
-    NOTUSED(button_name);
+    NOT_USED(old_or_installation_value, button_name);
 
     if(field_name == "snapserver")
     {
@@ -524,7 +523,7 @@ bool cgi::apply_setting(QString const & button_name, QString const & field_name,
         snap_config snap_cgi(g_configuration_filename);
         snap_cgi["snapserver"] = new_value;
 
-        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, "snapserver", new_value));
+        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, "snapserver", new_value));
         return true;
     }
 

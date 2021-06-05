@@ -83,7 +83,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_ATTACHMENT_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -202,7 +202,7 @@ int64_t attachment::do_update(int64_t last_updated)
  */
 void attachment::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -764,7 +764,7 @@ SNAP_LOG_TRACE("renamed=")(renamed)(", field_name=")(field_name);
                     QString("Field name is not \"%1\" and does not start with \"%2\".")
                             .arg(field_name)
                             .arg(starts_with));
-            NOTREACHED();
+            NOT_REACHED();
         }
     }
 
@@ -787,7 +787,7 @@ SNAP_LOG_TRACE("**** getting revision key for ipath=")(ipath.get_key())(", cpath
                         .arg(field_name)
                         .arg(QString::fromLatin1(attachment_key.binaryValue().toHex()))
                         .arg(renamed));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // make sure that the data field exists
@@ -802,7 +802,7 @@ SNAP_LOG_TRACE("**** getting revision key for ipath=")(ipath.get_key())(", cpath
                         .arg(field_name)
                         .arg(QString::fromLatin1(attachment_key.binaryValue().toHex()))
                         .arg(renamed));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     libdbproxy::row::pointer_t file_row(files_table->getRow(attachment_key.binaryValue()));
@@ -975,7 +975,7 @@ void attachment::on_page_cloned(content::content::cloned_tree_t const& tree)
 
 void attachment::on_copy_branch_cells(libdbproxy::cells& source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
-    NOTUSED(destination_branch);
+    NOT_USED(destination_branch);
 
     libdbproxy::table::pointer_t files_table(content::content::instance()->get_files_table());
 

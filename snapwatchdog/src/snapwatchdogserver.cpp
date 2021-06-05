@@ -85,7 +85,7 @@ int main(int argc, char * argv[])
     // exit via the server so the server can clean itself up properly
     //
     snap::watchdog_server::exit( exitval );
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
     return exitval;
 }
 

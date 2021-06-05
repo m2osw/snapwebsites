@@ -297,7 +297,7 @@ snapdbproxy::snapdbproxy(int argc, char * argv[])
         std::cerr << "error: unexpected parameter found on daemon command line." << std::endl;
         std::cerr << f_opt.usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 }
 
@@ -526,7 +526,7 @@ void snapdbproxy::sighandler( int sig )
     // Exit with error status
     //
     ::exit( 1 );
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 

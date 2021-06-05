@@ -206,7 +206,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_SSH_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -284,7 +284,7 @@ QString ssh::dependencies() const
  */
 int64_t ssh::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -562,7 +562,7 @@ bool ssh::apply_setting
     , std::set<QString> & affected_services
     )
 {
-    NOTUSED(old_or_installation_value);
+    NOT_USED(old_or_installation_value);
 
     if( field_name == "sshd_password_auth" )
     {

@@ -192,28 +192,28 @@ public:
                     }
 
     logger &        operator () ()                              { return *this; }
-    logger &        operator () (log_security_t const v)        { NOTUSED(v); return *this; }
-    logger &        operator () (char const * s)                { NOTUSED(s); return *this; }
-    logger &        operator () (wchar_t const * s)             { NOTUSED(s); return *this; }
-    logger &        operator () (std::string const & s)         { NOTUSED(s); return *this; }
-    logger &        operator () (std::wstring const & s)        { NOTUSED(s); return *this; }
-    logger &        operator () (QString const & s)             { NOTUSED(s); return *this; }
-    logger &        operator () (snap::snap_config::snap_config_parameter_ref const & s) { NOTUSED(s); return *this; }
-    logger &        operator () (char const v)                  { NOTUSED(v); return *this; }
-    logger &        operator () (signed char const v)           { NOTUSED(v); return *this; }
-    logger &        operator () (unsigned char const v)         { NOTUSED(v); return *this; }
-    logger &        operator () (signed short const v)          { NOTUSED(v); return *this; }
-    logger &        operator () (unsigned short const v)        { NOTUSED(v); return *this; }
-    logger &        operator () (signed int const v)            { NOTUSED(v); return *this; }
-    logger &        operator () (unsigned int const v)          { NOTUSED(v); return *this; }
-    logger &        operator () (signed long const v)           { NOTUSED(v); return *this; }
-    logger &        operator () (unsigned long const v)         { NOTUSED(v); return *this; }
-    logger &        operator () (signed long long const v)      { NOTUSED(v); return *this; }
-    logger &        operator () (unsigned long long const v)    { NOTUSED(v); return *this; }
-    logger &        operator () (float const v)                 { NOTUSED(v); return *this; }
-    logger &        operator () (double const v)                { NOTUSED(v); return *this; }
-    logger &        operator () (bool const v)                  { NOTUSED(v); return *this; }
-    logger &        operator () (void const * p)                { NOTUSED(p); return *this; }
+    logger &        operator () (log_security_t const v)        { NOT_USED(v); return *this; }
+    logger &        operator () (char const * s)                { NOT_USED(s); return *this; }
+    logger &        operator () (wchar_t const * s)             { NOT_USED(s); return *this; }
+    logger &        operator () (std::string const & s)         { NOT_USED(s); return *this; }
+    logger &        operator () (std::wstring const & s)        { NOT_USED(s); return *this; }
+    logger &        operator () (QString const & s)             { NOT_USED(s); return *this; }
+    logger &        operator () (snap::snap_config::snap_config_parameter_ref const & s) { NOT_USED(s); return *this; }
+    logger &        operator () (char const v)                  { NOT_USED(v); return *this; }
+    logger &        operator () (signed char const v)           { NOT_USED(v); return *this; }
+    logger &        operator () (unsigned char const v)         { NOT_USED(v); return *this; }
+    logger &        operator () (signed short const v)          { NOT_USED(v); return *this; }
+    logger &        operator () (unsigned short const v)        { NOT_USED(v); return *this; }
+    logger &        operator () (signed int const v)            { NOT_USED(v); return *this; }
+    logger &        operator () (unsigned int const v)          { NOT_USED(v); return *this; }
+    logger &        operator () (signed long const v)           { NOT_USED(v); return *this; }
+    logger &        operator () (unsigned long const v)         { NOT_USED(v); return *this; }
+    logger &        operator () (signed long long const v)      { NOT_USED(v); return *this; }
+    logger &        operator () (unsigned long long const v)    { NOT_USED(v); return *this; }
+    logger &        operator () (float const v)                 { NOT_USED(v); return *this; }
+    logger &        operator () (double const v)                { NOT_USED(v); return *this; }
+    logger &        operator () (bool const v)                  { NOT_USED(v); return *this; }
+    logger &        operator () (void const * p)                { NOT_USED(p); return *this; }
 };
 
 
@@ -262,7 +262,7 @@ public:
             return false;
         }();
 
-        NOTUSED(g_registered);
+        NOT_USED(g_registered);
     }
 
 protected:

@@ -651,7 +651,7 @@ void lock_connection::process_timeout()
  */
 void lock_connection::ready(snap_communicator_message & message)
 {
-    NOTUSED(message);
+    NOT_USED(message);
 
     // no reply expected from the COMMANDS message,
     // so send the LOCK now which initiates the locking

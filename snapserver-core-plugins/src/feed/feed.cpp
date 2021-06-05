@@ -133,7 +133,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_FEED_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -256,7 +256,7 @@ int64_t feed::do_update(int64_t last_updated)
  */
 void feed::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -292,7 +292,7 @@ void feed::bootstrap(snap_child * snap)
  */
 void feed::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOTUSED(page);
+    NOT_USED(page);
 
     // avoid those links on administrative pages, totally useless!
     if(ipath.get_cpath().startsWith("admin/"))

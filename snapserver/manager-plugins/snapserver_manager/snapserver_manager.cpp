@@ -104,7 +104,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_SNAPSERVER_MANAGER_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -182,7 +182,7 @@ QString snapserver_manager::dependencies() const
  */
 int64_t snapserver_manager::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -397,9 +397,7 @@ bool snapserver_manager::display_value(QDomElement parent, snap_manager::status_
  */
 bool snapserver_manager::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
-    NOTUSED(button_name);
-    NOTUSED(affected_services);
+    NOT_USED(old_or_installation_value, button_name, affected_services);
 
     if(field_name == "listen")
     {

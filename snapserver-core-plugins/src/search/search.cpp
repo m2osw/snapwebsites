@@ -59,7 +59,7 @@ const char * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_SEARCH_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -178,7 +178,7 @@ int64_t search::do_update(int64_t last_updated)
  */
 void search::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml("search");
 }
@@ -259,7 +259,7 @@ void search::on_improve_signature(QString const & path, QDomDocument doc, QDomEl
  */
 void search::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     QDomDocument doc(page.ownerDocument());
 

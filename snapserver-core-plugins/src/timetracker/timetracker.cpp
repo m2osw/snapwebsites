@@ -101,7 +101,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_TIMETRACKER_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -221,7 +221,7 @@ int64_t timetracker::do_update(int64_t last_updated)
  */
 void timetracker::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -249,8 +249,7 @@ void timetracker::bootstrap(snap_child * snap)
 
 void timetracker::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(header);
-    NOTUSED(metadata);
+    NOT_USED(header, metadata);
 
     QString const cpath(ipath.get_cpath());
     if(cpath == get_name(name_t::SNAP_NAME_TIMETRACKER_PATH)
@@ -619,7 +618,7 @@ void timetracker::on_check_for_redirect(content::path_info_t & ipath)
 
 void timetracker::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(xml);
+    NOT_USED(xml);
 
     // we only support timetracker tokens
     //
@@ -777,7 +776,7 @@ QString timetracker::token_main_page(content::path_info_t & ipath)
 
 QString timetracker::token_calendar(content::path_info_t & ipath)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     locale::locale * locale_plugin(locale::locale::instance());
     users::users * users_plugin(users::users::instance());
@@ -1013,8 +1012,7 @@ QString timetracker::token_calendar(content::path_info_t & ipath)
  */
 void timetracker::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
-    NOTUSED(field_type);
-    NOTUSED(row);
+    NOT_USED(field_type, row);
 
     QString const cpath(ipath.get_cpath());
     snap_string_list const & segments(ipath.get_segments());

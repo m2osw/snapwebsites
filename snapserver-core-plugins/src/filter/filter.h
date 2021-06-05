@@ -121,7 +121,7 @@ public:
                 return "invalid";
 
             }
-            NOTREACHED();
+            NOT_REACHED();
         }
     };
 

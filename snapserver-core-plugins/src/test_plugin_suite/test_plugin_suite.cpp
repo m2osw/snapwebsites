@@ -256,7 +256,7 @@ int64_t test_plugin_suite::do_update(int64_t last_updated)
 {
     SNAP_PLUGIN_UPDATE_INIT();
 
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
     //SNAP_PLUGIN_UPDATE(2014, 4, 10, 22, 47, 40, content_update);
 
     SNAP_PLUGIN_UPDATE_EXIT();

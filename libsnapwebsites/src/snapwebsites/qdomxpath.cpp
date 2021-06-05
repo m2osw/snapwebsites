@@ -1381,7 +1381,7 @@ public:
             case type_t::ATOMIC_TYPE_DOUBLE:
             case type_t::ATOMIC_TYPE_STRING:
                 // ignore the result, we return *this below
-                snap::NOTUSED(atomic_value_t::operator = (rhs));
+                snap::NOT_USED(atomic_value_t::operator = (rhs));
                 break;
 
             case type_t::ATOMIC_TYPE_SET:
@@ -1652,7 +1652,7 @@ public:
                                                             .arg(static_cast<int>(node.nodeType())));
 
         }
-        /*NOTREACHED*/
+        /*NOT_REACHED*/
     }
 
     /** \brief Retrieve the set value.

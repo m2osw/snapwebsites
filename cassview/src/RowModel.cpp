@@ -100,7 +100,7 @@ Qt::ItemFlags RowModel::flags( const QModelIndex & idx ) const
     }
     return f;
 #if 0
-    snap::NOTUSED(idx);
+    snap::NOT_USED(idx);
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 #endif
 }

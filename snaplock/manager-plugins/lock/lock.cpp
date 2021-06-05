@@ -80,7 +80,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_LOCK_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -157,7 +157,7 @@ QString lock::dependencies() const
  */
 int64_t lock::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -305,8 +305,8 @@ bool lock::display_value(QDomElement parent, snap_manager::status_t const & s, s
  */
 bool lock::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
-    NOTUSED(button_name);
+    NOT_USED(old_or_installation_value);
+    NOT_USED(button_name);
 
     if(field_name == "candidate_priority")
     {
@@ -319,7 +319,7 @@ bool lock::apply_setting(QString const & button_name, QString const & field_name
         snap_config snap_lock_conf(g_configuration_filename);
         snap_lock_conf[field_name] = new_value;
 
-        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
 
         return true;
     }

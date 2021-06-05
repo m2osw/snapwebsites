@@ -73,7 +73,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid name_t::SNAP_NAME_DATE_WIDGETS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -196,7 +196,7 @@ int64_t date_widgets::do_update(int64_t last_updated)
  */
 void date_widgets::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -376,9 +376,7 @@ void date_widgets::on_string_to_value(editor::editor::string_to_value_info_t & v
  */
 void date_widgets::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
-    NOTUSED(ipath);
-    NOTUSED(field_id);
-    NOTUSED(row);
+    NOT_USED(ipath, field_id, row);
 
     if(field_type == get_name(name_t::SNAP_NAME_DATE_WIDGETS_DROPDOWN_TYPE))
     {
@@ -445,8 +443,7 @@ void date_widgets::on_validate_editor_post_for_widget(
             QString const & value,
             bool const is_secret)
 {
-    NOTUSED(ipath);
-    NOTUSED(widget_type);
+    NOT_USED(ipath, widget_type);
 
     // emptiness is checked with the system "required" feature
     if(!value.isEmpty())

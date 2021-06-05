@@ -140,14 +140,14 @@ snap_resetfail2ban::snap_resetfail2ban(int argc, char * argv[])
     {
         std::cerr << f_opt.usage();
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 
     if(f_opt.is_defined("version"))
     {
         std::cout << SNAPFIREWALL_VERSION_STRING << std::endl;
         exit(0);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 
     // read the configuration file

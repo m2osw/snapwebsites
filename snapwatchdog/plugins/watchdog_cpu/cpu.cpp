@@ -73,7 +73,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_CPU_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -151,7 +151,7 @@ QString cpu::dependencies() const
  */
 int64_t cpu::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in watchdog

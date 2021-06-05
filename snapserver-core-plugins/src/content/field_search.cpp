@@ -1289,7 +1289,7 @@ void field_search::run()
 
                     }
 
-                    NOTREACHED();
+                    NOT_REACHED();
                 }
 
                 bool keep_result() const

@@ -111,7 +111,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_SELF_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -189,7 +189,7 @@ QString self::dependencies() const
  */
 int64_t self::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -646,7 +646,7 @@ bool self::apply_setting(QString const & button_name
                        , QString const & old_or_installation_value
                        , std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
+    NOT_USED(old_or_installation_value);
 
     // refresh is a special case in the "self" plugin only
     //
@@ -718,7 +718,7 @@ bool self::apply_setting(QString const & button_name
     if(button_name == "upgrade"
     || button_name == "upgrade_everywhere")
     {
-        NOTUSED(f_snap->upgrader());
+        NOT_USED(f_snap->upgrader());
         //f_snap->reset_aptcheck(); -- this is too soon, the upgrader() call
         //                             now creates a child process with fork()
         //                             to make sure we can go on even when
@@ -755,7 +755,7 @@ bool self::apply_setting(QString const & button_name
         //       now, probably from the "--config" parameter, but how do
         //       we do that for each service?)
         //
-        NOTUSED(f_snap->replace_configuration_value("/etc/snapwebsites/snapwebsites.d/snapmanager.conf", field_name, value));
+        NOT_USED(f_snap->replace_configuration_value("/etc/snapwebsites/snapwebsites.d/snapmanager.conf", field_name, value));
         return true;
     }
 
@@ -770,7 +770,7 @@ bool self::apply_setting(QString const & button_name
         // we do not need to restart anything because the value is used
         // by the snapmanager.cgi which is started on each user access
         //
-        NOTUSED(f_snap->replace_configuration_value("/etc/snapwebsites/snapwebsites.d/snapmanager.conf", field_name, new_value));
+        NOT_USED(f_snap->replace_configuration_value("/etc/snapwebsites/snapwebsites.d/snapmanager.conf", field_name, new_value));
         return true;
     }
 

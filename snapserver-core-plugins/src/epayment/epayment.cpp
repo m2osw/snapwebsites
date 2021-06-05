@@ -162,7 +162,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_EPAYMENT_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -1349,7 +1349,7 @@ QString recurring_t::freq_to_string(frequency_t frequency)
         throw epayment_invalid_recurring_field_exception(QString("freq_to_string(): unknown frequency (%1).").arg(static_cast<int>(frequency)));
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -1550,7 +1550,7 @@ int64_t epayment::do_update(int64_t last_updated)
  */
 void epayment::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -1587,8 +1587,7 @@ void epayment::bootstrap(snap_child * snap)
  */
 void epayment::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(ipath);
-    NOTUSED(metadata);
+    NOT_USED(ipath, metadata);
 
     QDomDocument doc(header.ownerDocument());
 

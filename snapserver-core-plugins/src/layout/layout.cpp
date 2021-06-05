@@ -122,7 +122,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_LAYOUT_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -270,7 +270,7 @@ int64_t layout::do_update(int64_t last_updated)
 
 int64_t layout::do_dynamic_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -294,7 +294,7 @@ int64_t layout::do_dynamic_update(int64_t last_updated)
  */
 void layout::content_update(int64_t const last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     install_layout("default");
 }
@@ -586,7 +586,7 @@ QString layout::get_layout(content::path_info_t & ipath, QString const & column_
                         "Layout Not Found",
                         QString("User specified layout \"%1\"").arg(layout_name),
                         "Found a tainted layout name, refusing it!");
-                NOTREACHED();
+                NOT_REACHED();
             }
         }
     }
@@ -727,7 +727,7 @@ QString layout::define_layout(
                     "Layout Unavailable",
                     "Somehow no website layout was accessible.",
                     QString("layout::define_layout() found more than one '/' in \"%1\".").arg(layout_name));
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         // The following two lines are really ugly:
@@ -757,7 +757,7 @@ QString layout::define_layout(
                     "Layout Unavailable",
                     QString("The name \"%1\" used as the layout cell is not acceptable.").arg(cell_name),
                     "layout::define_layout() found an illegal cell name.");
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         // most often we do not put the .xsl at the end of the name
@@ -826,7 +826,7 @@ QString layout::define_layout(
                     "Layout Unavailable",
                     "Somehow no website layout was accessible, not even the internal default.",
                     "layout::define_layout() could not open \"" + default_filename + "\" resource file.");
-            NOTREACHED();
+            NOT_REACHED();
         }
         QByteArray const data(file.readAll());
         if(data.size() == 0)
@@ -835,7 +835,7 @@ QString layout::define_layout(
                     "Layout Unavailable",
                     "Somehow no website layout was accessible, not even the internal default.",
                     "layout::define_layout() could not read the \"" + default_filename + "\" resource file.");
-            NOTREACHED();
+            NOT_REACHED();
         }
         xsl = QString::fromUtf8(data.data(), data.size());
     }
@@ -1107,7 +1107,7 @@ QString layout::create_body_string(
     // (Note: here we do not need the theme XSLT data so we ignore it)
     //
     QString theme_name;
-    NOTUSED(define_layout(
+    NOT_USED(define_layout(
                   ipath
                 , get_name(name_t::SNAP_NAME_LAYOUT_THEME)
                 , get_name(name_t::SNAP_NAME_LAYOUT_THEME_XSL)
@@ -1558,7 +1558,7 @@ SNAP_LOG_TRACE("handle box for ")(box_plugin->get_plugin_name())(" with owner \"
                                         "Plugin Missing",
                                         "Plugin \"" + box_plugin->get_plugin_name() + "\" does not know how to handle a box assigned to it.",
                                         "layout::generate_boxes() the plugin does not derive from layout::layout_boxes.");
-                                NOTREACHED();
+                                NOT_REACHED();
                             }
                         }
                     }
@@ -1888,7 +1888,7 @@ void layout::install_layout(QString const & layout_name)
                     "Layout Unavailable",
                     "Could not read content.xml from the resources.",
                     "layout::install_layout() could not open content.xml resource file.");
-            NOTREACHED();
+            NOT_REACHED();
         }
         QByteArray data(file.readAll());
         xml_content = QString::fromUtf8(data.data(), data.size());
@@ -1918,7 +1918,7 @@ void layout::install_layout(QString const & layout_name)
                 "Layout Unavailable",
                 QString("Layout \"%1\" content.xml file could not be loaded.").arg(layout_name),
                 "layout::install_layout() could not load the content.xml file from the layout table.");
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // add the XML document to the installation data
@@ -2005,7 +2005,7 @@ void layout::finish_install_layout()
  */
 bool layout::generate_header_content_impl(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(header);
+    NOT_USED(header);
 
     content::path_info_t main_ipath;
     main_ipath.set_path(f_snap->get_uri().path());
@@ -2262,7 +2262,7 @@ bool layout::add_layout_from_resources_impl(QString const & name)
                     "Body Layout Unavailable",
                     QString("Could not read \"%1\" from the Qt resources.").arg(body),
                     "layout::add_layout_from_resources_impl() could not open resource file for a body file.");
-            NOTREACHED();
+            NOT_REACHED();
         }
         QByteArray data(file.readAll());
         layout_table->getRow(name)->getCell(get_name(name_t::SNAP_NAME_LAYOUT_BODY_XSL))->setValue(data);
@@ -2277,7 +2277,7 @@ bool layout::add_layout_from_resources_impl(QString const & name)
                     "Theme Layout Unavailable",
                     QString("Could not read \"%1\" from the Qt resources.").arg(theme),
                     "layout::add_layout_from_resources_impl() could not open resource file for a theme file.");
-            NOTREACHED();
+            NOT_REACHED();
         }
         QByteArray data(file.readAll());
         layout_table->getRow(name)->getCell(get_name(name_t::SNAP_NAME_LAYOUT_THEME_XSL))->setValue(data);
@@ -2292,7 +2292,7 @@ bool layout::add_layout_from_resources_impl(QString const & name)
                     "Sendmail Theme Content Unavailable",
                     QString("Could not read \"%1\" from the Qt resources.").arg(content),
                     "layout::add_layout_from_resources_impl() could not open resource file for a content.xml file.");
-            NOTREACHED();
+            NOT_REACHED();
         }
         QByteArray data(file.readAll());
         layout_table->getRow(name)->getCell(get_name(name_t::SNAP_NAME_LAYOUT_CONTENT_XML))->setValue(data);
@@ -2334,7 +2334,7 @@ void layout::add_layout_from_resources_done(QString const & layout_name)
 
 void layout::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
-    NOTUSED(destination_branch);
+    NOT_USED(destination_branch);
 
     content::content::copy_branch_cells_as_is(source_cells, destination_row, get_name(name_t::SNAP_NAME_LAYOUT_NAMESPACE));
 }
@@ -2342,8 +2342,7 @@ void layout::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::
 
 bool layout::on_improve_signature(QString const & path, QDomDocument doc, QDomElement & signature_tag)
 {
-    NOTUSED(path);
-    NOTUSED(signature_tag);
+    NOT_USED(path, signature_tag);
 
     QDomElement head;
     QDomElement root(doc.documentElement());

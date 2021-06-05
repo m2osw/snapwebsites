@@ -113,7 +113,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_TEST_PLUGIN_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -256,7 +256,7 @@ int64_t test_plugin::do_update(int64_t last_updated)
  */
 void test_plugin::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -314,7 +314,7 @@ libdbproxy::table::pointer_t test_plugin::get_test_results_table()
  */
 void test_plugin::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     if(!token.is_namespace("test_plugin::"))
     {
@@ -509,7 +509,7 @@ void test_plugin::on_token_help(filter::filter::token_help_t & help)
  */
 bool test_plugin::on_path_execute(content::path_info_t& ipath)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
     //f_snap->output(layout::layout::instance()->apply_layout(ipath, this));
 
     return false;

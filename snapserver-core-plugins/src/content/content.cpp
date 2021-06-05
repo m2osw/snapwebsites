@@ -418,7 +418,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_CONTENT_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -610,7 +610,7 @@ int64_t content::do_update(int64_t last_updated)
  */
 void content::remove_files_compressor(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     libdbproxy::table::pointer_t files_table(get_files_table());
     files_table->clearCache();
@@ -648,7 +648,7 @@ void content::remove_files_compressor(int64_t variables_timestamp)
  */
 void content::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 }
 
 
@@ -1074,7 +1074,7 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
                         QString("Page \"%1\" cannot be added under \"%2\" since \"%2\" is marked as final.")
                                     .arg(key).arg(parent_key),
                         "The parent row does not allow for further children.");
-                NOTREACHED();
+                NOT_REACHED();
             }
         }
     }
@@ -1188,8 +1188,7 @@ bool content::create_content_impl(path_info_t & ipath, QString const & owner, QS
  */
 void content::create_content_done(path_info_t & ipath, QString const & owner, QString const & type)
 {
-    NOTUSED(owner);
-    NOTUSED(type);
+    NOT_USED(owner, type);
 
     SNAP_LOG_DEBUG("Finalization of page \"")(ipath.get_key())("\" in content plugin (i.e. create_content_done() function) is running now.");
 
@@ -1381,7 +1380,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                             .arg(attachment_filename)
                             .arg(parent_key),
                 "The parent row does not allow for further children.");
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     snap_version::quick_find_version_in_source fv;
@@ -1401,7 +1400,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                     QString("The attachment \"%1\" cannot be added under \"%2\" as it does not represent JavaScript code.")
                                 .arg(attachment_filename).arg(parent_key),
                     "The filename does not have a .js extension.");
-            NOTREACHED();
+            NOT_REACHED();
         }
     }
     else if(is_css)
@@ -1413,7 +1412,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                     QString("The attachment \"%1\" cannot be added under \"%2\" as it does not represent CSS data.")
                                 .arg(attachment_filename).arg(parent_key),
                     "The filename does not have a .css extension.");
-            NOTREACHED();
+            NOT_REACHED();
         }
     }
     if(is_js || is_css)
@@ -1437,7 +1436,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                             "https://snapwebsites.org/implementation/feature-requirements/attachments-core\">Version field</a>.")
                                     .arg(attachment_filename),
                     "The content of this file is not valid for a JavaScript or CSS file (version required).");
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         // get the filename without the extension
@@ -1460,7 +1459,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                 f_snap->die(snap_child::http_code_t::HTTP_CODE_FORBIDDEN, "Invalid Filename",
                         "The attachment \"" + attachment_filename + "\" has an invalid name and must be rejected. " + js_filename.get_error(),
                         "The name is not considered valid for a versioned file.");
-                NOTREACHED();
+                NOT_REACHED();
             }
             if(fv.get_version_string() != js_filename.get_version_string())
             {
@@ -1470,7 +1469,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                             .arg(js_filename.get_version_string())
                             .arg(fv.get_version_string()),
                         "The version in the filename is not equal to the one defined in the file.");
-                NOTREACHED();
+                NOT_REACHED();
             }
             // TODO verify the browser defined in the filename
             //      against Browsers field found in the file
@@ -1503,7 +1502,7 @@ bool content::create_attachment_impl(attachment_file & file, snap_version::versi
                 f_snap->die(snap_child::http_code_t::HTTP_CODE_FORBIDDEN, "Invalid Filename",
                         QString("The attachment \"%1\" has an invalid name and must be rejected. %2").arg(attachment_filename).arg(errmsg),
                         "The name is not considered valid for a versioned file.");
-                NOTREACHED();
+                NOT_REACHED();
             }
 
             if(fv.get_name().isEmpty())
@@ -2507,7 +2506,7 @@ libdbproxy::value content::get_content_parameter(path_info_t & ipath, QString co
         throw snap_logic_exception("invalid PARAM_REVISION_... parameter to get_content_parameter().");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 /** \brief Prepare a set of content to add to the database.
@@ -4199,7 +4198,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "JavaScript Not Found",
                 "JavaScript \"" + name + "\" could not be read for inclusion in your HTML page.",
                 "A JavaScript was requested in the \"files\" table before it was inserted under /js/...");
-        NOTREACHED();
+        NOT_REACHED();
     }
     libdbproxy::row::pointer_t javascript_row(files_table->getRow(get_name(name_t::SNAP_NAME_CONTENT_FILES_JAVASCRIPTS)));
     javascript_row->clearCache();
@@ -4395,7 +4394,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
                                 f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "Invalid Dependency",
                                         QString("JavaScript dependency \"%1::%2\" has a non-supported namespace.").arg(dep_namespace).arg(name),
                                         QString("The namespace is expected to be \"javascripts\" (or empty,) or \"css\"."));
-                                NOTREACHED();
+                                NOT_REACHED();
                             }
                         }
                         // else TBD -- we checked when saving that darn string
@@ -4436,7 +4435,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
     f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "JavaScript Not Found",
             "JavaScript \"" + name + "\" was not found. Was it installed?",
             "The named JavaScript was not found in the \"javascripts\" row of the \"files\" table.");
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -4526,7 +4525,7 @@ void content::add_inline_javascript(QDomDocument doc, QString const & code)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "Inline JavaScript CDATA Section Not Found",
                 "The metadata/inline-javascript/script included a child node which was not a CDATA section. We do not know how to proceed.",
                 "This error should never happen unless someone messes around with the metadata tree and inserts nodes before the CDATA section.");
-        NOTREACHED();
+        NOT_REACHED();
     }
 }
 
@@ -4556,7 +4555,7 @@ void content::add_css(QDomDocument doc, QString const & name)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "CSS Not Found",
                 "CSS \"" + name + "\" could not be read for inclusion in your HTML page.",
                 "A CSS was requested in the \"files\" table before it was inserted under /css/...");
-        NOTREACHED();
+        NOT_REACHED();
     }
     libdbproxy::row::pointer_t css_row(files_table->getRow("css"));
     css_row->clearCache();
@@ -4740,7 +4739,7 @@ void content::add_css(QDomDocument doc, QString const & name)
     f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "CSS Not Found",
             "CSS \"" + name + "\" was not found. Was it installed?",
             "The named CSS was not found in the \"css\" row of the \"files\" table.");
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 

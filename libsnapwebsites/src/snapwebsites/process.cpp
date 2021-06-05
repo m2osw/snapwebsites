@@ -176,8 +176,7 @@ namespace snap
  */
 bool process::process_output_callback::error_available(process * p, QByteArray const & error)
 {
-    NOTUSED(p);
-    NOTUSED(error);
+    NOT_USED(p, error);
 
     return true;
 }
@@ -799,7 +798,7 @@ int process::run()
         }
         // the child can't safely return from here
         exit(1);
-        NOTREACHED();
+        NOT_REACHED();
         return -1;
 
     default:

@@ -62,7 +62,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid SNAP_NAME_AVATAR_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -184,7 +184,7 @@ int64_t avatar::do_update(int64_t last_updated)
  */
 void avatar::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -214,8 +214,7 @@ void avatar::bootstrap(snap_child * snap)
  */
 void avatar::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(ipath);
-    NOTUSED(xml);
+    NOT_USED(ipath, xml);
 
     if(!token.is_namespace("avatar::"))
     {

@@ -88,7 +88,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_INFO_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -207,7 +207,7 @@ int64_t info::do_update(int64_t last_updated)
  */
 void info::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -280,7 +280,7 @@ bool info::on_path_execute(content::path_info_t & ipath)
  */
 void info::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     // only check if user is logged in
     // (if user is not administratively logged in at the moment, try to
@@ -395,7 +395,7 @@ void info::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
  */
 void info::on_improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag)
 {
-    NOTUSED(path);
+    NOT_USED(path);
 
     // only check if user is logged in
     // (if user is not administratively logged in at the moment, try to
@@ -448,8 +448,7 @@ void info::on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynami
 
 void info::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
-    NOTUSED(field_type);
-    NOTUSED(row);
+    NOT_USED(field_type, row);
 
     QString const cpath(ipath.get_cpath());
     if(cpath == "unsubscribe")

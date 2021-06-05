@@ -2372,7 +2372,7 @@ snap_communicator::connection_with_send_message::~connection_with_send_message()
  */
 void snap_communicator::connection_with_send_message::msg_help(snap_communicator_message & message)
 {
-    NOTUSED(message);
+    NOT_USED(message);
 
     bool need_user_help(true);
     snap_string_list commands;
@@ -2494,7 +2494,7 @@ void snap_communicator::connection_with_send_message::msg_alive(snap_communicato
  */
 void snap_communicator::connection_with_send_message::msg_log(snap_communicator_message & message)
 {
-    NOTUSED(message);
+    NOT_USED(message);
 
     if(snap::logging::is_configured())
     {
@@ -2527,7 +2527,7 @@ void snap_communicator::connection_with_send_message::msg_log(snap_communicator_
  */
 void snap_communicator::connection_with_send_message::msg_quitting(snap_communicator_message & message)
 {
-    NOTUSED(message);
+    NOT_USED(message);
 
     stop(true);
 }
@@ -2567,7 +2567,7 @@ void snap_communicator::connection_with_send_message::msg_ready(snap_communicato
  */
 void snap_communicator::connection_with_send_message::msg_stop(snap_communicator_message & message)
 {
-    NOTUSED(message);
+    NOT_USED(message);
 
     stop(false);
 }
@@ -2657,7 +2657,7 @@ void snap_communicator::connection_with_send_message::msg_reply_with_unknown(sna
  */
 void snap_communicator::connection_with_send_message::help(snap_string_list & commands)
 {
-    NOTUSED(commands);
+    NOT_USED(commands);
 
     // do nothing by default -- user is expected to overload this function
 }
@@ -2673,7 +2673,7 @@ void snap_communicator::connection_with_send_message::help(snap_string_list & co
  */
 void snap_communicator::connection_with_send_message::ready(snap_communicator_message & message)
 {
-    NOTUSED(message);
+    NOT_USED(message);
 
     // do nothing by default -- user is expected to overload this function
     //
@@ -2691,7 +2691,7 @@ void snap_communicator::connection_with_send_message::ready(snap_communicator_me
  */
 void snap_communicator::connection_with_send_message::stop(bool quitting)
 {
-    NOTUSED(quitting);
+    NOT_USED(quitting);
 
     // do nothing by default -- user is expected to overload this function
     //
@@ -3463,7 +3463,7 @@ int snap_communicator::snap_inter_thread_message_connection::poll(int timeout)
             process_invalid();
         }
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -3585,7 +3585,7 @@ void snap_communicator::snap_inter_thread_message_connection::process_read()
  */
 bool snap_communicator::snap_inter_thread_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOTUSED(cache);
+    NOT_USED(cache);
 
     if(f_creator_id == gettid())
     {
@@ -4002,7 +4002,7 @@ void snap_communicator::snap_pipe_buffer_connection::process_hup()
  */
 bool snap_communicator::snap_pipe_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOTUSED(cache);
+    NOT_USED(cache);
 
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
@@ -5545,7 +5545,7 @@ void snap_communicator::snap_tcp_client_message_connection::process_line(QString
  */
 bool snap_communicator::snap_tcp_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOTUSED(cache);
+    NOT_USED(cache);
 
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
@@ -6391,7 +6391,7 @@ void snap_communicator::snap_tcp_server_client_message_connection::process_line(
  */
 bool snap_communicator::snap_tcp_server_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOTUSED(cache);
+    NOT_USED(cache);
 
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
@@ -7491,7 +7491,7 @@ void snap_communicator::snap_tcp_client_permanent_message_connection::connection
  */
 void snap_communicator::snap_tcp_client_permanent_message_connection::process_connection_failed(std::string const & error_message)
 {
-    NOTUSED(error_message);
+    NOT_USED(error_message);
     set_enable(true);
 }
 
@@ -8144,7 +8144,7 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::peek()
  */
 bool snap_communicator::snap_tcp_blocking_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOTUSED(cache);
+    NOT_USED(cache);
 
     int const s(get_socket());
     if(s >= 0)

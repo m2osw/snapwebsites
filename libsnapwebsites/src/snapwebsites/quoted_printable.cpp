@@ -193,7 +193,7 @@ std::string encode(std::string const & input, int flags)
                 return !(c >= ' ' && c <= '~');
 
             }
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         void add_char(char c)

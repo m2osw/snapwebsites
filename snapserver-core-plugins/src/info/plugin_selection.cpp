@@ -52,7 +52,7 @@ SNAP_PLUGIN_EXTENSION_START(info)
 
 void info::init_plugin_selection_editor_widgets(content::path_info_t & ipath, QString const & field_id, QDomElement & widget)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     if(field_id == "plugin_path")
     {

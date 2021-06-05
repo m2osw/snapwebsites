@@ -241,7 +241,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_EPAYMENT_PAYPAL_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -369,7 +369,7 @@ int64_t epayment_paypal::do_update(int64_t last_updated)
  */
 void epayment_paypal::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -449,8 +449,7 @@ libdbproxy::table::pointer_t epayment_paypal::get_epayment_paypal_table()
  */
 void epayment_paypal::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(ipath);
-    NOTUSED(metadata);
+    NOT_USED(ipath, metadata);
 
     QDomDocument doc(header.ownerDocument());
 
@@ -592,7 +591,7 @@ SNAP_LOG_DEBUG() << "epayment_paypal::on_path_execute() cpath = [" << cpath << "
                 false
             );
             f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_FAILED_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-            NOTREACHED();
+            NOT_REACHED();
         }
         else
         {
@@ -601,7 +600,7 @@ SNAP_LOG_DEBUG() << "epayment_paypal::on_path_execute() cpath = [" << cpath << "
             cancel_invoice(token);
 
             f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_CANCELED_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-            NOTREACHED();
+            NOT_REACHED();
         }
     }
     else if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_RETURN_URL))
@@ -948,12 +947,12 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             }
 
             f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_THANK_YOU_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-            NOTREACHED();
+            NOT_REACHED();
             break;
         }
         // redirect the user to a failure page
         f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_FAILED_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOTREACHED();
+        NOT_REACHED();
     }
     else if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_RETURN_PLAN_URL))
     {
@@ -1241,10 +1240,10 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
             epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PAID);
 
             f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_THANK_YOU_SUBSCRIPTION_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-            NOTREACHED();
+            NOT_REACHED();
         }
         f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_FAILED_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // output the page as the output plugin otherwise would by itself
@@ -3247,8 +3246,7 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
 
 void epayment_paypal::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(ipath);
-    NOTUSED(xml);
+    NOT_USED(ipath, xml);
 
     if(!token.is_namespace("epayment_paypal::"))
     {
@@ -3328,7 +3326,7 @@ void epayment_paypal::on_token_help(filter::filter::token_help_t & help)
  */
 void epayment_paypal::on_repeat_payment(content::path_info_t & first_invoice_ipath, content::path_info_t & previous_invoice_ipath, content::path_info_t & new_invoice_ipath)
 {
-    NOTUSED(previous_invoice_ipath);
+    NOT_USED(previous_invoice_ipath);
 
     content::content * content_plugin(content::content::instance());
     libdbproxy::table::pointer_t revision_table(content_plugin->get_revision_table());

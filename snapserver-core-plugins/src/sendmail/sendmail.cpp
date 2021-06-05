@@ -256,7 +256,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception(QString("Invalid name_t::SNAP_NAME_SENDMAIL_...").arg(static_cast<int>(name)));
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -367,7 +367,7 @@ int64_t sendmail::do_update(int64_t last_updated)
  */
 void sendmail::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 
@@ -881,7 +881,7 @@ void sendmail::on_backend_action(QString const & action)
         {
             SNAP_LOG_FATAL("sendmail::on_backend_action(): snap exception caught: ")(e.what());
             exit(1);
-            NOTREACHED();
+            NOT_REACHED();
         }
         catch( libdbproxy::exception const & e )
         {
@@ -891,19 +891,19 @@ void sendmail::on_backend_action(QString const & action)
                 SNAP_LOG_ERROR("exception backtrace: ")(bt_line);
             }
             exit(1);
-            NOTREACHED();
+            NOT_REACHED();
         }
         catch( std::exception const & e )
         {
             SNAP_LOG_FATAL("sendmail::on_backend_action(): exception caught: ")(e.what())(" (not a snap_exception nor a exception!)");
             exit(1);
-            NOTREACHED();
+            NOT_REACHED();
         }
         catch( ... )
         {
             SNAP_LOG_FATAL("sendmail::on_backend_action(): unknown exception caught!");
             exit(1);
-            NOTREACHED();
+            NOT_REACHED();
         }
     }
     else
@@ -1126,7 +1126,7 @@ void sendmail::reorganize_bounce_email(QByteArray const & column_key, QString co
                         emails_table->getRow(get_name(name_t::SNAP_NAME_SENDMAIL_BOUNCED))->getCell(key)->setValue(report);
                     }
                     return;
-                    NOTREACHED();
+                    NOT_REACHED();
                 }
             }
         }
@@ -2648,7 +2648,7 @@ void sendmail::on_generate_main_content(content::path_info_t & ipath, QDomElemen
  */
 void sendmail::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     if(!token.is_namespace("sendmail::"))
     {

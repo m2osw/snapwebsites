@@ -121,7 +121,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -199,7 +199,7 @@ QString snapdatabase::dependencies() const
  */
 int64_t snapdatabase::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -672,8 +672,7 @@ bool snapdatabase::display_value(QDomElement parent, snap_manager::status_t cons
  */
 bool snapdatabase::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
-    NOTUSED(button_name);
+    NOT_USED(old_or_installation_value, button_name);
 
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_SERVICE_STATUS))
     {
@@ -704,7 +703,7 @@ bool snapdatabase::apply_setting(QString const & button_name, QString const & fi
 
                 std::string const conf_filename(path + "/schemes.d/" + basename);
 
-                NOTUSED(f_snap->replace_configuration_value(
+                NOT_USED(f_snap->replace_configuration_value(
                               QString::fromUtf8(conf_filename.c_str())
                             , field_name
                             , new_value
@@ -720,7 +719,7 @@ bool snapdatabase::apply_setting(QString const & button_name, QString const & fi
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_IP))
     {
         affected_services.insert("firewall-reload");
-        NOTUSED(f_snap->replace_configuration_value(
+        NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PUBLIC_IP"
                     , new_value
@@ -731,7 +730,7 @@ bool snapdatabase::apply_setting(QString const & button_name, QString const & fi
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PUBLIC_INTERFACE))
     {
         affected_services.insert("firewall-reload");
-        NOTUSED(f_snap->replace_configuration_value(
+        NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PUBLIC_INTERFACE"
                     , new_value
@@ -742,7 +741,7 @@ bool snapdatabase::apply_setting(QString const & button_name, QString const & fi
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_IP))
     {
         affected_services.insert("firewall-reload");
-        NOTUSED(f_snap->replace_configuration_value(
+        NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PRIVATE_IP"
                     , new_value
@@ -753,7 +752,7 @@ bool snapdatabase::apply_setting(QString const & button_name, QString const & fi
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_PRIVATE_INTERFACE))
     {
         affected_services.insert("firewall-reload");
-        NOTUSED(f_snap->replace_configuration_value(
+        NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PRIVATE_INTERFACE"
                     , new_value
@@ -764,7 +763,7 @@ bool snapdatabase::apply_setting(QString const & button_name, QString const & fi
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_SNAPDATABASE_ADMIN_IPS))
     {
         affected_services.insert("firewall-reload");
-        NOTUSED(f_snap->replace_configuration_value(
+        NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "ADMIN_IPS"
                     , new_value
@@ -775,7 +774,7 @@ bool snapdatabase::apply_setting(QString const & button_name, QString const & fi
     if(field_name == "private_network_ips")
     {
         affected_services.insert("firewall-reload");
-        NOTUSED(f_snap->replace_configuration_value(
+        NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PRIVATE_NETWORK_IPS"
                     , new_value
@@ -786,7 +785,7 @@ bool snapdatabase::apply_setting(QString const & button_name, QString const & fi
     if(field_name == "secure_ip")
     {
         affected_services.insert("firewall-reload");
-        NOTUSED(f_snap->replace_configuration_value(
+        NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "SECURE_IP"
                     , new_value
@@ -812,7 +811,7 @@ void snapdatabase::on_handle_affected_services(std::set<QString> & affected_serv
         snap::process p("reload firewall");
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command(g_firewall_script);
-        NOTUSED(p.run());           // errors are automatically logged by snap::process
+        NOT_USED(p.run());           // errors are automatically logged by snap::process
     }
 }
 

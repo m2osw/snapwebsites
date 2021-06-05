@@ -2456,7 +2456,7 @@ void snap_firewall::sighandler( int sig )
     // Exit with error status
     //
     ::exit( 1 );
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 

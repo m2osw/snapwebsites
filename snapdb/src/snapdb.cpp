@@ -472,7 +472,7 @@ void snapdb::drop_table() const
     {
         std::cerr << "Drop table exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 }
 
@@ -498,7 +498,7 @@ void snapdb::drop_row() const
     {
         std::cerr << "Remove row QCassandraQuery exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 }
 
@@ -527,7 +527,7 @@ void snapdb::drop_cell() const
     {
         std::cerr << "Remove cell QCassandraQuery exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 }
 
@@ -553,7 +553,7 @@ bool snapdb::row_exists() const
     {
         std::cerr << "Row exists QCassandraQuery exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 
     return false;
@@ -623,7 +623,7 @@ void snapdb::display_rows() const
     {
         std::cerr << "Display rows QCassandraQuery exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 }
 
@@ -665,7 +665,7 @@ void snapdb::display_rows_wildcard() const
     {
         std::cerr << "Display rows wildcard QCassandraQuery exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 }
 
@@ -795,7 +795,7 @@ void snapdb::display_cell() const
         {
             std::cerr << "QCassandraQuery exception caught! what=" << ex.what() << std::endl;
             exit(1);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         if(f_opt->is_defined("save-cell"))
@@ -810,7 +810,7 @@ void snapdb::display_cell() const
                     << "\" and row \"" << f_row
                     << "\"." << std::endl;
                 exit(1);
-                snap::NOTREACHED();
+                snap::NOT_REACHED();
             }
             out.write( value.data(), value.size() );
         }
@@ -843,7 +843,7 @@ void snapdb::set_cell() const
                       << "\"."
                       << std::endl;
             exit(1);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
     }
 
@@ -873,7 +873,7 @@ void snapdb::set_cell() const
     {
         std::cerr << "QCassandraQuery exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 }
 

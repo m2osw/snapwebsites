@@ -102,7 +102,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_JAVASCRIPT_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -200,7 +200,7 @@ QString javascript::dependencies() const
  */
 int64_t javascript::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -379,8 +379,7 @@ public:
 
     virtual QScriptValue property(QScriptValue const& object, QScriptString const& object_name, uint id)
     {
-        NOTUSED(object);
-        NOTUSED(id);
+        NOT_USED(object, id);
         QScriptValue result(f_plugin->js_property_get(object_name).toString());
         return result;
     }
@@ -388,9 +387,7 @@ public:
     virtual QScriptValue::PropertyFlags propertyFlags(QScriptValue const& object, QScriptString const& property_name, uint id)
     {
         // at some point we may want to allow read/write/delete...
-        NOTUSED(object);
-        NOTUSED(property_name);
-        NOTUSED(id);
+        NOT_USED(object, property_name, id);
         return QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::KeepExistingFlags;
     }
 
@@ -402,20 +399,14 @@ public:
 
     virtual QueryFlags queryProperty(QScriptValue const & object, QScriptString const & property_name, QueryFlags flags, uint * id)
     {
-        NOTUSED(object);
-        NOTUSED(property_name);
-        NOTUSED(flags);
-        NOTUSED(id);
+        NOT_USED(object, property_name, flags, id);
         return QScriptClass::HandlesReadAccess;
     }
 
     virtual void setProperty(QScriptValue & object, QScriptString const & property_name, uint id, QScriptValue const & value)
     {
 //SNAP_LOG_TRACE() << "setProperty() called... not implemented yet\n";
-        NOTUSED(object);
-        NOTUSED(property_name);
-        NOTUSED(id);
-        NOTUSED(value);
+        NOT_USED(object, property_name, id, value);
         throw std::runtime_error("setProperty() not implemented yet");
     }
 
@@ -677,8 +668,7 @@ QVariant javascript::evaluate_script(QString const & script)
 void javascript::on_process_attachment(libdbproxy::row::pointer_t file_row, content::attachment_file const & file)
 {
     // TODO: got to finish the as2js compiler...
-    NOTUSED(file_row);
-    NOTUSED(file);
+    NOT_USED(file_row, file);
 }
 
 

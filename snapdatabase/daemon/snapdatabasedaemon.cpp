@@ -384,7 +384,11 @@ int tool::init(int argc, char * argv[])
 
     f_opt->finish_parsing(argc, argv);
 
-    snaplogger::process_logger_options(*f_opt, "/etc/snaplogger");
+    if(!snaplogger::process_logger_options(*f_opt, "/etc/snaplogger"))
+    {
+        // exit on any error
+        throw advgetopt::getopt_exit("logger options generated an error.", 0);
+    }
 
     return 0;
 }
@@ -829,7 +833,7 @@ int main(int argc, char * argv[])
     }
     catch(advgetopt::getopt_exit const & e)
     {
-        snap::NOTUSED(e);
+        snap::NOT_USED(e);
         return 0;
     }
     catch(std::exception const & e)

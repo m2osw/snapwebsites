@@ -292,7 +292,7 @@ int64_t filter::do_update(int64_t last_updated)
  */
 void filter::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -533,7 +533,7 @@ void filter::on_xss_filter(QDomNode & node,
  */
 bool filter::replace_token_impl(content::path_info_t & ipath, QDomDocument & xml, token_info_t & token)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     switch(token.f_name[0].unicode())
     {
@@ -1810,8 +1810,7 @@ QString filter::encode_text_for_html(QString const & text)
  */
 bool filter::body_to_teaser(QDomElement body, filter_teaser_info_t const & info)
 {
-    NOTUSED(body);
-    NOTUSED(info);
+    NOT_USED(body, info);
 
     int const max_words(info.get_max_words());
     int const max_tags(info.get_max_tags());

@@ -130,13 +130,13 @@ int main(int argc, char * argv[])
         if( arg == "--help" )
         {
             usage();
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
         else if( arg == "--version" )
         {
             std::cout << SNAPWEBSITES_VERSION_STRING << std::endl;
             exit(0);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
         else if( arg == "--host" )
         {
@@ -145,7 +145,7 @@ int main(int argc, char * argv[])
             {
                 std::cerr << "error: --host must be followed by the IP address to connect to." << std::endl;
                 exit(1);
-                snap::NOTREACHED();
+                snap::NOT_REACHED();
             }
             snap_test::host(argv[i]);
         }
@@ -156,7 +156,7 @@ int main(int argc, char * argv[])
             {
                 std::cerr << "error: --host must be followed by the IP address to connect to." << std::endl;
                 exit(1);
-                snap::NOTREACHED();
+                snap::NOT_REACHED();
             }
             port = atol(argv[i]);
         }

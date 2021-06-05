@@ -86,7 +86,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid SNAP_NAME_ANTIVIRUS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -207,7 +207,7 @@ int64_t antivirus::do_update(int64_t last_updated)
  */
 void antivirus::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
     content::content::instance()->add_xml(get_plugin_name());
 }
 
@@ -334,7 +334,7 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
         v.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
         v.set_command("clamscan");
         v.add_argument("--version");
-        NOTUSED(v.run()); // result error info already printed by process class
+        NOT_USED(v.run()); // result error info already printed by process class
         QString const output(v.get_output(true));
         revision_row->getCell(get_name(name_t::SNAP_NAME_ANTIVIRUS_VERSION))->setValue(output);
     }

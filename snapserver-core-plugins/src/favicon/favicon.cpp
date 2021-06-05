@@ -87,7 +87,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_FAVICON_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -257,7 +257,7 @@ int64_t favicon::do_update(int64_t last_updated)
  */
 void favicon::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -346,7 +346,7 @@ void favicon::save_clicked_icon()
                 "Predefined Icon Not Found",
                 QString("The system could not read favorite icon \"%1.ico\".").arg(icon_name),
                 QString("Could not load the default resource favicon \":/images/favicon/%1.ico\".").arg(icon_name));
-        NOTREACHED();
+        NOT_REACHED();
     }
     QByteArray data(file.readAll());
 
@@ -359,7 +359,7 @@ void favicon::save_clicked_icon()
                 "Predefined Icon Incompatible",
                 QString("The system could not load favorite icon \"%1.ico\".").arg(icon_name),
                 QString("The load of resource favicon \":/images/favicon/%1.ico\" failed.").arg(icon_name));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // verify the number of frames in this .ico
@@ -372,7 +372,7 @@ void favicon::save_clicked_icon()
                 "Predefined Icon Incompatible",
                 QString("The system could not load at least one frame from favorite icon \"%1.ico\".").arg(icon_name),
                 QString("The load of resource favicon \":/images/favicon/%1.ico\" failed: no frames available.").arg(icon_name));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     smart_snap_image_buffer_t ibuf(image.get_buffer(0));
@@ -421,7 +421,7 @@ void favicon::save_clicked_icon()
  */
 void favicon::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(metadata);
+    NOT_USED(metadata);
 
     if(ipath.get_cpath() == "admin/settings/favicon")
     {
@@ -512,7 +512,7 @@ void favicon::output(content::path_info_t & ipath)
             f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "Icon Not Found",
                     "This website does not have a favorite icon.",
                     "Could not load the default resource favicon \":/images/favicon/snap-favicon.ico\".");
-            NOTREACHED();
+            NOT_REACHED();
         }
         image = file.readAll();
 
@@ -550,7 +550,7 @@ void favicon::output(content::path_info_t & ipath)
  */
 void favicon::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOTUSED(page);
+    NOT_USED(page);
 
     content::field_search::search_result_t result;
 
@@ -666,8 +666,7 @@ void favicon::on_can_handle_dynamic_path(content::path_info_t & ipath, path::dyn
  */
 void favicon::on_improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag)
 {
-    NOTUSED(path);
-    NOTUSED(signature_tag);
+    NOT_USED(path, signature_tag);
 
     // check whether a favicon is defined
     content::path_info_t ipath;

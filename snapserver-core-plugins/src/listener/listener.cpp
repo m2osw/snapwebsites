@@ -159,7 +159,7 @@ int64_t listener::do_update(int64_t last_updated)
  */
 void listener::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -241,7 +241,7 @@ void listener::on_process_post(QString const & uri_path)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_ACCEPTABLE, "Not Acceptable",
                 "The number of URI you are listening to is not a valid integer.",
                 QString("Somehow _listener_size is not an integer (%1).").arg(size_str));
-        NOTREACHED();
+        NOT_REACHED();
     }
     if(max_uri < 0)
     {
@@ -250,7 +250,7 @@ void listener::on_process_post(QString const & uri_path)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_ACCEPTABLE, "Not Acceptable",
                 "The number of URI you are listening to is negative...",
                 QString("Somehow _listener_size is negative (%1 -> %2).").arg(size_str).arg(max_uri));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     QString const & user_path(users_plugin->get_user_info().get_user_path(false));
@@ -311,10 +311,7 @@ void listener::on_process_post(QString const & uri_path)
 
 bool listener::listener_check_impl(snap_uri const & uri, content::path_info_t & page_ipath, QDomDocument doc, QDomElement result)
 {
-    NOTUSED(uri);
-    NOTUSED(page_ipath);
-    NOTUSED(doc);
-    NOTUSED(result);
+    NOT_USED(uri, page_ipath, doc, result);
 
     // TODO: add handling of all the plugins that cannot include the listener
     //       if any requires it (users? to test when we get logged out?)

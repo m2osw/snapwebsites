@@ -186,7 +186,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid SNAP_NAME_ECOMMERCE_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -505,7 +505,7 @@ int64_t ecommerce::do_update(int64_t last_updated)
  */
 void ecommerce::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -543,8 +543,7 @@ void ecommerce::bootstrap(snap_child * snap)
  */
 void ecommerce::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(ipath);
-    NOTUSED(metadata);
+    NOT_USED(ipath, metadata);
 
     QDomDocument doc(header.ownerDocument());
 
@@ -775,8 +774,7 @@ bool ecommerce::on_path_execute(content::path_info_t& ipath)
  */
 void ecommerce::on_preprocess_path(content::path_info_t& ipath, plugins::plugin *path_plugin)
 {
-    NOTUSED(ipath);
-    NOTUSED(path_plugin);
+    NOT_USED(ipath, path_plugin);
 
     snap_uri const main_uri(f_snap->get_uri());
     if(main_uri.has_query_option("cart"))
@@ -1433,7 +1431,7 @@ std::cerr << "***\n*** from invoices " << invoices_ipath.get_key() << " create i
     // was just saved in the invoice; in its place we put an invoice
     // URL so for users without an account we still have access
     users_plugin->attach_to_session(get_name(name_t::SNAP_NAME_ECOMMERCE_INVOICE_PATH), invoice_ipath.get_key());
-    NOTUSED(users_plugin->detach_from_session(get_name(name_t::SNAP_NAME_ECOMMERCE_CART_PRODUCTS)));
+    NOT_USED(users_plugin->detach_from_session(get_name(name_t::SNAP_NAME_ECOMMERCE_CART_PRODUCTS)));
 
     // The "actual" generation of the invoice should be using an XSLT
     // file and not C++ code; that way we can easily extend the display.
@@ -1650,8 +1648,7 @@ bool ecommerce::product_allowed_impl(QDomElement product, content::path_info_t &
 
 void ecommerce::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(ipath);
-    NOTUSED(xml);
+    NOT_USED(ipath, xml);
 
     if(!token.is_namespace("ecommerce::"))
     {

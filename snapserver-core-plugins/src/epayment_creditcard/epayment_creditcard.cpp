@@ -100,7 +100,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_EPAYMENT_CREDITCARD_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -238,7 +238,7 @@ int64_t epayment_creditcard::do_update(int64_t last_updated)
  */
 void epayment_creditcard::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -278,7 +278,7 @@ void epayment_creditcard::bootstrap(snap_child * snap)
  */
 void epayment_creditcard::on_process_post(QString const & uri_path)
 {
-    NOTUSED(uri_path);
+    NOT_USED(uri_path);
 }
 
 
@@ -306,7 +306,7 @@ void epayment_creditcard::on_dynamic_editor_widget(
         QString const & name,
         QDomDocument & editor_widgets)
 {
-    NOTUSED(name);
+    NOT_USED(name);
 
     // are we dealing with the epayment credit card form?
     //
@@ -987,8 +987,7 @@ void epayment_creditcard::gateway_features(epayment_gateway_features_t & gateway
  */
 bool epayment_creditcard::process_creditcard(epayment_creditcard_info_t & creditcard_info, editor::save_info_t & save_info)
 {
-    NOTUSED(creditcard_info);
-    NOTUSED(save_info);
+    NOT_USED(creditcard_info, save_info);
 
     SNAP_LOG_INFO("epayment_creditcard::process_creditcard() called.");
 

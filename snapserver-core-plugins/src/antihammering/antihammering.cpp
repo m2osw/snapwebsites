@@ -94,7 +94,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_ANTIHAMMERING_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 /** \brief Initialize the antihammering plugin.
@@ -215,7 +215,7 @@ int64_t antihammering::do_update(int64_t last_updated)
  */
 void antihammering::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -272,7 +272,7 @@ libdbproxy::table::pointer_t antihammering::get_antihammering_table()
  */
 void antihammering::on_output_result(QString const & uri_path, QByteArray & output)
 {
-    NOTUSED(output);
+    NOT_USED(output);
 
     // retrieve the status
     //
@@ -348,7 +348,7 @@ void antihammering::on_output_result(QString const & uri_path, QByteArray & outp
  */
 void antihammering::on_check_for_redirect(content::path_info_t & ipath)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     int64_t const start_date(f_snap->get_start_date());
 
@@ -406,7 +406,7 @@ void antihammering::on_check_for_redirect(content::path_info_t & ipath)
                 "Server Unavailable",
                 "We received too many hits. Please pause for a while.",
                 QString("Blocking user because too many hits happened, stage = %1.").arg(stage));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // count the number of 200 which are HTML pages (result starts with "200 html-page")
@@ -436,7 +436,7 @@ void antihammering::on_check_for_redirect(content::path_info_t & ipath)
                 "Server Unavailable",
                 "We received too many hits. Please pause for a while.",
                 "Blocking user because too many hits happened.");
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // then count the number of errors (result over 399)

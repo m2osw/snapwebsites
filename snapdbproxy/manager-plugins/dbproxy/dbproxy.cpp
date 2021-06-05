@@ -116,7 +116,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_DBPROXY_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -194,7 +194,7 @@ QString dbproxy::dependencies() const
  */
 int64_t dbproxy::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -450,8 +450,7 @@ bool dbproxy::display_value(QDomElement parent, snap_manager::status_t const & s
  */
 bool dbproxy::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
-    NOTUSED(button_name);
+    NOT_USED(old_or_installation_value, button_name);
 
     // restore defaults?
     //
@@ -482,7 +481,7 @@ bool dbproxy::apply_setting(QString const & button_name, QString const & field_n
         snap_config snap_dbproxy_conf(g_configuration_filename);
         snap_dbproxy_conf["cassandra_use_ssl"] = new_value;
 
-        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, "cassandra_use_ssl", new_value));
+        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, "cassandra_use_ssl", new_value));
 
         // the affected_services.insert() already sends a RELOADCONFIG message
         //bool const config_set = f_snap->replace_configuration_value(g_configuration_d_filename, "cassandra_use_ssl", new_value);

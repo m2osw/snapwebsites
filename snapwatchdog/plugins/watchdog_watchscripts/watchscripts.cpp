@@ -109,7 +109,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_WATCHSCRIPTS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -187,7 +187,7 @@ QString watchscripts::dependencies() const
  */
 int64_t watchscripts::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in watchdog
     SNAP_PLUGIN_UPDATE_EXIT();
@@ -492,7 +492,7 @@ QString watchscripts::generate_header(QString const & type)
 
 bool watchscripts::output_available(process * p, QByteArray const & output)
 {
-    NOTUSED(p);
+    NOT_USED(p);
 
     // ignore if empty (it should not happen but our code depends on that premise.)
     //
@@ -539,7 +539,7 @@ bool watchscripts::output_available(process * p, QByteArray const & output)
 
 bool watchscripts::error_available(process * p, QByteArray const & error)
 {
-    NOTUSED(p);
+    NOT_USED(p);
 
     // ignore if empty (it should not happen but our code depends on it.)
     //

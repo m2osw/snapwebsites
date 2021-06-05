@@ -670,7 +670,7 @@ void snaplock_ticket::ticket_added(snaplock_ticket::key_map_t const & still_ente
         snap::snap_communicator_message exiting_message;
         exiting_message.set_command("LOCKEXITING");
         exiting_message.add_parameter("key", f_entering_key);
-        snap::NOTUSED(send_message_to_leaders(exiting_message));
+        snap::NOT_USED(send_message_to_leaders(exiting_message));
 
         f_snaplock->lock_exiting(exiting_message);
     }
@@ -724,7 +724,7 @@ void snaplock_ticket::remove_entering(QString const & key)
                 snap::snap_communicator_message ticket_ready_message;
                 ticket_ready_message.set_command("TICKETREADY");
                 ticket_ready_message.add_parameter("key", f_ticket_key);
-                snap::NOTUSED(send_message_to_leaders(ticket_ready_message));
+                snap::NOT_USED(send_message_to_leaders(ticket_ready_message));
             }
         }
     }

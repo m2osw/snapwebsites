@@ -260,7 +260,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_PERMISSIONS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -1513,7 +1513,7 @@ int64_t permissions::do_update(int64_t last_updated)
  */
 void permissions::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -1768,7 +1768,7 @@ bool permissions::get_user_rights_impl(permissions * perms, sets_t & sets)
  */
 bool permissions::get_plugin_permissions_impl(permissions * perms, sets_t & sets)
 {
-    NOTUSED(perms);
+    NOT_USED(perms);
 
     // if the user data was cached and is still valid, then we are done here
     //
@@ -2062,7 +2062,7 @@ void permissions::on_validate_action(content::path_info_t & ipath, QString const
                 "Access Denied",
                 "You are not authorized to access our website in this way.",
                 QString("programmer checking permission access with an empty action on page \"%1\".").arg(ipath.get_key()));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     QString const & login_status(get_login_status());
@@ -2384,7 +2384,7 @@ void permissions::on_check_for_redirect(content::path_info_t & ipath)
                                 "Redirect to the secure version of this page.",
                                 QString("This page (%1) can only be viewed using an encrypted connection. We are redirecting this user to itself using HTTPS instead (%2).")
                                         .arg(ipath.get_key()).arg(redirect));
-                    NOTREACHED();
+                    NOT_REACHED();
                 }
                 // else -- no good destination...
                 SNAP_LOG_WARNING("somehow ipath key \"")
@@ -2549,7 +2549,7 @@ void permissions::on_access_allowed(QString const & user_path, content::path_inf
                     "Unknown Action",
                     "The action you are trying to performed is not known by Snap!",
                     QString("permissions::on_access_allowed() was used with action \"%1\".").arg(action));
-            NOTREACHED();
+            NOT_REACHED();
         }
         f_valid_actions[action] = true;
     }
@@ -3372,7 +3372,7 @@ void permissions::on_add_snap_expr_functions(snap_expr::functions_t & functions)
 
 void permissions::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(header);
+    NOT_USED(header);
 
     if(ipath.get_cpath() == "remove-iframe-for-login")
     {
@@ -3435,7 +3435,7 @@ void permissions::on_generate_header_content(content::path_info_t & ipath, QDomE
  */
 void permissions::on_modified_link(links::link_info const & link, bool const created)
 {
-    NOTUSED(created);
+    NOT_USED(created);
 
     if(!link.name().startsWith(QString("%1::").arg(get_name(name_t::SNAP_NAME_PERMISSIONS_NAMESPACE))))
     {
@@ -3488,7 +3488,7 @@ void permissions::reset_permissions_cache()
  */
 void permissions::repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning)
 {
-    NOTUSED(cloning);
+    NOT_USED(cloning);
 
     // permission links are never unique
     links::link_info src(source.name(), false, clone, branch_number);

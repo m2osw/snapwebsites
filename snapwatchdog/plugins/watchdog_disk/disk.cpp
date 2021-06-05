@@ -67,7 +67,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_DISK_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -90,7 +90,7 @@ std::vector<QString> const g_ignore_filled_partitions =
  */
 void statvfs_alarm_handler(int sig)
 {
-    snap::NOTUSED(sig);
+    NOT_USED(sig);
 }
 
 
@@ -168,7 +168,7 @@ int statvfs_try(char const * path, struct statvfs * s, unsigned int seconds)
     // we have to ignore the error in this case because there is
     // pretty much nothing we can do about it (throw?!)
     //
-    snap::NOTUSED(sigaction(SIGALRM, &saved_action, nullptr));
+    NOT_USED(sigaction(SIGALRM, &saved_action, nullptr));
 
     // reset the alarm if required (if 0, avoid the system call)
     //
@@ -280,7 +280,7 @@ QString disk::dependencies() const
  */
 int64_t disk::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in watchdog
     SNAP_PLUGIN_UPDATE_EXIT();

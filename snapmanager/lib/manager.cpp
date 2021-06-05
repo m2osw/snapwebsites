@@ -213,7 +213,7 @@ char const * get_name(name_t name)
         throw snap::snap_logic_exception("Invalid SNAP_NAME_MANAGER_...");
 
     }
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 
@@ -473,7 +473,7 @@ QString manager::dependencies() const
 void manager::bootstrap(snap_child * snap)
 {
     // virtual function stub
-    NOTUSED(snap);
+    NOT_USED(snap);
 }
 
 
@@ -805,7 +805,7 @@ bool manager::stop_now_prima() const
 
 void manager::forward_message(snap::snap_communicator_message const & message)
 {
-    snap::NOTUSED(message);
+    snap::NOT_USED(message);
     throw std::logic_error("forward_message() called on the wrong object (i.e. it is not implemented.)");
 }
 

@@ -550,8 +550,7 @@ public:
 
     static int create_message(int count, int c)
     {
-        snap::NOTUSED(count);
-        snap::NOTUSED(c);
+        snap::NOT_USED(count, c);
 
         g_console->open_message_dialog();
         return 0;
@@ -796,7 +795,7 @@ public:
         {
             std::cerr << "error: --gui and --cui are mutually exclusive." << std::endl;
             exit(1);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         if(f_cui)
@@ -805,7 +804,7 @@ public:
             {
                 std::cerr << "error: --message is not compatible with --cui." << std::endl;
                 exit(1);
-                snap::NOTREACHED();
+                snap::NOT_REACHED();
             }
         }
         else
@@ -814,7 +813,7 @@ public:
             {
                 std::cerr << "error: --address is mandatory when not entering the CUI or GUI interface." << std::endl;
                 exit(1);
-                snap::NOTREACHED();
+                snap::NOT_REACHED();
             }
         }
 
@@ -823,7 +822,7 @@ public:
         {
             std::cerr << "error: --tcp and --udp are mutually exclusive" << std::endl;
             exit(1);
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
         }
 
         f_connection = std::make_shared<connection>();

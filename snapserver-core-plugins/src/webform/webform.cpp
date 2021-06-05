@@ -62,7 +62,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid SNAP_NAME_WEBFORM_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -171,7 +171,7 @@ QString webform::dependencies() const
  */
 int64_t webform::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -191,7 +191,7 @@ int64_t webform::do_update(int64_t last_updated)
  */
 void webform::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }

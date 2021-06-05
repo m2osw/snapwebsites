@@ -60,7 +60,7 @@ void content::invalid_revision_control(QString const& version)
     f_snap->die(snap_child::http_code_t::HTTP_CODE_INTERNAL_SERVER_ERROR, "Invalid Revision Control",
             "The revision control \"" + version + "\" does not look valid.",
             "The version does not seem to start with a valid decimal number.");
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 

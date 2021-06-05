@@ -65,7 +65,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_FLAGS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -142,7 +142,7 @@ QString flags::dependencies() const
  */
 int64_t flags::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in watchdog
     SNAP_PLUGIN_UPDATE_EXIT();

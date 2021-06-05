@@ -157,7 +157,7 @@ int64_t char_chart::do_update(int64_t last_updated)
  */
 void char_chart::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml("char_chart");
 }

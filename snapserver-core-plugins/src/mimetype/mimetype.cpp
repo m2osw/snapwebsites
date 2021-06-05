@@ -158,7 +158,7 @@ int find_mimetype(QString const & mime_type)
 //        throw snap_logic_exception("invalid name_t::SNAP_NAME_MIMETYPE_...");
 //
 //    }
-//    NOTREACHED();
+//    NOT_REACHED();
 //}
 
 
@@ -262,7 +262,7 @@ int64_t mimetype::do_update(int64_t last_updated)
  */
 void mimetype::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }

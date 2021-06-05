@@ -97,7 +97,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid SNAP_NAME_LOCALE_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -233,7 +233,7 @@ QString locale::dependencies() const
  */
 int64_t locale::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -1236,7 +1236,7 @@ time_t locale::parse_date(QString const & date, parse_error_t & errcode)
                 ++s;
             }
         }
-        NOTREACHED();
+        NOT_REACHED();
     }
     else
     {
@@ -1433,7 +1433,7 @@ time_t locale::parse_time(QString const & time_str, parse_error_t & errcode)
                 ++s;
             }
         }
-        NOTREACHED();
+        NOT_REACHED();
     }
     else
     {

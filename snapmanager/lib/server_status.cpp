@@ -438,7 +438,7 @@ bool server_status::read_all()
             return !f_has_error;
         }
     }
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 
@@ -503,7 +503,7 @@ bool server_status::read_header()
             return true;
         }
     }
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 
@@ -863,7 +863,7 @@ bool server_status::readline(QString & result)
             line += buf;
         }
     }
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 

@@ -1108,7 +1108,7 @@ read_token:
 
                 }
             }
-            snap::NOTREACHED();
+            snap::NOT_REACHED();
             break;
 
         }
@@ -1589,7 +1589,7 @@ int dns_options::recursive_option(keyword::pointer_t in)
         in->add_value(k);
     }
 
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
     return 1;
 }
 

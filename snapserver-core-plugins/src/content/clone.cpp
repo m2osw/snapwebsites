@@ -619,7 +619,7 @@ bool content::move_page(path_info_t & ipath_source, path_info_t & ipath_destinat
         f_snap->die(snap_child::http_code_t::HTTP_CODE_FORBIDDEN, "Forbidden Move",
                 "Sorry. this page is marked as undeletable and as such it cannot be moved.",
                 QString("User tried to move page \"%1\", which is locked (marked as undeletable).").arg(ipath_source.get_key()));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // setup the clone parameters
@@ -670,7 +670,7 @@ bool content::trash_page(path_info_t & ipath)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_FORBIDDEN, "Forbidden Removal",
                 "Sorry. This page is marked as undeletable.",
                 QString("User tried to delete page \"%1\", which is locked.").arg(ipath.get_key()));
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // create a destination path in the trashcan

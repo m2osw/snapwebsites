@@ -269,7 +269,7 @@ void manager_daemon::sighandler( int sig )
     // Exit with error status
     //
     ::exit( 1 );
-    snap::NOTREACHED();
+    snap::NOT_REACHED();
 }
 
 
@@ -621,7 +621,7 @@ void manager_daemon::stop(bool quitting)
  */
 void manager_daemon::manager_install(snap::snap_communicator_message const & message)
 {
-    snap::NOTUSED(message);
+    snap::NOT_USED(message);
     //installer(message);
 }
 
@@ -771,7 +771,7 @@ void manager_daemon::unreachable_message(snap::snap_communicator_message const &
 
         // write the result back to the file
         //
-        snap::NOTUSED(status_info.write());
+        snap::NOT_USED(status_info.write());
     }
 }
 

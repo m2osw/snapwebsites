@@ -274,7 +274,7 @@ bool snap_image::info_jpeg(unsigned char const *s, size_t l, unsigned char const
         }
         q += 2 + len;
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 #pragma GCC diagnostic pop
 

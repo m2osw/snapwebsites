@@ -391,7 +391,7 @@ const char * get_name(name_t name)
         throw snap_logic_exception(QString("invalid name_t::SNAP_NAME_USERS_... (%1)").arg(static_cast<int>(name)));
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -558,7 +558,7 @@ int64_t users::do_dynamic_update(int64_t last_updated)
  */
 void users::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
     content::content::instance()->add_xml(get_plugin_name());
 }
 
@@ -577,7 +577,7 @@ void users::content_update(int64_t variables_timestamp)
 void users::user_identifier_update(int64_t variables_timestamp)
 {
     SNAP_LOG_TRACE( "users::user_identifier_update()" );
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     auto users_table     ( get_users_table() );
     auto index_row_name  ( get_name(name_t::SNAP_NAME_USERS_INDEX_ROW)  );
@@ -908,7 +908,7 @@ QString users::get_user_cookie_name()
                     "Service Not Available",
                     "The server was not able to generate a safe random number. Please try again in a moment.",
                     "User cookie name could not be generated as the RAND_bytes() function could not generate enough random data");
-            NOTREACHED();
+            NOT_REACHED();
         }
         // actually most ASCII characters are allowed, but to be fair, it
         // is not safe to use most so we limit using a simple array
@@ -1659,7 +1659,7 @@ void users::user_logout()
     // drop the referrer if there is one, it is a security
     // issue to keep that info on an explicit log out!
     //
-    NOTUSED(detach_referrer(f_user_info));
+    NOT_USED(detach_referrer(f_user_info));
 
     // the software is requesting to log the user out
     //
@@ -1786,14 +1786,14 @@ void users::on_generate_main_content(content::path_info_t & ipath, QDomElement &
 
 void users::on_generate_boxes_content(content::path_info_t & page_ipath, content::path_info_t & ipath, QDomElement & page, QDomElement & boxes)
 {
-    NOTUSED(page_ipath);
+    NOT_USED(page_ipath);
     output::output::instance()->on_generate_main_content(ipath, page, boxes);
 }
 
 
 void users::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(ipath);
+    NOT_USED(ipath);
 
     QDomDocument doc(header.ownerDocument());
 
@@ -1970,8 +1970,7 @@ void users::on_generate_page_content(content::path_info_t & ipath, QDomElement &
 
 void users::on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type)
 {
-    NOTUSED(owner);
-    NOTUSED(type);
+    NOT_USED(owner, type);
 
     if(f_user_info.exists())
     {
@@ -2042,7 +2041,7 @@ void users::verify_user(content::path_info_t & ipath)
             // (if logged in he was verified in some way!)
             //
             f_snap->page_redirect("user/me", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         // this computer is expected to be used by multiple users, the
@@ -2063,7 +2062,7 @@ void users::verify_user(content::path_info_t & ipath)
         // drop the referrer if there is one, it is a security
         // issue to keep that info on an almost explicit log out!
         //
-        NOTUSED(detach_referrer(f_user_info));
+        NOT_USED(detach_referrer(f_user_info));
 
         sessions::sessions::instance()->save_session(*f_info, new_random);
 
@@ -2161,7 +2160,7 @@ void users::verify_user(content::path_info_t & ipath)
 
         // redirect the user to the verification form
         f_snap->page_redirect("verify", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // it looks like the session is valid, get the user email and verify
@@ -2179,7 +2178,7 @@ void users::verify_user(content::path_info_t & ipath)
         // redirect the user to the log in page
 
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // SNAP-258: use identifier instead of user key (canonicialized email address).
@@ -2193,7 +2192,7 @@ void users::verify_user(content::path_info_t & ipath)
         // redirect the user to the verification form although it won't work
         // next time either...
         f_snap->page_redirect("verify", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     content::path_info_t user_ipath;
@@ -2218,7 +2217,7 @@ void users::verify_user(content::path_info_t & ipath)
         );
         // redirect the user to the log in page
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOTREACHED();
+        NOT_REACHED();
     }
 
     // a status link exists...
@@ -2236,7 +2235,7 @@ void users::verify_user(content::path_info_t & ipath)
         );
         // redirect the user to the log in page? (XXX should this be the registration page instead?)
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOTREACHED();
+        NOT_REACHED();
     }
     // remove the "user/new" status link so the user can now log in
     // he was successfully verified
@@ -2266,7 +2265,7 @@ void users::verify_user(content::path_info_t & ipath)
         "Thank you for registering an account with us. Your account is now verified! You can now log in with the form below."
     );
     f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -2347,7 +2346,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
                 //     (i.e. your user account is messed up, please contact us?)
                 f_snap->page_redirect("verify", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
             }
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         user_logged_info_t logged_info( f_snap, user_info );
@@ -2481,7 +2480,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
                             (valid_password
                                 ? "This time the user entered the correct password, unfortunately, the password has been blocked earlier"
                                 : "Trying to reject a hacker since we got too many attempts at login in with an invalid password"));
-                    NOTREACHED();
+                    NOT_REACHED();
                 }
             }
 
@@ -2585,7 +2584,7 @@ QString users::login_user(QString const & email, QString const & password, bool 
                     }
 //SNAP_LOG_TRACE("redirect user to: ")(logged_info.get_uri());
                     f_snap->page_redirect(logged_info.get_uri(), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-                    NOTREACHED();
+                    NOT_REACHED();
                 }
 
                 // user does not have enough permission to log in?
@@ -2780,8 +2779,8 @@ void users::create_logged_in_user_session( user_info_t const & user_info )
             //            are detaching from "old_session" and not the
             //            current session
             //
-            NOTUSED(sessions_plugin->detach_from_session(old_session, get_name(name_t::SNAP_NAME_USERS_LOGIN_REFERRER)));
-            NOTUSED(sessions_plugin->detach_from_session(old_session, referrer_identifier(user_info)));
+            NOT_USED(sessions_plugin->detach_from_session(old_session, get_name(name_t::SNAP_NAME_USERS_LOGIN_REFERRER)));
+            NOT_USED(sessions_plugin->detach_from_session(old_session, referrer_identifier(user_info)));
 
             sessions_plugin->save_session(old_session, false);
 
@@ -4059,7 +4058,7 @@ void users::on_attach_to_session()
         // we had messages when on_detach_from_session() was called,
         // so we have to drop them now
         //
-        NOTUSED(detach_from_session(messages::get_name(messages::name_t::SNAP_NAME_MESSAGES_MESSAGES)));
+        NOT_USED(detach_from_session(messages::get_name(messages::name_t::SNAP_NAME_MESSAGES_MESSAGES)));
     }
 }
 
@@ -4308,8 +4307,7 @@ void users::encrypt_password(QString const & digest, QString const & password, Q
  */
 void users::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOTUSED(ipath);
-    NOTUSED(xml);
+    NOT_USED(ipath, xml);
 
     if(token.f_name.length() <= 7
     || !token.is_namespace("users::"))
@@ -4604,7 +4602,7 @@ bool users::user_session_is_old() const
  */
 void users::on_improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag)
 {
-    NOTUSED(path);
+    NOT_USED(path);
 
     if(f_user_info.is_user())
     {
@@ -4712,7 +4710,7 @@ void users::on_set_timezone()
  */
 void users::repair_link_of_cloned_page(QString const& clone, snap_version::version_number_t branch_number, links::link_info const& source, links::link_info const& destination, bool const cloning)
 {
-    NOTUSED(cloning);
+    NOT_USED(cloning);
 
     if(source.name() == get_name(name_t::SNAP_NAME_USERS_AUTHOR)
     && destination.name() == get_name(name_t::SNAP_NAME_USERS_AUTHORED_PAGES))
@@ -4774,7 +4772,7 @@ void users::on_table_is_accessible(QString const & table_name, server::accessibl
  */
 void users::save_password_done(user_info_t & user_info, QString const & user_password, QString const & password_policy)
 {
-    NOTUSED(password_policy);
+    NOT_USED(password_policy);
 
     QByteArray salt;
     QByteArray hash;

@@ -131,7 +131,7 @@ const char * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_SITEMAPXML_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -535,7 +535,7 @@ int64_t sitemapxml::do_update(int64_t last_updated)
  */
 void sitemapxml::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     // additional sitemap<###>.xml are added dynamically as the CRON
     // processes find out that additional pages are required.
@@ -789,7 +789,7 @@ bool sitemapxml::on_path_execute(content::path_info_t & ipath)
  */
 bool sitemapxml::generate_sitemapxml_impl(sitemapxml * r)
 {
-    NOTUSED(r);
+    NOT_USED(r);
 
     libdbproxy::table::pointer_t branch_table(content::content::instance()->get_branch_table());
 
@@ -1344,8 +1344,7 @@ void sitemapxml::add_url(url_info const & url)
  */
 void sitemapxml::on_allow_shorturl(content::path_info_t & ipath, QString const & owner, QString const & type, bool & allow)
 {
-    NOTUSED(owner);
-    NOTUSED(type);
+    NOT_USED(owner, type);
 
     if(!allow)
     {
@@ -1374,7 +1373,7 @@ void sitemapxml::on_allow_shorturl(content::path_info_t & ipath, QString const &
 
 void sitemapxml::on_copy_branch_cells(libdbproxy::cells& source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
-    NOTUSED(destination_branch);
+    NOT_USED(destination_branch);
 
     content::content::copy_branch_cells_as_is(source_cells, destination_row, get_name(name_t::SNAP_NAME_SITEMAPXML_NAMESPACE));
 }

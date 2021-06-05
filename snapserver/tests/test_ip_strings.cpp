@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
             {
             case 'h':
                 usage();
-                snap::NOTREACHED();
+                snap::NOT_REACHED();
 
             default:
                 std::cerr << "error: unknown option '" << argv[i][1] << "'.\n";
@@ -85,7 +85,7 @@ int main(int argc, char * argv[])
     if(help)
     {
         usage();
-        snap::NOTREACHED();
+        snap::NOT_REACHED();
     }
 
     // test various IPv4

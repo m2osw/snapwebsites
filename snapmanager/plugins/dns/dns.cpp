@@ -87,7 +87,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_DNS_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -174,7 +174,7 @@ bool dns::is_installed()
  */
 int64_t dns::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -456,7 +456,7 @@ bool dns::apply_setting ( QString const & button_name
                         , std::set<QString> & affected_services
                         )
 {
-    NOTUSED(affected_services);
+    NOT_USED(affected_services);
 
     if( field_name == CREATE_MASTER_ZONE )
     {

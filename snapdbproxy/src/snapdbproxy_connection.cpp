@@ -395,7 +395,7 @@ ssize_t snapdbproxy_connection::read(void * buf, size_t count)
             struct pollfd fd;
             fd.fd = f_client->get_socket();
             fd.events = POLLIN | POLLPRI | POLLRDHUP | POLLHUP;
-            snap::NOTUSED(poll(&fd, 1, 0));
+            snap::NOT_USED(poll(&fd, 1, 0));
             if((fd.revents & (POLLHUP | POLLRDHUP)) != 0)
             {
                 // this happens all the time so we just use a trace on it
@@ -495,7 +495,7 @@ ssize_t snapdbproxy_connection::write(void const * buf, size_t count)
             struct pollfd fd;
             fd.fd = socket;
             fd.events = POLLOUT | POLLRDHUP | POLLHUP;
-            snap::NOTUSED(poll(&fd, 1, 0));
+            snap::NOT_USED(poll(&fd, 1, 0));
             if((fd.revents & (POLLHUP | POLLRDHUP)) != 0)
             {
                 SNAP_LOG_ERROR("snapdbproxy_connection::write() attempted to write to a socket that is closed.");
@@ -549,7 +549,7 @@ void snapdbproxy_connection::kill()
         //       socket in between and f_socket will either still be opened
         //       or -1)
         //
-        snap::NOTUSED(::shutdown(f_socket, SHUT_RD));
+        snap::NOT_USED(::shutdown(f_socket, SHUT_RD));
     }
 }
 
@@ -657,7 +657,7 @@ void snapdbproxy_connection::declare_cursor(libdbproxy::order const & order)
 
 void snapdbproxy_connection::declare_batch(libdbproxy::order const & order)
 {
-    snap::NOTUSED(order);
+    snap::NOT_USED(order);
     batch_t batch;
     batch.f_query = casswrapper::Query::create(f_session);
     batch.f_batch = casswrapper::LoggedBatch::create();

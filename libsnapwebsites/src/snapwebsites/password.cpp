@@ -507,7 +507,7 @@ bool password::get_password_from_console(std::string const & salt)
             // ignore failures... it is likely to work since we did not
             // change the original data, but who knows.
             //
-            NOTUSED(tcsetattr(f_tty, TCSAFLUSH, &f_original));
+            NOT_USED(tcsetattr(f_tty, TCSAFLUSH, &f_original));
         }
 
         bool is_valid() const

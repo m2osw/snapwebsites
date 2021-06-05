@@ -100,7 +100,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_NO_IFRAME_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -218,7 +218,7 @@ int64_t no_iframe::do_update(int64_t last_updated)
  */
 void no_iframe::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -255,7 +255,7 @@ void no_iframe::bootstrap(snap_child * snap)
  */
 void no_iframe::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(metadata);
+    NOT_USED(metadata);
 
     snap_string_list const & segments(ipath.get_segments());
     if(segments.size() > 0

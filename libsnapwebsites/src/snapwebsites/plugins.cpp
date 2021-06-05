@@ -928,7 +928,7 @@ QString plugin::settings_path() const
  */
 int64_t plugin::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -956,7 +956,7 @@ int64_t plugin::do_update(int64_t last_updated)
  */
 int64_t plugin::do_dynamic_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 

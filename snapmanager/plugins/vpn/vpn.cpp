@@ -87,7 +87,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_VPN_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -165,7 +165,7 @@ QString vpn::dependencies() const
  */
 int64_t vpn::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -477,9 +477,7 @@ bool vpn::apply_setting ( QString const & button_name
                         , std::set<QString> & affected_services
                         )
 {
-    NOTUSED(button_name);
-    NOTUSED(old_or_installation_value);
-    NOTUSED(affected_services);
+    NOT_USED(button_name, old_or_installation_value, affected_services);
 
     if( field_name == CLIENT_SERVER_IP )
     {

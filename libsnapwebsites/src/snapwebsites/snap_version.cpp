@@ -2053,7 +2053,7 @@ QString quick_find_version_in_source::get_line()
             return line;
         }
     }
-    NOTREACHED();
+    NOT_REACHED();
     return "";
 }
 

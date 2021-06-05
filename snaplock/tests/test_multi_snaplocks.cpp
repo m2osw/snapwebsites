@@ -993,7 +993,7 @@ void snapcommunicator_emulator::msg_lockfailed(snap::snap_communicator_message &
 
 void snapcommunicator_emulator::msg_lockready(snap::snap_communicator_message & message)
 {
-    snap::NOTUSED(message);
+    snap::NOT_USED(message);
 
     SNAP_LOG_INFO("told that locks of ")(f_port)(" are now ready.");
 
@@ -1009,7 +1009,7 @@ void snapcommunicator_emulator::msg_lockready(snap::snap_communicator_message & 
 
 void snapcommunicator_emulator::msg_nolock(snap::snap_communicator_message & message)
 {
-    snap::NOTUSED(message);
+    snap::NOT_USED(message);
 
     SNAP_LOG_INFO("told that locks of ")(f_port)(" are not yet available (or not available anymore.");
 

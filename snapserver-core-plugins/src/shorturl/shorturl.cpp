@@ -129,7 +129,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_SHORTURL_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 /** \brief Initialize the shorturl plugin.
@@ -247,7 +247,7 @@ int64_t shorturl::do_update(int64_t last_updated)
  */
 void shorturl::content_update(int64_t variables_timestamp)
 {
-    NOTUSED(variables_timestamp);
+    NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -373,7 +373,7 @@ void shorturl::on_check_for_redirect(content::path_info_t & ipath)
                                 QString("This URL (%1) represents a short URL, redirecting to the actual page (%2).")
                                         .arg(ipath.get_key())
                                         .arg(url));
-            NOTREACHED();
+            NOT_REACHED();
         }
 
         // This is nearly an error; we do not expect users to be sent to
@@ -486,7 +486,7 @@ QString shorturl::get_shorturl(uint64_t identifier)
  */
 void shorturl::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOTUSED(header);
+    NOT_USED(header);
 
     // only setup the shorturl if we are on the main page
     //
@@ -534,8 +534,7 @@ void shorturl::on_generate_header_content(content::path_info_t & ipath, QDomElem
  */
 bool shorturl::allow_shorturl_impl(content::path_info_t & ipath, QString const & owner, QString const & type, bool & allow)
 {
-    NOTUSED(owner);
-    NOTUSED(type);
+    NOT_USED(owner, type);
 
     // do not ever create short URLs for admin pages
     QString const cpath(ipath.get_cpath());

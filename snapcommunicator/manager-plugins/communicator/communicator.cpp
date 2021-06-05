@@ -134,7 +134,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_COMMUNICATOR_...");
 
     }
-    NOTREACHED();
+    NOT_REACHED();
 }
 
 
@@ -212,7 +212,7 @@ QString communicator::dependencies() const
  */
 int64_t communicator::do_update(int64_t last_updated)
 {
-    NOTUSED(last_updated);
+    NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -603,8 +603,7 @@ bool communicator::display_value(QDomElement parent, snap_manager::status_t cons
  */
 bool communicator::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOTUSED(old_or_installation_value);
-    NOTUSED(button_name);
+    NOT_USED(old_or_installation_value, button_name);
 
     // restore defaults?
     //
@@ -624,8 +623,8 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         // because at this point we do not want to offer an end user
         // interface to deal with all the ports.
         //
-        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
-        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, "listen", new_value + ":4040"));
+        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, "listen", new_value + ":4040"));
         return true;
     }
 
@@ -637,7 +636,7 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         affected_services.insert("snapcommunicator");
         affected_services.insert("snapmanagerdaemon");
 
-        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
         return true;
     }
 
@@ -670,7 +669,7 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command("systemctl");
         p.add_argument("daemon-reload"); // python script sends output to STDERR
-        NOTUSED(p.run());
+        NOT_USED(p.run());
         return true;
     }
 
@@ -691,7 +690,7 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command("systemctl");
         p.add_argument("daemon-reload"); // python script sends output to STDERR
-        NOTUSED(p.run());
+        NOT_USED(p.run());
         return true;
     }
 
@@ -702,7 +701,7 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         //
         affected_services.insert("snapcommunicator");
 
-        NOTUSED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
 
         snap_config snap_communicator_conf(g_configuration_filename);
         snap_communicator_conf[field_name] = new_value;
