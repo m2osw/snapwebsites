@@ -310,7 +310,7 @@ public:
     virtual int64_t                 do_update(int64_t last_updated) override;
     virtual void                    bootstrap(snap_child * snap) override;
 
-    libdbproxy::table::pointer_t get_links_table();
+    libdbproxy::table::pointer_t    get_links_table();
 
     // server signals
     void                            on_add_snap_expr_functions(snap_expr::functions_t & functions);

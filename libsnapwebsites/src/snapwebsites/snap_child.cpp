@@ -7725,6 +7725,9 @@ QString snap_child::get_unique_number()
  *                          added to the list of plugins (important for
  *                          the Snap! server itself, not so much for other
  *                          servers using plugins.)
+ * \param[in] introducer  A string to add to each plugin name as a prefix.
+ *
+ * \return The list of loaded plugins.
  */
 snap_string_list snap_child::init_plugins(bool const add_defaults, QString const & introducer)
 {

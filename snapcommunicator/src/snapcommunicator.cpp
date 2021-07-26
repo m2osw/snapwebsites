@@ -5345,9 +5345,6 @@ remote_snap_communicator::~remote_snap_communicator()
     {
         SNAP_LOG_DEBUG("deleting remote_snap_communicator connection: ")(f_address.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT));
     }
-    catch(addr::addr_invalid_parameter const &)
-    {
-    }
     catch(addr::addr_invalid_argument const &)
     {
     }

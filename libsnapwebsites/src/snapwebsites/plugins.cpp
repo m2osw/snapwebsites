@@ -224,7 +224,7 @@ bool load(QString const & plugin_paths, snap_child * snap, plugin_ptr_t server, 
         QString const filename(find_plugin_filename(paths, name));
         if(filename.isEmpty())
         {
-            SNAP_LOG_ERROR("plugin named \"")(name)("\" not found in the plugin directory. (paths: ")(plugin_paths)(")");
+            SNAP_LOG_ERROR("plugin named \"")(name)("\" not found in the plugin directories. (paths: ")(plugin_paths)(")");
             good = false;
             continue;
         }
@@ -482,7 +482,7 @@ void register_plugin(QString const & name, plugin * p)
 {
     if(name.isEmpty())
     {
-        throw plugin_exception("plugin name missing when registering... expected \"" + name + "\".");
+        throw plugin_exception("plugin name missing when registering.");
     }
 
     QString const full_name(g_next_register_introducer.isEmpty()
@@ -1083,7 +1083,7 @@ plugin_info::plugin_info(QString const & plugin_paths, QString const & name)
                             if(stat(f_filename.toUtf8().data(), &s) == 0)
                             {
                                 // should we make use of the usec mtime when available?
-                                f_last_modification = static_cast<int64_t>(s.st_mtime * 1000000LL);
+                                f_last_modification = static_cast<int64_t>(s.st_mtime * 1'000'000LL);
                             }
                         }
                     }

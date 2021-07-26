@@ -51,11 +51,11 @@ public:
 };
 
 
-class plugin_signal
-{
-public:
-    plugin_signal(const char * name);
-};
+//class plugin_signal
+//{
+//public:
+//    plugin_signal(const char * name);
+//};
 
 
 
