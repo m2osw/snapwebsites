@@ -2,7 +2,7 @@
 // File:        snapmanager/cgi/snapmanagercgi.cpp
 // Object:      Allow for managing a Snap! Cluster.
 //
-// Copyright:   Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright:   Copyright (c) 2016-2021  Made to Order Software Corp.  All Rights Reserved
 //              All Rights Reserved.
 //
 // https://snapwebsites.org/
@@ -1545,7 +1545,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
                     return login_form("Your session timed out.");
                 }
             }
-            catch(snap::string_exception_invalid_parameter const &)
+            catch(snap::string_invalid_parameter const &)
             {
                 // conversion failed, not too surprising from a
                 // tainted variable, ignore; user is not logged in

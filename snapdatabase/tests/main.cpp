@@ -147,7 +147,7 @@ Catch::clara::Parser add_command_line_options(Catch::clara::Parser const & cli)
 
 void init_callback()
 {
-    libexcept::set_collect_stack(false);
+    libexcept::set_collect_stack(libexcept::collect_stack_t::COLLECT_STACK_NO);
 }
 
 
