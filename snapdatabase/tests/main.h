@@ -38,7 +38,6 @@ namespace SNAP_CATCH2_NAMESPACE
 
 
 
-extern std::string                 g_tmp_dir;
 
 
 std::string setup_context(std::string const & path, std::vector<std::string> const & xmls);

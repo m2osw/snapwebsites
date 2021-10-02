@@ -62,12 +62,11 @@ namespace SNAP_CATCH2_NAMESPACE
 
 
 
-std::string                 g_tmp_dir;
 
 
 std::string setup_context(std::string const & sub_path, std::vector<std::string> const & xmls)
 {
-    std::string path(g_tmp_dir + "/" + sub_path);
+    std::string path(g_tmp_dir() + "/" + sub_path);
 
     if(mkdir(path.c_str(), 0700) != 0)
     {
@@ -136,15 +135,6 @@ std::string setup_context(std::string const & sub_path, std::vector<std::string>
 }
 
 
-Catch::clara::Parser add_command_line_options(Catch::clara::Parser const & cli)
-{
-    return cli
-         | Catch::clara::Opt(SNAP_CATCH2_NAMESPACE::g_tmp_dir, "tmp")
-              ["-T"]["--tmp"]
-              ("a path to a temporary directory used by the tests.");
-}
-
-
 void init_callback()
 {
     libexcept::set_collect_stack(libexcept::collect_stack_t::COLLECT_STACK_NO);
@@ -154,24 +144,6 @@ void init_callback()
 int init_tests(Catch::Session & session)
 {
     snap::NOT_USED(session);
-
-    if(g_tmp_dir.find_first_of("'\"") != std::string::npos)
-    {
-        std::cerr << "error: the path to the temporary directory cannot include single (') or double (\") quotes."
-                  << std::endl;
-        return 1;
-    }
-
-    std::string cmd("rm -rf \"");
-    cmd += g_tmp_dir;
-    cmd += '"';
-    snap::NOT_USED(system(cmd.c_str()));
-
-    if(mkdir(g_tmp_dir.c_str(), 0700) != 0)
-    {
-        perror(("could not create directory \"" + g_tmp_dir + "\"").c_str());
-        return 1;
-    }
 
     snaplogger::logger::pointer_t l(snaplogger::logger::get_instance());
     l->add_console_appender();
@@ -197,7 +169,7 @@ int main(int argc, char * argv[])
             , argc
             , argv
             , SNAP_CATCH2_NAMESPACE::init_callback
-            , SNAP_CATCH2_NAMESPACE::add_command_line_options
+            , nullptr
             , SNAP_CATCH2_NAMESPACE::init_tests
         );
 }

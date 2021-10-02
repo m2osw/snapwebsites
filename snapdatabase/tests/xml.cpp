@@ -46,7 +46,7 @@ namespace
 
 std::string get_folder_name()
 {
-    std::string const xml_path(SNAP_CATCH2_NAMESPACE::g_tmp_dir + "/xml");
+    std::string const xml_path(SNAP_CATCH2_NAMESPACE::g_tmp_dir() + "/xml");
 
     if(mkdir(xml_path.c_str(), 0700) != 0)
     {
