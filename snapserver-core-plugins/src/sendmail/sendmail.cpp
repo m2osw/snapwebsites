@@ -2606,7 +2606,7 @@ void sendmail::on_generate_main_content(content::path_info_t & ipath, QDomElemen
             //for(email::parameter_map_t::const_iterator it(parameters.begin());
             //                                        it != parameters.end();
             //                                        ++it)
-            for(auto const it : parameters)
+            for(auto const & it : parameters)
             {
                 QDomElement param_tag(doc.createElement("param"));
                 param_tag.setAttribute("name", it.first);
