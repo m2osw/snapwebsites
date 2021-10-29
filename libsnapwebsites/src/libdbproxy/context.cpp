@@ -585,7 +585,7 @@ QString context::generateReplicationStanza() const
 void context::parseContextDefinition( casswrapper::schema::KeyspaceMeta::pointer_t keyspace_meta )
 {
     f_schema = keyspace_meta;
-    for( const auto pair : f_schema->getTables() )
+    for(auto const & pair : f_schema->getTables())
     {
         table::pointer_t t(getTable(pair.first));
         t->parseTableDefinition(pair.second);

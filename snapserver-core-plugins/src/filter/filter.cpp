@@ -1512,7 +1512,7 @@ bool filter::filter_text_impl(filter_text_t & txt_filt)
                     tok += QChar(c);
                     c = getc();
                 }
-                /*FLOWTHROUGH*/
+                [[fallthrough]];
             case '.':
                 if(c == '.')
                 {

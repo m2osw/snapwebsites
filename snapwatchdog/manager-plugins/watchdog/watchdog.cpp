@@ -45,7 +45,7 @@
 #include <snapdev/join_strings.h>
 #include <snapdev/not_reached.h>
 #include <snapdev/not_used.h>
-#include <snapdev/string_pathinfo.h>
+#include <snapdev/pathinfo.h>
 #include <snapdev/tokenize_string.h>
 
 
