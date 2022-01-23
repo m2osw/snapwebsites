@@ -1545,7 +1545,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
                     return login_form("Your session timed out.");
                 }
             }
-            catch(snap::string_invalid_parameter const &)
+            catch(snap::hexadecimal_string_invalid_parameter const &)
             {
                 // conversion failed, not too surprising from a
                 // tainted variable, ignore; user is not logged in

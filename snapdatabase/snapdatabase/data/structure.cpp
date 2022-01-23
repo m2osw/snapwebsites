@@ -1,4 +1,4 @@
-// Copyright (c) 2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2019-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/snapdatabase
 // contact@m2osw.com
@@ -35,7 +35,7 @@
 
 // advgetopt lib
 //
-#include    <advgetopt/validator.h>
+#include    <advgetopt/validator_integer.h>
 
 
 // snaplogger lib

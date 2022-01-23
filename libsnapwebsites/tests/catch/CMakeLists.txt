@@ -26,19 +26,11 @@
 #      Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-find_package( Catch2 )
+project( libsnapwebsites_tests )
 
-if(Catch2_FOUND)
+find_package(SnapCatch2)
 
-    project( libsnapwebsites_tests )
-
-    add_definitions(
-        -DCATCH_CONFIG_PREFIX_ALL
-    )
-
-    include_directories(
-        ${CATCH_INCLUDE_DIR}
-    )
+if(SnapCatch2_FOUND)
 
     add_executable( ${PROJECT_NAME}
         # main()
@@ -51,13 +43,19 @@ if(Catch2_FOUND)
         catch_weightedhttpstrings.cpp
     )
 
-    target_link_libraries( ${PROJECT_NAME}
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            ${SNAPCATCH2_INCLUDE_DIRS}
+    )
+
+    target_link_libraries(${PROJECT_NAME}
         ${ADVGETOPT_LIBRARIES}
         ${LIBEXCEPT_LIBRARIES}
         ${LIBTLD_LIBRARIES}
         ${LOG4CPLUS_LIBRARIES}
         ${QT_LIBRARIES}
         ${AS2JS_LIBRARIES}
+        ${SNAPCATCH2_LIBRARIES}
         ${QTSERIALIZATION_LIBRARIES}
         ${MAGIC_LIBRARIES}
         ${LIBPROCPS_LIBRARIES}
@@ -72,13 +70,13 @@ if(Catch2_FOUND)
     # You can use the --success command line option to see all the tests
     # as they run; it is a LOT of output though, thus by default we don't
     # use it (TODO: add support for --progress)
-    add_test( libsnapwebsites_tests ${PROJECT_NAME} )
+    add_test(libsnapwebsites_tests ${PROJECT_NAME})
 
-else(Catch2_FOUND)
+else(SnapCatch2_FOUND)
 
     # You may use 'apt-get install catch' under Ubuntu
-    message("No catch test will be created because you do not seem to have catch.hpp installed...")
+    message("No catch test will be created because you do not seem to have snapcatch2.hpp installed...")
 
-endif(Catch2_FOUND)
+endif(SnapCatch2_FOUND)
 
 # vim: ts=4 sw=4 et
