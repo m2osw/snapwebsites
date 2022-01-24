@@ -494,6 +494,7 @@ advgetopt::options_environment g_snapserver_options_environment =
     .f_options = g_snapserver_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPSERVER_OPTIONS",
+    .f_section_variables_name = nullptr,
     .f_configuration_files = nullptr,
     .f_configuration_filename = nullptr,
     .f_configuration_directories = nullptr,

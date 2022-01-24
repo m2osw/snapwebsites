@@ -161,6 +161,7 @@ advgetopt::options_environment const g_options_environment =
     .f_options = g_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPLISTD_OPTIONS",
+    .f_section_variables_name = nullptr,
     .f_configuration_files = nullptr,
     .f_configuration_filename = nullptr,
     .f_configuration_directories = nullptr,
