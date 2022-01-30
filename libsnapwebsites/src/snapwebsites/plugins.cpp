@@ -1,4 +1,3 @@
-// Snap Websites Server -- plugin loader
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -928,7 +927,7 @@ QString plugin::settings_path() const
  */
 int64_t plugin::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -956,7 +955,7 @@ int64_t plugin::do_update(int64_t last_updated)
  */
 int64_t plugin::do_dynamic_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 

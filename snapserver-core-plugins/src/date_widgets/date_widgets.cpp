@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -73,7 +73,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid name_t::SNAP_NAME_DATE_WIDGETS_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -196,7 +196,7 @@ int64_t date_widgets::do_update(int64_t last_updated)
  */
 void date_widgets::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -376,7 +376,7 @@ void date_widgets::on_string_to_value(editor::editor::string_to_value_info_t & v
  */
 void date_widgets::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
-    NOT_USED(ipath, field_id, row);
+    snapdev::NOT_USED(ipath, field_id, row);
 
     if(field_type == get_name(name_t::SNAP_NAME_DATE_WIDGETS_DROPDOWN_TYPE))
     {
@@ -443,7 +443,7 @@ void date_widgets::on_validate_editor_post_for_widget(
             QString const & value,
             bool const is_secret)
 {
-    NOT_USED(ipath, widget_type);
+    snapdev::NOT_USED(ipath, widget_type);
 
     // emptiness is checked with the system "required" feature
     if(!value.isEmpty())

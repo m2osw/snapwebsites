@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle a cart, checkout, wishlist, affiliates...
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -186,7 +185,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid SNAP_NAME_ECOMMERCE_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -505,7 +504,7 @@ int64_t ecommerce::do_update(int64_t last_updated)
  */
 void ecommerce::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -543,7 +542,7 @@ void ecommerce::bootstrap(snap_child * snap)
  */
 void ecommerce::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOT_USED(ipath, metadata);
+    snapdev::NOT_USED(ipath, metadata);
 
     QDomDocument doc(header.ownerDocument());
 
@@ -774,7 +773,7 @@ bool ecommerce::on_path_execute(content::path_info_t& ipath)
  */
 void ecommerce::on_preprocess_path(content::path_info_t& ipath, plugins::plugin *path_plugin)
 {
-    NOT_USED(ipath, path_plugin);
+    snapdev::NOT_USED(ipath, path_plugin);
 
     snap_uri const main_uri(f_snap->get_uri());
     if(main_uri.has_query_option("cart"))
@@ -1431,7 +1430,7 @@ std::cerr << "***\n*** from invoices " << invoices_ipath.get_key() << " create i
     // was just saved in the invoice; in its place we put an invoice
     // URL so for users without an account we still have access
     users_plugin->attach_to_session(get_name(name_t::SNAP_NAME_ECOMMERCE_INVOICE_PATH), invoice_ipath.get_key());
-    NOT_USED(users_plugin->detach_from_session(get_name(name_t::SNAP_NAME_ECOMMERCE_CART_PRODUCTS)));
+    snapdev::NOT_USED(users_plugin->detach_from_session(get_name(name_t::SNAP_NAME_ECOMMERCE_CART_PRODUCTS)));
 
     // The "actual" generation of the invoice should be using an XSLT
     // file and not C++ code; that way we can easily extend the display.
@@ -1648,7 +1647,7 @@ bool ecommerce::product_allowed_impl(QDomElement product, content::path_info_t &
 
 void ecommerce::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOT_USED(ipath, xml);
+    snapdev::NOT_USED(ipath, xml);
 
     if(!token.is_namespace("ecommerce::"))
     {

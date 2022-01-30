@@ -223,7 +223,7 @@ snapcluster::snapcluster(int argc, char * argv[])
     {
         f_opt.usage();
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // --version
@@ -231,7 +231,7 @@ snapcluster::snapcluster(int argc, char * argv[])
     {
         std::cerr << SNAPCOMMUNICATOR_VERSION_STRING << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     add_snap_communicator_commands();
@@ -283,7 +283,7 @@ bool snapcluster::send_message(snap::snap_communicator_message const & message, 
 
 void snapcluster::ready(snap::snap_communicator_message & message)
 {
-    snap::NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     snap::snap_communicator_message clusterstatus_message;
     clusterstatus_message.set_command("CLUSTERSTATUS");
@@ -294,7 +294,7 @@ void snapcluster::ready(snap::snap_communicator_message & message)
 
 void snapcluster::stop(bool quitting)
 {
-    snap::NOT_USED(quitting);
+    snapdev::NOT_USED(quitting);
 
     if(f_messenger != nullptr)
     {

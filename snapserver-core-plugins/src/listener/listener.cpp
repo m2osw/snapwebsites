@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle listener requests responses
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -159,7 +158,7 @@ int64_t listener::do_update(int64_t last_updated)
  */
 void listener::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -241,7 +240,7 @@ void listener::on_process_post(QString const & uri_path)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_ACCEPTABLE, "Not Acceptable",
                 "The number of URI you are listening to is not a valid integer.",
                 QString("Somehow _listener_size is not an integer (%1).").arg(size_str));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     if(max_uri < 0)
     {
@@ -250,7 +249,7 @@ void listener::on_process_post(QString const & uri_path)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_ACCEPTABLE, "Not Acceptable",
                 "The number of URI you are listening to is negative...",
                 QString("Somehow _listener_size is negative (%1 -> %2).").arg(size_str).arg(max_uri));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     QString const & user_path(users_plugin->get_user_info().get_user_path(false));
@@ -311,7 +310,7 @@ void listener::on_process_post(QString const & uri_path)
 
 bool listener::listener_check_impl(snap_uri const & uri, content::path_info_t & page_ipath, QDomDocument doc, QDomElement result)
 {
-    NOT_USED(uri, page_ipath, doc, result);
+    snapdev::NOT_USED(uri, page_ipath, doc, result);
 
     // TODO: add handling of all the plugins that cannot include the listener
     //       if any requires it (users? to test when we get logged out?)

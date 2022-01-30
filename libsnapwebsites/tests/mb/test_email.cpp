@@ -1,4 +1,3 @@
-// Snap Websites Server -- test_email.cpp/h
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 //
 // This test works along the test_ssl_server.cpp and implements the
@@ -88,7 +87,7 @@ void init_test()
         //
         std::cerr << "error:test_email: could not retrieve your $PATH environment variable." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     std::string path(sendmail_path);
     if(*p != '\0')
@@ -345,7 +344,7 @@ public:
 
     bool attachment_header(snap::email::attachment const & a, QCaseInsensitiveString const & name, QString const & value)
     {
-        snap::NOT_USED(a);
+        snapdev::NOT_USED(a);
         if(name == "Content-Type")
         {
             // the content-type gets changed because we have
@@ -478,8 +477,8 @@ public:
 
         std::string const buffer(read_to("--" + f_boundary));
         QByteArray const data(buffer.c_str());
-        std::string const da(snap::bin_to_hex(data.trimmed().data()));
-        std::string const db(snap::bin_to_hex(a.get_data().trimmed().data()));
+        std::string const da(snapdev::bin_to_hex(data.trimmed().data()));
+        std::string const db(snapdev::bin_to_hex(a.get_data().trimmed().data()));
         if(da != db)
         {
             // WARNING: first I tested with:
@@ -495,9 +494,9 @@ public:
                       << " does not match the data found in \""
                       << f_filename
                       << "\":" << std::endl
-                      << snap::bin_to_hex(data.trimmed().data()) << std::endl
+                      << snapdev::bin_to_hex(data.trimmed().data()) << std::endl
                       << "versus: " << std::endl
-                      << snap::bin_to_hex(a.get_data().trimmed().data()) << std::endl
+                      << snapdev::bin_to_hex(a.get_data().trimmed().data()) << std::endl
                       << std::endl;
             exit(1);
         }

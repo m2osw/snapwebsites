@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -133,7 +133,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_FEED_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -256,7 +256,7 @@ int64_t feed::do_update(int64_t last_updated)
  */
 void feed::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -292,7 +292,7 @@ void feed::bootstrap(snap_child * snap)
  */
 void feed::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOT_USED(page);
+    snapdev::NOT_USED(page);
 
     // avoid those links on administrative pages, totally useless!
     if(ipath.get_cpath().startsWith("admin/"))

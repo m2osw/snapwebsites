@@ -143,7 +143,7 @@ void init_callback()
 
 int init_tests(Catch::Session & session)
 {
-    snap::NOT_USED(session);
+    snapdev::NOT_USED(session);
 
     snaplogger::logger::pointer_t l(snaplogger::logger::get_instance());
     l->add_console_appender();

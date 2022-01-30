@@ -1,4 +1,3 @@
-// Snap Websites Server -- firewall handling by snap
 // Copyright (c) 2011-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -2457,7 +2456,7 @@ void snap_firewall::sighandler( int sig )
     // Exit with error status
     //
     ::exit( 1 );
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 

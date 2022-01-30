@@ -1,4 +1,3 @@
-// Snap Lock -- class to handle inter-process and inter-computer locks
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -651,7 +650,7 @@ void lock_connection::process_timeout()
  */
 void lock_connection::ready(snap_communicator_message & message)
 {
-    NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     // no reply expected from the COMMANDS message,
     // so send the LOCK now which initiates the locking

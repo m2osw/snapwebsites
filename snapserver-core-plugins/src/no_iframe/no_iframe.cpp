@@ -1,4 +1,3 @@
-// Snap Websites Server -- manager the No IFRAME JavaScript
 // Copyright (c) 2017-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -100,7 +99,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_NO_IFRAME_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -218,7 +217,7 @@ int64_t no_iframe::do_update(int64_t last_updated)
  */
 void no_iframe::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -255,7 +254,7 @@ void no_iframe::bootstrap(snap_child * snap)
  */
 void no_iframe::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOT_USED(metadata);
+    snapdev::NOT_USED(metadata);
 
     snap_string_list const & segments(ipath.get_segments());
     if(segments.size() > 0

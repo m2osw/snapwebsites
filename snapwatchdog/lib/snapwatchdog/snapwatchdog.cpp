@@ -14,9 +14,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -41,6 +41,7 @@
 
 // snapdev lib
 //
+#include <snapdev/not_reached.h>
 #include <snapdev/not_used.h>
 
 
@@ -601,7 +602,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_WATCHDOG_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -1279,7 +1280,7 @@ void watchdog_server::init_parameters()
 
 void watchdog_server::msg_nocassandra(snap::snap_communicator_message & message)
 {
-    snap::NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     // we lost Cassandra, "disconnect" from snapdbproxy until we
     // get CASSANDRAREADY again
@@ -1291,7 +1292,7 @@ void watchdog_server::msg_nocassandra(snap::snap_communicator_message & message)
 
 void watchdog_server::msg_cassandraready(snap::snap_communicator_message & message)
 {
-    snap::NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     // connect to Cassandra and verify that a "serverstats"
     // table exists
@@ -1342,7 +1343,7 @@ void watchdog_server::msg_rusage(snap::snap_communicator_message & message)
 
 void watchdog_server::ready(snap::snap_communicator_message & message)
 {
-    snap::NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     // TBD: should we wait on this signal before we start the g_tick_timer?
     //      since we do not need the snap communicator, probably not useful
@@ -1363,7 +1364,7 @@ void watchdog_server::ready(snap::snap_communicator_message & message)
 
 void watchdog_server::msg_reload_config(snap::snap_communicator_message & message)
 {
-    snap::NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     f_force_restart = true;
     stop(false);
@@ -1975,7 +1976,7 @@ bool watchdog_child::run_watchdog_plugins()
 
         // the child has to exit()
         exit(0);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     catch(snap_exception const & e)
     {
@@ -1990,7 +1991,7 @@ bool watchdog_child::run_watchdog_plugins()
         SNAP_LOG_FATAL("watchdog_child::run_watchdog_plugins(): unknown exception caught!");
     }
     exit(1);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
     return false; // not reached, true or false is pretty much the same here
 }
 
@@ -2115,7 +2116,7 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
 
         // the child has to exit()
         exit(0);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     catch(snap_exception const & e)
     {
@@ -2130,7 +2131,7 @@ bool watchdog_child::record_usage(snap::snap_communicator_message const & messag
         SNAP_LOG_FATAL("watchdog_child::record_usage(): unknown exception caught!");
     }
     exit(1);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
     return false; // not reached, true or false is pretty much the same here
 }
 
@@ -2267,7 +2268,7 @@ void watchdog_child::exit(int code)
     f_client.reset();
 
     server::exit(code);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 

@@ -1214,7 +1214,7 @@ void table_impl::row_update(row::pointer_t row_data, cursor::pointer_t cur)
 {
 // 'cur' has the OID which we can use to find the data (we will also save
 // the exact location so we don't have to search again)
-snap::NOT_USED(row_data, cur);
+snapdev::NOT_USED(row_data, cur);
 }
 
 
@@ -1368,7 +1368,7 @@ void table_impl::read_rows(cursor_data & data)
 
 void table_impl::read_secondary(cursor_data & data)
 {
-snap::NOT_USED(data);
+snapdev::NOT_USED(data);
 std::cerr << "table: TODO implement read secondary...\n";
 throw snapdatabase_not_yet_implemented("table: TODO implement read secondary");
 }
@@ -1386,7 +1386,7 @@ void table_impl::read_indirect(cursor_data & data)
         return;
     }
 
-snap::NOT_USED(data);
+snapdev::NOT_USED(data);
 std::cerr << "table: TODO implement read indirect...\n";
 throw snapdatabase_not_yet_implemented("table: TODO implement read indirect");
 }
@@ -1492,7 +1492,7 @@ std::cerr << "read_primary: reading row!?\n";
 
 void table_impl::read_expiration(cursor_data & data)
 {
-snap::NOT_USED(data);
+snapdev::NOT_USED(data);
 std::cerr << "table: TODO implement read expiration...\n";
 throw snapdatabase_not_yet_implemented("table: TODO implement read expiration");
 }
@@ -1500,7 +1500,7 @@ throw snapdatabase_not_yet_implemented("table: TODO implement read expiration");
 
 void table_impl::read_tree(cursor_data & data)
 {
-snap::NOT_USED(data);
+snapdev::NOT_USED(data);
 std::cerr << "table: TODO implement read tree...\n";
 throw snapdatabase_not_yet_implemented("table: TODO implement read tree");
 }

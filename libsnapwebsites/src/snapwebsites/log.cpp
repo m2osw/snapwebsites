@@ -1,4 +1,3 @@
-// Snap Websites Server -- log services
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // self
 //
@@ -192,28 +191,28 @@ public:
                     }
 
     logger &        operator () ()                              { return *this; }
-    logger &        operator () (log_security_t const v)        { NOT_USED(v); return *this; }
-    logger &        operator () (char const * s)                { NOT_USED(s); return *this; }
-    logger &        operator () (wchar_t const * s)             { NOT_USED(s); return *this; }
-    logger &        operator () (std::string const & s)         { NOT_USED(s); return *this; }
-    logger &        operator () (std::wstring const & s)        { NOT_USED(s); return *this; }
-    logger &        operator () (QString const & s)             { NOT_USED(s); return *this; }
-    logger &        operator () (snap::snap_config::snap_config_parameter_ref const & s) { NOT_USED(s); return *this; }
-    logger &        operator () (char const v)                  { NOT_USED(v); return *this; }
-    logger &        operator () (signed char const v)           { NOT_USED(v); return *this; }
-    logger &        operator () (unsigned char const v)         { NOT_USED(v); return *this; }
-    logger &        operator () (signed short const v)          { NOT_USED(v); return *this; }
-    logger &        operator () (unsigned short const v)        { NOT_USED(v); return *this; }
-    logger &        operator () (signed int const v)            { NOT_USED(v); return *this; }
-    logger &        operator () (unsigned int const v)          { NOT_USED(v); return *this; }
-    logger &        operator () (signed long const v)           { NOT_USED(v); return *this; }
-    logger &        operator () (unsigned long const v)         { NOT_USED(v); return *this; }
-    logger &        operator () (signed long long const v)      { NOT_USED(v); return *this; }
-    logger &        operator () (unsigned long long const v)    { NOT_USED(v); return *this; }
-    logger &        operator () (float const v)                 { NOT_USED(v); return *this; }
-    logger &        operator () (double const v)                { NOT_USED(v); return *this; }
-    logger &        operator () (bool const v)                  { NOT_USED(v); return *this; }
-    logger &        operator () (void const * p)                { NOT_USED(p); return *this; }
+    logger &        operator () (log_security_t const v)        { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (char const * s)                { snapdev::NOT_USED(s); return *this; }
+    logger &        operator () (wchar_t const * s)             { snapdev::NOT_USED(s); return *this; }
+    logger &        operator () (std::string const & s)         { snapdev::NOT_USED(s); return *this; }
+    logger &        operator () (std::wstring const & s)        { snapdev::NOT_USED(s); return *this; }
+    logger &        operator () (QString const & s)             { snapdev::NOT_USED(s); return *this; }
+    logger &        operator () (snap::snap_config::snap_config_parameter_ref const & s) { snapdev::NOT_USED(s); return *this; }
+    logger &        operator () (char const v)                  { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (signed char const v)           { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (unsigned char const v)         { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (signed short const v)          { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (unsigned short const v)        { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (signed int const v)            { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (unsigned int const v)          { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (signed long const v)           { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (unsigned long const v)         { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (signed long long const v)      { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (unsigned long long const v)    { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (float const v)                 { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (double const v)                { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (bool const v)                  { snapdev::NOT_USED(v); return *this; }
+    logger &        operator () (void const * p)                { snapdev::NOT_USED(p); return *this; }
 };
 
 
@@ -262,7 +261,7 @@ public:
             return false;
         }();
 
-        NOT_USED(g_registered);
+        snapdev::NOT_USED(g_registered);
     }
 
 protected:

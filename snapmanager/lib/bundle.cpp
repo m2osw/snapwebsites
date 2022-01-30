@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle snapmanager bundles
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // self
 //
@@ -402,7 +401,7 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
         case bundle_field<T>::type_t::BUNDLE_FIELD_TYPE_LIST:
             {
                 std::string const list(n.text().toUtf8().data());
-                snap::tokenize_string<bundle::string_set_t>(b->*it->f_data_list, list, ",", true, " ");
+                snapdev::tokenize_string<bundle::string_set_t>(b->*it->f_data_list, list, ",", true, " ");
             }
             break;
 

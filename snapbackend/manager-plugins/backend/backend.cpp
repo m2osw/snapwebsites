@@ -12,9 +12,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // backend
@@ -166,7 +166,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_BACKEND_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -244,7 +244,7 @@ QString backend::dependencies() const
  */
 int64_t backend::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -754,7 +754,7 @@ bool backend::apply_setting( QString const     & button_name
                            , std::set<QString> & affected_services
                            )
 {
-    NOT_USED(old_or_installation_value, affected_services);
+    snapdev::NOT_USED(old_or_installation_value, affected_services);
 
     // restore defaults?
     //
@@ -769,7 +769,7 @@ bool backend::apply_setting( QString const     & button_name
 
         snap_config snap_server_conf(g_configuration_filename);
         snap_server_conf["backend_status"] = new_value;
-        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, "backend_status", new_value));
+        snapdev::NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, "backend_status", new_value));
 
         update_all_services();
         return true;
@@ -892,7 +892,7 @@ bool backend::apply_setting( QString const     & button_name
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command("systemctl");
         p.add_argument("daemon-reload");
-        NOT_USED(p.run());
+        snapdev::NOT_USED(p.run());
         return true;
     }
 
@@ -912,7 +912,7 @@ bool backend::apply_setting( QString const     & button_name
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command("systemctl");
         p.add_argument("daemon-reload");
-        NOT_USED(p.run());
+        snapdev::NOT_USED(p.run());
         return true;
     }
 
@@ -950,7 +950,7 @@ bool backend::apply_setting( QString const     & button_name
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command("systemctl");
         p.add_argument("daemon-reload");
-        NOT_USED(p.run());
+        snapdev::NOT_USED(p.run());
         return true;
     }
 

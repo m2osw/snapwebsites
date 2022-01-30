@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle Snap! files apache2 settings
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -84,7 +83,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_APACHE2_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -162,7 +161,7 @@ QString apache2::dependencies() const
  */
 int64_t apache2::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -427,7 +426,7 @@ bool apache2::display_value(QDomElement parent, snap_manager::status_t const & s
  */
 bool apache2::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOT_USED(old_or_installation_value);
+    snapdev::NOT_USED(old_or_installation_value);
 
     // we support Save and Restore Default of the id_rsa.pub file
     //
@@ -642,7 +641,7 @@ void apache2::on_handle_affected_services(std::set<QString> & affected_services)
         p.set_command("systemctl");
         p.add_argument("restart");
         p.add_argument("apache2");
-        NOT_USED(p.run());           // errors are automatically logged by snap::process
+        snapdev::NOT_USED(p.run());           // errors are automatically logged by snap::process
 
         restarted = true;
     }
@@ -666,7 +665,7 @@ void apache2::on_handle_affected_services(std::set<QString> & affected_services)
             p.set_command("systemctl");
             p.add_argument("reload");
             p.add_argument("apache2");
-            NOT_USED(p.run());           // errors are automatically logged by snap::process
+            snapdev::NOT_USED(p.run());           // errors are automatically logged by snap::process
         }
     }
 }

@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // self
 //
@@ -657,7 +657,7 @@ lexer::token_t lexer::get_normal_token(mode_t mode)
                       << " (0x" << std::hex << std::uppercase << c
                       << ") from input file.\n";
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
 
         }
     }
@@ -773,7 +773,7 @@ lexer::token_t lexer::get_number_token(mode_t mode, int c)
             }
             d = getc();
         }
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // first read the number as if it were an integer
@@ -1019,7 +1019,7 @@ lexer::token_t lexer::get_string_token()
         }
         str += c; // note: c may be '\0' here!
     }
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -1846,7 +1846,7 @@ void parser::parse()
                 default:
                     std::cerr << "error: a type followed by & must be an integral type.\n";
                     exit(1);
-                    snap::NOT_REACHED();
+                    snapdev::NOT_REACHED();
 
                 }
                 token = f_lexer->get_token(lexer::mode_t::LEXER_MODE_NORMAL);
@@ -2077,7 +2077,7 @@ void parser::parse()
                 default:
                     std::cerr << "error: a type followed by / must be a string type.\n";
                     exit(1);
-                    snap::NOT_REACHED();
+                    snapdev::NOT_REACHED();
 
                 }
                 break;
@@ -2174,7 +2174,7 @@ void parser::parse()
                                     << ": " << static_cast<char>(token.get_character())
                                     << " used with a floating point number.\n";
                             exit(1);
-                            snap::NOT_REACHED();
+                            snapdev::NOT_REACHED();
 
                         }
                     }
@@ -2210,7 +2210,7 @@ void parser::parse()
                                   << f_lexer->current_line() << ": unknown comparison operator "
                                   << token.get_character() << ".\n";
                         exit(1);
-                        snap::NOT_REACHED();
+                        snapdev::NOT_REACHED();
 
                     }
                     token = f_lexer->get_token(lexer::mode_t::LEXER_MODE_NORMAL);
@@ -2347,7 +2347,7 @@ void parser::parse()
         case entry_t::type_t::ENTRY_TYPE_UNKNOWN:
             std::cerr << "error: entry type still unknown when defining its value.\n";
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
 
         }
         token = f_lexer->get_token(lexer::mode_t::LEXER_MODE_MESSAGE);
@@ -2552,7 +2552,7 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
 
         void output_unknown(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: found an unknown entry while outputing data.\n";
             exit(1);
         }
@@ -2583,7 +2583,7 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
 
         void output_short(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (short).\n";
             exit(1);
         }
@@ -2618,7 +2618,7 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
 
         void output_ushort(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ushort).\n";
             exit(1);
         }
@@ -2706,21 +2706,21 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
 
         void output_melong(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (melong).\n";
             exit(1);
         }
 
         void output_ulong(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ulong).\n";
             exit(1);
         }
 
         void output_ulelong(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ulelong).\n";
             exit(1);
         }
@@ -2743,119 +2743,119 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
 
         void output_umelong(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (umelong).\n";
             exit(1);
         }
 
         void output_beid3(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (beid3).\n";
             exit(1);
         }
 
         void output_leid3(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (leid3).\n";
             exit(1);
         }
 
         void output_ubeid3(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ubeid3).\n";
             exit(1);
         }
 
         void output_uleid3(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (uleid3).\n";
             exit(1);
         }
 
         void output_quad(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (quad).\n";
             exit(1);
         }
 
         void output_bequad(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (bequad).\n";
             exit(1);
         }
 
         void output_lequad(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (lequad).\n";
             exit(1);
         }
 
         void output_uquad(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (uquad).\n";
             exit(1);
         }
 
         void output_ubequad(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ubequad).\n";
             exit(1);
         }
 
         void output_ulequad(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ulequad).\n";
             exit(1);
         }
 
         void output_float(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (float).\n";
             exit(1);
         }
 
         void output_befloat(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (befloat).\n";
             exit(1);
         }
 
         void output_lefloat(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (lefloat).\n";
             exit(1);
         }
 
         void output_double(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (double).\n";
             exit(1);
         }
 
         void output_bedouble(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (bedouble).\n";
             exit(1);
         }
 
         void output_ledouble(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ledouble).\n";
             exit(1);
         }
@@ -2881,21 +2881,21 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
 
         void output_pstring(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (pstring).\n";
             exit(1);
         }
 
         void output_besearch16(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (besearch16).\n";
             exit(1);
         }
 
         void output_lesearch16(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (lesearch16).\n";
             exit(1);
         }
@@ -2942,105 +2942,105 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
 
         void output_date(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (date).\n";
             exit(1);
         }
 
         void output_qdate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (qdate).\n";
             exit(1);
         }
 
         void output_ldate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ldate).\n";
             exit(1);
         }
 
         void output_qldate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (qldate).\n";
             exit(1);
         }
 
         void output_bedate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (bedate).\n";
             exit(1);
         }
 
         void output_beqdate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (beqdate).\n";
             exit(1);
         }
 
         void output_beldate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (beldate).\n";
             exit(1);
         }
 
         void output_beqldate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (beqldate).\n";
             exit(1);
         }
 
         void output_ledate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (ledate).\n";
             exit(1);
         }
 
         void output_leqdate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (leqdate).\n";
             exit(1);
         }
 
         void output_leldate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (leldate).\n";
             exit(1);
         }
 
         void output_leqldate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (leqldate).\n";
             exit(1);
         }
 
         void output_medate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (medate).\n";
             exit(1);
         }
 
         void output_meldate(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (meldate).\n";
             exit(1);
         }
 
         void output_indirect(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cerr << "error: type not implemented yet (indirect).\n";
             exit(1);
         }
@@ -3048,13 +3048,13 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
         void output_default(size_t pos)
         {
             // default is always true
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cout << "true";
         }
 
         void output_name(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             // this is already done in the caller which generates the
             // function declaration
         }
@@ -3078,7 +3078,7 @@ void parser::output_entry(size_t start, size_t end, bool has_mime)
 
         void output_endif(size_t pos)
         {
-            snap::NOT_USED(pos);
+            snapdev::NOT_USED(pos);
             std::cout << "}" << std::endl;
         }
 
@@ -3249,19 +3249,19 @@ int main(int argc, char *argv[])
             || strcmp(argv[i], "--help") == 0)
             {
                 usage();
-                snap::NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             if(strcmp(argv[i], "--version") == 0)
             {
                 std::cout << MIMETYPE_VERSION_STRING << std::endl;
                 exit(1);
-                snap::NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             if(strcmp(argv[i], "--lib-version") == 0)
             {
                 std::cout << SNAPWEBSITES_VERSION_MAJOR << "." << SNAPWEBSITES_VERSION_MINOR << "." << SNAPWEBSITES_VERSION_PATCH << std::endl;
                 exit(1);
-                snap::NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             if(strcmp(argv[i], "-d") == 0
             || strcmp(argv[i], "--debug") == 0)

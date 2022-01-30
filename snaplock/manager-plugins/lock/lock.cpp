@@ -1,4 +1,3 @@
-// Snap Websites Server -- manage the snaplock settings
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -80,7 +79,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_LOCK_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -157,7 +156,7 @@ QString lock::dependencies() const
  */
 int64_t lock::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -305,8 +304,7 @@ bool lock::display_value(QDomElement parent, snap_manager::status_t const & s, s
  */
 bool lock::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOT_USED(old_or_installation_value);
-    NOT_USED(button_name);
+    snapdev::NOT_USED(old_or_installation_value, button_name);
 
     if(field_name == "candidate_priority")
     {
@@ -319,7 +317,7 @@ bool lock::apply_setting(QString const & button_name, QString const & field_name
         snap_config snap_lock_conf(g_configuration_filename);
         snap_lock_conf[field_name] = new_value;
 
-        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+        snapdev::NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
 
         return true;
     }

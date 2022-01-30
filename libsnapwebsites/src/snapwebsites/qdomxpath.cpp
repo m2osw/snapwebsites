@@ -1,4 +1,3 @@
-// Snap Websites Servers -- retrieve a list of nodes from a QDomDocument based on an XPath
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -1381,7 +1380,7 @@ public:
             case type_t::ATOMIC_TYPE_DOUBLE:
             case type_t::ATOMIC_TYPE_STRING:
                 // ignore the result, we return *this below
-                snap::NOT_USED(atomic_value_t::operator = (rhs));
+                snapdev::NOT_USED(atomic_value_t::operator = (rhs));
                 break;
 
             case type_t::ATOMIC_TYPE_SET:

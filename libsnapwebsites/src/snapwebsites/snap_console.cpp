@@ -1,4 +1,3 @@
-// Snap Console -- two panel console with ncurses
 // Copyright (c) 2018-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -285,12 +284,12 @@ public:
         if(wprintw(f_win_output, "%s", line.c_str()) != OK)
         {
             fatal_error("wprintw() to output window failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         if(wrefresh(p->f_win_output) != OK)
         {
             fatal_error("wrefresh() to output window failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         f_first_line = false;
 
@@ -323,7 +322,7 @@ public:
         if(clearok(curscr, TRUE) != OK)
         {
             fatal_error("clearok() failed in clear_output()");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // we will next be writing a first line again
@@ -476,7 +475,7 @@ private:
         if(f_term == nullptr)
         {
             fatal_error("newterm() failed to initialize ncurses");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         set_term(f_term);
 
@@ -484,7 +483,7 @@ private:
         if(f_win_main == nullptr)
         {
             fatal_error("initscr() failed to initialize ncurses");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // we've got a screen, we're in visual mode now
@@ -498,12 +497,12 @@ private:
             if(start_color() != OK)
             {
                 fatal_error("start_color() failed");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             if(use_default_colors() != OK)
             {
                 fatal_error("use_default_colors() failed");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
 
             // I'm not too sure how to handle this one...
@@ -524,28 +523,28 @@ private:
         if(f_screen_height < 5)
         {
             fatal_error("your console is not tall enough for this application");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         if(cbreak() != OK)
         {
             fatal_error("cbreak() failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         if(noecho() != OK)
         {
             fatal_error("noecho() failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         if(nonl() != OK)
         {
             fatal_error("nonl() failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         if(intrflush(nullptr, false) != OK)
         {
             fatal_error("intrflush() failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // IMPORTANT:
@@ -574,14 +573,14 @@ private:
         if(f_win_output == nullptr)
         {
             fatal_error("could not create output window");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         f_win_input = newwin(4, f_screen_width - 2, f_screen_height - 5, 1);
         if(f_win_input == nullptr)
         {
             fatal_error("could not create input window");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // allow strings longer than the message window and show only the
@@ -590,7 +589,7 @@ private:
         if(scrollok(f_win_output, TRUE) != OK)
         {
             fatal_error("scrollok() failed; could not setup output window to scoll on large lines");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         //if(scrollok(f_win_input, TRUE) != OK) -- TBD
         //{
@@ -659,7 +658,7 @@ private:
 
     static int show_help(int count, int c)
     {
-        NOT_USED(count, c);
+        snapdev::NOT_USED(count, c);
 
         f_snap_console->process_help();
 
@@ -674,13 +673,13 @@ private:
         if(rl_bind_key('\t', rl_insert) != 0)
         {
             fatal_error("invalid key passed to rl_bind_key()");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         if(rl_bind_keyseq("\\eOP" /* F1 */, &show_help) != 0)
         {
             fatal_error("invalid key (^[OP a.k.a. F1) sequence passed to rl_bind_keyseq");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // TODO: allow for not using history
@@ -750,7 +749,7 @@ private:
     {
         pointer_t p(ptr());
 
-        snap::NOT_USED(dummy);
+        snapdev::NOT_USED(dummy);
 
         p->f_input_available = 0; // false
 
@@ -819,7 +818,7 @@ private:
         if(werase(f_win_output) != OK)
         {
             fatal_error("werase() of output window failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         draw_borders();
@@ -838,7 +837,7 @@ private:
             if(wprintw(f_win_output, "%s%s", nl, l.c_str()) != OK)
             {
                 fatal_error("wprintw() to output window failed");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             nl = "\n";
         }
@@ -850,7 +849,7 @@ private:
             if(wnoutrefresh(f_win_output) != OK)
             {
                 fatal_error("wnoutrefresh() of output window failed");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
         }
         else
@@ -858,7 +857,7 @@ private:
             if(wrefresh(f_win_output) != OK)
             {
                 fatal_error("wrefresh() of output window failed");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
         }
     }
@@ -883,7 +882,7 @@ private:
         if(werase(f_win_input) != OK)
         {
             fatal_error("werase() failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // this might write a string wider than the terminal currently,
@@ -900,7 +899,7 @@ private:
             if(wnoutrefresh(f_win_input) != OK)
             {
                 fatal_error("wnoutrefresh() failed");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
         }
         else
@@ -908,7 +907,7 @@ private:
             if(wrefresh(f_win_input) != OK)
             {
                 fatal_error("wrefresh() failed");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
         }
     }
@@ -943,7 +942,7 @@ private:
             if(wmove(f_win_input, y, x) != OK)
             {
                 fatal_error("wmove() failed");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             curs_set(2);
         }
@@ -967,24 +966,24 @@ private:
         if(f_screen_height < 5)
         {
             fatal_error("window too small after resize");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         if(wresize(f_win_output, f_screen_height - 7, f_screen_width - 2) != OK)
         {
             fatal_error("wresize of output window failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         if(wresize(f_win_input, 4, f_screen_width - 2) != OK)
         {
             fatal_error("wresize of input window failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         if(mvwin(f_win_input, f_screen_height - 5, 1) != OK)
         {
             fatal_error("mvwin of input window failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // batch refreshes and commit them with doupdate()
@@ -994,7 +993,7 @@ private:
         if(doupdate() != OK)
         {
             fatal_error("doupdate() after wresize() failed");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 

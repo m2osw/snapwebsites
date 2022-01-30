@@ -128,7 +128,7 @@ private:
     args_t              f_args = args_t();
     std::string         f_email = std::string();
     std::string         f_msmtp_command = std::string();
-    snap::raii_fd_t     f_lock_fd = snap::raii_fd_t();
+    snapdev::raii_fd_t  f_lock_fd = snapdev::raii_fd_t();
     bool                f_dequeue_emails = false;
     bool                f_no_dequeue = false;
     bool                f_locked = false;
@@ -606,7 +606,7 @@ int sendmail::dequeue()
     // remove only the emails that were sent; with mmap()'ed files
     // we can just use memmove() and truncate() to rearrange the file
     //
-    snap::raii_fd_t fd;
+    snapdev::raii_fd_t fd;
     fd.reset(open(g_root_mail, O_RDWR));
     if(fd == nullptr)
     {
@@ -1031,19 +1031,19 @@ int main(int argc, char * argv [])
     // executable (chmod 755 /etc/cron.hourly/myscript) and thus it did not
     // kick start at all...
     {
-        snap::raii_fd_t fd;
+        snapdev::raii_fd_t fd;
         fd.reset(open("/tmp/sendmail-run.txt"
                        , O_CLOEXEC | O_CREAT | O_RDWR
                        , S_IRUSR | S_IWUSR));
         if(fd != nullptr)
         {
             std::string msg("args =\n");
-            snap::NOT_USED(write(fd.get(), msg.c_str(), msg.length()));
+            snapdev::NOT_USED(write(fd.get(), msg.c_str(), msg.length()));
 
             for(int idx(0); idx < argc; ++idx)
             {
                 msg = std::to_string(idx) + ". " + argv[idx] + "\n";
-                snap::NOT_USED(write(fd.get(), msg.c_str(), msg.length()));
+                snapdev::NOT_USED(write(fd.get(), msg.c_str(), msg.length()));
             }
         }
         else

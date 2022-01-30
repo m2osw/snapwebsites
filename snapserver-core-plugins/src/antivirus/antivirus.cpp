@@ -1,4 +1,3 @@
-// Snap Websites Server -- check uploaded files for viruses
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -86,7 +85,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid SNAP_NAME_ANTIVIRUS_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -207,7 +206,7 @@ int64_t antivirus::do_update(int64_t last_updated)
  */
 void antivirus::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
     content::content::instance()->add_xml(get_plugin_name());
 }
 
@@ -334,7 +333,7 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
         v.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
         v.set_command("clamscan");
         v.add_argument("--version");
-        NOT_USED(v.run()); // result error info already printed by process class
+        snapdev::NOT_USED(v.run()); // result error info already printed by process class
         QString const output(v.get_output(true));
         revision_row->getCell(get_name(name_t::SNAP_NAME_ANTIVIRUS_VERSION))->setValue(output);
     }

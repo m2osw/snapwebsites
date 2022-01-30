@@ -128,7 +128,7 @@ void manager_daemon::init(int argc, char * argv[])
     if(f_config.has_parameter("bundle_uri"))
     {
         std::string const bundle_uri(f_config["bundle_uri"]);
-        snap::tokenize_string(f_bundle_uri, bundle_uri, ",", true, " ");
+        snapdev::tokenize_string(f_bundle_uri, bundle_uri, ",", true, " ");
 
         if(!f_bundle_uri.empty())
         {
@@ -269,7 +269,7 @@ void manager_daemon::sighandler( int sig )
     // Exit with error status
     //
     ::exit( 1 );
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -621,7 +621,7 @@ void manager_daemon::stop(bool quitting)
  */
 void manager_daemon::manager_install(snap::snap_communicator_message const & message)
 {
-    snap::NOT_USED(message);
+    snapdev::NOT_USED(message);
     //installer(message);
 }
 
@@ -771,7 +771,7 @@ void manager_daemon::unreachable_message(snap::snap_communicator_message const &
 
         // write the result back to the file
         //
-        snap::NOT_USED(status_info.write());
+        snapdev::NOT_USED(status_info.write());
     }
 }
 

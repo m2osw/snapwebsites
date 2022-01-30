@@ -1,4 +1,3 @@
-// Snap Websites Server -- info plugin to control the core settings
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -88,7 +87,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_INFO_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -97,7 +96,6 @@ char const * get_name(name_t name)
  * This function is used to initialize the info plugin object.
  */
 info::info()
-    //: f_snap(nullptr) -- auto-init
 {
 }
 
@@ -207,7 +205,7 @@ int64_t info::do_update(int64_t last_updated)
  */
 void info::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -280,7 +278,7 @@ bool info::on_path_execute(content::path_info_t & ipath)
  */
 void info::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOT_USED(ipath);
+    snapdev::NOT_USED(ipath);
 
     // only check if user is logged in
     // (if user is not administratively logged in at the moment, try to
@@ -395,7 +393,7 @@ void info::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
  */
 void info::on_improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag)
 {
-    NOT_USED(path);
+    snapdev::NOT_USED(path);
 
     // only check if user is logged in
     // (if user is not administratively logged in at the moment, try to
@@ -448,7 +446,7 @@ void info::on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynami
 
 void info::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
-    NOT_USED(field_type, row);
+    snapdev::NOT_USED(field_type, row);
 
     QString const cpath(ipath.get_cpath());
     if(cpath == "unsubscribe")

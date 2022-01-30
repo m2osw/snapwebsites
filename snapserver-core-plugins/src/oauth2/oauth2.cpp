@@ -1,4 +1,3 @@
-// Snap Websites Server -- OAuth2 handling
 // Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /** \file
  * \brief OAuth2 handling.
@@ -121,7 +120,7 @@ const char * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_OAUTH2_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -254,7 +253,7 @@ int64_t oauth2::do_update(int64_t last_updated)
  */
 void oauth2::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -282,7 +281,7 @@ void oauth2::bootstrap(snap_child * snap)
  */
 void oauth2::on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type)
 {
-    NOT_USED(type);
+    snapdev::NOT_USED(type);
 
     if(owner != "output"
     || ipath.get_cpath() != "admin/settings/oauth2")
@@ -359,7 +358,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                     "This website does not authorize OAuth2 authentications at the moment.",
                     "The OAuth2 system is currently disabled.",
                     "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     libdbproxy::table::pointer_t secret_table(content_plugin->get_secret_table());
@@ -373,7 +372,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                     "Your OAuth2 settings do not include a user email for us to log your application in.",
                     "The OAuth2 system is currently \"disabled\" because no user email was specified.",
                     "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // Retrieve the Snap-Authorization Field
@@ -395,7 +394,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                     QString("The authorization did not have 2 parts (Snap and Secret) or the first is not \"Snap\" (\"%1\")")
                             .arg(snap_base64.size() == 2 ? snap_base64[0] : "undefined"),
                     "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // Decrypt the buffer
@@ -410,7 +409,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                     "The authentication identifier and secret codes are expected to include only one colon character.",
                     "The expected authorization \"id:secret\" not available.",
                     "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     users::users * users_plugin(users::users::instance());
@@ -478,7 +477,7 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
                                 .arg(identifier != identifier_secret[0] ? " identifier" : "")
                                 .arg(secret     != identifier_secret[1] ? " secret"     : ""),
                         "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 
@@ -578,7 +577,7 @@ void oauth2::application_login()
                     "Applications do not accept method HEAD or TRACE.",
                     "Invalid method to access an application page.",
                     "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // if the user is not accessing the OAuth2 log in feature
@@ -598,7 +597,7 @@ void oauth2::application_login()
                 "This page requires a Snap-Authorization.",
                 QString("An API page was accessed with any invalid Snap-Authorization field (%1).").arg(authorization),
                 "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     users::users * users_plugin(users::users::instance());
@@ -672,7 +671,7 @@ void oauth2::application_login()
         // detach_from_session() signal was not yet emitted so we do not
         // have to call the attach_to_session() signal before exiting.
         exit(0);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     require_oauth2_login();
@@ -682,7 +681,7 @@ void oauth2::application_login()
             "This page requires a valid Snap-Authorization. If you had such, it may have timed out.",
             "The application session information was not valid and the user could not be authenticated properly.",
             "https://snapwebsites.org/implementation/feature-requirements/oauth2-core");
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 

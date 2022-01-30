@@ -38,7 +38,6 @@
 // snapdev lib
 //
 #include <snapdev/not_used.h>
-#include <snapdev/tokenize_string.h>
 
 
 // libaddr lib
@@ -5576,7 +5575,7 @@ int main(int argc, char * argv[])
     // exit via the server so the server can clean itself up properly
     snap::server::exit( exitval );
 
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
     return 0;
 }
 

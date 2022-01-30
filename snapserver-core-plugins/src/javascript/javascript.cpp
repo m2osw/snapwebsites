@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // This language is based on the ECMA definitions although we added some of
 // our own operators and functionality to make it easier/faster to use in
@@ -102,7 +102,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_JAVASCRIPT_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -200,7 +200,7 @@ QString javascript::dependencies() const
  */
 int64_t javascript::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -379,7 +379,7 @@ public:
 
     virtual QScriptValue property(QScriptValue const& object, QScriptString const& object_name, uint id)
     {
-        NOT_USED(object, id);
+        snapdev::NOT_USED(object, id);
         QScriptValue result(f_plugin->js_property_get(object_name).toString());
         return result;
     }
@@ -387,7 +387,7 @@ public:
     virtual QScriptValue::PropertyFlags propertyFlags(QScriptValue const& object, QScriptString const& property_name, uint id)
     {
         // at some point we may want to allow read/write/delete...
-        NOT_USED(object, property_name, id);
+        snapdev::NOT_USED(object, property_name, id);
         return QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::KeepExistingFlags;
     }
 
@@ -399,14 +399,14 @@ public:
 
     virtual QueryFlags queryProperty(QScriptValue const & object, QScriptString const & property_name, QueryFlags flags, uint * id)
     {
-        NOT_USED(object, property_name, flags, id);
+        snapdev::NOT_USED(object, property_name, flags, id);
         return QScriptClass::HandlesReadAccess;
     }
 
     virtual void setProperty(QScriptValue & object, QScriptString const & property_name, uint id, QScriptValue const & value)
     {
 //SNAP_LOG_TRACE() << "setProperty() called... not implemented yet\n";
-        NOT_USED(object, property_name, id, value);
+        snapdev::NOT_USED(object, property_name, id, value);
         throw std::runtime_error("setProperty() not implemented yet");
     }
 
@@ -668,7 +668,7 @@ QVariant javascript::evaluate_script(QString const & script)
 void javascript::on_process_attachment(libdbproxy::row::pointer_t file_row, content::attachment_file const & file)
 {
     // TODO: got to finish the as2js compiler...
-    NOT_USED(file_row, file);
+    snapdev::NOT_USED(file_row, file);
 }
 
 

@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -292,7 +292,7 @@ int64_t filter::do_update(int64_t last_updated)
  */
 void filter::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -533,7 +533,7 @@ void filter::on_xss_filter(QDomNode & node,
  */
 bool filter::replace_token_impl(content::path_info_t & ipath, QDomDocument & xml, token_info_t & token)
 {
-    NOT_USED(ipath);
+    snapdev::NOT_USED(ipath);
 
     switch(token.f_name[0].unicode())
     {
@@ -1810,7 +1810,7 @@ QString filter::encode_text_for_html(QString const & text)
  */
 bool filter::body_to_teaser(QDomElement body, filter_teaser_info_t const & info)
 {
-    NOT_USED(body, info);
+    snapdev::NOT_USED(body, info);
 
     int const max_words(info.get_max_words());
     int const max_tags(info.get_max_tags());

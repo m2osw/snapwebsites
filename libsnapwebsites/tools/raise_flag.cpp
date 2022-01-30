@@ -1,4 +1,3 @@
-// Snap Websites Server -- command line tool to raise a snap flag
 // Copyright (c) 2018-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // snapwebsites lib
@@ -470,7 +469,7 @@ int main(int argc, char * argv[])
             {
                 std::string const tags(opt.get_string("tags"));
                 std::vector<std::string> list_of_tags;
-                snap::tokenize_string(list_of_tags, tags, ",", true, " \r\n\t");
+                snapdev::tokenize_string(list_of_tags, tags, ",", true, " \r\n\t");
                 for(auto const & t : list_of_tags)
                 {
                     flag->add_tag(t);
@@ -536,7 +535,7 @@ int main(int argc, char * argv[])
     // exit via the server so the server can clean itself up properly
     //
     exit( exitval );
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
     return 0;
 }
 

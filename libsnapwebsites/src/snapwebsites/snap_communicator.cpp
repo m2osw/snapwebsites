@@ -1,4 +1,3 @@
-// Snap Communicator -- classes to ease handling communication between processes
 // Copyright (c) 2012-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // to get the POLLRDHUP definition
 #ifndef _GNU_SOURCE
@@ -430,7 +429,7 @@ bool snap_communicator_message::from_message(QString const & message)
 
             // also restore new lines and blackslashes if any
             std::string const str_value(param_value.toUtf8().data());
-            std::string const unsafe_value(string_replace_many(
+            std::string const unsafe_value(snapdev::string_replace_many(
                     str_value,
                     {
                         { "\\\\", "\\" },
@@ -535,7 +534,7 @@ QString snap_communicator_message::to_message() const
         {
             f_cached_message += QString("%1%2=").arg(first ? " " : ";").arg(p.key());
             std::string const str_value(p.value().toUtf8().data());
-            std::string const safe_value(string_replace_many(
+            std::string const safe_value(snapdev::string_replace_many(
                     str_value,
                     {
                         { "\\", "\\\\" },
@@ -2372,7 +2371,7 @@ snap_communicator::connection_with_send_message::~connection_with_send_message()
  */
 void snap_communicator::connection_with_send_message::msg_help(snap_communicator_message & message)
 {
-    NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     bool need_user_help(true);
     snap_string_list commands;
@@ -2494,7 +2493,7 @@ void snap_communicator::connection_with_send_message::msg_alive(snap_communicato
  */
 void snap_communicator::connection_with_send_message::msg_log(snap_communicator_message & message)
 {
-    NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     if(snap::logging::is_configured())
     {
@@ -2527,7 +2526,7 @@ void snap_communicator::connection_with_send_message::msg_log(snap_communicator_
  */
 void snap_communicator::connection_with_send_message::msg_quitting(snap_communicator_message & message)
 {
-    NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     stop(true);
 }
@@ -2567,7 +2566,7 @@ void snap_communicator::connection_with_send_message::msg_ready(snap_communicato
  */
 void snap_communicator::connection_with_send_message::msg_stop(snap_communicator_message & message)
 {
-    NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     stop(false);
 }
@@ -2657,7 +2656,7 @@ void snap_communicator::connection_with_send_message::msg_reply_with_unknown(sna
  */
 void snap_communicator::connection_with_send_message::help(snap_string_list & commands)
 {
-    NOT_USED(commands);
+    snapdev::NOT_USED(commands);
 
     // do nothing by default -- user is expected to overload this function
 }
@@ -2673,7 +2672,7 @@ void snap_communicator::connection_with_send_message::help(snap_string_list & co
  */
 void snap_communicator::connection_with_send_message::ready(snap_communicator_message & message)
 {
-    NOT_USED(message);
+    snapdev::NOT_USED(message);
 
     // do nothing by default -- user is expected to overload this function
     //
@@ -2691,7 +2690,7 @@ void snap_communicator::connection_with_send_message::ready(snap_communicator_me
  */
 void snap_communicator::connection_with_send_message::stop(bool quitting)
 {
-    NOT_USED(quitting);
+    snapdev::NOT_USED(quitting);
 
     // do nothing by default -- user is expected to overload this function
     //
@@ -3463,7 +3462,7 @@ int snap_communicator::snap_inter_thread_message_connection::poll(int timeout)
             process_invalid();
         }
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -3585,7 +3584,7 @@ void snap_communicator::snap_inter_thread_message_connection::process_read()
  */
 bool snap_communicator::snap_inter_thread_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOT_USED(cache);
+    snapdev::NOT_USED(cache);
 
     if(f_creator_id == gettid())
     {
@@ -4002,7 +4001,7 @@ void snap_communicator::snap_pipe_buffer_connection::process_hup()
  */
 bool snap_communicator::snap_pipe_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOT_USED(cache);
+    snapdev::NOT_USED(cache);
 
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
@@ -5545,7 +5544,7 @@ void snap_communicator::snap_tcp_client_message_connection::process_line(QString
  */
 bool snap_communicator::snap_tcp_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOT_USED(cache);
+    snapdev::NOT_USED(cache);
 
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
@@ -6391,7 +6390,7 @@ void snap_communicator::snap_tcp_server_client_message_connection::process_line(
  */
 bool snap_communicator::snap_tcp_server_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOT_USED(cache);
+    snapdev::NOT_USED(cache);
 
     // transform the message to a string and write to the socket
     // the writing is asynchronous so the message is saved in a cache
@@ -7491,7 +7490,7 @@ void snap_communicator::snap_tcp_client_permanent_message_connection::connection
  */
 void snap_communicator::snap_tcp_client_permanent_message_connection::process_connection_failed(std::string const & error_message)
 {
-    NOT_USED(error_message);
+    snapdev::NOT_USED(error_message);
     set_enable(true);
 }
 
@@ -8144,7 +8143,7 @@ void snap_communicator::snap_tcp_blocking_client_message_connection::peek()
  */
 bool snap_communicator::snap_tcp_blocking_client_message_connection::send_message(snap_communicator_message const & message, bool cache)
 {
-    NOT_USED(cache);
+    snapdev::NOT_USED(cache);
 
     int const s(get_socket());
     if(s >= 0)

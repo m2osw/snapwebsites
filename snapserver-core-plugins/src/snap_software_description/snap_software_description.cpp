@@ -1,4 +1,3 @@
-// Snap Websites Server -- Snap Software Description handling
 // Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /** \file
  * \brief Snap Software Description plugin.
@@ -139,7 +138,7 @@ const char * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_SNAP_SOFTWARE_DESCRIPTION_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -250,7 +249,7 @@ int64_t snap_software_description::do_update(int64_t last_updated)
  */
 void snap_software_description::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -311,7 +310,7 @@ QString snap_software_description::get_root_path()
  */
 void snap_software_description::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOT_USED(header, metadata);
+    snapdev::NOT_USED(header, metadata);
 
     // only put that info on the home page ("/")
     // and all the types specific to snap-software-description
@@ -335,7 +334,7 @@ void snap_software_description::on_generate_header_content(content::path_info_t 
  */
 void snap_software_description::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOT_USED(page);
+    snapdev::NOT_USED(page);
 
     // only on the home page; no need to replicate that info on all pages
     //
@@ -380,7 +379,7 @@ void snap_software_description::on_generate_robotstxt(robotstxt::robotstxt * r)
  */
 void snap_software_description::on_allow_shorturl(content::path_info_t & ipath, QString const & owner, QString const & type, bool & allow)
 {
-    NOT_USED(owner, type);
+    snapdev::NOT_USED(owner, type);
 
     if(!allow)
     {

@@ -1,4 +1,3 @@
-// Snap Websites Server -- plugin selection
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -52,7 +51,7 @@ SNAP_PLUGIN_EXTENSION_START(info)
 
 void info::init_plugin_selection_editor_widgets(content::path_info_t & ipath, QString const & field_id, QDomElement & widget)
 {
-    NOT_USED(ipath);
+    snapdev::NOT_USED(ipath);
 
     if(field_id == "plugin_path")
     {

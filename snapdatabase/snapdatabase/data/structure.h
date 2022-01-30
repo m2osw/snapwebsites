@@ -401,96 +401,96 @@ struct struct_description_t
 
 
 class FieldName
-    : public snap::StructureValue<char const *>
+    : public snapdev::StructureValue<char const *>
 {
 public:
     constexpr FieldName()
-        : snap::StructureValue<char const *>(nullptr)
+        : snapdev::StructureValue<char const *>(nullptr)
     {
     }
 
     constexpr FieldName(char const * name)
-        : snap::StructureValue<char const *>(name)
+        : snapdev::StructureValue<char const *>(name)
     {
     }
 };
 
 
 class FieldType
-    : public snap::StructureValue<struct_type_t>
+    : public snapdev::StructureValue<struct_type_t>
 {
 public:
     constexpr FieldType()
-        : snap::StructureValue<struct_type_t>(struct_type_t::STRUCT_TYPE_END)
+        : snapdev::StructureValue<struct_type_t>(struct_type_t::STRUCT_TYPE_END)
     {
     }
 
     constexpr FieldType(struct_type_t type)
-        : snap::StructureValue<struct_type_t>(type)
+        : snapdev::StructureValue<struct_type_t>(type)
     {
     }
 };
 
 
 class FieldFlags
-    : public snap::StructureValue<struct_description_flags_t>
+    : public snapdev::StructureValue<struct_description_flags_t>
 {
 public:
     constexpr FieldFlags()
-        : snap::StructureValue<struct_description_flags_t>(STRUCT_DESCRIPTION_FLAG_NONE)
+        : snapdev::StructureValue<struct_description_flags_t>(STRUCT_DESCRIPTION_FLAG_NONE)
     {
     }
 
     constexpr FieldFlags(struct_description_flags_t flags)
-        : snap::StructureValue<struct_description_flags_t>(flags)
+        : snapdev::StructureValue<struct_description_flags_t>(flags)
     {
     }
 };
 
 
 class FieldDefaultValue
-    : public snap::StructureValue<char const *>
+    : public snapdev::StructureValue<char const *>
 {
 public:
     constexpr FieldDefaultValue()
-        : snap::StructureValue<char const *>(nullptr)
+        : snapdev::StructureValue<char const *>(nullptr)
     {
     }
 
     constexpr FieldDefaultValue(char const * default_value)
-        : snap::StructureValue<char const *>(default_value)
+        : snapdev::StructureValue<char const *>(default_value)
     {
     }
 };
 
 
 class FieldVersion
-    : public snap::StructureValue<min_max_version_t>
+    : public snapdev::StructureValue<min_max_version_t>
 {
 public:
     constexpr FieldVersion()
-        : snap::StructureValue<min_max_version_t>(min_max_version_t())
+        : snapdev::StructureValue<min_max_version_t>(min_max_version_t())
     {
     }
 
     constexpr FieldVersion(int min_major, int min_minor, int max_major, int max_minor)
-        : snap::StructureValue<min_max_version_t>(min_max_version_t(min_major, min_minor, max_major, max_minor))
+        : snapdev::StructureValue<min_max_version_t>(min_max_version_t(min_major, min_minor, max_major, max_minor))
     {
     }
 };
 
 
 class FieldSubDescription
-    : public snap::StructureValue<struct_description_t const *>
+    : public snapdev::StructureValue<struct_description_t const *>
 {
 public:
     constexpr FieldSubDescription()
-        : snap::StructureValue<struct_description_t const *>(nullptr)
+        : snapdev::StructureValue<struct_description_t const *>(nullptr)
     {
     }
 
     constexpr FieldSubDescription(struct_description_t const * sub_description)
-        : snap::StructureValue<struct_description_t const *>(sub_description)
+        : snapdev::StructureValue<struct_description_t const *>(sub_description)
     {
     }
 };
@@ -503,14 +503,14 @@ constexpr struct_description_t define_description(ARGS ...args)
 #pragma GCC diagnostic ignored "-Wpedantic"
     struct_description_t s =
     {
-        .f_field_name =          snap::find_field<FieldName          >(args...),        // no default, mandatory
-        .f_type =                snap::find_field<FieldType          >(args...),        // no default, mandatory
+        .f_field_name =          snapdev::find_field<FieldName          >(args...),        // no default, mandatory
+        .f_type =                snapdev::find_field<FieldType          >(args...),        // no default, mandatory
         .f_flags =               static_cast<struct_description_flags_t>(
-                                    snap::find_field<FieldFlags         >(args..., FieldFlags())),
-        .f_default_value =       snap::find_field<FieldDefaultValue  >(args..., FieldDefaultValue()),
-        .f_min_version =         snap::find_field<FieldVersion       >(args..., FieldVersion()).min(),
-        .f_max_version =         snap::find_field<FieldVersion       >(args..., FieldVersion()).max(),
-        .f_sub_description =     snap::find_field<FieldSubDescription>(args..., FieldSubDescription()),
+                                    snapdev::find_field<FieldFlags         >(args..., FieldFlags())),
+        .f_default_value =       snapdev::find_field<FieldDefaultValue  >(args..., FieldDefaultValue()),
+        .f_min_version =         snapdev::find_field<FieldVersion       >(args..., FieldVersion()).min(),
+        .f_max_version =         snapdev::find_field<FieldVersion       >(args..., FieldVersion()).max(),
+        .f_sub_description =     snapdev::find_field<FieldSubDescription>(args..., FieldSubDescription()),
     };
 #pragma GCC diagnostic pop
 
@@ -549,32 +549,32 @@ struct descriptions_by_version_t
 
 
 class DescriptionVersion
-    : public snap::StructureValue<version_t>
+    : public snapdev::StructureValue<version_t>
 {
 public:
     constexpr DescriptionVersion()
-        : snap::StructureValue<version_t>(version_t())
+        : snapdev::StructureValue<version_t>(version_t())
     {
     }
 
     constexpr DescriptionVersion(int major, int minor)
-        : snap::StructureValue<version_t>(version_t(major, minor))
+        : snapdev::StructureValue<version_t>(version_t(major, minor))
     {
     }
 };
 
 
 class DescriptionDescription
-    : public snap::StructureValue<struct_description_t const *>
+    : public snapdev::StructureValue<struct_description_t const *>
 {
 public:
     constexpr DescriptionDescription()
-        : snap::StructureValue<struct_description_t const *>(nullptr)
+        : snapdev::StructureValue<struct_description_t const *>(nullptr)
     {
     }
 
     constexpr DescriptionDescription(struct_description_t const * description)
-        : snap::StructureValue<struct_description_t const *>(description)
+        : snapdev::StructureValue<struct_description_t const *>(description)
     {
     }
 };
@@ -587,8 +587,8 @@ constexpr descriptions_by_version_t define_description_by_version(ARGS ...args)
 #pragma GCC diagnostic ignored "-Wpedantic"
     descriptions_by_version_t d =
     {
-        .f_version =         snap::find_field<DescriptionVersion       >(args...),         // no default, mandatory
-        .f_description =     snap::find_field<DescriptionDescription   >(args...),         // no default, mandatory
+        .f_version =         snapdev::find_field<DescriptionVersion       >(args...),         // no default, mandatory
+        .f_description =     snapdev::find_field<DescriptionDescription   >(args...),         // no default, mandatory
     };
 #pragma GCC diagnostic pop
 

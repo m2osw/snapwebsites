@@ -1,4 +1,3 @@
-// Snap Websites Server -- all the user content and much of the system content
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 /** \file
@@ -60,7 +59,7 @@ void content::invalid_revision_control(QString const& version)
     f_snap->die(snap_child::http_code_t::HTTP_CODE_INTERNAL_SERVER_ERROR, "Invalid Revision Control",
             "The revision control \"" + version + "\" does not look valid.",
             "The version does not seem to start with a valid decimal number.");
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 

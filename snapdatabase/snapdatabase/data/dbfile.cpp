@@ -83,7 +83,7 @@ std::string generate_table_dir(std::string const & path, std::string const & tab
     struct stat s;
     if(::stat(dirname.c_str(), &s) != 0)
     {
-        snap::NOT_USED(mkdir(dirname.c_str(), S_IRWXU));
+        snapdev::NOT_USED(mkdir(dirname.c_str(), S_IRWXU));
 
         if(::stat(dirname.c_str(), &s) != 0)
         {
@@ -246,7 +246,7 @@ int dbfile::open_file()
 
     // we need to have a global lock in case the file was not yet created
     //
-    snap::lockfile global_lock(f_lock_filename, snap::lockfile::mode_t::LOCKFILE_EXCLUSIVE);
+    snapdev::lockfile global_lock(f_lock_filename, snapdev::lockfile::mode_t::LOCKFILE_EXCLUSIVE);
     global_lock.lock();
 
     // first attempt a regular open because once a file was created, this

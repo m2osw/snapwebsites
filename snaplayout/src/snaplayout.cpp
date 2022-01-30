@@ -1,28 +1,21 @@
-/*
- * Copyright (c) 2012-2020  Made to Order Software Corp.  All Rights Reserved
- * 
- * https://snapwebsites.org/
- * contact@m2osw.com
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+// Copyright (c) 2012-2020  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "version.h"
 
@@ -330,7 +323,7 @@ snap_layout::snap_layout(int argc, char * argv[])
     {
         std::cout << SNAPLAYOUT_VERSION_STRING << std::endl;
         exit(0);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     //
     if( !f_opt->is_defined( "--" ) )
@@ -340,24 +333,24 @@ snap_layout::snap_layout(int argc, char * argv[])
             std::cerr << "usage: snaplayout --set-theme URL theme|layout ['\"layout_name\";']'" << std::endl;
             std::cerr << "note: if layout_name is not specified, the theme/layout is deleted from the database." << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         if( f_opt->is_defined( "extract" ) )
         {
             std::cerr << "usage: snaplayout --extract <layout name> <filename>" << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         if( f_opt->is_defined( "remove-theme" ) )
         {
             std::cerr << "usage: snaplayout --remove-theme <layout name>" << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         std::cerr << "one or more layout files are required!" << std::endl;
         std::cerr << f_opt->usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     if(!f_opt->is_defined("set-theme")
     && !f_opt->is_defined("remove-theme")
@@ -403,19 +396,19 @@ snap_layout::snap_layout(int argc, char * argv[])
                                 //<< "Error code: " << except.code() << std::endl
                                 ;
                             exit(1);
-                            snap::NOT_REACHED();
+                            snapdev::NOT_REACHED();
                         }
                         catch( std::exception const & except )
                         {
                             std::cerr << "Error extracting '" << fn << "': Exception caught: " << except.what() << std::endl;
                             exit(1);
-                            snap::NOT_REACHED();
+                            snapdev::NOT_REACHED();
                         }
                         catch( ... )
                         {
                             std::cerr << "Caught unknown exception attempting to extract '" << fn << "'!" << std::endl;
                             exit(1);
-                            snap::NOT_REACHED();
+                            snapdev::NOT_REACHED();
                         }
                     }
                 }
@@ -427,7 +420,7 @@ snap_layout::snap_layout(int argc, char * argv[])
                 {
                     std::cerr << "error: could not open layout file named \"" << filename << "\"" << std::endl;
                     exit(1);
-                    snap::NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
 
                 time_t filetime(0);
@@ -440,7 +433,7 @@ snap_layout::snap_layout(int argc, char * argv[])
                 {
                     std::cerr << "error: could not get mtime from file \"" << filename << "\"." << std::endl;
                     exit(1);
-                    snap::NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
 
                 QByteArray byte_arr;
@@ -462,7 +455,7 @@ bool snap_layout::load_xml_info(QDomDocument & doc, QString const & filename, QS
     {
         std::cerr << "error: the XML document does not have a root element, failed handling \"" << filename << "\"" << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     QString const content_modified_date(snap_tree.attribute("content-modified", "0"));
 
@@ -506,7 +499,7 @@ bool snap_layout::load_xml_info(QDomDocument & doc, QString const & filename, QS
                               << filename
                               << "\"" << std::endl;
                     exit(1);
-                    snap::NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 if(content_name.isEmpty())
                 {
@@ -517,7 +510,7 @@ bool snap_layout::load_xml_info(QDomDocument & doc, QString const & filename, QS
                     std::cerr << "error: the XML document includes two different entries with layout paths that differ: \""
                               << content_name << "\" and \"" << name << "\" in \"" << filename << "\"" << std::endl;
                     exit(1);
-                    snap::NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
             }
         }
@@ -538,13 +531,13 @@ bool snap_layout::load_xml_info(QDomDocument & doc, QString const & filename, QS
     {
         std::cerr << "error: the XML document is missing a path to a layout in \"" << filename << "\"" << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     if(content_modified_date.isEmpty())
     {
         std::cerr << "error: the XML document is missing its content-modified attribute in your XML document \"" << filename << "\"" << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // now convert the date, we expect a very specific format
@@ -553,7 +546,7 @@ bool snap_layout::load_xml_info(QDomDocument & doc, QString const & filename, QS
     {
         std::cerr << "error: the date \"" << content_modified_date << "\" doesn't seem valid in \"" << filename << "\", the expected format is \"yyyy-MM-dd HH:mm:ss\"" << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     content_modified = t.toTime_t();
 
@@ -648,7 +641,7 @@ void snap_layout::load_xsl_info(QDomDocument & doc, QString const & filename, QS
     {
         std::cerr << "error: the layout-name, layout-area, and layout-modified parameters must all three be defined in your XSL document \"" << filename << "\"" << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // now convert the date, we expect a very specific format
@@ -657,7 +650,7 @@ void snap_layout::load_xsl_info(QDomDocument & doc, QString const & filename, QS
     {
         std::cerr << "error: the date \"" << layout_modified_date << "\" doesn't seem valid in \"" << filename << "\", the expected format is \"yyyy-MM-dd HH:mm:ss\"" << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     layout_modified = t.toTime_t();
 }
@@ -670,7 +663,7 @@ void snap_layout::load_css(QString const & filename, QByteArray const & content,
     {
         std::cerr << "error: the CSS file \"" << filename << "\" does not include a valid introducer comment." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     // valid comment, but we need to have a name which is not mandatory
     // in the find_version() function.
@@ -678,7 +671,7 @@ void snap_layout::load_css(QString const & filename, QByteArray const & content,
     {
         std::cerr << "error: the CSS file \"" << filename << "\" does not define the Name: field. We cannot know where to save it." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     // now we force a Layout: field for CSS files defined in a layout
     row_name = fv.get_layout();
@@ -686,7 +679,7 @@ void snap_layout::load_css(QString const & filename, QByteArray const & content,
     {
         std::cerr << "error: the CSS file \"" << filename << "\" does not define the Layout: field. We cannot know where to save it." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -698,7 +691,7 @@ void snap_layout::load_js(QString const & filename, QByteArray const & content, 
     {
         std::cerr << "error: the JS file \"" << filename << "\" does not include a valid introducer comment." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     // valid comment, but we need to have a name which is not mandatory
     // in the find_version() function.
@@ -706,7 +699,7 @@ void snap_layout::load_js(QString const & filename, QByteArray const & content, 
     {
         std::cerr << "error: the JS file \"" << filename << "\" does not define the Name: field. We cannot know where to save it." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     // now we force a Layout: field for JavaScript files defined in a layout
     row_name = fv.get_layout();
@@ -714,7 +707,7 @@ void snap_layout::load_js(QString const & filename, QByteArray const & content, 
     {
         std::cerr << "error: the JS file \"" << filename << "\" does not define the Layout: field. We cannot know where to save it." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -727,7 +720,7 @@ void snap_layout::load_image( QString const & filename, QByteArray const & conte
     {
         std::cerr << "error: the image file does not include the name of the theme." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     row_name = row_name.mid(0, pos);
     pos = row_name.lastIndexOf('/');
@@ -741,7 +734,7 @@ void snap_layout::load_image( QString const & filename, QByteArray const & conte
     {
         std::cerr << "error: \"image\" file named \"" << filename << "\" does not use a recognized image file format." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -763,7 +756,7 @@ void snap_layout::connect()
                 << "!"
                 << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
     }
@@ -780,7 +773,7 @@ void snap_layout::connect()
                   << "!"
                   << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -799,7 +792,7 @@ bool snap_layout::tableExists( const QString& table_name ) const
     {
         std::cerr << "snap_layout::tableExists(): Exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     return false;
@@ -824,10 +817,10 @@ bool snap_layout::rowExists( QString const & table_name, QByteArray const & row_
     {
         std::cerr << "snap_layout::rowExists(): Exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
     return false;
 }
 
@@ -852,10 +845,10 @@ bool snap_layout::cellExists( const QString& table_name, const QByteArray& row_k
     {
         std::cerr << "snap_layout::cellExists(): Exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
     return false;
 }
 
@@ -886,7 +879,7 @@ void snap_layout::add_files()
         {
             std::cerr << "error: file \"" << filename << "\" must include an extension (end with .xml, .xsl, .css, .js, .png, .jpg, etc.)" << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         QString row_name; // == <layout name>
         QString cell_name; // == <layout_area>  or 'content'
@@ -902,7 +895,7 @@ void snap_layout::add_files()
                 std::cerr << "error: file \"" << filename << "\" parsing failed." << std::endl;
                 std::cerr << "detail " << error_line << "[" << error_column << "]: " << error_msg << std::endl;
                 exit(1);
-                snap::NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             time_t layout_modified;
             if(load_xml_info(doc, filename, row_name, layout_modified))
@@ -966,7 +959,7 @@ void snap_layout::add_files()
                 std::cerr << "error: file \"" << filename << "\" parsing failed." << std::endl;
                 std::cerr << "detail " << error_line << "[" << error_column << "]: " << error_msg << std::endl;
                 exit(1);
-                snap::NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             time_t layout_modified;
             load_xsl_info(doc, filename, row_name, cell_name, layout_modified);
@@ -1017,7 +1010,7 @@ void snap_layout::add_files()
                             // (if necessary we could add a command line option to force such though)
                             std::cerr << "error: existing XSLT data was created more recently than the one specified on the command line: \"" << filename << "\"." << std::endl;
                             exit(1);
-                            snap::NOT_REACHED();
+                            snapdev::NOT_REACHED();
                         }
                         else if(layout_modified == existing_layout_modified)
                         {
@@ -1032,7 +1025,7 @@ void snap_layout::add_files()
         {
             std::cerr << "error: file \"" << filename << "\" must be an XML file (end with the .xml or .xsl extension,) a CSS file (end with .css,) a JavaScript file (end with .js,) or be an image (end with .gif, .png, .jpg, .jpeg.)" << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         if(f_verbose && cell_name != filename)
@@ -1055,7 +1048,7 @@ void snap_layout::add_files()
         {
             std::cerr << "UPDATE layout Query exception caught! what=" << ex.what() << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // set last modification time
@@ -1091,7 +1084,7 @@ void snap_layout::add_files()
         {
             std::cerr << "SELECT existing layout Query exception caught! what=" << ex.what() << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         try
@@ -1113,7 +1106,7 @@ void snap_layout::add_files()
         {
             std::cerr << "UPDATE layout Query exception caught! what=" << ex.what() << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 }
@@ -1126,7 +1119,7 @@ void snap_layout::set_theme()
     {
         std::cerr << "error: the --set-theme command expects 2 or 3 arguments." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     connect();
@@ -1135,7 +1128,7 @@ void snap_layout::set_theme()
     {
         std::cerr << "Content table not found. You must run the server once before we can setup the theme." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     QString uri         ( f_opt->get_string( "--", 0 ).c_str() );
@@ -1159,7 +1152,7 @@ void snap_layout::set_theme()
     {
         std::cerr << "the name of the field must be \"layout\" or \"theme\"." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
 
@@ -1168,7 +1161,7 @@ void snap_layout::set_theme()
     {
         std::cerr << "content-types not found for domain \"" << uri << "\"." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     try
@@ -1209,7 +1202,7 @@ void snap_layout::set_theme()
     {
         std::cerr << "Theme set Query exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -1221,7 +1214,7 @@ void snap_layout::remove_theme()
     {
         std::cerr << "error: the --remove-theme command expects 1 argument." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     connect();
@@ -1230,7 +1223,7 @@ void snap_layout::remove_theme()
     {
         std::cerr << "warning: \"layout\" table not found. If you do not yet have a layout table then no theme can be deleted." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     QString const row_name( f_opt->get_string( "--", 0 ).c_str() );
@@ -1238,7 +1231,7 @@ void snap_layout::remove_theme()
     {
         std::cerr << "warning: \"" << row_name << "\" layout not found." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     if( !cellExists("layout", row_name.toUtf8(), QByteArray("theme")) )
@@ -1262,7 +1255,7 @@ void snap_layout::remove_theme()
     {
         std::cerr << "Remove theme Query exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     if(f_verbose)
@@ -1279,7 +1272,7 @@ void snap_layout::extract_file()
     {
         std::cerr << "error: the --extract command expects 2 arguments: layout name and filename. Got " << arg_count << " at this point." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     connect();
@@ -1288,7 +1281,7 @@ void snap_layout::extract_file()
     {
         std::cerr << "warning: \"layout\" table not found. If you do not yet have a layout table then no theme files can be extracted." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     QString const row_name( f_opt->get_string( "--", 0 ).c_str() );
@@ -1296,7 +1289,7 @@ void snap_layout::extract_file()
     {
         std::cerr << "warning: \"" << row_name << "\" layout not found." << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     if( !cellExists("layout", row_name.toUtf8(), QByteArray("theme")) )
@@ -1329,7 +1322,7 @@ void snap_layout::extract_file()
         {
             std::cerr << "error: file \"" << filename << "\" does not exist in this layout." << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 
@@ -1351,7 +1344,7 @@ void snap_layout::extract_file()
             {
                 std::cerr << "error: could not create file \"" << filename << "\" to write the data." << std::endl;
                 exit(1);
-                snap::NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             output.write( q->getByteArrayColumn("value") );
         }
@@ -1361,7 +1354,7 @@ void snap_layout::extract_file()
     {
         std::cerr << "Extract file Query exception caught! what=" << ex.what() << std::endl;
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     if(f_verbose)

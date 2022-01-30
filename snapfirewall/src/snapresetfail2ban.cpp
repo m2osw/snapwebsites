@@ -1,5 +1,7 @@
-// Snap Websites Server -- firewall handling by snap
 // Copyright (c) 2011-2020  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/
+// contact@m2osw.com
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -11,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // self
 //
@@ -141,14 +143,14 @@ snap_resetfail2ban::snap_resetfail2ban(int argc, char * argv[])
     {
         std::cerr << f_opt.usage();
         exit(1);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     if(f_opt.is_defined("version"))
     {
         std::cout << SNAPFIREWALL_VERSION_STRING << std::endl;
         exit(0);
-        snap::NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // read the configuration file

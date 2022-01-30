@@ -1,4 +1,3 @@
-// Snap Websites Server -- run apt-get to upgrade a computer
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // snapmanager lib
@@ -190,7 +189,7 @@ int main(int argc, char * argv[])
         // make sure we do not start an upgrade while an installation is
         // still going (and vice versa)
         //
-        snap::lockfile lf(upgrader->lock_filename(), snap::lockfile::mode_t::LOCKFILE_EXCLUSIVE);
+        snapdev::lockfile lf(upgrader->lock_filename(), snapdev::lockfile::mode_t::LOCKFILE_EXCLUSIVE);
         if(lf.try_lock())
         {
             bool const r(upgrade(upgrader));

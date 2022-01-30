@@ -1108,12 +1108,12 @@ int manager_cgi::is_logged_in(std::string & request_method)
                 std::string const content(user_ref.get_content());
 
                 std::vector<std::string> lines;
-                snap::NOT_USED(snap::tokenize_string(lines, content, "\n", true, " "));
+                snapdev::NOT_USED(snapdev::tokenize_string(lines, content, "\n", true, " "));
 
                 for(auto line : lines)
                 {
                     std::vector<std::string> name_value;
-                    snap::NOT_USED(snap::tokenize_string(name_value, line, ":", false, " "));
+                    snapdev::NOT_USED(snapdev::tokenize_string(name_value, line, ":", false, " "));
                     if(name_value.size() != 2)
                     {
                         return error(
@@ -1285,7 +1285,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
                             , "Could not generate a session number."
                             , "Somehow RAND_bytes() failed.");
                 }
-                session_id = snap::bin_to_hex(std::string(reinterpret_cast<char *>(buf), sizeof(buf)));
+                session_id = snapdev::bin_to_hex(std::string(reinterpret_cast<char *>(buf), sizeof(buf)));
                 session_path = get_session_path(true) + "/" + session_id + ".session";
 
                 session_fd = open(session_path.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, 0700);
@@ -1368,14 +1368,14 @@ int manager_cgi::is_logged_in(std::string & request_method)
         // and if so, check whether the session is still valid
         //
         std::vector<std::string> cookies;
-        snap::NOT_USED(snap::tokenize_string(cookies, http_cookies, ";", true, " "));
+        snapdev::NOT_USED(snapdev::tokenize_string(cookies, http_cookies, ";", true, " "));
 
         // TBD: could we use the snap_uri() class to handle the raw cookie data?
 
         for(auto c : cookies)
         {
             std::vector<std::string> name_value;
-            snap::NOT_USED(snap::tokenize_string(name_value, c, "=", true, " "));
+            snapdev::NOT_USED(snapdev::tokenize_string(name_value, c, "=", true, " "));
             if(name_value.size() != 2)
             {
                 continue;
@@ -1413,7 +1413,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
                 // verify that it is hexadecimal, but we do not care about
                 // the binary code here
                 //
-                snap::NOT_USED(snap::hex_to_bin(attempt_session_id));
+                snapdev::NOT_USED(snapdev::hex_to_bin(attempt_session_id));
 
                 std::string const session_filename(get_session_path(false) + "/" + attempt_session_id + ".session");
                 snap::file_content session_data(session_filename);
@@ -1545,7 +1545,7 @@ int manager_cgi::is_logged_in(std::string & request_method)
                     return login_form("Your session timed out.");
                 }
             }
-            catch(snap::hexadecimal_string_invalid_parameter const &)
+            catch(snapdev::hexadecimal_string_invalid_parameter const &)
             {
                 // conversion failed, not too surprising from a
                 // tainted variable, ignore; user is not logged in
@@ -1890,7 +1890,7 @@ SNAP_LOG_TRACE("msg.run() finished");
  */
 bool manager_cgi::generate_content_impl(QDomDocument doc, QDomElement root, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
 {
-    snap::NOT_USED(output, uri);
+    snapdev::NOT_USED(output, uri);
 
     // is a host name specified?
     //
@@ -1934,7 +1934,7 @@ bool manager_cgi::generate_content_impl(QDomDocument doc, QDomElement root, QDom
 
 void manager_cgi::generate_content_done(QDomDocument doc, QDomElement root, QDomElement output, QDomElement menu, snap::snap_uri const & uri)
 {
-    snap::NOT_USED(root, menu);
+    snapdev::NOT_USED(root, menu);
 
     // did one of the plugins generate the output?
     // if so then we have nothing to do here

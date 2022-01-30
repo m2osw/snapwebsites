@@ -1,4 +1,3 @@
-// Snap Websites Servers -- quote a string so it is only ASCII (for emails)
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -193,7 +192,7 @@ std::string encode(std::string const & input, int flags)
                 return !(c >= ' ' && c <= '~');
 
             }
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         void add_char(char c)

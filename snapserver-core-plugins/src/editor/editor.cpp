@@ -1,4 +1,3 @@
-// Snap Websites Server -- JavaScript WYSIWYG form widgets
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // self
 //
@@ -149,7 +148,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid name_t::SNAP_NAME_EDITOR_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -486,7 +485,7 @@ int64_t editor::do_update(int64_t last_updated)
  */
 void editor::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -554,7 +553,7 @@ void editor::on_check_for_redirect(content::path_info_t & ipath)
                             .arg(ipath.get_key())
                             .arg(info.get_page_path())
                             .arg(info.get_plugin_owner()));
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
 
 //SNAP_LOG_TRACE("**** setting ipath to ")(info.get_object_path());
@@ -596,7 +595,7 @@ void editor::on_generate_main_content(content::path_info_t & ipath, QDomElement 
  */
 void editor::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOT_USED(ipath);
+    snapdev::NOT_USED(ipath);
 
     QDomDocument doc(header.ownerDocument());
 
@@ -724,7 +723,7 @@ void editor::on_validate_post_for_widget(
         , QString const & widget_type
         , bool const is_secret)
 {
-    NOT_USED(widget, widget_type, is_secret);
+    snapdev::NOT_USED(widget, widget_type, is_secret);
 
     messages::messages * messages(messages::messages::instance());
 
@@ -770,7 +769,7 @@ void editor::on_validate_post_for_widget(
  */
 void editor::on_process_form_post(content::path_info_t & ipath, sessions::sessions::session_info const & session_info)
 {
-    NOT_USED(session_info);
+    snapdev::NOT_USED(session_info);
 
     QString const cpath(ipath.get_cpath());
     if(cpath == "admin/drafts/new")
@@ -856,7 +855,7 @@ void editor::process_new_draft()
                 f_snap->die(snap_child::http_code_t::HTTP_CODE_CONFLICT,
                     "Conflict Error", "We could not create a new draft entry for you. Too many other drafts existed already. Please try again later.",
                     "Somehow the server was not able to generated another draft entry.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             new_draft_key = QString("%1%2/%3.%4").arg(site_key).arg(drafts_path).arg(start_time).arg(extra);
         }
@@ -924,7 +923,7 @@ void editor::process_new_draft()
     f_snap->page_redirect(QString("%1?%2=edit").arg(draft_ipath.get_key()).arg(qs_action), snap_child::http_code_t::HTTP_CODE_FOUND,
             "Page was created successfully",
             "Sending you to your new page so that way you can edit it and ultimately publish it.");
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -979,7 +978,7 @@ void editor::on_process_post(QString const & uri_path)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_ACCEPTABLE, "Not Acceptable",
                 "Somehow the editor does not understand the Save command sent to the server.",
                 QString("User gave us an unknown save mode (%1).").arg(f_snap->postenv("_editor_save_mode")));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
 //SNAP_LOG_WARNING("save mode [")(static_cast<int>(editor_save_mode))("]");
@@ -993,7 +992,7 @@ void editor::on_process_post(QString const & uri_path)
         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_ACCEPTABLE, "Not Acceptable",
                 "The session identification is not valid.",
                 QString("User gave us an unknown session identifier (%1).").arg(editor_full_session));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     messages::messages * messages(messages::messages::instance());
@@ -1016,7 +1015,7 @@ void editor::on_process_post(QString const & uri_path)
                     "Editor Session Gone",
                     "It looks like you attempted to submit editor content without first loading it.",
                     "User sent editor content with a session identifier that is not available.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
         return;
 
     case sessions::sessions::session_info::session_info_type_t::SESSION_INFO_OUT_OF_DATE:
@@ -1089,7 +1088,7 @@ void editor::on_process_post(QString const & uri_path)
                     QString("User POSTed a request with random number %1, but we expected %2.")
                             .arg(info.get_session_random())
                             .arg(session_data[1]));
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
 #if 0
@@ -1108,7 +1107,7 @@ void editor::on_process_post(QString const & uri_path)
                             .arg(ipath.get_key())
                             .arg(info.get_page_path())
                             .arg(info.get_plugin_owner()));
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 #endif
 
@@ -2381,7 +2380,7 @@ void editor::editor_save_attachment(
             , sessions::sessions::session_info & info
             , server_access::server_access * server_access_plugin)
 {
-    NOT_USED(info);
+    snapdev::NOT_USED(info);
 
     mimetype::mimetype * mimetype_plugin(mimetype::mimetype::instance());
 
@@ -2420,7 +2419,7 @@ void editor::editor_save_attachment(
             f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_ACCEPTABLE, "Field Name Not Acceptable",
                 QString("Editor widget named \"%1\" is not valid.").arg(names[i]),
                 "Somehow the client sent us a reply with an invalid widget name.");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         QDomNodeList attachment_tags(w->second.elementsByTagName("attachment"));
         int const max_attachments(attachment_tags.size());
@@ -2537,7 +2536,7 @@ QDomDocument editor::get_editor_widgets(content::path_info_t & ipath, bool const
                 f_snap->die(snap_child::http_code_t::HTTP_CODE_CONFLICT, "Conflict Error",
                     QString("Editor layout name \"%1\" is not valid. Names on both sides of the slash (/) must be defined.").arg(script),
                     "The editor layout name is not composed of two valid names separated by a slash (/) but it does contain a slash.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             script = script_parts[1];
         }
@@ -2549,7 +2548,7 @@ QDomDocument editor::get_editor_widgets(content::path_info_t & ipath, bool const
             f_snap->die(snap_child::http_code_t::HTTP_CODE_CONFLICT, "Conflict Error",
                 QString("Editor layout name \"%1\" is not valid.").arg(script),
                 "The editor layout name is not composed of exactly one or two names.");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // if empty then there is nothing else to do, there is no editor form
@@ -2570,7 +2569,7 @@ QDomDocument editor::get_editor_widgets(content::path_info_t & ipath, bool const
                         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "Missing File",
                             "Editor default layout for a standard page could not be opened.",
                             "The editor \"default-page.xml\" layout file could not be opened.");
-                        NOT_REACHED();
+                        snapdev::NOT_REACHED();
                     }
 
                     QByteArray const data(rc_widgets.readAll());
@@ -2579,7 +2578,7 @@ QDomDocument editor::get_editor_widgets(content::path_info_t & ipath, bool const
                         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "Missing File",
                             "Editor default layout for a standard page could not be read.",
                             "The editor \"default-page.xml\" layout file could not be read.");
-                        NOT_REACHED();
+                        snapdev::NOT_REACHED();
                     }
 
                     QString const widgets_xml(QString::fromUtf8(data.data(), data.size()));
@@ -2588,7 +2587,7 @@ QDomDocument editor::get_editor_widgets(content::path_info_t & ipath, bool const
                         f_snap->die(snap_child::http_code_t::HTTP_CODE_NOT_FOUND, "Missing File",
                             "Editor default layout is empty.",
                             "The editor \"default-page.xml\" layout file is empty?");
-                        NOT_REACHED();
+                        snapdev::NOT_REACHED();
                     }
 
                     QDomDocument named_editor_widgets("editor-form");
@@ -3350,7 +3349,7 @@ bool editor::validate_editor_post_for_widget_impl(
                                         "Internal Server Error",
                                         QString("The server could not parse the email filter in \"%1\".").arg(regex_name),
                                         "The email format could not properly be parsed.");
-                                    NOT_REACHED();
+                                    snapdev::NOT_REACHED();
                                 }
                             }
                             else if(regex_name == "email")
@@ -5463,7 +5462,7 @@ bool editor::prepare_editor_form_impl(editor * e)
 {
     // no need to use 'e' in this implementation,
     // it is useful in other plugins though
-    NOT_USED(e);
+    snapdev::NOT_USED(e);
 
     // if we already computed that document, return false immediately
     if(!f_editor_form.documentElement().isNull())
@@ -5484,7 +5483,7 @@ void editor::on_generate_boxes_content(
         , QDomElement & page
         , QDomElement & box)
 {
-    NOT_USED(page_cpath);
+    snapdev::NOT_USED(page_cpath);
 
     // generate the editor content
     //
@@ -5513,7 +5512,7 @@ void editor::repair_link_of_cloned_page(
         , links::link_info const & destination
         , bool const cloning)
 {
-    NOT_USED(cloning);
+    snapdev::NOT_USED(cloning);
 
     links::link_info src(source.name(), source.is_unique(), clone, branch_number);
     links::links::instance()->create_link(src, destination);

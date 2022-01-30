@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -176,7 +176,7 @@ namespace snap
  */
 bool process::process_output_callback::error_available(process * p, QByteArray const & error)
 {
-    NOT_USED(p, error);
+    snapdev::NOT_USED(p, error);
 
     return true;
 }
@@ -798,7 +798,7 @@ int process::run()
         }
         // the child can't safely return from here
         exit(1);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
         return -1;
 
     default:

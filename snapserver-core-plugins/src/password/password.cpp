@@ -1,4 +1,3 @@
-// Snap Websites Server -- verify passwords of all the parts used by snap
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -234,7 +233,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception(QString("invalid name_t::SNAP_NAME_PASSWORD_... (%1)").arg(static_cast<int>(name)));
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -363,7 +362,7 @@ int64_t password::do_update(int64_t last_updated)
  */
 void password::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -419,7 +418,7 @@ void password::on_prepare_editor_form(editor::editor * e)
  */
 void password::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t data_row)
 {
-    NOT_USED(ipath, field_id, widget, data_row);
+    snapdev::NOT_USED(ipath, field_id, widget, data_row);
 
     f_added_policy = f_added_policy || field_type == "password_confirm";
 }
@@ -490,7 +489,7 @@ void password::on_generate_main_content(content::path_info_t & ipath, QDomElemen
  */
 void password::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOT_USED(ipath, body);
+    snapdev::NOT_USED(ipath, body);
 
     if(f_added_policy)
     {
@@ -1129,7 +1128,7 @@ void password::on_user_logged_in(users::users::user_logged_info_t & logged_info)
 
 void password::on_save_password(users::users::user_info_t & user_info, QString const & user_password, QString const & password_policy)
 {
-    NOT_USED(user_password);
+    snapdev::NOT_USED(user_password);
 
     //if(!row->exists(users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD)))
     if(!user_info.value_exists(users::name_t::SNAP_NAME_USERS_PASSWORD))

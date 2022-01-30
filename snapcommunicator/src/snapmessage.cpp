@@ -1,4 +1,3 @@
-// Snap Websites Server -- to send UDP signals to backends
 // Copyright (c) 2018-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // snapwebsites lib
@@ -551,7 +550,7 @@ public:
 
     static int create_message(int count, int c)
     {
-        snap::NOT_USED(count, c);
+        snapdev::NOT_USED(count, c);
 
         g_console->open_message_dialog();
         return 0;
@@ -796,7 +795,7 @@ public:
         {
             std::cerr << "error: --gui and --cui are mutually exclusive." << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         if(f_cui)
@@ -805,7 +804,7 @@ public:
             {
                 std::cerr << "error: --message is not compatible with --cui." << std::endl;
                 exit(1);
-                snap::NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
         }
         else
@@ -814,7 +813,7 @@ public:
             {
                 std::cerr << "error: --address is mandatory when not entering the CUI or GUI interface." << std::endl;
                 exit(1);
-                snap::NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
         }
 
@@ -823,7 +822,7 @@ public:
         {
             std::cerr << "error: --tcp and --udp are mutually exclusive" << std::endl;
             exit(1);
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         f_connection = std::make_shared<connection>();

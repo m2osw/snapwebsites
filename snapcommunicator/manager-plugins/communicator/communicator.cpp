@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // communicator
@@ -45,7 +45,6 @@
 #include <snapdev/not_reached.h>
 #include <snapdev/not_used.h>
 #include <snapdev/pathinfo.h>
-#include <snapdev/tokenize_string.h>
 
 
 // Qt lib
@@ -134,7 +133,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_COMMUNICATOR_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -212,7 +211,7 @@ QString communicator::dependencies() const
  */
 int64_t communicator::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -603,7 +602,7 @@ bool communicator::display_value(QDomElement parent, snap_manager::status_t cons
  */
 bool communicator::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOT_USED(old_or_installation_value, button_name);
+    snapdev::NOT_USED(old_or_installation_value, button_name);
 
     // restore defaults?
     //
@@ -623,8 +622,8 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         // because at this point we do not want to offer an end user
         // interface to deal with all the ports.
         //
-        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
-        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, "listen", new_value + ":4040"));
+        snapdev::NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+        snapdev::NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, "listen", new_value + ":4040"));
         return true;
     }
 
@@ -636,7 +635,7 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         affected_services.insert("snapcommunicator");
         affected_services.insert("snapmanagerdaemon");
 
-        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+        snapdev::NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
         return true;
     }
 
@@ -669,7 +668,7 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command("systemctl");
         p.add_argument("daemon-reload"); // python script sends output to STDERR
-        NOT_USED(p.run());
+        snapdev::NOT_USED(p.run());
         return true;
     }
 
@@ -690,7 +689,7 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command("systemctl");
         p.add_argument("daemon-reload"); // python script sends output to STDERR
-        NOT_USED(p.run());
+        snapdev::NOT_USED(p.run());
         return true;
     }
 
@@ -701,7 +700,7 @@ bool communicator::apply_setting(QString const & button_name, QString const & fi
         //
         affected_services.insert("snapcommunicator");
 
-        NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
+        snapdev::NOT_USED(f_snap->replace_configuration_value(g_configuration_d_filename, field_name, new_value));
 
         snap_config snap_communicator_conf(g_configuration_filename);
         snap_communicator_conf[field_name] = new_value;

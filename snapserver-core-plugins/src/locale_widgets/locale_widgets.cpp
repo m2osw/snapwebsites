@@ -1,4 +1,3 @@
-// Snap Websites Server -- offer a plethora of localized editor widgets
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -75,7 +74,7 @@ SNAP_PLUGIN_START(locale_widgets, 1, 0)
 //        throw snap_logic_exception("invalid SNAP_NAME_LOCALE_WIDGETS_...");
 //
 //    }
-//    NOT_REACHED();
+//    snapdev::NOT_REACHED();
 //}
 
 
@@ -226,7 +225,7 @@ int64_t locale_widgets::do_update(int64_t last_updated)
  */
 void locale_widgets::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -277,7 +276,7 @@ void locale_widgets::on_prepare_editor_form(editor::editor * e)
  */
 void locale_widgets::on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row)
 {
-    NOT_USED(field_id, row);
+    snapdev::NOT_USED(field_id, row);
 
     QString const cpath(ipath.get_cpath());
     if(field_type == "locale_timezone")
@@ -434,7 +433,7 @@ void locale_widgets::on_validate_editor_post_for_widget(
             QString const & value,
             bool const is_secret)
 {
-    NOT_USED(ipath, widget_type);
+    snapdev::NOT_USED(ipath, widget_type);
 
     messages::messages * messages(messages::messages::instance());
 

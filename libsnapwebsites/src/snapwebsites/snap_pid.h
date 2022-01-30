@@ -94,12 +94,12 @@ private:
     void            close_pipes();
     void            send_signal(bool result);
 
-    std::string     f_service_name = std::string();
-    int             f_pipes[2];
-    std::string     f_pid_filename = std::string();
-    raii_fd_t       f_safe_fd = raii_fd_t();
-    bool            f_child_process = false;
-    char            f_result = static_cast<char>(false);
+    std::string         f_service_name = std::string();
+    int                 f_pipes[2];
+    std::string         f_pid_filename = std::string();
+    snapdev::raii_fd_t  f_safe_fd = snapdev::raii_fd_t();
+    bool                f_child_process = false;
+    char                f_result = static_cast<char>(false);
 };
 
 } // namespace snap

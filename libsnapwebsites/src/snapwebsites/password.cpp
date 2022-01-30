@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -507,7 +507,7 @@ bool password::get_password_from_console(std::string const & salt)
             // ignore failures... it is likely to work since we did not
             // change the original data, but who knows.
             //
-            NOT_USED(tcsetattr(f_tty, TCSAFLUSH, &f_original));
+            snapdev::NOT_USED(tcsetattr(f_tty, TCSAFLUSH, &f_original));
         }
 
         bool is_valid() const
@@ -1006,9 +1006,9 @@ bool password_file::find(std::string const & name, password & p)
     // setup the encrypted password and salt
     //
     std::string password_hex_salt(ptr + salt_position + 1, password_position - salt_position - 1);
-    std::string password_salt(hex_to_bin(password_hex_salt));
+    std::string password_salt(snapdev::hex_to_bin(password_hex_salt));
     std::string encrypted_hex_password(ptr + password_position + 1, end_position - password_position - 1);
-    std::string encrypted_password(hex_to_bin(encrypted_hex_password));
+    std::string encrypted_password(snapdev::hex_to_bin(encrypted_hex_password));
     p.set_encrypted_password(encrypted_password, password_salt);
     password::clear_string(password_hex_salt);
     password::clear_string(password_salt);
@@ -1058,9 +1058,9 @@ bool password_file::save(std::string const & name, password const & p)
             + ":"
             + p.get_digest()
             + ":"
-            + bin_to_hex(p.get_salt())
+            + snapdev::bin_to_hex(p.get_salt())
             + ":"
-            + bin_to_hex(p.get_encrypted_password())
+            + snapdev::bin_to_hex(p.get_encrypted_password())
             + "\n");
 
     // search the user

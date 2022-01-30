@@ -1,4 +1,3 @@
-// Snap Websites Server -- path handling
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -78,7 +77,7 @@ SNAP_PLUGIN_START(path, 1, 0)
 //        throw snap_logic_exception("invalid name_t::SNAP_NAME_PATH_...");
 //
 //    }
-//    NOT_REACHED();
+//    snapdev::NOT_REACHED();
 //}
 
 
@@ -128,7 +127,7 @@ void path_error_callback::on_error(
         server_access_plugin->ajax_output();
         f_snap->output_result(snap_child::HEADER_MODE_ERROR, f_snap->get_output());
         f_snap->exit(0);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // give a chance to other plugins to handle the error
@@ -179,11 +178,11 @@ void path_error_callback::on_error(
             // exit with an error
             //
             f_snap->exit(1);
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
     f_snap->die(err_code, err_name, err_description, err_details);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -243,7 +242,7 @@ void path_error_callback::on_redirect(
         }
         f_snap->page_redirect(path, http_code, err_description, err_details);
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -286,7 +285,7 @@ void dynamic_plugin_t::set_plugin(plugins::plugin * p)
                 "This page references multiple plugins and the server does not currently have means of choosing one over the other.",
                 QString("User tried to access dynamic page but more than one plugin says it owns the resource, primary is \"%1\", second request by \"%2\"")
                         .arg(f_plugin->get_plugin_name()).arg(p->get_plugin_name()));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     f_plugin = p;
@@ -336,7 +335,7 @@ void dynamic_plugin_t::set_plugin_if_renamed(plugins::plugin * p, QString const 
                     "This page references multiple plugins if the path is renamed and the server does not currently have means of choosing one over the other.",
                     QString("User tried to access dynamic page, but more than one plugin says it can handle it: primary \"%2\", second request \"%3\".")
                             .arg(f_plugin_if_renamed->get_plugin_name()).arg(p->get_plugin_name()));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     f_plugin_if_renamed = p;
@@ -777,7 +776,7 @@ void path::verify_permissions(content::path_info_t & ipath, permission_error_cal
  */
 bool path::access_allowed_impl(QString const & user_path, content::path_info_t & ipath, QString const & action, QString const & login_status, content::permission_flag & result)
 {
-    NOT_USED(user_path, ipath, action, login_status);
+    snapdev::NOT_USED(user_path, ipath, action, login_status);
 
     return result.allowed();
 }
@@ -974,7 +973,7 @@ void path::on_execute(QString const & uri_path)
                             "This page does not exist on this website.",
                             "User tried to access page \"" + ipath.get_cpath() + "\" and no dynamic path handling happened");
             }
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
     else
@@ -1009,7 +1008,7 @@ void path::on_execute(QString const & uri_path)
                         "Somehow this page is not currently available.",
                         QString("User tried to access page \"%1\" but the page's plugin (%2) refused it.")
                                 .arg(ipath.get_cpath()).arg(path_plugin->get_plugin_name()));
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
         }
     }
@@ -1132,7 +1131,7 @@ bool path::check_for_redirect_impl(content::path_info_t & ipath)
                                 QString("This page (%1) was moved so we are redirecting this user to the new location (%2). At this point we are using a 302 Found to avoid caching and because the move has happened less than 24h ago.")
                                         .arg(ipath.get_key()).arg(moved_ipath.get_key()));
                 }
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             // else -- TODO: if the destination status is MOVED, we can process it too!
         }
@@ -1143,7 +1142,7 @@ bool path::check_for_redirect_impl(content::path_info_t & ipath)
                     "This page is not currently valid. It cannot be viewed.",
                     QString("User tried to access page \"%1\" but it is marked as MOVED and the destination is either unspecified or not NORMAL.")
                             .arg(ipath.get_key()));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     return true;

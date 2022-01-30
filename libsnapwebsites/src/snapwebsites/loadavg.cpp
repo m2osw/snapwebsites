@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -80,7 +80,7 @@ bool loadavg_file::load()
 {
     // open the file
     //
-    raii_fd_t safe_fd(open(g_filename.c_str(), O_RDONLY));
+    snapdev::raii_fd_t safe_fd(open(g_filename.c_str(), O_RDONLY));
     if(!safe_fd)
     {
         return false;
@@ -137,7 +137,7 @@ bool loadavg_file::save() const
 {
     // open the file
     //
-    raii_fd_t safe_fd(open(g_filename.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
+    snapdev::raii_fd_t safe_fd(open(g_filename.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
     if(!safe_fd)
     {
         return false;

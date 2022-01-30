@@ -176,10 +176,10 @@ void context_impl::initialize()
         //          will automatically convert the data, but you may have
         //          surprises...)
         //
-        snap::glob_to_list<std::set<std::string>> list;
+        snapdev::glob_to_list<std::set<std::string>> list;
         if(!list.read_path<
-                  snap::glob_to_list_flag_t::GLOB_FLAG_ONLY_DIRECTORIES
-                , snap::glob_to_list_flag_t::GLOB_FLAG_TILDE>(path + "/*.xml"))
+                  snapdev::glob_to_list_flag_t::GLOB_FLAG_ONLY_DIRECTORIES
+                , snapdev::glob_to_list_flag_t::GLOB_FLAG_TILDE>(path + "/*.xml"))
         {
             SNAP_LOG_WARNING
                 << "Could not read directory \""

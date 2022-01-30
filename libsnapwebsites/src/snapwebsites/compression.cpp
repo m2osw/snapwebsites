@@ -489,7 +489,7 @@ public:
 
     virtual QByteArray decompress(QByteArray const & input, size_t uncompressed_size)
     {
-        NOT_USED(input, uncompressed_size);
+        snapdev::NOT_USED(input, uncompressed_size);
         throw compression_exception_not_implemented("gzip decompress() with the uncompressed_size parameter is not implemented.");
     }
 
@@ -512,7 +512,7 @@ public:
 
     virtual QByteArray compress(QByteArray const & input, level_t level, bool text)
     {
-        NOT_USED(text);
+        snapdev::NOT_USED(text);
 
         // transform the 0 to 100 level to the standard 1 to 9 in zlib
         int const zlib_level(bound_level((level * 2 + 25) / 25, Z_BEST_SPEED, Z_BEST_COMPRESSION));
@@ -556,7 +556,7 @@ public:
 
     virtual bool compatible(QByteArray const & input) const
     {
-        NOT_USED(input);
+        snapdev::NOT_USED(input);
 
         // there is no magic header in this one...
         return false;
@@ -566,7 +566,7 @@ public:
     {
         // the decompress function for "deflate" requires the size in
         // our case so this function is not implemented for now...
-        NOT_USED(input);
+        snapdev::NOT_USED(input);
         throw compression_exception_not_implemented("gzip decompress() with the uncompressed_size parameter is not implemented.");
     }
 

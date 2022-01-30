@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -59,7 +59,7 @@ const char * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_SEARCH_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -68,7 +68,6 @@ const char * get_name(name_t name)
  * This function initializes the search plugin.
  */
 search::search()
-    //: f_snap(NULL) -- auto-init
 {
 }
 
@@ -178,7 +177,7 @@ int64_t search::do_update(int64_t last_updated)
  */
 void search::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml("search");
 }
@@ -259,7 +258,7 @@ void search::on_improve_signature(QString const & path, QDomDocument doc, QDomEl
  */
 void search::on_generate_page_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body)
 {
-    NOT_USED(ipath);
+    snapdev::NOT_USED(ipath);
 
     QDomDocument doc(page.ownerDocument());
 

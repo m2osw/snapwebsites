@@ -1,4 +1,3 @@
-// Snap Websites Server -- manage the snapfirewall settings
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -42,7 +41,6 @@
 #include <snapdev/not_reached.h>
 #include <snapdev/not_used.h>
 #include <snapdev/pathinfo.h>
-#include <snapdev/tokenize_string.h>
 
 
 // Qt lib
@@ -121,7 +119,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_FIREWALL_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -199,7 +197,7 @@ QString firewall::dependencies() const
  */
 int64_t firewall::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -672,7 +670,7 @@ bool firewall::display_value(QDomElement parent, snap_manager::status_t const & 
  */
 bool firewall::apply_setting(QString const & button_name, QString const & field_name, QString const & new_value, QString const & old_or_installation_value, std::set<QString> & affected_services)
 {
-    NOT_USED(old_or_installation_value, button_name);
+    snapdev::NOT_USED(old_or_installation_value, button_name);
 
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_SERVICE_STATUS))
     {
@@ -703,7 +701,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
 
                 std::string const conf_filename(path + "/schemes.d/" + basename);
 
-                NOT_USED(f_snap->replace_configuration_value(
+                snapdev::NOT_USED(f_snap->replace_configuration_value(
                               QString::fromUtf8(conf_filename.c_str())
                             , field_name
                             , new_value
@@ -719,7 +717,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_IP))
     {
         affected_services.insert("firewall-reload");
-        NOT_USED(f_snap->replace_configuration_value(
+        snapdev::NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PUBLIC_IP"
                     , new_value
@@ -730,7 +728,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PUBLIC_INTERFACE))
     {
         affected_services.insert("firewall-reload");
-        NOT_USED(f_snap->replace_configuration_value(
+        snapdev::NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PUBLIC_INTERFACE"
                     , new_value
@@ -741,7 +739,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_IP))
     {
         affected_services.insert("firewall-reload");
-        NOT_USED(f_snap->replace_configuration_value(
+        snapdev::NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PRIVATE_IP"
                     , new_value
@@ -752,7 +750,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_PRIVATE_INTERFACE))
     {
         affected_services.insert("firewall-reload");
-        NOT_USED(f_snap->replace_configuration_value(
+        snapdev::NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PRIVATE_INTERFACE"
                     , new_value
@@ -763,7 +761,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
     if(field_name == get_name(name_t::SNAP_NAME_SNAPMANAGERCGI_FIREWALL_ADMIN_IPS))
     {
         affected_services.insert("firewall-reload");
-        NOT_USED(f_snap->replace_configuration_value(
+        snapdev::NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "ADMIN_IPS"
                     , new_value
@@ -774,7 +772,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
     if(field_name == "private_network_ips")
     {
         affected_services.insert("firewall-reload");
-        NOT_USED(f_snap->replace_configuration_value(
+        snapdev::NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "PRIVATE_NETWORK_IPS"
                     , new_value
@@ -785,7 +783,7 @@ bool firewall::apply_setting(QString const & button_name, QString const & field_
     if(field_name == "secure_ip")
     {
         affected_services.insert("firewall-reload");
-        NOT_USED(f_snap->replace_configuration_value(
+        snapdev::NOT_USED(f_snap->replace_configuration_value(
                       g_conf_filename
                     , "SECURE_IP"
                     , new_value
@@ -811,7 +809,7 @@ void firewall::on_handle_affected_services(std::set<QString> & affected_services
         snap::process p("reload firewall");
         p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         p.set_command(g_firewall_script);
-        NOT_USED(p.run());           // errors are automatically logged by snap::process
+        snapdev::NOT_USED(p.run());           // errors are automatically logged by snap::process
     }
 }
 

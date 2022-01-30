@@ -1,5 +1,7 @@
-// Snap Websites Server -- manage double links
 // Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/
+// contact@m2osw.com
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -11,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -93,7 +95,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_LINKS_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -1333,7 +1335,7 @@ bool link_context::next_link(link_info & info)
                 return true;
             }
         }
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // end of list reached (or there was no such link to start with...)
@@ -1482,7 +1484,7 @@ QString links::dependencies() const
  */
 int64_t links::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
 
@@ -1566,7 +1568,7 @@ void links::init_tables()
  */
 bool links::modified_link_impl(link_info const & link, bool const created)
 {
-    NOT_USED(link, created);
+    snapdev::NOT_USED(link, created);
     return f_snap->is_ready();
 }
 

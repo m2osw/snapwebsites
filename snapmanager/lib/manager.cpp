@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -214,7 +214,7 @@ char const * get_name(name_t name)
         throw snap::snap_logic_exception("Invalid SNAP_NAME_MANAGER_...");
 
     }
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -474,7 +474,7 @@ QString manager::dependencies() const
 void manager::bootstrap(snap_child * snap)
 {
     // virtual function stub
-    NOT_USED(snap);
+    snapdev::NOT_USED(snap);
 }
 
 
@@ -806,7 +806,7 @@ bool manager::stop_now_prima() const
 
 void manager::forward_message(snap::snap_communicator_message const & message)
 {
-    snap::NOT_USED(message);
+    snapdev::NOT_USED(message);
     throw std::logic_error("forward_message() called on the wrong object (i.e. it is not implemented.)");
 }
 

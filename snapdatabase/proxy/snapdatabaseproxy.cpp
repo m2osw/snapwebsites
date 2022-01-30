@@ -172,7 +172,7 @@ namespace
 {
 
 
-typedef std::unique_ptr<glob_t, snap::raii_pointer_deleter<glob_t, decltype(&::globfree), &::globfree>> glob_pointer_t;
+typedef std::unique_ptr<glob_t, snapdev::raii_pointer_deleter<glob_t, decltype(&::globfree), &::globfree>> glob_pointer_t;
 
 
 advgetopt::option const g_options[] =
@@ -836,7 +836,7 @@ int main(int argc, char * argv[])
     }
     catch(advgetopt::getopt_exit const & e)
     {
-        snap::NOT_USED(e);
+        snapdev::NOT_USED(e);
         return 0;
     }
     catch(std::exception const & e)

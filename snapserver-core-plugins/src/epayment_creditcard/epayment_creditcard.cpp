@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle credit card data for other plugins
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -100,7 +99,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_EPAYMENT_CREDITCARD_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -238,7 +237,7 @@ int64_t epayment_creditcard::do_update(int64_t last_updated)
  */
 void epayment_creditcard::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -278,7 +277,7 @@ void epayment_creditcard::bootstrap(snap_child * snap)
  */
 void epayment_creditcard::on_process_post(QString const & uri_path)
 {
-    NOT_USED(uri_path);
+    snapdev::NOT_USED(uri_path);
 }
 
 
@@ -306,7 +305,7 @@ void epayment_creditcard::on_dynamic_editor_widget(
         QString const & name,
         QDomDocument & editor_widgets)
 {
-    NOT_USED(name);
+    snapdev::NOT_USED(name);
 
     // are we dealing with the epayment credit card form?
     //
@@ -987,7 +986,7 @@ void epayment_creditcard::gateway_features(epayment_gateway_features_t & gateway
  */
 bool epayment_creditcard::process_creditcard(epayment_creditcard_info_t & creditcard_info, editor::save_info_t & save_info)
 {
-    NOT_USED(creditcard_info, save_info);
+    snapdev::NOT_USED(creditcard_info, save_info);
 
     SNAP_LOG_INFO("epayment_creditcard::process_creditcard() called.");
 

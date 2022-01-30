@@ -142,7 +142,7 @@ std::uint8_t block_primary_index::get_size() const
     // this is calculate in memory and the snap::log2() is just two or three
     // assembly instructions so it's dead fast (it's inline).
     //
-    return static_cast<std::uint8_t>(std::min(snap::log2(f_table->get_page_size()) - snap::log2(sizeof(reference_t)), 32));
+    return static_cast<std::uint8_t>(std::min(snapdev::log2(f_table->get_page_size()) - snapdev::log2(sizeof(reference_t)), 32));
 }
 
 

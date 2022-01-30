@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // mailserver
@@ -95,7 +95,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_MAILSERVER_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -182,7 +182,7 @@ bool mailserver::is_installed() const
  */
 int64_t mailserver::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -303,7 +303,7 @@ bool mailserver::apply_setting(QString const & button_name
     , QString const & old_or_installation_value
     , std::set<QString> & affected_services)
 {
-    NOT_USED(button_name, field_name, old_or_installation_value, affected_services);
+    snapdev::NOT_USED(button_name, field_name, old_or_installation_value, affected_services);
 
     QFile setup_postfix_script( "/tmp/setup-postfix.sh" );
     //

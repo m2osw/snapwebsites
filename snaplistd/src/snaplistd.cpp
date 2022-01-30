@@ -399,7 +399,7 @@ void snaplistd::sighandler( int sig )
     // Exit with error status
     //
     ::exit(1);
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 

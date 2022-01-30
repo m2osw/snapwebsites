@@ -1,4 +1,3 @@
-// Snap Manager -- snap database manager to work on Cassandra's tables
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -908,7 +907,7 @@ void snap_manager::onQueryFinished( casswrapper::Query::pointer_t q )
 {
     f_queryQueue.pop();
 
-    snap::NOT_USED(getQueryResult( q ));
+    snapdev::NOT_USED(getQueryResult( q ));
 
     startQuery();
 }
@@ -2145,8 +2144,8 @@ void snap_manager::onSitesListCurrentChanged( QModelIndex current, QModelIndex /
 
 void snap_manager::onSitesParamsCurrentChanged( QModelIndex current, QModelIndex previous )
 {
-    //snap::NOT_USED(current);
-    snap::NOT_USED(previous);
+    //snapdev::NOT_USED(current);
+    snapdev::NOT_USED(previous);
 
     f_sites_delete->setEnabled( current.isValid() );
 }
@@ -2154,7 +2153,7 @@ void snap_manager::onSitesParamsCurrentChanged( QModelIndex current, QModelIndex
 
 void snap_manager::onSitesParamsDataChanged( const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles )
 {
-    snap::NOT_USED(topLeft, bottomRight, roles);
+    snapdev::NOT_USED(topLeft, bottomRight, roles);
 
     const auto modified( f_params_row_model.isModified() );
     f_sites_apply ->setEnabled( modified );
@@ -2164,7 +2163,7 @@ void snap_manager::onSitesParamsDataChanged( const QModelIndex &topLeft, const Q
 
 void snap_manager::onSitesNewClicked( bool checked )
 {
-    snap::NOT_USED(checked);
+    snapdev::NOT_USED(checked);
     f_sites_parameter_name ->setEnabled( true );
     f_sites_parameter_value->setEnabled( true );
     f_sites_parameter_type ->setEnabled( true );
@@ -2176,7 +2175,7 @@ void snap_manager::onSitesNewClicked( bool checked )
 
 void snap_manager::onSitesSaveClicked( bool checked )
 {
-    snap::NOT_USED(checked);
+    snapdev::NOT_USED(checked);
 
     if( QMessageBox::question
             ( this
@@ -2215,13 +2214,13 @@ void snap_manager::onSitesSaveClicked( bool checked )
 
 void snap_manager::onSitesDeleteClicked( bool clicked )
 {
-    snap::NOT_USED(clicked);
+    snapdev::NOT_USED(clicked);
 }
 
 
 void snap_manager::onSitesApplyClicked( bool clicked )
 {
-    snap::NOT_USED(clicked);
+    snapdev::NOT_USED(clicked);
 
     QString const table_name(snap::get_name(snap::name_t::SNAP_NAME_SITES));
     const auto& rowKey( f_params_row_model.rowKey() );
@@ -2262,7 +2261,7 @@ void snap_manager::onSitesApplyClicked( bool clicked )
 
 void snap_manager::onSitesRevertClicked( bool clicked )
 {
-    snap::NOT_USED(clicked);
+    snapdev::NOT_USED(clicked);
 
     if( QMessageBox::question
             ( this
@@ -2282,7 +2281,7 @@ void snap_manager::onSitesRevertClicked( bool clicked )
 
 void snap_manager::onSitesParamSaveFinished( casswrapper::Query::pointer_t q )
 {
-    snap::NOT_USED(q);
+    snapdev::NOT_USED(q);
     f_params_row_model.clearModified();
     f_sites_apply->setEnabled(false);
     f_sites_revert->setEnabled(false);

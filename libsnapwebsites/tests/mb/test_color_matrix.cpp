@@ -1,4 +1,3 @@
-// Snap Websites Server -- test matrix.cpp/h
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 //
 // This test works along the test_ssl_server.cpp and implements the
@@ -67,7 +66,7 @@ double g_saturation = 1.0;
 double g_hue = 0.0;
 double g_brightness = 1.0;
 
-snap::matrix<double>    g_color_matrix(4, 4);
+snapdev::matrix<double>    g_color_matrix(4, 4);
 
 void calculate_color_matrix()
 {
@@ -179,7 +178,7 @@ std::cout.precision(17);
 
     calculate_color_matrix();
 
-snap::matrix<double> p(4,4);
+snapdev::matrix<double> p(4,4);
 p[0][0] = 0.81649658092772615;
 p[0][1] = 0.0;
 p[0][2] = 0.097737296040753485;
@@ -197,7 +196,7 @@ p[3][1] = 0.0;
 p[3][2] = 0.0;
 p[3][3] = 1.0;
 
-snap::matrix<double> r_b(4,4);
+snapdev::matrix<double> r_b(4,4);
 double const rot_cos = cos((g_hue * M_PI / 180.0));
 double const rot_sin = sin((g_hue * M_PI / 180.0));
 r_b[0][0] =  rot_cos;
@@ -205,7 +204,7 @@ r_b[0][1] =  rot_sin;
 r_b[1][0] = -rot_sin;
 r_b[1][1] =  rot_cos;
 
-snap::matrix<double> m(4,4);
+snapdev::matrix<double> m(4,4);
 m = p * r_b / p;
 
 std::cerr << "quick matrix = " << m << "\n";
@@ -277,7 +276,7 @@ std::cerr << "c0 = " << (g_color_matrix[0][0] + g_color_matrix[1][0] + g_color_m
 
 void show_hue_matrix(int luma_select)
 {
-    snap::matrix<double> a(4, 4);
+    snapdev::matrix<double> a(4, 4);
 
     // setup the the luma and then calculate a few matrices that are
     // used to calculate the factors
@@ -317,7 +316,7 @@ void show_hue_matrix(int luma_select)
 
     // $R_r$ -- rotation around red axis (inverse rotation around X axis)
     //
-    snap::matrix<double> r_r(4, 4);
+    snapdev::matrix<double> r_r(4, 4);
     double const inv_sqrt_2 = 1.0 / sqrt(2.0);
     r_r[1][1] =  inv_sqrt_2;
     r_r[1][2] =  inv_sqrt_2;
@@ -328,7 +327,7 @@ void show_hue_matrix(int luma_select)
 
     // $R_g$ -- rotation around green axis (inverse rotation around Y axis)
     //
-    snap::matrix<double> r_g(4, 4);
+    snapdev::matrix<double> r_g(4, 4);
     double const inv_sqrt_3 = 1.0 / sqrt(3.0);
     double const sqrt_2_over_sqrt_3 = sqrt(2.0) / sqrt(3.0);
     r_g[0][0] =  sqrt_2_over_sqrt_3;
@@ -340,21 +339,21 @@ void show_hue_matrix(int luma_select)
 
     // $R_{rg}$ -- the product or $R_r$ and $R_g$
     //
-    snap::matrix<double> r_rg(r_r * r_g);
+    snapdev::matrix<double> r_rg(r_r * r_g);
 
 //std::cerr << "R_rg = " << r_rg << "\n";
 
     // Luminance Vector
     //
-    snap::matrix<double> w(a.get_luma_vector());
+    snapdev::matrix<double> w(a.get_luma_vector());
 
 //std::cerr << "w = " << w << "\n";
 
-    snap::matrix<double> l(r_rg * w);
+    snapdev::matrix<double> l(r_rg * w);
 
 //std::cerr << "l = " << l << "\n";
 
-    snap::matrix<double> s(4, 4);
+    snapdev::matrix<double> s(4, 4);
     s[0][2] = l[0][0] / l[2][0];
     s[1][2] = l[1][0] / l[2][0];
 
@@ -364,7 +363,7 @@ void show_hue_matrix(int luma_select)
 
 //std::cerr << "M_rg * s = " << (r_rg * s) << "\n";
 
-    snap::matrix<double> p(r_rg);
+    snapdev::matrix<double> p(r_rg);
     p *= s;
 
 //std::cerr << "p = " << p << "\n";
@@ -383,7 +382,7 @@ void show_hue_matrix(int luma_select)
     std::cout << std::endl << "        );" << std::endl;
 
 // 'a' is an identity, so we can use it to compute the inverse
-    snap::matrix<double> p_inv(a/p);
+    snapdev::matrix<double> p_inv(a/p);
 
 //std::cerr << "p^-1 = " << p_inv << "\n";
 

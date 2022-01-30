@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // self
 //
@@ -117,7 +117,7 @@ mail_exchangers::mail_exchangers(std::string const & domain)
     // dig worked, check the results
     //
     std::vector<std::string> lines;
-    int const count(tokenize_string(lines, output, "\n", true, " "));
+    int const count(snapdev::tokenize_string(lines, output, "\n", true, " "));
     if(count <= 0)
     {
         // no output?
@@ -138,7 +138,7 @@ mail_exchangers::mail_exchangers(std::string const & domain)
                 break;
             }
             std::vector<std::string> fields;
-            /*int const ln_count*/ (tokenize_string(fields, lines[l], " \t", true, " ."));
+            /*int const ln_count*/ (snapdev::tokenize_string(fields, lines[l], " \t", true, " ."));
             if(fields.empty()
             || fields[0] != full_domain)
             {

@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -174,7 +174,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_EPAYMENT_STRIPE_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -307,7 +307,7 @@ int64_t epayment_stripe::do_update(int64_t last_updated)
  */
 void epayment_stripe::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -385,7 +385,7 @@ libdbproxy::table::pointer_t epayment_stripe::get_epayment_stripe_table()
  */
 void epayment_stripe::on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata)
 {
-    NOT_USED(ipath, metadata);
+    snapdev::NOT_USED(ipath, metadata);
 
     QDomDocument doc(header.ownerDocument());
 
@@ -512,7 +512,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //                false
 //            );
 //            f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_FAILED_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-//            NOT_REACHED();
+//            snapdev::NOT_REACHED();
 //        }
 //        else
 //        {
@@ -521,7 +521,7 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            cancel_invoice(token);
 //
 //            f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_CANCELED_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-//            NOT_REACHED();
+//            snapdev::NOT_REACHED();
 //        }
 //    }
 //    else if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_RETURN_URL))
@@ -868,12 +868,12 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            }
 //
 //            f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_THANK_YOU_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-//            NOT_REACHED();
+//            snapdev::NOT_REACHED();
 //            break;
 //        }
 //        // redirect the user to a failure page
 //        f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_FAILED_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-//        NOT_REACHED();
+//        snapdev::NOT_REACHED();
 //    }
 //    else if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_RETURN_PLAN_URL))
 //    {
@@ -1161,10 +1161,10 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PAID);
 //
 //            f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_THANK_YOU_SUBSCRIPTION_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-//            NOT_REACHED();
+//            snapdev::NOT_REACHED();
 //        }
 //        f_snap->page_redirect(epayment::get_name(epayment::name_t::SNAP_NAME_EPAYMENT_FAILED_PATH), snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-//        NOT_REACHED();
+//        snapdev::NOT_REACHED();
 //    }
 //
 //    // output the page as the output plugin otherwise would by itself
@@ -2191,7 +2191,7 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 
 void epayment_stripe::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOT_USED(ipath, xml);
+    snapdev::NOT_USED(ipath, xml);
 
     if(!token.is_namespace("epayment_stripe::"))
     {
@@ -2259,7 +2259,7 @@ void epayment_stripe::on_replace_token(content::path_info_t & ipath, QDomDocumen
  */
 void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipath, content::path_info_t & previous_invoice_ipath, content::path_info_t & new_invoice_ipath)
 {
-    NOT_USED(first_invoice_ipath, previous_invoice_ipath, new_invoice_ipath);
+    snapdev::NOT_USED(first_invoice_ipath, previous_invoice_ipath, new_invoice_ipath);
 
     // if no stripe key defined, it cannot be a repeat of a stripe charge
     //
@@ -2644,7 +2644,7 @@ void epayment_stripe::log_error(http_client_server::http_response::pointer_t res
  */
 bool epayment_stripe::process_creditcard(epayment_creditcard::epayment_creditcard_info_t & creditcard_info, editor::save_info_t & save_info)
 {
-    NOT_USED(save_info);
+    snapdev::NOT_USED(save_info);
 
     //
     // WARNING: do not log the JSON responses as is, many include the

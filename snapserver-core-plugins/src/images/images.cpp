@@ -1,4 +1,3 @@
-// Snap Websites Server -- handling of images
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -95,7 +94,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception(QString("invalid name_t::SNAP_NAME_OUTPUT_... (%1)").arg(static_cast<int>(name)));
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -455,7 +454,7 @@ int64_t images::do_update(int64_t last_updated)
  */
 void images::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -666,7 +665,7 @@ images::virtual_path_t images::check_virtual_path(content::path_info_t & ipath, 
 
 void images::on_listener_check(snap_uri const & uri, content::path_info_t & page_ipath, QDomDocument doc, QDomElement result)
 {
-    NOT_USED(uri);
+    snapdev::NOT_USED(uri);
 
     path::dynamic_plugin_t info;
     switch(check_virtual_path(page_ipath, info))
@@ -749,7 +748,7 @@ bool images::on_path_execute(content::path_info_t & ipath)
                         .arg(field_name)
                         .arg(QString::fromLatin1(attachment_key.binaryValue().toHex()))
                         .arg(renamed));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     libdbproxy::table::pointer_t files_table(content::content::instance()->get_files_table());
@@ -762,7 +761,7 @@ bool images::on_path_execute(content::path_info_t & ipath)
                 QString("Could not find field \"%1\" of file \"%2\".")
                         .arg(content::get_name(content::name_t::SNAP_NAME_CONTENT_FILES_DATA))
                         .arg(QString::fromLatin1(attachment_key.binaryValue().toHex())));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     libdbproxy::row::pointer_t file_row(files_table->getRow(attachment_key.binaryValue()));
@@ -820,7 +819,7 @@ bool images::on_path_execute(content::path_info_t & ipath)
  */
 void images::on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type)
 {
-    NOT_USED(owner, type);
+    snapdev::NOT_USED(owner, type);
 
     //
     // TODO: automate connections between new pages and image transformations
@@ -2496,7 +2495,7 @@ bool images::func_write(parameters_t & params)
 
 void images::on_replace_token( content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token )
 {
-    NOT_USED(ipath, xml);
+    snapdev::NOT_USED(ipath, xml);
 
     if(!token.is_namespace("images::"))
     {

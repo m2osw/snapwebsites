@@ -182,7 +182,7 @@ snap_flag::snap_flag(std::string const & filename)
         //
         std::string const tags(flag.get_parameter("tags"));
         std::vector<std::string> tag_list;
-        tokenize_string(tag_list
+        snapdev::tokenize_string(tag_list
                       , tags
                       , ","
                       , true

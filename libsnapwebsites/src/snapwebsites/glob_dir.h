@@ -63,7 +63,7 @@ private:
 class glob_dir
 {
 public:
-    typedef std::unique_ptr<glob_t, raii_pointer_deleter<glob_t, decltype(&::globfree), &::globfree>> glob_pointer_t;
+    typedef std::unique_ptr<glob_t, snapdev::raii_pointer_deleter<glob_t, decltype(&::globfree), &::globfree>> glob_pointer_t;
 
                     glob_dir();
                     glob_dir( char const * path, int const flags = 0, bool allow_empty = false );

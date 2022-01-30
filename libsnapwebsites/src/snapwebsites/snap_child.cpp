@@ -1,4 +1,3 @@
-// Snap Websites Server -- snap websites serving children
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -2632,7 +2631,7 @@ void snap_child::set_timezone(QString const& timezone)
  */
 void snap_child::set_locale(QString const & locale)
 {
-    NOT_USED(locale);
+    snapdev::NOT_USED(locale);
     // force new locale
     // Note: empty ("") is like using $LANG to setup the locale
 //std::cerr << "***\n*** set_locale(" << locale << ")\n***\n";
@@ -2948,14 +2947,14 @@ pid_t snap_child::fork_child()
             {
                 SNAP_LOG_FATAL("snap_child::fork_child() lost parent too soon and did not receive SIGHUP; quit immediately.");
                 exit(1);
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
         }
         catch( snap_exception const & except )
         {
             SNAP_LOG_FATAL("snap_child::fork_child(): snap_exception caught: ")(except.what());
             exit(1);
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         catch( std::exception const & std_except )
         {
@@ -2965,13 +2964,13 @@ pid_t snap_child::fork_child()
             //
             SNAP_LOG_FATAL("snap_child::fork_child(): std::exception caught: ")(std_except.what());
             exit(1);
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         catch( ... )
         {
             SNAP_LOG_FATAL("snap_child::fork_child(): unknown exception caught!");
             exit(1);
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 
@@ -3078,7 +3077,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         // move all possible work that does not required the DB before
         // this line so we avoid a network connection altogether
         //
-        NOT_USED(connect_cassandra(true));  // since we pass 'true', the returned value will always be true
+        snapdev::NOT_USED(connect_cassandra(true));  // since we pass 'true', the returned value will always be true
 
         canonicalize_domain();      // using the URI, find the domain core::rules and start the canonicalization process
         canonicalize_website();     // using the canonicalized domain, find the website core::rules and continue the canonicalization process
@@ -3114,7 +3113,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
                 die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
                     "The website is being initialized. Please try again in a moment. Thank you.",
                     "The site state is undefined. It is not yet initialized.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             if(state.stringValue() != "ready")
             {
@@ -3126,7 +3125,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
                            " It either was not yet initialized or it is being"
                            " updated right now (or the update process crashed?)")
                                     .arg(state.stringValue()));
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
 
                 // double protection, this statement is not reachable
                 return false;
@@ -3145,7 +3144,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         //delete this;
         output_session_log("done");
         exit(0);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     catch( snap_lock_failed_exception const & except )
     {
@@ -3156,7 +3155,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         die(http_code_t::HTTP_CODE_LOCKED, "",
             "One of the resources you tried to access is currently locked. Please try again in a moment.",
             QString("A lock failed (%1)").arg(except.what()));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     catch( snap_exception const & except )
     {
@@ -3192,7 +3191,7 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
     }
 
     exit(1);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 
     // compiler expects a return
     return false;
@@ -3389,7 +3388,7 @@ void snap_child::read_environment()
             f_snap->die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
                 "Unstable network connection",
                 QString("an error occurred while reading the environment from the socket in the server child process (%1).").arg(details));
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         char getc() const
@@ -3410,7 +3409,7 @@ void snap_child::read_environment()
             {
                 int const e(errno);
                 die(QString("I/O error, errno: %1").arg(e));
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             return c;
         }
@@ -3420,7 +3419,7 @@ void snap_child::read_environment()
         //    if(f_unget != '\0')
         //    {
         //        die("too many unget() called");
-        //        NOT_REACHED();
+        //        snapdev::NOT_REACHED();
         //    }
         //    f_unget = c;
         //}
@@ -3431,14 +3430,14 @@ void snap_child::read_environment()
             if(f_name == "#INFO")
             {
                 f_snap->snap_info();
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
 
             // #STATS
             if(f_name == "#STATS")
             {
                 f_snap->snap_statistics();
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
 
             // #INIT
@@ -3453,7 +3452,7 @@ void snap_child::read_environment()
                 if(f_name != "#START")
                 {
                     die("#START or other supported command missing.");
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
             }
             // TODO add support for a version: #START=1.2 or #INIT=1.2
@@ -3481,7 +3480,7 @@ void snap_child::read_environment()
             if(!f_post_environment.contains("CONTENT-DISPOSITION"))
             {
                 die("multipart posts must have a Content-Disposition header to be considered valid.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             // TODO: verify and if necessary fix this as the ';' could I think
             //       appear in a string; looking at the docs, I'm not too sure
@@ -3493,14 +3492,14 @@ void snap_child::read_environment()
             {
                 die(QString("multipart posts Content-Disposition must at least include \"form-data\" and a name parameter, \"%1\" is not valid.")
                             .arg(f_post_environment["CONTENT-DISPOSITION"]));
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             if(disposition[0].trimmed() != "form-data")
             {
                 // not happy if we don't get form-data parts
                 die(QString("multipart posts Content-Disposition must be a \"form-data\", \"%1\" is not valid.")
                             .arg(f_post_environment["CONTENT-DISPOSITION"]));
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             // retrieve all the parameters, then keep those we want to keep
             int const max_strings(disposition.size());
@@ -3514,7 +3513,7 @@ void snap_child::read_environment()
                     die(QString("parameter %1 in this multipart posts Content-Disposition does not include an equal character so \"%1\" is not valid.")
                                 .arg(i)
                                 .arg(f_post_environment["CONTENT-DISPOSITION"]));
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 nv[0] = nv[0].trimmed().toLower(); // case insensitive
                 nv[1] = nv[1].trimmed();
@@ -3529,7 +3528,7 @@ void snap_child::read_environment()
             {
                 die(QString("multipart posts Content-Disposition must include a name=\"...\" parameter, \"%1\" is not valid.")
                             .arg(f_post_environment["CONTENT-DISPOSITION"]));
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             // remove the ending \r\n
             if(f_post_content.right(2) == "\r\n")
@@ -3557,7 +3556,7 @@ void snap_child::read_environment()
                 {
                     die(QString("multipart post variable \"%1\" defined twice")
                                 .arg(f_name));
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 f_post[f_name] = filename;
 
@@ -3619,7 +3618,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                     // the character encoding is defined as the form, page,
                     // or UTF-8 encoding; Content-Type not permitted here!
                     die(QString("multipart posts Content-Type is not allowed with simple parameters."));
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 // TODO verify that the content of a post just needs to be
                 //      decoded or whether it already is UTF-8 as required
@@ -3628,7 +3627,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 {
                     die(QString("multipart post variable \"%1\" defined twice")
                                 .arg(f_name));
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 // append a '\0' so we can call is_valid_utf8()
                 char const nul('\0');
@@ -3638,7 +3637,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                     f_snap->die(http_code_t::HTTP_CODE_BAD_REQUEST, "Invalid Form Content",
                         "Your form includes characters that are not compatible with the UTF-8 encoding. Try to avoid special characters and try again. If you are using Internet Explorer, know that older versions may not be compatible with international characters.",
                         "is_valid_utf8() returned false against the user's content");
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 // make sure to view the input as UTF-8 characters
                 f_post[f_name] = QString::fromUtf8(f_post_content.data(), f_post_content.size() - 1); //snap_uri::urldecode(f_post_content, true);?
@@ -3658,7 +3657,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                     if(f_post_first)
                     {
                         die("got end boundary without a start");
-                        NOT_REACHED();
+                        snapdev::NOT_REACHED();
                     }
                     process_post_variable();
                     return true;
@@ -3688,7 +3687,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
             if(f_post_first)
             {
                 die("the first POST boundary is missing.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
 
             if(f_post_header)
@@ -3706,7 +3705,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                     f_snap->die(http_code_t::HTTP_CODE_BAD_REQUEST, "Invalid Form Content",
                         "Your multi-part form header includes characters that are not compatible with the ASCII encoding.",
                         "is_valid_ascii() returned false against a line of the user's multipart form header");
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
 
                 // we got a header (Blah: value)
@@ -3726,7 +3725,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                     if(p == -1)
                     {
                         die("invalid header variable name/value pair, no ':' found.");
-                        NOT_REACHED();
+                        snapdev::NOT_REACHED();
                     }
                     // render name case insensitive
                     f_name = line.mid(0, p).trimmed().toUpper();
@@ -3750,7 +3749,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
             if(f_has_post)
             {
                 die("at most 1 #POST is accepted in the environment.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             f_has_post = true;
 
@@ -3793,7 +3792,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
             if(boundary.isEmpty())
             {
                 die("multipart POST does not include a valid boundary.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             f_boundary = ("--" + boundary).toLatin1();
             f_end_boundary = f_boundary;
@@ -3846,7 +3845,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
             if(f_name.isEmpty())
             {
                 die("empty lines are not accepted in the child environment.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             if(f_has_post)
             {
@@ -3933,14 +3932,14 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 else if(c == '\r')
                 {
                     die("got a \\r character in the environment (not in a multi-part POST)");
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 else if(reading_name)
                 {
                     if(isspace(c))
                     {
                         die("spaces are not allowed in environment variable names");
-                        NOT_REACHED();
+                        snapdev::NOT_REACHED();
                     }
                     f_name += c;
                 }
@@ -4221,7 +4220,7 @@ void snap_child::setup_uri()
         die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
                     "HTTP_HOST is required but not defined in your request.",
                     "HTTP_HOST was not defined in the user request");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     QString host(f_env["HTTP_HOST"]);
     int const port_pos(host.indexOf(':'));
@@ -4235,7 +4234,7 @@ void snap_child::setup_uri()
         die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
                     "HTTP_HOST is required but is empty in your request.",
                     "HTTP_HOST was defined but there was no domain name");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     f_uri.set_domain(host);
 
@@ -4245,7 +4244,7 @@ void snap_child::setup_uri()
         die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
                     "SERVER_PORT is required but not defined in your request.",
                     "SERVER_PORT was not defined in the user request");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     f_uri.set_port(f_env["SERVER_PORT"]);
 
@@ -4261,7 +4260,7 @@ void snap_child::setup_uri()
         die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
                      "REQUEST_URI is required but not defined in your request.",
                      "REQUEST_URI was not defined in the user's request");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     // For some reasons I was thinking that the q=... was necessary to
     // find the correct REQUEST_URI -- it is only if you want to allow
@@ -4307,7 +4306,7 @@ void snap_child::setup_uri()
             die(http_code_t::HTTP_CODE_REQUEST_URI_TOO_LONG, "",
                          "The path of this request is too long.",
                          "We accept paths up to 2048 characters.");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
         f_uri.set_path(path);
         int limit(path.lastIndexOf('/'));
@@ -4668,7 +4667,7 @@ bool snap_child::connect_cassandra(bool child)
         die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
                 "Our database is being initialized more than once.",
                 "The connect_cassandra() function cannot be called more than once.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // retrieve the address:port info
@@ -4711,7 +4710,7 @@ bool snap_child::connect_cassandra(bool child)
         die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
                 "Our database system is temporarilly unavailable.",
                 "Could not connect to Cassandra");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
 // WARNING: The f_casssandra->contexts() function should not be used anymore
@@ -4739,7 +4738,7 @@ SNAP_LOG_WARNING("snap_child::connect_cassandra() should not have to call contex
                     "",
                     "Our database system does not seem to be properly installed.",
                     QString("The child process connected to Cassandra but it could not find the \"%1\" context.").arg(context_name));
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
     catch(std::exception const & e)
@@ -4759,7 +4758,7 @@ SNAP_LOG_WARNING("snap_child::connect_cassandra() should not have to call contex
                 "",
                 "Our database system is not currently available.",
                 "The child process connected to Cassandra through snapdbproxy, but it could not find retrieve the context metadata.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // TBD -- Is that really the right place for this?
@@ -4859,7 +4858,7 @@ void snap_child::canonicalize_domain()
                     "Domain Not Found",
                     "This website does not exist. Please check the URI and make corrections as required.",
                     "User attempt to access \"" + f_domain_key + "\" which is not defined as a domain.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // get the core::rules
@@ -4874,7 +4873,7 @@ void snap_child::canonicalize_domain()
                     "Domain Not Found",
                     "This website does not exist. Please check the URI and make corrections as required.",
                     "User attempt to access domain \"" + f_domain_key + "\" which does not have a valid core::rules entry.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // parse the rules to our domain structures
@@ -5037,7 +5036,7 @@ void snap_child::canonicalize_website()
     {
         // this website doesn't exist; i.e. that's a 404
         die(http_code_t::HTTP_CODE_NOT_FOUND, "Website Not Found", "This website does not exist. Please check the URI and make corrections as required.", "User attempt to access \"" + f_website_key + "\" which was not defined as a website.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // get the core::rules
@@ -5049,7 +5048,7 @@ void snap_child::canonicalize_website()
         // way it's wrong here
         //
         die(http_code_t::HTTP_CODE_NOT_FOUND, "Website Not Found", "This website does not exist. Please check the URI and make corrections as required.", "User attempt to access website \"" + f_website_key + "\" which does not have a valid core::rules entry.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // parse the rules to our website structures
@@ -5434,7 +5433,7 @@ void snap_child::canonicalize_options()
                     die(http_code_t::HTTP_CODE_BAD_REQUEST, "Invalid Revision",
                             QString("The revision (%1) is not valid. It is expected to be a branch number, a period (.), and a revision number.").arg(rev),
                             "We found a number of period other than 1 or 2.");
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
             }
         }
@@ -5446,7 +5445,7 @@ void snap_child::canonicalize_options()
         die(http_code_t::HTTP_CODE_BAD_REQUEST, "Invalid Revision",
                 "You defined a rev parameter along a branch and/or revision, which is not supported. Remove one or the other to access your page.",
                 QString("We only accept a branch+revision (%1.%2) or a rev (%3).").arg(branch).arg(revision).arg(rev));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     snap_version::version_number_t branch_value(static_cast<snap_version::basic_version_number_t>(snap_version::SPECIAL_VERSION_UNDEFINED));
@@ -5462,7 +5461,7 @@ void snap_child::canonicalize_options()
             die(http_code_t::HTTP_CODE_BAD_REQUEST, "Invalid Branch",
                     QString("Branch number \"%1\" is invalid. Only digits are expected.").arg(branch),
                     "The user did not give us a number as the branch number.");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
     if(!revision.isEmpty())
@@ -5475,7 +5474,7 @@ void snap_child::canonicalize_options()
             die(http_code_t::HTTP_CODE_BAD_REQUEST, "Invalid Revision",
                     QString("Revision number \"%1\" is invalid. Only digits are expected.").arg(revision),
                     "The user did not give us a number as the revision number.");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 
@@ -5626,7 +5625,7 @@ bool snap_child::verify_locale(QString & lang, QString & country, bool generate_
                 die(http_code_t::HTTP_CODE_BAD_REQUEST, "Country Defined Twice",
                         QString("Country is defined twice.").arg(lang).arg(c),
                         "This one may be a programmer mistake. The country parameter was not an empty string on entry of this function.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             return false;
         }
@@ -5641,7 +5640,7 @@ bool snap_child::verify_locale(QString & lang, QString & country, bool generate_
                 die(http_code_t::HTTP_CODE_NOT_FOUND, "Language Not Found",
                         QString("Language in the locale specification \"%1\" is not defined which is not supported.").arg(lang),
                         "Prevented user from accessing the website with no language specified, even though he specified a language entry.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             return false;
         }
@@ -5653,7 +5652,7 @@ bool snap_child::verify_locale(QString & lang, QString & country, bool generate_
                 die(http_code_t::HTTP_CODE_NOT_FOUND, "Country Not Found",
                         QString("Country in the locale specification \"%1\" is not defined. Remove '%2' if you do not want to include a country.").arg(lang).arg(c),
                         "Prevented user from accessing the website with no country specified, even though he specified a country entry.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             return false;
         }
@@ -5674,7 +5673,7 @@ bool snap_child::verify_locale(QString & lang, QString & country, bool generate_
                 die(http_code_t::HTTP_CODE_NOT_FOUND, "Language Not Found",
                         QString("Language in the locale specification \"%1\" is not currently considered a known or valid language name.").arg(lang),
                         "Prevented user from accessing the website with an invalid language.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             return false;
         }
@@ -5692,7 +5691,7 @@ bool snap_child::verify_locale(QString & lang, QString & country, bool generate_
                 die(http_code_t::HTTP_CODE_NOT_FOUND, "Country Not Found",
                         QString("Locale specification \"%1\" seems to include a charset which is not legal at this time.").arg(lang),
                         "Prevented user from accessing the website because a charset was specified with the language.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             return false;
         }
@@ -5704,7 +5703,7 @@ bool snap_child::verify_locale(QString & lang, QString & country, bool generate_
                 die(http_code_t::HTTP_CODE_NOT_FOUND, "Country Not Found",
                         QString("Country in locale specification \"%1\" does not look like a valid country name.").arg(lang),
                         "Prevented user from accessing the website with an invalid country.");
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             return false;
         }
@@ -5929,7 +5928,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
         die(http_code_t::HTTP_CODE_INTERNAL_SERVER_ERROR, "Initialization Mismatch",
                 "An internal server error was detected while initializing the process.",
                 "The server snap_child::page_redirect() function was called before the website got canonicalized.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     QString const method(snapenv(get_name(name_t::SNAP_NAME_CORE_REQUEST_METHOD)));
     if(method != "GET"
@@ -5939,7 +5938,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
         die(http_code_t::HTTP_CODE_FORBIDDEN, "Method Not Allowed",
                 QString("Prevented a redirect when using method %1.").arg(method),
                 "We do not currently support redirecting users for methods other than GET, POST, and HEAD.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     switch(http_code)
@@ -5955,7 +5954,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
         die(http_code_t::HTTP_CODE_FORBIDDEN, "Error Code Not Allowed For Redirect",
                 QString("Prevented a redirect using HTTP code %1.").arg(static_cast<int>(http_code)),
                 "We limit the redirect to using 301, 302, 303, 307, and 308.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
 
     }
 
@@ -5967,7 +5966,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
         die(http_code_t::HTTP_CODE_INTERNAL_SERVER_ERROR, "Hack Prevention",
                 "Server prevented a potential hack from being applied.",
                 "The server snap_child::page_redirect() function was called with a path that includes \n or \r and refused processing it: \"" + path + "\"");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     snap_uri uri;
@@ -5981,7 +5980,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
             die(http_code_t::HTTP_CODE_ACCESS_DENIED, "Invalid URI",
                     "The server prevented a redirect because it could not understand the destination URI.",
                     "The server snap_child::page_redirect() function was called with a path that it did not like: \"" + path + "\"");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 
@@ -6086,7 +6085,7 @@ void snap_child::page_redirect(QString const & path, http_code_t http_code, QStr
 
     // XXX should we exit with 1 in this case?
     exit(0);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -6348,7 +6347,7 @@ void snap_child::exit(int code)
     }
 
     server::exit(code);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -7823,7 +7822,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
            , "Server cannot find any plugins because the path is not properly configured."
            , "An error occured loading the server plugins (plugins_path parameter in snapserver.conf is undefined)."
            );
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     if(!snap::plugins::load(plugins_path, this, std::static_pointer_cast<snap::plugins::plugin>(server), list_of_plugins, introducer))
@@ -7833,7 +7832,7 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
            , "Server encountered problems with its plugins."
            , "An error occurred while loading the server plugins. See other errors from the plugin implementation for details."
            );
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     // at this point each plugin was allocated through their factory
     // but they are not really usable yet because we did not initialize them
@@ -8409,7 +8408,7 @@ void snap_child::execute()
             die(http_code_t::HTTP_CODE_NOT_FOUND, "Page Empty",
                 "Somehow this page could not be generated.",
                 "the execute() command ran but the output is empty (this is never correct with HTML data, it could be with text/plain responses though)");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 
@@ -8535,7 +8534,7 @@ void snap_child::output_result(header_mode_t modes, QByteArray output_data)
                     die(http_code_t::HTTP_CODE_NOT_ACCEPTABLE, "No Acceptable Compression Encoding",
                         "Your client requested a compression that we do not offer and it does not accept content without compression.",
                         "a client requested content with Accept-Encoding: identity;q=0 and no other compression we understand");
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 // The "identity" SHOULD NOT be used with the Content-Encoding
                 // (RFC 2616 -- https://tools.ietf.org/html/rfc2616)
@@ -10030,7 +10029,7 @@ void snap_child::extract_resource(QString const & resource_name, QString const &
                 "Resource Unavailable",
                 QString("Somehow resource \"%1\" could not be loaded.").arg(resource_name),
                 "The resource name is wrong, maybe the ':' is missing at the start?");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // read the entire file
@@ -10044,7 +10043,7 @@ void snap_child::extract_resource(QString const & resource_name, QString const &
                 "I/O Error",
                 QString("Somehow we could not create output file \"%1\".").arg(output_filename),
                 "The resource name is wrong, maybe the ':' is missing at the start?");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // save the resource

@@ -52,7 +52,7 @@ public:
 class udp_base
 {
 public:
-    typedef std::unique_ptr<struct addrinfo, snap::raii_pointer_deleter<struct addrinfo, decltype(&::freeaddrinfo), &::freeaddrinfo>> raii_addrinfo_t;
+    typedef std::unique_ptr<struct addrinfo, snapdev::raii_pointer_deleter<struct addrinfo, decltype(&::freeaddrinfo), &::freeaddrinfo>> raii_addrinfo_t;
 
     int                 get_socket() const;
     int                 get_mtu_size() const;
@@ -66,7 +66,7 @@ protected:
     // TODO: convert the port + addr into a libaddr addr object?
     //       (we use the f_addrinfo as is in the sendto() and bind() calls, though)
     //
-    snap::raii_fd_t     f_socket = snap::raii_fd_t();
+    snapdev::raii_fd_t  f_socket = snapdev::raii_fd_t();
     int                 f_port = -1;
     mutable int         f_mtu_size = 0;
     std::string         f_addr = std::string();

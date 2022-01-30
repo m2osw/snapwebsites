@@ -1,4 +1,3 @@
-// Snap Websites -- tool to add/edit/remove DNS options
 // Copyright (c) 2016-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -1109,7 +1108,7 @@ read_token:
 
                 }
             }
-            snap::NOT_REACHED();
+            snapdev::NOT_REACHED();
             break;
 
         }
@@ -1590,7 +1589,7 @@ int dns_options::recursive_option(keyword::pointer_t in)
         in->add_value(k);
     }
 
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
     return 1;
 }
 

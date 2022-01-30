@@ -1,7 +1,3 @@
-//
-// File:        snapmanager/lib/status.cpp
-// Object:      Manager the status object.
-//
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -24,7 +20,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
 // self
 //
@@ -43,7 +38,6 @@
 
 // snapdev lib
 //
-#include <snapdev/not_reached.h>
 #include <snapdev/string_replace_many.h>
 
 
@@ -200,7 +194,7 @@ QString status_t::to_string() const
     //QString value(f_value);
 
     std::string value(f_value.toUtf8().data());
-    std::string const safe_value(snap::string_replace_many(
+    std::string const safe_value(snapdev::string_replace_many(
             value,
             {
                 { "\\", "\\\\" },
@@ -314,7 +308,7 @@ bool status_t::from_string(QString const & line)
     //f_value.replace("\\\\", "\\").replace("\\n", "\n").replace("\\r", "\r");
 
     std::string value(line.mid(s - line.data()).toUtf8().data());
-    std::string const unsafe_value(snap::string_replace_many(
+    std::string const unsafe_value(snapdev::string_replace_many(
             value,
             {
                 { "\\\\", "\\" },

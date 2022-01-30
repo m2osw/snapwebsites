@@ -1,4 +1,3 @@
-// Snap Websites Server -- URI canonicalization
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -2268,7 +2267,7 @@ using namespace parser;
  */
 void domain_set_qualified_name(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<parser::token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     (*t)[0]->set_value((*n)[0]->get_value().toString() + "::" + (*t)[2]->get_value().toString());
@@ -2287,7 +2286,7 @@ void domain_set_qualified_name(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_standard_var(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     // get the node where the qualified name is defined
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
@@ -2309,7 +2308,7 @@ void domain_set_standard_var(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_website_var(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<domain_variable> v(new domain_variable(domain_variable::DOMAIN_VARIABLE_TYPE_WEBSITE, (*n)[0]->get_value().toString(), (*t)[4]->get_value().toString()));
@@ -2335,7 +2334,7 @@ void domain_set_website_var(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_flag_var(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<token_node> o(qSharedPointerDynamicCast<token_node, token>((*t)[5]));
@@ -2368,7 +2367,7 @@ void domain_set_flag_var(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_var_required(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
     QSharedPointer<domain_variable> v(qSharedPointerDynamicCast<domain_variable, parser_user_data>(n->get_user_data()));
@@ -2387,7 +2386,7 @@ void domain_set_var_required(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_var_optional(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
     QSharedPointer<domain_variable> v(qSharedPointerDynamicCast<domain_variable, parser_user_data>(n->get_user_data()));
@@ -2407,7 +2406,7 @@ void domain_set_var_optional(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_new_domain_list(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<domain_variable> v(qSharedPointerDynamicCast<domain_variable, parser_user_data>(n->get_user_data()));
@@ -2428,7 +2427,7 @@ void domain_set_new_domain_list(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_add_domain_list(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> nl(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<token_node> nr(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
@@ -2450,7 +2449,7 @@ void domain_set_add_domain_list(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_rule(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[2]));
     QSharedPointer<domain_info> info(qSharedPointerDynamicCast<domain_info, parser_user_data>(n->get_user_data()));
@@ -2470,7 +2469,7 @@ void domain_set_rule(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_new_rule_list(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<domain_info> info(qSharedPointerDynamicCast<domain_info, parser_user_data>(n->get_user_data()));
@@ -2491,7 +2490,7 @@ void domain_set_new_rule_list(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_add_rule_list(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> nl(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<token_node> nr(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
@@ -2510,7 +2509,7 @@ void domain_set_add_rule_list(const rule& r, QSharedPointer<token_node>& t)
  */
 void domain_set_start_result(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     // we don't need the dynamic cast since we don't need to access the rules
@@ -2866,7 +2865,7 @@ void website_rules::write(QtSerialization::QWriter& w) const
  */
 void website_set_qualified_name(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<parser::token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     (*t)[0]->set_value((*n)[0]->get_value().toString() + "::" + (*t)[2]->get_value().toString());
@@ -2885,7 +2884,7 @@ void website_set_qualified_name(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_standard_var(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     // get the node where the qualified name is defined
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
@@ -2907,7 +2906,7 @@ void website_set_standard_var(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_website_var(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<website_variable> v(new website_variable(website_variable::WEBSITE_VARIABLE_TYPE_WEBSITE, (*n)[0]->get_value().toString(), (*t)[4]->get_value().toString()));
@@ -2933,7 +2932,7 @@ void website_set_website_var(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_flag_var(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<token_node> o(qSharedPointerDynamicCast<token_node, token>((*t)[5]));
@@ -2966,7 +2965,7 @@ void website_set_flag_var(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_var_required(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
     QSharedPointer<website_variable> v(qSharedPointerDynamicCast<website_variable, parser_user_data>(n->get_user_data()));
@@ -2985,7 +2984,7 @@ void website_set_var_required(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_var_optional(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
     QSharedPointer<website_variable> v(qSharedPointerDynamicCast<website_variable, parser_user_data>(n->get_user_data()));
@@ -3004,7 +3003,7 @@ void website_set_var_optional(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_var_path(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     if(t->size() == 1)
     {
@@ -3033,7 +3032,7 @@ void website_set_var_path(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_var_port(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<website_variable> v(new website_variable(website_variable::WEBSITE_VARIABLE_TYPE_STANDARD,
             "port", (*t)[2]->get_value().toString()));
@@ -3053,7 +3052,7 @@ void website_set_var_port(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_var_query(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
     QSharedPointer<website_variable> v(qSharedPointerDynamicCast<website_variable, parser_user_data>(n->get_user_data()));
@@ -3072,7 +3071,7 @@ void website_set_var_query(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_var_protocol(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     //QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
     QSharedPointer<website_variable> v(new website_variable(website_variable::WEBSITE_VARIABLE_TYPE_STANDARD,
@@ -3091,7 +3090,7 @@ void website_set_var_protocol(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_variable_rule(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     // we don't need the dynamic cast since we don't need to access the variables
@@ -3110,7 +3109,7 @@ void website_set_variable_rule(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_new_website_list(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<website_variable> v(qSharedPointerDynamicCast<website_variable, parser_user_data>(n->get_user_data()));
@@ -3131,7 +3130,7 @@ void website_set_new_website_list(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_add_website_list(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> nl(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<token_node> nr(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
@@ -3153,7 +3152,7 @@ void website_set_add_website_list(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_rule(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[2]));
     QSharedPointer<website_info> info(qSharedPointerDynamicCast<website_info, parser_user_data>(n->get_user_data()));
@@ -3173,7 +3172,7 @@ void website_set_rule(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_new_rule_list(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<website_info> info(qSharedPointerDynamicCast<website_info, parser_user_data>(n->get_user_data()));
@@ -3194,7 +3193,7 @@ void website_set_new_rule_list(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_add_rule_list(const rule& r, QSharedPointer<token_node>& t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> nl(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     QSharedPointer<token_node> nr(qSharedPointerDynamicCast<token_node, token>((*t)[1]));
@@ -3213,7 +3212,7 @@ void website_set_add_rule_list(const rule& r, QSharedPointer<token_node>& t)
  */
 void website_set_start_result(rule const & r, QSharedPointer<token_node> & t)
 {
-    NOT_USED(r);
+    snapdev::NOT_USED(r);
 
     QSharedPointer<token_node> n(qSharedPointerDynamicCast<token_node, token>((*t)[0]));
     // we don't need the dynamic cast since we don't need to access the rules

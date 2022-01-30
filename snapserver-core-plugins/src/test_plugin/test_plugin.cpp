@@ -1,4 +1,3 @@
-// Snap Websites Server -- test_plugin to run plugin unit tests from the browser
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -113,7 +112,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_TEST_PLUGIN_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -256,7 +255,7 @@ int64_t test_plugin::do_update(int64_t last_updated)
  */
 void test_plugin::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -314,7 +313,7 @@ libdbproxy::table::pointer_t test_plugin::get_test_results_table()
  */
 void test_plugin::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOT_USED(ipath);
+    snapdev::NOT_USED(ipath);
 
     if(!token.is_namespace("test_plugin::"))
     {
@@ -509,7 +508,7 @@ void test_plugin::on_token_help(filter::filter::token_help_t & help)
  */
 bool test_plugin::on_path_execute(content::path_info_t& ipath)
 {
-    NOT_USED(ipath);
+    snapdev::NOT_USED(ipath);
     //f_snap->output(layout::layout::instance()->apply_layout(ipath, this));
 
     return false;

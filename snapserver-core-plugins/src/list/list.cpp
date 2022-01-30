@@ -1,4 +1,3 @@
-// Snap Websites Server -- advanced handling of lists
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // self
 //
@@ -176,7 +175,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("invalid name_t::SNAP_NAME_LIST_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -784,7 +783,7 @@ void listdata_connection::process_data(QString const & acknowledgement_id)
             //
             std::string const message(f_data.substr(f_start, f_pos - f_start));
             std::vector<std::string> variables;
-            tokenize_string(variables, message, ";", true, " ");
+            snapdev::tokenize_string(variables, message, ";", true, " ");
             for(size_t idx(0); idx < variables.size(); ++idx)
             {
                 auto const equal(variables[idx].find_first_of('='));
@@ -1992,7 +1991,7 @@ int64_t list::do_update(int64_t last_updated)
  */
 void list::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -2062,7 +2061,7 @@ void list::on_generate_main_content(content::path_info_t & ipath, QDomElement & 
  */
 void list::on_create_content(content::path_info_t & ipath, QString const & owner, QString const & type)
 {
-    NOT_USED(owner, type);
+    snapdev::NOT_USED(owner, type);
 
     content::content * content_plugin(content::content::instance());
     libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
@@ -2108,7 +2107,7 @@ void list::on_create_content(content::path_info_t & ipath, QString const & owner
  */
 void list::on_modified_link(links::link_info const & link, bool const created)
 {
-    NOT_USED(created);
+    snapdev::NOT_USED(created);
 
     if(!created
     && link.is_unique()
@@ -2311,7 +2310,7 @@ void list::on_modified_content(content::path_info_t & ipath)
     // it is best this way)
     {
         std::string const journal_filename(std::string(path.c_str()) + "/" + std::to_string(hour) + ".msg");
-        raii_fd_t safe_fd(open(journal_filename.c_str(), O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR));
+        snapdev::raii_fd_t safe_fd(open(journal_filename.c_str(), O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR));
         if(!safe_fd)
         {
             SNAP_LOG_ERROR("could not open file \"")(journal_filename)("\" for writing");
@@ -3241,14 +3240,14 @@ int list::generate_new_list_for_all_pages(QString const & site_key, content::pat
 
 int list::generate_new_list_for_descendants(QString const & site_key, content::path_info_t & list_ipath)
 {
-    NOT_USED(site_key);
+    snapdev::NOT_USED(site_key);
     return generate_new_list_for_all_descendants(list_ipath, list_ipath, true);
 }
 
 
 int list::generate_new_list_for_children(QString const & site_key, content::path_info_t & list_ipath)
 {
-    NOT_USED(site_key);
+    snapdev::NOT_USED(site_key);
     return generate_new_list_for_all_descendants(list_ipath, list_ipath, false);
 }
 
@@ -3315,7 +3314,7 @@ int list::generate_new_list_for_type(QString const & site_key, content::path_inf
 
 int list::generate_new_list_for_hand_picked_pages(QString const & site_key, content::path_info_t & list_ipath, QString const & hand_picked_pages)
 {
-    NOT_USED(site_key);
+    snapdev::NOT_USED(site_key);
 
     int did_work(0);
 
@@ -3867,7 +3866,7 @@ int list::generate_list_for_page(content::path_info_t & page_ipath
     // maybe we can debug this later
     //
     //int64_t const last_updated(list_row->getCell(get_name(name_t::SNAP_NAME_LIST_LAST_UPDATED))->getValue().safeInt64Value());
-    NOT_USED(update_request_time);
+    snapdev::NOT_USED(update_request_time);
     //if(last_updated - 60 * 1000000 > update_request_time)
     //{
     //    return did_work;
@@ -4305,7 +4304,7 @@ QString list::run_list_item_key(content::path_info_t & list_ipath, content::path
  */
 void list::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOT_USED(xml);
+    snapdev::NOT_USED(xml);
 
     // a list::... token?
     if(!token.is_namespace("list::"))
@@ -4467,7 +4466,7 @@ QString list::generate_list(content::path_info_t & ipath, content::path_info_t &
                     "Plugin Missing",
                     QString("Plugin \"%1\" does not know how to handle a list assigned to it.").arg(list_plugin->get_plugin_name()),
                     "list::on_replace_token() the plugin does not derive from layout::layout_content.");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // IMPORTANT NOTE: We do not check the maximum with the count
@@ -4661,7 +4660,7 @@ QString list::generate_list(content::path_info_t & ipath, content::path_info_t &
 
 void list::on_generate_boxes_content(content::path_info_t & page_cpath, content::path_info_t & ipath, QDomElement & page, QDomElement & box)
 {
-    NOT_USED(page_cpath);
+    snapdev::NOT_USED(page_cpath);
 
     output::output::instance()->on_generate_main_content(ipath, page, box);
 }
@@ -4669,7 +4668,7 @@ void list::on_generate_boxes_content(content::path_info_t & page_cpath, content:
 
 void list::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch)
 {
-    NOT_USED(destination_branch);
+    snapdev::NOT_USED(destination_branch);
 
     libdbproxy::cells left_cells;
 

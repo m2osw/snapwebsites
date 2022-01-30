@@ -1,35 +1,21 @@
-/*
- * Text:
- *      snapmanagercgi/lib/installer.cpp
- *
- * Description:
- *      The implementation of the INSTALL function.
- *
- * License:
- *      Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
- *
- *      https://snapwebsites.org/
- *      contact@m2osw.com
- *
- *      Permission is hereby granted, free of charge, to any person obtaining a
- *      copy of this software and associated documentation files (the
- *      "Software"), to deal in the Software without restriction, including
- *      without limitation the rights to use, copy, modify, merge, publish,
- *      distribute, sublicense, and/or sell copies of the Software, and to
- *      permit persons to whom the Software is furnished to do so, subject to
- *      the following conditions:
- *
- *      The above copyright notice and this permission notice shall be included
- *      in all copies or substantial portions of the Software.
- *
- *      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- *      OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- *      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- *      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- *      CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+// Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -509,7 +495,7 @@ bool manager::upgrader()
 
     exit(success ? 0 : 1);
 
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
 #endif
 
     return true;
@@ -538,7 +524,7 @@ bool manager::installer(QString const & bundle_name
     // make sure we do not start an installation while an upgrade is
     // still going (and vice versa)
     //
-    snap::lockfile lf(lock_filename(), snap::lockfile::mode_t::LOCKFILE_EXCLUSIVE);
+    snapdev::lockfile lf(lock_filename(), snapdev::lockfile::mode_t::LOCKFILE_EXCLUSIVE);
     if(!lf.try_lock())
     {
         return false;
@@ -591,7 +577,7 @@ bool manager::installer(QString const & bundle_name
         // only installations offer variables at the moment
         //
         std::vector<std::string> variables;
-        snap::NOT_USED(snap::tokenize_string(variables, install_values, "\r\n", true, " "));
+        snapdev::NOT_USED(snapdev::tokenize_string(variables, install_values, "\r\n", true, " "));
         std::for_each(variables.begin(), variables.end(),
                     [&vars](auto const & v)
                     {
@@ -665,7 +651,7 @@ bool manager::installer(QString const & bundle_name
     {
         QDomElement affected_services_element(affected_services_tags.at(0).toElement());
         std::vector<std::string> variables;
-        if(snap::tokenize_string(variables, affected_services_element.text().toUtf8().data(), ",", true, " ") > 0)
+        if(snapdev::tokenize_string(variables, affected_services_element.text().toUtf8().data(), ",", true, " ") > 0)
         {
             // variables are 'std::string' and affected_services are 'QString' for now...
             //std::copy(variables.cbegin(), variables.cend(), std::inserter(affected_services, affected_services.begin()));
@@ -721,7 +707,7 @@ bool manager::installer(QString const & bundle_name
         QDomElement package_list(bundle_packages.at(0).toElement());
         std::string const list_of_packages(package_list.text().toUtf8().data());
         std::vector<std::string> packages;
-        snap::NOT_USED(snap::tokenize_string(packages, list_of_packages, ",", true, " "));
+        snapdev::NOT_USED(snapdev::tokenize_string(packages, list_of_packages, ",", true, " "));
         std::for_each(packages.begin(), packages.end(),
                 [=, &success](auto const & p)
                 {
@@ -865,7 +851,7 @@ void manager::reboot(bool reboot)
         drain.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
         drain.set_command("/usr/bin/cass-stop");
         drain.add_argument(host);
-        snap::NOT_USED(drain.run());
+        snapdev::NOT_USED(drain.run());
     }
 
     // now do the shutdown
@@ -883,7 +869,7 @@ void manager::reboot(bool reboot)
     }
     p.add_argument("now");
     p.add_argument("Shutdown initiated by Snap! Manager Daemon");
-    snap::NOT_USED(p.run());
+    snapdev::NOT_USED(p.run());
 }
 
 
@@ -1087,7 +1073,7 @@ bool manager::replace_configuration_value(
             SNAP_LOG_INFO("could not create file \"")(filename)("\" to save new configuration value.");
             return false;
         }
-        snap::raii_fd_t safe_fd(fd);
+        snapdev::raii_fd_t safe_fd(fd);
 
         std::string const comment("# This file was auto-generated by snapmanager.cgi\n"
                                   "# Feel free to do additional modifications here as\n"
@@ -1129,7 +1115,7 @@ bool manager::replace_configuration_value(
     }
     else
     {
-        snap::raii_fd_t safe_fd(fd);
+        snapdev::raii_fd_t safe_fd(fd);
 
         // go to the end, gives us the size as a side effect
         //
@@ -1162,7 +1148,7 @@ bool manager::replace_configuration_value(
         // TBD: Offer administrators a way to define the backup extension?
         if((flags & REPLACE_CONFIGURATION_VALUE_CREATE_BACKUP) != 0)
         {
-            snap::raii_fd_t bak(open((filename + ".bak").toUtf8().data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
+            snapdev::raii_fd_t bak(open((filename + ".bak").toUtf8().data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
             if(!bak)
             {
                 SNAP_LOG_INFO("could not create backup file \"")(filename)(".bak\" to save new configuration value.");
@@ -1179,8 +1165,8 @@ bool manager::replace_configuration_value(
         //       the field if it is found, and even only if the new
         //       value is not the exact same size
         //
-        snap::NOT_USED(lseek(fd, 0, SEEK_SET));
-        snap::NOT_USED(::ftruncate(fd, 0));
+        snapdev::NOT_USED(lseek(fd, 0, SEEK_SET));
+        snapdev::NOT_USED(::ftruncate(fd, 0));
 
         QByteArray const section_utf8(section.toUtf8());
         bool in_section(section.isEmpty());
@@ -1664,7 +1650,7 @@ void manager::service_apply_status(std::string const & service_name, service_sta
             else
             {
                 std::vector<std::string> wants;
-                snap::NOT_USED(snap::tokenize_string(wants, wanted_by, " ", true, " "));
+                snapdev::NOT_USED(snapdev::tokenize_string(wants, wanted_by, " ", true, " "));
                 for(auto const & w : wants)
                 {
                     systemctl("add-wants", QString::fromUtf8(w.c_str()), service);

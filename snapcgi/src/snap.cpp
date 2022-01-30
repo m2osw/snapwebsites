@@ -1,4 +1,3 @@
-// Snap Websites Server -- snap websites CGI function
 // Copyright (c) 2011-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // at this point this is just a passwthrough process, at some point we may
 // want to implement a (complex) cache system that works here
@@ -276,7 +275,7 @@ private:
 snap_cgi::snap_cgi( int argc, char * argv[] )
     : f_opt(g_snapcgi_options_environment)
 {
-    snap::NOT_USED(argc);
+    snapdev::NOT_USED(argc);
 
     f_opt.parse_program_name(argv);
     f_opt.parse_configuration_files();
@@ -1591,7 +1590,7 @@ void snap_cgi::cache_data(char const * data, size_t size)
             //
             f_cache_file.reset();
             f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
-            snap::NOT_USED(delete_cache_file(f_cache_temporary_filename));
+            snapdev::NOT_USED(delete_cache_file(f_cache_temporary_filename));
         }
         return;
 
@@ -1891,7 +1890,7 @@ void snap_cgi::check_headers()
             // something failed, no caching
             //
             f_cache_state = cache_state_t::CACHE_STATE_FIELD_NO_CACHE;
-            snap::NOT_USED(delete_cache_file(f_cache_temporary_filename));
+            snapdev::NOT_USED(delete_cache_file(f_cache_temporary_filename));
         }
     }
 
@@ -1937,7 +1936,7 @@ void snap_cgi::temporary_to_permanent_cache()
     //
     if(r != 0)
     {
-        snap::NOT_USED(delete_cache_file(f_cache_temporary_filename));
+        snapdev::NOT_USED(delete_cache_file(f_cache_temporary_filename));
     }
 }
 
@@ -2050,7 +2049,7 @@ int main(int argc, char * argv[])
         std::cerr << "snap: exception: " << e.what() << std::endl;
         return 1;
     }
-    snap::NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 // vim: ts=4 sw=4 et

@@ -1,4 +1,3 @@
-// Snap Websites Server -- users_ui handling
 // Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /** \file
  * \brief Users User Interface handling.
@@ -245,7 +244,7 @@ int64_t users_ui::do_update(int64_t last_updated)
  */
 void users_ui::content_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
 }
@@ -262,7 +261,7 @@ void users_ui::content_update(int64_t variables_timestamp)
  */
 void users_ui::fix_owner_update(int64_t variables_timestamp)
 {
-    NOT_USED(variables_timestamp);
+    snapdev::NOT_USED(variables_timestamp);
 
     // I leave this here as an example, only:
     //
@@ -349,7 +348,7 @@ void users_ui::on_attach_to_session()
         // so we have to detach now (i.e. delete from the session)
         //
         users::users * users_plugin(users::users::instance());
-        NOT_USED(users_plugin->detach_from_session(users::get_name(users::name_t::SNAP_NAME_USERS_CHANGING_PASSWORD_KEY)));
+        snapdev::NOT_USED(users_plugin->detach_from_session(users::get_name(users::name_t::SNAP_NAME_USERS_CHANGING_PASSWORD_KEY)));
     }
 }
 
@@ -394,7 +393,7 @@ void users_ui::on_detach_from_session()
  */
 void users_ui::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token)
 {
-    NOT_USED(ipath, xml);
+    snapdev::NOT_USED(ipath, xml);
 
     if(!token.is_namespace("users::"))
     {
@@ -595,7 +594,7 @@ void users_ui::on_check_for_redirect(content::path_info_t & ipath)
                         false
                     );
                     f_snap->page_redirect("user/me", snap_child::http_code_t::HTTP_CODE_SEE_OTHER, "Permission Denied", "You changed your account password recently and this website does not allow you to change it again right away. You will have to wait some time and try again.");
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
             }
         }
@@ -631,12 +630,12 @@ bool users_ui::on_path_execute(content::path_info_t & ipath)
     {
         users::users * users_plugin(users::users::instance());
         users_plugin->verify_user(ipath);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     else if(ipath.get_cpath().left(13) == "new-password/")
     {
         verify_password(ipath);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     f_snap->output(layout::layout::instance()->apply_layout(ipath, this));
@@ -797,7 +796,7 @@ void users_ui::on_generate_boxes_content(content::path_info_t & page_cpath, cont
  */
 void users_ui::prepare_replace_password_form(QDomElement & body)
 {
-    NOT_USED(body);
+    snapdev::NOT_USED(body);
 
     users::users * users_plugin(users::users::instance());
 
@@ -809,7 +808,7 @@ void users_ui::prepare_replace_password_form(QDomElement & body)
         // send him to his normal password form
         //
         f_snap->page_redirect("user/password", snap_child::http_code_t::HTTP_CODE_SEE_OTHER, "Already Logged In", "You are already logged in so you cannot access this page at this time.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     if(users_plugin->user_is_logged_in())
     {
@@ -818,14 +817,14 @@ void users_ui::prepare_replace_password_form(QDomElement & body)
         // meaning we want the user to have logged in recently.)
         //
         f_snap->page_redirect("verify-credentials", snap_child::http_code_t::HTTP_CODE_SEE_OTHER, "Not Enough Permissions", "You are logged in with minimal permissions. To access this page we have to verify your credentials.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     if(f_user_changing_password_key.isEmpty())
     {
         // user is not even logged in and he did not follow a valid link
         // XXX the login page is probably the best choice?
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER, "Replace Password Not Possible", "You required to change your password in a way which is not currently valid. Please go to log in instead.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -869,7 +868,7 @@ void users_ui::show_user(content::path_info_t & ipath, QDomElement & page, QDomE
             // redirect the user to the log in page
             //
             f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
             return;
         }
         if(!user_info.exists())
@@ -887,7 +886,7 @@ void users_ui::show_user(content::path_info_t & ipath, QDomElement & page, QDomE
             // redirect the user to the log in page
             //
             f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
             return;
         }
         libdbproxy::value value(user_info.get_value(users::name_t::SNAP_NAME_USERS_IDENTIFIER));
@@ -902,7 +901,7 @@ void users_ui::show_user(content::path_info_t & ipath, QDomElement & page, QDomE
             // redirect the user to the log in page
             //
             f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
             return;
         }
         identifier = value.int64Value();
@@ -931,7 +930,7 @@ void users_ui::show_user(content::path_info_t & ipath, QDomElement & page, QDomE
                     "User Not Found",
                     "This user does not exist. Please check the URI and make corrections as required.",
                     "User attempt to access user \"" + user_id + "\" which does not look like a valid integer.");
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
 
         // verify that the identifier indeed represents a user
@@ -951,7 +950,7 @@ void users_ui::show_user(content::path_info_t & ipath, QDomElement & page, QDomE
                 QString("We could not find an account for user \"%1\" on this system.").arg(user_id),
                 QString("user account for \"%1\" does not exist at this point").arg(user_id)
             );
-            NOT_REACHED();
+            snapdev::NOT_REACHED();
         }
     }
 //printf("Got user [%s] / [%ld]\n", cpath.toUtf8().data(), identifier);
@@ -987,7 +986,7 @@ void users_ui::prepare_password_form()
                 "Access Denied",
                 "You need to be logged in and have enough permissions to access this page.",
                 "user attempt to change a password without enough permissions.");
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -1007,7 +1006,7 @@ void users_ui::prepare_login_form()
     {
         // user is logged in already, just send him to his profile
         f_snap->page_redirect("user/me", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
 // TODO: as an extension, only allow the login/register forms when
@@ -1033,14 +1032,14 @@ void users_ui::prepare_verify_credentials_form()
     if(!users_plugin->user_is_logged_in())
     {
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     if(users_plugin->user_has_administrative_rights())
     {
         // ?!? -- what should we do in this case?
         f_snap->page_redirect("user/me", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // Note that here users_plugin->user_is_logged_in() may return
@@ -1098,7 +1097,7 @@ void users_ui::prepare_basic_anonymous_form()
         // user is logged in already, just send him to his profile
         //
         f_snap->page_redirect("user/me", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -1134,7 +1133,7 @@ void users_ui::prepare_forgot_password_form()
             false
         );
         f_snap->page_redirect("user/password", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -1160,7 +1159,7 @@ void users_ui::prepare_new_password_form()
             false
         );
         f_snap->page_redirect("user/password", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 }
 
@@ -1203,7 +1202,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
         // (if logged in he was verified in some way!)
         //
         f_snap->page_redirect("user/me", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     QString const session_id(ipath.get_cpath().mid(13));
@@ -1247,7 +1246,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
         // XXX should we avoid the redirect if we are already on that page?
         //
         f_snap->page_redirect("new-password", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // it looks like the session is valid, get the user identifier and verify
@@ -1268,7 +1267,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
         );
         // redirect the user to the log in page
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     auto const user_info(users_plugin->get_user_info_by_id(identifier));
     if(!user_info.exists())
@@ -1282,7 +1281,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
         );
         // redirect the user to the log in page
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
 #if 0
@@ -1295,7 +1294,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
         // TODO where to send that user?! have an error page for all of those
         //      "your account is dead, sorry dear..."
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     int64_t const identifier(user_identifier.int64Value());
 #endif
@@ -1321,7 +1320,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
         );
         // redirect the user to the log in page
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // a status link exists... is it the right one?
@@ -1341,7 +1340,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
         );
         // redirect the user to the log in page? (XXX should this be the registration page instead?)
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     // remove the "user/password" status link so the user can now log in
     // he was successfully logged in -- don't kill this one yet...
@@ -1349,7 +1348,7 @@ void users_ui::verify_password(content::path_info_t & ipath)
 
     // redirect the user to the "semi-public replace password page"
     send_to_replace_password_page(user_info.get_user_email(), false);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -1398,7 +1397,7 @@ void users_ui::send_to_replace_password_page(QString const & email, bool const s
         );
         // redirect the user to the log in page
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     if(set_status)
@@ -1444,7 +1443,7 @@ void users_ui::send_to_replace_password_page(QString const & email, bool const s
     // send the user to the "public" replace password page since he got verified
     //
     f_snap->page_redirect("user/password/replace", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -1458,7 +1457,7 @@ void users_ui::send_to_replace_password_page(QString const & email, bool const s
  */
 void users_ui::on_process_form_post(content::path_info_t & ipath, sessions::sessions::session_info const & session_info)
 {
-    NOT_USED(session_info);
+    snapdev::NOT_USED(session_info);
 
     QString const cpath(ipath.get_cpath());
     if(cpath == "login")
@@ -1660,7 +1659,7 @@ void users_ui::process_register_form()
         );
         // redirect the user to the verification form
         f_snap->page_redirect("verify", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
         break;
 
     case users::users::status_t::STATUS_VALID:
@@ -1679,7 +1678,7 @@ void users_ui::process_register_form()
                 "Access Denied",
                 "You are not allowed to create an account on this website.",
                 QString("User \"%1\" is blocked and does not have permission to create an account here.").arg(email));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
         break;
 
     case users::users::status_t::STATUS_PASSWORD:
@@ -1710,7 +1709,7 @@ void users_ui::process_register_form()
                 "Access Denied",
                 "You are not allowed to create an account on this website.",
                 QString("register_user() returned an unexpected status (%1) for \"%2\".").arg(static_cast<int>(status)).arg(email));
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
         break;
 
     }
@@ -1783,7 +1782,7 @@ void users_ui::process_forgot_password_form()
                     "We just sent you a new verification email. Please check your account and follow the verification link or copy and paste your verification code below."
                 );
                 f_snap->page_redirect("new-password", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-                NOT_REACHED();
+                snapdev::NOT_REACHED();
             }
             else
             {
@@ -1852,14 +1851,14 @@ void users_ui::process_replace_password_form()
         // user is logged in already, send him to his normal password form
         f_user_changing_password_key.clear();
         f_snap->page_redirect("user/password", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
     if(f_user_changing_password_key.isEmpty())
     {
         // user is not logged in and he did not follow a valid link
         // XXX the login page is probably the best choice?
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // for errors if any
@@ -1937,7 +1936,7 @@ void users_ui::process_replace_password_form()
                         // TBD: should we use the saved login redirect instead?
                         //      (if not then we probably want to clear it)
                         f_snap->page_redirect("user/me", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-                        NOT_REACHED();
+                        snapdev::NOT_REACHED();
                     }
 
                     // well... someone said "I do not like this password"!
@@ -1980,7 +1979,7 @@ void users_ui::process_replace_password_form()
 
     // XXX the login page is probably the best choice?
     f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -2004,7 +2003,7 @@ void users_ui::process_password_form()
         // user is not even logged in!?
         //
         f_snap->page_redirect("login", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // for errors if any
@@ -2040,7 +2039,7 @@ void users_ui::process_password_form()
                     f_snap->die(snap_child::http_code_t::HTTP_CODE_FORBIDDEN,
                             "Access Denied", "You need to be logged in and have enough permissions to access this page.",
                             "User attempt to change a password in his account which is currently blocked.");
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 else if(status_info.key() == site_key + users::get_name(users::name_t::SNAP_NAME_USERS_PASSWORD_PATH))
                 {
@@ -2147,7 +2146,7 @@ void users_ui::process_password_form()
                         //
                         f_snap->page_redirect(referrer, snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
                     }
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
                 messages::messages::instance()->set_error(
                     "Invalid Password",
@@ -2189,7 +2188,7 @@ void users_ui::process_password_form()
 
     // XXX the profile page is probably the best choice?
     f_snap->page_redirect("user/me", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -2241,7 +2240,7 @@ void users_ui::process_verify_resend_form()
                         "We just sent you a new verification email. Please check your account and follow the verification link or copy and paste your verification code below."
                     );
                     f_snap->page_redirect("verify", snap_child::http_code_t::HTTP_CODE_SEE_OTHER);
-                    NOT_REACHED();
+                    snapdev::NOT_REACHED();
                 }
 
                 details = QString("user \"%1\" is not new (maybe it is active, blocked, auto...), we do not send verification emails to such").arg(email);
@@ -2553,7 +2552,7 @@ void users_ui::on_init_editor_widget
     , libdbproxy::row::pointer_t row
     )
 {
-    NOT_USED(field_type, row);
+    snapdev::NOT_USED(field_type, row);
 
     // If some handling is done without the user logged in, then we can
     // add that here

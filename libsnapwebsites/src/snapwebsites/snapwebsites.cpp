@@ -1,4 +1,3 @@
-// Snap Websites Server -- snap websites server
 // Copyright (c) 2011-2020  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -14,9 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -359,7 +358,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception(QString("invalid name_t::SNAP_NAME_CORE_... (%1)").arg(static_cast<int>(name)));
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -762,7 +761,7 @@ QString server::dependencies() const
 void server::bootstrap(snap_child * snap)
 {
     // virtual function stub
-    NOT_USED(snap);
+    snapdev::NOT_USED(snap);
 }
 
 
@@ -777,7 +776,7 @@ void server::bootstrap(snap_child * snap)
  */
 int64_t server::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     SNAP_PLUGIN_UPDATE_EXIT();
@@ -853,7 +852,7 @@ void server::exit( int const code )
 
     // Sanity check!
     //
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -1039,7 +1038,7 @@ void server::config(int argc, char * argv[])
     {
         show_version();
         exit(0);
-        NOT_REACHED();
+        snapdev::NOT_REACHED();
     }
 
     // We want the servername for later.
@@ -2025,7 +2024,7 @@ void server::capture_zombies(pid_t child_pid)
     // however, at this point the check_status() function makes that
     // call so we cannot have it here too...
     //
-    NOT_USED(child_pid);
+    snapdev::NOT_USED(child_pid);
 
     // capture zombies first
     snap_child_vector_t::size_type max_children(f_children_running.size());
@@ -2946,7 +2945,7 @@ void server::process_connection(tcp_client_server::bio_client::pointer_t client)
                       "\n"
                       "<h1>503 Service Unavailable</h1>\n"
                       "<p>Snap cannot find <strong>Cassandra</strong> at the moment.</p>\n");
-        NOT_USED(client->write(err.c_str(), err.size()));
+        snapdev::NOT_USED(client->write(err.c_str(), err.size()));
     }
     else if(!f_snaplock)
     {
@@ -2958,7 +2957,7 @@ void server::process_connection(tcp_client_server::bio_client::pointer_t client)
                       "\n"
                       "<h1>503 Service Unavailable</h1>\n"
                       "<p>Cannot find <strong>Snap! Lock</strong> at the moment.</p>\n");
-        NOT_USED(client->write(err.c_str(), err.size()));
+        snapdev::NOT_USED(client->write(err.c_str(), err.size()));
     }
     else if(!f_firewall_up)
     {
@@ -2970,7 +2969,7 @@ void server::process_connection(tcp_client_server::bio_client::pointer_t client)
                       "\n"
                       "<h1>503 Service Unavailable</h1>\n"
                       "<p>Cannot find <strong>Snap! Firewall</strong> at the moment.</p>\n");
-        NOT_USED(client->write(err.c_str(), err.size()));
+        snapdev::NOT_USED(client->write(err.c_str(), err.size()));
     }
     else
     {
@@ -3009,7 +3008,7 @@ void server::process_connection(tcp_client_server::bio_client::pointer_t client)
                           "\n"
                           "<h1>503 Service Unavailable</h1>\n"
                           "<p>Server cannot start child process.</p>\n");
-            NOT_USED(client->write(err.c_str(), err.size()));
+            snapdev::NOT_USED(client->write(err.c_str(), err.size()));
         }
     }
 }
@@ -3608,7 +3607,7 @@ quiet_error_callback::quiet_error_callback(snap_child * snap, bool log)
 void quiet_error_callback::on_error(snap_child::http_code_t const err_code, QString const & err_name, QString const & err_description, QString const & err_details, bool const err_by_mime_type)
 {
     // since we ignore the error here anyway we can ignore this flag...
-    NOT_USED(err_by_mime_type);
+    snapdev::NOT_USED(err_by_mime_type);
 
     f_error = true;
 
@@ -3642,7 +3641,7 @@ void quiet_error_callback::on_redirect(
         /* message::set_error() */ QString const & err_name, QString const & err_description, QString const & err_details, bool err_security,
         /* snap_child::page_redirect() */ QString const & path, snap_child::http_code_t const http_code)
 {
-    NOT_USED(err_security);
+    snapdev::NOT_USED(err_security);
 
     f_error = true;
     if(f_log)

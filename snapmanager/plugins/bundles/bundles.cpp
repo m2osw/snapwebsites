@@ -1,4 +1,3 @@
-// Snap Websites Server -- manage the bundles
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -11,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // self
@@ -41,7 +40,6 @@
 #include <snapdev/not_reached.h>
 #include <snapdev/not_used.h>
 #include <snapdev/pathinfo.h>
-#include <snapdev/tokenize_string.h>
 
 
 // libaddr lib
@@ -111,7 +109,7 @@ char const * get_name(name_t name)
         throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_BUNDLES_...");
 
     }
-    NOT_REACHED();
+    snapdev::NOT_REACHED();
 }
 
 
@@ -188,7 +186,7 @@ QString bundles::dependencies() const
  */
 int64_t bundles::do_update(int64_t last_updated)
 {
-    NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated);
 
     SNAP_PLUGIN_UPDATE_INIT();
     // no updating in snapmanager*
@@ -236,7 +234,7 @@ void bundles::on_retrieve_status(snap_manager::server_status & server_status)
                             : snap_manager::status_t::state_t::STATUS_STATE_INFO
                     , get_plugin_name()
                     , "bundle_uri"
-                    , QString::fromUtf8(snap::join_strings(bundle_uri, ",").c_str()));
+                    , QString::fromUtf8(snapdev::join_strings(bundle_uri, ",").c_str()));
         server_status.set_field(bundle);
     }
 
@@ -263,7 +261,7 @@ void bundles::retrieve_bundles_status(snap_manager::server_status & server_statu
     // we test the flag once and then go in a loop that's going to be
     // rather slow and a process may lock the database at that point
     //
-    raii_fd_t const lock_fd(open("/var/lib/dpkg/lock", O_RDONLY | O_CLOEXEC, 0));
+    snapdev::raii_fd_t const lock_fd(open("/var/lib/dpkg/lock", O_RDONLY | O_CLOEXEC, 0));
     if(lock_fd)
     {
         // the lock file exists, attempt a lock
@@ -718,7 +716,7 @@ bool bundles::apply_setting(QString const & button_name
         //       we do that for each service?) -- I may be able to use
         //       the snap::config interface to get to it?
         //
-        NOT_USED(f_snap->replace_configuration_value(g_configuration_fullname, field_name, value));
+        snapdev::NOT_USED(f_snap->replace_configuration_value(g_configuration_fullname, field_name, value));
         return true;
     }
 
@@ -737,7 +735,7 @@ bool bundles::apply_setting(QString const & button_name
         //    return false;
         //}
         QByteArray values(old_or_installation_value.toUtf8());
-        NOT_USED(f_snap->installer(field_name, install ? "install" : "purge", values.data(), affected_services));
+        snapdev::NOT_USED(f_snap->installer(field_name, install ? "install" : "purge", values.data(), affected_services));
         return true;
     }
 

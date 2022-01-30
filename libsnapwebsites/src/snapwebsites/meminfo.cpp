@@ -14,9 +14,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // self
 //
@@ -155,7 +155,7 @@ meminfo_t get_meminfo()
         }
         std::string line(buf);
         std::vector<std::string> tokens;
-        size_t const size(tokenize_string(tokens, line, " \t", true, ":"));
+        size_t const size(snapdev::tokenize_string(tokens, line, " \t", true, ":"));
         if(size >= 2)
         {
             // name / value [ / "kB"]
