@@ -29,9 +29,9 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
-find_package( Catch )
+find_package(SnapCatch2)
 
-if(CATCH_FOUND)
+if(SnapCatch2_FOUND)
     set( CASSANDRA_HOST_IP "127.0.0.1" CACHE STRING "Host IP address for the cassandra server to connect to." )
     ##
     ## Test the snap_lock from one or multiple computers
@@ -88,7 +88,7 @@ if(CATCH_FOUND)
         COMMAND
             ${PROJECT_NAME} --count 10
     )
-endif(CATCH_FOUND)
+endif(SnapCatch2_FOUND)
 
 
 # vim: ts=4 sw=4 et

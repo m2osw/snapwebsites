@@ -40,9 +40,9 @@ set( CASSANDRA_HOST_IP "127.0.0.1" CACHE STRING "Host IP address for the cassand
 ## The unified unit tests in one large test
 ##
 
-find_package( Catch )
+find_package(SnapCatch2)
 
-if(CATCH_FOUND)
+if(SnapCatch2_FOUND)
     ##
     ## Code from snapbase
     ##
@@ -89,12 +89,12 @@ if(CATCH_FOUND)
     )
     add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} --host ${CASSANDRA_HOST_IP} )
 
-else(CATCH_FOUND)
+else(SnapCatch2_FOUND)
 
     # You may use 'apt-get install catch' under Ubuntu
     message("Catch based tests will not be created because you do not seem to have catch.hpp installed...")
 
-endif(CATCH_FOUND)
+endif(SnapCatch2_FOUND)
 
 
 

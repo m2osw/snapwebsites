@@ -29,9 +29,9 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
-find_package( Catch )
+find_package(SnapCatch2)
 
-if(CATCH_FOUND)
+if(SnapCatch2_FOUND)
     set( MYSQL_HOST_IP "127.0.0.1" CACHE STRING "Host IP address for the MySQL server to connect to." )
     ##
     ## Test the snap_listd from one or multiple computers
@@ -55,7 +55,7 @@ if(CATCH_FOUND)
         NAME ${PROJECT_NAME}
         COMMAND ${PROJECT_NAME} --mysql-host ${MYSQL_HOST_IP}
     )
-endif(CATCH_FOUND)
+endif(SnapCatch2_FOUND)
 
 
 # vim: ts=4 sw=4 et
