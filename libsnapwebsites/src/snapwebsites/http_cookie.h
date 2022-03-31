@@ -16,29 +16,25 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_exception.h"
+// libexcept lib
+//
+#include "libexcept/exception.h"
 
+
+// Qt lib
+//
 #include <QDateTime>
+
+
 
 namespace snap
 {
 
-class http_cookie_exception : public snap_exception
-{
-public:
-    http_cookie_exception(char const *        what_msg) : snap_exception("http_cookie", what_msg) {}
-    http_cookie_exception(std::string const & what_msg) : snap_exception("http_cookie", what_msg) {}
-    http_cookie_exception(QString const &     what_msg) : snap_exception("http_cookie", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(http_cookie_exception);
+
+DECLARE_EXCEPTION(http_cookie_exception, http_cookie_parse_exception);
 
 
-class http_cookie_parse_exception : public http_cookie_exception
-{
-public:
-    http_cookie_parse_exception(char const *        what_msg) : http_cookie_exception(what_msg) {}
-    http_cookie_parse_exception(std::string const & what_msg) : http_cookie_exception(what_msg) {}
-    http_cookie_parse_exception(QString const &     what_msg) : http_cookie_exception(what_msg) {}
-};
 
 
 

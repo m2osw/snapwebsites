@@ -44,29 +44,9 @@ enum class name_t
 char const *get_name(name_t const name) __attribute__ ((const));
 
 
-class form_exception : public snap_exception
-{
-public:
-    explicit form_exception(char const *        what_msg) : snap_exception("Form", what_msg) {}
-    explicit form_exception(std::string const & what_msg) : snap_exception("Form", what_msg) {}
-    explicit form_exception(QString const &     what_msg) : snap_exception("Form", what_msg) {}
-};
-
-class form_exception_invalid_form_xml : public form_exception
-{
-public:
-    explicit form_exception_invalid_form_xml(char const *        what_msg) : form_exception(what_msg) {}
-    explicit form_exception_invalid_form_xml(std::string const & what_msg) : form_exception(what_msg) {}
-    explicit form_exception_invalid_form_xml(QString const &     what_msg) : form_exception(what_msg) {}
-};
-
-class form_exception_invalid_xslt_data : public form_exception
-{
-public:
-    explicit form_exception_invalid_xslt_data(char const *        what_msg) : form_exception(what_msg) {}
-    explicit form_exception_invalid_xslt_data(std::string const & what_msg) : form_exception(what_msg) {}
-    explicit form_exception_invalid_xslt_data(QString const &     what_msg) : form_exception(what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(form_exception);
+DECLARE_EXCEPTION(form_exception, form_exception_invalid_form_xml);
+DECLARE_EXCEPTION(form_exception, form_exception_invalid_xslt_data);
 
 
 
@@ -80,7 +60,8 @@ public:
 };
 
 
-class form : public plugins::plugin
+class form
+    : public cppthread::plugin
 {
 public:
                                 form();
@@ -92,8 +73,6 @@ public:
     static form *               instance();
 
     // plugins::plugin implementation
-    virtual QString             description() const override;
-    virtual QString             dependencies() const override;
     virtual int64_t             do_update(int64_t last_updated) override;
     virtual void                bootstrap(snap_child * snap) override;
 

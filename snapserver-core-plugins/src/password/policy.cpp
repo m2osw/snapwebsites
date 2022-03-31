@@ -26,17 +26,20 @@
 
 // self
 //
-#include "password.h"
+#include    "password.h"
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace password
+{
 
-SNAP_PLUGIN_EXTENSION_START(password)
 
 
 /** \brief The policy to use with this object.
@@ -822,6 +825,7 @@ QString policy_t::is_blacklisted(QString const & user_password) const
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace password
+} // namespace snap
 // vim: ts=4 sw=4 et

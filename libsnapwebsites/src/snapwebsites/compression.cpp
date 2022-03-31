@@ -21,7 +21,12 @@
 
 // self lib
 //
-#include "snapwebsites/log.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
+
 
 // snapdev lib
 //
@@ -237,7 +242,9 @@ QByteArray compress(QString & compressor_name, QByteArray const & input, level_t
     if(input.size() == 0 || level < 5)
     {
 #ifdef DEBUG
-SNAP_LOG_TRACE("nothing to compress");
+SNAP_LOG_TRACE
+<< "nothing to compress"
+<< SNAP_LOG_SEND;
 #endif
         compressor_name = compressor_t::NO_COMPRESSION;
         return input;
@@ -274,7 +281,9 @@ SNAP_LOG_TRACE("nothing to compress");
         // compressor is not available, return input as is...
         compressor_name = compressor_t::NO_COMPRESSION;
 #ifdef DEBUG
-SNAP_LOG_TRACE("compressor not found?!");
+SNAP_LOG_TRACE
+<< "compressor not found?!"
+<< SNAP_LOG_SEND;
 #endif
         return input;
     }
@@ -285,7 +294,9 @@ SNAP_LOG_TRACE("compressor not found?!");
     {
         compressor_name = compressor_t::NO_COMPRESSION;
 #ifdef DEBUG
-SNAP_LOG_TRACE("compression is larger?!");
+SNAP_LOG_TRACE
+<< "compression is larger?!"
+<< SNAP_LOG_SEND;
 #endif
         return input;
     }
@@ -912,7 +923,9 @@ public:
             {
                 if(header[i] != '\0')
                 {
-                    throw compression_exception_not_compatible(QString("ustar magic code missing at position %1").arg(f_pos));
+                    throw compression_exception_not_compatible(
+                          "ustar magic code missing at position "
+                        + std::to_string(f_pos));
                 }
             }
             f_pos += 512;
@@ -925,7 +938,8 @@ public:
         uint32_t const comp_checksum(tar_check_sum(&header[0]));
         if(file_checksum != comp_checksum)
         {
-            throw compression_exception_not_compatible(QString("ustar checksum code does not match what was expected"));
+            throw compression_exception_not_compatible(
+                    "ustar checksum code does not match what was expected");
         }
 
         QString filename(QString::fromUtf8(&header[0], static_cast<int>(strnlen(&header[0], 100))));

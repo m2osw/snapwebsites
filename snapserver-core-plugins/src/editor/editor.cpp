@@ -16,66 +16,92 @@
 
 // self
 //
-#include "editor.h"
+#include    "editor.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../attachment/attachment.h"
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
-#include "../mimetype/mimetype.h"
-#include "../permissions/permissions.h"
+#include    "../output/output.h"
+#include    "../attachment/attachment.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
+#include    "../mimetype/mimetype.h"
+#include    "../permissions/permissions.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/flags.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/mkgmtime.h>
-#include <snapwebsites/qcompatibility.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qdomreceiver.h>
-#include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/qxmlmessagehandler.h>
-#include <snapwebsites/snap_image.h>
-#include <snapwebsites/snap_lock.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/dbutils.h>
+#include    <snapwebsites/flags.h>
+#include    <snapwebsites/mkgmtime.h>
+#include    <snapwebsites/qcompatibility.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomreceiver.h>
+#include    <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/qxmlmessagehandler.h>
+#include    <snapwebsites/snap_image.h>
+#include    <snapwebsites/snap_lock.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// libtld lib
+// snapdev
 //
-#include <libtld/tld.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// Qt lib
+// libtld
 //
-#include <QTextDocument>
-#include <QFile>
-#include <QFileInfo>
+#include    <libtld/tld.h>
 
 
-// C++ lib
+// Qt
 //
-#include <iostream>
-#include <cmath>
+#include    <QTextDocument>
+#include    <QFile>
+#include    <QFileInfo>
+
+
+// C++
+//
+#include    <iostream>
+#include    <cmath>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(editor, 1, 0)
+namespace snap
+{
+namespace editor
+{
+
+CPPTHREAD_PLUGIN_START(editor, 1, 0)
+    , ::cppthread::plugin_description(
+            "Offer a WYSIWYG* editor to people using the website."
+            " The editor appears wherever a plugin creates a div tag with"
+            " the contenteditable attribute set to true."
+            "\n(*) WYSIWYG: What You See Is What You Get.")
+    , ::cppthread::plugin_icon("/images/editor/editor-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/editor")
+    , ::cppthread::plugin_dependency("attachment")
+    , ::cppthread::plugin_dependency("locale")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("server_access")
+    , ::cppthread::plugin_dependency("sessions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("editor")
+    , ::cppthread::plugin_categorization_tag("gui")
+CPPTHREAD_PLUGIN_END()
 
 
 
@@ -363,93 +389,6 @@ libdbproxy::value & editor::string_to_value_info_t::result()
 
 
 
-
-/** \brief Initialize the editor plugin.
- *
- * This function is used to initialize the editor plugin object.
- */
-editor::editor()
-    //: f_snap(nullptr) -- auto-init
-    //, f_editor_form() -- auto-init
-{
-}
-
-
-/** \brief Clean up the editor plugin.
- *
- * Ensure the editor object is clean before it is gone.
- */
-editor::~editor()
-{
-}
-
-
-/** \brief Get a pointer to the editor plugin.
- *
- * This function returns an instance pointer to the editor plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the editor plugin.
- */
-editor * editor::instance()
-{
-    return g_plugin_editor_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString editor::settings_path() const
-{
-    return "/admin/settings/editor";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString editor::icon() const
-{
-    return "/images/editor/editor-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString editor::description() const
-{
-    return "Offer a WYSIWYG* editor to people using the website."
-        " The editor appears wherever a plugin creates a div tag with"
-        " the contenteditable attribute set to true."
-        "\n(*) WYSIWYG: What You See Is What You Get.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString editor::dependencies() const
-{
-    return "|attachment|locale|messages|output|server_access|sessions|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -5698,6 +5637,7 @@ libdbproxy::value editor::get_value( QString const & name ) const
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace editor
+} // namespace snap
 // vim: ts=4 sw=4 et

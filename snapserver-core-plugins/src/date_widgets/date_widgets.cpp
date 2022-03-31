@@ -18,37 +18,60 @@
 
 // self
 //
-#include "date_widgets.h"
+#include    "date_widgets.h"
 
 
 // other plugins
 //
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/mkgmtime.h>
-#include <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/mkgmtime.h>
+#include    <snapwebsites/qdomxpath.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(date_widgets, 1, 0)
+namespace snap
+{
+namespace date_widgets
+{
 
 
+CPPTHREAD_PLUGIN_START(date_widgets, 1, 0)
+    , ::cppthread::plugin_description(
+            "This plugin offers several \"Date\" widgets for the Snap! editor."
+            " By default, one can use a Line Edit widgets to let users type in a"
+            " date. Only, it is often a lot faster to just click on the date in"
+            " small calendar popup. The Date widget also offers a date range"
+            " selection and a partial date selection (only one of the day, month"
+            " or year; i.e. credit card expiration dates is only the year and the"
+            " month.)")
+    , ::cppthread::plugin_icon("/images/editor/date-widgets-logo-64x64.png")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("gui")
+    , ::cppthread::plugin_categorization_tag("date")
+    , ::cppthread::plugin_categorization_tag("locale")
+CPPTHREAD_PLUGIN_END()
 
 
 
@@ -80,87 +103,6 @@ char const * get_name(name_t name)
 
 
 
-
-
-
-/** \brief Initialize the date_widgets plugin.
- *
- * This function is used to initialize the date_widgets plugin object.
- */
-date_widgets::date_widgets()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the date_widgets plugin.
- *
- * Ensure the date_widgets object is clean before it is gone.
- */
-date_widgets::~date_widgets()
-{
-}
-
-
-/** \brief Get a pointer to the date_widgets plugin.
- *
- * This function returns an instance pointer to the date_widgets plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the date_widgets plugin.
- */
-date_widgets * date_widgets::instance()
-{
-    return g_plugin_date_widgets_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString date_widgets::icon() const
-{
-    return "/images/editor/date-widgets-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString date_widgets::description() const
-{
-    return "This plugin offers several \"Date\" widgets for the Snap! editor."
-        " By default, one can use a Line Edit widgets to let users type in a"
-        " date. Only, it is often a lot faster to just click on the date in"
-        " small calendar popup. The Date widget also offers a date range"
-        " selection and a partial date selection (only one of the day, month"
-        " or year; i.e. credit card expiration dates is only the year and the"
-        " month.)";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString date_widgets::dependencies() const
-{
-    return "|editor|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -652,6 +594,7 @@ void date_widgets::on_validate_editor_post_for_widget(
 
 
 
-SNAP_PLUGIN_END()
 
+} // namespace date_widgets
+} // namespace snap
 // vim: ts=4 sw=4 et

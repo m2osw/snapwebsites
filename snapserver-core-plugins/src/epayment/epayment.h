@@ -70,63 +70,14 @@ enum class name_t
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
+DECLARE_MAIN_EXCEPTION(epayment_exception);
 
-class epayment_exception : public snap_exception
-{
-public:
-    explicit epayment_exception(char const *        what_msg) : snap_exception("epayment", what_msg) {}
-    explicit epayment_exception(std::string const & what_msg) : snap_exception("epayment", what_msg) {}
-    explicit epayment_exception(QString const &     what_msg) : snap_exception("epayment", what_msg) {}
-};
-
-class epayment_invalid_type_exception : public epayment_exception
-{
-public:
-    explicit epayment_invalid_type_exception(char const *        what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_invalid_type_exception(std::string const & what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_invalid_type_exception(QString const &     what_msg) : epayment_exception(what_msg) {}
-};
-
-class epayment_cannot_set_exception : public epayment_exception
-{
-public:
-    explicit epayment_cannot_set_exception(char const *        what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_cannot_set_exception(std::string const & what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_cannot_set_exception(QString const &     what_msg) : epayment_exception(what_msg) {}
-};
-
-class epayment_cannot_unset_exception : public epayment_exception
-{
-public:
-    explicit epayment_cannot_unset_exception(char const *        what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_cannot_unset_exception(std::string const & what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_cannot_unset_exception(QString const &     what_msg) : epayment_exception(what_msg) {}
-};
-
-class epayment_cannot_find_exception : public epayment_exception
-{
-public:
-    explicit epayment_cannot_find_exception(char const *        what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_cannot_find_exception(std::string const & what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_cannot_find_exception(QString const &     what_msg) : epayment_exception(what_msg) {}
-};
-
-class epayment_missing_product_exception : public epayment_exception
-{
-public:
-    explicit epayment_missing_product_exception(char const *        what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_missing_product_exception(std::string const & what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_missing_product_exception(QString const &     what_msg) : epayment_exception(what_msg) {}
-};
-
-class epayment_invalid_recurring_field_exception : public epayment_exception
-{
-public:
-    explicit epayment_invalid_recurring_field_exception(char const *        what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_invalid_recurring_field_exception(std::string const & what_msg) : epayment_exception(what_msg) {}
-    explicit epayment_invalid_recurring_field_exception(QString const &     what_msg) : epayment_exception(what_msg) {}
-};
-
+DECLARE_EXCEPTION(epayment_exception, epayment_invalid_type_exception);
+DECLARE_EXCEPTION(epayment_exception, epayment_cannot_set_exception);
+DECLARE_EXCEPTION(epayment_exception, epayment_cannot_unset_exception);
+DECLARE_EXCEPTION(epayment_exception, epayment_cannot_find_exception);
+DECLARE_EXCEPTION(epayment_exception, epayment_missing_product_exception);
+DECLARE_EXCEPTION(epayment_exception, epayment_invalid_recurring_field_exception);
 
 
 
@@ -296,7 +247,7 @@ private:
 
 
 class epayment
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                                 epayment();
@@ -308,10 +259,6 @@ public:
     static epayment *           instance();
 
     // plugins::plugin implementation
-    virtual QString             settings_path() const override;
-    virtual QString             icon() const override;
-    virtual QString             description() const override;
-    virtual QString             dependencies() const override;
     virtual int64_t             do_update(int64_t last_updated) override;
     virtual void                bootstrap(snap_child * snap) override;
 

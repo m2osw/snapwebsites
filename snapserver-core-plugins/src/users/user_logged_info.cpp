@@ -25,17 +25,20 @@
 
 // self
 //
-#include "users.h"
+#include    "users.h"
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 
-SNAP_PLUGIN_EXTENSION_START(users)
+namespace snap
+{
+namespace user
+{
 
 
 
@@ -322,6 +325,6 @@ QString const & users::user_logged_info_t::get_uri() const
 
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace users
+} // namespace snap
 // vim: ts=4 sw=4 et

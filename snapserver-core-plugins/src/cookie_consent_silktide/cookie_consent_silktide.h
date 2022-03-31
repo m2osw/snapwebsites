@@ -70,7 +70,7 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class cookie_consent_silktide
-        : public plugins::plugin
+        : public cppthread::plugin
 {
 public:
                                 cookie_consent_silktide();
@@ -82,10 +82,6 @@ public:
     static cookie_consent_silktide * instance();
 
     // plugins::plugin implementation
-    virtual QString             settings_path() const override;
-    virtual QString             icon() const override;
-    virtual QString             description() const override;
-    virtual QString             dependencies() const override;
     virtual int64_t             do_update(int64_t last_updated) override;
     virtual void                bootstrap(snap_child * snap) override;
 

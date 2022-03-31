@@ -30,17 +30,20 @@
 
 // self
 //
-#include "epayment_creditcard.h"
+#include    "epayment_creditcard.h"
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace epayment_creditcard
+{
 
-SNAP_PLUGIN_EXTENSION_START(epayment_creditcard)
 
 
 epayment_gateway_features_t::epayment_gateway_features_t(QString const & gateway)
@@ -68,6 +71,6 @@ QString epayment_gateway_features_t::get_name() const
 
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace epayment_creditcard
+} // namespace snap
 // vim: ts=4 sw=4 et

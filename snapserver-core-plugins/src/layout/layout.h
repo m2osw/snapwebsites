@@ -18,7 +18,7 @@
 
 // other plugins
 //
-#include "../content/content.h"
+#include    "../content/content.h"
 
 
 namespace snap
@@ -43,21 +43,10 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class layout_exception : public snap_exception
-{
-public:
-    explicit layout_exception(char const *        what_msg) : snap_exception("layout", what_msg) {}
-    explicit layout_exception(std::string const & what_msg) : snap_exception("layout", what_msg) {}
-    explicit layout_exception(QString const &     what_msg) : snap_exception("layout", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(layout_exception);
 
-class layout_exception_invalid_xslt_data : public layout_exception
-{
-public:
-    explicit layout_exception_invalid_xslt_data(char const *        what_msg) : layout_exception(what_msg) {}
-    explicit layout_exception_invalid_xslt_data(std::string const & what_msg) : layout_exception(what_msg) {}
-    explicit layout_exception_invalid_xslt_data(QString const &     what_msg) : layout_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(layout_exception, layout_exception_invalid_xslt_data);
+
 
 
 class layout_content
@@ -83,7 +72,7 @@ public:
 
 
 class layout
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                         layout();
@@ -94,13 +83,10 @@ public:
 
     static layout *     instance();
 
-    // plugins::plugin implementation
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
+    // cppthread::plugin implementation
+    virtual void        bootstrap(void * snap) override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual int64_t     do_dynamic_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child *snap) override;
 
     libdbproxy::table::pointer_t get_layout_table();
 

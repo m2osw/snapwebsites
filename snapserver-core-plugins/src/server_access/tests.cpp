@@ -18,32 +18,35 @@
 
 // self
 //
-#include "server_access.h"
+#include    "server_access.h"
 
 
 // other plugins
 //
-#include "../content/content.h"
+#include    "../content/content.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace server_access
+{
 
-SNAP_PLUGIN_EXTENSION_START(server_access)
 
 
 SNAP_TEST_PLUGIN_SUITE(server_access)
@@ -59,6 +62,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(server_access, test_ajax)
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace server_access
+} // namespace snap
 // vim: ts=4 sw=4 et

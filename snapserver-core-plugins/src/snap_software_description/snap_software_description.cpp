@@ -37,43 +37,73 @@
 
 // self
 //
-#include "snap_software_description.h"
+#include    "snap_software_description.h"
 
 
 // other plugins
 //
-#include "../attachment/attachment.h"
-#include "../filter/filter.h"
-#include "../list/list.h"
-#include "../shorturl/shorturl.h"
+#include    "../attachment/attachment.h"
+#include    "../filter/filter.h"
+#include    "../list/list.h"
+#include    "../shorturl/shorturl.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/http_strings.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/http_strings.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QFile>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// Qt
+//
+#include    <QFile>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(snap_software_description, 1, 0)
+namespace snap
+{
+namespace snap_software_description
+{
+
+
+
+CPPTHREAD_PLUGIN_START(snap_software_description, 1, 0)
+    , ::cppthread::plugin_description(
+             "The Snap Software Description plugin offers you a way to"
+             " define a set of descriptions for software that you are offering"
+             " for download on your website. The software may be free or for"
+             " a fee. It may also be a shareware.")
+    , ::cppthread::plugin_icon()
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("attachment")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("list")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 
@@ -151,68 +181,6 @@ const char * get_name(name_t name)
  */
 
 
-/** \brief Initialize the snap_software_description plugin.
- *
- * This function initializes the snap_software_description plugin.
- */
-snap_software_description::snap_software_description()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-/** \brief Destroy the snap_software_description plugin.
- *
- * This function cleans up the snap_software_description plugin.
- */
-snap_software_description::~snap_software_description()
-{
-}
-
-
-/** \brief Get a pointer to the snap_software_description plugin.
- *
- * This function returns an instance pointer to the snap_software_descriptiosnap_software_descriptionin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the snap_software_description plugin.
- */
-snap_software_description * snap_software_description::instance()
-{
-    return g_plugin_snap_software_description_factory.instance();
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString snap_software_description::description() const
-{
-    return "The Snap Software Description plugin offers you a way to"
-          " define a set of descriptions for software that you are offering"
-          " for download on your website. The software may be free or for"
-          " a fee. It may also be a shareware.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString snap_software_description::dependencies() const
-{
-    return "|attachment|content|editor|layout|list|output|path|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -1291,6 +1259,7 @@ bool snap_software_description::load_xsl_file(QString const & filename, QString 
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace snap_software_description
+} // namespace snap
 // vim: ts=4 sw=4 et

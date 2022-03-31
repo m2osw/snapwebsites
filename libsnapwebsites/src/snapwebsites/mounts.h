@@ -16,32 +16,33 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_exception.h"
 
-#include <vector>
-//#include <memory>
+// libexcept
 //
-//#include <proc/readproc.h>
-#include <mntent.h>
+#include    <libexcept/exception.h>
+
+
+// C++
+//
+//#include    <memory>
+#include    <vector>
+
+
+// C
+//
+#include    <mntent.h>
+//#include    <proc/readproc.h>
+
+
 
 namespace snap
 {
 
-class snap_mounts_exception : public snap_exception
-{
-public:
-    explicit snap_mounts_exception(const char *        whatmsg) : snap_exception("snap_mounts", whatmsg) {}
-    explicit snap_mounts_exception(const std::string & whatmsg) : snap_exception("snap_mounts", whatmsg) {}
-    explicit snap_mounts_exception(const QString &     whatmsg) : snap_exception("snap_mounts", whatmsg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_mounts_exception);
 
-class snap_mounts_exception_io_error : public snap_mounts_exception
-{
-public:
-    explicit snap_mounts_exception_io_error(const char *        whatmsg) : snap_mounts_exception(whatmsg) {}
-    explicit snap_mounts_exception_io_error(const std::string & whatmsg) : snap_mounts_exception(whatmsg) {}
-    explicit snap_mounts_exception_io_error(const QString &     whatmsg) : snap_mounts_exception(whatmsg) {}
-};
+DECLARE_EXCEPTION(snap_mounts_exception, snap_mounts_exception_io_error);
+
+
 
 
 

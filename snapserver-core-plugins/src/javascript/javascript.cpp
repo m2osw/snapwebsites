@@ -30,38 +30,62 @@
 
 // self
 //
-#include "javascript.h"
+#include    "javascript.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/plugins.h>
-#include <snapwebsites/snap_version.h>
-#include <snapwebsites/log.h>
+#include    <snapwebsites/snap_version.h>
 
 
-// snapdev lib
+// cppthread
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+//#include    <cppthread/plugins.h>
 
 
-// Qt lib
+// snaplogger
 //
-#include <QScriptEngine>
-#include <QScriptProgram>
-#include <QScriptClass>
-#include <QScriptClassPropertyIterator>
-#include <QSharedPointer>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// Qt
+//
+#include    <QScriptEngine>
+#include    <QScriptProgram>
+#include    <QScriptClass>
+#include    <QScriptClassPropertyIterator>
+#include    <QSharedPointer>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(javascript, 1, 0)
+namespace snap
+{
+namespace javascript
+{
+
+
+CPPTHREAD_PLUGIN_START(javascript, 1, 0)
+    , ::cppthread::plugin_description(
+            "Offer server side JavaScript support for different plugins."
+            " This implementation makes use of the QScript extension.")
+    , ::cppthread::plugin_icon("/images/snap/javascript-logo-64x64.png")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /*
@@ -99,7 +123,7 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("invalid name_t::SNAP_NAME_JAVASCRIPT_...");
+        throw snap_logic_error("invalid name_t::SNAP_NAME_JAVASCRIPT_...");
 
     }
     snapdev::NOT_REACHED();
@@ -112,78 +136,6 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the javascript plugin.
- *
- * This function is used to initialize the javascript plugin object.
- */
-javascript::javascript()
-{
-}
-
-
-/** \brief Clean up the javascript plugin.
- *
- * Ensure the javascript object is clean before it is gone.
- */
-javascript::~javascript()
-{
-}
-
-
-/** \brief Get a pointer to the javascript plugin.
- *
- * This function returns an instance pointer to the javascript plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the javascript plugin.
- */
-javascript * javascript::instance()
-{
-    return g_plugin_javascript_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString javascript::icon() const
-{
-    return "/images/snap/javascript-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString javascript::description() const
-{
-    return "Offer server side JavaScript support for different plugins."
-            " This implementation makes use of the QScript extension.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString javascript::dependencies() const
-{
-    return "|content|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -405,7 +357,9 @@ public:
 
     virtual void setProperty(QScriptValue & object, QScriptString const & property_name, uint id, QScriptValue const & value)
     {
-//SNAP_LOG_TRACE() << "setProperty() called... not implemented yet\n";
+//SNAP_LOG_TRACE
+//    << "setProperty() called... not implemented yet\n"
+//    << SNAP_LOG_SEND;
         snapdev::NOT_USED(object, property_name, id, value);
         throw std::runtime_error("setProperty() not implemented yet");
     }
@@ -602,7 +556,9 @@ public:
 
     virtual void setProperty(QScriptValue& object, const QScriptString& property_name, uint id, const QScriptValue& value)
     {
-//SNAP_LOG_TRACE() << "setProperty() called... not implemented yet\n";
+//SNAP_LOG_TRACE
+//    << "setProperty() called... not implemented yet\n"
+//    << SNAP_LOG_SEND;
         throw std::runtime_error("setProperty() not implemented yet");
     }
 #pragma GCC diagnostic pop
@@ -630,24 +586,44 @@ private:
  */
 QVariant javascript::evaluate_script(QString const & script)
 {
-//SNAP_LOG_TRACE() << "evaluating JS [" << script << "]\n";
+//SNAP_LOG_TRACE
+//    << "evaluating JS [" << script << "]\n"
+//    << SNAP_LOG_SEND;
     QScriptProgram program(script);
     QScriptEngine engine;
     plugins_class plugins(this, &engine);
     QScriptValue plugins_object(engine.newObject(&plugins));
     engine.globalObject().setProperty("plugins", plugins_object);
-//SNAP_LOG_TRACE("object name = [")(plugins_object.scriptClass()->name())("] (")(plugins_object.isObject())(")\n");
+//SNAP_LOG_TRACE
+//    << "object name = ["
+//    << plugins_object.scriptClass()->name()
+//    << "] ("
+//    << plugins_object.isObject()
+//    << ")\n"
+//    << SNAP_LOG_SEND;
     QScriptValue value(engine.evaluate(program));
     QVariant const variant(value.toVariant());
     if(value.isError())
     {
         // this happens if the script is not correct and it cannot be executed
-        SNAP_LOG_ERROR("javascript: value says there is an error in \"")(script)("\"!");
+        SNAP_LOG_ERROR
+            << "javascript: value says there is an error in \""
+            << script
+            << "\"!"
+            << SNAP_LOG_SEND;
     }
     if(engine.hasUncaughtException())
     {
         QScriptValue e(engine.uncaughtException());
-        SNAP_LOG_ERROR("javascript: result = ")(engine.hasUncaughtException())(", e = ")(e.isError())(", s = \"")(e.toString())("\"");
+        SNAP_LOG_ERROR
+            << "javascript: result = "
+            << engine.hasUncaughtException()
+            << ", e = "
+            << e.isError()
+            << ", s = \""
+            << e.toString()
+            << "\""
+            << SNAP_LOG_SEND;
     }
     return variant;
 }
@@ -752,7 +728,6 @@ void javascript::on_check_attachment_security(content::attachment_file const & f
 
 
 
-
-SNAP_PLUGIN_END()
-
+} // namespace javascript
+} // namespace snap
 // vim: ts=4 sw=4 et

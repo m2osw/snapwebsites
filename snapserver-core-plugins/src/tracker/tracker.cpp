@@ -18,37 +18,51 @@
 
 // self
 //
-#include "tracker.h"
+#include    "tracker.h"
 
 
 // ohter plugins
 //
-#include "../users/users.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C lib
+// C
 //
-#include <arpa/inet.h>
+#include    <arpa/inet.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(tracker, 1, 0)
+namespace snap
+{
+namespace tracker
+{
+
+
+CPPTHREAD_PLUGIN_START(tracker, 1, 0)
+    , ::cppthread::plugin_description(
+            "Log all movements of all the users accessing your website.")
+    , ::cppthread::plugin_icon("/images/tracker/tracker-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/tracker")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed tracker name.
@@ -101,89 +115,6 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the tracker plugin.
- *
- * This function is used to initialize the tracker plugin object.
- */
-tracker::tracker()
-    //: f_snap(nullptr) -- auto-init
-    //, f_tracker_table(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the tracker plugin.
- *
- * Ensure the tracker object is clean before it is gone.
- */
-tracker::~tracker()
-{
-}
-
-
-/** \brief Get a pointer to the tracker plugin.
- *
- * This function returns an instance pointer to the tracker plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the tracker plugin.
- */
-tracker * tracker::instance()
-{
-    return g_plugin_tracker_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString tracker::settings_path() const
-{
-    return "/admin/settings/tracker";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString tracker::icon() const
-{
-    return "/images/tracker/tracker-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString tracker::description() const
-{
-    return "Log all movements of all the users accessing your website.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString tracker::dependencies() const
-{
-    return "|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -501,6 +432,6 @@ void tracker::on_backend_tracking_data()
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace tracker
+} // namespace snap
 // vim: ts=4 sw=4 et

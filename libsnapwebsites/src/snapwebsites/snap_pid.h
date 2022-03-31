@@ -20,14 +20,14 @@
 #pragma once
 
 
-// self
+// libexcept lib
 //
-#include "snapwebsites/snap_exception.h"
+#include    <libexcept/exception.h>
 
 
 // snapdev lib
 //
-#include <snapdev/raii_generic_deleter.h>
+#include    <snapdev/raii_generic_deleter.h>
 
 
 
@@ -47,32 +47,10 @@ namespace snap
 {
 
 
+DECLARE_MAIN_EXCEPTION(snap_pid_exception);
 
-class snap_pid_exception : public snap_exception
-{
-public:
-    explicit snap_pid_exception(char const *        whatmsg) : snap_exception("snap_pid", whatmsg) {}
-    explicit snap_pid_exception(std::string const & whatmsg) : snap_exception("snap_pid", whatmsg) {}
-    explicit snap_pid_exception(QString const &     whatmsg) : snap_exception("snap_pid", whatmsg) {}
-};
-
-class snap_pid_exception_io_error : public snap_pid_exception
-{
-public:
-    explicit snap_pid_exception_io_error(char const *        whatmsg) : snap_pid_exception(whatmsg) {}
-    explicit snap_pid_exception_io_error(std::string const & whatmsg) : snap_pid_exception(whatmsg) {}
-    explicit snap_pid_exception_io_error(QString const &     whatmsg) : snap_pid_exception(whatmsg) {}
-};
-
-class snap_pid_exception_invalid_parameter : public snap_pid_exception
-{
-public:
-    explicit snap_pid_exception_invalid_parameter(char const *        whatmsg) : snap_pid_exception(whatmsg) {}
-    explicit snap_pid_exception_invalid_parameter(std::string const & whatmsg) : snap_pid_exception(whatmsg) {}
-    explicit snap_pid_exception_invalid_parameter(QString const &     whatmsg) : snap_pid_exception(whatmsg) {}
-};
-
-
+DECLARE_EXCEPTION(snap_pid_exception, snap_pid_exception_io_error);
+DECLARE_EXCEPTION(snap_pid_exception, snap_pid_exception_invalid_parameter);
 
 
 
@@ -95,7 +73,7 @@ private:
     void            send_signal(bool result);
 
     std::string         f_service_name = std::string();
-    int                 f_pipes[2];
+    int                 f_pipes[2] = {};
     std::string         f_pid_filename = std::string();
     snapdev::raii_fd_t  f_safe_fd = snapdev::raii_fd_t();
     bool                f_child_process = false;

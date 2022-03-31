@@ -16,38 +16,26 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_exception.h"
+// libexcept
+//
+#include "libexcept/exception.h"
 
+// Qt
+//
 #include <QDomDocument>
 #include <QVariant>
 #include <QMap>
 
+
+
 namespace snap
 {
 
-class xslt_exception : public snap_exception
-{
-public:
-    explicit xslt_exception(char const *        what_msg) : snap_exception("xslt", what_msg) {}
-    explicit xslt_exception(std::string const & what_msg) : snap_exception("xslt", what_msg) {}
-    explicit xslt_exception(QString const &     what_msg) : snap_exception("xslt", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(xslt_exception);
 
-class xslt_initialization_error : public xslt_exception
-{
-public:
-    explicit xslt_initialization_error(char const *        whatmsg) : xslt_exception(whatmsg) {}
-    explicit xslt_initialization_error(std::string const & whatmsg) : xslt_exception(whatmsg) {}
-    explicit xslt_initialization_error(QString const &     whatmsg) : xslt_exception(whatmsg) {}
-};
+DECLARE_EXCEPTION(xslt_exception, xslt_initialization_error);
+DECLARE_EXCEPTION(xslt_exception, xslt_evaluation_error);
 
-class xslt_evaluation_error : public xslt_exception
-{
-public:
-    explicit xslt_evaluation_error(char const *        whatmsg) : xslt_exception(whatmsg) {}
-    explicit xslt_evaluation_error(std::string const & whatmsg) : xslt_exception(whatmsg) {}
-    explicit xslt_evaluation_error(QString const &     whatmsg) : xslt_exception(whatmsg) {}
-};
 
 
 

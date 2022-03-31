@@ -16,28 +16,22 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_exception.h"
+// libexcept
+//
+#include    <libexcept/exception.h>
+
+
 
 namespace snap
 {
 
-class snap_magic_exception : public snap_exception
-{
-public:
-    explicit snap_magic_exception(char const *        whatmsg) : snap_exception("snap_magic", whatmsg) {}
-    explicit snap_magic_exception(std::string const & whatmsg) : snap_exception("snap_magic", whatmsg) {}
-    explicit snap_magic_exception(QString const &     whatmsg) : snap_exception("snap_magic", whatmsg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_magic_exception);
 
-class snap_magic_exception_no_magic : public snap_magic_exception
-{
-public:
-    explicit snap_magic_exception_no_magic(char const *        whatmsg) : snap_magic_exception(whatmsg) {}
-    explicit snap_magic_exception_no_magic(std::string const & whatmsg) : snap_magic_exception(whatmsg) {}
-    explicit snap_magic_exception_no_magic(QString const &     whatmsg) : snap_magic_exception(whatmsg) {}
-};
+DECLARE_EXCEPTION(snap_magic_exception, snap_magic_exception_no_magic);
+
 
 // the actual function that generates a MIME type from a byte array
+//
 QString     get_mime_type(const QByteArray & data);
 
 }

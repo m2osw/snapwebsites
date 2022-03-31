@@ -17,30 +17,27 @@
 
 // self
 //
-#include "snapwebsites/qdomxpath.h"
+#include    "snapwebsites/qdomxpath.h"
+
+#include    "snapwebsites/floats.h"
 
 
-// snapwebsites lib
+// snapdev
 //
-#include "snapwebsites/floats.h"
-#include "snapwebsites/qstring_stream.h"
+#include    <snapdev/qstring_extensions.h>
+#include    <snapdev/not_used.h>
 
 
-// snapdev lib
+// C++
 //
-#include <snapdev/not_used.h>
-
-
-// C++ lib
-//
-#include <cmath>
-#include <iomanip>
-#include <limits>
+#include    <cmath>
+#include    <iomanip>
+#include    <limits>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 

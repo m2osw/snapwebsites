@@ -16,21 +16,29 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/snapwebsites.h>
-#include <snapwebsites/snap_exception.h>
-#include <snapwebsites/log.h>
+#include    <snapwebsites/snapwebsites.h>
 
 
-// snapdev lib
+// libexcept
 //
-#include <snapdev/not_reached.h>
+#include    <libexcept/exception.h>
+
+
+// snaplogger
+//
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 

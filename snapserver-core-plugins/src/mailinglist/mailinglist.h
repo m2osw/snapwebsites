@@ -16,17 +16,21 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/snapwebsites.h>
-#include <snapwebsites/plugins.h>
-#include <snapwebsites/snap_child.h>
+#include    <snapwebsites/snapwebsites.h>
+#include    <snapwebsites/snap_child.h>
 
-// Qt lib
+
+// cppthread
 //
-#include <QMap>
-#include <QVector>
-#include <QByteArray>
+//#include    <cppthread/plugins.h>
+
+// Qt
+//
+#include    <QMap>
+#include    <QVector>
+#include    <QByteArray>
 
 
 namespace snap
@@ -45,7 +49,7 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class mailinglist
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
     class list
@@ -83,10 +87,6 @@ public:
     static mailinglist *instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

@@ -17,112 +17,57 @@
 
 // self
 //
-#include "listener.h"
+#include    "listener.h"
 
 
 // other plugins
 //
-#include "../messages/messages.h"
-#include "../permissions/permissions.h"
-#include "../server_access/server_access.h"
-#include "../users/users.h"
+#include    "../messages/messages.h"
+#include    "../permissions/permissions.h"
+#include    "../server_access/server_access.h"
+#include    "../users/users.h"
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(listener, 1, 0)
-
-
-
-/** \brief Initialize the listener plugin.
- *
- * This function is used to initialize the listener plugin object.
- */
-listener::listener()
-    //: f_snap(nullptr) -- auto-init
+namespace snap
 {
-}
-
-
-/** \brief Clean up the listener plugin.
- *
- * Ensure the listener object is clean before it is gone.
- */
-listener::~listener()
+namespace listener
 {
-}
 
 
-/** \brief Get a pointer to the listener plugin.
- *
- * This function returns an instance pointer to the listener plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the listener plugin.
- */
-listener * listener::instance()
-{
-    return g_plugin_listener_factory.instance();
-}
+CPPTHREAD_PLUGIN_START(listener, 1, 0)
+    , ::cppthread::plugin_description(
+            "Check whether a page or document (when the page represents an"
+            " attachment) is ready for consumption. For example, the listener"
+            " is used by the editor to listen for attachment upload completion.")
+    , ::cppthread::plugin_icon("/images/listener/listener-logo-64x64.png")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("server_access")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString listener::icon() const
-{
-    return "/images/listener/listener-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString listener::description() const
-{
-    return "Check whether a page or document (when the page represents an"
-          " attachment) is ready for consumption. For example, the listener"
-          " is used by the editor to listen for attachment upload completion.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString listener::dependencies() const
-{
-    return "|messages|path|permissions|server_access|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -319,6 +264,7 @@ bool listener::listener_check_impl(snap_uri const & uri, content::path_info_t & 
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace listener
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -76,35 +76,17 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 
-class permissions_exception : public snap_exception
-{
-public:
-    explicit permissions_exception(char const *        what_msg) : snap_exception("Permissions", what_msg) {}
-    explicit permissions_exception(std::string const & what_msg) : snap_exception("Permissions", what_msg) {}
-    explicit permissions_exception(QString const &     what_msg) : snap_exception("Permissions", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(permissions_exception);
 
-class permissions_exception_invalid_group_name : public permissions_exception
-{
-public:
-    explicit permissions_exception_invalid_group_name(char const *        what_msg) : permissions_exception(what_msg) {}
-    explicit permissions_exception_invalid_group_name(std::string const & what_msg) : permissions_exception(what_msg) {}
-    explicit permissions_exception_invalid_group_name(QString const &     what_msg) : permissions_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(permissions_exception, permissions_exception_invalid_group_name);
+DECLARE_EXCEPTION(permissions_exception, permissions_exception_invalid_path);
 
-class permissions_exception_invalid_path : public permissions_exception
-{
-public:
-    explicit permissions_exception_invalid_path(char const *        what_msg) : permissions_exception(what_msg) {}
-    explicit permissions_exception_invalid_path(std::string const & what_msg) : permissions_exception(what_msg) {}
-    explicit permissions_exception_invalid_path(QString const &     what_msg) : permissions_exception(what_msg) {}
-};
 
 
 
 
 class permissions
-    : public plugins::plugin
+    : public cppthread::plugin
     , public links::links_cloned
     , public layout::layout_content
     , public server::backend_action
@@ -186,8 +168,6 @@ public:
     static permissions *    instance();
 
     // plugins::plugin implementation
-    virtual QString         description() const override;
-    virtual QString         dependencies() const override;
     virtual int64_t         do_update(int64_t last_updated) override;
     virtual void            bootstrap(snap_child * snap) override;
 

@@ -18,28 +18,30 @@
 
 // self
 //
-#include "snapwebsites/qdomhelpers.h"
+#include    "snapwebsites/qdomhelpers.h"
+
+#include    "snapwebsites/snap_exception.h"
+#include    "snapwebsites/snap_string_list.h"
 
 
-// snapwebsites
+// snapdev
 //
-#include "snapwebsites/qstring_stream.h"
-#include "snapwebsites/snap_string_list.h"
+#include    <snapdev/qstring_extensions.h>
 
 
-// Qt lib
+// Qt
 //
-#include <QTextStream>
+#include    <QTextStream>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -376,7 +378,7 @@ void remove_all_children(QDomElement& parent)
  * Note that the function could return an element from the HTML or other
  * data found in that XML document if such tags are present as is.
  *
- * \exception snap_logic_exception
+ * \exception snap_logic_error
  * The logic exception is raised if the tag cannot be found. If the
  * must_exist parameter is set to false, then this exception is not raised.
  *
@@ -395,7 +397,10 @@ QDomElement get_element(QDomDocument & doc, QString const & name, bool must_exis
         // <page> tag before calling this function
         if(must_exist)
         {
-            throw snap_logic_exception(QString("<%1> tag not found in the body DOM").arg(name));
+            throw snap_logic_error(
+                      "<"
+                    + to_string(name)
+                    + "> tag not found in the body DOM.");
         }
         return QDomElement();
     }
@@ -404,7 +409,10 @@ QDomElement get_element(QDomDocument & doc, QString const & name, bool must_exis
     if(must_exist && element.isNull())
     {
         // we just got a tag, this is really impossible!?
-        throw snap_logic_exception(QString("<%1> tag not a DOM Element???").arg(name));
+        throw snap_logic_error(
+                  "<"
+                + to_string(name)
+                + "> tag not a DOM Element???");
     }
 
     return element;
@@ -440,7 +448,10 @@ QDomElement get_child_element(QDomNode parent, QString const& path)
 #ifdef _DEBUG
     if(path.startsWith("/"))
     {
-        throw snap_logic_exception(QString("path \"%1\" for get_child_element cannot start with a slash").arg(path));
+        throw snap_logic_error(
+                  "path \""
+                + to_string(path)
+                + "\" for get_child_element cannot start with a slash");
     }
 #endif
 
@@ -504,7 +515,10 @@ QDomElement create_element(QDomNode parent, QString const& path)
 #ifdef _DEBUG
     if(path.startsWith("/"))
     {
-        throw snap_logic_exception(QString("path \"%1\" for create_element cannot start with a slash").arg(path));
+        throw snap_logic_error(
+                  "path \""
+                + to_string(path)
+                + "\" for create_element cannot start with a slash");
     }
 #endif
 

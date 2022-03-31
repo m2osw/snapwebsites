@@ -25,12 +25,20 @@
 
 // snapwebsites lib
 //
-#include "log.h"
 #include "snap_magic.h"
 #include "snap_pipe.h"
-#include "process.h"
 #include "quoted_printable.h"
 #include "snapwebsites.h"
+
+// eventdispatcher lib
+//
+#include    <cppprocess/process.h>
+
+
+// snaplogger lib
+//
+#include    <snaplogger/message.h>
+
 
 // libQtSerialization lib
 //
@@ -1728,6 +1736,10 @@ QString email::serialize() const
  * \exception email_exception_missing_parameter
  * If the From header or the destination email only are missing this
  * exception is raised.
+ *
+ * \return true if the send() command worked (note that does not mean the
+ * email made it; we'll know later whether it failed if we received a
+ * bounced email).
  */
 bool email::send() const
 {
@@ -1813,7 +1825,11 @@ bool email::send() const
         {
             // no plain text, but let us know that something went wrong at least
             //
-            SNAP_LOG_WARNING("An error occurred while executing html2text (exit code: ")(r)(")");
+            SNAP_LOG_WARNING
+                << "An error occurred while executing html2text (exit code: "
+                << r
+                << ")"
+                << SNAP_LOG_SEND;
         }
     }
 
@@ -1847,12 +1863,31 @@ bool email::send() const
 
     // create an output stream to send the email
     //
-    QString const cmd(QString("sendmail -f \"%1\" \"%2\"")
-                            .arg(QString::fromUtf8(s.f_email_only.c_str()))
-                            .arg(QString::fromUtf8(m.f_email_only.c_str())));
-    SNAP_LOG_TRACE("sendmail command: [")(cmd)("]");
-    snap_pipe spipe(cmd, snap_pipe::mode_t::PIPE_MODE_IN);
-    std::ostream f(&spipe);
+    cppprocess::process p("sendmail");
+    p.set_command("sendmail");
+    p.add_argument("-f");
+    p.add_argument(s.f_email_only);
+    p.add_argument(m.f_email_only);
+    SNAP_LOG_TRACE("sendmail command: [")(p.get_command_line())("]");
+
+    cppprocess::io_data_pipe::pointer_t in(std::make_shared<cppprocess::io_data_pipe>());
+    p.set_io_input(in);
+
+    int const start_status(p.start());
+    if(start_status != 0)
+    {
+        SNAP_LOG_ERROR
+            << "could not start process \""
+            << p.get_name()
+            << "\" (command line: "
+            << p.get_command_line()
+            << ")."
+            << SNAP_LOG_SEND;
+        return false;
+    }
+
+    //snap_pipe spipe(cmd, snap_pipe::mode_t::PIPE_MODE_IN);
+    //std::ostream f(&spipe);
 
     // convert email data to text and send that to the sendmail command line
     //
@@ -1924,55 +1959,93 @@ bool email::send() const
         //       encoding, we should err (we probably want to
         //       capture those in the add_header() though)
         //
-        f << it.first << ": " << it.second << std::endl;
+        //f << it.first << ": " << it.second << std::endl;
+        in.add_input(it.first);
+        in.add_input(": ");
+        in.add_input(it.second);
+        in.add_input("\n");
     }
 
     // XXX: allow administrators to change the `branding` flag
     //
     if(f_branding)
     {
-        f << "X-Generated-By: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (https://snapwebsites.org/)" << std::endl
-          << "X-Mailer: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (https://snapwebsites.org/)" << std::endl;
+        //f << "X-Generated-By: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (https://snapwebsites.org/)" << std::endl
+        //  << "X-Mailer: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (https://snapwebsites.org/)" << std::endl;
+        in.add_input(
+            "X-Generated-By: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (https://snapwebsites.org/)\n"
+            "X-Mailer: Snap! Websites C++ v" SNAPWEBSITES_VERSION_STRING " (https://snapwebsites.org/)\n";
     }
 
     // end the headers
     //
-    f << std::endl;
+    //f << std::endl;
+    in.add_input("\n");
 
     if(body_only)
     {
         // in this case we only have one entry, probably HTML, and thus we
         // can avoid the multi-part headers and attachments
         //
-        f << body_attachment.get_data().data() << std::endl;
+        //f << body_attachment.get_data().data() << std::endl;
+        in.add_input(body_attachment.get_data().data());
+        in.add_input("\n");
     }
     else
     {
         // TBD: should we make this text changeable by client?
         //
-        f << "The following are various parts of a multipart email." << std::endl
-          << "It is likely to include a text version (first part) that you should" << std::endl
-          << "be able to read as is." << std::endl
-          << "It may be followed by HTML and then various attachments." << std::endl
-          << "Please consider installing a MIME capable client to read this email." << std::endl
-          << std::endl;
+        //f << "The following are various parts of a multipart email." << std::endl
+        //  << "It is likely to include a text version (first part) that you should" << std::endl
+        //  << "be able to read as is." << std::endl
+        //  << "It may be followed by HTML and then various attachments." << std::endl
+        //  << "Please consider installing a MIME capable client to read this email." << std::endl
+        //  << std::endl;
+        in.add_input(
+                "The following are various parts of a multipart email.\n"
+                "It is likely to include a text version (first part) that you should\n"
+                "be able to read as is.\n"
+                "It may be followed by HTML and then various attachments.\n"
+                "Please consider installing a MIME capable client to read this email.\n"
+                "\n");
 
         int i(0);
         if(!plain_text.isEmpty())
         {
             // if we have plain text then we have alternatives
             //
-            f << "--" << boundary << std::endl
-              << "Content-Type: multipart/alternative;" << std::endl
-              << "  boundary=\"" << boundary << ".msg\"" << std::endl
-              << std::endl
-              << "--" << boundary << ".msg" << std::endl
-              << "Content-Type: text/plain; charset=\"utf-8\"" << std::endl
-              //<< "MIME-Version: 1.0" << std::endl -- only show this one in the main header
-              << "Content-Transfer-Encoding: quoted-printable" << std::endl
-              << "Content-Description: Mail message body" << std::endl
-              << std::endl
-              << quoted_printable::encode(plain_text.toUtf8().data(), quoted_printable::QUOTED_PRINTABLE_FLAG_NO_LONE_PERIOD) << std::endl;
+            //f << "--" << boundary << std::endl
+            //  << "Content-Type: multipart/alternative;" << std::endl
+            //  << "  boundary=\"" << boundary << ".msg\"" << std::endl
+            //  << std::endl
+            //  << "--" << boundary << ".msg" << std::endl
+            //  << "Content-Type: text/plain; charset=\"utf-8\"" << std::endl
+            //  //<< "MIME-Version: 1.0" << std::endl -- only show this one in the main header
+            //  << "Content-Transfer-Encoding: quoted-printable" << std::endl
+            //  << "Content-Description: Mail message body" << std::endl
+            //  << std::endl
+            //  << quoted_printable::encode(plain_text.toUtf8().data(), quoted_printable::QUOTED_PRINTABLE_FLAG_NO_LONE_PERIOD) << std::endl;
+            in.add_input("--");
+            in.add_input(boundary);
+            in.add_input("\n"
+                         "Content-Type: multipart/alternative;\n"
+                         "  boundary-\"");
+            in.add_input(boundary);
+            in.add_input(".msg\"\n"
+                         "\n");
+            in.add_input("--");
+            in.add_input(boundary);
+            in.add_input(".msg\n");
+            in.add_input("\n"
+                         "Content-Type: text/plain; charset=\"utf-8\"\n"
+                         "Content-Transfer-Encoding: quoted-printable\n"
+                         "Content-Description: Mail message body\n"
+                         "\n");
+            in.add_input(
+                      quoted_printable::encode(
+                              plain_text.toUtf8().data()
+                            , quoted_printable::QUOTED_PRINTABLE_FLAG_NO_LONE_PERIOD));
+            in.add_input("\n");
 
             // at this time, this if() should always be true
             //
@@ -1980,18 +2053,32 @@ bool email::send() const
             {
                 // now include the HTML
                 //
-                f << "--" << boundary << ".msg" << std::endl;
+                //f << "--" << boundary << ".msg" << std::endl;
+                in.add_input("--");
+                in.add_input(boundary);
+                in.add_input(".msg\n");
                 for(auto const & it : body_attachment.get_all_headers())
                 {
-                    f << it.first << ": " << it.second << std::endl;
+                    //f << it.first << ": " << it.second << std::endl;
+                    in.add_input(it.first);
+                    in.add_input(": ");
+                    in.add_input(it.second);
+                    in.add_input("\n");
                 }
+                // one empty line to end the headers
+                //
+                in.add_input("\n");
 
-                // one empty line before the contents
-                // here the data is already encoded
-                f << std::endl
-                  << body_attachment.get_data().data() << std::endl
-                  << "--" << boundary << ".msg--" << std::endl
-                  << std::endl;
+                // here the data in body_attachment is already encoded
+                //
+                //f << std::endl
+                //  << body_attachment.get_data().data() << std::endl
+                //  << "--" << boundary << ".msg--" << std::endl
+                //  << std::endl;
+                in.add_input(body_attachment.get_data().data());
+                in.add_input("--");
+                in.add_input(boundary);
+                in.add_input(".msg--\n\n");
 
                 // we used "attachment" 0, so print the others starting at 1
                 //
@@ -2010,7 +2097,10 @@ bool email::send() const
 
             // send the boundary
             //
-            f << "--" << boundary << std::endl;
+            //f << "--" << boundary << std::endl;
+            in.add_input("--");
+            in.add_input(boundary);
+            in.add_input("\n");
 
             // send  the headers for that attachment
             //
@@ -2022,38 +2112,55 @@ bool email::send() const
             copy_filename_to_content_type(attachment_headers);
             for(auto const & it : attachment_headers)
             {
-                f << it.first << ": " << it.second << std::endl;
+                //f << it.first << ": " << it.second << std::endl;
+                in.add_input(it.first);
+                in.add_input(": ");
+                in.add_input(it.second);
+                in.add_input("\n");
             }
-
-            // one empty line before the contents
+            // one empty line to end the headers
             //
-            f << std::endl;
+            //f << std::endl;
+            in.add_input("\n");
 
             // here the data is already encoded
             //
-            f << a.get_data().data() << std::endl;
+            //f << a.get_data().data() << std::endl;
+            in.add_input(a.get_data().data());
+            in.add_input("\n");
         }
 
         // last boundary to end them all
         //
-        f << "--" << boundary << "--" << std::endl;
+        //f << "--" << boundary << "--" << std::endl;
+        in.add_input("--");
+        in.add_input(boundary);
+        in.add_input("--\n");
     }
 
     // end the message
     //
-    f << std::endl
-      << "." << std::endl;
+    //f << std::endl
+    //  << "." << std::endl;
+    in.add_input("\n"
+                 ".\n");
 
     // make sure the ostream gets flushed or some data could be left in
     // a cache and never written to the pipe (unlikely since we do not
     // use the cache, but future C++ versions could have a problem.)
     //
-    f.flush();
+    //f.flush();
 
     // close pipe as soon as we are done writing to it
     // and return true if it all worked as expected
     //
-    return spipe.close_pipe() == 0;
+    //return spipe.close_pipe() == 0;
+
+    // TODO: this needs to be using ed::communicator so we need a callback
+    //       if we want to support a similar "interface" (i.e. if the caller
+    //       wants to know whether it worked)
+    //
+    return p.wait() == 0;
 }
 
 

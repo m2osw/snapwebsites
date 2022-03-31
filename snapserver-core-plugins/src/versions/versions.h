@@ -34,21 +34,9 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class versions_exception : public snap_exception
-{
-public:
-    explicit versions_exception(char const *        what_msg) : snap_exception("versions", what_msg) {}
-    explicit versions_exception(std::string const & what_msg) : snap_exception("versions", what_msg) {}
-    explicit versions_exception(QString const &     what_msg) : snap_exception("versions", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(versions_exception);
 
-class versions_exception_invalid_content_xml : public versions_exception
-{
-public:
-    explicit versions_exception_invalid_content_xml(char const *        what_msg) : versions_exception(what_msg) {}
-    explicit versions_exception_invalid_content_xml(std::string const & what_msg) : versions_exception(what_msg) {}
-    explicit versions_exception_invalid_content_xml(QString const &     what_msg) : versions_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(versions_exception, versions_exception_invalid_content_xml);
 
 
 
@@ -57,7 +45,7 @@ public:
 
 
 class versions
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                         versions();
@@ -69,10 +57,6 @@ public:
     static versions *   instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

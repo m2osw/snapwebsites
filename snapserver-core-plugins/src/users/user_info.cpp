@@ -18,54 +18,65 @@
 
 // self
 //
-#include "users.h"
+#include    "users.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../list/list.h"
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
-#include "../server_access/server_access.h"
+#include    "../output/output.h"
+#include    "../list/list.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
+#include    "../server_access/server_access.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qstring_stream.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qstring_stream.h>
+#include    <snapwebsites/snap_lock.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// Qt lib
+// C++
 //
-#include <QFile>
+#include    <iostream>
 
 
-// OpenSSL lib
+// Qt
 //
-#include <openssl/evp.h>
-#include <openssl/rand.h>
+#include    <QFile>
+
+
+// OpenSSL
+//
+#include    <openssl/evp.h>
+#include    <openssl/rand.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
-SNAP_PLUGIN_EXTENSION_START(users)
+
+namespace snap
+{
+namespace users
+{
+
+
+
 
 
 users::user_info_t::user_info_t()
@@ -87,7 +98,7 @@ users::user_info_t::user_info_t()
  *
  * \param[in] email_or_path  String representing either a user path or an email.
  */
-users::user_info_t::user_info_t( QString const & email_or_path )
+users::user_info_t::user_info_t(QString const & email_or_path)
 {
     // val == "user/<id>" ?
     //
@@ -1123,6 +1134,7 @@ libdbproxy::row::pointer_t users::user_info_t::get_user_row() const
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace users
+} // namespace snap
 // vim: ts=4 sw=4 et

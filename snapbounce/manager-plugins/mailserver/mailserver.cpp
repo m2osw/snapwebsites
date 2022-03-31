@@ -26,9 +26,9 @@
 #include <snapmanager/form.h>
 
 
-// snapwebsites lib
+// snaplogger lib
 //
-#include <snapwebsites/log.h>
+#include <snaplogger/message.h>
 
 
 // snapdev lib

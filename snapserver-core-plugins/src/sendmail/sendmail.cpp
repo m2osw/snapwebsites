@@ -21,70 +21,94 @@
 
 // self
 //
-#include "sendmail.h"
+#include    "sendmail.h"
 
 
 // plugins
 //
-#include "../locale/snap_locale.h"
-#include "../output/output.h"
-#include "../users/users.h"
+#include    "../locale/snap_locale.h"
+#include    "../output/output.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/flags.h>
-#include <snapwebsites/http_strings.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/mkgmtime.h>
-#include <snapwebsites/process.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/quoted_printable.h>
-#include <snapwebsites/snap_magic.h>
-#include <snapwebsites/snap_pipe.h>
+#include    <snapwebsites/flags.h>
+#include    <snapwebsites/http_strings.h>
+#include    <snapwebsites/mkgmtime.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/quoted_printable.h>
+#include    <snapwebsites/snap_magic.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_used.h>
 
 
 // libtld
 //
-#include <libtld/tld.h>
+#include    <libtld/tld.h>
 
 
 // libdbproxy
 //
-#include <libdbproxy/value.h>
+#include    <libdbproxy/value.h>
 
 
-// Qt Serialization library
+// Qt Serialization
 //
-#include <QtSerialization/QSerializationComposite.h>
-#include <QtSerialization/QSerializationFieldString.h>
-#include <QtSerialization/QSerializationFieldTag.h>
+#include    <QtSerialization/QSerializationComposite.h>
+#include    <QtSerialization/QSerializationFieldString.h>
+#include    <QtSerialization/QSerializationFieldTag.h>
 
 
 // C++
 //
-#include <fstream>
-#include <iostream>
+#include    <fstream>
+#include    <iostream>
 
 
 // Qt
 //
-#include <QFile>
+#include    <QFile>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(sendmail, 1, 0)
+namespace snap
+{
+namespace sendmail
+{
+
+
+CPPTHREAD_PLUGIN_START(sendmail, 1, 0)
+    , ::cppthread::plugin_description(
+            "Handle sending emails from your website environment."
+            " This version of sendmail requires a backend process to"
+            " actually process the emails and send them out.")
+    , ::cppthread::plugin_icon("/images/sendmail/sendmail-logo-64x64.png")
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("sessions")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed sendmail plugin name.
@@ -260,80 +284,6 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the sendmail plugin.
- *
- * This function is used to initialize the sendmail plugin object.
- */
-sendmail::sendmail()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the sendmail plugin.
- *
- * Ensure the sendmail object is clean before it is gone.
- */
-sendmail::~sendmail()
-{
-}
-
-
-/** \brief Get a pointer to the sendmail plugin.
- *
- * This function returns an instance pointer to the sendmail plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the sendmail plugin.
- */
-sendmail * sendmail::instance()
-{
-    return g_plugin_sendmail_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString sendmail::icon() const
-{
-    return "/images/sendmail/sendmail-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString sendmail::description() const
-{
-    return "Handle sending emails from your website environment."
-        " This version of sendmail requires a backend process to"
-        " actually process the emails and send them out.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString sendmail::dependencies() const
-{
-    return "|filter|layout|output|path|sessions|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -2211,10 +2161,8 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
     QString const body_mime_type(body_attachment.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_CONTENT_TYPE_HEADER)));
     if(body_mime_type.mid(0, 9) == "text/html")
     {
-        process p("html2text");
-        p.set_mode(process::mode_t::PROCESS_MODE_INOUT);
+        cppprocess::process p("html2text");
         p.set_command("html2text");
-        //p.add_argument("-help");
         p.add_argument("-nobs");
         p.add_argument("-utf8");
         p.add_argument("-style");
@@ -2222,7 +2170,6 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
         p.add_argument("-width");
         p.add_argument("70");
         std::string html_data;
-        QByteArray data(body_attachment.get_data());
         // TODO: support other encoding, err if not supported
         if(body_attachment.get_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_EMAIL_CONTENT_TRANSFER_ENCODING)) == "quoted-printable")
         {
@@ -2238,11 +2185,19 @@ void sendmail::sendemail(QString const & key, QString const & unique_key)
         {
             html_data = data.data();
         }
-        p.set_input(QString::fromUtf8(html_data.c_str()));
-        int const r(p.run());
+        cppprocess::io_data_pipe::pointer_t in(std::make_shared<cppprocess::io_data_pipe>());
+        in->add_input(std::string(body_attachment.get_data().data()));
+        p.set_input_io(in);
+        cppprocess::io_capture_pipe::pointer_t out(std::make_shared<cppprocess::io_capture_pipe>());
+        p.set_output_io(out);
+        int r(p.start());
         if(r == 0)
         {
-            plain_text = p.get_output();
+            r = p.wait();
+        }
+        if(r == 0)
+        {
+            plain_text = QString::fromUtf8(out->get_output().c_str());
         }
         else
         {
@@ -3598,4 +3553,7 @@ SNAP_PLUGIN_END()
 // Connection closed by foreign host.
 
 
+
+} // namespace sendmail
+} // namespace snap
 // vim: ts=4 sw=4 et

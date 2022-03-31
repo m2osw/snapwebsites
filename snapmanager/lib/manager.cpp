@@ -18,46 +18,58 @@
 
 // self
 //
-#include "snapmanager/manager.h"
+#include    "snapmanager/manager.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/glob_dir.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/mkdir_p.h>
-#include <snapwebsites/qstring_stream.h>
+#include    <snapwebsites/snap_exception.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/exception.h>
+#include    <snaplogger/message.h>
+#include    <snaplogger/options.h>
 
 
-// addr lib
+// advgetopt
 //
-#include <libaddr/addr_parser.h>
+#include    <advgetopt/exception.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QFile>
+#include    <snapdev/glob_to_list.h>
+#include    <snapdev/mkdir_p.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/qstring_extensions.h>
 
 
-// C++ lib
+// addr
 //
-#include <sstream>
+#include    <libaddr/addr_parser.h>
 
 
-// C lib
+// Qt
 //
-#include <signal.h>
+#include    <QFile>
+
+
+// C++
+//
+#include    <sstream>
+
+
+// C
+//
+#include    <signal.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -107,14 +119,14 @@ manager::pointer_t g_instance;
 
 advgetopt::option const g_manager_options[] =
 {
-    {
-        '\0',
-        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_REQUIRED,
-        "config",
-        nullptr,
-        "Path and filename of the snapmanager.cgi and snapmanagerdaemon configuration file.",
-        nullptr
-    },
+    //{
+    //    '\0',
+    //    advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_REQUIRED,
+    //    "config",
+    //    nullptr,
+    //    "Path and filename of the snapmanager.cgi and snapmanagerdaemon configuration file.",
+    //    nullptr
+    //},
     {
         '\0',
         advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_REQUIRED,
@@ -123,22 +135,14 @@ advgetopt::option const g_manager_options[] =
         "Path to this process data directory to save the cluster status.",
         nullptr
     },
-    {
-        '\0',
-        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_FLAG,
-        "debug",
-        nullptr,
-        "Start in debug mode.",
-        nullptr
-    },
-    {
-        '\0',
-        advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
-        "log-config",
-        "/etc/snapwebsites/logger/snapmanagerdaemon.properties",
-        "Full path of log configuration file.",
-        nullptr
-    },
+    //{
+    //    '\0',
+    //    advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR,
+    //    "log-config",
+    //    "/etc/snapwebsites/logger/snapmanagerdaemon.properties",
+    //    "Full path of log configuration file.",
+    //    nullptr
+    //},
     {
         '\0',
         advgetopt::GETOPT_FLAG_COMMAND_LINE | advgetopt::GETOPT_FLAG_ENVIRONMENT_VARIABLE | advgetopt::GETOPT_FLAG_CONFIGURATION_FILE | advgetopt::GETOPT_FLAG_REQUIRED,
@@ -211,7 +215,7 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap::snap_logic_exception("Invalid SNAP_NAME_MANAGER_...");
+        throw snap::snap_logic_error("Invalid SNAP_NAME_MANAGER_...");
 
     }
     snapdev::NOT_REACHED();
@@ -223,7 +227,9 @@ char const * get_name(name_t name)
 manager::manager(bool daemon)
     : snap_child(server_pointer_t())
     , f_daemon(daemon)
-    , f_config("snapmanager")
+    , f_signal_handler(ed::signal_handler::create_instance(
+                              ed::signal_handler::EXTENDED_SIGNAL_TERMINAL))
+    , f_config(advgetopt::conf_file::get_conf_file(advgetopt::conf_file_setup("/etc/snapwebsites/snapmanager.conf")))
 {
 }
 
@@ -246,69 +252,41 @@ manager::~manager()
  */
 void manager::init(int argc, char * argv[])
 {
-    // Stop on these signals, log them, then terminate.
-    //
-    signal( SIGSEGV, sighandler );
-    signal( SIGBUS,  sighandler );
-    signal( SIGFPE,  sighandler );
-    signal( SIGILL,  sighandler );
-    signal( SIGTERM, sighandler );
-    signal( SIGINT,  sighandler );
-    signal( SIGQUIT, sighandler );
-
-    // ignore console signals
-    //
-    signal( SIGTSTP,  SIG_IGN );
-    signal( SIGTTIN,  SIG_IGN );
-    signal( SIGTTOU,  SIG_IGN );
-
     g_instance = shared_from_this();
 
     // parse the arguments
     //
-    f_opt.reset(new advgetopt::getopt(g_manager_options_environment, argc, argv));
-
-    // read the configuration file
-    //
-    if(f_opt->is_defined( "config"))
+    f_opt = std::make_shared<advgetopt::getopt>(g_manager_options_environment);
+    snaplogger::add_logger_options(*f_opt);
+    f_opt->finish_parsing(argc, argv);
+    if(!snaplogger::process_logger_options(*f_opt))
     {
-        f_config.set_configuration_path(f_opt->get_string("config"));
+        // exit on any error
+        throw advgetopt::getopt_exit("logger options generated an error.", 0);
     }
 
     // get the server name using the library function
     //
     f_server_name = QString::fromUtf8(snap::server::get_server_name().c_str());
 
-    // --debug
-    //
-    f_debug = f_opt->is_defined("debug");
-
-    // setup the logger
+    // setup the logger -- the new logger does not yet have such a feature I think
     // the definition in the configuration file has priority...
     //
-    QString const log_config_filename(QString("log_config_%1").arg(f_daemon ? "daemon" : "cgi"));
-    if(f_config.has_parameter(log_config_filename))
-    {
-        // use .conf definition when available
-        f_log_conf = f_config[log_config_filename];
-    }
-    else
-    {
-        f_log_conf = QString::fromUtf8(f_opt->get_string("log-config").c_str());
-    }
-    snap::logging::configure_conffile( f_log_conf );
-
-    if(f_debug)
-    {
-        // Force the logger level to DEBUG
-        // (unless already lower)
-        //
-        snap::logging::reduce_log_output_level( snap::logging::log_level_t::LOG_LEVEL_DEBUG );
-    }
+    //QString const log_config_filename(QString("log_config_%1").arg(f_daemon ? "daemon" : "cgi"));
+    //if(f_config.has_parameter(log_config_filename))
+    //{
+    //    // use .conf definition when available
+    //    f_log_conf = f_config[log_config_filename];
+    //}
+    //else
+    //{
+    //    f_log_conf = QString::fromUtf8(f_opt->get_string("log-config").c_str());
+    //}
+    //snap::logging::configure_conffile( f_log_conf );
 
     // make sure there are no standalone parameters
     //
-    if( f_opt->is_defined( "--" ) )
+    if(f_opt->is_defined("--"))
     {
         std::cerr << "fatal error: unexpected parameter found on daemon command line." << std::endl;
         std::cerr << f_opt->usage(advgetopt::GETOPT_FLAG_SHOW_USAGE_ON_ERROR);
@@ -446,7 +424,10 @@ void manager::sighandler( int sig )
         snap::snap_exception_base::output_stack_trace();
     }
     //
-    SNAP_LOG_FATAL("signal caught: ")(signame);
+    SNAP_LOG_FATAL
+        << "signal caught: "
+        << signame
+        << SNAP_LOG_SEND;
 
     // is server available?
     if(g_instance)
@@ -507,7 +488,9 @@ void manager::load_plugins()
 
         if(!snap::plugins::load(f_plugins_path, this, std::static_pointer_cast<snap::plugins::plugin>(g_instance), all_plugins, QString()))
         {
-            SNAP_LOG_FATAL("loading of all the snapmanager plugins failed.");
+            SNAP_LOG_FATAL
+                << "loading of all the snapmanager plugins failed."
+                << SNAP_LOG_SEND;
             throw snapmanager_exception_cannot_load_plugins("the snapmanager library could not load its plugins");
         }
     }
@@ -527,13 +510,23 @@ std::vector<std::string> manager::read_filenames(std::string const & pattern) co
                 result.push_back(the_path.toUtf8().data());
             });
     }
-    catch( std::exception const & x)
+    catch(std::exception const & x)
     {
-        SNAP_LOG_ERROR("could not read \"")(pattern)("\" (what=")(x.what())(")!");
+        SNAP_LOG_ERROR
+            << "could not read \""
+            << pattern
+            << "\" (what="
+            << x.what()
+            << ")!"
+            << SNAP_LOG_SEND;
     }
     catch( ... )
     {
-        SNAP_LOG_ERROR("could not read \"")(pattern)("\"!");
+        SNAP_LOG_ERROR
+            << "could not read \""
+            << pattern
+            << "\"!"
+            << SNAP_LOG_SEND;
     }
 
     return result;
@@ -635,11 +628,13 @@ bundle::vector_t manager::load_bundles()
                         }));
                 if(it != result.end())
                 {
-                    SNAP_LOG_ERROR("bundle named \"")
-                                  (b->get_name())
-                                  ("\" found twice, the second time was in \"")
-                                  (filename)
-                                  ("\".");
+                    SNAP_LOG_ERROR
+                        << "bundle named \""
+                        << b->get_name()
+                        << "\" found twice, the second time was in \""
+                        << filename
+                        << "\"."
+                        << SNAP_LOG_SEND;
                     return bundle::vector_t();
                 }
                 else
@@ -653,9 +648,11 @@ bundle::vector_t manager::load_bundles()
             // got an error loading the XML file, possibly because a
             // tag is not closed correctly, etc.
             //
-            SNAP_LOG_ERROR("could not load bundle file \"")
-                          (filename)
-                          ("\". Check the file with xmllint and try again.");
+            SNAP_LOG_ERROR
+                << "could not load bundle file \""
+                << filename
+                << "\". Check the file with xmllint and try again."
+                << SNAP_LOG_SEND;
             return bundle::vector_t();
         }
     }
@@ -679,7 +676,13 @@ bundle::vector_t manager::load_bundles()
                 // this can happen if you do not have all the necessary
                 // 3rd party bundles...
                 //
-                SNAP_LOG_WARNING("bundle \"")(b->get_name())("\" references a missing 'prereq' bundle named \"")(p)("\".");
+                SNAP_LOG_WARNING
+                    << "bundle \""
+                    << b->get_name()
+                    << "\" references a missing 'prereq' bundle named \""
+                    << p
+                    << "\"."
+                    << SNAP_LOG_SEND;
             }
             else if(*it == b)
             {
@@ -689,7 +692,11 @@ bundle::vector_t manager::load_bundles()
                 //       which depends on C and C depends on A, we've got
                 //       a really bad error
                 //
-                SNAP_LOG_ERROR("you cannot be in a prereq of yourself (\"")(p)("\").");
+                SNAP_LOG_ERROR
+                    << "you cannot be in a prereq of yourself (\""
+                    << p
+                    << "\")."
+                    << SNAP_LOG_SEND;
                 return bundle::vector_t();
             }
             else
@@ -716,13 +723,23 @@ bundle::vector_t manager::load_bundles()
                 // this can happen if you do not have all the necessary
                 // 3rd party bundles...
                 //
-                SNAP_LOG_WARNING("bundle \"")(b->get_name())("\" references a missing 'conflicts' bundle named \"")(c)("\".");
+                SNAP_LOG_WARNING
+                    << "bundle \""
+                    << b->get_name()
+                    << "\" references a missing 'conflicts' bundle named \""
+                    << c
+                    << "\"."
+                    << SNAP_LOG_SEND;
             }
             else if(*it == b)
             {
                 // in conflict with yourselves?
                 //
-                SNAP_LOG_ERROR("you cannot be in conflict with yourself (\"")(c)("\").");
+                SNAP_LOG_ERROR
+                    << "you cannot be in conflict with yourself (\""
+                    << c
+                    << "\")."
+                    << SNAP_LOG_SEND;
                 return bundle::vector_t();
             }
             else
@@ -750,14 +767,22 @@ bundle::vector_t manager::load_bundles()
                 // this is not acceptable, prevent all bundles from being
                 // added so the programmer notices quickly
                 //
-                SNAP_LOG_ERROR("missing suggested bundle \"")(s)("\".");
+                SNAP_LOG_ERROR
+                    << "missing suggested bundle \""
+                    << s
+                    << "\"."
+                    << SNAP_LOG_SEND;
                 return bundle::vector_t();
             }
             if(*it == b)
             {
                 // suggesting yourself?
                 //
-                SNAP_LOG_ERROR("you cannot suggest \"")(s)("\" to itself.");
+                SNAP_LOG_ERROR
+                    << "you cannot suggest \""
+                    << s
+                    << "\" to itself."
+                    << SNAP_LOG_SEND;
                 return bundle::vector_t();
             }
             b->add_suggestions_bundle(*it);
@@ -804,7 +829,7 @@ bool manager::stop_now_prima() const
 }
 
 
-void manager::forward_message(snap::snap_communicator_message const & message)
+void manager::forward_message(ed::message const & message)
 {
     snapdev::NOT_USED(message);
     throw std::logic_error("forward_message() called on the wrong object (i.e. it is not implemented.)");

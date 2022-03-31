@@ -17,41 +17,68 @@
 
 // self
 //
-#include "timetracker.h"
+#include    "timetracker.h"
 
 
 // other plugins
 //
-#include "../bookkeeping/bookkeeping.h"
-#include "../layout/layout.h"
-#include "../list/list.h"
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
-#include "../output/output.h"
-#include "../permissions/permissions.h"
-#include "../users/users.h"
+#include    "../bookkeeping/bookkeeping.h"
+#include    "../layout/layout.h"
+#include    "../list/list.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
+#include    "../output/output.h"
+#include    "../permissions/permissions.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(timetracker, 1, 0)
+namespace snap
+{
+namespace timetracker
+{
+
+
+
+CPPTHREAD_PLUGIN_START(timetracker, 1, 0)
+    , ::cppthread::plugin_description(
+            "The time tracker plugin lets you or your employees enter their"
+            " hours in order to generate invoices to your clients."
+            " The tracker includes notes to describe the work done.")
+    , ::cppthread::plugin_icon("/images/timetracker/timetracker-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/timetracker")
+    , ::cppthread::plugin_dependency("bookkeeping")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("finance")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \class timetracker
@@ -104,88 +131,7 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the timetracker plugin.
- *
- * This function is used to initialize the timetracker plugin object.
- */
-timetracker::timetracker()
-    //: f_snap(nullptr) -- auto-init
-{
-}
 
-/** \brief Clean up the timetracker plugin.
- *
- * Ensure the timetracker object is clean before it is gone.
- */
-timetracker::~timetracker()
-{
-}
-
-/** \brief Get a pointer to the timetracker plugin.
- *
- * This function returns an instance pointer to the timetracker plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the timetracker plugin.
- */
-timetracker * timetracker::instance()
-{
-    return g_plugin_timetracker_factory.instance();
-}
-
-
-/** \brief Send users to the timetracker settings.
- *
- * This path represents the timetracker settings.
- */
-QString timetracker::settings_path() const
-{
-    return "/admin/settings/timetracker";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString timetracker::icon() const
-{
-    return "/images/timetracker/timetracker-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString timetracker::description() const
-{
-    return "The time tracker plugin lets you or your employees enter their"
-          " hours in order to generate invoices to your clients."
-          " The tracker includes notes to describe the work done.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString timetracker::dependencies() const
-{
-    return "|bookkeeping|editor|messages|output|path|permissions|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -1063,6 +1009,7 @@ void timetracker::init_day_editor_widgets(QString const & field_id, QDomElement 
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace timetracker
+} // namespace snap
 // vim: ts=4 sw=4 et

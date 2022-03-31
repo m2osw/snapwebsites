@@ -17,42 +17,64 @@
 
 // self
 //
-#include "images.h"
+#include    "images.h"
 
 
 // other plugins
 //
-#include "../listener/listener.h"
-#include "../messages/messages.h"
-#include "../users/users.h"
+#include    "../listener/listener.h"
+#include    "../messages/messages.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/snap_image.h>
+#include    <snapwebsites/dbutils.h>
+#include    <snapwebsites/snap_image.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
-#include <algorithm>
+#include    <snapdev/not_used.h>
+
+
+// C++
+//
+#include    <iostream>
+#include    <algorithm>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace images
+{
 
-SNAP_PLUGIN_START(images, 1, 0)
+
+CPPTHREAD_PLUGIN_START(images, 1, 0)
+    , ::cppthread::plugin_description(
+            "Transform images in one way or another. Also used to generate"
+            " previews of attachments such as the first page of a PDF file.")
+    , ::cppthread::plugin_icon("/images/images/images-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/images")
+    , ::cppthread::plugin_dependency("listener")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("versions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("images")
+    , ::cppthread::plugin_categorization_tag("gui")
+CPPTHREAD_PLUGIN_END()
 
 //
 // Magick Documentation
@@ -313,23 +335,6 @@ int const images::g_commands_size(sizeof(images::g_commands) / sizeof(images::g_
 
 
 
-/** \brief Initialize the images plugin.
- *
- * This function is used to initialize the images plugin object.
- */
-images::images()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the images plugin.
- *
- * Ensure the images object is clean before it is gone.
- */
-images::~images()
-{
-}
 
 
 /** \brief Initialize the images.
@@ -354,72 +359,6 @@ void images::bootstrap(snap_child * snap)
     SNAP_LISTEN(images,  "versions", versions::versions, versions_libraries,      boost::placeholders::_1);
     SNAP_LISTEN(images,  "filter",   filter::filter,     replace_token,           boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3);
     SNAP_LISTEN(images,  "filter",   filter::filter,     token_help,              boost::placeholders::_1);
-}
-
-
-/** \brief Get a pointer to the images plugin.
- *
- * This function returns an instance pointer to the images plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the images plugin.
- */
-images * images::instance()
-{
-    return g_plugin_images_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString images::settings_path() const
-{
-    return "/admin/images";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString images::icon() const
-{
-    return "/images/images/images-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString images::description() const
-{
-    return "Transform images in one way or another. Also used to generate"
-          " previews of attachments such as the first page of a PDF file.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString images::dependencies() const
-{
-    return "|listener|messages|path|versions|";
 }
 
 
@@ -1163,7 +1102,11 @@ int64_t images::transform_images()
                 gmtime_r(&seconds, &t);
                 strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &t);
                 name = QString("%1.%2 (%3) %4").arg(buf).arg(time % 1000000, 6, 10, QChar('0')).arg(time).arg(image_key);
-                SNAP_LOG_TRACE("images plugin working on column \"")(name)("\"");
+                SNAP_LOG_TRACE
+                    << "images plugin working on column \""
+                    << name
+                    << "\""
+                    << SNAP_LOG_SEND;
             }
 
             if(do_image_transformations(image_key))
@@ -1469,7 +1412,11 @@ Magick::Image images::apply_image_script(QString const & script, content::path_i
 
             // transform variables (if any) to actual paths
 // for now keep a log to see what is happening
-SNAP_LOG_INFO(" ++ [")(params.f_command)("]");
+SNAP_LOG_INFO
+<< " ++ ["
+<< params.f_command
+<< "]"
+<< SNAP_LOG_SEND;
             for(int k(0); k < params.f_params.size(); ++k)
             {
                 int start_pos(0);
@@ -1497,7 +1444,13 @@ SNAP_LOG_INFO(" ++ [")(params.f_command)("]");
                         }
                     }
                 }
-SNAP_LOG_INFO() << " -- param[" << k << "] = [" << params.f_params[k] << "]";
+SNAP_LOG_INFO
+<< " -- param["
+<< k
+<< "] = ["
+<< params.f_params[k]
+<< "]"
+<< SNAP_LOG_SEND;
             }
 
             // call the command
@@ -2507,7 +2460,9 @@ void images::on_replace_token( content::path_info_t & ipath, QDomDocument & xml,
     {
         if( !token.verify_args(1, 1) )
         {
-            SNAP_LOG_ERROR("images::on_replace_token(): images::inline_uri() expects exactly 1 argument!");
+            SNAP_LOG_ERROR
+                << "images::on_replace_token(): images::inline_uri() expects exactly 1 argument!"
+                << SNAP_LOG_SEND;
             return;
         }
 
@@ -2522,7 +2477,10 @@ void images::on_replace_token( content::path_info_t & ipath, QDomDocument & xml,
         content::path_info_t img_ipath;
         img_ipath.set_path(uri);
 
-SNAP_LOG_TRACE("image_path cpath=")(img_ipath.get_cpath());
+SNAP_LOG_TRACE
+<< "image_path cpath="
+<< img_ipath.get_cpath()
+<< SNAP_LOG_SEND;
         //
         if( img_ipath.has_branch() && img_ipath.has_revision() )
         {
@@ -2536,7 +2494,11 @@ SNAP_LOG_TRACE("image_path cpath=")(img_ipath.get_cpath());
         {
             token.f_replacement = uri;
         }
-SNAP_LOG_TRACE("token.f_replacement=[")(token.f_replacement)("]");
+SNAP_LOG_TRACE
+<< "token.f_replacement=["
+<< token.f_replacement
+<< "]"
+<< SNAP_LOG_SEND;
     }
 }
 
@@ -2548,6 +2510,7 @@ void images::on_token_help(filter::filter::token_help_t & help)
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace images
+} // namespace snap
 // vim: ts=4 sw=4 et

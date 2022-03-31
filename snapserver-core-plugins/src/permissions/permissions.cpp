@@ -1,5 +1,8 @@
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -19,46 +22,68 @@
 
 // self
 //
-#include "permissions.h"
+#include    "permissions.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../users/users.h"
-#include "../messages/messages.h"
+#include    "../output/output.h"
+#include    "../users/users.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/plugins.h>
-#include <snapwebsites/qstring_stream.h>
+#include    <snapwebsites/plugins.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// libdbproxy lib
+// snapdev
 //
-#include <libdbproxy/value.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/qstring_extensions.h>
 
 
-// OpenSSL lib
+// libdbproxy
 //
-#include <openssl/rand.h>
+#include    <libdbproxy/value.h>
+
+
+// OpenSSL
+//
+#include    <openssl/rand.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(permissions, 1, 0)
+namespace snap
+{
+namespace permissions
+{
+
+
+CPPTHREAD_PLUGIN_START(permissions, 1, 0)
+    , ::cppthread::plugin_description(
+            "The permissions plugin is one of the most important plugins of the"
+            " Snap! system. It allows us to determine whether the current user"
+            " has enough rights to act on a specific page.")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("user")
+CPPTHREAD_PLUGIN_END()
 
 
 
@@ -1414,71 +1439,6 @@ next_plugin:;
 }
 
 
-/** \brief Initialize the permissions plugin.
- *
- * This function is used to initialize the permissions plugin object.
- */
-permissions::permissions()
-    //: f_snap(NULL) -- auto-init
-    //, f_login_status("") -- auto-init
-    //, f_has_user_path(false) -- auto-init
-    //, f_user_path("") -- auto-init
-{
-}
-
-
-/** \brief Clean up the permissions plugin.
- *
- * Ensure the permissions object is clean before it is gone.
- */
-permissions::~permissions()
-{
-}
-
-
-/** \brief Get a pointer to the permissions plugin.
- *
- * This function returns an instance pointer to the permissions plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the permissions plugin.
- */
-permissions * permissions::instance()
-{
-    return g_plugin_permissions_factory.instance();
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString permissions::description() const
-{
-    return "The permissions plugin is one of the most important plugins of the"
-          " Snap! system. It allows us to determine whether the current user"
-          " has enough rights to act on a specific page.";
-}
-
-
-/** \brief Return our dependencies
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString permissions::dependencies() const
-{
-    return "|layout|messages|output|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -3496,7 +3456,6 @@ void permissions::repair_link_of_cloned_page(QString const & clone, snap_version
 
 
 
-
-SNAP_PLUGIN_END()
-
+} // namespace permissions
+} // namespace snap
 // vim: ts=4 sw=4 et

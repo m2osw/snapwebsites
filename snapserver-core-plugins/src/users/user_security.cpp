@@ -26,17 +26,21 @@
 
 // self
 //
-#include "users.h"
+#include    "users.h"
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace users
+{
 
-SNAP_PLUGIN_EXTENSION_START(users)
+
 
 
 /** \brief Initializes a user_security_t object.
@@ -221,6 +225,6 @@ users::users::status_t users::user_security_t::get_status() const
 
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace users
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -27,29 +27,36 @@
 
 // self
 //
-#include "filter.h"
+#include    "filter.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/xslt.h>
 
 
-// C++ lib
+// snaplogger
 //
-#include <iostream>
+#include    <snaplogger/message.h>
+
+
+// C++
+//
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace filter
+{
 
-SNAP_PLUGIN_EXTENSION_START(filter)
 
 
 filter::token_help_t::token_help_t()
@@ -81,6 +88,7 @@ QString filter::token_help_t::result()
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace filter
+} // namespace snap
 // vim: ts=4 sw=4 et

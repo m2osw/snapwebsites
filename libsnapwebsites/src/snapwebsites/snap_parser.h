@@ -16,50 +16,29 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_exception.h"
+// libexcept lib
+//
+#include    <libexcept/exception.h>
 
-#include <QVariant>
-#include <QVector>
-#include <QSharedPointer>
+
+// Qt lib
+//
+#include    <QVariant>
+#include    <QVector>
+#include    <QSharedPointer>
+
+
 
 namespace snap
 {
 namespace parser
 {
 
-class snap_parser_exception : public snap_exception
-{
-public:
-    snap_parser_exception(char const *        what_msg) : snap_exception("parser", what_msg) {}
-    snap_parser_exception(std::string const & what_msg) : snap_exception("parser", what_msg) {}
-    snap_parser_exception(QString const &     what_msg) : snap_exception("parser", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_parser_exception);
 
-class snap_parser_no_current_choices : public snap_parser_exception
-{
-public:
-    snap_parser_no_current_choices(char const *        what_msg) : snap_parser_exception(what_msg) {}
-    snap_parser_no_current_choices(std::string const & what_msg) : snap_parser_exception(what_msg) {}
-    snap_parser_no_current_choices(QString const &     what_msg) : snap_parser_exception(what_msg) {}
-};
-
-class snap_parser_state_has_children : public snap_parser_exception
-{
-public:
-    snap_parser_state_has_children(char const *        what_msg) : snap_parser_exception(what_msg) {}
-    snap_parser_state_has_children(std::string const & what_msg) : snap_parser_exception(what_msg) {}
-    snap_parser_state_has_children(QString const &     what_msg) : snap_parser_exception(what_msg) {}
-};
-
-class snap_parser_unexpected_token : public snap_parser_exception
-{
-public:
-    snap_parser_unexpected_token(char const *        what_msg) : snap_parser_exception(what_msg) {}
-    snap_parser_unexpected_token(std::string const & what_msg) : snap_parser_exception(what_msg) {}
-    snap_parser_unexpected_token(QString const &     what_msg) : snap_parser_exception(what_msg) {}
-};
-
-
+DECLARE_EXCEPTION(snap_parser_exception, snap_parser_no_current_choices);
+DECLARE_EXCEPTION(snap_parser_exception, snap_parser_state_has_children);
+DECLARE_EXCEPTION(snap_parser_exception, snap_parser_unexpected_token);
 
 
 

@@ -68,7 +68,7 @@ public:
 
 
 class robotstxt
-    : public plugins::plugin
+    : public cppthread::plugin
     , public path::path_execute
 {
 public:
@@ -85,9 +85,6 @@ public:
     static robotstxt *  instance();
 
     // plugins::plugin
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 
@@ -122,7 +119,7 @@ private:
     snap_child *        f_snap = nullptr;
     robots_txt_t        f_robots_txt = robots_txt_t();
 
-    QString             f_robots_path = QString(); // path that the cache represents
+    QString             f_robots_path = QString("#"); // path that the cache represents
     QString             f_robots_cache = QString();
 };
 

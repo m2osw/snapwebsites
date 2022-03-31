@@ -17,43 +17,63 @@
 
 // self
 //
-#include "server_access.h"
+#include    "server_access.h"
 
 
 // other plugins
 //
-#include "../messages/messages.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// libutf8 lib
+// snaplogger
 //
-#include <libutf8/libutf8.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// libutf8
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <libutf8/libutf8.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// C++
+//
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(server_access, 1, 0)
+namespace snap
+{
+namespace server_access
+{
+
+
+
+CPPTHREAD_PLUGIN_START(server_access, 1, 0)
+    , ::cppthread::plugin_description(
+            "Intercept default output and transform it for AJAX responses."
+            " Handle AJAX responses for functions that do it right.")
+    , ::cppthread::plugin_icon("/images/server-access/server-access-logo-64x64.png")
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+CPPTHREAD_PLUGIN_END()
 
 
 /* \brief Get a fixed server_access name.
@@ -83,85 +103,6 @@ char const * get_name(name_t name)
 }
 
 
-
-/** \brief Initialize the server_access plugin.
- *
- * This function is used to initialize the server_access plugin object.
- */
-server_access::server_access()
-    //: f_snap(nullptr) -- auto-init
-    : f_ajax("snap")
-    //, f_ajax_initialized(false) -- auto-init
-    //, f_success(false) -- auto-init
-    //, f_ajax_redirect("") -- auto-init
-    //, f_ajax_target("") -- auto-init
-{
-}
-
-
-/** \brief Clean up the server_access plugin.
- *
- * Ensure the server_access object is clean before it is gone.
- */
-server_access::~server_access()
-{
-}
-
-
-/** \brief Get a pointer to the server_access plugin.
- *
- * This function returns an instance pointer to the server_access plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the server_access plugin.
- */
-server_access * server_access::instance()
-{
-    return g_plugin_server_access_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString server_access::icon() const
-{
-    return "/images/server-access/server-access-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString server_access::description() const
-{
-    return "Intercept default output and transform it for AJAX responses."
-        " Handle AJAX responses for functions that do it right.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString server_access::dependencies() const
-{
-    return "|content|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -659,6 +600,7 @@ void server_access::ajax_append_data(QString const& name, QByteArray const& data
  */
 
 
-SNAP_PLUGIN_END()
 
+} // namespace server_access
+} // namespace snap
 // vim: ts=4 sw=4 et

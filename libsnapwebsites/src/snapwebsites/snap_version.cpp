@@ -24,6 +24,7 @@
 //
 #include "snapwebsites/minmax.h"
 #include "snapwebsites/qcompatibility.h"
+#include "snapwebsites/snap_exception.h"
 #include "snapwebsites/snap_string_list.h"
 
 

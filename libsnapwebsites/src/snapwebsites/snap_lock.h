@@ -16,34 +16,27 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_communicator.h"
+// eventdispatcher lib
+//
+#include    <eventdispatcher/communicator.h>
+
+#include    <eventdispatcher/tcp_bio_client.h>
+
+
+// libexcept lib
+//
+#include    <libexcept/exception.h>
+
+
 
 namespace snap
 {
 
-class snap_lock_exception : public snap_exception
-{
-public:
-    explicit snap_lock_exception(char const *        what_msg) : snap_exception("snap_lock", what_msg) {}
-    explicit snap_lock_exception(std::string const & what_msg) : snap_exception("snap_lock", what_msg) {}
-    explicit snap_lock_exception(QString const &     what_msg) : snap_exception("snap_lock", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_lock_exception);
 
-class snap_lock_failed_exception : public snap_lock_exception
-{
-public:
-    explicit snap_lock_failed_exception(char const *        what_msg) : snap_lock_exception(what_msg) {}
-    explicit snap_lock_failed_exception(std::string const & what_msg) : snap_lock_exception(what_msg) {}
-    explicit snap_lock_failed_exception(QString const &     what_msg) : snap_lock_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(snap_lock_exception, snap_lock_failed_exception);
+DECLARE_EXCEPTION(snap_lock_exception, snap_lock_not_initialized);
 
-class snap_lock_not_initialized : public snap_lock_exception
-{
-public:
-    explicit snap_lock_not_initialized(char const *        what_msg) : snap_lock_exception(what_msg) {}
-    explicit snap_lock_not_initialized(std::string const & what_msg) : snap_lock_exception(what_msg) {}
-    explicit snap_lock_not_initialized(QString const &     what_msg) : snap_lock_exception(what_msg) {}
-};
 
 
 
@@ -75,7 +68,7 @@ public:
     static constexpr timeout_t    SNAP_MAXIMUM_TIMEOUT = 7 * 24 * 60 * 60;   // no matter what limit all timeouts to this value (7 days)
 
                         snap_lock(
-                              QString const & object_name
+                              std::string const & object_name
                             , timeout_t lock_duration = -1
                             , timeout_t lock_obtention_timeout = -1
                             , timeout_t unlock_duration = SNAP_UNLOCK_USES_LOCK_TIMEOUT);
@@ -92,10 +85,10 @@ public:
     static void         initialize_snapcommunicator(
                               std::string const & addr
                             , int port
-                            , tcp_client_server::bio_client::mode_t mode = tcp_client_server::bio_client::mode_t::MODE_PLAIN);
+                            , ed::tcp_bio_client::mode_t mode = ed::tcp_bio_client::mode_t::MODE_PLAIN);
 
     bool                lock(
-                              QString const & object_name
+                              std::string const & object_name
                             , timeout_t lock_duration = -1
                             , timeout_t lock_obtention_timeout = -1
                             , timeout_t unlock_duration = SNAP_UNLOCK_USES_LOCK_TIMEOUT);

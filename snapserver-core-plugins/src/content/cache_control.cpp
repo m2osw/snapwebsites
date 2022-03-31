@@ -28,9 +28,9 @@
 #include "content.h"
 
 
-// snapwebsites lib
+// snaplogger lib
 //
-#include <snapwebsites/log.h>
+#include <snaplogger/message.h>
 
 
 // snapdev lib
@@ -44,7 +44,10 @@
 
 
 
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
 
 
 
@@ -62,7 +65,6 @@ void content::set_cache_control_page(path_info_t & ipath)
 
 
 
-
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

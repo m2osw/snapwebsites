@@ -38,36 +38,61 @@
 
 // self
 //
-#include "users_ui.h"
+#include    "users_ui.h"
 
 
 // other plugins
 //
-#include "../editor/editor.h"
-#include "../output/output.h"
-#include "../messages/messages.h"
-#include "../sendmail/sendmail.h"
-#include "../password/password.h"
+#include    "../editor/editor.h"
+#include    "../output/output.h"
+#include    "../messages/messages.h"
+#include    "../sendmail/sendmail.h"
+#include    "../password/password.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(users_ui, 1, 0)
+namespace snap
+{
+namespace users_ui
+{
+
+
+
+CPPTHREAD_PLUGIN_START(users_ui, 1, 0)
+    , ::cppthread::plugin_description(
+            "The users_ui plugin manages all the user interface (forms)"
+            " on a website.")
+    , ::cppthread::plugin_icon("/images/users/users-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/users")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("form")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("password")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("sendmail")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help/plugin/users")
+    , ::cppthread::plugin_categorization_tag("gui")
+    , ::cppthread::plugin_categorization_tag("user")
+CPPTHREAD_PLUGIN_END()
 
 
 namespace
@@ -102,111 +127,6 @@ BOOST_STATIC_ASSERT((COOKIE_NAME_SIZE % 3) == 0);
  */
 
 
-/** \brief Initialize the users_ui plugin.
- *
- * This function initializes the users_ui plugin.
- */
-users_ui::users_ui()
-    //: f_snap(nullptr) -- auto-init
-    //, f_user_changing_password_key("") -- auto-init
-{
-}
-
-/** \brief Destroy the users_ui plugin.
- *
- * This function cleans up the users_ui plugin.
- */
-users_ui::~users_ui()
-{
-}
-
-
-/** \brief Get a pointer to the users_ui plugin.
- *
- * This function returns an instance pointer to the users_ui plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the users_ui plugin.
- */
-users_ui * users_ui::instance()
-{
-    return g_plugin_users_ui_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString users_ui::settings_path() const
-{
-    return "/admin/settings/users";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString users_ui::icon() const
-{
-    return "/images/users/users-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString users_ui::description() const
-{
-    return "The users_ui plugin manages all the user interface (forms)"
-           " on a website.";
-}
-
-
-/** \brief Change the help URI to the base plugin.
- *
- * This help_uri() function returns the URI to the base plugin URI
- * since this plugin is just an extension and does not need to have
- * a separate help page.
- *
- * \return The URI to the locale plugin help page.
- */
-QString users_ui::help_uri() const
-{
-    // TBD: should we instead call the help_uri() of the users plugin?
-    //
-    //      users::users::instance()->help_uri();
-    //
-    //      I'm afraid that it would be a bad example because the pointer
-    //      may not be a good pointer anymore at this time (once we
-    //      properly remove plugins that we loaded just to get their info.)
-    //
-    return "https://snapwebsites.org/help/plugin/users";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString users_ui::dependencies() const
-{
-    return "|editor|form|layout|messages|password|output|path|sendmail|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -2653,6 +2573,7 @@ void users_ui::on_save_editor_fields(editor::save_info_t & save_info)
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace users_ui
+} // namespace snap
 // vim: ts=4 sw=4 et

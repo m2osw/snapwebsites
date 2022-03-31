@@ -35,7 +35,7 @@ const char * get_name(name_t name) __attribute__ ((const));
 
 
 class taxonomy
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                         taxonomy();
@@ -47,9 +47,6 @@ public:
     static taxonomy *   instance();
 
     // plugins::plugin implementation
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual int64_t     do_dynamic_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;

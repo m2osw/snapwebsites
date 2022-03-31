@@ -17,37 +17,56 @@
 
 // self
 //
-#include "epayment.h"
+#include    "epayment.h"
 
 
 // other plugins
 //
-#include "../editor/editor.h"
+#include    "../editor/editor.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(epayment, 1, 0)
+namespace snap
+{
+namespace epayment
+{
+
+
+CPPTHREAD_PLUGIN_START(epayment, 1, 0)
+    , ::cppthread::plugin_description(
+            "The e-Payment plugin offers one common way to process an"
+            " electronic or not so electronic payment online (i.e. you"
+            " may accept checks, for example...)")
+    , ::cppthread::plugin_icon("/images/epayment/epayment-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/epayment")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("payment")
+    , ::cppthread::plugin_categorization_tag("finance")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /* \brief Get a fixed epayment name.
@@ -1431,92 +1450,6 @@ bool recurring_t::operator != (recurring_t const & rhs) const
 
 
 
-/** \brief Initialize the epayment plugin.
- *
- * This function is used to initialize the epayment plugin object.
- */
-epayment::epayment()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the epayment plugin.
- *
- * Ensure the epayment object is clean before it is gone.
- */
-epayment::~epayment()
-{
-}
-
-
-/** \brief Get a pointer to the epayment plugin.
- *
- * This function returns an instance pointer to the epayment plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the epayment plugin.
- */
-epayment * epayment::instance()
-{
-    return g_plugin_epayment_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString epayment::settings_path() const
-{
-    return "/admin/settings/epayment";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString epayment::icon() const
-{
-    return "/images/epayment/epayment-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString epayment::description() const
-{
-    return "The e-Payment plugin offers one common way to process an"
-          " electronic or not so electronic payment online (i.e. you"
-          " may accept checks, for example...)";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString epayment::dependencies() const
-{
-    return "|content|editor|";
-}
-
-
 /** \brief Check whether updates are necessary.
  *
  * This function updates the database when a newer version is installed
@@ -1881,7 +1814,9 @@ bool epayment::repeat_payment_impl(content::path_info_t & first_invoice_ipath, c
     case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_COMPLETED:
     case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED:
         // it was marked as paid or failed in some way so ignore the request
-        SNAP_LOG_WARNING("repeat_payment() called with an invoice which is marked abandoned, canceled, paid, completed, or failed.");
+        SNAP_LOG_WARNING
+            << "repeat_payment() called with an invoice which is marked abandoned, canceled, paid, completed, or failed."
+            << SNAP_LOG_SEND;
         return false;
 
     default:
@@ -1897,7 +1832,9 @@ bool epayment::repeat_payment_impl(content::path_info_t & first_invoice_ipath, c
         break;
 
     default:
-        SNAP_LOG_WARNING("repeat_payment() called with a previous invoice not marked as paid or completed.");
+        SNAP_LOG_WARNING
+            << "repeat_payment() called with a previous invoice not marked as paid or completed."
+            << SNAP_LOG_SEND;
         return false;
 
     }
@@ -1909,7 +1846,9 @@ bool epayment::repeat_payment_impl(content::path_info_t & first_invoice_ipath, c
         break;
 
     default:
-        SNAP_LOG_WARNING("repeat_payment() called with a first invoice not marked as paid or completed.");
+        SNAP_LOG_WARNING
+            << "repeat_payment() called with a first invoice not marked as paid or completed."
+            << SNAP_LOG_SEND;
         return false;
 
     }
@@ -1922,6 +1861,8 @@ bool epayment::repeat_payment_impl(content::path_info_t & first_invoice_ipath, c
 // List of bitcoin libraries and software
 //   https://en.bitcoin.it/wiki/Software
 
-SNAP_PLUGIN_END()
 
+
+} // namespace epayment
+} // namespace snap
 // vim: ts=4 sw=4 et

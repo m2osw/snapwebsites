@@ -18,31 +18,35 @@
 
 // self
 //
-#include "list.h"
+#include    "list.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
+#include    <snapwebsites/log.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
+#include    <snapdev/not_reached.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_EXTENSION_START(list)
+namespace snap
+{
+namespace list
+{
+
 
 
 SNAP_TEST_PLUGIN_SUITE(list)
@@ -209,6 +213,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(list, test_add_page_twice)
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace list
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -17,35 +17,42 @@
 
 // self
 //
-#include "info.h"
+#include    "info.h"
 
 
 // other plugins
 //
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qcompatibility.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/qcompatibility.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_EXTENSION_START(info)
+namespace snap
+{
+namespace info
+{
 
 
 
@@ -231,7 +238,12 @@ void info::init_plugin_selection_editor_widgets(content::path_info_t & ipath, QS
                 x.evaluate_to_document(output);
 
                 QDomNodeList output_tags(output.elementsByTagName("output"));
-//SNAP_LOG_WARNING("got output with [")(output.toString())("] -> ")(output_tags.size());
+//SNAP_LOG_WARNING
+//    << "got output with ["
+//    << output.toString()
+//    << "] -> "
+//    << output_tags.size()
+//    << SNAP_LOG_SEND;
                 if(output_tags.size() == 1)
                 {
                     ++count;
@@ -252,7 +264,12 @@ void info::init_plugin_selection_editor_widgets(content::path_info_t & ipath, QS
             catch(plugins::plugin_exception const & e)
             {
                 // ignore invalid entries...
-                SNAP_LOG_TRACE("could not load plugin named \"")(name)("\". Error: ")(e.what());
+                SNAP_LOG_TRACE
+                    << "could not load plugin named \""
+                    << name
+                    << "\". Error: "
+                    << e.what()
+                    << SNAP_LOG_SEND;
             }
         }
     }
@@ -431,7 +448,11 @@ bool info::plugin_selection_on_path_execute(content::path_info_t & ipath)
         }
         else
         {
-            //SNAP_LOG_ERROR("invalid access to page \"")(cpath)("\". Plugin name missing?");
+            //SNAP_LOG_ERROR
+            //    << "invalid access to page \""
+            //    << cpath
+            //    << "\". Plugin name missing?"
+            //    << SNAP_LOG_SEND;
 
             messages::messages::instance()->set_error(
                 "Plugin Not Found",
@@ -526,5 +547,6 @@ bool info::uninstall_plugin(snap_string_list & plugin_list, QString const & plug
 
 
 
-SNAP_PLUGIN_END()
+} // namespace info
+} // namespace snap
 // vim: ts=4 sw=4 et

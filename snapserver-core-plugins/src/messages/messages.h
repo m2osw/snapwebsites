@@ -34,37 +34,15 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
+DECLARE_MAIN_EXCEPTION(messages_exception);
 
-class messages_exception : public snap_exception
-{
-public:
-    explicit messages_exception(char const *        what_msg) : snap_exception("messages", what_msg) {}
-    explicit messages_exception(std::string const & what_msg) : snap_exception("messages", what_msg) {}
-    explicit messages_exception(QString const &     what_msg) : snap_exception("messages", what_msg) {}
-};
-
-class messages_exception_invalid_field_name : public messages_exception
-{
-public:
-    explicit messages_exception_invalid_field_name(char const *        what_msg) : messages_exception(what_msg) {}
-    explicit messages_exception_invalid_field_name(std::string const & what_msg) : messages_exception(what_msg) {}
-    explicit messages_exception_invalid_field_name(QString const &     what_msg) : messages_exception(what_msg) {}
-};
-
-class messages_exception_already_defined : public messages_exception
-{
-public:
-    explicit messages_exception_already_defined(char const *        what_msg) : messages_exception(what_msg) {}
-    explicit messages_exception_already_defined(std::string const & what_msg) : messages_exception(what_msg) {}
-    explicit messages_exception_already_defined(QString const &     what_msg) : messages_exception(what_msg) {}
-};
-
-
+DECLARE_EXCEPTION(messages_exception, messages_exception_invalid_field_name);
+DECLARE_EXCEPTION(messages_exception, messages_exception_already_defined);
 
 
 
 class messages
-    : public plugins::plugin
+    : public cppthread::plugin
     , public QtSerialization::QSerializationObject
 {
 public:
@@ -128,10 +106,6 @@ public:
     static messages *   instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     description() const override;
-    virtual QString     icon() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

@@ -18,52 +18,77 @@
 
 // self
 //
-#include "epayment_stripe.h"
+#include    "epayment_stripe.h"
 
 
 // other plugins
 //
-#include "../editor/editor.h"
-#include "../messages/messages.h"
-#include "../output/output.h"
-#include "../permissions/permissions.h"
+#include    "../editor/editor.h"
+#include    "../messages/messages.h"
+#include    "../output/output.h"
+#include    "../permissions/permissions.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/tcp_client_server.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// as2js lib
+// snapdev
 //
-#include <as2js/json.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// as2js
 //
-#include <iostream>
+#include    <as2js/json.h>
 
 
-// OpenSSL lib
+// C++
 //
-#include <openssl/rand.h>
+#include    <iostream>
+
+
+// OpenSSL
+//
+#include    <openssl/rand.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(epayment_stripe, 1, 0)
+namespace snap
+{
+namespace epayment_stripe
+{
+
+
+CPPTHREAD_PLUGIN_START(epayment_stripe, 1, 0)
+    , ::cppthread::plugin_description(
+            "The stripe e-Payment Facility plugin offers payment from the"
+            " client's stripe account.")
+    , ::cppthread::plugin_icon("/images/epayment/stripe-logo-64x64.png")
+    , ::cppthread::plugin_settings(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH))
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("epayment_creditcard")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("payment")
+    , ::cppthread::plugin_categorization_tag("finance")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /* \brief Get a fixed epayment name.
@@ -183,96 +208,6 @@ char const * get_name(name_t name)
 
 
 
-
-
-/** \brief Initialize the epayment_stripe plugin.
- *
- * This function is used to initialize the epayment_stripe plugin object.
- *
- * Various documentations about Stripe available services:
- *
- * \li https://stripe.com/docs/api
- * \li https://stripe.com/docs/connect
- */
-epayment_stripe::epayment_stripe()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the epayment_stripe plugin.
- *
- * Ensure the epayment_stripe object is clean before it is gone.
- */
-epayment_stripe::~epayment_stripe()
-{
-}
-
-
-/** \brief Get a pointer to the epayment_stripe plugin.
- *
- * This function returns an instance pointer to the epayment_stripe plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the epayment_stripe plugin.
- */
-epayment_stripe * epayment_stripe::instance()
-{
-    return g_plugin_epayment_stripe_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString epayment_stripe::settings_path() const
-{
-    return get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH);
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString epayment_stripe::icon() const
-{
-    return "/images/epayment/stripe-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString epayment_stripe::description() const
-{
-    return "The stripe e-Payment Facility plugin offers payment from the"
-          " client's stripe account.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString epayment_stripe::dependencies() const
-{
-    return "|editor|epayment_creditcard|filter|messages|output|path|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -816,7 +751,9 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            as2js::JSON::JSONValue::pointer_t value(json->parse(in));
 //            if(!value)
 //            {
-//                SNAP_LOG_ERROR("JSON parser failed parsing 'execute' response");
+//                SNAP_LOG_ERROR
+//                  << "JSON parser failed parsing 'execute' response"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("JSON parser failed parsing 'execute' response");
 //            }
 //            as2js::JSON::JSONValue::object_t const& object(value->get_object());
@@ -825,13 +762,17 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            // verify that the payment identifier corresponds to what we expect
 //            if(object.find("id") == object.end())
 //            {
-//                SNAP_LOG_ERROR("'id' missing in 'execute' response");
+//                SNAP_LOG_ERROR
+//                  << "'id' missing in 'execute' response"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("'id' missing in 'execute' response");
 //            }
 //            QString const execute_id(QString::fromUtf8(object.at("id")->get_string().to_utf8().c_str()));
 //            if(execute_id != id)
 //            {
-//                SNAP_LOG_ERROR("'id' in 'execute' response is not the same as the invoice 'id'");
+//                SNAP_LOG_ERROR
+//                  << "'id' in 'execute' response is not the same as the invoice 'id'"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("'id' in 'execute' response is not the same as the invoice 'id'");
 //            }
 //
@@ -839,12 +780,16 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            // verify that: "intent" == "sale"
 //            if(object.find("intent") == object.end())
 //            {
-//                SNAP_LOG_ERROR("'intent' missing in 'execute' response");
+//                SNAP_LOG_ERROR
+//                  << "'intent' missing in 'execute' response"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("'intent' missing in 'execute' response");
 //            }
 //            if(object.at("intent")->get_string() != "sale")
 //            {
-//                SNAP_LOG_ERROR("'intent' in 'execute' response is not 'sale'");
+//                SNAP_LOG_ERROR
+//                  << "'intent' in 'execute' response is not 'sale'"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("'intent' in 'execute' response is not 'sale'");
 //            }
 //
@@ -852,7 +797,9 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            // now check the state of the sale
 //            if(object.find("state") == object.end())
 //            {
-//                SNAP_LOG_ERROR("'state' missing in 'execute' response");
+//                SNAP_LOG_ERROR
+//                  << "'state' missing in 'execute' response"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("'state' missing in 'execute' response");
 //            }
 //            if(object.at("state")->get_string() == "approved")
@@ -901,7 +848,13 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            libdbproxy::table::pointer_t epayment_stripe_table(get_epayment_stripe_table());
 //
 //            QString const token(main_uri.query_option("token"));
-//SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
+//SNAP_LOG_WARNING
+// << "*** token is ["
+// << token
+// << "] ["
+// << main_uri.full_domain()
+// << "]"
+// << SNAP_LOG_SEND;
 //            QString const date_invoice(epayment_stripe_table->getRow(main_uri.full_domain())->getCell("agreement/" + token)->getValue().stringValue());
 //            int const pos(date_invoice.indexOf(','));
 //            if(pos < 1)
@@ -1042,7 +995,10 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            execute_request.set_header("Authorization", QString("%1 %2").arg(token_type.c_str()).arg(access_token.c_str()).toUtf8().data());
 //            execute_request.set_header("Stripe-Request-Id", create_unique_request_id(invoice_ipath.get_key()));
 //            execute_request.set_data("{}");
-//            //SNAP_LOG_INFO("Request: ")(execute_request.get_request());
+//            //SNAP_LOG_INFO
+//            //     << "Request: "
+//            //     << execute_request.get_request()
+//            //     << SNAP_LOG_SEND;
 //            http_client_server::http_response::pointer_t response(http.send_request(execute_request));
 //
 //            secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_EXECUTED_AGREEMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
@@ -1088,7 +1044,9 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            as2js::JSON::JSONValue::pointer_t value(json->parse(in));
 //            if(!value)
 //            {
-//                SNAP_LOG_ERROR("JSON parser failed parsing 'execute' response");
+//                SNAP_LOG_ERROR
+//                  << "JSON parser failed parsing 'execute' response"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("JSON parser failed parsing 'execute' response");
 //            }
 //            as2js::JSON::JSONValue::object_t const& object(value->get_object());
@@ -1098,7 +1056,9 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            // we get a subscription ID in the result
 //            if(object.find("id") == object.end())
 //            {
-//                SNAP_LOG_ERROR("'id' missing in 'execute' response");
+//                SNAP_LOG_ERROR
+//                  << "'id' missing in 'execute' response"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("'id' missing in 'execute' response");
 //            }
 //            QString const execute_id(QString::fromUtf8(object.at("id")->get_string().to_utf8().c_str()));
@@ -1110,7 +1070,9 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //            // use to handle this recurring payment
 //            if(object.find("links") == object.end())
 //            {
-//                SNAP_LOG_ERROR("agreement links missing");
+//                SNAP_LOG_ERROR
+//                  << "agreement links missing"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("agreement links missing");
 //            }
 //            QString agreement_url;
@@ -1128,19 +1090,25 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //                        // the method has to be POST
 //                        if(link_object.find("method") == link_object.end())
 //                        {
-//                            SNAP_LOG_ERROR("Stripe link \"self\" has no \"method\" parameter");
+//                            SNAP_LOG_ERROR
+//                              << "Stripe link \"self\" has no \"method\" parameter"
+//                              << SNAP_LOG_SEND;
 //                            throw epayment_stripe_exception_io_error("Stripe link \"self\" has no \"method\" parameter");
 //                        }
 //                        // this is set to GET although we can use it with PATCH
 //                        // too...
 //                        if(link_object.at("method")->get_string() != "GET")
 //                        {
-//                            SNAP_LOG_ERROR("Stripe link \"self\" has a \"method\" other than \"GET\"");
+//                            SNAP_LOG_ERROR
+//                              << "Stripe link \"self\" has a \"method\" other than \"GET\""
+//                              << SNAP_LOG_SEND;
 //                            throw epayment_stripe_exception_io_error("Stripe link \"self\" has a \"method\" other than \"GET\"");
 //                        }
 //                        if(link_object.find("href") == link_object.end())
 //                        {
-//                            SNAP_LOG_ERROR("Stripe link \"self\" has no \"href\" parameter");
+//                            SNAP_LOG_ERROR
+//                              << "Stripe link \"self\" has no \"href\" parameter"
+//                              << SNAP_LOG_SEND;
 //                            throw epayment_stripe_exception_io_error("Stripe link \"self\" has no \"href\" parameter");
 //                        }
 //                        as2js::String const& plan_url_str(link_object.at("href")->get_string());
@@ -1152,7 +1120,9 @@ void epayment_stripe::on_generate_main_content(content::path_info_t & ipath, QDo
 //
 //            if(agreement_url.isEmpty())
 //            {
-//                SNAP_LOG_ERROR("agreement \"self\" link missing");
+//                SNAP_LOG_ERROR
+//                  << "agreement \"self\" link missing"
+//                  << SNAP_LOG_SEND;
 //                throw epayment_stripe_exception_io_error("agreement \"self\" link missing");
 //            }
 //
@@ -1520,7 +1490,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // we need a successful response
 //    if(response->get_response_code() != 200)
 //    {
-//        SNAP_LOG_ERROR("OAuth2 request failed");
+//        SNAP_LOG_ERROR
+//          << "OAuth2 request failed"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("OAuth2 request failed");
 //    }
 //
@@ -1528,7 +1500,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    if(!response->has_header("content-type")
 //    || response->get_header("content-type") != "application/json")
 //    {
-//        SNAP_LOG_ERROR("OAuth2 request did not return application/json data");
+//        SNAP_LOG_ERROR
+//          << "OAuth2 request did not return application/json data"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("OAuth2 request did not return application/json data");
 //    }
 //
@@ -1545,7 +1519,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    as2js::JSON::JSONValue::pointer_t value(json->parse(in));
 //    if(!value)
 //    {
-//        SNAP_LOG_ERROR("JSON parser failed parsing 'oauth2' response");
+//        SNAP_LOG_ERROR
+//          << "JSON parser failed parsing 'oauth2' response"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("JSON parser failed parsing 'oauth2' response");
 //    }
 //    as2js::JSON::JSONValue::object_t const& object(value->get_object());
@@ -1554,7 +1530,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // we should always have a token_type
 //    if(object.find("token_type") == object.end())
 //    {
-//        SNAP_LOG_ERROR("oauth token_type missing");
+//        SNAP_LOG_ERROR
+//          << "oauth token_type missing"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("oauth token_type missing");
 //    }
 //    // at this point we expect "Bearer", but we assume it could change
@@ -1566,7 +1544,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // we should always have an access token
 //    if(object.find("access_token") == object.end())
 //    {
-//        SNAP_LOG_ERROR("oauth access_token missing");
+//        SNAP_LOG_ERROR
+//          << "oauth access_token missing"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("oauth access_token missing");
 //    }
 //    access_token = object.at("access_token")->get_string().to_utf8();
@@ -1576,7 +1556,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // get the amount of time the token will last in seconds
 //    if(object.find("expires_in") == object.end())
 //    {
-//        SNAP_LOG_ERROR("oauth expires_in missing");
+//        SNAP_LOG_ERROR
+//          << "oauth expires_in missing"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("oauth expires_in missing");
 //    }
 //    // if defined, "expires_in" is an integer
@@ -1997,7 +1979,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    if(response->get_response_code() != 200
 //    && response->get_response_code() != 201)
 //    {
-//        SNAP_LOG_ERROR("creating a plan failed");
+//        SNAP_LOG_ERROR
+//          << "creating a plan failed"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("creating a plan failed");
 //    }
 //
@@ -2005,7 +1989,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    if(!response->has_header("content-type")
 //    || response->get_header("content-type") != "application/json")
 //    {
-//        SNAP_LOG_ERROR("plan creation request did not return application/json data");
+//        SNAP_LOG_ERROR
+//          << "plan creation request did not return application/json data"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("plan creation request did not return application/json data");
 //    }
 //
@@ -2015,7 +2001,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    as2js::JSON::JSONValue::pointer_t value(json->parse(in));
 //    if(!value)
 //    {
-//        SNAP_LOG_ERROR("JSON parser failed parsing plan creation response");
+//        SNAP_LOG_ERROR
+//          << "JSON parser failed parsing plan creation response"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("JSON parser failed parsing plan creation response");
 //    }
 //    as2js::JSON::JSONValue::object_t const& object(value->get_object());
@@ -2025,14 +2013,18 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // the state should be "created" at this point
 //    if(object.find("state") == object.end())
 //    {
-//        SNAP_LOG_ERROR("plan status missing");
+//        SNAP_LOG_ERROR
+//          << "plan status missing"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("plan status missing");
 //    }
 //    // TODO: the case should not change, but Stripe suggest you test
 //    //       statuses in a case insensitive manner
 //    if(object.at("state")->get_string() != "CREATED")
 //    {
-//        SNAP_LOG_ERROR("Stripe plan status is not \"CREATED\" as expected");
+//        SNAP_LOG_ERROR
+//          << "Stripe plan status is not \"CREATED\" as expected"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("Stripe plan status is not \"CREATED\" as expected");
 //    }
 //
@@ -2041,7 +2033,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // get the "id" of this new plan
 //    if(object.find("id") == object.end())
 //    {
-//        SNAP_LOG_ERROR("plan identifier missing");
+//        SNAP_LOG_ERROR
+//          << "plan identifier missing"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("plan identifier missing");
 //    }
 //    as2js::String const id_string(object.at("id")->get_string());
@@ -2059,7 +2053,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    // apply the following orders to the plan
 //    if(object.find("links") == object.end())
 //    {
-//        SNAP_LOG_ERROR("plan links missing");
+//        SNAP_LOG_ERROR
+//          << "plan links missing"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("plan links missing");
 //    }
 //    QString plan_url;
@@ -2077,19 +2073,25 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //                // the method has to be POST
 //                if(link_object.find("method") == link_object.end())
 //                {
-//                    SNAP_LOG_ERROR("Stripe link \"self\" has no \"method\" parameter");
+//                    SNAP_LOG_ERROR
+//                      << "Stripe link \"self\" has no \"method\" parameter"
+//                      << SNAP_LOG_SEND;
 //                    throw epayment_stripe_exception_io_error("Stripe link \"self\" has no \"method\" parameter");
 //                }
 //                // this is set to GET although we can use it with PATCH
 //                // too...
 //                if(link_object.at("method")->get_string() != "GET")
 //                {
-//                    SNAP_LOG_ERROR("Stripe link \"self\" has a \"method\" other than \"GET\"");
+//                    SNAP_LOG_ERROR
+//                      << "Stripe link \"self\" has a \"method\" other than \"GET\""
+//                      << SNAP_LOG_SEND;
 //                    throw epayment_stripe_exception_io_error("Stripe link \"self\" has a \"method\" other than \"GET\"");
 //                }
 //                if(link_object.find("href") == link_object.end())
 //                {
-//                    SNAP_LOG_ERROR("Stripe link \"self\" has no \"href\" parameter");
+//                    SNAP_LOG_ERROR
+//                      << "Stripe link \"self\" has no \"href\" parameter"
+//                      << SNAP_LOG_SEND;
 //                    throw epayment_stripe_exception_io_error("Stripe link \"self\" has no \"href\" parameter");
 //                }
 //                as2js::String const& plan_url_str(link_object.at("href")->get_string());
@@ -2101,7 +2103,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //
 //    if(plan_url.isEmpty())
 //    {
-//        SNAP_LOG_ERROR("plan \"self\" link missing");
+//        SNAP_LOG_ERROR
+//          << "plan \"self\" link missing"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("payment \"self\" link missing");
 //    }
 //
@@ -2179,7 +2183,9 @@ int8_t epayment_stripe::get_maximum_repeat_failures()
 //    && response->get_response_code() != 201
 //    && response->get_response_code() != 204)
 //    {
-//        SNAP_LOG_ERROR("marking plan as ACTIVE failed");
+//        SNAP_LOG_ERROR
+//          << "marking plan as ACTIVE failed"
+//          << SNAP_LOG_SEND;
 //        throw epayment_stripe_exception_io_error("marking plan as ACTIVE failed");
 //    }
 //
@@ -2425,7 +2431,9 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         if(!charge_json_value)
         {
             // TBD: should we not just delete our data and start over?
-            SNAP_LOG_FATAL("epayment_stripe::on_repeat_payment() JSON parser failed parsing 'create/update customer' response");
+            SNAP_LOG_FATAL
+                << "epayment_stripe::on_repeat_payment() JSON parser failed parsing 'create/update customer' response"
+                << SNAP_LOG_SEND;
             throw epayment_stripe_exception_io_error("JSON parser failed parsing 'create/update customer' response");
         }
         as2js::JSON::JSONValue::object_t root_object(charge_json_value->get_object());
@@ -2433,7 +2441,9 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         // ID
         if(root_object.find("id") == root_object.end())
         {
-            SNAP_LOG_FATAL("epayment_stripe::on_repeat_payment() 'id' missing in 'charge' response");
+            SNAP_LOG_FATAL
+                << "epayment_stripe::on_repeat_payment() 'id' missing in 'charge' response"
+                << SNAP_LOG_SEND;
             throw epayment_stripe_exception_io_error("'id' missing in 'charge' response");
         }
         QString const charge_id(QString::fromUtf8(root_object.at("id")->get_string().to_utf8().c_str()));
@@ -2469,7 +2479,9 @@ void epayment_stripe::on_repeat_payment(content::path_info_t & first_invoice_ipa
         epayment::epayment * epayment_plugin(epayment::epayment::instance());
         epayment_plugin->set_invoice_status(new_invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PAID);
 
-        SNAP_LOG_INFO("epayment_stripe::on_repeat_payment() subscription charge succeeded.");
+        SNAP_LOG_INFO
+            << "epayment_stripe::on_repeat_payment() subscription charge succeeded."
+            << SNAP_LOG_SEND;
     }
 }
 
@@ -2571,7 +2583,9 @@ void epayment_stripe::log_error(http_client_server::http_response::pointer_t res
     as2js::JSON::JSONValue::pointer_t error_json_value(error_json->parse(error_json_input));
     if(!error_json_value)
     {
-        SNAP_LOG_FATAL("JSON parser failed parsing error response");
+        SNAP_LOG_FATAL
+            << "JSON parser failed parsing error response"
+            << SNAP_LOG_SEND;
         throw epayment_stripe_exception_invalid_error("JSON parser failed parsing error response");
     }
     as2js::JSON::JSONValue::object_t const & root_object(error_json_value->get_object());
@@ -2579,7 +2593,9 @@ void epayment_stripe::log_error(http_client_server::http_response::pointer_t res
     // "error"
     if(root_object.find("error") == root_object.end())
     {
-        SNAP_LOG_ERROR("'error' missing in an error response");
+        SNAP_LOG_ERROR
+            << "'error' missing in an error response"
+            << SNAP_LOG_SEND;
         throw epayment_stripe_exception_invalid_error("'error' missing in error response");
     }
     as2js::JSON::JSONValue::object_t const & error_object(root_object.at("error")->get_object());
@@ -2587,7 +2603,9 @@ void epayment_stripe::log_error(http_client_server::http_response::pointer_t res
     // "message"
     if(error_object.find("message") == error_object.end())
     {
-        SNAP_LOG_ERROR("'message' missing in an error response");
+        SNAP_LOG_ERROR
+            << "'message' missing in an error response"
+            << SNAP_LOG_SEND;
         throw epayment_stripe_exception_invalid_error("'message' missing in error response");
     }
     QString const message(QString::fromUtf8(error_object.at("message")->get_string().to_utf8().c_str()));
@@ -2668,7 +2686,11 @@ bool epayment_stripe::process_creditcard(epayment_creditcard::epayment_creditcar
     int64_t const start_date(f_snap->get_start_date());
     QString const site_key(f_snap->get_site_key_with_slash());
 
-    SNAP_LOG_INFO("epayment_stripe::process_creditcard() called")(debug ? " (debug turned on)" : "")(".");
+    SNAP_LOG_INFO
+        << "epayment_stripe::process_creditcard() called"
+        << (debug ? " (debug turned on)" : "")
+        << "."
+        << SNAP_LOG_SEND;
 
 #ifdef _DEBUG
 // For debug purposes, you may check all the values with the following
@@ -2855,7 +2877,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                     if(!retrieve_json_value)
                     {
                         // TBD: should we not just delete our data and start over?
-                        SNAP_LOG_FATAL("JSON parser failed parsing 'execute' response");
+                        SNAP_LOG_FATAL
+                            << "JSON parser failed parsing 'execute' response"
+                            << SNAP_LOG_SEND;
                         throw epayment_stripe_exception_io_error("JSON parser failed parsing 'execute' response");
                     }
                     as2js::JSON::JSONValue::object_t const & id_object(retrieve_json_value->get_object());
@@ -2865,14 +2889,18 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                     if(id_object.find("id") == id_object.end())
                     {
                         // TBD: should we not just delete our data and start over?
-                        SNAP_LOG_FATAL("'id' missing in 'retrieve customer' response");
+                        SNAP_LOG_FATAL
+                            << "'id' missing in 'retrieve customer' response"
+                            << SNAP_LOG_SEND;
                         throw epayment_stripe_exception_io_error("'id' missing in 'execute' response");
                     }
                     QString const reply_id(QString::fromUtf8(id_object.at("id")->get_string().to_utf8().c_str()));
                     if(reply_id != customer_stripe_key)
                     {
                         // TBD: should we not just delete our data and start over?
-                        SNAP_LOG_FATAL("'id' in 'retrieve customer' response is not the same as the input 'id'");
+                        SNAP_LOG_FATAL
+                            << "'id' in 'retrieve customer' response is not the same as the input 'id'"
+                            << SNAP_LOG_SEND;
                         throw epayment_stripe_exception_io_error("'id' in 'retrieve customer' response is not the same as the invoice 'id'");
                     }
 
@@ -2885,14 +2913,20 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                     //
                     update = true;
 
-                    SNAP_LOG_INFO("epayment_stripe::process_creditcard() doing an update.");
+                    SNAP_LOG_INFO
+                        << "epayment_stripe::process_creditcard() doing an update."
+                        << SNAP_LOG_SEND;
                 }
                 else if(retrieve_response->get_response_code() == 404)
                 {
                     // somehow Stripe says that customer does not exist
                     // so we will re-create it below
                     //
-                    SNAP_LOG_WARNING("epayment_stripe::process_creditcard() existing user \"")(user_email)("\" not present at Stripe, create now.");
+                    SNAP_LOG_WARNING
+                        << "epayment_stripe::process_creditcard() existing user \""
+                        << user_email
+                        << "\" not present at Stripe, create now."
+                        << SNAP_LOG_SEND;
                 }
                 else
                 {
@@ -3035,7 +3069,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             if(!create_json_value)
             {
                 // TBD: should we not just delete our data and start over?
-                SNAP_LOG_FATAL("JSON parser failed parsing 'create/update customer' response");
+                SNAP_LOG_FATAL
+                    << "JSON parser failed parsing 'create/update customer' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_stripe_exception_io_error("JSON parser failed parsing 'create/update customer' response");
             }
             as2js::JSON::JSONValue::object_t root_object(create_json_value->get_object());
@@ -3043,7 +3079,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             // ID
             if(root_object.find("id") == root_object.end())
             {
-                SNAP_LOG_FATAL("'id' missing in 'create/update customer' response");
+                SNAP_LOG_FATAL
+                    << "'id' missing in 'create/update customer' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_stripe_exception_io_error("'id' missing in 'create/update customer' response");
             }
             QString const customer_id(QString::fromUtf8(root_object.at("id")->get_string().to_utf8().c_str()));
@@ -3054,7 +3092,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
                 if(customer_id != customer_stripe_key)
                 {
                     // TBD: should we not just delete our data and start over?
-                    SNAP_LOG_FATAL("'id' in 'create/update customer' response is not the same as the input 'id'");
+                    SNAP_LOG_FATAL
+                        << "'id' in 'create/update customer' response is not the same as the input 'id'"
+                        << SNAP_LOG_SEND;
                     throw epayment_stripe_exception_io_error("'id' in 'create/update customer' response is not the same as the invoice 'id'");
                 }
             }
@@ -3101,11 +3141,15 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
 
             if(update)
             {
-                SNAP_LOG_INFO("epayment_stripe::process_creditcard() update successful.");
+                SNAP_LOG_INFO
+                    << "epayment_stripe::process_creditcard() update successful."
+                    << SNAP_LOG_SEND;
             }
             else
             {
-                SNAP_LOG_INFO("epayment_stripe::process_creditcard() new user created successfully.");
+                SNAP_LOG_INFO
+                    << "epayment_stripe::process_creditcard() new user created successfully."
+                    << SNAP_LOG_SEND;
             }
         }
 
@@ -3237,7 +3281,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             if(!charge_json_value)
             {
                 // TBD: should we not just delete our data and start over?
-                SNAP_LOG_FATAL("JSON parser failed parsing 'create/update customer' response");
+                SNAP_LOG_FATAL
+                    << "JSON parser failed parsing 'create/update customer' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_stripe_exception_io_error("JSON parser failed parsing 'create/update customer' response");
             }
             as2js::JSON::JSONValue::object_t root_object(charge_json_value->get_object());
@@ -3245,7 +3291,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             // ID
             if(root_object.find("id") == root_object.end())
             {
-                SNAP_LOG_FATAL("'id' missing in 'charge' response");
+                SNAP_LOG_FATAL
+                    << "'id' missing in 'charge' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_stripe_exception_io_error("'id' missing in 'charge' response");
             }
             QString const charge_id(QString::fromUtf8(root_object.at("id")->get_string().to_utf8().c_str()));
@@ -3278,7 +3326,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
             secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_INFO))
                       ->setValue(QString::fromUtf8(charge_json_value->to_string().to_utf8().c_str()));
 
-            SNAP_LOG_INFO("epayment_stripe::process_creditcard() subscription charge succeeded.");
+            SNAP_LOG_INFO
+                << "epayment_stripe::process_creditcard() subscription charge succeeded."
+                << SNAP_LOG_SEND;
 
             // this was a subscription, let epayment_creditcard know
             //
@@ -3445,7 +3495,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         if(!charge_json_value)
         {
             // TBD: should we not just delete our data and start over?
-            SNAP_LOG_FATAL("JSON parser failed parsing 'create/update customer' response");
+            SNAP_LOG_FATAL
+                << "JSON parser failed parsing 'create/update customer' response"
+                << SNAP_LOG_SEND;
             throw epayment_stripe_exception_io_error("JSON parser failed parsing 'create/update customer' response");
         }
         as2js::JSON::JSONValue::object_t root_object(charge_json_value->get_object());
@@ -3453,7 +3505,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         // ID
         if(root_object.find("id") == root_object.end())
         {
-            SNAP_LOG_FATAL("'id' missing in 'charge' response");
+            SNAP_LOG_FATAL
+                << "'id' missing in 'charge' response"
+                << SNAP_LOG_SEND;
             throw epayment_stripe_exception_io_error("'id' missing in 'charge' response");
         }
         QString const charge_id(QString::fromUtf8(root_object.at("id")->get_string().to_utf8().c_str()));
@@ -3484,7 +3538,9 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
         secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_STRIPE_CHARGE_INFO))
                   ->setValue(QString::fromUtf8(charge_json_value->to_string().to_utf8().c_str()));
 
-        SNAP_LOG_INFO("epayment_stripe::process_creditcard() simple charge succeeded.");
+        SNAP_LOG_INFO
+            << "epayment_stripe::process_creditcard() simple charge succeeded."
+            << SNAP_LOG_SEND;
     }
 
     safe_invoice_status.success();
@@ -3578,6 +3634,7 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
  */
 
 
-SNAP_PLUGIN_END()
 
+} // namespace epayment_stripe
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -16,10 +16,9 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// snapwebsites lib
+// snapwebsites
 //
 #include <snapwebsites/snapwebsites.h>
-#include <snapwebsites/plugins.h>
 
 
 namespace snap
@@ -28,29 +27,12 @@ namespace test_plugin_suite
 {
 
 
-class test_plugin_suite_exception : public snap_exception
-{
-public:
-    explicit test_plugin_suite_exception(char const *        what_msg) : snap_exception("Test Plugin Suite", what_msg) {}
-    explicit test_plugin_suite_exception(std::string const & what_msg) : snap_exception("Test Plugin Suite", what_msg) {}
-    explicit test_plugin_suite_exception(QString const &     what_msg) : snap_exception("Test Plugin Suite", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(test_plugin_suite_exception);
 
-class test_plugin_suite_already_exists : public test_plugin_suite_exception
-{
-public:
-    explicit test_plugin_suite_already_exists(char const *        what_msg) : test_plugin_suite_exception(what_msg) {}
-    explicit test_plugin_suite_already_exists(std::string const & what_msg) : test_plugin_suite_exception(what_msg) {}
-    explicit test_plugin_suite_already_exists(QString const &     what_msg) : test_plugin_suite_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(test_plugin_suite_exception, test_plugin_suite_already_exists);
+DECLARE_EXCEPTION(test_plugin_suite_exception, test_plugin_suite_assert_failed);
 
-class test_plugin_suite_assert_failed : public test_plugin_suite_exception
-{
-public:
-    explicit test_plugin_suite_assert_failed(char const *        what_msg) : test_plugin_suite_exception(what_msg) {}
-    explicit test_plugin_suite_assert_failed(std::string const & what_msg) : test_plugin_suite_exception(what_msg) {}
-    explicit test_plugin_suite_assert_failed(QString const &     what_msg) : test_plugin_suite_exception(what_msg) {}
-};
+
 
 
 
@@ -245,7 +227,7 @@ private:
 
 
 class test_plugin_suite
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                                 test_plugin_suite();
@@ -256,13 +238,9 @@ public:
 
     static test_plugin_suite *  instance();
 
-    // plugins::plugin implementation
-    virtual QString             settings_path() const override;
-    virtual QString             icon() const override;
-    virtual QString             description() const override;
-    virtual QString             dependencies() const override;
+    // cppthread::plugin implementation
+    virtual void                bootstrap(void * snap) override;
     virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
 
     test_list_t const &         get_test_list() const;
 

@@ -16,12 +16,20 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapmanager/manager.h"
-#include "snapmanager/plugin_base.h"
+// self
+//
+#include    "snapmanager/manager.h"
+#include    "snapmanager/plugin_base.h"
 
-#include <snapwebsites/plugins.h>
 
-#include <QDomDocument>
+// cppthread
+//
+#include    <cppthread/plugins.h>
+
+
+// Qt
+//
+#include    <QDomDocument>
 
 namespace snap
 {
@@ -36,22 +44,10 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
+DECLARE_MAIN_EXCEPTION(snapserver_manager_exception);
 
-class snapserver_manager_exception : public snap_exception
-{
-public:
-    explicit snapserver_manager_exception(char const *        what_msg) : snap_exception("snapserver_manager", what_msg) {}
-    explicit snapserver_manager_exception(std::string const & what_msg) : snap_exception("snapserver_manager", what_msg) {}
-    explicit snapserver_manager_exception(QString const &     what_msg) : snap_exception("snapserver_manager", what_msg) {}
-};
+DECLARE_EXCEPTION(snapserver_manager_exception, snapserver_manager_exception_invalid_argument);
 
-class snapserver_manager_exception_invalid_argument : public snapserver_manager_exception
-{
-public:
-    explicit snapserver_manager_exception_invalid_argument(char const *        what_msg) : snapserver_manager_exception(what_msg) {}
-    explicit snapserver_manager_exception_invalid_argument(std::string const & what_msg) : snapserver_manager_exception(what_msg) {}
-    explicit snapserver_manager_exception_invalid_argument(QString const &     what_msg) : snapserver_manager_exception(what_msg) {}
-};
 
 
 

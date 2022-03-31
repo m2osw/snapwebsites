@@ -23,9 +23,13 @@
 
 // snapwebsites lib
 //
-#include "snapwebsites/log.h"
 #include "snapwebsites/tcp_client_server.h"
 #include "snapwebsites/snapwebsites.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // C++ lib
@@ -315,7 +319,9 @@ bool snap_initialize_website::start_process()
 {
     if(!f_process_thread->start())
     {
-        SNAP_LOG_FATAL("cannot start thread for website initialization!");
+        SNAP_LOG_FATAL
+            << "cannot start thread for website initialization!"
+            << SNAP_LOG_SEND;
         return false;
     }
 

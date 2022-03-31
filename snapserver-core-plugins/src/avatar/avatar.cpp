@@ -37,8 +37,23 @@
 
 
 
+namespace snap
+{
+namespace avatar
+{
 
-SNAP_PLUGIN_START(avatar, 1, 0)
+
+
+CPPTHREAD_PLUGIN_START(avatar, 1, 0)
+    , ::cppthread::plugin_description(
+            "Transform user emails in comments, pages, profiles"
+            " to Avatar images.")
+    , ::cppthread::plugin_icon("/images/avatar/avatar-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/avatar")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("user")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed avatar name.
@@ -59,95 +74,10 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("invalid SNAP_NAME_AVATAR_...");
+        throw snap_logic_error("invalid SNAP_NAME_AVATAR_...");
 
     }
     snapdev::NOT_REACHED();
-}
-
-
-/** \brief Initialize the avatar plugin.
- *
- * This function is used to initialize the avatar plugin object.
- */
-avatar::avatar()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the avatar plugin.
- *
- * Ensure the avatar object is clean before it is gone.
- */
-avatar::~avatar()
-{
-}
-
-
-/** \brief Get a pointer to the avatar plugin.
- *
- * This function returns an instance pointer to the avatar plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the avatar plugin.
- */
-avatar * avatar::instance()
-{
-    return g_plugin_avatar_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString avatar::settings_path() const
-{
-    return "/admin/settings/avatar";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString avatar::icon() const
-{
-    return "/images/avatar/avatar-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString avatar::description() const
-{
-    return "Transform user emails in comments, pages, profiles"
-          " to Avatar images.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString avatar::dependencies() const
-{
-    return "|filter|";
 }
 
 
@@ -258,6 +188,7 @@ void avatar::on_token_help(filter::filter::token_help_t & help)
 //   http://en.gravatar.com/site/implement/
 //
 
-SNAP_PLUGIN_END()
 
+} // namespace avatar
+} // namespace snap
 // vim: ts=4 sw=4 et

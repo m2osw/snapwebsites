@@ -99,21 +99,10 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class epayment_paypal_exception : public snap_exception
-{
-public:
-    explicit epayment_paypal_exception(char const *        what_msg) : snap_exception("epayment_paypal", what_msg) {}
-    explicit epayment_paypal_exception(std::string const & what_msg) : snap_exception("epayment_paypal", what_msg) {}
-    explicit epayment_paypal_exception(QString const &     what_msg) : snap_exception("epayment_paypal", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(epayment_paypal_exception);
 
-class epayment_paypal_exception_io_error : public snap_exception
-{
-public:
-    explicit epayment_paypal_exception_io_error(char const *        what_msg) : snap_exception("epayment_paypal", what_msg) {}
-    explicit epayment_paypal_exception_io_error(std::string const & what_msg) : snap_exception("epayment_paypal", what_msg) {}
-    explicit epayment_paypal_exception_io_error(QString const &     what_msg) : snap_exception("epayment_paypal", what_msg) {}
-};
+DECLARE_EXCEPTION(epayment_paypal_exception, epayment_paypal_exception_io_error);
+
 
 
 
@@ -123,7 +112,7 @@ public:
 
 
 class epayment_paypal
-    : public plugins::plugin
+    : public cppthread::plugin
     , public path::path_execute
     , public layout::layout_content
 {
@@ -137,10 +126,6 @@ public:
     static epayment_paypal *    instance();
 
     // plugins::plugin implementation
-    virtual QString             settings_path() const override;
-    virtual QString             icon() const override;
-    virtual QString             description() const override;
-    virtual QString             dependencies() const override;
     virtual int64_t             do_update(int64_t last_updated) override;
     virtual void                bootstrap(snap_child * snap) override;
 

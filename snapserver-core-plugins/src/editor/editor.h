@@ -29,61 +29,15 @@ namespace snap
 namespace editor
 {
 
-class editor_exception : public snap_exception
-{
-public:
-    explicit editor_exception(char const *        what_msg) : snap_exception("editor", what_msg) {}
-    explicit editor_exception(std::string const & what_msg) : snap_exception("editor", what_msg) {}
-    explicit editor_exception(QString const &     what_msg) : snap_exception("editor", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(editor_exception);
 
-class editor_exception_invalid_argument : public editor_exception
-{
-public:
-    explicit editor_exception_invalid_argument(char const *        what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_invalid_argument(std::string const & what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_invalid_argument(QString const &     what_msg) : editor_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(editor_exception, editor_exception_invalid_argument);
+DECLARE_EXCEPTION(editor_exception, editor_exception_invalid_path);
+DECLARE_EXCEPTION(editor_exception, editor_exception_invalid_editor_form_xml);
+DECLARE_EXCEPTION(editor_exception, editor_exception_too_many_tags);
+DECLARE_EXCEPTION(editor_exception, editor_exception_invalid_xslt_data);
+DECLARE_EXCEPTION(editor_exception, editor_exception_locked);
 
-class editor_exception_invalid_path : public editor_exception
-{
-public:
-    explicit editor_exception_invalid_path(char const *        what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_invalid_path(std::string const & what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_invalid_path(QString const &     what_msg) : editor_exception(what_msg) {}
-};
-
-class editor_exception_invalid_editor_form_xml : public editor_exception
-{
-public:
-    explicit editor_exception_invalid_editor_form_xml(char const *        what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_invalid_editor_form_xml(std::string const & what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_invalid_editor_form_xml(QString const &     what_msg) : editor_exception(what_msg) {}
-};
-
-class editor_exception_too_many_tags : public editor_exception
-{
-public:
-    explicit editor_exception_too_many_tags(char const *        what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_too_many_tags(std::string const & what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_too_many_tags(QString const &     what_msg) : editor_exception(what_msg) {}
-};
-
-class editor_exception_invalid_xslt_data : public editor_exception
-{
-public:
-    explicit editor_exception_invalid_xslt_data(char const *        what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_invalid_xslt_data(std::string const & what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_invalid_xslt_data(QString const &     what_msg) : editor_exception(what_msg) {}
-};
-
-class editor_exception_locked : public editor_exception
-{
-public:
-    explicit editor_exception_locked(char const *        what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_locked(std::string const & what_msg) : editor_exception(what_msg) {}
-    explicit editor_exception_locked(QString const &     what_msg) : editor_exception(what_msg) {}
-};
 
 
 
@@ -211,7 +165,7 @@ private:
 
 
 class editor
-    : public plugins::plugin
+    : public cppthread::plugin
     , public links::links_cloned
     , public path::path_execute
     , public layout::layout_content
@@ -339,10 +293,6 @@ public:
     static editor *     instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

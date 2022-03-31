@@ -29,28 +29,36 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/log.h>
+#include    <snapwebsites/dbutils.h>
 
 
-// C++ lib
+// snaplogger
 //
-#include <iostream>
+#include    <snaplogger/message.h>
+
+
+// C++
+//
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
+
 
 
 /** \brief Destroy a page.
@@ -438,6 +446,6 @@ void content::destroy_revision_done(QString const & revision_key)
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -28,25 +28,32 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomhelpers.h>
+
+
+// snaplogger
+//
+#include    <snaplogger/message.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 
 
 
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
 
 
 
@@ -165,11 +172,6 @@ SNAP_PLUGIN_EXTENSION_START(content)
  * object.
  */
 field_search::cmd_info_t::cmd_info_t()
-    //: f_cmd(command_t::COMMAND_UNKNOWN) -- auto-init
-    //, f_value() -- auto-init
-    //, f_element() -- auto-init
-    //, f_result(nullptr) -- auto-init
-    //, f_path_info() -- auto-init
 {
 }
 
@@ -1736,6 +1738,6 @@ field_search create_field_search(char const *filename, char const *func, int lin
 
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

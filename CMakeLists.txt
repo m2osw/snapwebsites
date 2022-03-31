@@ -79,6 +79,7 @@ find_package( SnapCMakeModules REQUIRED       )
 find_package( SnapLogger       REQUIRED       )
 find_package( ZLIB             REQUIRED       )
 find_package( ZipIos           REQUIRED 2.1   )
+
 find_package( SnapDoxygen                     )
 
 SnapGetVersion( SNAPWEBSITES ${CMAKE_CURRENT_SOURCE_DIR} )

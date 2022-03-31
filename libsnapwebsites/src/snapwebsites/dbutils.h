@@ -17,15 +17,33 @@
 //
 #pragma once
 
-#include <libdbproxy/cell.h>
-#include <libdbproxy/row.h>
-#include <libdbproxy/table.h>
+// libdbproxy
+//
+#include    <libdbproxy/cell.h>
+#include    <libdbproxy/row.h>
+#include    <libdbproxy/table.h>
 
-#include <QString>
-#include <QByteArray>
+
+// libexcep
+//
+#include    <libexcept/exception.h>
+
+
+// Qt
+//
+#include    <QString>
+#include    <QByteArray>
 
 namespace snap
 {
+
+
+DECLARE_MAIN_EXCEPTION(dbutils_exception);
+
+DECLARE_EXCEPTION(dbutils_exception, dbutils_invalid_parameter);
+DECLARE_EXCEPTION(dbutils_exception, dbutils_name_missing);
+DECLARE_EXCEPTION(dbutils_exception, dbutils_unknown_type);
+
 
 class dbutils
 {

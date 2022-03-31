@@ -159,48 +159,73 @@
 
 // self
 //
-#include "sessions.h"
+#include    "sessions.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
+#include    "../output/output.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/plugins.h>
+#include    <snapwebsites/plugins.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// libdbproxy lib
+// snapdev
 //
-#include <libdbproxy/value.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// libdbproxy
 //
-#include <iostream>
+#include    <libdbproxy/value.h>
 
 
-// OpenSSL lib
+// C++
 //
-#include <openssl/rand.h>
+#include    <iostream>
+
+
+// OpenSSL
+//
+#include    <openssl/rand.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(sessions, 1, 1)
+namespace snap
+{
+namespace sessions
+{
+
+
+CPPTHREAD_PLUGIN_START(sessions, 1, 0)
+    , ::cppthread::plugin_description(
+            "The sessions plugin is used by many other plugins to generate"
+            " session identifiers and save information about the given session."
+            " This is useful for many different reasons. In case of a user, a"
+            " session is used to make sure that the same user comes back to the"
+            " website. It is also used by forms to make sure that a for submission"
+            " is valid.")
+    , ::cppthread::plugin_icon("/images/sessions/sessions-logo-64x64.png")
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed sessions plugin name.
@@ -266,7 +291,7 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("invalid name_t::SNAP_NAME_SESSIONS_...");
+        throw sessions_logic_error("invalid name_t::SNAP_NAME_SESSIONS_...");
 
     }
     snapdev::NOT_REACHED();
@@ -1260,83 +1285,7 @@ int32_t sessions::session_info::get_ttl(int64_t now) const
 
 
 
-/** \brief Initialize the sessions plugin.
- *
- * This function is used to initialize the sessions plugin object.
- */
-sessions::sessions()
-    //: f_snap(nullptr) -- auto-init
-{
-}
 
-
-/** \brief Clean up the sessions plugin.
- *
- * Ensure the sessions object is clean before it is gone.
- */
-sessions::~sessions()
-{
-}
-
-
-/** \brief Get a pointer to the sessions plugin.
- *
- * This function returns an instance pointer to the sessions plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the sessions plugin.
- */
-sessions * sessions::instance()
-{
-    return g_plugin_sessions_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString sessions::icon() const
-{
-    return "/images/sessions/sessions-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString sessions::description() const
-{
-    return "The sessions plugin is used by many other plugins to generate"
-          " session identifiers and save information about the given session."
-          " This is useful for many different reasons. In case of a user, a"
-          " session is used to make sure that the same user comes back to the"
-          " website. It is also used by forms to make sure that a for submission"
-          " is valid.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString sessions::dependencies() const
-{
-    return "|layout|output|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -2210,6 +2159,7 @@ void sessions::on_table_is_accessible(QString const & table_name, server::access
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace sessions
+} // namespace snap
 // vim: ts=4 sw=4 et

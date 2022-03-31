@@ -21,14 +21,20 @@
 #include "snapwebsites/http_strings.h"
 
 
-// snapwebsites lib
+
+// snaplogger
 //
-#include "snapwebsites/log.h"
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/poison.h>
+#include    <snapdev/qstring_extensions.h>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 namespace snap
@@ -614,7 +620,12 @@ bool WeightedHttpString::parse(QString const & str, bool reset)
     {
         // in case the caller "forgets" to print errors...
         //
-        SNAP_LOG_ERROR("parsing of \"")(str)("\" generated errors:\n")(f_error_messages);
+        SNAP_LOG_ERROR
+            << "parsing of \""
+            << str
+            << "\" generated errors:\n"
+            << f_error_messages
+            << SNAP_LOG_SEND;
     }
 
     return f_error_messages.isEmpty();

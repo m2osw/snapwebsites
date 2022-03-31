@@ -23,8 +23,12 @@
 
 // snapwebsites lib
 //
-#include "snapwebsites/log.h"
 #include "snapwebsites/snapwebsites.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // libdbproxy lib

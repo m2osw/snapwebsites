@@ -25,22 +25,24 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
 
 
 /** \brief Set the permission and reason for refusal.
@@ -69,8 +71,6 @@ void permission_flag::not_permitted(QString const & new_reason)
 
 
 
-
-
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

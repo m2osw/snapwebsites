@@ -18,34 +18,42 @@
 
 // self
 //
-#include "info.h"
+#include    "info.h"
 
 
 // other plugins
 //
-#include "../sendmail/sendmail.h"
-#include "../sessions/sessions.h"
-#include "../users/users.h"
+#include    "../sendmail/sendmail.h"
+#include    "../sessions/sessions.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_EXTENSION_START(info)
+namespace snap
+{
+namespace info
+{
+
 
 
 bool info::unsubscribe_on_path_execute(content::path_info_t & ipath)
@@ -170,5 +178,6 @@ void info::unsubscribe_on_finish_editor_form_processing(content::path_info_t & i
 }
 
 
-SNAP_PLUGIN_END()
+} // namespace info
+} // namespace snap
 // vim: ts=4 sw=4 et

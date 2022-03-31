@@ -11,14 +11,24 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_child.h"
-#include "snapwebsites/snap_communicator.h"
-#include "snapwebsites/snap_thread.h"
+#include    "snapwebsites/snap_child.h"
+
+
+// cppthread
+//
+#include    <cppthread/thread.h>
+
+
+// eventdispatcher
+//
+#include    <eventdispatcher/communicator.h>
+
+
 
 namespace snap
 {
@@ -47,8 +57,8 @@ public:
     //
     void                        process_tick();
     bool                        process_timeout();
-    void                        process_message(snap::snap_communicator_message const & message);
-    void                        process_child_message(snap::snap_communicator_message const & message);
+    void                        process_message(ed::message const & message);
+    void                        process_child_message(ed::message const & message);
     void                        process_reconnect();
     void                        capture_zombies(pid_t pid);
 

@@ -19,27 +19,43 @@
 
 // self
 //
-#include "snapwebsites/dbutils.h"
+#include    "snapwebsites/dbutils.h"
+
 
 // snapwebsites lib
 //
-#include "snapwebsites/snap_exception.h"
-#include "snapwebsites/qstring_stream.h"
-#include "snapwebsites/log.h"
-#include "snapwebsites/mkgmtime.h"
-#include "snapwebsites/snap_string_list.h"
+#include    "snapwebsites/mkgmtime.h"
+#include    "snapwebsites/snap_string_list.h"
+
+
+// libexcept
+//
+#include    <libexcept/exception.h>
+
+
+// snaplogger
+//
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    "snapdev/qstring_extensions.h"
+
 
 // C++ lib
 //
-#include <iostream>
+#include    <iostream>
+
 
 // C lib
 //
-#include <uuid/uuid.h>
+#include    <uuid/uuid.h>
 
-// list include
+
+// last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 namespace snap
@@ -61,7 +77,7 @@ namespace
         {
             return static_cast<char>(c - 'A' + 10);
         }
-        throw snap_exception( "error: invalid hexadecimal digit, it cannot be converted." );
+        throw dbutils_invalid_parameter("error: invalid hexadecimal digit, it cannot be converted.");
     }
 }
 
@@ -222,7 +238,7 @@ QByteArray dbutils::string_to_key( QString const & str )
             ret.push_back( static_cast<char>( val.toInt( &ok, 16 ) ) );
             if( !ok )
             {
-                throw snap_exception( "Cannot convert to number! Not base 16." );
+                throw dbutils_invalid_parameter("Cannot convert to number! Not base 16.");
             }
         }
     }
@@ -234,7 +250,7 @@ QByteArray dbutils::string_to_key( QString const & str )
             ret.push_back( static_cast<char>( str_num.toInt( &ok, 16 ) ) );
             if( !ok )
             {
-                throw snap_exception( "Cannot convert to number! Not base 16 or too large." );
+                throw dbutils_invalid_parameter( "Cannot convert to number! Not base 16 or too large." );
             }
         }
     }
@@ -491,7 +507,7 @@ void dbutils::set_column_name( QByteArray& key, const QString& name ) const
         QStringList arr( name.split(' ') );
         if( arr.size() != 3 )
         {
-            throw std::runtime_error("expected 3 arguments!");
+            throw dbutils_invalid_parameter("list.standalone: expected 3 arguments!");
         }
 
         const char priority = arr[0][0].toLatin1();
@@ -506,7 +522,7 @@ void dbutils::set_column_name( QByteArray& key, const QString& name ) const
         QStringList arr( name.split(' ') );
         if( arr.size() != 2 )
         {
-            throw std::runtime_error("expected 3 arguments!");
+            throw dbutils_invalid_parameter("files.images: expected 2 arguments!");
         }
 
         const uint64_t microsec( string_to_microseconds( arr[0] ) );
@@ -526,7 +542,7 @@ void dbutils::set_column_name( QByteArray& key, const QString& name ) const
         QStringList arr( name.split('_') );
         if( arr.size() != 3 )
         {
-            throw std::runtime_error( "The column key is expected to be in the form: <name>_<browser>_<version>!" );
+            throw dbutils_invalid_parameter("files.javascript/css: The column key is expected to be in the form: <name>_<browser>_<version>!" );
         }
 
         libdbproxy::appendStringValue( key, arr[0] + "_" );       // name
@@ -929,7 +945,7 @@ dbutils::column_type_t dbutils::get_column_type( QString const & name )
 {
     if(name.isEmpty())
     {
-        throw snap_exception( "error: get_column_type() can't be called with an empty column name" );
+        throw dbutils_name_missing( "error: get_column_type() can't be called with an empty column name" );
     }
 
     switch(name[0].unicode())
@@ -1010,7 +1026,7 @@ dbutils::column_type_t dbutils::get_column_type( QString const & name )
 
     }
 
-    throw snap_exception( "error: get_column_type() doesn't know about type " + std::string(name.toUtf8().data()) );
+    throw dbutils_unknown_type( "error: get_column_type() doesn't know about type " + std::string(name.toUtf8().data()) );
 }
 
 
@@ -1367,7 +1383,13 @@ QString dbutils::get_column_value( const QByteArray& key, const libdbproxy::valu
     }
     catch(std::runtime_error const& e)
     {
-        SNAP_LOG_ERROR() << "error: caught a runtime exception dealing with \"" << get_column_name(key) << "\" (" << e.what() << ")";
+        SNAP_LOG_ERROR
+            << "error: caught a runtime exception dealing with \""
+            << get_column_name(key)
+            << "\" ("
+            << e.what()
+            << ")."
+            << SNAP_LOG_SEND;
         // TBD: just rethrow?
         //throw;
         v = "ERROR DETECTED";
@@ -1637,7 +1659,7 @@ void dbutils::set_column_value( const QByteArray& key, libdbproxy::value& cvalue
             }
             else
             {
-                throw snap_exception( "error: unknown secure value! Must be -1, 0 or 1!" );
+                throw dbutils_invalid_parameter( "error: unknown secure value! Must be -1, 0 or 1!" );
             }
             cvalue.setSignedCharValue( cv );
         }
@@ -1679,7 +1701,7 @@ void dbutils::set_column_value( const QByteArray& key, libdbproxy::value& cvalue
             }
             else
             {
-                throw snap_exception( "error: unknown status state value! Must be between 0 and +5 or a valid name!" );
+                throw dbutils_invalid_parameter( "error: unknown status state value! Must be between 0 and +5 or a valid name!" );
             }
             //if(pos != -1)
             //{

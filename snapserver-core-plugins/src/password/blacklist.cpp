@@ -46,7 +46,10 @@
 
 
 
-SNAP_PLUGIN_EXTENSION_START(password)
+namespace snap
+{
+namespace password
+{
 
 
 
@@ -128,6 +131,7 @@ void blacklist_t::passwords_to_list(QString const & passwords)
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace password
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -17,31 +17,28 @@
 
 #pragma once
 
-#include "snapwebsites/snap_config.h"
-#include "snapwebsites/snap_exception.h"
+// libexcept
+//
+#include    <libexcept/exception.h>
 
-#include <libdbproxy/libdbproxy.h>
+
+// advgetopt
+//
+#include    <advgetopt/conf_file.h>
+
+
+// libdbproxy
+//
+#include    <libdbproxy/libdbproxy.h>
+
 
 
 namespace snap
 {
 
-class snap_cassandra_exception : public snap_exception
-{
-public:
-    snap_cassandra_exception(char const *        what_msg) : snap_exception("snap_cassandra", what_msg) {}
-    snap_cassandra_exception(std::string const & what_msg) : snap_exception("snap_cassandra", what_msg) {}
-    snap_cassandra_exception(QString const &     what_msg) : snap_exception("snap_cassandra", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_cassandra_exception);
 
-class snap_cassandra_not_available_exception : public snap_cassandra_exception
-{
-public:
-    snap_cassandra_not_available_exception(char const *        what_msg) : snap_cassandra_exception(what_msg) {}
-    snap_cassandra_not_available_exception(std::string const & what_msg) : snap_cassandra_exception(what_msg) {}
-    snap_cassandra_not_available_exception(QString const &     what_msg) : snap_cassandra_exception(what_msg) {}
-};
-
+DECLARE_EXCEPTION(snap_cassandra_exception, snap_cassandra_not_available_exception);
 
 
 

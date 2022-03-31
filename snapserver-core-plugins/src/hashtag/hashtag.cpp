@@ -18,26 +18,48 @@
 
 // self
 //
-#include "hashtag.h"
+#include    "hashtag.h"
 
 
 // snapwebsites
 //
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_used.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(hashtag, 1, 0)
+namespace snap
+{
+namespace hashtag
+{
+
+
+CPPTHREAD_PLUGIN_START(hashtag, 1, 0)
+    , ::cppthread::plugin_description(
+            "Plugin used to transform #hashtag entries into tags and links."
+            " Because all the pages linked to a particular hashtags appear"
+            " in the same list, in effect, you get all the pages grouped as"
+            " with Twitter and other similar systems.")
+    , ::cppthread::plugin_icon("/images/hashtag/hashtag-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/hashtag")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /** \brief Get a fixed hashtag name.
@@ -71,91 +93,6 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the hashtag plugin.
- *
- * This function is used to initialize the hashtag plugin object.
- */
-hashtag::hashtag()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the hashtag plugin.
- *
- * Ensure the hashtag object is clean before it is gone.
- */
-hashtag::~hashtag()
-{
-}
-
-
-/** \brief Get a pointer to the hashtag plugin.
- *
- * This function returns an instance pointer to the hashtag plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the hashtag plugin.
- */
-hashtag * hashtag::instance()
-{
-    return g_plugin_hashtag_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString hashtag::settings_path() const
-{
-    return "/admin/settings/hashtag";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString hashtag::icon() const
-{
-    return "/images/hashtag/hashtag-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString hashtag::description() const
-{
-    return "Plugin used to transform #hashtag entries into tags and links."
-          " Because all the pages linked to a particular hashtags appear"
-          " in the same list, in effect, you get all the pages grouped as"
-          " with Twitter and other similar systems.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString hashtag::dependencies() const
-{
-    return "|filter|messages|output|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -337,8 +274,6 @@ void hashtag::on_filter_text(filter::filter::filter_text_t & txt_filt)
 
 
 
-
-
-SNAP_PLUGIN_END()
-
+} // namespace hashtag
+} // namespace snap
 // vim: ts=4 sw=4 et

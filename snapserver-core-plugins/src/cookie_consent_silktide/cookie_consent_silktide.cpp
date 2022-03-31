@@ -20,42 +20,60 @@
 
 // self
 //
-#include "cookie_consent_silktide.h"
+#include    "cookie_consent_silktide.h"
 
 
 // other plugins
 //
-#include "../attachment/attachment.h"
+#include    "../attachment/attachment.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// as2js lib
+// as2js
 //
-#include <as2js/json.h>
+#include    <as2js/json.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(cookie_consent_silktide, 1, 0)
+namespace snap
+{
+namespace cookie_consent_silktide
+{
+
+
+CPPTHREAD_PLUGIN_START(cookie_consent_silktide, 1, 0)
+    , ::cppthread::plugin_description(
+            "Show an in-page popup allowing users to agree on use of cookies."
+            " This plugin makes use the third party silktide cookie-consent tool.")
+    , ::cppthread::plugin_icon("/images/cookie-consent-silktide/cookie-consent-silktide-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/cookie-consent-silktide")
+    , ::cppthread::plugin_dependency("attachment")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /* \brief Get a fixed cookie_consent_silktide name.
@@ -131,91 +149,6 @@ char const * get_name(name_t name)
 
 
 
-
-
-/** \brief Initialize the locale plugin.
- *
- * This function is used to initialize the locale plugin object.
- */
-cookie_consent_silktide::cookie_consent_silktide()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the locale plugin.
- *
- * Ensure the locale object is clean before it is gone.
- */
-cookie_consent_silktide::~cookie_consent_silktide()
-{
-}
-
-
-/** \brief Get a pointer to the locale plugin.
- *
- * This function returns an instance pointer to the locale plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the locale plugin.
- */
-cookie_consent_silktide * cookie_consent_silktide::instance()
-{
-    return g_plugin_cookie_consent_silktide_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString cookie_consent_silktide::settings_path() const
-{
-    return "/admin/settings/cookie-consent-silktide";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString cookie_consent_silktide::icon() const
-{
-    return "/images/cookie-consent-silktide/cookie-consent-silktide-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString cookie_consent_silktide::description() const
-{
-    return "Show an in-page popup allowing users to agree on use of cookies."
-        " This plugin makes use the third party silktide cookie-consent tool.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString cookie_consent_silktide::dependencies() const
-{
-    return "|attachment|editor|layout|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -343,7 +276,11 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
         return;
     }
 
-    SNAP_LOG_INFO("saving silktide options to \"")(get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_JAVASCRIPT_OPTIONS))("\".");
+    SNAP_LOG_INFO
+        << "saving silktide options to \""
+        << get_name(name_t::SNAP_NAME_COOKIE_CONSENT_SILKTIDE_JAVASCRIPT_OPTIONS)
+        << "\"."
+        << SNAP_LOG_SEND;
 
     as2js::String temp_str;
     as2js::Position pos;
@@ -483,6 +420,6 @@ void cookie_consent_silktide::on_save_editor_fields(editor::save_info_t & save_i
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace cookie_content_silktide
+} // namespace snap
 // vim: ts=4 sw=4 et

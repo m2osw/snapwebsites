@@ -32,7 +32,11 @@
 //
 #include <snapwebsites/dbutils.h>
 #include <snapwebsites/http_strings.h>
-#include <snapwebsites/log.h>
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // snapdev lib
@@ -58,7 +62,29 @@
 
 
 
-SNAP_PLUGIN_START(attachment, 1, 0)
+namespace snap
+{
+namespace attachment
+{
+
+
+
+CPPTHREAD_PLUGIN_START(attachment, 1, 0)
+    , ::cppthread::plugin_description(
+            "Handle the output of attachments, which includes sending the"
+            " proper compressed file and in some cases transforming the file"
+            " on the fly before sending it to the user (i.e. resizing an image"
+            " to \"better\" sizes for the page being presented.)")
+    , ::cppthread::plugin_icon("/images/attachment/attachment-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/antihammering")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("files")
+CPPTHREAD_PLUGIN_END()
+
 
 // using the SNAP_NAME_CONTENT_... for this one.
 /* \brief Get a fixed attachment name.
@@ -91,83 +117,6 @@ char const * get_name(name_t name)
 
 
 
-
-
-/** \brief Initialize the attachment plugin.
- *
- * This function is used to initialize the attachment plugin object.
- */
-attachment::attachment()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the attachment plugin.
- *
- * Ensure the attachment object is clean before it is gone.
- */
-attachment::~attachment()
-{
-}
-
-
-/** \brief Get a pointer to the attachment plugin.
- *
- * This function returns an instance pointer to the attachment plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the attachment plugin.
- */
-attachment * attachment::instance()
-{
-    return g_plugin_attachment_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString attachment::icon() const
-{
-    return "/images/attachment/attachment-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString attachment::description() const
-{
-    return "Handle the output of attachments, which includes sending the"
-        " proper compressed file and in some cases transforming the file"
-        " on the fly before sending it to the user (i.e. resizing an image"
-        " to \"better\" sizes for the page being presented.)";
-}
-
-
-/** \brief Return our dependencies
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString attachment::dependencies() const
-{
-    return "|content|messages|path|permissions|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -710,7 +659,11 @@ bool attachment::check_for_minified_js_or_css(content::path_info_t & ipath, path
 bool attachment::on_path_execute(content::path_info_t & ipath)
 {
 #ifdef DEBUG
-    SNAP_LOG_TRACE("attachment::on_path_execute(")(ipath.get_key())(")");
+    SNAP_LOG_TRACE
+        << "attachment::on_path_execute("
+        << ipath.get_key()
+        << ")"
+        << SNAP_LOG_SEND;
 #endif
     // TODO: we probably do not want to check for attachments to send if the
     //       action is not "view"...
@@ -734,11 +687,21 @@ bool attachment::on_path_execute(content::path_info_t & ipath)
     {
         attachment_ipath = ipath;
         field_name = files_data;
-SNAP_LOG_TRACE("renamed is empty, setting attachment_ipath=")(attachment_ipath.get_key())(", field_name=")(field_name);
+SNAP_LOG_TRACE
+<< "renamed is empty, setting attachment_ipath="
+<< attachment_ipath.get_key()
+<< ", field_name="
+<< field_name
+<< SNAP_LOG_SEND;
     }
     else
     {
-SNAP_LOG_TRACE("renamed=")(renamed)(", field_name=")(field_name);
+SNAP_LOG_TRACE
+<< "renamed="
+<< renamed
+<< ", field_name="
+<< field_name
+<< SNAP_LOG_SEND;
         // TODO: that data may NOT be available yet in which case a plugin
         //       needs to offer it... how do we do that?!
         attachment_ipath.set_path(renamed);
@@ -768,7 +731,12 @@ SNAP_LOG_TRACE("renamed=")(renamed)(", field_name=")(field_name);
     }
 
     // get the file MD5 which must be exactly 16 bytes
-SNAP_LOG_TRACE("**** getting revision key for ipath=")(ipath.get_key())(", cpath=")(ipath.get_cpath());
+SNAP_LOG_TRACE
+<< "**** getting revision key for ipath="
+<< ipath.get_key()
+<< ", cpath="
+<< ipath.get_cpath()
+<< SNAP_LOG_SEND;
     libdbproxy::table::pointer_t revision_table(content::content::instance()->get_revision_table());
     libdbproxy::value const attachment_key(
             revision_table
@@ -1043,7 +1011,10 @@ void attachment::on_handle_error_by_mime_type(snap_child::http_code_t err_code, 
             // info which the path plugin has already done
             if(!more_details.isEmpty())
             {
-                SNAP_LOG_FATAL("attachment::on_handle_error_by_mime_type(): ")(more_details);
+                SNAP_LOG_FATAL
+                    << "attachment::on_handle_error_by_mime_type(): "
+                    << more_details
+                    << SNAP_LOG_SEND;
             }
 
             // force header to text/html anyway
@@ -1379,6 +1350,7 @@ int attachment::delete_all_attachments(content::path_info_t & ipath)
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace attachment
+} // namespace snap
 // vim: ts=4 sw=4 et

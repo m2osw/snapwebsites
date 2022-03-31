@@ -1,38 +1,26 @@
-/*
- * Text:
- *      libsnapwebsites/src/libdbproxy/table.cpp
- *
- * Description:
- *      Handling of cassandra tables (Column Families).
- *
- * Documentation:
- *      See each function below.
- *
- * License:
- *      Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
- * 
- *      https://snapwebsites.org/
- *      contact@m2osw.com
- * 
- *      Permission is hereby granted, free of charge, to any person obtaining a
- *      copy of this software and associated documentation files (the
- *      "Software"), to deal in the Software without restriction, including
- *      without limitation the rights to use, copy, modify, merge, publish,
- *      distribute, sublicense, and/or sell copies of the Software, and to
- *      permit persons to whom the Software is furnished to do so, subject to
- *      the following conditions:
- *
- *      The above copyright notice and this permission notice shall be included
- *      in all copies or substantial portions of the Software.
- *
- *      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- *      OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- *      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- *      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- *      CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "libdbproxy/libdbproxy.h"
 #include "libdbproxy/table.h"
@@ -40,8 +28,19 @@
 
 #include <casswrapper/schema.h>
 
-#include <snapwebsites/log.h>
 
+// snapdev lib
+//
+#include    <snapdev/qstring_extensions.h>
+
+
+// snaplogger lib
+//
+#include    <snaplogger/message.h>
+
+
+// C++ lib
+//
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
@@ -1432,7 +1431,11 @@ void table::insertValue( const QByteArray& row_key, const QByteArray& column_key
     order_result const insert_value_result(f_proxy->sendOrder(insert_value));
     if(!insert_value_result.succeeded())
     {
-        SNAP_LOG_ERROR("unable to insert a value into the table for query: '")(query_string)("'");
+        SNAP_LOG_ERROR
+            << "unable to insert a value into the table for query: '"
+            << query_string
+            << "'"
+            << SNAP_LOG_SEND;
         throw exception("inserting a value failed");
     }
 }

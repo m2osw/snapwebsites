@@ -60,33 +60,56 @@
 
 // self
 //
-#include "shorturl.h"
+#include    "shorturl.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../messages/messages.h"
+#include    "../output/output.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/snap_lock.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
-SNAP_PLUGIN_START(shorturl, 1, 0)
+
+namespace snap
+{
+namespace shorturl
+{
+
+
+CPPTHREAD_PLUGIN_START(shorturl, 1, 0)
+    , ::cppthread::plugin_description(
+            "Fully automated management of short URLs for this website.")
+    , ::cppthread::plugin_icon("/images/shorturl/shorturl-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/shorturl")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("sessions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed shorturl name.
@@ -131,87 +154,8 @@ char const * get_name(name_t name)
     snapdev::NOT_REACHED();
 }
 
-/** \brief Initialize the shorturl plugin.
- *
- * This function is used to initialize the shorturl plugin object.
- */
-shorturl::shorturl()
-{
-}
 
 
-/** \brief Clean up the shorturl plugin.
- *
- * Ensure the shorturl object is clean before it is gone.
- */
-shorturl::~shorturl()
-{
-}
-
-
-/** \brief Get a pointer to the shorturl plugin.
- *
- * This function returns an instance pointer to the shorturl plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the shorturl plugin.
- */
-shorturl * shorturl::instance()
-{
-    return g_plugin_shorturl_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString shorturl::settings_path() const
-{
-    return "/admin/settings/shorturl";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString shorturl::icon() const
-{
-    return "/images/shorturl/shorturl-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString shorturl::description() const
-{
-    return "Fully automated management of short URLs for this website.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString shorturl::dependencies() const
-{
-    return "|messages|path|output|sessions|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -768,6 +712,7 @@ void shorturl::on_page_cloned(content::content::cloned_tree_t const& tree)
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace shorturl
+} // namespace snap
 // vim: ts=4 sw=4 et

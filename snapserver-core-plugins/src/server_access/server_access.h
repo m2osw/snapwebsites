@@ -34,39 +34,11 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
+DECLARE_MAIN_EXCEPTION(server_access_exception);
 
-class server_access_exception : public snap_exception
-{
-public:
-    explicit server_access_exception(char const *        what_msg) : snap_exception("server-access", what_msg) {}
-    explicit server_access_exception(std::string const & what_msg) : snap_exception("server-access", what_msg) {}
-    explicit server_access_exception(QString const &     what_msg) : snap_exception("server-access", what_msg) {}
-};
-
-class server_access_exception_create_called_twice : public server_access_exception
-{
-public:
-    explicit server_access_exception_create_called_twice(char const *        what_msg) : server_access_exception(what_msg) {}
-    explicit server_access_exception_create_called_twice(std::string const & what_msg) : server_access_exception(what_msg) {}
-    explicit server_access_exception_create_called_twice(QString const &     what_msg) : server_access_exception(what_msg) {}
-};
-
-class server_access_exception_success_with_errors : public server_access_exception
-{
-public:
-    explicit server_access_exception_success_with_errors(char const *        what_msg) : server_access_exception(what_msg) {}
-    explicit server_access_exception_success_with_errors(std::string const & what_msg) : server_access_exception(what_msg) {}
-    explicit server_access_exception_success_with_errors(QString const &     what_msg) : server_access_exception(what_msg) {}
-};
-
-class server_access_exception_invalid_uri : public server_access_exception
-{
-public:
-    explicit server_access_exception_invalid_uri(char const *        what_msg) : server_access_exception(what_msg) {}
-    explicit server_access_exception_invalid_uri(std::string const & what_msg) : server_access_exception(what_msg) {}
-    explicit server_access_exception_invalid_uri(QString const &     what_msg) : server_access_exception(what_msg) {}
-};
-
+DECLARE_EXCEPTION(server_access_exception, server_access_exception_create_called_twice);
+DECLARE_EXCEPTION(server_access_exception, server_access_exception_success_with_errors);
+DECLARE_EXCEPTION(server_access_exception, server_access_exception_invalid_uri);
 
 
 
@@ -76,7 +48,7 @@ public:
 
 
 class server_access
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                                 server_access();
@@ -88,9 +60,6 @@ public:
     static server_access *      instance();
 
     // plugins::plugin implementation
-    virtual QString             icon() const override;
-    virtual QString             description() const override;
-    virtual QString             dependencies() const override;
     virtual int64_t             do_update(int64_t last_updated) override;
     virtual void                bootstrap(snap_child * snap) override;
 
@@ -119,7 +88,7 @@ private:
     SNAP_TEST_PLUGIN_TEST_DECL(test_ajax)
 
     snap_child *                f_snap = nullptr;
-    QDomDocument                f_ajax = QDomDocument();
+    QDomDocument                f_ajax = QDomDocument("ajax");
     bool                        f_ajax_initialized = false;
     bool                        f_ajax_output = false;
     bool                        f_success = false;

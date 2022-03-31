@@ -37,18 +37,12 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class antivirus_exception : public snap_exception
-{
-public:
-    explicit antivirus_exception(char const *        what_msg) : snap_exception("Anti-Virus", what_msg) {}
-    explicit antivirus_exception(std::string const & what_msg) : snap_exception("Anti-Virus", what_msg) {}
-    explicit antivirus_exception(QString const &     what_msg) : snap_exception("Anti-Virus", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(antivirus_exception);
 
 
 
 class antivirus
-    : public plugins::plugin
+    : public cppthread::plugin
     , public layout::layout_content
 {
 public:
@@ -61,9 +55,6 @@ public:
     static antivirus *      instance();
 
     // plugins::plugin implementation
-    virtual QString         icon() const override;
-    virtual QString         description() const override;
-    virtual QString         dependencies() const override;
     virtual int64_t         do_update(int64_t last_updated) override;
     virtual void            bootstrap(snap_child * snap) override;
 

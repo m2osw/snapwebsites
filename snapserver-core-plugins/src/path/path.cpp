@@ -17,42 +17,66 @@
 
 // self
 //
-#include "path.h"
+#include    "path.h"
 
 
 // other plugins
 //
-#include "../links/links.h"
-#include "../messages/messages.h"
-#include "../server_access/server_access.h"
+#include    "../links/links.h"
+#include    "../messages/messages.h"
+#include    "../server_access/server_access.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qstring_stream.h>
-#include <snapwebsites/snap_uri.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/snap_uri.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
+#include    <snapdev/qstring_extensions.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// C++
+//
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(path, 1, 0)
+namespace snap
+{
+namespace path
+{
+
+
+
+CPPTHREAD_PLUGIN_START(path, 1, 0)
+    , ::cppthread::plugin_description(
+            "This plugin manages the path to a page. This is used to determine"
+            " the plugin that knows how to handle the data displayed to the user"
+            " when given a specific path.")
+    , ::cppthread::plugin_icon()
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("links")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("server_access")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("content")
+CPPTHREAD_PLUGIN_END()
 
 /* \brief Get a fixed path name.
  *
@@ -152,7 +176,17 @@ void path_error_callback::on_error(
 
                 // log the error
                 //
-                SNAP_LOG_FATAL("path::on_error(): ")(err_details)(" (")(static_cast<int>(err_code))(" ")(err_name)(": ")(err_description)(")");
+                SNAP_LOG_FATAL
+                    << "path::on_error(): "
+                    << err_details
+                    << " ("
+                    << static_cast<int>(err_code)
+                    << " "
+                    << err_name
+                    << ": "
+                    << err_description
+                    << ")"
+                    << SNAP_LOG_SEND;
 
                 // On error we do not return the HTTP protocol, only the Status field
                 // it just needs to be first to make sure it works right
@@ -172,7 +206,9 @@ void path_error_callback::on_error(
             {
                 // ignore all errors because at this point we must die quickly.
                 //
-                SNAP_LOG_FATAL("path.cpp:on_error(): try/catch caught an exception");
+                SNAP_LOG_FATAL
+                    << "path.cpp:on_error(): try/catch caught an exception"
+                    << SNAP_LOG_SEND;
             }
 
             // exit with an error
@@ -208,9 +244,16 @@ void path_error_callback::on_redirect(
         {
             // we cannot generate a warning with a secure error message...
             // we just log it for now.
-            SNAP_LOG_FATAL(logging::log_security_t::LOG_SECURITY_SECURE)
-                    ("path::on_redirect(): ")(err_details)(" (")
-                                (err_name)(": ")(err_description)(")");
+            SNAP_LOG_FATAL
+                << logging::log_security_t::LOG_SECURITY_SECURE
+                << "path::on_redirect(): "
+                << err_details
+                << " ("
+                << err_name
+                << ": "
+                << err_description
+                << ")"
+                << SNAP_LOG_SEND;
             // we still generate a warning so the end users has a chance
             // to see something at some point
             messages::messages::instance()->set_warning("An Error Occurred", "An unspecified error occurred.", "Please check your secure log for more information.");
@@ -343,68 +386,6 @@ void dynamic_plugin_t::set_plugin_if_renamed(plugins::plugin * p, QString const 
 }
 
 
-/** \brief Initialize the path plugin.
- *
- * This function initializes the path plugin.
- */
-path::path()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Destroy the path plugin.
- *
- * This function cleans up the path plugin.
- */
-path::~path()
-{
-}
-
-
-/** \brief Get a pointer to the path plugin.
- *
- * This function returns an instance pointer to the path plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the path plugin.
- */
-path * path::instance()
-{
-    return g_plugin_path_factory.instance();
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString path::description() const
-{
-    return "This plugin manages the path to a page. This is used to determine"
-        " the plugin that knows how to handle the data displayed to the user"
-        " when given a specific path.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString path::dependencies() const
-{
-    return "|content|links|messages|server_access|";
-}
 
 
 /** \brief Bootstrap the path.
@@ -446,7 +427,11 @@ plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_erro
     && content_table->getRow(ipath.get_key())->exists(primary_owner))
     //&& content_table->getRow(ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_STATUS)))
     {
-//SNAP_LOG_TRACE("found path ")(ipath.get_key())(" in database... no dynamic stuff.");
+//SNAP_LOG_TRACE
+//    << "found path "
+//    << ipath.get_key()
+//    << " in database... no dynamic stuff."
+//    << SNAP_LOG_SEND;
         QString const action(define_action(ipath));
 
         // I do not think this is smart, instead I pass the action to the
@@ -534,9 +519,21 @@ plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_erro
 
         // retrieve the plugin pointer
 #ifdef DEBUG
-        SNAP_LOG_TRACE("path::get_plugin() cpath=")(ipath.get_cpath());
-        SNAP_LOG_TRACE("   action=")(action);
-        SNAP_LOG_TRACE("   execute [")(ipath.get_key())("] with plugin [")(owner)("]");
+        SNAP_LOG_TRACE
+            << "path::get_plugin() cpath="
+            << ipath.get_cpath()
+            << SNAP_LOG_SEND;
+        SNAP_LOG_TRACE
+            << "   action="
+            << action
+            << SNAP_LOG_SEND;
+        SNAP_LOG_TRACE
+            << "   execute ["
+            << ipath.get_key()
+            << "] with plugin ["
+            << owner
+            << "]"
+            << SNAP_LOG_SEND;
 #endif
 //std::cerr << "Execute [" << ipath.get_key() << "] with plugin [" << owner << "]\n";
         owner_plugin = plugins::get_plugin(owner);
@@ -683,7 +680,12 @@ plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_erro
         can_handle_dynamic_path(ipath, dp);
 
         owner_plugin = dp.get_plugin();
-//SNAP_LOG_TRACE("Testing for page dynamically [")(ipath.get_cpath())("] -> ")(owner_plugin ? owner_plugin->get_plugin_name() : "no plugin found");
+//SNAP_LOG_TRACE
+//    << "Testing for page dynamically ["
+//    << ipath.get_cpath()
+//    << "] -> "
+//    << (owner_plugin ? owner_plugin->get_plugin_name() : "no plugin found")
+//    << SNAP_LOG_SEND;
         if(owner_plugin == nullptr)
         {
             // a plugin (such as the attachment, images, or search plugins)
@@ -694,7 +696,13 @@ plugins::plugin * path::get_plugin(content::path_info_t & ipath, permission_erro
             {
                 QString renamed_path(dp.get_renamed_path());
                 ipath.set_parameter("renamed_path", renamed_path);
-                SNAP_LOG_TRACE("Path was renamed from [")(ipath.get_cpath())("] to [")(renamed_path)("]");
+                SNAP_LOG_TRACE
+                    << "Path was renamed from ["
+                    << ipath.get_cpath()
+                    << "] to ["
+                    << renamed_path
+                    << "]"
+                    << SNAP_LOG_SEND;
             }
         }
     }
@@ -749,7 +757,12 @@ void path::verify_permissions(content::path_info_t & ipath, permission_error_cal
 {
     QString const action(define_action(ipath));
 
-    SNAP_LOG_TRACE("verify_permissions(): ipath=")(ipath.get_key())(", action=")(action);
+    SNAP_LOG_TRACE
+        << "verify_permissions(): ipath="
+        << ipath.get_key()
+        << ", action="
+        << action
+        << SNAP_LOG_SEND;
 
     // only actions that are defined in the permission types are
     // allowed, anything else is funky action from a hacker or
@@ -896,11 +909,17 @@ void path::on_execute(QString const & uri_path)
     ipath.set_main_page(true);
 
 #ifdef DEBUG
-    SNAP_LOG_TRACE("path::on_execute(\"")(uri_path)
-            ("\") -> [")(ipath.get_cpath())
-            ("] [branch=")(ipath.get_branch())
-            ("] [revision=")(ipath.get_revision())
-            ("]");
+    SNAP_LOG_TRACE
+        << "path::on_execute(\""
+        << uri_path
+        << "\") -> ["
+        << ipath.get_cpath()
+        << "] [branch="
+        << ipath.get_branch()
+        << "] [revision="
+        << ipath.get_revision()
+        << "]"
+        << SNAP_LOG_SEND;
 #endif
 
     // allow modules to redirect now, it has to be really early, note
@@ -995,7 +1014,11 @@ void path::on_execute(QString const & uri_path)
         if(f_snap->empty_output())
         {
 #ifdef DEBUG
-            SNAP_LOG_TRACE("**** calling pe->on_path_execute(")(ipath.get_cpath())(")");
+            SNAP_LOG_TRACE
+                << "**** calling pe->on_path_execute("
+                << ipath.get_cpath()
+                << ")"
+                << SNAP_LOG_SEND;
 #endif
             if(!pe->on_path_execute(ipath))
             {
@@ -1232,6 +1255,6 @@ void path::on_improve_signature(QString const & url_path, QDomDocument doc, QDom
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace path
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -17,48 +17,72 @@
 
 // self
 //
-#include "form.h"
+#include    "form.h"
 
 
 // other plugins
 //
-#include "../content/content.h"
-#include "../messages/messages.h"
+#include    "../content/content.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qcompatibility.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qdomreceiver.h>
-#include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/qstring_stream.h>
-#include <snapwebsites/qxmlmessagehandler.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/qcompatibility.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomreceiver.h>
+#include    <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/qxmlmessagehandler.h>
+#include    <snapwebsites/snap_exception.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QByteArray>
-#include <QFile>
-#include <QFileInfo>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/qstring_extensions.h>
+
+
+// Qt
+//
+#include    <QByteArray>
+#include    <QFile>
+#include    <QFileInfo>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace form
+{
 
-SNAP_PLUGIN_START(form, 1, 0)
+
+CPPTHREAD_PLUGIN_START(form, 1, 0)
+    , ::cppthread::plugin_description(
+            "The form plugin is used to generate forms from simple XML"
+            " documents. This plugin uses an XSLT template to process"
+            " the the XML data. This plugin is a required backend plugin.")
+    , ::cppthread::plugin_icon()
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("sessions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 namespace
@@ -109,72 +133,14 @@ char const * get_name(name_t const name)
 
     default:
         // invalid index
-        throw snap_logic_exception("invalid name_t::SNAP_NAME_FORM_...");
+        throw snap_logic_error("invalid name_t::SNAP_NAME_FORM_...");
 
     }
     snapdev::NOT_REACHED();
 }
 
-/** \brief Initialize the form plugin.
- *
- * This function initializes the form plugin.
- */
-form::form()
-{
-}
-
-/** \brief Destroy the form plugin.
- *
- * This function cleans up the form plugin.
- */
-form::~form()
-{
-}
 
 
-/** \brief Get a pointer to the form plugin.
- *
- * This function returns an instance pointer to the form plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the form plugin.
- */
-form * form::instance()
-{
-    return g_plugin_form_factory.instance();
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString form::description() const
-{
-    return "The form plugin is used to generate forms from simple XML"
-        " documents. This plugin uses an XSLT template to process"
-        " the the XML data. This plugin is a required backend plugin.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString form::dependencies() const
-{
-    return "|content|filter|messages|sessions|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -258,7 +224,9 @@ QDomDocument form::form_to_html(sessions::sessions::session_info & info, QDomDoc
         QFile file(":/xsl/form/core-form.xsl");
         if(!file.open(QIODevice::ReadOnly))
         {
-            SNAP_LOG_FATAL("form::form_to_html() could not open core-form.xsl resource file.");
+            SNAP_LOG_FATAL
+                << "form::form_to_html() could not open core-form.xsl resource file."
+                << SNAP_LOG_SEND;
             return doc_output;
         }
         // WARNING WARNING WARNING
@@ -267,7 +235,9 @@ QDomDocument form::form_to_html(sessions::sessions::session_info & info, QDomDoc
         // in memory.)
         if(!f_form_elements.setContent(&file, false))
         {
-            SNAP_LOG_FATAL("form::form_to_html() could not parse core-form.xsl resource file.");
+            SNAP_LOG_FATAL
+                << "form::form_to_html() could not parse core-form.xsl resource file."
+                << SNAP_LOG_SEND;
             return doc_output;
         }
         QDomNode p(f_form_elements.firstChild());
@@ -277,7 +247,9 @@ QDomDocument form::form_to_html(sessions::sessions::session_info & info, QDomDoc
             if(p.isNull())
             {
                 // well... nothing found?
-                SNAP_LOG_FATAL("form::form_to_html() could not find the first element.");
+                SNAP_LOG_FATAL
+                    << "form::form_to_html() could not find the first element."
+                    << SNAP_LOG_SEND;
                 return doc_output;
             }
             p = p.nextSibling();
@@ -286,7 +258,9 @@ QDomDocument form::form_to_html(sessions::sessions::session_info & info, QDomDoc
         if(stylesheet.tagName() != "xsl:stylesheet")
         {
             // we only can handle stylesheets
-            SNAP_LOG_FATAL("form::form_to_html() the first element is not a stylesheet.");
+            SNAP_LOG_FATAL
+                << "form::form_to_html() the first element is not a stylesheet."
+                << SNAP_LOG_SEND;
             return doc_output;
         }
         f_form_stylesheet = stylesheet;
@@ -676,13 +650,17 @@ void form::add_form_elements(QString& filename)
     QFile file(filename);
     if(!file.open(QIODevice::ReadOnly))
     {
-        SNAP_LOG_FATAL("form::add_form_elements() could not open core-form.xsl resource file.");
+        SNAP_LOG_FATAL
+            << "form::add_form_elements() could not open core-form.xsl resource file."
+            << SNAP_LOG_SEND;
         return;
     }
     QDomDocument add;
     if(!add.setContent(&file, true))
     {
-        SNAP_LOG_FATAL("form::add_form_elements() could not parse core-form.xsl resource file.");
+        SNAP_LOG_FATAL
+            << "form::add_form_elements() could not parse core-form.xsl resource file."
+            << SNAP_LOG_SEND;
         return;
     }
     add_form_elements(add);
@@ -751,14 +729,18 @@ QDomDocument const form::load_form(content::path_info_t & ipath, QString const &
         {
             g_cached_form[csource].f_error = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> Resource \""
                                                 + source + "\" could not be opened.</span>";
-            SNAP_LOG_ERROR("form::load_form() could not open \"" + csource + "\" resource file.");
+            SNAP_LOG_ERROR
+                << "form::load_form() could not open \"" + csource + "\" resource file."
+                << SNAP_LOG_SEND;
             return g_cached_form[csource].f_doc;
         }
         if(!g_cached_form[csource].f_doc.setContent(&file, true))
         {
             g_cached_form[csource].f_error = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> Resource \""
                                                 + source + "\" could not be parsed as valid XML.</span>";
-            SNAP_LOG_ERROR("form::load_form() could not parse \"" + csource + "\" resource file.");
+            SNAP_LOG_ERROR
+                << "form::load_form() could not parse \"" + csource + "\" resource file."
+                << SNAP_LOG_SEND;
             return g_cached_form[csource].f_doc;
         }
     }
@@ -771,7 +753,9 @@ QDomDocument const form::load_form(content::path_info_t & ipath, QString const &
         {
             g_cached_form[csource].f_error = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> Form \""
                                                 + source + "\" could not be loaded from the database.</span>";
-            SNAP_LOG_ERROR("form::load_form() could not load \"" + csource + "\" from the database.");
+            SNAP_LOG_ERROR
+                << "form::load_form() could not load \"" + csource + "\" from the database."
+                << SNAP_LOG_SEND;
             return g_cached_form[csource].f_doc;
         }
         libdbproxy::row::pointer_t row(content_table->getRow(csource));
@@ -779,7 +763,11 @@ QDomDocument const form::load_form(content::path_info_t & ipath, QString const &
         {
             g_cached_form[csource].f_error = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> No form defined at \""
                                                 + source + "\".</span>";
-            SNAP_LOG_ERROR("form::load_form() could not find a form at \"" + csource + "\".");
+            SNAP_LOG_ERROR
+                << "form::load_form() could not find a form at \""
+                << csource
+                << "\"."
+                << SNAP_LOG_SEND;
             return g_cached_form[csource].f_doc;
         }
         libdbproxy::value form_xml(row->getCell(get_name(name_t::SNAP_NAME_FORM_FORM))->getValue());
@@ -787,7 +775,11 @@ QDomDocument const form::load_form(content::path_info_t & ipath, QString const &
         {
             g_cached_form[csource].f_error = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> Form \""
                                                 + source + "\" could not be parsed as valid XML.</span>";
-            SNAP_LOG_ERROR("form::load_form() could not parse \"" + csource + "\" form.");
+            SNAP_LOG_ERROR
+                << "form::load_form() could not parse \""
+                << csource
+                << "\" form."
+                << SNAP_LOG_SEND;
             return g_cached_form[csource].f_doc;
         }
     }
@@ -803,7 +795,11 @@ QDomDocument const form::load_form(content::path_info_t & ipath, QString const &
         // sought is 100% secure (i.e. not a file such as /etc/passwd)
         g_cached_form[csource].f_error = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> Form \""
                                             + source + "\" could not be loaded (direct files not supported yet).</span>";
-        SNAP_LOG_ERROR("form::load_form() prevented loading \"" + csource + "\" file from disk for security reasons.");
+        SNAP_LOG_ERROR
+            << "form::load_form() prevented loading \""
+            << csource
+            << "\" file from disk for security reasons."
+            << SNAP_LOG_SEND;
         return g_cached_form[csource].f_doc;
     }
 
@@ -2179,7 +2175,15 @@ void form::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, fi
     {
         token.f_error = true;
         token.f_replacement = "<span class=\"filter-error\"><span class=\"filter-error-word\">error:</span> Could not determine a valid resource path.</span>";
-        SNAP_LOG_ERROR("form::on_replace_token() could not determine a valid resource path (empty) for token \"")(token.f_name)("\" and owner \"")(plugin_owner)("\" on path \"")(ipath.get_key())("\".");
+        SNAP_LOG_ERROR
+            << "form::on_replace_token() could not determine a valid resource path (empty) for token \""
+            << token.f_name
+            << "\" and owner \""
+            << plugin_owner
+            << "\" on path \""
+            << ipath.get_key()
+            << "\"."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -2189,7 +2193,11 @@ void form::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, fi
     {
         token.f_error = true;
         token.f_replacement = "<span class=\"filter-error\"><span class=\"filter-error-word\">error:</span> Resource \"" + source + "\" could not determine the plugin owner.</span>";
-        SNAP_LOG_ERROR("form::on_replace_token() could not determine the plugin owner for \"" + source + "\" resource file.");
+        SNAP_LOG_ERROR
+            << "form::on_replace_token() could not determine the plugin owner for \""
+            << source
+            << "\" resource file."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -2243,7 +2251,11 @@ void form::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, fi
     {
         token.f_error = true;
         token.f_replacement = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> Session identifier \"" + session_id_str + "\" is not a valid decimal number.</span>";
-        SNAP_LOG_ERROR("form::on_replace_token() could not parse \"" + session_id_str + "\" as a session identifier.");
+        SNAP_LOG_ERROR
+            << "form::on_replace_token() could not parse \""
+            << session_id_str
+            << "\" as a session identifier."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -2266,7 +2278,11 @@ void form::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, fi
             {
                 token.f_error = true;
                 token.f_replacement = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> Session auto-reset minutes attribute (" + minutes + ") is not a valid decimal number.</span>";
-                SNAP_LOG_ERROR("form::on_replace_token() could not parse \"" + minutes + "\" as a auto-reset timeout in minutes.");
+                SNAP_LOG_ERROR
+                    << "form::on_replace_token() could not parse \""
+                    << minutes
+                    << "\" as a auto-reset timeout in minutes."
+                    << SNAP_LOG_SEND;
                 return;
             }
         }
@@ -2287,7 +2303,11 @@ void form::on_replace_token(content::path_info_t & ipath, QDomDocument & xml, fi
             {
                 token.f_error = true;
                 token.f_replacement = "<span class=\"filter-error\"><span class=\"filter-error-word\">ERROR:</span> Session timeout minutes attribute (" + minutes + ") is not a valid decimal number.</span>";
-                SNAP_LOG_ERROR("form::on_replace_token() could not parse \"" + minutes + "\" as a timeout in minutes.");
+                SNAP_LOG_ERROR
+                    << "form::on_replace_token() could not parse \""
+                    << minutes
+                    << "\" as a timeout in minutes."
+                    << SNAP_LOG_SEND;
                 return;
             }
         }
@@ -2364,7 +2384,11 @@ QString form::get_source(QString const & owner, content::path_info_t & ipath)
         source = ":/xml/" + owner + "/" + source + ".xml";
     }
 
-    SNAP_LOG_TRACE("Form source filename: \"")(source)("\"");
+    SNAP_LOG_TRACE
+        << "Form source filename: \""
+        << source
+        << "\""
+        << SNAP_LOG_SEND;
 
     return source;
 }
@@ -2400,7 +2424,6 @@ void form::on_copy_branch_cells(libdbproxy::cells& source_cells, libdbproxy::row
 
 
 
-
-SNAP_PLUGIN_END()
-
+} // namespace form
+} // namespace snap
 // vim: ts=4 sw=4 et

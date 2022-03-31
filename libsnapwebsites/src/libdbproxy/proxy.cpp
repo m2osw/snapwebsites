@@ -1,57 +1,50 @@
-/*
- * Text:
- *      libsnapwebsites/src/libdbproxy/proxy.cpp
- *
- * Description:
- *      Handle sending CQL orders to the snapproxy and receiving the
- *      Cassandra results.
- *
- * Documentation:
- *      See each function below.
- *
- * License:
- *      Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
- *
- *      https://snapwebsites.org/
- *      contact@m2osw.com
- *
- *      Permission is hereby granted, free of charge, to any person obtaining a
- *      copy of this software and associated documentation files (the
- *      "Software"), to deal in the Software without restriction, including
- *      without limitation the rights to use, copy, modify, merge, publish,
- *      distribute, sublicense, and/or sell copies of the Software, and to
- *      permit persons to whom the Software is furnished to do so, subject to
- *      the following conditions:
- *
- *      The above copyright notice and this permission notice shall be included
- *      in all copies or substantial portions of the Software.
- *
- *      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- *      OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- *      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- *      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- *      CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // ourselves
 //
 #include "libdbproxy/proxy.h"
 #include "libdbproxy/libdbproxy.h"
 
-#include <snapwebsites/log.h>
 
-// 3rd party lib
+// snaplogger lib
+//
+#include <snaplogger/message.h>
+
+
+// Qt lib
 //
 #include <QtCore>
+
 
 // C++ lib
 //
 #include <iostream>
 #include <sstream>
 
-// OS libs
+
+// C libs
 //
 #include <openssl/err.h>
 #include <unistd.h>
@@ -206,7 +199,9 @@ order_result proxy::sendOrder(order const & order)
     //
     if(static_cast<int>(bio_write(encoded.data(), encoded.size())) != encoded.size())
     {
-        SNAP_LOG_DEBUG("++++ bio_write() failed!");
+        SNAP_LOG_DEBUG
+            << "++++ bio_write() failed!"
+            << SNAP_LOG_SEND;
         return result;
     }
 
@@ -222,7 +217,13 @@ order_result proxy::sendOrder(order const & order)
         int const r(bio_read(buf, sizeof(buf)));
         if(r != sizeof(buf)) // 4 letters + 4 bytes for size
         {
-            SNAP_LOG_DEBUG("++++ bio_read() could not read ")(sizeof(buf))(" bytes of header, instead it got ")(r)(" bytes, so it failed!");
+            SNAP_LOG_DEBUG
+                << "++++ bio_read() could not read "
+                << sizeof(buf)
+                << " bytes of header, instead it got "
+                << r
+                << " bytes, so it failed!"
+                << SNAP_LOG_SEND;
             return result;
         }
 
@@ -238,7 +239,10 @@ order_result proxy::sendOrder(order const & order)
         //
         if(reply_size > 200 * 1024 * 1024)
         {
-            SNAP_LOG_DEBUG("++++ reply_size out of bounds! (max. 200Mb) size=")(reply_size);
+            SNAP_LOG_DEBUG
+                << "++++ reply_size out of bounds! (max. 200Mb) size="
+                << reply_size
+                << SNAP_LOG_SEND;
             return result;
         }
 
@@ -247,7 +251,10 @@ order_result proxy::sendOrder(order const & order)
         {
             if(static_cast<uint32_t>(bio_read(reply.get(), reply_size)) != reply_size)
             {
-                SNAP_LOG_DEBUG("++++ reply_size not read! size=")(reply_size);
+                SNAP_LOG_DEBUG
+                    << "++++ reply_size not read! size="
+                    << reply_size
+                    << SNAP_LOG_SEND;
                 return result;
             }
         }
@@ -294,7 +301,9 @@ order proxy::receiveOrder(proxy_io & io)
 {
     if(!f_host.isEmpty())
     {
-        SNAP_LOG_DEBUG("++++ receiveOrder(): f_host is not empty!");
+        SNAP_LOG_DEBUG
+            << "++++ receiveOrder(): f_host is not empty!"
+            << SNAP_LOG_SEND;
         throw exception("proxy::receiveOrder() called from the client...");
     }
 
@@ -312,11 +321,13 @@ order proxy::receiveOrder(proxy_io & io)
         // this one happens all the time when the client exits without
         // sending a clean disconnect to the snapdbproxy daemon
         //
-        SNAP_LOG_DEBUG("++++ io.read() could not read ")
-                      (sizeof(buf))
-                      (" bytes of header, instead it got ")
-                      (r)
-                      (" bytes, so it failed!");
+        SNAP_LOG_DEBUG
+            << "++++ io.read() could not read "
+            << sizeof(buf)
+            << " bytes of header, instead it got "
+            << r
+            << " bytes, so it failed!"
+            << SNAP_LOG_SEND;
         return order;
     }
 
@@ -330,14 +341,19 @@ order proxy::receiveOrder(proxy_io & io)
     //
     if(order_size > 200 * 1024 * 1024)
     {
-        SNAP_LOG_DEBUG("++++ order_size out of bounds! (max. 200Mb) size=")(order_size);
+        SNAP_LOG_DEBUG
+            << "++++ order_size out of bounds! (max. 200Mb) size="
+            << order_size
+            << SNAP_LOG_SEND;
         return order;
     }
 
     std::string const command(reinterpret_cast<char const *>(buf), 4);
     if(command != "CQLP")
     {
-        SNAP_LOG_DEBUG("++++ wrong command!");
+        SNAP_LOG_DEBUG
+            << "++++ wrong command!"
+            << SNAP_LOG_SEND;
         return order;
     }
 
@@ -346,13 +362,17 @@ order proxy::receiveOrder(proxy_io & io)
     fast_buffer order_data(order_size);
     if(static_cast<uint32_t>(io.read(order_data.get(), order_size)) != order_size)
     {
-        SNAP_LOG_DEBUG("++++ io.read() error!");
+        SNAP_LOG_DEBUG
+            << "++++ io.read() error!"
+            << SNAP_LOG_SEND;
         return order;
     }
 
     if(!order.decodeOrder(reinterpret_cast<unsigned char const *>(order_data.get()), order_size))
     {
-        SNAP_LOG_DEBUG("++++ decodeOrder() failed!");
+        SNAP_LOG_DEBUG
+            << "++++ decodeOrder() failed!"
+            << SNAP_LOG_SEND;
         return order;
     }
 

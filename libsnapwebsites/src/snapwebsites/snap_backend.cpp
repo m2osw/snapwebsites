@@ -26,8 +26,12 @@
 // snapwebsites lib
 //
 #include "snapwebsites/snapwebsites.h"
-#include "snapwebsites/log.h"
 #include "snapwebsites/snap_lock.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // snapdev lib

@@ -40,18 +40,12 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class antihammering_exception : public snap_exception
-{
-public:
-    explicit antihammering_exception(char const *        what_msg) : snap_exception("Antihammering URL", what_msg) {}
-    explicit antihammering_exception(std::string const & what_msg) : snap_exception("Antihammering URL", what_msg) {}
-    explicit antihammering_exception(QString const &     what_msg) : snap_exception("Antihammering URL", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(antihammering_exception);
 
 
 
 class antihammering
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                             antihammering();
@@ -63,10 +57,6 @@ public:
     static antihammering *  instance();
 
     // plugins::plugin implementation
-    virtual QString         icon() const override;
-    virtual QString         description() const override;
-    virtual QString         settings_path() const override;
-    virtual QString         dependencies() const override;
     virtual int64_t         do_update(int64_t last_updated) override;
     virtual void            bootstrap(snap_child * snap) override;
 

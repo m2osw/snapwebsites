@@ -16,7 +16,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/tcp_client_server.h"
+#include "eventdispatcher/tcp_bio_client.h"
 
 #include <map>
 #include <vector>
@@ -129,7 +129,7 @@ public:
 private:
     friend http_client;
 
-    void            read_response(tcp_client_server::bio_client::pointer_t connection);
+    void            read_response(ed::tcp_bio_client::pointer_t connection);
 
     std::string                 f_original_header = std::string();
     protocol_t                  f_protocol = protocol_t::UNKNOWN;
@@ -155,10 +155,10 @@ public:
     http_response::pointer_t    send_request(http_request const & request);
 
 private:
-    bool                                        f_keep_alive = true;
-    tcp_client_server::bio_client::pointer_t    f_connection = tcp_client_server::bio_client::pointer_t();
-    std::string                                 f_host = std::string();
-    int32_t                                     f_port = -1;
+    bool                            f_keep_alive = true;
+    ed::tcp_bio_client::pointer_t   f_connection = ed::tcp_bio_client::pointer_t();
+    std::string                     f_host = std::string();
+    int32_t                         f_port = -1;
 };
 
 

@@ -37,7 +37,7 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class webform
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                         webform();
@@ -49,10 +49,6 @@ public:
     static webform *    instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

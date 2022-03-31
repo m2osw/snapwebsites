@@ -19,43 +19,30 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// lib snapwebsites
+// libexcept
 //
-#include <snapwebsites/snap_exception.h>
+#include    <libexcept/exception.h>
 
-// C++ lib
+
+// Qt
 //
-#include <memory>
-#include <set>
-#include <vector>
+#include    <QString>
+
+
+// C++
+//
+#include    <memory>
+#include    <set>
+#include    <vector>
 
 
 namespace snap
 {
 
-class flags_exception : public snap_exception
-{
-public:
-    flags_exception(char const *        what_msg) : snap_exception("flags", what_msg) {}
-    flags_exception(std::string const & what_msg) : snap_exception("flags", what_msg) {}
-    flags_exception(QString const &     what_msg) : snap_exception("flags", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(flags_exception);
 
-class flags_exception_invalid_parameter : public flags_exception
-{
-public:
-    flags_exception_invalid_parameter(char const *        what_msg) : flags_exception(what_msg) {}
-    flags_exception_invalid_parameter(std::string const & what_msg) : flags_exception(what_msg) {}
-    flags_exception_invalid_parameter(QString const &     what_msg) : flags_exception(what_msg) {}
-};
-
-class flags_exception_too_many_flags : public flags_exception
-{
-public:
-    flags_exception_too_many_flags(char const *        what_msg) : flags_exception(what_msg) {}
-    flags_exception_too_many_flags(std::string const & what_msg) : flags_exception(what_msg) {}
-    flags_exception_too_many_flags(QString const &     what_msg) : flags_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(flags_exception, flags_exception_invalid_parameter);
+DECLARE_EXCEPTION(flags_exception, flags_exception_too_many_flags);
 
 
 
@@ -113,7 +100,7 @@ public:
 
 private:
     static void                 valid_name(std::string & name);
-    static void                 load_flag(std::string const & filename, vector_t * result);
+    static void                 load_flag(int index, std::string const & filename, vector_t * result);
 
     state_t                     f_state             = state_t::STATE_UP;
     std::string                 f_unit              = std::string();

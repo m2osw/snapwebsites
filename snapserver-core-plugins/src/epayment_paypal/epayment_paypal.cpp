@@ -17,52 +17,77 @@
 
 // self
 //
-#include "epayment_paypal.h"
+#include    "epayment_paypal.h"
 
 
 // other plugins
 //
-#include "../editor/editor.h"
-#include "../messages/messages.h"
-#include "../output/output.h"
+#include    "../editor/editor.h"
+#include    "../messages/messages.h"
+#include    "../output/output.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/snap_lock.h>
-#include <snapwebsites/tcp_client_server.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/snap_lock.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// as2js lib
+// snapdev
 //
-#include <as2js/json.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// as2js
 //
-#include <iostream>
+#include    <as2js/json.h>
 
 
-// OpenSSL lib
+// C++
 //
-#include <openssl/rand.h>
+#include    <iostream>
+
+
+// OpenSSL
+//
+#include    <openssl/rand.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(epayment_paypal, 1, 0)
+namespace snap
+{
+namespace epayment_paypal
+{
+
+
+CPPTHREAD_PLUGIN_START(epayment_paypal, 1, 0)
+    , ::cppthread::plugin_description(
+            "The PayPal e-Payment Facility plugin offers payment from the"
+            " client's PayPal account.")
+    , ::cppthread::plugin_icon("/images/epayment/paypal-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/epayment/paypal")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("epayment")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /* \brief Get a fixed epayment name.
@@ -251,89 +276,6 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the epayment_paypal plugin.
- *
- * This function is used to initialize the epayment_paypal plugin object.
- */
-epayment_paypal::epayment_paypal()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the epayment_paypal plugin.
- *
- * Ensure the epayment_paypal object is clean before it is gone.
- */
-epayment_paypal::~epayment_paypal()
-{
-}
-
-
-/** \brief Get a pointer to the epayment_paypal plugin.
- *
- * This function returns an instance pointer to the epayment_paypal plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the epayment_paypal plugin.
- */
-epayment_paypal * epayment_paypal::instance()
-{
-    return g_plugin_epayment_paypal_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString epayment_paypal::settings_path() const
-{
-    return "/admin/settings/epayment/paypal";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString epayment_paypal::icon() const
-{
-    return "/images/epayment/paypal-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString epayment_paypal::description() const
-{
-    return "The PayPal e-Payment Facility plugin offers payment from the"
-          " client's PayPal account.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString epayment_paypal::dependencies() const
-{
-    return "|editor|epayment|filter|messages|output|path|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -570,7 +512,11 @@ void epayment_paypal::on_generate_main_content(content::path_info_t & ipath, QDo
 bool epayment_paypal::on_path_execute(content::path_info_t & ipath)
 {
     QString const cpath(ipath.get_cpath());
-SNAP_LOG_DEBUG() << "epayment_paypal::on_path_execute() cpath = [" << cpath << "]";
+SNAP_LOG_DEBUG
+<< "epayment_paypal::on_path_execute() cpath = ["
+<< cpath
+<< "]"
+<< SNAP_LOG_SEND;
     if(cpath == get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_CANCEL_URL)
     || cpath == get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_CANCEL_PLAN_URL))
     {
@@ -627,7 +573,13 @@ SNAP_LOG_DEBUG() << "epayment_paypal::on_path_execute() cpath = [" << cpath << "
             }
 
             QString const id(main_uri.query_option("paymentId"));
-SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() << "]";
+SNAP_LOG_DEBUG
+<< "paymentId is ["
+<< id
+<< "] ["
+<< main_uri.full_domain()
+<< "]"
+<< SNAP_LOG_SEND;
             QString const date_invoice(epayment_paypal_table->getRow(main_uri.full_domain())->getCell("id/" + id)->getValue().stringValue());
             int const pos(date_invoice.indexOf(','));
             if(pos < 1)
@@ -894,7 +846,9 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             as2js::JSON::JSONValue::pointer_t value(json->parse(in));
             if(!value)
             {
-                SNAP_LOG_ERROR("JSON parser failed parsing 'execute' response");
+                SNAP_LOG_ERROR
+                    << "JSON parser failed parsing 'execute' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("JSON parser failed parsing 'execute' response");
             }
             as2js::JSON::JSONValue::object_t const & object(value->get_object());
@@ -903,13 +857,17 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             // verify that the payment identifier corresponds to what we expect
             if(object.find("id") == object.end())
             {
-                SNAP_LOG_ERROR("'id' missing in 'execute' response");
+                SNAP_LOG_ERROR
+                    << "'id' missing in 'execute' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("'id' missing in 'execute' response");
             }
             QString const execute_id(QString::fromUtf8(object.at("id")->get_string().to_utf8().c_str()));
             if(execute_id != id)
             {
-                SNAP_LOG_ERROR("'id' in 'execute' response is not the same as the invoice 'id'");
+                SNAP_LOG_ERROR
+                    << "'id' in 'execute' response is not the same as the invoice 'id'"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("'id' in 'execute' response is not the same as the invoice 'id'");
             }
 
@@ -917,12 +875,16 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             // verify that: "intent" == "sale"
             if(object.find("intent") == object.end())
             {
-                SNAP_LOG_ERROR("'intent' missing in 'execute' response");
+                SNAP_LOG_ERROR
+                    << "'intent' missing in 'execute' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("'intent' missing in 'execute' response");
             }
             if(object.at("intent")->get_string() != "sale")
             {
-                SNAP_LOG_ERROR("'intent' in 'execute' response is not 'sale'");
+                SNAP_LOG_ERROR
+                    << "'intent' in 'execute' response is not 'sale'"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("'intent' in 'execute' response is not 'sale'");
             }
 
@@ -930,7 +892,9 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             // now check the state of the sale
             if(object.find("state") == object.end())
             {
-                SNAP_LOG_ERROR("'state' missing in 'execute' response");
+                SNAP_LOG_ERROR
+                    << "'state' missing in 'execute' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("'state' missing in 'execute' response");
             }
             if(object.at("state")->get_string() == "approved")
@@ -979,7 +943,13 @@ SNAP_LOG_DEBUG() << "paymentId is [" << id << "] [" << main_uri.full_domain() <<
             libdbproxy::table::pointer_t epayment_paypal_table(get_epayment_paypal_table());
 
             QString const token(main_uri.query_option("token"));
-SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
+SNAP_LOG_WARNING
+<< "*** token is ["
+<< token
+<< "] ["
+<< main_uri.full_domain()
+<< "]"
+<< SNAP_LOG_SEND;
             QString const date_invoice(epayment_paypal_table->getRow(main_uri.full_domain())->getCell("agreement/" + token)->getValue().stringValue());
             int const pos(date_invoice.indexOf(','));
             if(pos < 1)
@@ -1120,7 +1090,10 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
             execute_request.set_header("Authorization", QString("%1 %2").arg(token_type.c_str()).arg(access_token.c_str()).toUtf8().data());
             execute_request.set_header("PayPal-Request-Id", create_unique_request_id(invoice_ipath.get_key()));
             execute_request.set_data("{}");
-            //SNAP_LOG_INFO("Request: ")(execute_request.get_request());
+            //SNAP_LOG_INFO
+            //    << "Request: "
+            //    << execute_request.get_request()
+            //    << SNAP_LOG_SEND;
             http_client_server::http_response::pointer_t response(http.send_request(execute_request));
 
             secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_EXECUTED_AGREEMENT_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
@@ -1166,7 +1139,9 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
             as2js::JSON::JSONValue::pointer_t value(json->parse(in));
             if(!value)
             {
-                SNAP_LOG_ERROR("JSON parser failed parsing 'execute' response");
+                SNAP_LOG_ERROR
+                    << "JSON parser failed parsing 'execute' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("JSON parser failed parsing 'execute' response");
             }
             as2js::JSON::JSONValue::object_t const & object(value->get_object());
@@ -1176,7 +1151,9 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
             // we get a subscription ID in the result
             if(object.find("id") == object.end())
             {
-                SNAP_LOG_ERROR("'id' missing in 'execute' response");
+                SNAP_LOG_ERROR
+                    << "'id' missing in 'execute' response"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("'id' missing in 'execute' response");
             }
             QString const execute_id(QString::fromUtf8(object.at("id")->get_string().to_utf8().c_str()));
@@ -1188,7 +1165,9 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
             // use to handle this recurring payment
             if(object.find("links") == object.end())
             {
-                SNAP_LOG_ERROR("agreement links missing");
+                SNAP_LOG_ERROR
+                    << "agreement links missing"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("agreement links missing");
             }
             QString agreement_url;
@@ -1206,19 +1185,25 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
                         // the method has to be POST
                         if(link_object.find("method") == link_object.end())
                         {
-                            SNAP_LOG_ERROR("PayPal link \"self\" has no \"method\" parameter");
+                            SNAP_LOG_ERROR
+                                << "PayPal link \"self\" has no \"method\" parameter"
+                                << SNAP_LOG_SEND;
                             throw epayment_paypal_exception_io_error("PayPal link \"self\" has no \"method\" parameter");
                         }
                         // this is set to GET although we can use it with PATCH
                         // too...
                         if(link_object.at("method")->get_string() != "GET")
                         {
-                            SNAP_LOG_ERROR("PayPal link \"self\" has a \"method\" other than \"GET\"");
+                            SNAP_LOG_ERROR
+                                << "PayPal link \"self\" has a \"method\" other than \"GET\""
+                                << SNAP_LOG_SEND;
                             throw epayment_paypal_exception_io_error("PayPal link \"self\" has a \"method\" other than \"GET\"");
                         }
                         if(link_object.find("href") == link_object.end())
                         {
-                            SNAP_LOG_ERROR("PayPal link \"self\" has no \"href\" parameter");
+                            SNAP_LOG_ERROR
+                                << "PayPal link \"self\" has no \"href\" parameter"
+                                << SNAP_LOG_SEND;
                             throw epayment_paypal_exception_io_error("PayPal link \"self\" has no \"href\" parameter");
                         }
                         as2js::String const & plan_url_str(link_object.at("href")->get_string());
@@ -1230,7 +1215,9 @@ SNAP_LOG_WARNING("*** token is [")(token)("] [")(main_uri.full_domain())("]");
 
             if(agreement_url.isEmpty())
             {
-                SNAP_LOG_ERROR("agreement \"self\" link missing");
+                SNAP_LOG_ERROR
+                    << "agreement \"self\" link missing"
+                    << SNAP_LOG_SEND;
                 throw epayment_paypal_exception_io_error("agreement \"self\" link missing");
             }
 
@@ -1496,7 +1483,9 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     // we need a successful response
     if(response->get_response_code() != 200)
     {
-        SNAP_LOG_ERROR("OAuth2 request failed");
+        SNAP_LOG_ERROR
+            << "OAuth2 request failed"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("OAuth2 request failed");
     }
 
@@ -1504,7 +1493,9 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     if(!response->has_header("content-type")
     || response->get_header("content-type") != "application/json")
     {
-        SNAP_LOG_ERROR("OAuth2 request did not return application/json data");
+        SNAP_LOG_ERROR
+            << "OAuth2 request did not return application/json data"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("OAuth2 request did not return application/json data");
     }
 
@@ -1521,7 +1512,9 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     as2js::JSON::JSONValue::pointer_t value(json->parse(in));
     if(!value)
     {
-        SNAP_LOG_ERROR("JSON parser failed parsing 'oauth2' response");
+        SNAP_LOG_ERROR
+            << "JSON parser failed parsing 'oauth2' response"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("JSON parser failed parsing 'oauth2' response");
     }
     as2js::JSON::JSONValue::object_t const & object(value->get_object());
@@ -1530,7 +1523,9 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     // we should always have a token_type
     if(object.find("token_type") == object.end())
     {
-        SNAP_LOG_ERROR("oauth token_type missing");
+        SNAP_LOG_ERROR
+            << "oauth token_type missing"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("oauth token_type missing");
     }
     // at this point we expect "Bearer", but we assume it could change
@@ -1542,7 +1537,9 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     // we should always have an access token
     if(object.find("access_token") == object.end())
     {
-        SNAP_LOG_ERROR("oauth access_token missing");
+        SNAP_LOG_ERROR
+            << "oauth access_token missing"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("oauth access_token missing");
     }
     access_token = object.at("access_token")->get_string().to_utf8();
@@ -1552,7 +1549,9 @@ bool epayment_paypal::get_oauth2_token(http_client_server::http_client & http, s
     // get the amount of time the token will last in seconds
     if(object.find("expires_in") == object.end())
     {
-        SNAP_LOG_ERROR("oauth expires_in missing");
+        SNAP_LOG_ERROR
+            << "oauth expires_in missing"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("oauth expires_in missing");
     }
     // if defined, "expires_in" is an integer
@@ -1949,7 +1948,11 @@ QString epayment_paypal::get_product_plan(http_client_server::http_client & http
         // CHAR SET -- set in respone
     } // merchant preferences
 
-SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
+SNAP_LOG_DEBUG
+<< "PLAN JSON BODY: ["
+<< body->to_string().to_utf8()
+<< "]"
+<< SNAP_LOG_SEND;
 
     http_client_server::http_request create_plan_request;
     bool const debug(get_debug());
@@ -1971,7 +1974,10 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
     if(response->get_response_code() != 200
     && response->get_response_code() != 201)
     {
-        SNAP_LOG_ERROR("creating a plan failed with response code ")(response->get_response_code());
+        SNAP_LOG_ERROR
+            << "creating a plan failed with response code "
+            << response->get_response_code()
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("creating a plan failed");
     }
 
@@ -1979,7 +1985,9 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
     if(!response->has_header("content-type")
     || response->get_header("content-type") != "application/json")
     {
-        SNAP_LOG_ERROR("plan creation request did not return application/json data");
+        SNAP_LOG_ERROR
+            << "plan creation request did not return application/json data"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("plan creation request did not return application/json data");
     }
 
@@ -1989,7 +1997,9 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
     as2js::JSON::JSONValue::pointer_t value(json->parse(in));
     if(!value)
     {
-        SNAP_LOG_ERROR("JSON parser failed parsing plan creation response");
+        SNAP_LOG_ERROR
+            << "JSON parser failed parsing plan creation response"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("JSON parser failed parsing plan creation response");
     }
     as2js::JSON::JSONValue::object_t const & object(value->get_object());
@@ -1999,14 +2009,18 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
     // the state should be "created" at this point
     if(object.find("state") == object.end())
     {
-        SNAP_LOG_ERROR("plan status missing");
+        SNAP_LOG_ERROR
+            << "plan status missing"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("plan status missing");
     }
     // TODO: the case should not change, but PayPal suggest you test
     //       statuses in a case insensitive manner
     if(object.at("state")->get_string() != "CREATED")
     {
-        SNAP_LOG_ERROR("PayPal plan status is not \"CREATED\" as expected");
+        SNAP_LOG_ERROR
+            << "PayPal plan status is not \"CREATED\" as expected"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("PayPal plan status is not \"CREATED\" as expected");
     }
 
@@ -2015,7 +2029,9 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
     // get the "id" of this new plan
     if(object.find("id") == object.end())
     {
-        SNAP_LOG_ERROR("plan identifier missing");
+        SNAP_LOG_ERROR
+            << "plan identifier missing"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("plan identifier missing");
     }
     as2js::String const id_string(object.at("id")->get_string());
@@ -2033,7 +2049,9 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
     // apply the following orders to the plan
     if(object.find("links") == object.end())
     {
-        SNAP_LOG_ERROR("plan links missing");
+        SNAP_LOG_ERROR
+            << "plan links missing"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("plan links missing");
     }
     QString plan_url;
@@ -2051,19 +2069,25 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
                 // the method has to be POST
                 if(link_object.find("method") == link_object.end())
                 {
-                    SNAP_LOG_ERROR("PayPal link \"self\" has no \"method\" parameter");
+                    SNAP_LOG_ERROR
+                        << "PayPal link \"self\" has no \"method\" parameter"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("PayPal link \"self\" has no \"method\" parameter");
                 }
                 // this is set to GET although we can use it with PATCH
                 // too...
                 if(link_object.at("method")->get_string() != "GET")
                 {
-                    SNAP_LOG_ERROR("PayPal link \"self\" has a \"method\" other than \"GET\"");
+                    SNAP_LOG_ERROR
+                        << "PayPal link \"self\" has a \"method\" other than \"GET\""
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("PayPal link \"self\" has a \"method\" other than \"GET\"");
                 }
                 if(link_object.find("href") == link_object.end())
                 {
-                    SNAP_LOG_ERROR("PayPal link \"self\" has no \"href\" parameter");
+                    SNAP_LOG_ERROR
+                        << "PayPal link \"self\" has no \"href\" parameter"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("PayPal link \"self\" has no \"href\" parameter");
                 }
                 as2js::String const & plan_url_str(link_object.at("href")->get_string());
@@ -2075,7 +2099,9 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
 
     if(plan_url.isEmpty())
     {
-        SNAP_LOG_ERROR("plan \"self\" link missing");
+        SNAP_LOG_ERROR
+            << "plan \"self\" link missing"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("payment \"self\" link missing");
     }
 
@@ -2125,7 +2151,11 @@ SNAP_LOG_DEBUG() << "PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
         value_object->set_member("state", field);
     }
 
-SNAP_LOG_DEBUG() << "ACTIVATED PLAN JSON BODY: [" << body->to_string().to_utf8() << "]";
+SNAP_LOG_DEBUG
+<< "ACTIVATED PLAN JSON BODY: ["
+<< body->to_string().to_utf8()
+<< "]"
+<< SNAP_LOG_SEND;
 
     http_client_server::http_request activate_plan_request;
     activate_plan_request.set_uri(plan_url.toUtf8().data());
@@ -2143,7 +2173,11 @@ SNAP_LOG_DEBUG() << "ACTIVATED PLAN JSON BODY: [" << body->to_string().to_utf8()
 
     secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_ACTIVATED_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
     secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_ACTIVATED_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
-SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().c_str()) << "]";
+SNAP_LOG_DEBUG
+<< "answer is ["
+<< QString::fromUtf8(response->get_response().c_str())
+<< "]"
+<< SNAP_LOG_SEND;
 
     // we need a successful response (according to the documentation,
     // it should always be 204, but we are getting a 200 answer)
@@ -2151,7 +2185,9 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
     && response->get_response_code() != 201
     && response->get_response_code() != 204)
     {
-        SNAP_LOG_ERROR("marking plan as ACTIVE failed");
+        SNAP_LOG_ERROR
+            << "marking plan as ACTIVE failed"
+            << SNAP_LOG_SEND;
         throw epayment_paypal_exception_io_error("marking plan as ACTIVE failed");
     }
 
@@ -2519,9 +2555,12 @@ void epayment_paypal::on_process_post(QString const & uri_path)
                     body->set_member("start_date", field);
                 }
 
-SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
+SNAP_LOG_DEBUG
+<< "AGREEMENT JSON BODY: ["
 << body->to_string().to_utf8()
-<< "] *** URL: " << plan_url;
+<< "] *** URL: "
+<< plan_url
+<< SNAP_LOG_SEND;
 
                 http_client_server::http_request create_agreement_request;
                 bool const debug(get_debug());
@@ -2545,7 +2584,10 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                 && response->get_response_code() != 201)
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("creating a plan failed with response code ")(response->get_response_code());
+                    SNAP_LOG_ERROR
+                        << "creating a plan failed with response code "
+                        << response->get_response_code()
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("creating a plan failed");
                 }
 
@@ -2554,7 +2596,9 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                 || response->get_header("content-type") != "application/json")
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("plan creation request did not return application/json data");
+                    SNAP_LOG_ERROR
+                        << "plan creation request did not return application/json data"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("plan creation request did not return application/json data");
                 }
 
@@ -2565,7 +2609,9 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                 if(!value)
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("JSON parser failed parsing plan creation response");
+                    SNAP_LOG_ERROR
+                        << "JSON parser failed parsing plan creation response"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("JSON parser failed parsing plan creation response");
                 }
                 as2js::JSON::JSONValue::object_t const & object(value->get_object());
@@ -2577,14 +2623,18 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                 if(object.find("plan") == object.end())
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("plan object missing in agreement");
+                    SNAP_LOG_ERROR
+                        << "plan object missing in agreement"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("plan object missing in agreement");
                 }
                 as2js::JSON::JSONValue::object_t const & plan(object.at("plan")->get_object());
                 if(plan.find("state") == plan.end())
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("plan status missing in agreement");
+                    SNAP_LOG_ERROR
+                        << "plan status missing in agreement"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("plan status missing in agreement");
                 }
                 // TODO: the case should not change, but PayPal suggest you test
@@ -2592,7 +2642,9 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                 if(plan.at("state")->get_string() != "ACTIVE")
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("PayPal plan status is not \"ACTIVE\" as expected when creating an agreement");
+                    SNAP_LOG_ERROR
+                        << "PayPal plan status is not \"ACTIVE\" as expected when creating an agreement"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("PayPal plan status is not \"ACTIVE\" as expected when creating an agreement");
                 }
 
@@ -2602,7 +2654,9 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                 if(object.find("links") == object.end())
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("agreement links missing");
+                    SNAP_LOG_ERROR
+                        << "agreement links missing"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("agreement links missing");
                 }
                 as2js::JSON::JSONValue::array_t const & links(object.at("links")->get_array());
@@ -2620,19 +2674,25 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                             if(link_object.find("method") == link_object.end())
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"approval_url\" has no \"method\" parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"approval_url\" has no \"method\" parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"approval_url\" has no \"method\" parameter");
                             }
                             if(link_object.at("method")->get_string() != "REDIRECT")
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"approval_url\" has a \"method\" other than \"REDIRECT\"");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"approval_url\" has a \"method\" other than \"REDIRECT\""
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"approval_url\" has a \"method\" other than \"REDIRECT\"");
                             }
                             if(link_object.find("href") == link_object.end())
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"approval_url\" has no \"href\" parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"approval_url\" has no \"href\" parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"approval_url\" has no \"href\" parameter");
                             }
                             as2js::String const & href(link_object.at("href")->get_string());
@@ -2645,7 +2705,9 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                             if(!redirect_uri.has_query_option("token"))
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"approval_url\" has no \"token\" query string parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"approval_url\" has no \"token\" query string parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"approval_url\" has no \"token\" query string parameter");
                             }
                             // The Cancel URL only receives the token,
@@ -2662,19 +2724,25 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
                             if(link_object.find("method") == link_object.end())
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"execute\" has no \"method\" parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"execute\" has no \"method\" parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"execute\" has no \"method\" parameter");
                             }
                             if(link_object.at("method")->get_string() != "POST")
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"execute\" has a \"method\" other than \"POST\"");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"execute\" has a \"method\" other than \"POST\""
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"execute\" has a \"method\" other than \"POST\"");
                             }
                             if(link_object.find("href") == link_object.end())
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"execute\" has no \"href\" parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"execute\" has no \"href\" parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"execute\" has no \"href\" parameter");
                             }
                             as2js::String const & href(link_object.at("href")->get_string());
@@ -3001,7 +3069,8 @@ SNAP_LOG_DEBUG() << "AGREEMENT JSON BODY: ["
 
 SNAP_LOG_DEBUG() << "JSON BODY: ["
 << body->to_string().to_utf8()
-<< "]";
+<< "]"
+<< SNAP_LOG_SEND;
 
                 http_client_server::http_request payment_request;
                 bool const debug(get_debug());
@@ -3023,7 +3092,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 if(response->get_response_code() != 200
                 && response->get_response_code() != 201)
                 {
-                    SNAP_LOG_ERROR("creating a sale payment failed");
+                    SNAP_LOG_ERROR
+                        << "creating a sale payment failed"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("creating a sale payment failed");
                 }
 
@@ -3032,7 +3103,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 || response->get_header("content-type") != "application/json")
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("sale request did not return application/json data");
+                    SNAP_LOG_ERROR
+                        << "sale request did not return application/json data"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("sale request did not return application/json data");
                 }
 
@@ -3043,7 +3116,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 if(!value)
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("JSON parser failed parsing sale response");
+                    SNAP_LOG_ERROR
+                        << "JSON parser failed parsing sale response"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("JSON parser failed parsing sale response");
                 }
                 as2js::JSON::JSONValue::object_t const & object(value->get_object());
@@ -3054,7 +3129,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 if(object.find("state") == object.end())
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("payment state missing");
+                    SNAP_LOG_ERROR
+                        << "payment state missing"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("payment state missing");
                 }
                 // TODO: the case should not change, but PayPal suggest you test
@@ -3062,7 +3139,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 if(object.at("state")->get_string() != "created")
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("PayPal payment status is not \"created\" as expected");
+                    SNAP_LOG_ERROR
+                        << "PayPal payment status is not \"created\" as expected"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("PayPal payment status is not \"created\" as expected");
                 }
 
@@ -3075,7 +3154,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                     if(object.at("intent")->get_string() != "sale")
                     {
                         epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                        SNAP_LOG_ERROR("PayPal payment status is not \"created\" as expected");
+                        SNAP_LOG_ERROR
+                            << "PayPal payment status is not \"created\" as expected"
+                            << SNAP_LOG_SEND;
                         throw epayment_paypal_exception_io_error("PayPal payment status is not \"created\" as expected");
                     }
                 }
@@ -3086,7 +3167,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 if(object.find("id") == object.end())
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("payment identifier missing");
+                    SNAP_LOG_ERROR
+                        << "payment identifier missing"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("payment identifier missing");
                 }
                 as2js::String const & id_string(object.at("id")->get_string());
@@ -3114,7 +3197,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                 if(object.find("links") == object.end())
                 {
                     epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                    SNAP_LOG_ERROR("payment links missing");
+                    SNAP_LOG_ERROR
+                        << "payment links missing"
+                        << SNAP_LOG_SEND;
                     throw epayment_paypal_exception_io_error("payment links missing");
                 }
                 as2js::JSON::JSONValue::array_t const & links(object.at("links")->get_array());
@@ -3132,19 +3217,25 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                             if(link_object.find("method") == link_object.end())
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"approval_url\" has no \"method\" parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"approval_url\" has no \"method\" parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"approval_url\" has no \"method\" parameter");
                             }
                             if(link_object.at("method")->get_string() != "REDIRECT")
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"approval_url\" has a \"method\" other than \"REDIRECT\"");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"approval_url\" has a \"method\" other than \"REDIRECT\""
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"approval_url\" has a \"method\" other than \"REDIRECT\"");
                             }
                             if(link_object.find("href") == link_object.end())
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"approval_url\" has no \"href\" parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"approval_url\" has no \"href\" parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"approval_url\" has no \"href\" parameter");
                             }
                             as2js::String const & href(link_object.at("href")->get_string());
@@ -3157,7 +3248,9 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                             if(!redirect_uri.has_query_option("token"))
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"approval_url\" has no \"token\" query string parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"approval_url\" has no \"token\" query string parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"approval_url\" has no \"token\" query string parameter");
                             }
                             // The Cancel URL only receives the token,
@@ -3173,19 +3266,25 @@ SNAP_LOG_DEBUG() << "JSON BODY: ["
                             if(link_object.find("method") == link_object.end())
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"execute\" has no \"method\" parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"execute\" has no \"method\" parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"execute\" has no \"method\" parameter");
                             }
                             if(link_object.at("method")->get_string() != "POST")
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"execute\" has a \"method\" other than \"POST\"");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"execute\" has a \"method\" other than \"POST\""
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"execute\" has a \"method\" other than \"POST\"");
                             }
                             if(link_object.find("href") == link_object.end())
                             {
                                 epayment_plugin->set_invoice_status(invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-                                SNAP_LOG_ERROR("PayPal link \"execute\" has no \"href\" parameter");
+                                SNAP_LOG_ERROR
+                                    << "PayPal link \"execute\" has no \"href\" parameter"
+                                    << SNAP_LOG_SEND;
                                 throw epayment_paypal_exception_io_error("PayPal link \"execute\" has no \"href\" parameter");
                             }
                             as2js::String const & href(link_object.at("href")->get_string());
@@ -3357,7 +3456,11 @@ void epayment_paypal::on_repeat_payment(content::path_info_t & first_invoice_ipa
         // since this code is likely to run once every 5 min. and we could
         // have thousands of invoices, we do not print out an error message
         // nor an INFO log; still emit a DEBUG message, just in case
-        SNAP_LOG_DEBUG("The PayPal recurring payment facility will not attempt plan processing of the same invoice (")(new_invoice_ipath.get_key())(") more than once a day.");
+        SNAP_LOG_DEBUG
+            << "The PayPal recurring payment facility will not attempt plan processing of the same invoice ("
+            << new_invoice_ipath.get_key()
+            << ") more than once a day."
+            << SNAP_LOG_SEND;
         return;
     }
     new_invoice_revision_row->getCell(get_name(name_t::SNAP_NAME_EPAYMENT_PAYPAL_LAST_ATTEMPT))->setValue(start_date);
@@ -3397,7 +3500,11 @@ void epayment_paypal::on_repeat_payment(content::path_info_t & first_invoice_ipa
         //
         //    https://api.sandbox.paypal.com/v1/payments/billing-agreements/I-123
         //
-SNAP_LOG_DEBUG() << "agreement URL is [" << agreement_url << "]";
+SNAP_LOG_DEBUG
+<< "agreement URL is ["
+<< agreement_url
+<< "]"
+<< SNAP_LOG_SEND;
         paypal_agreement_request.set_uri(agreement_url.toUtf8().data());
         //paypal_agreement_request.set_path("...");
         //paypal_agreement_request.set_port(443); // https
@@ -3411,7 +3518,11 @@ SNAP_LOG_DEBUG() << "agreement URL is [" << agreement_url << "]";
 
         secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CHECK_BILL_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
         secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_CHECK_BILL_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
-SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().c_str()) << "]";
+SNAP_LOG_DEBUG
+<< "answer is ["
+<< response->get_response()
+<< "]"
+<< SNAP_LOG_SEND;
 
         // we need a successful response (according to the documentation,
         // it should always be 204, but we are getting a 200 answer)
@@ -3438,7 +3549,9 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         if(!value)
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("JSON parser failed parsing 'agreement' response");
+            SNAP_LOG_ERROR
+                << "JSON parser failed parsing 'agreement' response"
+                << SNAP_LOG_SEND;
             return;
         }
         as2js::JSON::JSONValue::object_t const & object(value->get_object());
@@ -3448,14 +3561,18 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         if(object.find("id") == object.end())
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("'id' missing in 'agreement' response");
+            SNAP_LOG_ERROR
+                << "'id' missing in 'agreement' response"
+                << SNAP_LOG_SEND;
             return;
         }
         QString const agreement_identifier(QString::fromUtf8(object.at("id")->get_string().to_utf8().c_str()));
         if(agreement_identifier != agreement_id.stringValue())
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("'id' in 'agreement' response is not the same as the invoice 'id'");
+            SNAP_LOG_ERROR
+                << "'id' in 'agreement' response is not the same as the invoice 'id'"
+                << SNAP_LOG_SEND;
             return;
         }
 
@@ -3464,14 +3581,18 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         if(object.find("state") == object.end())
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("'state' missing in 'agreement' response");
+            SNAP_LOG_ERROR
+                << "'state' missing in 'agreement' response"
+                << SNAP_LOG_SEND;
             return;
         }
         QString const agreement_state(QString::fromUtf8(object.at("id")->get_string().to_utf8().c_str()));
         if(agreement_state.compare("Active", Qt::CaseInsensitive) == 0)
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("'state' in 'agreement' response is not 'Active'");
+            SNAP_LOG_ERROR
+                << "'state' in 'agreement' response is not 'Active'"
+                << SNAP_LOG_SEND;
             return;
         }
 
@@ -3480,7 +3601,9 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         if(object.find("agreement_details") == object.end())
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("'agreement_details' missing in 'agreement' response");
+            SNAP_LOG_ERROR
+                << "'agreement_details' missing in 'agreement' response"
+                << SNAP_LOG_SEND;
             return;
         }
         as2js::JSON::JSONValue::object_t const & agreement_details(object.at("agreement_details")->get_object());
@@ -3490,7 +3613,9 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         if(agreement_details.find("outstanding_balance") == agreement_details.end())
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("'outstanding_balance' missing in 'agreement.agreement_details' response");
+            SNAP_LOG_ERROR
+                << "'outstanding_balance' missing in 'agreement.agreement_details' response"
+                << SNAP_LOG_SEND;
             return;
         }
         as2js::JSON::JSONValue::object_t const & outstanding_balance(agreement_details.at("outstanding_balance")->get_object());
@@ -3500,7 +3625,9 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         if(outstanding_balance.find("value") == outstanding_balance.end())
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("'value' missing in 'agreement.agreement_details.outstand_balance' response");
+            SNAP_LOG_ERROR
+                << "'value' missing in 'agreement.agreement_details.outstand_balance' response"
+                << SNAP_LOG_SEND;
             return;
         }
         // returned as a string even though it is a number
@@ -3510,14 +3637,18 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         if(!ok)
         {
             // TODO: change status of invoice to CANCELED?
-            SNAP_LOG_ERROR("'agreement.agreement_details.outstand_balance.value' is not a valid double");
+            SNAP_LOG_ERROR
+                << "'agreement.agreement_details.outstand_balance.value' is not a valid double"
+                << SNAP_LOG_SEND;
             return;
         }
 
         if(bv <= 0.0)
         {
             // TODO: show invoice number
-            SNAP_LOG_INFO("No outstanding balance according to PayPal. Try again later.");
+            SNAP_LOG_INFO
+                << "No outstanding balance according to PayPal. Try again later."
+                << SNAP_LOG_SEND;
             return;
         }
     }
@@ -3714,7 +3845,11 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_BILL_PLAN_HEADER))->setValue(QString::fromUtf8(response->get_original_header().c_str()));
         secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_BILL_PLAN))->setValue(QString::fromUtf8(response->get_response().c_str()));
         secret_row->getCell(get_name(name_t::SNAP_SECURE_NAME_EPAYMENT_PAYPAL_INVOICE_NUMBER))->setValue(invoice_number);
-SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().c_str()) << "]";
+SNAP_LOG_DEBUG
+<< "answer is ["
+<< response->get_response()
+<< "]"
+<< SNAP_LOG_SEND;
 
         // parse the response which is always JSON even on errors
         as2js::JSON::pointer_t json(new as2js::JSON);
@@ -3762,7 +3897,9 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
             //       error says the user canceled that plan)
             epayment_plugin->set_invoice_status(new_invoice_ipath, new_status);
 
-            SNAP_LOG_ERROR("processing recurring payment failed");
+            SNAP_LOG_ERROR
+                << "processing recurring payment failed"
+                << SNAP_LOG_SEND;
             throw epayment_paypal_exception_io_error("processing recurring payment failed");
         }
 
@@ -3770,7 +3907,9 @@ SNAP_LOG_DEBUG() << "answer is [" << QString::fromUtf8(response->get_response().
         {
             // this is double bad, completely failed
             epayment_plugin->set_invoice_status(new_invoice_ipath, epayment::name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED);
-            SNAP_LOG_ERROR("JSON parser failed parsing auto-payment response");
+            SNAP_LOG_ERROR
+                << "JSON parser failed parsing auto-payment response"
+                << SNAP_LOG_SEND;
             throw epayment_paypal_exception_io_error("JSON parser failed parsing auto-payment response");
         }
 
@@ -3827,6 +3966,8 @@ void epayment_paypal::on_table_is_accessible(QString const & table_name, server:
 // PayPal REST documentation at time of writing
 //   https://developer.paypal.com/webapps/developer/docs/api/
 
-SNAP_PLUGIN_END()
 
+
+} // namespace epayment_paypal
+} // namespace snap
 // vim: ts=4 sw=4 et

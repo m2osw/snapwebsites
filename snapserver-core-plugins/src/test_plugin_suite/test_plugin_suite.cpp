@@ -18,27 +18,43 @@
 
 // self
 //
-#include "test_plugin_suite.h"
+#include    "test_plugin_suite.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_used.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace test_plugin_suite
+{
 
-SNAP_PLUGIN_START(test_plugin_suite, 1, 0)
+
+CPPTHREAD_PLUGIN_START(test_plugin_suite, 1, 0)
+    , ::cppthread::plugin_description(
+            "The test_plugin_suite plugin is the low level test plugin"
+            " capability, which gives you the ability to implement unit"
+            " tests in your plugins. Use the test_plugin to run the tests.")
+    , ::cppthread::plugin_icon("/images/test-plugin/test-plugin-logo-64x64.jpg")
+    , ::cppthread::plugin_settings("/admin/test-plugin")
+    , ::cppthread::plugin_dependency("server")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \class test_plugin_suite
@@ -152,93 +168,6 @@ test_list_t::test_func_map_t const& test_list_t::get_tests() const
 
 
 
-/** \brief Initialize the test_plugin_suite plugin.
- *
- * This function is used to initialize the test_plugin_suite plugin object.
- */
-test_plugin_suite::test_plugin_suite()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the test_plugin_suite plugin.
- *
- * Ensure the test_plugin_suite object is clean before it is gone.
- */
-test_plugin_suite::~test_plugin_suite()
-{
-}
-
-
-/** \brief Get a pointer to the test_plugin_suite plugin.
- *
- * This function returns an instance pointer to the test_plugin_suite plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the test_plugin_suite plugin.
- */
-test_plugin_suite * test_plugin_suite::instance()
-{
-    return g_plugin_test_plugin_suite_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin "settings". In case of the
- * test plugin suite, this is really the page that allows one
- * to run the tests.
- */
-QString test_plugin_suite::settings_path() const
-{
-    return "/admin/test-plugin";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString test_plugin_suite::icon() const
-{
-    return "/images/test-plugin/test-plugin-logo-64x64.jpg";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString test_plugin_suite::description() const
-{
-    return "The test_plugin_suite plugin is the low level test plugin"
-          " capability, which gives you the ability to implement unit"
-          " tests in your plugins. Use the test_plugin to run the tests.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString test_plugin_suite::dependencies() const
-{
-    return "|server|";
-}
-
 
 /** \brief Check whether updates are necessary.
  *
@@ -302,8 +231,6 @@ test_list_t const & test_plugin_suite::get_test_list() const
 
 
 
-
-
-SNAP_PLUGIN_END()
-
+} // namespace test_plugin_suite
+} // namespace snap
 // vim: ts=4 sw=4 et

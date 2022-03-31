@@ -16,36 +16,63 @@
 
 // self
 //
-#include "bookkeeping.h"
+#include    "bookkeeping.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../permissions/permissions.h"
-#include "../messages/messages.h"
+#include    "../output/output.h"
+#include    "../permissions/permissions.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/snap_lock.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(bookkeeping, 1, 0)
+namespace snap
+{
+namespace bookkeeping
+{
+
+
+
+CPPTHREAD_PLUGIN_START(bookkeeping, 1, 0)
+    , ::cppthread::plugin_description(
+            "The bookkeeping plugin offers a basic set of functionality to"
+            " manage your small business books: expensives, invoices, payroll,"
+            " contractors, accounts, etc.")
+    , ::cppthread::plugin_icon("/images/bookkeeping/bookkeeping-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/bookkeeping")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("sendmail")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("finance")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \class bookkeeping
@@ -118,90 +145,6 @@ char const * get_name(name_t name)
 
     }
     snapdev::NOT_REACHED();
-}
-
-
-/** \brief Initialize the bookkeeping plugin.
- *
- * This function is used to initialize the bookkeeping plugin object.
- */
-bookkeeping::bookkeeping()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-/** \brief Clean up the bookkeeping plugin.
- *
- * Ensure the bookkeeping object is clean before it is gone.
- */
-bookkeeping::~bookkeeping()
-{
-}
-
-/** \brief Get a pointer to the bookkeeping plugin.
- *
- * This function returns an instance pointer to the bookkeeping plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the bookkeeping plugin.
- */
-bookkeeping * bookkeeping::instance()
-{
-    return g_plugin_bookkeeping_factory.instance();
-}
-
-
-/** \brief Send users to the bookkeeping settings.
- *
- * This path represents the bookkeeping settings.
- */
-QString bookkeeping::settings_path() const
-{
-    return "/admin/settings/bookkeeping";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString bookkeeping::icon() const
-{
-    return "/images/bookkeeping/bookkeeping-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString bookkeeping::description() const
-{
-    return "The bookkeeping plugin offers a basic set of functionality to"
-          " manage your small business books: expensives, invoices, payroll,"
-          " contractors, accounts, etc.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString bookkeeping::dependencies() const
-{
-    return "|editor|messages|output|path|permissions|sendmail|users|";
 }
 
 
@@ -279,15 +222,21 @@ bool bookkeeping::on_path_execute(content::path_info_t & ipath)
     QString const cpath(ipath.get_cpath());
     if(cpath == get_name(name_t::SNAP_NAME_BOOKKEEPING_ADD_CLIENT_PATH))
     {
-SNAP_LOG_WARNING("got inside add-client...?");
+SNAP_LOG_WARNING
+<< "got inside add-client...?"
+<< SNAP_LOG_SEND;
         if(f_snap->postenv_exists("client_name"))
         {
             // we are getting a request to create a new client
             //
-SNAP_LOG_WARNING("create new client...");
+SNAP_LOG_WARNING
+<< "create new client..."
+<< SNAP_LOG_SEND;
             return create_new_client(ipath);
         }
-SNAP_LOG_WARNING("bad post?! client...");
+SNAP_LOG_WARNING
+<< "bad post?! client..."
+<< SNAP_LOG_SEND;
         if(!f_snap->all_postenv().empty())
         {
             messages::messages::instance()->set_error(
@@ -301,7 +250,9 @@ SNAP_LOG_WARNING("bad post?! client...");
             server_access_plugin->ajax_output();
             return false;
         }
-SNAP_LOG_WARNING("that path, but no posts?...");
+SNAP_LOG_WARNING
+<< "that path, but no posts?..."
+<< SNAP_LOG_SEND;
     }
 
     return output::output::instance()->on_path_execute(ipath);
@@ -449,6 +400,7 @@ bool bookkeeping::create_new_client(content::path_info_t & ipath)
 
 
 
-SNAP_PLUGIN_END()
 
+} // namespace bookkeeping
+} // namespace snap
 // vim: ts=4 sw=4 et

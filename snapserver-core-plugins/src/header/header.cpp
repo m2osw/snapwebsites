@@ -17,27 +17,46 @@
 
 // self
 //
-#include "header.h"
+#include    "header.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
+#include    "../output/output.h"
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(header, 1, 0)
+namespace snap
+{
+namespace header
+{
+
+
+CPPTHREAD_PLUGIN_START(header, 1, 0)
+    , ::cppthread::plugin_description(
+            "Allows you to add/remove HTML and HTTP headers to your content."
+            " Note that this module can, but should not be used to manage meta"
+            " data for your page.")
+    , ::cppthread::plugin_icon("/images/header/header-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/header")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 /** \brief Get a fixed header name.
  *
@@ -66,89 +85,7 @@ const char * get_name(name_t name)
     snapdev::NOT_REACHED();
 }
 
-/** \brief Initialize the header plugin.
- *
- * This function is used to initialize the header plugin object.
- */
-header::header()
-    //: f_snap(nullptr) -- auto-init
-{
-}
 
-/** \brief Clean up the header plugin.
- *
- * Ensure the header object is clean before it is gone.
- */
-header::~header()
-{
-}
-
-
-/** \brief Get a pointer to the header plugin.
- *
- * This function returns an instance pointer to the header plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the header plugin.
- */
-header * header::instance()
-{
-    return g_plugin_header_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString header::settings_path() const
-{
-    return "/admin/settings/header";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString header::icon() const
-{
-    return "/images/header/header-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString header::description() const
-{
-    return "Allows you to add/remove HTML and HTTP headers to your content."
-          " Note that this module can, but should not be used to manage meta"
-          " data for your page.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString header::dependencies() const
-{
-    return "|layout|output|path|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -306,8 +243,6 @@ void header::on_generate_header_content(content::path_info_t & ipath, QDomElemen
 
 
 
-
-
-SNAP_PLUGIN_END()
-
+} // namespace header
+} // namespace snap
 // vim: ts=4 sw=4 et

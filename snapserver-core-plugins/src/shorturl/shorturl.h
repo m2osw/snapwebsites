@@ -18,8 +18,8 @@
 
 // other plugins
 //
-#include "../path/path.h"
-#include "../sessions/sessions.h"
+#include    "../path/path.h"
+#include    "../sessions/sessions.h"
 
 
 namespace snap
@@ -41,18 +41,12 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class shorturl_exception : public snap_exception
-{
-public:
-    explicit shorturl_exception(char const *        what_msg) : snap_exception("Short URL", what_msg) {}
-    explicit shorturl_exception(std::string const & what_msg) : snap_exception("Short URL", what_msg) {}
-    explicit shorturl_exception(QString const &     what_msg) : snap_exception("Short URL", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(shorturl_exception);
 
 
 
 class shorturl
-    : public plugins::plugin
+    : public cppthread::plugin
     , public path::path_execute
     , public layout::layout_content
 {
@@ -66,10 +60,6 @@ public:
     static shorturl *   instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

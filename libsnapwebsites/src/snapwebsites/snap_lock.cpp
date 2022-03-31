@@ -22,9 +22,17 @@
 
 // snapwebsites lib
 //
-#include "snapwebsites/log.h"
 #include "snapwebsites/qstring_stream.h"
-#include "snapwebsites/snap_communicator_dispatcher.h"
+
+
+// eventdispatcher lib
+//
+#include "eventdispatcher/dispatcher.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // snapdev lib
@@ -231,7 +239,7 @@ class lock_connection
 public:
     typedef std::shared_ptr<lock_connection>        pointer_t;
 
-                            lock_connection(QString const & object_name, snap_lock::timeout_t lock_duration, snap_lock::timeout_t lock_obtention_timeout, snap_lock::timeout_t unlock_duration);
+                            lock_connection(std::string const & object_name, snap_lock::timeout_t lock_duration, snap_lock::timeout_t lock_obtention_timeout, snap_lock::timeout_t unlock_duration);
     virtual                 ~lock_connection() override;
 
     void                    run();
@@ -257,8 +265,8 @@ private:
     static snap::dispatcher<lock_connection>::dispatcher_match::vector_t const    g_lock_connection_messages;
 
     pid_t const                 f_owner;
-    QString const               f_service_name;
-    QString const               f_object_name;
+    std::string const               f_service_name;
+    std::string const               f_object_name;
     snap_lock::timeout_t const  f_lock_duration;
     time_t                      f_lock_timeout_date = 0;
     time_t const                f_obtention_timeout_date;
@@ -346,11 +354,11 @@ snap::dispatcher<lock_connection>::dispatcher_match::vector_t const lock_connect
  * \param[in] unlock_duration  The amount of time we have to acknowledge a
  *                             timed out lock.
  */
-lock_connection::lock_connection(QString const & object_name, snap_lock::timeout_t lock_duration, snap_lock::timeout_t lock_obtention_timeout, snap_lock::timeout_t unlock_duration)
+lock_connection::lock_connection(std::string const & object_name, snap_lock::timeout_t lock_duration, snap_lock::timeout_t lock_obtention_timeout, snap_lock::timeout_t unlock_duration)
     : snap_tcp_blocking_client_message_connection(g_snapcommunicator_address, g_snapcommunicator_port, g_snapcommunicator_mode)
     , dispatcher(this, g_lock_connection_messages)
     , f_owner(gettid())
-    , f_service_name(QString("lock_%1_%2").arg(gettid()).arg(++g_unique_number))
+    , f_service_name(std::string("lock_%1_%2").arg(gettid()).arg(++g_unique_number))
     , f_object_name(object_name)
     , f_lock_duration(lock_duration == -1 ? g_lock_duration_timeout : lock_duration)
     //, f_lock_timeout_date(0) -- only determined if we obtain the lock
@@ -683,9 +691,11 @@ void lock_connection::ready(snap_communicator_message & message)
  */
 void lock_connection::stop(bool quitting)
 {
-    SNAP_LOG_WARNING("we received the ")
-                    (quitting ? "QUITTING" : "STOP")
-                    (" command while waiting for a lock.");
+    SNAP_LOG_WARNING
+        << "we received the "
+        << (quitting ? "QUITTING" : "STOP")
+        << " command while waiting for a lock."
+        << SNAP_LOG_SEND;
 
     mark_done();
 }
@@ -710,9 +720,12 @@ void lock_connection::msg_locked(snap::snap_communicator_message & message)
     {
         // somehow we received the LOCKED message with the wrong object name
         //
-        throw snap_lock_failed_exception(QString("received lock confirmation for object \"%1\" instead of \"%2\" (LOCKED).")
-                        .arg(message.get_parameter("object_name"))
-                        .arg(f_object_name));
+        throw snap_lock_failed_exception(
+                  "received lock confirmation for object \""
+                + message.get_parameter("object_name")
+                + "\" instead of \""
+                + f_object_name
+                + "\" (LOCKED).");
     }
     f_lock_timeout_date = message.get_integer_parameter("timeout_date");
 
@@ -743,23 +756,27 @@ void lock_connection::msg_lockfailed(snap::snap_communicator_message & message)
 {
     if(message.get_parameter("object_name") == f_object_name)
     {
-        SNAP_LOG_WARNING("lock for object \"")
-                        (f_object_name)
-                        ("\" failed (LOCKEDFAILED) with reason: ")
-                        (message.get_parameter("error"))
-                        (".");
+        SNAP_LOG_WARNING
+            << "lock for object \""
+            << f_object_name
+            << "\" failed (LOCKEDFAILED) with reason: "
+            << message.get_parameter("error")
+            << "."
+            << SNAP_LOG_SEND;
     }
     else
     {
         // this should not happen
         //
-        SNAP_LOG_ERROR("object \"")
-                      (message.get_parameter("object_name"))
-                      ("\" just reported a lock failure and we received its message while trying to lock \"")
-                      (f_object_name)
-                      ("\" (LOCKEDFAILED) with reason: ")
-                      (message.get_parameter("error"))
-                      (".");
+        SNAP_LOG_ERROR
+            << "object \""
+            << message.get_parameter("object_name")
+            << "\" just reported a lock failure and we received its message while trying to lock \""
+            << f_object_name
+            << "\" (LOCKEDFAILED) with reason: "
+            << message.get_parameter("error")
+            << "."
+            << SNAP_LOG_SEND;
     }
 
     mark_done();
@@ -816,14 +833,19 @@ void lock_connection::msg_unlocked(snap::snap_communicator_message & message)
     if(message.get_parameter("object_name") != f_object_name)
     {
         f_lock_timeout_date = 0;
-        SNAP_LOG_FATAL("object \"")
-                      (message.get_parameter("object_name"))
-                      ("\" just got unlocked and we received its message while trying to lock \"")
-                      (f_object_name)
-                      ("\" (UNLOCKED).");
-        throw snap_lock_failed_exception(QString("object \"%1\" just got unlocked and we received its message while trying to lock \"%2\" (UNLOCKED).")
-                            .arg(message.get_parameter("object_name"))
-                            .arg(f_object_name));
+        SNAP_LOG_FATAL
+            << "object \""
+            << message.get_parameter("object_name")
+            << "\" just got unlocked and we received its message while trying to lock \""
+            << f_object_name
+            << "\" (UNLOCKED)."
+            << SNAP_LOG_SEND;
+        throw snap_lock_failed_exception(
+                      "object \""
+                    + message.get_parameter("object_name")
+                    + "\" just got unlocked and we received its message while trying to lock \""
+                    + f_object_name
+                    + "\" (UNLOCKED).");
     }
 
     // we should not receive the UNLOCKED before the LOCKED
@@ -832,23 +854,29 @@ void lock_connection::msg_unlocked(snap::snap_communicator_message & message)
     //
     if(f_lock_timeout_date == 0)
     {
-        SNAP_LOG_FATAL("lock for object \"")
-                      (f_object_name)
-                      ("\" failed (UNLOCKED received before LOCKED).");
-        throw snap_lock_failed_exception(QString("lock for object \"%1\" failed (UNLOCKED received before LOCKED).")
-                        .arg(f_object_name));
+        SNAP_LOG_FATAL
+            << "lock for object \""
+            << f_object_name
+            << "\" failed (UNLOCKED received before LOCKED)."
+            << SNAP_LOG_SEND;
+        throw snap_lock_failed_exception(
+                      "lock for object \""
+                    + f_object_name
+                    + "\" failed (UNLOCKED received before LOCKED).");
     }
 
     f_lock_timeout_date = 0;
 
     if(message.has_parameter("error"))
     {
-        QString const error(message.get_parameter("error"));
+        std::string const error(message.get_parameter("error"));
         if(error == "timedout")
         {
-            SNAP_LOG_INFO("lock for object \"")
-                            (f_object_name)
-                            ("\" timed out.");
+            SNAP_LOG_INFO
+                << "lock for object \""
+                << f_object_name
+                << "\" timed out."
+                << SNAP_LOG_SEND;
 
             // we are expected to send an acknowledgement in this case
             // but we do not do so here, the caller is expected to take
@@ -858,11 +886,13 @@ void lock_connection::msg_unlocked(snap::snap_communicator_message & message)
         }
         else
         {
-            SNAP_LOG_WARNING("lock for object \"")
-                            (f_object_name)
-                            ("\" failed with error: ")
-                            (error)
-                            (".");
+            SNAP_LOG_WARNING
+                << "lock for object \""
+                << f_object_name
+                << "\" failed with error: "
+                << error
+                << "."
+                << SNAP_LOG_SEND;
         }
     }
 }
@@ -930,13 +960,17 @@ constexpr snap_lock::timeout_t    snap_lock::SNAP_MAXIMUM_TIMEOUT;
  *
  * \sa snap_lock::initialize_lock_duration_timeout()
  */
-snap_lock::snap_lock(QString const & object_name, timeout_t lock_duration, timeout_t lock_obtention_timeout, timeout_t unlock_duration)
+snap_lock::snap_lock(
+      std::string const & object_name
+    , timeout_t lock_duration
+    , timeout_t lock_obtention_timeout
+    , timeout_t unlock_duration)
 {
-    if(!object_name.isEmpty())
+    if(!object_name.empty())
     {
         if(!lock(object_name, lock_duration, lock_obtention_timeout, unlock_duration))
         {
-            throw snap_lock_failed_exception(QString("locking \"%1\" failed.").arg(object_name));
+            throw snap_lock_failed_exception("locking \"" + object_name + "\" failed.");
         }
     }
 }
@@ -1142,7 +1176,11 @@ void snap_lock::initialize_snapcommunicator(std::string const & addr, int port, 
  *
  * \return Whether the lock was obtained (true) or not (false).
  */
-bool snap_lock::lock(QString const & object_name, timeout_t lock_duration, timeout_t lock_obtention_timeout, timeout_t unlock_duration)
+bool snap_lock::lock(
+      std::string const & object_name
+    , timeout_t lock_duration
+    , timeout_t lock_obtention_timeout
+    , timeout_t unlock_duration)
 {
     // although we have a shared pointer, the order in which the lock
     // and unlock work would be inverted if we were to just call

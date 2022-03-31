@@ -17,48 +17,52 @@
 
 // self
 //
-#include "./password.h"
+#include    "./password.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../messages/messages.h"
-#include "../permissions/permissions.h"
+#include    "../output/output.h"
+#include    "../messages/messages.h"
+#include    "../permissions/permissions.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/fuzzy_string_compare.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/fuzzy_string_compare.h>
+#include    <snapwebsites/snap_lock.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QChar>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// Qt
 //
-#include <algorithm>
-#include <iostream>
+#include    <QChar>
 
 
-// OpenSSL lib
+// C++
 //
-#include <openssl/rand.h>
+#include    <algorithm>
+#include    <iostream>
+
+
+// OpenSSL
+//
+#include    <openssl/rand.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -85,7 +89,29 @@
  * \li http://reusablesec.blogspot.com/2010/10/new-paper-on-password-security-metrics.html
  */
 
-SNAP_PLUGIN_START(password, 1, 0)
+
+namespace snap
+{
+namespace password
+{
+
+
+CPPTHREAD_PLUGIN_START(password, 1, 0)
+    , ::cppthread::plugin_description(
+            "Check passwords of newly created users for strength."
+            " The plugin verifies various settings to ensure the strength of passwords."
+            " It can also check a database of black listed passwords.")
+    , ::cppthread::plugin_icon("/images/password/password-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/password")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("login")
+CPPTHREAD_PLUGIN_END()
 
 
 
@@ -243,91 +269,6 @@ char const * get_name(name_t name)
 
 
 
-
-/** \brief Initialize the password plugin.
- *
- * This function is used to initialize the password plugin object.
- */
-password::password()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the password plugin.
- *
- * Ensure the password object is clean before it is gone.
- */
-password::~password()
-{
-}
-
-
-/** \brief Get a pointer to the password plugin.
- *
- * This function returns an instance pointer to the password plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the password plugin.
- */
-password * password::instance()
-{
-    return g_plugin_password_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString password::settings_path() const
-{
-    return "/admin/settings/password";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString password::icon() const
-{
-    return "/images/password/password-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString password::description() const
-{
-    return "Check passwords of newly created users for strength."
-          " The plugin verifies various settings to ensure the strength of passwords."
-          " It can also check a database of black listed passwords.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString password::dependencies() const
-{
-    return "|editor|messages|output|permissions|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -1375,6 +1316,7 @@ void password::on_blocked_user(users::users::user_info_t & user_info, QString co
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace password
+} // namespace snap
 // vim: ts=4 sw=4 et

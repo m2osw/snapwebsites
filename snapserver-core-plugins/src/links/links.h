@@ -20,9 +20,11 @@
 //
 #include "../test_plugin_suite/test_plugin_suite.h"
 
-// snapwebsites lib
+
+// snapwebsites
 //
 #include <snapwebsites/snapwebsites.h>
+
 
 
 namespace snap
@@ -54,53 +56,13 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class links_exception : public snap_exception
-{
-public:
-    explicit links_exception(char const *        what_msg) : snap_exception("links", what_msg) {}
-    explicit links_exception(std::string const & what_msg) : snap_exception("links", what_msg) {}
-    explicit links_exception(QString const &     what_msg) : snap_exception("links", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(links_exception);
 
-class links_exception_missing_links_table : public links_exception
-{
-public:
-    explicit links_exception_missing_links_table(char const *        what_msg) : links_exception(what_msg) {}
-    explicit links_exception_missing_links_table(std::string const & what_msg) : links_exception(what_msg) {}
-    explicit links_exception_missing_links_table(QString const &     what_msg) : links_exception(what_msg) {}
-};
-
-class links_exception_missing_branch_table : public links_exception
-{
-public:
-    explicit links_exception_missing_branch_table(char const *        what_msg) : links_exception(what_msg) {}
-    explicit links_exception_missing_branch_table(std::string const & what_msg) : links_exception(what_msg) {}
-    explicit links_exception_missing_branch_table(QString const &     what_msg) : links_exception(what_msg) {}
-};
-
-class links_exception_invalid_name : public links_exception
-{
-public:
-    explicit links_exception_invalid_name(char const *        what_msg) : links_exception(what_msg) {}
-    explicit links_exception_invalid_name(std::string const & what_msg) : links_exception(what_msg) {}
-    explicit links_exception_invalid_name(QString const &     what_msg) : links_exception(what_msg) {}
-};
-
-class links_exception_invalid_db_data : public links_exception
-{
-public:
-    explicit links_exception_invalid_db_data(char const *        what_msg) : links_exception(what_msg) {}
-    explicit links_exception_invalid_db_data(std::string const & what_msg) : links_exception(what_msg) {}
-    explicit links_exception_invalid_db_data(QString const &     what_msg) : links_exception(what_msg) {}
-};
-
-class links_exception_missing_link : public links_exception
-{
-public:
-    explicit links_exception_missing_link(char const *        what_msg) : links_exception(what_msg) {}
-    explicit links_exception_missing_link(std::string const & what_msg) : links_exception(what_msg) {}
-    explicit links_exception_missing_link(QString const  &    what_msg) : links_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(links_exception, links_exception_missing_links_table);
+DECLARE_EXCEPTION(links_exception, links_exception_missing_branch_table);
+DECLARE_EXCEPTION(links_exception, links_exception_invalid_name);
+DECLARE_EXCEPTION(links_exception, links_exception_invalid_db_data);
+DECLARE_EXCEPTION(links_exception, links_exception_missing_link);
 
 
 
@@ -286,7 +248,7 @@ public:
 
 
 class links
-    : public plugins::plugin
+    : public cppthread::plugin
     , public server::backend_action
 {
 public:
@@ -303,12 +265,9 @@ public:
 
     static links *                  instance();
 
-    // plugins::plugin implementation
-    virtual QString                 icon() const override;
-    virtual QString                 description() const override;
-    virtual QString                 dependencies() const override;
+    // cppthread::plugin implementation
+    virtual void                    bootstrap(void * snap) override;
     virtual int64_t                 do_update(int64_t last_updated) override;
-    virtual void                    bootstrap(snap_child * snap) override;
 
     libdbproxy::table::pointer_t    get_links_table();
 

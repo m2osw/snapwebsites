@@ -29,13 +29,6 @@
 namespace snap
 {
 
-class mail_exhanger_exception : public snap_exception
-{
-public:
-    explicit mail_exhanger_exception(char const *        whatmsg) : snap_exception("mail_exhanger", whatmsg) {}
-    explicit mail_exhanger_exception(std::string const & whatmsg) : snap_exception("mail_exhanger", whatmsg) {}
-    explicit mail_exhanger_exception(QString const &     whatmsg) : snap_exception("mail_exhanger", whatmsg) {}
-};
 
 
 

@@ -26,8 +26,12 @@
 
 // snapwebsites lib
 //
-#include "snapwebsites/log.h"
 #include "snapwebsites/snapwebsites.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // C lib
@@ -126,11 +130,13 @@ void snap_pid::create_pid_file()
     //
     if(!f_safe_fd)
     {
-        SNAP_LOG_FATAL("Server \"")
-                      (f_service_name)
-                      ("\" could not create PID file \"")
-                      (f_pid_filename)
-                      ("\".");
+        SNAP_LOG_FATAL
+            << "Server \""
+            << f_service_name
+            << "\" could not create PID file \""
+            << f_pid_filename
+            << "\"."
+            << SNAP_LOG_SEND;
         send_signal(false);
         throw snap_pid_exception_io_error(
                       "Could not open PID file \""
@@ -142,11 +148,13 @@ void snap_pid::create_pid_file()
     //
     if(flock(f_safe_fd.get(), LOCK_EX) != 0)
     {
-        SNAP_LOG_FATAL("Server \"")
-                      (f_service_name)
-                      ("\"could not lock PID file \"")
-                      (f_pid_filename)
-                      ("\". Another instance is already running?");
+        SNAP_LOG_FATAL
+            << "Server \""
+            << f_service_name
+            << "\"could not lock PID file \""
+            << f_pid_filename
+            << "\". Another instance is already running?"
+            << SNAP_LOG_SEND;
         send_signal(false);
         throw snap_pid_exception_io_error(
                       "Could not lock PID file \""
@@ -159,11 +167,13 @@ void snap_pid::create_pid_file()
     std::string const pid(std::to_string(getpid()) + "\n");
     if(write(f_safe_fd.get(), pid.c_str(), pid.length()) != static_cast<ssize_t>(pid.length()))
     {
-        SNAP_LOG_FATAL("Server \"")
-                      (f_service_name)
-                      ("\"could not lock PID file \"")
-                      (f_pid_filename)
-                      ("\". Another instance is already running?");
+        SNAP_LOG_FATAL
+            << "Server \""
+            << f_service_name
+            << "\"could not lock PID file \""
+            << f_pid_filename
+            << "\". Another instance is already running?"
+            << SNAP_LOG_SEND;
         send_signal(false);
         throw snap_pid_exception_io_error(
                       "Could not lock PID file \""
@@ -197,9 +207,11 @@ void snap_pid::generate_filename(std::string const & service_name)
 {
     if(service_name.find('/') != std::string::npos)
     {
-        SNAP_LOG_FATAL("Service name \"")
-                      (service_name)
-                      ("\"cannot include a slash (/) character.");
+        SNAP_LOG_FATAL
+            << "Service name \""
+            << service_name
+            << "\"cannot include a slash (/) character."
+            << SNAP_LOG_SEND;
         throw snap_pid_exception_invalid_parameter(
                       "Service name \""
                     + service_name

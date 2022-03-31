@@ -20,39 +20,68 @@
 
 // self
 //
-#include "test_plugin.h"
+#include    "test_plugin.h"
 
 
 // other plugins
 //
-#include "../messages/messages.h"
-#include "../layout/layout.h"
-#include "../output/output.h"
-#include "../server_access/server_access.h"
+#include    "../messages/messages.h"
+#include    "../layout/layout.h"
+#include    "../output/output.h"
+#include    "../server_access/server_access.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/qcompatibility.h>
-#include <snapwebsites/qhtmlserializer.h>
-#include <snapwebsites/qxmlmessagehandler.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/dbutils.h>
+#include    <snapwebsites/qcompatibility.h>
+#include    <snapwebsites/qhtmlserializer.h>
+#include    <snapwebsites/qxmlmessagehandler.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(test_plugin, 1, 0)
+namespace snap
+{
+namespace test_plugin
+{
+
+
+
+CPPTHREAD_PLUGIN_START(test_plugin, 1, 0)
+    , ::cppthread::plugin_description(
+            "The test_plugin plugin is capable of finding tests throughout"
+            " all the plugins and run them one by one, per group,"
+            " or all at once.")
+    , ::cppthread::plugin_icon("/images/test-plugin/test-plugin-logo-64x64.jpg")
+    , ::cppthread::plugin_settings("/admin/test-plugin")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("server_access")
+    , ::cppthread::plugin_dependency("test_plugin_suite")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help/plugin/test_plugin_suite")
+    , ::cppthread::plugin_categorization_tag("test")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /** \class test_plugin
@@ -116,112 +145,7 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the test_plugin plugin.
- *
- * This function is used to initialize the test_plugin plugin object.
- */
-test_plugin::test_plugin()
-    //: f_snap(nullptr) -- auto-init
-{
-}
 
-/** \brief Clean up the test_plugin plugin.
- *
- * Ensure the test_plugin object is clean before it is gone.
- */
-test_plugin::~test_plugin()
-{
-}
-
-/** \brief Get a pointer to the test_plugin plugin.
- *
- * This function returns an instance pointer to the test_plugin plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the test_plugin plugin.
- */
-test_plugin * test_plugin::instance()
-{
-    return g_plugin_test_plugin_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin "settings". In case of the
- * test plugin, this is really the page that allows one
- * to run the tests.
- */
-QString test_plugin::settings_path() const
-{
-    return "/admin/test-plugin";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString test_plugin::icon() const
-{
-    return "/images/test-plugin/test-plugin-logo-64x64.jpg";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString test_plugin::description() const
-{
-    return "The test_plugin plugin is capable of finding tests throughout"
-          " all the plugins and run them one by one, per group,"
-          " or all at once.";
-}
-
-
-/** \brief Change the help URI to the base plugin.
- *
- * This help_uri() function returns the URI to the base plugin URI
- * since this plugin is just an extension and does not need to have
- * a separate help page.
- *
- * \return The URI to the test_plugin_suite plugin help page.
- */
-QString test_plugin::help_uri() const
-{
-    // TBD: should we instead call the help_uri() of the test_plugin_suite plugin?
-    //
-    //      test_plugin_suite::test_plugin_suite::instance()->help_uri();
-    //
-    //      I'm afraid that it would be a bad example because the pointer
-    //      may not be a good pointer anymore at this time (once we
-    //      properly remove plugins that we loaded just to get their info.)
-    //
-    return "https://snapwebsites.org/help/plugin/test_plugin_suite";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString test_plugin::dependencies() const
-{
-    return "|filter|layout|messages|output|path|server_access|test_plugin_suite|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -614,6 +538,6 @@ void test_plugin::on_process_post(QString const & uri_path)
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace test_plugin
+} // namespace snap
 // vim: ts=4 sw=4 et

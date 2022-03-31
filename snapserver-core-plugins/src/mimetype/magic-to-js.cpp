@@ -17,38 +17,38 @@
 
 // self
 //
-#include "magic-to-js.h"
+#include    "magic-to-js.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/snapwebsites.h>
+#include    <snapwebsites/snapwebsites.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <algorithm>
-#include <cstring>
-#include <fstream>
-#include <iomanip>
-#include <memory>
-#include <vector>
+#include    <algorithm>
+#include    <cstring>
+#include    <fstream>
+#include    <iomanip>
+#include    <memory>
+#include    <vector>
 
 
-// C lib
+// C
 //
-#include <math.h>
+#include    <math.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 

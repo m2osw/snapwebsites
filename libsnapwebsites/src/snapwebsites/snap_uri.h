@@ -19,66 +19,35 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
+// self
+//
 #include "snapwebsites/snap_parser.h"
 #include "snapwebsites/snap_string_list.h"
 
+
+// QtSerialization lib
+//
 #include <QtSerialization/QSerializationReader.h>
 #include <QtSerialization/QSerializationFieldTag.h>
 #include <QtSerialization/QSerializationWriter.h>
 
+
+// Qt lib
+//
 #include <QMap>
+
+
 
 namespace snap
 {
 
-class snap_uri_exception : public snap_exception
-{
-public:
-    explicit snap_uri_exception(char const *        what_msg) : snap_exception("snap_uri", what_msg) {}
-    explicit snap_uri_exception(std::string const & what_msg) : snap_exception("snap_uri", what_msg) {}
-    explicit snap_uri_exception(QString const &     what_msg) : snap_exception("snap_uri", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_uri_exception);
 
-class snap_uri_exception_invalid_uri : public snap_uri_exception
-{
-public:
-    explicit snap_uri_exception_invalid_uri(char const *        what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_invalid_uri(std::string const & what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_invalid_uri(QString const &     what_msg) : snap_uri_exception(what_msg) {}
-};
-
-class snap_uri_exception_invalid_parameter : public snap_uri_exception
-{
-public:
-    explicit snap_uri_exception_invalid_parameter(char const *        what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_invalid_parameter(std::string const & what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_invalid_parameter(QString const &     what_msg) : snap_uri_exception(what_msg) {}
-};
-
-class snap_uri_exception_invalid_path : public snap_uri_exception
-{
-public:
-    explicit snap_uri_exception_invalid_path(char const *        what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_invalid_path(std::string const & what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_invalid_path(QString const &     what_msg) : snap_uri_exception(what_msg) {}
-};
-
-class snap_uri_exception_out_of_bounds : public snap_uri_exception
-{
-public:
-    explicit snap_uri_exception_out_of_bounds(char const *        what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_out_of_bounds(std::string const & what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_out_of_bounds(QString const &     what_msg) : snap_uri_exception(what_msg) {}
-};
-
-class snap_uri_exception_exclusive_parameters : public snap_uri_exception
-{
-public:
-    explicit snap_uri_exception_exclusive_parameters(char const *        what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_exclusive_parameters(std::string const & what_msg) : snap_uri_exception(what_msg) {}
-    explicit snap_uri_exception_exclusive_parameters(QString const &     what_msg) : snap_uri_exception(what_msg) {}
-};
-
+DECLARE_EXCEPTION(snap_uri_exception, snap_uri_exception_invalid_uri);
+DECLARE_EXCEPTION(snap_uri_exception, snap_uri_exception_invalid_parameter);
+DECLARE_EXCEPTION(snap_uri_exception, snap_uri_exception_invalid_path);
+DECLARE_EXCEPTION(snap_uri_exception, snap_uri_exception_out_of_bounds);
+DECLARE_EXCEPTION(snap_uri_exception, snap_uri_exception_exclusive_parameters);
 
 
 

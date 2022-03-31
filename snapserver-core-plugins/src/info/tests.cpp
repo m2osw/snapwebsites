@@ -18,37 +18,45 @@
 
 // self test
 //
-#include "info.h"
+#include    "info.h"
 
 
 // other plugins
 //
-#include "../messages/messages.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qcompatibility.h>
+#include    <snapwebsites/qcompatibility.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
+#include    <snapdev/not_reached.h>
+
+
+// C++
+//
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_EXTENSION_START(info)
+namespace snap
+{
+namespace info
+{
+
 
 
 SNAP_TEST_PLUGIN_SUITE(info)
@@ -183,6 +191,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(info, verify_all_dependencies)
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace info
+} // namespace snap
 // vim: ts=4 sw=4 et

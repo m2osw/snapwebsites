@@ -45,22 +45,11 @@ enum class name_t
 };
 char const * get_name(name_t name) __attribute__ ((const));
 
+DECLARE_LOGIC_ERROR(locale_logic_error);
 
-class locale_exception : public snap_exception
-{
-public:
-    explicit locale_exception(char const *        what_msg) : snap_exception("locale", what_msg) {}
-    explicit locale_exception(std::string const & what_msg) : snap_exception("locale", what_msg) {}
-    explicit locale_exception(QString const &     what_msg) : snap_exception("locale", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(locale_exception);
 
-class locale_exception_invalid_argument : public locale_exception
-{
-public:
-    explicit locale_exception_invalid_argument(char const *        what_msg) : locale_exception(what_msg) {}
-    explicit locale_exception_invalid_argument(std::string const & what_msg) : locale_exception(what_msg) {}
-    explicit locale_exception_invalid_argument(QString const &     what_msg) : locale_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(locale_exception, locale_exception_invalid_argument);
 
 
 
@@ -69,7 +58,7 @@ public:
 
 
 class locale
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
     enum class parse_error_t
@@ -124,10 +113,6 @@ public:
     static locale *             instance();
 
     // plugin implementation
-    virtual QString             settings_path() const override;
-    virtual QString             icon() const override;
-    virtual QString             description() const override;
-    virtual QString             dependencies() const override;
     virtual int64_t             do_update(int64_t last_updated) override;
     virtual void                bootstrap(snap_child * snap) override;
 

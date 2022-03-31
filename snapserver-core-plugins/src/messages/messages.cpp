@@ -18,39 +18,59 @@
 
 // self
 //
-#include "messages.h"
+#include    "messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
+#include    <snapwebsites/snap_exception.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// QtSerialization lib
+// snapdev
 //
-#include <QtSerialization/QSerializationComposite.h>
-#include <QtSerialization/QSerializationFieldString.h>
-#include <QtSerialization/QSerializationFieldBasicTypes.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// QtSerialization
 //
-#include <iostream>
+#include    <QtSerialization/QSerializationComposite.h>
+#include    <QtSerialization/QSerializationFieldString.h>
+#include    <QtSerialization/QSerializationFieldBasicTypes.h>
+
+
+// C++
+//
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(messages, 1, 0)
+namespace snap
+{
+namespace messages
+{
+
+CPPTHREAD_PLUGIN_START(messages, 1, 0)
+    , ::cppthread::plugin_description(
+            "The messages plugin is used by many other plugins to manage"
+            " debug, information, warning, and error messages in the Snap! system.")
+    , ::cppthread::plugin_icon("/images/snap/messages-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/info")
+    , ::cppthread::plugin_dependency("server")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 namespace
@@ -83,7 +103,7 @@ const char * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("invalid name_t::SNAP_NAME_MESSAGES_...");
+        throw snap_logic_error("invalid name_t::SNAP_NAME_MESSAGES_...");
 
     }
     snapdev::NOT_REACHED();
@@ -363,89 +383,6 @@ void messages::message::serialize(QtSerialization::QWriter & w) const
 
 
 
-/** \brief Initialize the messages plugin.
- *
- * This function is used to initialize the messages plugin object.
- */
-messages::messages()
-{
-}
-
-
-/** \brief Clean up the messages plugin.
- *
- * Ensure the messages object is clean before it is gone.
- */
-messages::~messages()
-{
-}
-
-
-/** \brief Get a pointer to the messages plugin.
- *
- * This function returns an instance pointer to the messages plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the messages plugin.
- */
-messages * messages::instance()
-{
-    return g_plugin_messages_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString messages::settings_path() const
-{
-    return "/admin/settings/info";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString messages::icon() const
-{
-    return "/images/snap/messages-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString messages::description() const
-{
-    return "The messages plugin is used by many other plugins to manage"
-        " debug, information, warning, and error messages in the Snap! system.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString messages::dependencies() const
-{
-    return "|server|";
-}
-
 
 /** \brief Check whether updates are necessary.
  *
@@ -527,15 +464,22 @@ messages::message & messages::set_http_error(
     // the error code must be valid (i.e. an actual HTTP error!)
     if(static_cast<int>(err_code) < 400 || static_cast<int>(err_code) > 599)
     {
-        throw snap_logic_exception("the set_http_error() function was called with an invalid error code number");
+        throw snap_logic_error("the set_http_error() function was called with an invalid error code number");
     }
 
     // define a default error name if undefined
     snap_child::define_http_name(err_code, err_name);
 
     // log the error
-    logging::log_security_t const sec(err_security ? logging::log_security_t::LOG_SECURITY_SECURE : logging::log_security_t::LOG_SECURITY_NONE);
-    SNAP_LOG_FATAL(sec)(err_details)(" (")(err_name)(": ")(err_description)(")");
+   SNAP_LOG_FATAL
+        << snaplogger::section(err_security ? snaplogger::g_secure_component : snaplogger::g_normal_component)
+        << err_details
+        << " ("
+        << err_name
+        << ": "
+        << err_description
+        << ")"
+        << SNAP_LOG_SEND;
 
     // Status Header
     // i.e. "Status: 503 Service Unavailable"
@@ -574,12 +518,19 @@ messages::message & messages::set_error(QString err_name, QString const & err_de
 
     if(err_name.isEmpty())
     {
-        throw snap_logic_exception("The err_name parameter of the messages::set_error() function cannot be empty.");
+        throw snap_logic_error("The err_name parameter of the messages::set_error() function cannot be empty.");
     }
 
     // log the error
-    logging::log_security_t sec(err_security ? logging::log_security_t::LOG_SECURITY_SECURE : logging::log_security_t::LOG_SECURITY_NONE);
-    SNAP_LOG_ERROR(sec)(err_details)(" (")(err_name)(": ")(err_description)(")");
+    SNAP_LOG_ERROR
+        << snaplogger::section(err_security ? snaplogger::g_secure_component : snaplogger::g_normal_component)
+        << err_details
+        << " ("
+        << err_name
+        << ": "
+        << err_description
+        << ")"
+        << SNAP_LOG_SEND;
 
     message msg(message::message_type_t::MESSAGE_TYPE_ERROR, err_name, err_description);
     f_messages.push_back(msg);
@@ -616,7 +567,14 @@ messages::message & messages::set_warning(QString warning_name, QString const & 
     }
 
     // log the warning
-    SNAP_LOG_WARNING(warning_details)(" (")(warning_name)(": ")(warning_description)(")");
+    SNAP_LOG_WARNING
+        << warning_details
+        << " ("
+        << warning_name
+        << ": "
+        << warning_description
+        << ")"
+        << SNAP_LOG_SEND;
 
     message msg(message::message_type_t::MESSAGE_TYPE_WARNING, warning_name, warning_description);
     f_messages.push_back(msg);
@@ -650,7 +608,13 @@ messages::message & messages::set_info(QString info_name, QString const & info_d
         throw snap_logic_exception("The info_name parameter of the messages::set_info() function cannot be empty.");
     }
 
-    SNAP_LOG_INFO("(")(info_name)(": ")(info_description)(")");
+    SNAP_LOG_INFO
+        << "("
+        << info_name
+        << ": "
+        << info_description
+        << ")"
+        << SNAP_LOG_SEND;
 
     message msg(message::message_type_t::MESSAGE_TYPE_INFO, info_name, info_description);
     f_messages.push_back(msg);
@@ -684,7 +648,13 @@ messages::message & messages::set_debug(QString debug_name, QString const & debu
         throw snap_logic_exception("The debug_name parameter of the messages::set_debug() function cannot be empty.");
     }
 
-    SNAP_LOG_DEBUG("(")(debug_name)(": ")(debug_description)(")");
+    SNAP_LOG_DEBUG
+        << "("
+        << debug_name
+        << ": "
+        << debug_description
+        << ")"
+        << SNAP_LOG_SEND;
 
     message msg(message::message_type_t::MESSAGE_TYPE_DEBUG, debug_name, debug_description);
     f_messages.push_back(msg);
@@ -962,6 +932,7 @@ void messages::on_user_status(snap_child::user_status_t status, snap_child::user
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace messages
+} // namespace snap
 // vim: ts=4 sw=4 et

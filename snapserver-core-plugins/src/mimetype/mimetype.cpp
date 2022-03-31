@@ -17,27 +17,40 @@
 
 // self
 //
-#include "mimetype.h"
+#include    "mimetype.h"
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(mimetype, 1, 0)
+namespace snap
+{
+namespace mimetype
+{
+
+
+CPPTHREAD_PLUGIN_START(mimetype, 1, 0)
+    , ::cppthread::plugin_description(
+            "Add support detection of many file MIME types in JavaScript.")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 namespace
@@ -167,69 +180,6 @@ int find_mimetype(QString const & mime_type)
 
 
 
-
-/** \brief Initialize the MIME type plugin.
- *
- * This function is used to initialize the MIME type plugin object.
- */
-mimetype::mimetype()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the MIME type plugin.
- *
- * Ensure the MIME type object is clean before it is gone.
- */
-mimetype::~mimetype()
-{
-}
-
-
-/** \brief Get a pointer to the MIME type plugin.
- *
- * This function returns an instance pointer to the MIME type plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the MIME type plugin.
- */
-mimetype * mimetype::instance()
-{
-    return g_plugin_mimetype_factory.instance();
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString mimetype::description() const
-{
-    return "Add support detection of many file MIME types in JavaScript.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString mimetype::dependencies() const
-{
-    return "|output|";
-}
-
-
 /** \brief Check whether updates are necessary.
  *
  * This function updates the database when a newer version is installed
@@ -347,6 +297,6 @@ QString mimetype::mimetype_to_extension(QString const & mime_type)
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace mimetype
+} // namespace snap
 // vim: ts=4 sw=4 et

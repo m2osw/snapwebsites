@@ -27,17 +27,21 @@
 
 // self
 //
-#include "editor.h"
+#include    "editor.h"
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace editor
+{
 
-SNAP_PLUGIN_EXTENSION_START(editor)
+
 
 
 /** \brief Initialize a save_info_t object.
@@ -238,7 +242,6 @@ bool save_info_t::has_errors() const
 
 
 
-
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace editor
+} // namespace snap
 // vim: ts=4 sw=4 et

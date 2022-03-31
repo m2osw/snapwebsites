@@ -37,35 +37,58 @@
 
 // self
 //
-#include "oauth2.h"
+#include    "oauth2.h"
 
 
 // other plugins
 //
-#include "../users/users.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/http_strings.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/http_strings.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace oauth2
+{
 
-SNAP_PLUGIN_START(oauth2, 1, 0)
 
+CPPTHREAD_PLUGIN_START(oauth2, 1, 0)
+    , ::cppthread::plugin_description(
+            "The OAuth2 plugin offers an authentication mechanism to"
+            " be used by all the other plugins that support a REST API."
+            " The administrator of a website can decide whether to authorize"
+            " such access or not.")
+    , ::cppthread::plugin_icon("/images/oauth2/oauth2-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/oauth2")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("login")
+CPPTHREAD_PLUGIN_END()
 
 
 namespace
@@ -133,90 +156,6 @@ const char * get_name(name_t name)
  */
 
 
-/** \brief Initialize the oauth2 plugin.
- *
- * This function initializes the oauth2 plugin.
- */
-oauth2::oauth2()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-/** \brief Destroy the oauth2 plugin.
- *
- * This function cleans up the oauth2 plugin.
- */
-oauth2::~oauth2()
-{
-}
-
-
-/** \brief Get a pointer to the oauth2 plugin.
- *
- * This function returns an instance pointer to the oauth2 plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the oauth2 plugin.
- */
-oauth2 * oauth2::instance()
-{
-    return g_plugin_oauth2_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString oauth2::settings_path() const
-{
-    return "/admin/settings/oauth2";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString oauth2::icon() const
-{
-    return "/images/oauth2/oauth2-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString oauth2::description() const
-{
-    return "The OAuth2 plugin offers an authentication mechanism to"
-          " be used by all the other plugins that support a REST API."
-          " The administrator of a website can decide whether to authorize"
-          " such access or not.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString oauth2::dependencies() const
-{
-    return "|editor|layout|path|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -340,7 +279,9 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
         return false;
     }
 
-    SNAP_LOG_INFO("OAuth2 authorization request");
+    SNAP_LOG_INFO
+        << "OAuth2 authorization request"
+        << SNAP_LOG_SEND;
 
     f_snap->set_ignore_cookies();
 
@@ -496,7 +437,10 @@ bool oauth2::on_path_execute(content::path_info_t & ipath)
     }
     else
     {
-        SNAP_LOG_ERROR("Could not log in this application because the user attached to this website OAuth2 was not accepted. Details: ")(details);
+        SNAP_LOG_ERROR
+            << "Could not log in this application because the user attached to this website OAuth2 was not accepted. Details: "
+            << details
+            << SNAP_LOG_SEND;
     }
 
     // generate the result, an OAuth2 session
@@ -735,7 +679,15 @@ void oauth2::die(snap_child::http_code_t err_code, oauth2_error_t err_oauth2, QS
 
     snap_child::define_http_name(err_code, err_name);
 
-    SNAP_LOG_FATAL("snap child process: ")(err_details)(" (")(static_cast<int>(err_code))(": ")(err_description)(")");
+    SNAP_LOG_FATAL
+        << "snap child process: "
+        << err_details
+        << " ("
+        << static_cast<int>(err_code)
+        << ": "
+        << err_description
+        << ")."
+        << SNAP_LOG_SEND;
 
     f_snap->set_header(snap::get_name(snap::name_t::SNAP_NAME_CORE_STATUS_HEADER),
                        QString("%1 %2").arg(static_cast<int>(err_code)).arg(err_name),
@@ -858,6 +810,7 @@ Snap-Authorization: Bearer 231749675e79d6ae/1651269099
 */
 
 
-SNAP_PLUGIN_END()
 
+} // namespace oauth2
+} // namespace snap
 // vim: ts=4 sw=4 et

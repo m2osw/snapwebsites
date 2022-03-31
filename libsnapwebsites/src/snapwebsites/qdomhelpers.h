@@ -16,10 +16,17 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include    "snapwebsites/snap_exception.h"
+// libexcept lib
+//
+#include    <libexcept/exception.h>
 
+
+// Qt lib
+//
 #include    <QDomDocument>
 #include    <QDomElement>
+
+
 
 namespace snap
 {
@@ -27,22 +34,10 @@ namespace snap_dom
 {
 
 
-class snap_dom_exception : public snap_exception
-{
-public:
-    explicit snap_dom_exception(char const *        whatmsg) : snap_exception("snap_dom", whatmsg) {}
-    explicit snap_dom_exception(std::string const & whatmsg) : snap_exception("snap_dom", whatmsg) {}
-    explicit snap_dom_exception(QString const &     whatmsg) : snap_exception("snap_dom", whatmsg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_dom_exception);
 
+DECLARE_EXCEPTION(snap_dom_exception, snap_dom_exception_element_not_found);
 
-class snap_dom_exception_element_not_found : public snap_dom_exception
-{
-public:
-    explicit snap_dom_exception_element_not_found(char const *        whatmsg) : snap_dom_exception(whatmsg) {}
-    explicit snap_dom_exception_element_not_found(std::string const & whatmsg) : snap_dom_exception(whatmsg) {}
-    explicit snap_dom_exception_element_not_found(QString const &     whatmsg) : snap_dom_exception(whatmsg) {}
-};
 
 
 

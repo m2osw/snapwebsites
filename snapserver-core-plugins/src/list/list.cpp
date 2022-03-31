@@ -19,64 +19,87 @@
 
 // self
 //
-#include "list.h"
+#include    "list.h"
 
 
 // other plugins
 //
-#include "../links/links.h"
-#include "../path/path.h"
-#include "../output/output.h"
+#include    "../links/links.h"
+#include    "../path/path.h"
+#include    "../output/output.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/chownnm.h>
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/snap_backend.h>
-#include <snapwebsites/snap_expr.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/dbutils.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/snap_backend.h>
+#include    <snapwebsites/snap_expr.h>
+#include    <snapwebsites/snap_lock.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
-#include <snapdev/tokenize_string.h>
+#include    <snaplogger/message.h>
 
 
-// csspp lib
+// snapdev
 //
-#include <csspp/csspp.h>
+#include    <snapdev/chownnm.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/tokenize_string.h>
 
 
-// Qt lib
+// csspp
 //
-#include <QtCore>
-#include <QtSql>
+#include    <csspp/csspp.h>
 
 
-// C++ lib
+// Qt
 //
-#include <iostream>
+#include    <QtCore>
+#include    <QtSql>
 
 
-// C lib
+// C++
 //
-#include <sys/file.h>
-#include <sys/stat.h>
-#include <sys/time.h>
+#include    <iostream>
+
+
+// C
+//
+#include    <sys/file.h>
+#include    <sys/stat.h>
+#include    <sys/time.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(list, 1, 0)
+namespace snap
+{
+namespace list
+{
+
+
+CPPTHREAD_PLUGIN_START(list, 1, 0)
+    , ::cppthread::plugin_description(
+            "Generate lists of pages using a set of parameters as defined"
+            " by the system (some lists are defined internally) and the end"
+            " users.")
+    , ::cppthread::plugin_icon("/images/list/list-logo-64x64.png")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("links")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("content")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed list name.
@@ -322,7 +345,10 @@ private:
  * \param[in] list_data_path  The path to the journal files.
  */
 listdata_connection::listdata_connection(QString const & list_data_path)
-    : snap_tcp_blocking_client_message_connection(g_snapcommunicator_address, g_snapcommunicator_port, g_snapcommunicator_mode)
+    : tcp_blocking_client_message_connection(
+              g_snapcommunicator_address
+            , g_snapcommunicator_port
+            , g_snapcommunicator_mode)
     , f_path(list_data_path + "/" + snap::get_name(snap::name_t::SNAP_NAME_CORE_LIST_JOURNAL_PATH))
 {
     f_service_name = QString("listdata_%1").arg(++g_unique_service);
@@ -830,7 +856,7 @@ void listdata_connection::process_data(QString const & acknowledgement_id)
                 listdata_message.set_command("LISTDATA");
                 listdata_message.set_service("snaplistd");
                 listdata_message.add_parameter("service", f_service_name);
-                listdata_message.add_parameter("version", snap::snap_communicator::VERSION);
+                listdata_message.add_version_parameter();
                 listdata_message.add_parameter("uri", uri);
                 listdata_message.add_parameter("priority", priority);
                 listdata_message.add_parameter("key_start_date", key_start_date);
@@ -1883,81 +1909,6 @@ int32_t paging_t::get_page_size() const
  */
 
 
-
-
-/** \brief Initialize the list plugin.
- *
- * This function is used to initialize the list plugin object.
- */
-list::list()
-{
-}
-
-
-/** \brief Clean up the list plugin.
- *
- * Ensure the list object is clean before it is gone.
- */
-list::~list()
-{
-}
-
-
-/** \brief Get a pointer to the list plugin.
- *
- * This function returns an instance pointer to the list plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the list plugin.
- */
-list * list::instance()
-{
-    return g_plugin_list_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString list::icon() const
-{
-    return "/images/list/list-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString list::description() const
-{
-    return "Generate lists of pages using a set of parameters as defined"
-          " by the system (some lists are defined internally) and the end"
-          " users.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString list::dependencies() const
-{
-    return "|filter|layout|links|messages|output|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -4713,6 +4664,7 @@ void list::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::ro
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace list
+} // namespace snap
 // vim: ts=4 sw=4 et

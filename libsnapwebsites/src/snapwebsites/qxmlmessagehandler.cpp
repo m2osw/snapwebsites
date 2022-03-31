@@ -18,25 +18,30 @@
 
 // self
 //
-#include "snapwebsites/qxmlmessagehandler.h"
+#include    "snapwebsites/qxmlmessagehandler.h"
+
+#include    "snapwebsites/snap_exception.h"
 
 
-// snapwebsites lib
+// snapdev
 //
-#include "snapwebsites/qstring_stream.h"
-#include "snapwebsites/log.h"
-#include "snapwebsites/snap_exception.h"
+#include    "snapdev/qstring_extensions.h"
 
 
-// Qt lib
+// snaplogger
 //
-#include <QDomDocument>
-#include <QFile>
+#include    <snaplogger/message.h>
+
+
+// Qt
+//
+#include    <QDomDocument>
+#include    <QFile>
 
 
 // included last
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -85,61 +90,55 @@ void QMessageHandler::handleMessage(QtMsgType type, QString const & description,
         //       in the first place...
         f_had_msg = true;
 
-        char const * type_msg(nullptr);
-        logging::log_level_t level(logging::log_level_t::LOG_LEVEL_OFF);
+        snaplogger::severity_t level(snaplogger::severity_t::SEVERITY_OFF);
         switch(type)
         {
         case QtDebugMsg:
-            type_msg = "debug";
-            level = logging::log_level_t::LOG_LEVEL_DEBUG;
+            level = snaplogger::severity_t::SEVERITY_DEBUG;
             break;
 
         case QtWarningMsg:
-            type_msg = "warning";
-            level = logging::log_level_t::LOG_LEVEL_WARNING;
+            level = snaplogger::severity_t::SEVERITY_WARNING;
             break;
 
         case QtCriticalMsg:
-            type_msg = "critical";
-            level = logging::log_level_t::LOG_LEVEL_ERROR;
+            level = snaplogger::severity_t::SEVERITY_ERROR;
             break;
 
         //case QtFatalMsg:
         default:
-            type_msg = "fatal error";
-            level = logging::log_level_t::LOG_LEVEL_FATAL;
+            level = snaplogger::severity_t::SEVERITY_FATAL;
             break;
 
         }
 
         {
-            logging::logger l(level, __FILE__, __func__, __LINE__);
-            l.operator () (type_msg)(":");
+            snaplogger::message::pointer_t l(snaplogger::create_message(level, __FILE__, __func__, __LINE__));
             QString const location(sourceLocation.uri().toString());
             if(!location.isEmpty())
             {
-                l.operator () (location)(":");
+                *l << location << ":";
             }
             if(sourceLocation.line() != 0)
             {
-                l.operator () ("line #")(sourceLocation.line())(":");
+                *l << "line #" << sourceLocation.line() << ":";
             }
             if(sourceLocation.column() != 0)
             {
-                l.operator () ("column #")(sourceLocation.column())(":");
+                *l << "column #" << sourceLocation.column() << ":";
             }
-            l.operator () (" ")(f_error_description);
+            *l << ' ' << f_error_description;
             if(!f_xsl.isEmpty())
             {
 #ifdef DEBUG
-                l.operator () (" XSLT Script:\n[")(f_xsl)("]\n");
+                *l << " XSLT Script:\n[" << f_xsl << "]\n";
                 static int count(0);
                 QFile file_xsl(QString("/tmp/error%1-query.xsl").arg(count));
                 file_xsl.open(QIODevice::WriteOnly);
                 file_xsl.write(f_xsl.toUtf8());
                 file_xsl.close();
 
-                l.operator () (" in memory XML document:\n[")(f_doc)("]\n");
+                *l << " in memory XML document:\n[" << f_doc << "]\n";
                 QFile file_xml(QString("/tmp/error%1-document.xml").arg(count));
                 file_xml.open(QIODevice::WriteOnly);
                 file_xml.write(f_doc.toUtf8());
@@ -149,10 +148,13 @@ void QMessageHandler::handleMessage(QtMsgType type, QString const & description,
                 // to actually know who called the QXmlQuery function
                 snap_exception_base::output_stack_trace(100);
 #else
-                l.operator () (" Beginning of the XSLT script involved:\n")(f_xsl.left(200))
-                              ("\nBeginning of the XML script involved:\n")(f_doc.left(200));
+                *l << " Beginning of the XSLT script involved:\n"
+                   << f_xsl.left(200)
+                   << "\nBeginning of the XML script involved:\n"
+                   << f_doc.left(200);
 #endif
             }
+            ::snaplogger::send_message(*l);
         } // print log
     }
 }

@@ -21,31 +21,39 @@
 
 // self
 //
-#include "./flags.h"
+#include    "./flags.h"
 
 
 // snapwebsites lib
 //
-#include <snapwebsites/glob_dir.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/snap_config.h>
-#include <snapwebsites/snapwebsites.h>
+#include    <snapwebsites/snapwebsites.h>
+
+
+// advgetopt
+//
+#include    <advgetopt/conf_file.h>
+
+
+// snaplogger lib
+//
+#include    <snaplogger/message.h>
 
 
 // snapdev lib
 //
-#include <snapdev/not_used.h>
-#include <snapdev/tokenize_string.h>
+#include    <snapdev/glob_to_list.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/tokenize_string.h>
 
 
 // boost lib
 //
-#include <boost/algorithm/string.hpp>
+#include    <boost/algorithm/string.hpp>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -131,7 +139,7 @@ snap_flag::snap_flag(std::string const & filename)
     || !flag.has_parameter("name")
     || !flag.has_parameter("message"))
     {
-        throw flags_exception_invalid_parameter("a flag file is expecteda unit, section, and name field, along with a message field. Other fields are optional.");
+        throw flags_exception_invalid_parameter("a flag file is expected to include a unit, section, and name field, along with a message field. Other fields are optional.");
     }
 
     f_unit = flag.get_parameter("unit");
@@ -869,7 +877,7 @@ bool snap_flag::save()
  */
 snap_flag::vector_t snap_flag::load_flags()
 {
-    // get the path to read with glob_dir
+    // get the path to read with glob_to_list
     //
     snap_config server_config("snapserver");
     std::string path("/var/lib/snapwebsites/flags");
@@ -880,11 +888,18 @@ snap_flag::vector_t snap_flag::load_flags()
 
     // read the list of files
     //
-    glob_dir const flag_filenames(path + "/*.flag", GLOB_NOSORT | GLOB_NOESCAPE, true);
+    snapdev::glob_to_list<std::list<std::string>> flag_filenames
+    flag_filenames<
+          snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE
+        , snapdev::glob_to_list_flag_t::GLOB_FLAG_EMPTY>.read_path(
+              path + "/*.flag");
+
     snap_flag::vector_t result;
     try
     {
-        flag_filenames.enumerate_glob(std::bind(&load_flag, std::placeholders::_1, &result));
+        snapdev::enumerate(
+              flag_filenames
+            , std::bind(&load_flag, std::placeholders::_1, std::placeholders::_2, &result));
     }
     catch(flags_exception_too_many_flags const &)
     {
@@ -920,7 +935,7 @@ snap_flag::vector_t snap_flag::load_flags()
  * \param[in,out] result  The vector where the new snap_flag object is
  *                        pushed.
  */
-void snap_flag::load_flag(std::string const & filename, snap_flag::vector_t * result)
+void snap_flag::load_flag(int index, std::string const & filename, snap_flag::vector_t * result)
 {
     if(result->size() >= 100)
     {

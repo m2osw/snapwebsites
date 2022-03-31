@@ -48,43 +48,21 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class sessions_exception : public snap_exception
-{
-public:
-    explicit sessions_exception(char const *        what_msg) : snap_exception("Sessions", what_msg) {}
-    explicit sessions_exception(std::string const & what_msg) : snap_exception("Sessions", what_msg) {}
-    explicit sessions_exception(QString const &     what_msg) : snap_exception("Sessions", what_msg) {}
-};
+DECLARE_LOGIC_ERROR(sessions_logic_error);
 
-class sessions_exception_invalid_parameter : public sessions_exception
-{
-public:
-    explicit sessions_exception_invalid_parameter(const char *        what_msg) : sessions_exception(what_msg) {}
-    explicit sessions_exception_invalid_parameter(const std::string & what_msg) : sessions_exception(what_msg) {}
-    explicit sessions_exception_invalid_parameter(const QString &     what_msg) : sessions_exception(what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(sessions_exception);
 
-class sessions_exception_invalid_range : public sessions_exception
-{
-public:
-    explicit sessions_exception_invalid_range(const char *        what_msg) : sessions_exception(what_msg) {}
-    explicit sessions_exception_invalid_range(const std::string & what_msg) : sessions_exception(what_msg) {}
-    explicit sessions_exception_invalid_range(const QString &     what_msg) : sessions_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(sessions_exception, sessions_exception_invalid_parameter);
+DECLARE_EXCEPTION(sessions_exception, sessions_exception_invalid_range);
+DECLARE_EXCEPTION(sessions_exception, sessions_exception_no_random_data);
 
-class sessions_exception_no_random_data : public sessions_exception
-{
-public:
-    explicit sessions_exception_no_random_data(const char *        what_msg) : sessions_exception(what_msg) {}
-    explicit sessions_exception_no_random_data(const std::string & what_msg) : sessions_exception(what_msg) {}
-    explicit sessions_exception_no_random_data(const QString &     what_msg) : sessions_exception(what_msg) {}
-};
+
 
 
 
 
 class sessions
-    : public plugins::plugin
+    : public cppthread::plugin
     , public layout::layout_content
 {
 public:
@@ -186,9 +164,6 @@ public:
     static sessions *       instance();
 
     // plugins::plugin implementation
-    virtual QString         icon() const override;
-    virtual QString         description() const override;
-    virtual QString         dependencies() const override;
     virtual int64_t         do_update(int64_t last_updated) override;
     virtual void            bootstrap(snap_child * snap) override;
 

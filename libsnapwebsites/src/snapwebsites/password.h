@@ -16,54 +16,26 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// snapwebsites lib
+// snapwebsites
 //
-#include "snapwebsites/file_content.h"
 #include "snapwebsites/snap_exception.h"
+
+
+// snapdev
+//
+#include "snapdev/file_contents.h"
+
 
 
 namespace snap
 {
 
-class password_exception : public snap::snap_exception
-{
-public:
-    password_exception(char const *        what_msg) : snap_exception(what_msg) {}
-    password_exception(std::string const & what_msg) : snap_exception(what_msg) {}
-    password_exception(QString const &     what_msg) : snap_exception(what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(password_exception);
 
-class password_exception_function_failure : public password_exception
-{
-public:
-    password_exception_function_failure(char const *        what_msg) : password_exception(what_msg) {}
-    password_exception_function_failure(std::string const & what_msg) : password_exception(what_msg) {}
-    password_exception_function_failure(QString const &     what_msg) : password_exception(what_msg) {}
-};
-
-class password_exception_invalid_parameter : public password_exception
-{
-public:
-    password_exception_invalid_parameter(char const *        what_msg) : password_exception(what_msg) {}
-    password_exception_invalid_parameter(std::string const & what_msg) : password_exception(what_msg) {}
-    password_exception_invalid_parameter(QString const &     what_msg) : password_exception(what_msg) {}
-};
-
-class password_exception_digest_not_available : public password_exception
-{
-public:
-    password_exception_digest_not_available(char const *        what_msg) : password_exception(what_msg) {}
-    password_exception_digest_not_available(std::string const & what_msg) : password_exception(what_msg) {}
-    password_exception_digest_not_available(QString const &     what_msg) : password_exception(what_msg) {}
-};
-
-class password_exception_encryption_failed : public password_exception
-{
-public:
-    password_exception_encryption_failed(char const *        what_msg) : password_exception(what_msg) {}
-    password_exception_encryption_failed(std::string const & what_msg) : password_exception(what_msg) {}
-    password_exception_encryption_failed(QString const &     what_msg) : password_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(password_exception, password_exception_function_failure);
+DECLARE_EXCEPTION(password_exception, password_exception_invalid_parameter);
+DECLARE_EXCEPTION(password_exception, password_exception_digest_not_available);
+DECLARE_EXCEPTION(password_exception, password_exception_encryption_failed);
 
 
 
@@ -119,7 +91,7 @@ private:
 
     bool                    f_file_loaded = false;
     std::string::size_type  f_next = 0;
-    file_content            f_passwords;
+    snapdev::file_contents  f_passwords;
 };
 
 } // snap namespace

@@ -16,43 +16,24 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// libsnapwebsites
+// libexcept lib
 //
-#include "snapwebsites/snap_exception.h"
+#include    <libexcept/exception.h>
+
 
 // C++
 //
-#include <map>
+#include    <map>
+
 
 
 namespace snap
 {
 
-class http_link_exception : public snap_exception
-{
-public:
-    http_link_exception(char const *        what_msg) : snap_exception("http_link", what_msg) {}
-    http_link_exception(std::string const & what_msg) : snap_exception("http_link", what_msg) {}
-    http_link_exception(QString const &     what_msg) : snap_exception("http_link", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(http_link_exception);
 
-
-class http_link_parse_exception : public http_link_exception
-{
-public:
-    http_link_parse_exception(char const *        what_msg) : http_link_exception(what_msg) {}
-    http_link_parse_exception(std::string const & what_msg) : http_link_exception(what_msg) {}
-    http_link_parse_exception(QString const &     what_msg) : http_link_exception(what_msg) {}
-};
-
-
-class http_link_parameter_exception : public http_link_exception
-{
-public:
-    http_link_parameter_exception(char const *        what_msg) : http_link_exception(what_msg) {}
-    http_link_parameter_exception(std::string const & what_msg) : http_link_exception(what_msg) {}
-    http_link_parameter_exception(QString const &     what_msg) : http_link_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(http_link_exception, http_link_parse_exception);
+DECLARE_EXCEPTION(http_link_exception, http_link_parameter_exception);
 
 
 

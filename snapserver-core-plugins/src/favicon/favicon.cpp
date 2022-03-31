@@ -17,44 +17,67 @@
 
 // self
 //
-#include "favicon.h"
+#include    "favicon.h"
 
 
 // other plugins
 //
-#include "../attachment/attachment.h"
-#include "../messages/messages.h"
-#include "../permissions/permissions.h"
-#include "../output/output.h"
-#include "../server_access/server_access.h"
-#include "../users/users.h"
+#include    "../attachment/attachment.h"
+#include    "../messages/messages.h"
+#include    "../permissions/permissions.h"
+#include    "../output/output.h"
+#include    "../server_access/server_access.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/snap_image.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/snap_image.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QFile>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// Qt
+//
+#include    <QFile>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(favicon, 1, 0)
+namespace snap
+{
+namespace favicon
+{
+
+
+CPPTHREAD_PLUGIN_START(favicon, 1, 0)
+    , ::cppthread::plugin_description(
+            "Handling of the favicon.ico file(s).")
+    , ::cppthread::plugin_icon("/images/snap/snap-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/favicon")
+    , ::cppthread::plugin_dependency("form")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /** \brief Get a fixed favicon name.
@@ -141,89 +164,6 @@ char const * get_name(name_t name)
  */
 
 
-/** \brief Initialize the favicon plugin.
- *
- * This function is used to initialize the favicon plugin object.
- */
-favicon::favicon()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the favicon plugin.
- *
- * Ensure the favicon object is clean before it is gone.
- */
-favicon::~favicon()
-{
-}
-
-
-/** \brief Get a pointer to the favicon plugin.
- *
- *
- * This function returns an instance pointer to the favicon plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the favicon plugin.
- */
-favicon * favicon::instance()
-{
-    return g_plugin_favicon_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString favicon::settings_path() const
-{
-    return "/admin/settings/favicon";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString favicon::icon() const
-{
-    return "/images/snap/snap-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString favicon::description() const
-{
-    return "Handling of the favicon.ico file(s).";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString favicon::dependencies() const
-{
-    return "|form|messages|output|permissions|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -381,7 +321,11 @@ void favicon::save_clicked_icon()
         // this is a "warning" to the developer who maybe one day will see
         // it and fix the problem...
         //
-        SNAP_LOG_ERROR("the image \":/images/favicon/")(icon_name)(".ico\" is not an x-icon image.");
+        SNAP_LOG_ERROR
+            << "the image \":/images/favicon/"
+            << icon_name
+            << ".ico\" is not an x-icon image."
+            << SNAP_LOG_SEND;
     }
 
     content::path_info_t root_ipath;
@@ -707,6 +651,7 @@ void favicon::on_improve_signature(QString const & path, QDomDocument doc, QDomE
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace favicon
+} // namespace snap
 // vim: ts=4 sw=4 et

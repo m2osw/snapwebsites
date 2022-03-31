@@ -29,23 +29,30 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/log.h>
+#include    <snapwebsites/dbutils.h>
+
+
+// snaplogger
+//
+#include    <snaplogger/message.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
 
 
 /** \brief Handle the content specific links from a cloned page.
@@ -743,7 +750,6 @@ bool content::trash_page(path_info_t & ipath)
 
 
 
-
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

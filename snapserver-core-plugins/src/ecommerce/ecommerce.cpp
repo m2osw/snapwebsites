@@ -17,45 +17,49 @@
 
 // self
 //
-#include "ecommerce.h"
+#include    "ecommerce.h"
 
 
 // other plugins
 //
-#include "../editor/editor.h"
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
-#include "../output/output.h"
-#include "../permissions/permissions.h"
-#include "../shorturl/shorturl.h"
+#include    "../editor/editor.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
+#include    "../output/output.h"
+#include    "../permissions/permissions.h"
+#include    "../shorturl/shorturl.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/snap_lock.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// Qt lib
+// C++
 //
-#include <QDateTime>
+#include    <iostream>
+
+
+// Qt
+//
+#include    <QDateTime>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -140,7 +144,33 @@
  */
 
 
-SNAP_PLUGIN_START(ecommerce, 1, 0)
+namespace snap
+{
+namespace ecommerce
+{
+
+
+CPPTHREAD_PLUGIN_START(ecommerce, 1, 0)
+    , ::cppthread::plugin_description(
+            "The e-Commerce plugin offers all the necessary features a"
+            " website needs to offer a full e-Commerce environment so your"
+            " users can purchase your goods and services. The base plugin"
+            " includes many features directly available to you without the"
+            " need for other plugins. However, you want to install the"
+            " ecommerce-payment plugin and at least one of the payments"
+            " gateway in order to allow for the actual payments.")
+    , ::cppthread::plugin_icon("/images/ecommerce/ecommerce-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/ecommerce")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("shorturl")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("finance")
+    , ::cppthread::plugin_categorization_tag("payment")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /* \brief Get a fixed ecommerce name.
@@ -382,94 +412,6 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the ecommerce plugin.
- *
- * This function is used to initialize the ecommerce plugin object.
- */
-ecommerce::ecommerce()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the ecommerce plugin.
- *
- * Ensure the ecommerce object is clean before it is gone.
- */
-ecommerce::~ecommerce()
-{
-}
-
-
-/** \brief Get a pointer to the ecommerce plugin.
- *
- * This function returns an instance pointer to the ecommerce plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the ecommerce plugin.
- */
-ecommerce * ecommerce::instance()
-{
-    return g_plugin_ecommerce_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString ecommerce::settings_path() const
-{
-    return "/admin/settings/ecommerce";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString ecommerce::icon() const
-{
-    return "/images/ecommerce/ecommerce-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString ecommerce::description() const
-{
-    return "The e-Commerce plugin offers all the necessary features a"
-        " website needs to offer a full e-Commerce environment so your"
-        " users can purchase your goods and services. The base plugin"
-        " includes many features directly available to you without the"
-        " need for other plugins. However, you want to install the"
-        " ecommerce-payment plugin and at least one of the payments"
-        " gateway in order to allow for the actual payments.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString ecommerce::dependencies() const
-{
-    return "|filter|layout|output|permissions|shorturl|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -1387,7 +1329,7 @@ void ecommerce::on_generate_invoice(content::path_info_t& invoice_ipath, uint64_
     libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
     libdbproxy::row::pointer_t content_row(content_table->getRow(invoices_ipath.get_key()));
     {
-        snap_lock lock(invoices_ipath.get_key());
+        snap_lock lock(invoices_ipath.get_key().toUtf8().data());
 
         // retrieve the current invoice number and increment by one
         libdbproxy::value invoice_number_value(content_row->getCell(get_name(name_t::SNAP_NAME_ECOMMERCE_INVOICE_NUMBER))->getValue());
@@ -1771,6 +1713,6 @@ void ecommerce::on_token_help(filter::filter::token_help_t & help)
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace ecommerce
+} // namespace snap
 // vim: ts=4 sw=4 et

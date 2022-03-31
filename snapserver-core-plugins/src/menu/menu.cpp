@@ -18,43 +18,63 @@
 
 // self
 //
-#include "menu.h"
+#include    "menu.h"
 
 
 // other plugins
 //
-#include "../content/content.h"
-#include "../output/output.h"
+#include    "../content/content.h"
+#include    "../output/output.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// Qt lib
+// Qt
 //
-#include <QtCore/QDebug>
+#include    <QtCore/QDebug>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(menu, 1, 0)
+namespace snap
+{
+namespace menu
+{
+
+
+CPPTHREAD_PLUGIN_START(menu, 1, 0)
+    , ::cppthread::plugin_description(
+            "This plugin generates lists of pages used to form a menu."
+            " It manages two different types of lists: automated lists,"
+            " using the list plugin, and manually created lists where"
+            " a user enters each item in the list.")
+    , ::cppthread::plugin_icon("/images/menu/menu-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/menu")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("gui")
+CPPTHREAD_PLUGIN_END()
+
 
 /** \brief Get a fixed menu name.
  *
@@ -85,92 +105,6 @@ char const * get_name(name_t name)
 
 
 
-
-/** \brief Initialize the menu plugin.
- *
- * This function is used to initialize the menu plugin object.
- */
-menu::menu()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the menu plugin.
- *
- * Ensure the menu object is clean before it is gone.
- */
-menu::~menu()
-{
-}
-
-
-/** \brief Get a pointer to the menu plugin.
- *
- * This function returns an instance pointer to the menu plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the menu plugin.
- */
-menu * menu::instance()
-{
-    return g_plugin_menu_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString menu::settings_path() const
-{
-    return "/admin/menu";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString menu::icon() const
-{
-    return "/images/menu/menu-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString menu::description() const
-{
-    return "This plugin generates lists of pages used to form a menu."
-          " It manages two different types of lists: automated lists,"
-          " using the list plugin, and manually created lists where"
-          " a user enters each item in the list.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString menu::dependencies() const
-{
-    return "|content|layout|output|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -247,6 +181,7 @@ void menu::on_generate_main_content(content::path_info_t & ipath, QDomElement & 
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace menu
+} // namespace snap
 // vim: ts=4 sw=4 et

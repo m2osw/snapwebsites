@@ -18,47 +18,74 @@
 
 // self
 //
-#include "feed.h"
+#include    "feed.h"
 
 
 // other plugins
 //
-#include "../attachment/attachment.h"
-#include "../filter/filter.h"
-#include "../list/list.h"
-#include "../locale/snap_locale.h"
-#include "../path/path.h"
+#include    "../attachment/attachment.h"
+#include    "../filter/filter.h"
+#include    "../list/list.h"
+#include    "../locale/snap_locale.h"
+#include    "../path/path.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/qhtmlserializer.h>
-#include <snapwebsites/qxmlmessagehandler.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/qhtmlserializer.h>
+#include    <snapwebsites/qxmlmessagehandler.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QFile>
-#include <QTextStream>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// Qt
+//
+#include    <QFile>
+#include    <QTextStream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(feed, 1, 0)
+namespace snap
+{
+namespace feed
+{
+
+
+
+CPPTHREAD_PLUGIN_START(feed, 1, 0)
+    , ::cppthread::plugin_description(
+            "System used to generate RSS, Atom and other feeds. It also"
+            " handles subscriptions for subscription based feed systems"
+            " such as RSS Cloud and PubSubHubbub.")
+    , ::cppthread::plugin_icon("/images/feed/feed-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/feed")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /** \brief Get a fixed feed name.
@@ -137,90 +164,6 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the feed plugin.
- *
- * This function is used to initialize the feed plugin object.
- */
-feed::feed()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the feed plugin.
- *
- * Ensure the feed object is clean before it is gone.
- */
-feed::~feed()
-{
-}
-
-
-/** \brief Get a pointer to the feed plugin.
- *
- * This function returns an instance pointer to the feed plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the feed plugin.
- */
-feed *feed::instance()
-{
-    return g_plugin_feed_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString feed::settings_path() const
-{
-    return "/admin/settings/feed";
-}
-
-
-/** \brief A path or URI to a logo for the feed system.
- *
- * This function returns a 64x64 icons representing the feed plugin.
- *
- * \return A path to the feed logo.
- */
-QString feed::icon() const
-{
-    return "/images/feed/feed-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString feed::description() const
-{
-    return "System used to generate RSS, Atom and other feeds. It also"
-          " handles subscriptions for subscription based feed systems"
-          " such as RSS Cloud and PubSubHubbub.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString feed::dependencies() const
-{
-    return "|editor|layout|messages|output|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -388,7 +331,11 @@ void feed::on_finish_editor_form_processing(content::path_info_t & ipath, bool &
 void feed::on_backend_process()
 {
     snap_uri const & main_uri(f_snap->get_uri());
-    SNAP_LOG_TRACE("backend_process: process feed.rss content for \"")(main_uri.get_uri())("\".");
+    SNAP_LOG_TRACE
+        << "backend_process: process feed.rss content for \""
+        << main_uri.get_uri()
+        << "\"."
+        << SNAP_LOG_SEND;
 
     generate_feeds();
 }
@@ -466,14 +413,18 @@ void feed::generate_feeds()
                 QFile file(":/xsl/layout/feed-parser.xsl");
                 if(!file.open(QIODevice::ReadOnly))
                 {
-                    SNAP_LOG_FATAL("feed::generate_feeds() could not open the feed-parser.xsl resource file.");
+                    SNAP_LOG_FATAL
+                        << "feed::generate_feeds() could not open the feed-parser.xsl resource file."
+                        << SNAP_LOG_SEND;
                     return;
                 }
                 QByteArray data(file.readAll());
                 f_feed_parser_xsl = QString::fromUtf8(data.data(), data.size());
                 if(f_feed_parser_xsl.isEmpty())
                 {
-                    SNAP_LOG_FATAL("feed::generate_feeds() could not read the feed-parser.xsl resource file.");
+                    SNAP_LOG_FATAL
+                        << "feed::generate_feeds() could not read the feed-parser.xsl resource file."
+                        << SNAP_LOG_SEND;
                     return;
                 }
             }
@@ -771,7 +722,11 @@ void feed::generate_feeds()
                         }
                         else
                         {
-                            SNAP_LOG_WARNING("failed loading \"")(key)("\" as one of the feed formats.");
+                            SNAP_LOG_WARNING
+                                << "failed loading \""
+                                << key
+                                << "\" as one of the feed formats."
+                                << SNAP_LOG_SEND;
                         }
                     }
                 }
@@ -809,7 +764,11 @@ void feed::generate_feeds()
                         }
                         else
                         {
-                            SNAP_LOG_ERROR("invalid namespace (")(ns)(") specification in feed");
+                            SNAP_LOG_ERROR
+                                << "invalid namespace ("
+                                << ns
+                                << ") specification in feed"
+                                << SNAP_LOG_SEND;
                         }
                     }
                 }
@@ -881,7 +840,9 @@ void feed::generate_feeds()
                     QDomXPath::node_vector_t snap_info_tags(feed_dom_xpath.apply(feed_result));
                     if(snap_info_tags.size() != 1)
                     {
-                        SNAP_LOG_ERROR("any feed XSLT 2.0 file must include a snap-info tag with various details about the output file.");
+                        SNAP_LOG_ERROR
+                            << "any feed XSLT 2.0 file must include a snap-info tag with various details about the output file."
+                            << SNAP_LOG_SEND;
                         success = false;
                     }
                     else
@@ -1028,6 +989,8 @@ void feed::mark_attachment_as_feed(snap::content::attachment_file & attachment)
 // http://validator.w3.org/feed/
 // 
 
-SNAP_PLUGIN_END()
 
+
+} // namespace feed
+} // namespace snap
 // vim: ts=4 sw=4 et

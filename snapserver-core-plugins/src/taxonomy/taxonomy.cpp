@@ -17,27 +17,44 @@
 
 // self
 //
-#include "taxonomy.h"
+#include    "taxonomy.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(taxonomy, 1, 0)
+namespace snap
+{
+namespace taxonomy
+{
+
+
+
+CPPTHREAD_PLUGIN_START(taxonomy, 1, 0)
+    , ::cppthread::plugin_description(
+            "This plugin manages the different types on your website."
+            " Types include categories, tags, permissions, etc."
+            " Some of these types are locked so the system continues to"
+            " work, however, all can be edited by the user in some way.")
+    , ::cppthread::plugin_icon("/images/taxonomy/taxonomy-logo-64x64.png")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("taxonomy")
+CPPTHREAD_PLUGIN_END()
 
 
 
@@ -69,80 +86,6 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the taxonomy plugin.
- *
- * This function is used to initialize the taxonomy plugin object.
- */
-taxonomy::taxonomy()
-{
-}
-
-
-/** \brief Clean up the taxonomy plugin.
- *
- * Ensure the taxonomy object is clean before it is gone.
- */
-taxonomy::~taxonomy()
-{
-}
-
-
-/** \brief Get a pointer to the taxonomy plugin.
- *
- * This function returns an instance pointer to the taxonomy plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the taxonomy plugin.
- */
-taxonomy * taxonomy::instance()
-{
-    return g_plugin_taxonomy_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString taxonomy::icon() const
-{
-    return "/images/taxonomy/taxonomy-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString taxonomy::description() const
-{
-    return "This plugin manages the different types on your website."
-        " Types include categories, tags, permissions, etc."
-        " Some of these types are locked so the system continues to"
-        " work, however, all can be edited by the user in some way.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString taxonomy::dependencies() const
-{
-    return "|content|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -438,6 +381,7 @@ void taxonomy::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace taxonomy
+} // namespace snap
 // vim: ts=4 sw=4 et

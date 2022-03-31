@@ -18,27 +18,31 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
+
 
 
 namespace details
@@ -112,7 +116,6 @@ void content::on_add_snap_expr_functions(snap_expr::functions_t & functions)
 
 
 
-
-SNAP_PLUGIN_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

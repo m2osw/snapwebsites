@@ -110,61 +110,14 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 
-class users_exception : public snap_exception
-{
-public:
-    explicit users_exception(char const *        what_msg) : snap_exception("users", what_msg) {}
-    explicit users_exception(std::string const & what_msg) : snap_exception("users", what_msg) {}
-    explicit users_exception(QString const &     what_msg) : snap_exception("users", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(users_exception);
 
-class users_exception_invalid_email : public users_exception
-{
-public:
-    explicit users_exception_invalid_email(char const *        what_msg) : users_exception(what_msg) {}
-    explicit users_exception_invalid_email(std::string const & what_msg) : users_exception(what_msg) {}
-    explicit users_exception_invalid_email(QString const &     what_msg) : users_exception(what_msg) {}
-};
-
-class users_exception_invalid_path : public users_exception
-{
-public:
-    explicit users_exception_invalid_path(char const *        what_msg) : users_exception(what_msg) {}
-    explicit users_exception_invalid_path(std::string const & what_msg) : users_exception(what_msg) {}
-    explicit users_exception_invalid_path(QString const &     what_msg) : users_exception(what_msg) {}
-};
-
-class users_exception_size_mismatch : public users_exception
-{
-public:
-    explicit users_exception_size_mismatch(char const *        what_msg) : users_exception(what_msg) {}
-    explicit users_exception_size_mismatch(std::string const & what_msg) : users_exception(what_msg) {}
-    explicit users_exception_size_mismatch(QString const &     what_msg) : users_exception(what_msg) {}
-};
-
-class users_exception_digest_not_available : public users_exception
-{
-public:
-    explicit users_exception_digest_not_available(char const *        what_msg) : users_exception(what_msg) {}
-    explicit users_exception_digest_not_available(std::string const & what_msg) : users_exception(what_msg) {}
-    explicit users_exception_digest_not_available(QString const &     what_msg) : users_exception(what_msg) {}
-};
-
-class users_exception_encryption_failed : public users_exception
-{
-public:
-    explicit users_exception_encryption_failed(char const *        what_msg) : users_exception(what_msg) {}
-    explicit users_exception_encryption_failed(std::string const & what_msg) : users_exception(what_msg) {}
-    explicit users_exception_encryption_failed(QString const &     what_msg) : users_exception(what_msg) {}
-};
-
-class users_exception_invalid_object : public users_exception
-{
-public:
-    explicit users_exception_invalid_object(char const *        what_msg) : users_exception(what_msg) {}
-    explicit users_exception_invalid_object(std::string const & what_msg) : users_exception(what_msg) {}
-    explicit users_exception_invalid_object(QString const &     what_msg) : users_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(users_exception, users_exception_invalid_email);
+DECLARE_EXCEPTION(users_exception, users_exception_invalid_path);
+DECLARE_EXCEPTION(users_exception, users_exception_size_mismatch);
+DECLARE_EXCEPTION(users_exception, users_exception_digest_not_available);
+DECLARE_EXCEPTION(users_exception, users_exception_encryption_failed);
+DECLARE_EXCEPTION(users_exception, users_exception_invalid_object);
 
 
 
@@ -172,7 +125,7 @@ public:
 
 
 class users
-    : public plugins::plugin
+    : public cppthread::plugin
     , public links::links_cloned
     , public path::path_execute
     , public layout::layout_content
@@ -394,10 +347,6 @@ public:
     static users *          instance();
 
     // plugins::plugin implementation
-    virtual QString         settings_path() const override;
-    virtual QString         icon() const override;
-    virtual QString         description() const override;
-    virtual QString         dependencies() const override;
     virtual int64_t         do_update(int64_t last_updated) override;
     virtual int64_t         do_dynamic_update(int64_t last_updated) override;
     virtual void            bootstrap(::snap::snap_child * snap) override;

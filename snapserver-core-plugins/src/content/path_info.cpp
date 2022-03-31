@@ -25,27 +25,30 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// libdbproxy lib
+// libdbproxy
 //
-#include <libdbproxy/table.h>
+#include    <libdbproxy/table.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace content
+{
 
-SNAP_PLUGIN_EXTENSION_START(content)
 
 
 /** \brief Initialize the path_info_t object to an empty object.
@@ -68,18 +71,6 @@ SNAP_PLUGIN_EXTENSION_START(content)
 path_info_t::path_info_t()
     : f_content_plugin(content::content::instance())
     , f_snap(f_content_plugin->get_snap())
-    //, f_key("") -- auto-init
-    //, f_real_key("") -- auto-init
-    //, f_cpath("") -- auto-init
-    //, f_real_cpath("") -- auto-init
-    //, f_main_page(false) -- auto-init
-    //, f_parameters() -- auto-init
-    //, f_branch(snap_version::SPECIAL_VERSION_UNDEFINED) -- auto-init
-    //, f_revision(snap_version::SPECIAL_VERSION_UNDEFINED) -- auto-init
-    //, f_revision_string("") -- auto-init
-    //, f_branch_key("") -- auto-init
-    //, f_revision_key("") -- auto-init
-    //, f_locale("") -- auto-init
     , f_content_table(f_content_plugin->get_content_table())
     , f_branch_table(f_content_plugin->get_branch_table())
     , f_revision_table(f_content_plugin->get_revision_table())
@@ -1054,6 +1045,6 @@ void path_info_t::clear(bool keep_parameters)
 
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

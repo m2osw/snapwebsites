@@ -26,8 +26,12 @@
 // snapwebsites lib
 //
 #include <snapwebsites/qcompatibility.h>
-#include "snapwebsites/qstring_stream.h"
-#include "snapwebsites/log.h"
+#include <snapdev/qstring_extensions.h>
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // snapdev lib

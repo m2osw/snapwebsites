@@ -17,46 +17,46 @@
 
 // self
 //
-#include "sortable.h"
+#include    "sortable.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../messages/messages.h"
-#include "../permissions/permissions.h"
+#include    "../output/output.h"
+#include    "../messages/messages.h"
+#include    "../permissions/permissions.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <algorithm>
-#include <iostream>
+#include    <algorithm>
+#include    <iostream>
 
 
-// OpenSSL lib
+// OpenSSL
 //
-#include <openssl/rand.h>
+#include    <openssl/rand.h>
 
 
-// Qt lib
+// Qt
 //
-#include <QChar>
+#include    <QChar>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -68,7 +68,27 @@
  * of items by dragging and dropping those items.
  */
 
-SNAP_PLUGIN_START(sortable, 1, 0)
+namespace snap
+{
+namespace sortable
+{
+
+
+CPPTHREAD_PLUGIN_START(sortable, 1, 0)
+    , ::cppthread::plugin_description(
+            "Gives the end users the ability to sort list items."
+            " This plugin is very rarely added by itself. Instead, another"
+            " plugin that needs the sort capability will depend on it.")
+    , ::cppthread::plugin_icon("/images/sortable/sortable-logo-64x64.png")
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("sortable")
+CPPTHREAD_PLUGIN_END()
 
 
 
@@ -102,82 +122,6 @@ char const * get_name(name_t name)
 
 
 
-
-
-/** \brief Initialize the sortable plugin.
- *
- * This function is used to initialize the sortable plugin object.
- */
-sortable::sortable()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the sortable plugin.
- *
- * Ensure the sortable object is clean before it is gone.
- */
-sortable::~sortable()
-{
-}
-
-
-/** \brief Get a pointer to the sortable plugin.
- *
- * This function returns an instance pointer to the sortable plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the sortable plugin.
- */
-sortable * sortable::instance()
-{
-    return g_plugin_sortable_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString sortable::icon() const
-{
-    return "/images/sortable/sortable-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString sortable::description() const
-{
-    return "Gives the end users the ability to sort list items."
-          " This plugin is very rarely added by itself. Instead, another"
-          " plugin that needs the sort capability will depend on it.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString sortable::dependencies() const
-{
-    return "|editor|messages|output|permissions|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -246,6 +190,7 @@ void sortable::on_prepare_editor_form(editor::editor * e)
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace sortable
+} // namespace snap
 // vim: ts=4 sw=4 et

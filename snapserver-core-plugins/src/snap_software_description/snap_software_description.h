@@ -62,7 +62,7 @@ public:
 
 
 class snap_software_description
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                                             snap_software_description();
@@ -74,8 +74,6 @@ public:
     static snap_software_description *      instance();
 
     // plugins::plugin implementation
-    virtual QString                         description() const override;
-    virtual QString                         dependencies() const override;
     virtual int64_t                         do_update(int64_t last_updated) override;
     virtual void                            bootstrap(::snap::snap_child * snap) override;
 

@@ -20,44 +20,64 @@
 
 // self
 //
-#include "qrcode.h"
+#include    "qrcode.h"
 
 
 // other plugins
 //
-#include "../attachment/attachment.h"
-#include "../permissions/permissions.h"
-#include "../shorturl/shorturl.h"
+#include    "../attachment/attachment.h"
+#include    "../permissions/permissions.h"
+#include    "../shorturl/shorturl.h"
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
-// QtEncode lib
+// QtEncode
 //
-#include <qrencode.h>
+#include    <qrencode.h>
 
 
-// Magick++ lib
+// Magick++
 //
-#include <Magick++.h>
+#include    <Magick++.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(qrcode, 1, 0)
+namespace snap
+{
+namespace qrcode
+{
+
+
+CPPTHREAD_PLUGIN_START(qrcode, 1, 0)
+    , ::cppthread::plugin_description(
+            "Generate the QR Code of the website public pages.")
+    , ::cppthread::plugin_icon("/images/qrcode/qrcode-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/qrcode")
+    , ::cppthread::plugin_dependency("attachment")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("shorturl")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("utilities")
+CPPTHREAD_PLUGIN_END()
+
+
 
 /** \brief Get a fixed qrcode name.
  *
@@ -144,89 +164,6 @@ void data_deleter(unsigned char * data)
 
 
 
-
-/** \brief Initialize the qrcode plugin.
- *
- * This function is used to initialize the qrcode plugin object.
- */
-qrcode::qrcode()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the qrcode plugin.
- *
- * Ensure the qrcode object is clean before it is gone.
- */
-qrcode::~qrcode()
-{
-}
-
-
-/** \brief Get a pointer to the qrcode plugin.
- *
- * This function returns an instance pointer to the qrcode plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the qrcode plugin.
- */
-qrcode * qrcode::instance()
-{
-    return g_plugin_qrcode_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString qrcode::settings_path() const
-{
-    return "/admin/settings/qrcode";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString qrcode::icon() const
-{
-    return "/images/qrcode/qrcode-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString qrcode::description() const
-{
-    return "Generate the QR Code of the website public pages.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString qrcode::dependencies() const
-{
-    return "|attachment|editor|path|permissions|shorturl|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -531,7 +468,6 @@ bool qrcode::on_path_execute(content::path_info_t & ipath)
 
 
 
-
-SNAP_PLUGIN_END()
-
+} // namespace qrcode
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -44,31 +44,10 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class epayment_creditcard_exception : public snap_exception
-{
-public:
-    explicit epayment_creditcard_exception(char const *        what_msg) : snap_exception("server-access", what_msg) {}
-    explicit epayment_creditcard_exception(std::string const & what_msg) : snap_exception("server-access", what_msg) {}
-    explicit epayment_creditcard_exception(QString const &     what_msg) : snap_exception("server-access", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(epayment_creditcard_exception);
 
-class epayment_creditcard_exception_status_missing : public epayment_creditcard_exception
-{
-public:
-    explicit epayment_creditcard_exception_status_missing(char const *        what_msg) : epayment_creditcard_exception(what_msg) {}
-    explicit epayment_creditcard_exception_status_missing(std::string const & what_msg) : epayment_creditcard_exception(what_msg) {}
-    explicit epayment_creditcard_exception_status_missing(QString const &     what_msg) : epayment_creditcard_exception(what_msg) {}
-};
-
-class epayment_creditcard_exception_gateway_missing : public epayment_creditcard_exception
-{
-public:
-    explicit epayment_creditcard_exception_gateway_missing(char const *        what_msg) : epayment_creditcard_exception(what_msg) {}
-    explicit epayment_creditcard_exception_gateway_missing(std::string const & what_msg) : epayment_creditcard_exception(what_msg) {}
-    explicit epayment_creditcard_exception_gateway_missing(QString const &     what_msg) : epayment_creditcard_exception(what_msg) {}
-};
-
-
+DECLARE_EXCEPTION(epayment_creditcard_exception, epayment_creditcard_exception_status_missing);
+DECLARE_EXCEPTION(epayment_creditcard_exception, epayment_creditcard_exception_gateway_missing);
 
 
 
@@ -210,7 +189,7 @@ public:
 
 
 class epayment_creditcard
-    : public plugins::plugin
+    : public cppthread::plugin
     , public epayment_creditcard_gateway_t
 {
 public:
@@ -223,10 +202,6 @@ public:
     static epayment_creditcard *instance();
 
     // plugins::plugin implementation
-    virtual QString             settings_path() const override;
-    virtual QString             icon() const override;
-    virtual QString             description() const override;
-    virtual QString             dependencies() const override;
     virtual int64_t             do_update(int64_t last_updated) override;
     virtual void                bootstrap(snap_child * snap) override;
 

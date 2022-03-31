@@ -31,9 +31,9 @@
 #include "snapmanager/manager.h"
 
 
-// snapwebsites
+// snaplogger lib
 //
-#include <snapwebsites/log.h>
+#include <snaplogger/message.h>
 
 
 // snapdev lib
@@ -235,7 +235,11 @@ bool status_t::from_string(QString const & line)
     || (s + 1)->unicode() != ':')
     {
         // unexpected plugin name separator
-        SNAP_LOG_ERROR("status_t::from_string(): invalid plugin name separator in \"")(line)("\"");
+        SNAP_LOG_ERROR
+            << "status_t::from_string(): invalid plugin name separator in \""
+            << line
+            << "\""
+            << SNAP_LOG_SEND;
         return false;
     }
 
@@ -284,7 +288,13 @@ bool status_t::from_string(QString const & line)
         else
         {
             // unknown state
-            SNAP_LOG_ERROR("status_t::from_string(): unsupported state \"")(state)("\" in \"")(line)("\".");
+            SNAP_LOG_ERROR
+                << "status_t::from_string(): unsupported state \""
+                << state
+                << "\" in \""
+                << line
+                << "\"."
+                << SNAP_LOG_SEND;
             return false;
         }
 
@@ -295,7 +305,11 @@ bool status_t::from_string(QString const & line)
     if(s->isNull()
     || s->unicode() != '=')
     {
-        SNAP_LOG_ERROR("status_t::from_string(): '=' expected between name and value in \"")(line)("\".");
+        SNAP_LOG_ERROR
+            << "status_t::from_string(): '=' expected between name and value in \""
+            << line
+            << "\"."
+            << SNAP_LOG_SEND;
         return false;
     }
 

@@ -19,26 +19,6 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// self
-//
-#include "snapwebsites/http_strings.h"
-#include "snapwebsites/plugins.h"
-#include "snapwebsites/snap_child.h"
-#include "snapwebsites/snap_communicator.h"
-#include "snapwebsites/snap_config.h"
-#include "snapwebsites/snap_expr.h"
-#include "snapwebsites/snap_pid.h"
-#include "snapwebsites/version.h"
-
-// advgetopt lib
-//
-#include <advgetopt/advgetopt.h>
-
-// Qt lib
-//
-#include <QTranslator>
-
-
 /** \file
  * \brief Main header file of the libsnapwebsites library.
  *
@@ -47,6 +27,44 @@
  *
  * See the .cpp file for more details.
  */
+
+// self
+//
+#include    "snapwebsites/http_strings.h"
+#include    "snapwebsites/snap_child.h"
+#include    "snapwebsites/snap_expr.h"
+#include    "snapwebsites/snap_pid.h"
+#include    "snapwebsites/version.h"
+
+
+// cppthread
+//
+#include    <cppthread/plugins.h>
+
+
+// advgetopt
+//
+#include    <advgetopt/conf_file.h>
+
+
+// eventdispatcher
+//
+#include    <eventdispatcher/communicator.h>
+#include    <eventdispatcher/tcp_client_permanent_message_connection.h>
+#include    <eventdispatcher/udp_server.h>
+
+
+// advgetopt
+//
+#include    <advgetopt/advgetopt.h>
+
+
+// Qt
+//
+#include    <QTranslator>
+
+
+
 
 namespace snap
 {
@@ -131,37 +149,12 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 
-class snapwebsites_exception : public snap_exception
-{
-public:
-    explicit snapwebsites_exception(char const *        whatmsg) : snap_exception("snapwebsites", whatmsg) {}
-    explicit snapwebsites_exception(std::string const & whatmsg) : snap_exception("snapwebsites", whatmsg) {}
-    explicit snapwebsites_exception(QString const &     whatmsg) : snap_exception("snapwebsites", whatmsg) {}
-};
+DECLARE_MAIN_EXCEPTION(snapwebsites_exception);
 
-class snapwebsites_exception_invalid_parameters : public snapwebsites_exception
-{
-public:
-    explicit snapwebsites_exception_invalid_parameters(char const *        whatmsg) : snapwebsites_exception(whatmsg) {}
-    explicit snapwebsites_exception_invalid_parameters(std::string const & whatmsg) : snapwebsites_exception(whatmsg) {}
-    explicit snapwebsites_exception_invalid_parameters(QString const &     whatmsg) : snapwebsites_exception(whatmsg) {}
-};
+DECLARE_EXCEPTION(snapwebsites_exception, snapwebsites_exception_invalid_parameters);
+DECLARE_EXCEPTION(snapwebsites_exception, snapwebsites_exception_parameter_not_available);
+DECLARE_EXCEPTION(snapwebsites_exception, snapwebsites_exception_io_error);
 
-class snapwebsites_exception_parameter_not_available : public snapwebsites_exception
-{
-public:
-    explicit snapwebsites_exception_parameter_not_available(char const *        whatmsg) : snapwebsites_exception(whatmsg) {}
-    explicit snapwebsites_exception_parameter_not_available(std::string const & whatmsg) : snapwebsites_exception(whatmsg) {}
-    explicit snapwebsites_exception_parameter_not_available(QString const &     whatmsg) : snapwebsites_exception(whatmsg) {}
-};
-
-class snapwebsites_exception_io_error : public snapwebsites_exception
-{
-public:
-    explicit snapwebsites_exception_io_error(char const *        whatmsg) : snapwebsites_exception(whatmsg) {}
-    explicit snapwebsites_exception_io_error(std::string const & whatmsg) : snapwebsites_exception(whatmsg) {}
-    explicit snapwebsites_exception_io_error(QString const &     whatmsg) : snapwebsites_exception(whatmsg) {}
-};
 
 
 
@@ -213,13 +206,13 @@ class listener_impl;
 
 
 class server
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
     typedef std::shared_ptr<server>             pointer_t;
 
     // TODO: remove once snapcommunicator is used
-    typedef QSharedPointer<udp_client_server::udp_server>   udp_server_t;
+    typedef QSharedPointer<ed::udp_server>      udp_server_t;
 
     typedef uint32_t                            config_flags_t;
 
@@ -235,7 +228,7 @@ public:
     class backend_action_set
     {
     public:
-        void                    add_action(QString const & action, plugins::plugin * p);
+        void                    add_action(QString const & action, cppthread::plugin * p);
         bool                    has_action(QString const & action) const;
         void                    execute_action(QString const & action);
         QString                 get_plugin_name(QString const & action);
@@ -272,7 +265,7 @@ public:
     static pointer_t    instance();
     virtual             ~server();
 
-    [[noreturn]] static void exit( int const code );
+    [[noreturn]] static void exit(int const code);
 
     static char const * version();
     static int          version_major();
@@ -283,11 +276,8 @@ public:
     static std::string  get_server_name();
     static void         verify_server_name(std::string & server_name);
 
-    // plugins::plugin implementation
-    virtual QString     icon() const;
-    virtual QString     description() const;
-    virtual QString     dependencies() const;
-    virtual void        bootstrap(snap_child * snap);
+    // cppthread::plugin implementation
+    virtual void        bootstrap(void * snap) override;
     virtual int64_t     do_update(int64_t last_updated);
 
     [[noreturn]] void   usage();
@@ -313,7 +303,7 @@ public:
     int                 snapdbproxy_port() const { return f_snapdbproxy_port; }
     QString const &     snapdbproxy_addr() const { return f_snapdbproxy_addr; }
     void                capture_zombies(pid_t child_pid);
-    void                process_message(snap_communicator_message const & message);
+    void                process_message(ed::message const & message);
 
     unsigned long       connections_count();
 
@@ -321,13 +311,14 @@ public:
     void                set_service_name(std::string const & service_name);
     std::string const & get_service_name() const;
 
-    void                configure_messenger_logging( snap_communicator::snap_tcp_client_permanent_message_connection::pointer_t ptr );
+    void                configure_messenger_logging(ed::tcp_client_permanent_message_connection::pointer_t ptr);
 
     void                udp_ping_server( QString const & service, QString const & uri );
     void                udp_rusage(QString const & process_name);
     static void         block_ip( QString const & uri, QString const & period = QString(), QString const & reason = QString() );
 
-    snap_config const & get_parameters() const;
+    advgetopt::conf_file::pointer_t
+                        get_parameters() const;
 
 #ifdef SNAP_NO_FORK
     bool nofork() const;
@@ -365,7 +356,8 @@ protected:
     QString                     f_snapdbproxy_addr = QString();     // NO DEFAULT, if isEmpty() then we are not connected / cannot connect to snapdbproxy
     int32_t                     f_snapdbproxy_port = 0;
     bool                        f_snaplock = false;
-    snap_config                 f_parameters = snap_config();
+    advgetopt::conf_file::pointer_t
+                                f_parameters = advgetopt::conf_file::pointer_t();
 
 private:
     typedef std::shared_ptr<advgetopt::getopt>    getopt_ptr_t;
@@ -376,7 +368,7 @@ private:
     static void                 sighandler( int sig );
     static void                 sigloghandler( int sig );
 
-    void                        process_connection(tcp_client_server::bio_client::pointer_t client);
+    void                        process_connection(ed::tcp_bio_client::pointer_t client);
     void                        stop_thread_func();
     void                        stop(bool quitting);
 

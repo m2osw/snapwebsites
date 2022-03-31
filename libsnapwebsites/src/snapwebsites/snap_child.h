@@ -16,96 +16,52 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// snapwebsites lib
+// snapwebsites
 //
-#include "snapwebsites/cache_control.h"
-#include "snapwebsites/http_cookie.h"
-#include "snapwebsites/http_link.h"
-#include "snapwebsites/snap_communicator.h"
-#include "snapwebsites/snap_signals.h"
-#include "snapwebsites/snap_thread.h"
-#include "snapwebsites/snap_uri.h"
-#include "snapwebsites/snap_version.h"
-#include "snapwebsites/tcp_client_server.h"
-#include "snapwebsites/udp_client_server.h"
+#include    "snapwebsites/cache_control.h"
+#include    "snapwebsites/http_cookie.h"
+#include    "snapwebsites/http_link.h"
+#include    "snapwebsites/snap_signals.h"
+#include    "snapwebsites/snap_uri.h"
+#include    "snapwebsites/snap_version.h"
 
-// libdbproxy lib
-//
-#include <libdbproxy/libdbproxy.h>
-#include <libdbproxy/context.h>
 
-// Qt lib
+// cppthread
 //
-#include <QBuffer>
-#include <QDomDocument>
+#include    <cppthread/thread.h>
+#include    <cppthread/runner.h>
+
+
+// eventdispatcher
+//
+#include    <eventdispatcher/communicator.h>
+#include    <eventdispatcher/tcp_client_permanent_message_connection.h>
+
+
+// libdbproxy
+//
+#include    <libdbproxy/libdbproxy.h>
+#include    <libdbproxy/context.h>
+
+
+// Qt
+//
+#include    <QBuffer>
+#include    <QDomDocument>
 
 
 namespace snap
 {
 
-class snap_child_exception : public snap_exception
-{
-public:
-    explicit snap_child_exception(char const *        whatmsg) : snap_exception("snap_child", whatmsg) {}
-    explicit snap_child_exception(std::string const & whatmsg) : snap_exception("snap_child", whatmsg) {}
-    explicit snap_child_exception(QString const &     whatmsg) : snap_exception("snap_child", whatmsg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_child_exception);
 
-class snap_child_exception_unique_number_error : public snap_child_exception
-{
-public:
-    explicit snap_child_exception_unique_number_error(char const *        whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_unique_number_error(std::string const & whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_unique_number_error(QString const &     whatmsg) : snap_child_exception(whatmsg) {}
-};
-
-class snap_child_exception_invalid_header_value : public snap_child_exception
-{
-public:
-    explicit snap_child_exception_invalid_header_value(char const *        whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_invalid_header_value(std::string const & whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_invalid_header_value(QString const &     whatmsg) : snap_child_exception(whatmsg) {}
-};
-
-class snap_child_exception_invalid_header_field_name : public snap_child_exception
-{
-public:
-    explicit snap_child_exception_invalid_header_field_name(char const *        whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_invalid_header_field_name(std::string const & whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_invalid_header_field_name(QString const &     whatmsg) : snap_child_exception(whatmsg) {}
-};
-
-class snap_child_exception_no_server : public snap_child_exception
-{
-public:
-    explicit snap_child_exception_no_server(char const *        whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_no_server(std::string const & whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_no_server(QString const &     whatmsg) : snap_child_exception(whatmsg) {}
-};
-
-class snap_child_exception_invalid_email : public snap_child_exception
-{
-public:
-    explicit snap_child_exception_invalid_email(char const *        whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_invalid_email(std::string const & whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_invalid_email(QString const &     whatmsg) : snap_child_exception(whatmsg) {}
-};
-
-class snap_child_exception_no_cassandra : public snap_child_exception
-{
-public:
-    explicit snap_child_exception_no_cassandra(char const *        whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_no_cassandra(std::string const & whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_no_cassandra(QString const &     whatmsg) : snap_child_exception(whatmsg) {}
-};
-
-class snap_child_exception_table_missing : public snap_child_exception
-{
-public:
-    explicit snap_child_exception_table_missing(char const *        whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_table_missing(std::string const & whatmsg) : snap_child_exception(whatmsg) {}
-    explicit snap_child_exception_table_missing(QString const &     whatmsg) : snap_child_exception(whatmsg) {}
-};
+DECLARE_EXCEPTION(snap_child_exception, snap_child_exception_unique_number_error);
+DECLARE_EXCEPTION(snap_child_exception, snap_child_exception_invalid_header_value);
+DECLARE_EXCEPTION(snap_child_exception, snap_child_exception_invalid_header_field_name);
+DECLARE_EXCEPTION(snap_child_exception, snap_child_exception_no_server);
+DECLARE_EXCEPTION(snap_child_exception, snap_child_exception_invalid_email);
+DECLARE_EXCEPTION(snap_child_exception, snap_child_exception_no_cassandra);
+DECLARE_EXCEPTION(snap_child_exception, snap_child_exception_table_missing);
 
 
 
@@ -353,7 +309,7 @@ public:
                                 snap_child(server_pointer_t s);
     virtual                     ~snap_child();
 
-    bool                        process(tcp_client_server::bio_client::pointer_t client);
+    bool                        process(ed::tcp_bio_client::pointer_t client);
     std::shared_ptr<server>     get_server() const;
     pid_t                       get_child_pid() const;
     void                        kill();
@@ -491,7 +447,7 @@ protected:
     server_pointer_t                            f_server = server_pointer_t();
     bool                                        f_is_child = false;
     pid_t                                       f_child_pid = 0;
-    tcp_client_server::bio_client::pointer_t    f_client = tcp_client_server::bio_client::pointer_t();
+    ed::tcp_bio_client::pointer_t               f_client = ed::tcp_bio_client::pointer_t();
     libdbproxy::libdbproxy::pointer_t           f_cassandra = libdbproxy::libdbproxy::pointer_t();
     libdbproxy::context::pointer_t              f_context = libdbproxy::context::pointer_t();
     int64_t                                     f_start_date = 0; // time request arrived
@@ -511,7 +467,7 @@ private:
     typedef QMap<QString, http_cookie>      cookie_map_t;
 
     class messenger_runner
-        : public snap_thread::snap_runner
+        : public cppthread::runner
     {
     public:
                             messenger_runner( snap_child * sc );
@@ -526,7 +482,7 @@ private:
     };
 
     class child_messenger
-            : public snap_communicator::snap_tcp_client_permanent_message_connection
+            : public ed::tcp_client_permanent_message_connection
     {
     public:
         typedef std::shared_ptr<child_messenger> pointer_t;
@@ -539,7 +495,7 @@ private:
 
         child_messenger &   operator = (child_messenger & rhs) = delete;
 
-        virtual void        process_message( snap_communicator_message const & message ) override;
+        virtual void        process_message( ed::message const & message ) override;
         virtual void        process_connected() override;
 
     private:
@@ -603,8 +559,8 @@ private:
     cache_control_settings              f_server_cache_control = cache_control_settings();
     cache_control_settings              f_page_cache_control = cache_control_settings();
     messenger_runner                    f_messenger_runner;
-    snap::snap_thread                   f_messenger_thread;
-    snap_communicator::pointer_t        f_communicator = snap_communicator::pointer_t();
+    cppthread::thread                   f_messenger_thread;
+    ed::communicator::pointer_t         f_communicator = ed::communicator::pointer_t();
     child_messenger::pointer_t          f_messenger = child_messenger::pointer_t();
 };
 

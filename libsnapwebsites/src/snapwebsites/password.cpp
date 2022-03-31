@@ -360,9 +360,11 @@ void password::generate_password(int min_length)
             char err[256];
             ERR_error_string_n(ERR_peek_last_error(), err, sizeof(err));
             throw password_exception_function_failure(
-                QString("RAND_bytes() error, it could not properly fill the salt buffer (%1: %2)")
-                        .arg(ERR_peek_last_error())
-                        .arg(err));
+                  "RAND_bytes() error, it could not properly fill the salt buffer ("
+                + std::to_string(ERR_peek_last_error())
+                + ": "
+                + err
+                + ")");
         }
 
         for(int i(0); i < PASSWORD_SIZE; ++i)
@@ -410,7 +412,10 @@ void password::set_plain_password(std::string const & plain_password, std::strin
     if(!salt.empty()
     && salt.length() != SALT_SIZE)
     {
-        throw password_exception_invalid_parameter(QString("if defined, the salt must be exactly %1 bytes").arg(SALT_SIZE));
+        throw password_exception_invalid_parameter(
+              "if defined, the salt must be exactly "
+            + std::to_string(SALT_SIZE)
+            + " bytes");
     }
 
     // that means the encrypted password is not going to be valid either
@@ -737,9 +742,11 @@ void password::generate_password_salt()
         char err[256];
         ERR_error_string_n(ERR_peek_last_error(), err, sizeof(err));
         throw password_exception_function_failure(
-            QString("RAND_bytes() error, it could not properly fill the salt buffer (%1: %2)")
-                    .arg(ERR_peek_last_error())
-                    .arg(err));
+              "RAND_bytes() error, it could not properly fill the salt buffer ("
+            + std::to_string(ERR_peek_last_error())
+            + ": "
+            + err
+            + ")");
     }
 
     f_salt = std::string(reinterpret_cast<char *>(buf), sizeof(buf));
@@ -943,7 +950,7 @@ bool password_file::find(std::string const & name, password & p)
 
     // search the user
     //
-    std::string const & passwords(f_passwords.get_content());
+    std::string const & passwords(f_passwords.contents());
     std::string::size_type const user_pos(passwords.find(name + ":"));
 
     // did we find it?
@@ -1065,7 +1072,7 @@ bool password_file::save(std::string const & name, password const & p)
 
     // search the user
     //
-    std::string const & passwords(f_passwords.get_content());
+    std::string const & passwords(f_passwords.contents());
     std::string::size_type const user_pos(passwords.find(name + ":"));
 
     std::string new_content;
@@ -1118,7 +1125,7 @@ bool password_file::save(std::string const & name, password const & p)
 
     // save the new content in the file_content object
     //
-    f_passwords.set_content(new_content);
+    f_passwords.contents(new_content);
 
     password::clear_string(new_content);
 
@@ -1162,7 +1169,7 @@ bool password_file::remove(std::string const & name)
 
     // search the user
     //
-    std::string const & passwords(f_passwords.get_content());
+    std::string const & passwords(f_passwords.contents());
     std::string::size_type const user_pos(passwords.find(name + ":"));
 
     // did we find it?
@@ -1209,7 +1216,7 @@ bool password_file::remove(std::string const & name)
 
     // save the new content in the file_content object
     //
-    f_passwords.set_content(new_content);
+    f_passwords.contents(new_content);
 
     password::clear_string(new_content);
 
@@ -1248,7 +1255,7 @@ std::string password_file::next(password & p)
 
     // get the end of the line
     //
-    std::string const & passwords(f_passwords.get_content());
+    std::string const & passwords(f_passwords.contents());
     std::string::size_type const next_user_pos(passwords.find("\n", f_next));
     if(next_user_pos == std::string::npos)
     {

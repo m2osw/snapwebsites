@@ -22,8 +22,12 @@
 
 // snapwebsites lib
 //
-#include "snapwebsites/snap_exception.h"
 #include "snapwebsites/quoted_printable.h"
+
+
+// libexcept lib
+//
+#include <libexcept/exception.h>
 
 
 // snapdev lib
@@ -45,48 +49,11 @@
 namespace snap
 {
 
-class email_exception : public snap_exception
-{
-public:
-    // no sub-name
-    explicit email_exception(char const *        what_msg) : snap_exception("email", what_msg) {}
-    explicit email_exception(std::string const & what_msg) : snap_exception("email", what_msg) {}
-    explicit email_exception(QString const &     what_msg) : snap_exception("email", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(email_exception);
 
-
-class email_exception_called_multiple_times : public email_exception
-{
-public:
-    // no sub-name
-    explicit email_exception_called_multiple_times(char const *        what_msg) : email_exception(what_msg) {}
-    explicit email_exception_called_multiple_times(std::string const & what_msg) : email_exception(what_msg) {}
-    explicit email_exception_called_multiple_times(QString const &     what_msg) : email_exception(what_msg) {}
-};
-
-
-class email_exception_called_after_end_header : public email_exception
-{
-public:
-    // no sub-name
-    explicit email_exception_called_after_end_header(char const *        what_msg) : email_exception(what_msg) {}
-    explicit email_exception_called_after_end_header(std::string const & what_msg) : email_exception(what_msg) {}
-    explicit email_exception_called_after_end_header(QString const &     what_msg) : email_exception(what_msg) {}
-};
-
-
-class email_exception_too_many_levels : public email_exception
-{
-public:
-    // no sub-name
-    explicit email_exception_too_many_levels(char const *        what_msg) : email_exception(what_msg) {}
-    explicit email_exception_too_many_levels(std::string const & what_msg) : email_exception(what_msg) {}
-    explicit email_exception_too_many_levels(QString const &     what_msg) : email_exception(what_msg) {}
-};
-
-
-
-
+DECLARE_EXCEPTION(email_exception, email_exception_called_multiple_times);
+DECLARE_EXCEPTION(email_exception, email_exception_called_after_end_header);
+DECLARE_EXCEPTION(email_exception, email_exception_too_many_levels);
 
 
 

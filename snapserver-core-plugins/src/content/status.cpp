@@ -25,28 +25,24 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-
-SNAP_PLUGIN_EXTENSION_START(content)
-
-
-
-
-
-
+namespace snap
+{
+namespace content
+{
 
 
 
@@ -716,9 +712,6 @@ path_info_t::status_t::state_t path_info_t::status_t::string_to_status_name(std:
 
 
 
-
-
-
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -28,9 +28,13 @@
 // snapwebsites lib
 //
 #include <snapwebsites/file_content.h>
-#include <snapwebsites/log.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomxpath.h>
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // snapdev lib

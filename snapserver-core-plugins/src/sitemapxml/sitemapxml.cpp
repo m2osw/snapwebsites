@@ -20,46 +20,50 @@
 
 // self
 //
-#include "sitemapxml.h"
+#include    "sitemapxml.h"
 
 
 // other plugins
 //
-#include "../permissions/permissions.h"
-#include "../shorturl/shorturl.h"
+#include    "../permissions/permissions.h"
+#include    "../shorturl/shorturl.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qdomnodemodel.h>
-#include <snapwebsites/qxmlmessagehandler.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomnodemodel.h>
+#include    <snapwebsites/qxmlmessagehandler.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// Qt lib
+// C++
 //
-#include <QDateTime>
-#include <QDomDocument>
-#include <QDomProcessingInstruction>
-#include <QFile>
-#include <QXmlQuery>
+#include    <iostream>
+
+
+// Qt
+//
+#include    <QDateTime>
+#include    <QDomDocument>
+#include    <QDomProcessingInstruction>
+#include    <QFile>
+#include    <QXmlQuery>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -91,7 +95,24 @@
  * output with --output or the standard shell redirection (>).
  */
 
-SNAP_PLUGIN_START(sitemapxml, 1, 0)
+namespace snap
+{
+namespace sitemapxml
+{
+
+
+CPPTHREAD_PLUGIN_START(sitemapxml, 1, 0)
+    , ::cppthread::plugin_description(
+            "Generates the sitemap.xml file which is used by search engines to"
+            " discover your website pages. You can change the settings to hide"
+            " different pages or all your pages.")
+    , ::cppthread::plugin_settings("/admin/settings/sitemapxml")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("robotstxt")
+    , ::cppthread::plugin_dependency("shorturl")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("content")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed sitemapxml name.
@@ -429,78 +450,7 @@ bool sitemapxml::url_info::operator < (url_info const & rhs) const
 }
 
 
-/** \brief Initialize the sitemapxml plugin.
- *
- * This function is used to initialize the sitemapxml plugin object.
- */
-sitemapxml::sitemapxml()
-    //: f_snap(NULL) -- auto-init
-{
-}
 
-
-/** \brief Clean up the sitemapxml plugin.
- *
- * Ensure the sitemapxml object is clean before it is gone.
- */
-sitemapxml::~sitemapxml()
-{
-}
-
-
-/** \brief Get a pointer to the sitemapxml plugin.
- *
- * This function returns an instance pointer to the sitemapxml plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the sitemapxml plugin.
- */
-sitemapxml * sitemapxml::instance()
-{
-    return g_plugin_sitemapxml_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString sitemapxml::settings_path() const
-{
-    return "/admin/settings/sitemapxml";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString sitemapxml::description() const
-{
-    return "Generates the sitemap.xml file which is used by search engines to"
-        " discover your website pages. You can change the settings to hide"
-        " different pages or all your pages.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString sitemapxml::dependencies() const
-{
-    return "|permissions|robotstxt|shorturl|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -1378,6 +1328,7 @@ void sitemapxml::on_copy_branch_cells(libdbproxy::cells& source_cells, libdbprox
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace sitemapxml
+} // namespace snap
 // vim: ts=4 sw=4 et

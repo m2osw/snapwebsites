@@ -70,56 +70,83 @@
 
 // self
 //
-#include "users.h"
+#include    "users.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../list/list.h"
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
-#include "../server_access/server_access.h"
+#include    "../output/output.h"
+#include    "../list/list.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
+#include    "../server_access/server_access.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/flags.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qstring_stream.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/flags.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qstring_stream.h>
+#include    <snapwebsites/snap_lock.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QFile>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// Qt
 //
-#include <iostream>
+#include    <QFile>
 
 
-// OpenSSL lib
+// C++
 //
-#include <openssl/evp.h>
-#include <openssl/rand.h>
+#include    <iostream>
+
+
+// OpenSSL
+//
+#include    <openssl/evp.h>
+#include    <openssl/rand.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(users, 1, 0)
+namespace snap
+{
+namespace users
+{
+
+
+
+CPPTHREAD_PLUGIN_START(users, 1, 0)
+    , ::cppthread::plugin_description(
+            "The users plugin manages all the users on a website. It is also"
+            " capable to create new users which is a Snap! wide feature.")
+    , ::cppthread::plugin_icon("/images/users/users-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/users")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("locale")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("server_access")
+    , ::cppthread::plugin_dependency("sessions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("user")
+CPPTHREAD_PLUGIN_END()
+
 
 
 namespace
@@ -422,88 +449,7 @@ const char * get_name(name_t name)
  */
 
 
-/** \brief Initialize the users plugin.
- *
- * This function initializes the users plugin.
- */
-users::users()
-{
-}
 
-
-/** \brief Destroy the users plugin.
- *
- * This function cleans up the users plugin.
- */
-users::~users()
-{
-}
-
-
-/** \brief Get a pointer to the users plugin.
- *
- * This function returns an instance pointer to the users plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the users plugin.
- */
-users * users::instance()
-{
-    return g_plugin_users_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString users::settings_path() const
-{
-    return "/admin/settings/users";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString users::icon() const
-{
-    return "/images/users/users-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString users::description() const
-{
-    return "The users plugin manages all the users on a website. It is also"
-           " capable to create new users which is a Snap! wide feature.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString users::dependencies() const
-{
-    return "|filter|locale|output|path|server_access|sessions|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -540,7 +486,7 @@ int64_t users::do_dynamic_update(int64_t last_updated)
 {
     SNAP_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 12, 14, 18, 06, 32, user_identifier_update);
+    SNAP_PLUGIN_UPDATE(2016, 12, 14, 18, 6, 32, user_identifier_update);
 
     SNAP_PLUGIN_UPDATE_EXIT();
 }
@@ -4826,6 +4772,6 @@ void users::save_password_done(user_info_t & user_info, QString const & user_pas
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace users
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -18,15 +18,25 @@
 
 // our lib
 //
-#include "snapmanager/manager.h"
+#include    "snapmanager/manager.h"
+
 
 // snapwebsites lib
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/snap_exception.h>
-#include <snapwebsites/snap_communicator.h>
-#include <snapwebsites/snap_uri.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/snap_uri.h>
+#include    <snapwebsites/xslt.h>
+
+
+// libexcept lib
+//
+#include    <libexcept/exception.h>
+
+
+// eventdispatcher lib
+//
+#include    <eventdispatcher/communicator.h>
+#include    <eventdispatcher/tcp_blocking_client_message_connection.h>
+
 
 // C++ lib
 //
@@ -43,21 +53,21 @@ namespace snap_manager
 
 
 class messenger
-    : public snap::snap_communicator::snap_tcp_blocking_client_message_connection
+    : public ed::tcp_blocking_client_message_connection
 {
 public:
-                            messenger(std::string const & address, int port, snap::snap_communicator_message const & message);
+                            messenger(std::string const & address, int port, ed::message const & message);
     virtual                 ~messenger() override;
 
     QString const &         result();
 
     // implementation of snap_communicator::snap_tcp_blocking_client_message_connection
     void                    process_timeout();
-    void                    process_message(snap::snap_communicator_message const & message);
+    void                    process_message(ed::message const & message);
 
 private:
-    snap::snap_communicator_message f_message = snap::snap_communicator_message();
-    QString                         f_result = QString();
+    ed::message             f_message = ed::message();
+    QString                 f_result = QString();
 };
 
 

@@ -26,32 +26,44 @@
 
 // self
 //
-#include "attachment.h"
+#include    "attachment.h"
 
 
 // snapwebsites lib
 //
-#include <snapwebsites/plugins.h>
-#include <snapwebsites/log.h>
+#include    <snapwebsites/snap_exception.h>
 
 
-// snapdev lib
+// cpthread
 //
-#include <snapdev/not_reached.h>
+//#include    <cppthread/plugins.h>
+
+
+// snaplogger
+//
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
 
 
 // Qt lib
 //
-#include <QFile>
+#include    <QFile>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
+namespace snap
+{
+namespace content
+{
 
-SNAP_PLUGIN_EXTENSION_START(attachment)
 
 
 /** \brief Register various attachment backend actions.
@@ -92,7 +104,10 @@ void attachment::on_backend_action(QString const & action)
     else
     {
         // unknown action (we should not have been called with that name!)
-        throw snap_logic_exception(QString("content.cpp:on_backend_action(): content::on_backend_action(\"%1\") called with an unknown action...").arg(action));
+        throw snap_logic_error(
+              "content.cpp:on_backend_action(): content::on_backend_action(\""
+            + std::string(action.toUtf8().data())
+            + "\") called with an unknown action...");
     }
 }
 
@@ -117,7 +132,11 @@ void attachment::backend_action_extract_file()
     if(!content_table->exists(ipath.get_key())
     || !content_table->getRow(ipath.get_key())->exists(content::get_name(content::name_t::SNAP_NAME_CONTENT_CREATED)))
     {
-        SNAP_LOG_ERROR("Page for attachment \"")(ipath.get_key())("\" does not exist.");
+        SNAP_LOG_ERROR
+            << "Page for attachment \""
+            << ipath.get_key()
+            << "\" does not exist."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -174,6 +193,6 @@ void attachment::backend_action_extract_file()
 
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

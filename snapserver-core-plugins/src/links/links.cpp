@@ -20,44 +20,63 @@
 
 // self
 //
-#include "links.h"
+#include    "links.h"
 
 
 // other plugins
 //
 // TODO: remove dependency on content (because content includes links...)
 //       it may be that content and links should be merged (oh well!) TBD
-#include "../content/content.h"
+#include    "../content/content.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
-// Qt lib
+// Qt
 //
-#include <QtCore/QDebug>
+#include    <QtCore/QDebug>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(links, 1, 0)
+namespace snap
+{
+namespace links
+{
+
+
+CPPTHREAD_PLUGIN_START(links, 1, 0)
+    , ::cppthread::plugin_description(
+            "This plugin offers functions to link rows of data together."
+            " For example, it allows you to attach a tag to the page of content."
+            " This plugin is part of core since it links everything that core"
+            " needs to make the system function as expected.")
+    , ::cppthread::plugin_icon("/images/snap/links-logo-64x64.png")
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("content")
+CPPTHREAD_PLUGIN_END()
+
+
 
 /** \brief Get a fixed links name.
  *
@@ -1373,26 +1392,6 @@ bool link_context::next_link(link_info & info)
 
 
 
-/** \brief Initialize the links plugin.
- *
- * This function is used to initialize the links plugin object.
- */
-links::links()
-    //: f_snap(nullptr) -- auto-init
-    //, f_links_table() -- auto-init
-    //, f_branch_table() -- auto-init
-{
-}
-
-
-/** \brief Clean up the links plugin.
- *
- * Ensure the links object is clean before it is gone.
- */
-links::~links()
-{
-}
-
 
 /** \brief Initialize the links plugin.
  *
@@ -1409,64 +1408,6 @@ void links::bootstrap(snap_child * snap)
     SNAP_LISTEN(links, "server", server, register_backend_action, boost::placeholders::_1);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(links);
-}
-
-
-/** \brief Get a pointer to the links plugin.
- *
- * This function returns an instance pointer to the links plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the links plugin.
- */
-links * links::instance()
-{
-    return g_plugin_links_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString links::icon() const
-{
-    return "/images/snap/links-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString links::description() const
-{
-    return "This plugin offers functions to link rows of data together."
-        " For example, it allows you to attach a tag to the page of content."
-        " This plugin is part of core since it links everything that core"
-        " needs to make the system function as expected.";
-}
-
-
-/** \brief Say "content" is a dependency.
- *
- * Until we properly merge links and content together, we make links
- * depend on content.
- *
- * \return Our list of dependencies.
- */
-QString links::dependencies() const
-{
-    return "|content|";
 }
 
 
@@ -2644,7 +2585,6 @@ void links::on_add_snap_expr_functions(snap_expr::functions_t& functions)
 
 
 
-
-SNAP_PLUGIN_END()
-
+} // namespace links
+} // namespace snap
 // vim: ts=4 sw=4 et

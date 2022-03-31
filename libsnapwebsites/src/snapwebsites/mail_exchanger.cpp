@@ -17,27 +17,38 @@
 
 // self
 //
-#include "snapwebsites/mail_exchanger.h"
+#include    "snapwebsites/mail_exchanger.h"
 
-// libsnapwebsites library
+
+// cppprocess
 //
-#include "snapwebsites/log.h"
-#include "snapwebsites/process.h"
+#include    <cppprocess/process.h>
+#include    <cppprocess/io_capture_pipe.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/tokenize_string.h>
+#include    <snaplogger/message.h>
 
 
-// libtld library
+// snapdev
 //
-#include <libtld/tld.h>
+#include    <snapdev/tokenize_string.h>
+
+
+// libtld
+//
+#include    <libtld/tld.h>
+
+
+// C
+//
+#include    <string.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -86,7 +97,11 @@ mail_exchangers::mail_exchangers(std::string const & domain)
     if(!domain_obj.is_valid())
     {
         // f_domain_found is false by default... it failed
-        SNAP_LOG_DEBUG("mail_exchanger called with an invalid domain name: \"")(domain)("\"");
+        SNAP_LOG_DEBUG
+            << "mail_exchanger called with an invalid domain name: \""
+            << domain
+            << "\"."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -96,21 +111,32 @@ mail_exchangers::mail_exchangers(std::string const & domain)
 
     // generate a command line to execute `dig`
     //
-    process dig("dig");
-    dig.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
+    cppprocess::process dig("dig");
     dig.set_command("/usr/bin/dig");
-    dig.add_argument(QString::fromUtf8(full_domain.c_str()));
+    dig.add_argument(full_domain);
     dig.add_argument("mx");  // get MX field
-    int const r(dig.run());
+    cppprocess::io_capture_pipe::pointer_t out(std::make_shared<cppprocess::io_capture_pipe>());
+    dig.set_output_io(out);
+    int r(dig.start());
+    if(r == 0)
+    {
+        r = dig.wait();
+    }
 
     // retrieve the dig output
     //
-    std::string const output(dig.get_output(true).toUtf8().data());
+    std::string const output(out->get_trimmed_output());
 
     if(r != 0)
     {
         // dig command failed
-        SNAP_LOG_DEBUG("dig.run() returned ")(r)(" and output: [")(output)("]");
+        SNAP_LOG_DEBUG
+            << "dig.run() returned "
+            << r
+            << " and output: ["
+            << output
+            << "]"
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -122,7 +148,11 @@ mail_exchangers::mail_exchangers(std::string const & domain)
     {
         // no output?
         //
-        SNAP_LOG_DEBUG("dig returned no output [")(output)("]");
+        SNAP_LOG_DEBUG
+            << "dig returned no output ["
+            << output
+            << "]"
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -142,7 +172,13 @@ mail_exchangers::mail_exchangers(std::string const & domain)
             if(fields.empty()
             || fields[0] != full_domain)
             {
-                SNAP_LOG_DEBUG("authority (")(fields.empty() ? "<empty>" : fields[0])(") does not match the domain we used (")(full_domain)(")");
+                SNAP_LOG_DEBUG
+                    << "authority ("
+                    << (fields.empty() ? "<empty>" : fields[0])
+                    << ") does not match the domain we used ("
+                    << full_domain
+                    << ")"
+                    << SNAP_LOG_SEND;
                 return;
             }
             f_domain_found = true;
@@ -177,7 +213,11 @@ mail_exchangers::mail_exchangers(std::string const & domain)
                     //
                     if(*mx < '0' || *mx > '9')
                     {
-                        SNAP_LOG_DEBUG("priority missing in \"")(lines[l])("\"");
+                        SNAP_LOG_DEBUG
+                            << "priority missing in \""
+                            << lines[l]
+                            << "\""
+                            << SNAP_LOG_SEND;
                         return;
                     }
 
@@ -189,7 +229,11 @@ mail_exchangers::mail_exchangers(std::string const & domain)
                         //
                         if(priority > 500000000)
                         {
-                            SNAP_LOG_DEBUG("priority too large in \"")(lines[l])("\"");
+                            SNAP_LOG_DEBUG
+                                << "priority too large in \""
+                                << lines[l]
+                                << "\""
+                                << SNAP_LOG_SEND;
                             return;
                         }
                         priority = priority * 10 + *mx - '0';
@@ -203,7 +247,11 @@ mail_exchangers::mail_exchangers(std::string const & domain)
                     //
                     if(*mx == '\0')
                     {
-                        SNAP_LOG_DEBUG("invalid domain entry in \"")(lines[l])("\"");
+                        SNAP_LOG_DEBUG
+                            << "invalid domain entry in \""
+                            << lines[l]
+                            << "\""
+                            << SNAP_LOG_SEND;
                         return;
                     }
                     std::string mx_domain(mx);

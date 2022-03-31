@@ -26,27 +26,30 @@
 
 // self
 //
-#include "links.h"
+#include    "links.h"
 
 
 // other plugins
 //
-#include "../content/content.h"
+#include    "../content/content.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 
-SNAP_PLUGIN_EXTENSION_START(links)
+namespace snap
+{
+namespace links
+{
 
 
 /** \brief Register the links action.
@@ -182,7 +185,10 @@ void links::on_backend_action(QString const & action)
     else
     {
         // unknown action (we should not have been called with that name!)
-        throw snap_logic_exception(QString("links.cpp:on_backend_action(): links::on_backend_action(\"%1\") called with an unknown action...").arg(action));
+        throw snap_logic_error(
+              "links.cpp:on_backend_action(): links::on_backend_action(\""
+            + std::to_string(action.toUtf8().data())
+            + "\") called with an unknown action...");
     }
 }
 
@@ -197,13 +203,21 @@ void links::on_backend_action_create_link()
     snap_string_list unique(mode.split(","));
     if(unique.size() != 2)
     {
-        SNAP_LOG_FATAL("invalid mode \"")(mode)("\", missing comma or more than one comma.");
+        SNAP_LOG_FATAL
+            << "invalid mode \""
+            << mode
+            << "\", missing comma or more than one comma."
+            << SNAP_LOG_SEND;
         exit(1);
     }
     if((unique[0] != "*" && unique[0] != "1")
     || (unique[1] != "*" && unique[1] != "1"))
     {
-        SNAP_LOG_FATAL("invalid mode \"")(mode)("\", one of the repeat is not \"*\" or \"1\".");
+        SNAP_LOG_FATAL
+            << "invalid mode \""
+            << mode
+            << "\", one of the repeat is not \"*\" or \"1\"."
+            << SNAP_LOG_SEND;
         exit(1);
     }
 
@@ -211,7 +225,11 @@ void links::on_backend_action_create_link()
     source_ipath.set_path(f_snap->get_server_parameter("SOURCE_LINK"));
     if(!content_table->exists(source_ipath.get_key()))
     {
-        SNAP_LOG_FATAL("invalid source URI \"")(source_ipath.get_key())("\", page does not exist.");
+        SNAP_LOG_FATAL
+            << "invalid source URI \""
+            << source_ipath.get_key()
+            << "\", page does not exist."
+            << SNAP_LOG_SEND;
         exit(1);
     }
 
@@ -223,7 +241,11 @@ void links::on_backend_action_create_link()
     destination_ipath.set_path(f_snap->get_server_parameter("DESTINATION_LINK"));
     if(!content_table->exists(destination_ipath.get_key()))
     {
-        SNAP_LOG_FATAL("invalid destination URI \"")(destination_ipath.get_key())("\", page does not exist.");
+        SNAP_LOG_FATAL
+            << "invalid destination URI \""
+            << destination_ipath.get_key()
+            << "\", page does not exist."
+            << SNAP_LOG_SEND;
         exit(1);
     }
 
@@ -248,7 +270,11 @@ void links::on_backend_action_delete_link()
     {
         if(unique[0] != "*" && unique[0] != "1")
         {
-            SNAP_LOG_FATAL("invalid mode \"")(mode)("\", the repeat is not \"*\" or \"1\".");
+            SNAP_LOG_FATAL
+                << "invalid mode \""
+                << mode
+                << "\", the repeat is not \"*\" or \"1\"."
+                << SNAP_LOG_SEND;
             exit(1);
         }
 
@@ -256,7 +282,11 @@ void links::on_backend_action_delete_link()
         source_ipath.set_path(f_snap->get_server_parameter("SOURCE_LINK"));
         if(!content_table->exists(source_ipath.get_key()))
         {
-            SNAP_LOG_FATAL("invalid source URI \"")(source_ipath.get_key())("\", page does not exist.");
+            SNAP_LOG_FATAL
+                << "invalid source URI \""
+                << source_ipath.get_key()
+                << "\", page does not exist."
+                << SNAP_LOG_SEND;
             exit(1);
         }
 
@@ -272,7 +302,11 @@ void links::on_backend_action_delete_link()
         if((unique[0] != "*" && unique[0] != "1")
         || (unique[1] != "*" && unique[1] != "1"))
         {
-            SNAP_LOG_FATAL("invalid mode \"")(mode)("\", one of the repeat is not \"*\" or \"1\".");
+            SNAP_LOG_FATAL
+                << "invalid mode \""
+                << mode
+                << "\", one of the repeat is not \"*\" or \"1\"."
+                << SNAP_LOG_SEND;
             exit(1);
         }
 
@@ -280,7 +314,11 @@ void links::on_backend_action_delete_link()
         source_ipath.set_path(f_snap->get_server_parameter("SOURCE_LINK"));
         if(!content_table->exists(source_ipath.get_key()))
         {
-            SNAP_LOG_FATAL("invalid source URI \"")(source_ipath.get_key())("\", page does not exist.");
+            SNAP_LOG_FATAL
+                << "invalid source URI \""
+                << source_ipath.get_key()
+                << "\", page does not exist."
+                << SNAP_LOG_SEND;
             exit(1);
         }
 
@@ -292,7 +330,11 @@ void links::on_backend_action_delete_link()
         destination_ipath.set_path(f_snap->get_server_parameter("DESTINATION_LINK"));
         if(!content_table->exists(destination_ipath.get_key()))
         {
-            SNAP_LOG_FATAL("invalid destination URI \"")(destination_ipath.get_key())("\", page does not exist.");
+            SNAP_LOG_FATAL
+                << "invalid destination URI \""
+                << destination_ipath.get_key()
+                << "\", page does not exist."
+                << SNAP_LOG_SEND;
             exit(1);
         }
 
@@ -305,7 +347,11 @@ void links::on_backend_action_delete_link()
     }
     else
     {
-        SNAP_LOG_FATAL("invalid mode \"")(mode)("\", two or more commas.");
+        SNAP_LOG_FATAL
+            << "invalid mode \""
+            << mode
+            << "\", two or more commas."
+            << SNAP_LOG_SEND;
         exit(1);
     }
 }
@@ -445,7 +491,13 @@ void links::cleanup_links()
                             {
                                 // this is a spurious cell, get rid of it
                                 //
-                                SNAP_LOG_ERROR("found dangling link \"")(cell_name)("\" in row \"")(key)("\".");
+                                SNAP_LOG_ERROR
+                                    << "found dangling link \""
+                                    << cell_name
+                                    << "\" in row \""
+                                    << key
+                                    << "\"."
+                                    << SNAP_LOG_SEND;
                                 row->dropCell(cell_name);
                             }
                         }
@@ -507,7 +559,11 @@ void links::cleanup_links()
                 {
                     // this is a spurius row, get rid of it
                     //
-                    SNAP_LOG_ERROR("found dangling link in links table with row key \"")(key)("\".");
+                    SNAP_LOG_ERROR
+                        << "found dangling link in links table with row key \""
+                        << key
+                        << "\"."
+                        << SNAP_LOG_SEND;
                     links_table->dropRow(branch_key_and_link_name);
 
                     continue;
@@ -563,7 +619,13 @@ void links::cleanup_links()
                             // the corresponding page does not seem to exist
                             // so remove it
                             //
-                            SNAP_LOG_ERROR("found dangling link \"")(column_name)("\" in row \"")(key)("\".");
+                            SNAP_LOG_ERROR
+                                << "found dangling link \""
+                                << column_name
+                                << "\" in row \""
+                                << key
+                                << "\"."
+                                << SNAP_LOG_SEND;
                             row->dropCell(column_name);
                         }
                     }
@@ -695,24 +757,28 @@ void links::on_backend_action_snap547_fix_link_branches()
                             }
                             else
                             {
-                                SNAP_LOG_ERROR("cell value in links table is missing a branch number: row \"")
-                                              (key)
-                                              ("\", column \"")
-                                              (cell_name)
-                                              ("\" and value \"")
-                                              (value.stringValue())
-                                              ("\"");
+                                SNAP_LOG_ERROR
+                                    << "cell value in links table is missing a branch number: row \""
+                                    << key
+                                    << "\", column \""
+                                    << cell_name
+                                    << "\" and value \""
+                                    << value.stringValue()
+                                    << "\""
+                                    << SNAP_LOG_SEND;
                                 ++invalid_field_name;
                             }
                         }
                         else
                         {
                             // -- this would be too much
-                            //SNAP_LOG_DEBUG("skipping cell \"")
-                            //              (cell_name)
-                            //              ("\" from row \"")
-                            //              (key)
-                            //              ("\" since it already includes a '#<id>'");
+                            //SNAP_LOG_DEBUG
+                            //    << "skipping cell \""
+                            //    << cell_name
+                            //    << "\" from row \""
+                            //    << key
+                            //    << "\" since it already includes a '#<id>'"
+                            //    << SNAP_LOG_SEND;
                             ++already_done;
                         }
                     }
@@ -720,13 +786,15 @@ void links::on_backend_action_snap547_fix_link_branches()
             }
         }
 
-        SNAP_LOG_INFO("fixed ")
-                     (updated_column)
-                     (" columns, found ")
-                     (invalid_field_name)
-                     (" invalid columns (see warnings), and skipped ")
-                     (already_done)
-                     (" that looked like they were already processed.");
+        SNAP_LOG_INFO
+            << "fixed "
+            << updated_column
+            << " columns, found "
+            << invalid_field_name
+            << " invalid columns (see warnings), and skipped "
+            << already_done
+            << " that looked like they were already processed."
+            << SNAP_LOG_SEND;
     }
 
     // Take care of the "branch" table (i.e. column names would make use
@@ -941,20 +1009,24 @@ void links::on_backend_action_snap547_fix_link_branches()
                             }
                             else
                             {
-                                SNAP_LOG_ERROR("invalid branch number in \"")
-                                              (cell_name)
-                                              ("\"");
+                                SNAP_LOG_ERROR
+                                    << "invalid branch number in \""
+                                    << cell_name
+                                    << "\""
+                                    << SNAP_LOG_SEND;
 
                                 ++invalid_branch_number;
                             }
                         }
                         else
                         {
-                            SNAP_LOG_ERROR("in row \"")
-                                          (key)
-                                          ("\" found link field name \"")
-                                          (cell_name)
-                                          ("\" without a branch number.");
+                            SNAP_LOG_ERROR
+                                << "in row \""
+                                << key
+                                << "\" found link field name \""
+                                << cell_name
+                                << "\" without a branch number."
+                                << SNAP_LOG_SEND;
 
                             ++missing_branch_number;
                         }
@@ -965,26 +1037,27 @@ void links::on_backend_action_snap547_fix_link_branches()
 
         // give some stats to the admin.
         //
-        SNAP_LOG_INFO("link refactor: updated columns: ")
-                     (updated_column)
-                     (" (")
-                     (updates_to_any_column)
-                     ("), created missing columns: ")
-                     (created_missing_column)
-                     (", create missing row and column: ")
-                     (created_missing_row_and_column)
-                     (", skip equal ")
-                     (skip_equal)
-                     (", invalid branch number: ")
-                     (invalid_branch_number)
-                     (", missing branch number: ")
-                     (missing_branch_number);
+        SNAP_LOG_INFO
+            << "link refactor: updated columns: "
+            << updated_column
+            << " ("
+            << updates_to_any_column
+            << "), created missing columns: "
+            << created_missing_column
+            << ", create missing row and column: "
+            << created_missing_row_and_column
+            << ", skip equal "
+            << skip_equal
+            << ", invalid branch number: "
+            << invalid_branch_number
+            << ", missing branch number: "
+            << missing_branch_number
+            << SNAP_LOG_SEND;
     }
 }
 
 
 
-
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace links
+} // namespace snap
 // vim: ts=4 sw=4 et

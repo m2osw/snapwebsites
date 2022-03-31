@@ -34,30 +34,10 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class attachment_exception : public snap_exception
-{
-public:
-    explicit attachment_exception(char const *        what_msg) : snap_exception("attachment", what_msg) {}
-    explicit attachment_exception(std::string const & what_msg) : snap_exception("attachment", what_msg) {}
-    explicit attachment_exception(QString const &     what_msg) : snap_exception("attachment", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(attachment_exception);
 
-class attachment_exception_invalid_content_xml : public attachment_exception
-{
-public:
-    explicit attachment_exception_invalid_content_xml(char const *        what_msg) : attachment_exception(what_msg) {}
-    explicit attachment_exception_invalid_content_xml(std::string const & what_msg) : attachment_exception(what_msg) {}
-    explicit attachment_exception_invalid_content_xml(QString const &     what_msg) : attachment_exception(what_msg) {}
-};
-
-class attachment_exception_invalid_filename : public attachment_exception
-{
-public:
-    explicit attachment_exception_invalid_filename(char const *        what_msg) : attachment_exception(what_msg) {}
-    explicit attachment_exception_invalid_filename(std::string const & what_msg) : attachment_exception(what_msg) {}
-    explicit attachment_exception_invalid_filename(QString const &     what_msg) : attachment_exception(what_msg) {}
-};
-
+DECLARE_EXCEPTION(attachment_exception, attachment_exception_invalid_content_xml);
+DECLARE_EXCEPTION(attachment_exception, attachment_exception_invalid_filename);
 
 
 
@@ -65,7 +45,7 @@ public:
 
 
 class attachment
-    : public plugins::plugin
+    : public cppthread::plugin
     , public path::path_execute
     , public server::backend_action
     , public permission_error_callback::error_by_mime_type
@@ -80,9 +60,6 @@ public:
     static attachment * instance();
 
     // plugins::plugin implementation
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

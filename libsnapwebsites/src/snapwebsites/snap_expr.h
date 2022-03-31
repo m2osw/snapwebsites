@@ -16,23 +16,27 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// snapwebsites lib
+// libexcept lib
 //
-#include "snapwebsites/snap_exception.h"
+#include    <libexcept/exception.h>
+
 
 // libQtCassandra lib
 //
-#include <libdbproxy/value.h>
-#include <libdbproxy/context.h>
+#include    <libdbproxy/value.h>
+#include    <libdbproxy/context.h>
+
 
 // C++ lib
 //
-#include <cmath>
+#include    <cmath>
+
 
 // Qt lib
 //
 #include <QMap>
 #include <QSharedPointer>
+
 
 
 namespace snap
@@ -41,77 +45,20 @@ namespace snap_expr
 {
 
 
-class snap_expr_exception : public snap_exception
-{
-public:
-    explicit snap_expr_exception(char const *        what_msg) : snap_exception("snap_expr", what_msg) {}
-    explicit snap_expr_exception(std::string const & what_msg) : snap_exception("snap_expr", what_msg) {}
-    explicit snap_expr_exception(QString const &     what_msg) : snap_exception("snap_expr", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_expr_exception);
 
-class snap_expr_exception_unknown_function : public snap_expr_exception
-{
-public:
-    explicit snap_expr_exception_unknown_function(char const *        what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_unknown_function(std::string const & what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_unknown_function(QString const &     what_msg) : snap_expr_exception(what_msg) {}
-};
+DECLARE_LOGIC_ERROR(snap_expr_logic);
 
-class snap_expr_exception_invalid_number_of_parameters : public snap_expr_exception
-{
-public:
-    explicit snap_expr_exception_invalid_number_of_parameters(char const *        what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_invalid_number_of_parameters(std::string const & what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_invalid_number_of_parameters(QString const &     what_msg) : snap_expr_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(snap_expr_exception, snap_expr_exception_unknown_function);
+DECLARE_EXCEPTION(snap_expr_exception, snap_expr_exception_invalid_number_of_parameters);
+DECLARE_EXCEPTION(snap_expr_exception, snap_expr_exception_invalid_parameter_type);
+DECLARE_EXCEPTION(snap_expr_exception, snap_expr_exception_invalid_parameter_value);
+DECLARE_EXCEPTION(snap_expr_exception, snap_expr_exception_not_accessible);
+DECLARE_EXCEPTION(snap_expr_exception, snap_expr_exception_not_ready);
+DECLARE_EXCEPTION(snap_expr_exception, snap_expr_exception_invalid_data);
+DECLARE_EXCEPTION(snap_expr_exception, snap_expr_exception_division_by_zero);
 
-class snap_expr_exception_invalid_parameter_type : public snap_expr_exception
-{
-public:
-    explicit snap_expr_exception_invalid_parameter_type(char const *        what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_invalid_parameter_type(std::string const & what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_invalid_parameter_type(QString const &     what_msg) : snap_expr_exception(what_msg) {}
-};
 
-class snap_expr_exception_invalid_parameter_value : public snap_expr_exception
-{
-public:
-    explicit snap_expr_exception_invalid_parameter_value(char const *        what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_invalid_parameter_value(std::string const & what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_invalid_parameter_value(QString const &     what_msg) : snap_expr_exception(what_msg) {}
-};
-
-class snap_expr_exception_not_accessible : public snap_expr_exception
-{
-public:
-    explicit snap_expr_exception_not_accessible(char const *        what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_not_accessible(std::string const & what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_not_accessible(QString const &     what_msg) : snap_expr_exception(what_msg) {}
-};
-
-class snap_expr_exception_not_ready : public snap_expr_exception
-{
-public:
-    explicit snap_expr_exception_not_ready(char const *        what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_not_ready(std::string const & what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_not_ready(QString const &     what_msg) : snap_expr_exception(what_msg) {}
-};
-
-class snap_expr_exception_invalid_data : public snap_expr_exception
-{
-public:
-    explicit snap_expr_exception_invalid_data(char const *        what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_invalid_data(std::string const & what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_invalid_data(QString const &     what_msg) : snap_expr_exception(what_msg) {}
-};
-
-class snap_expr_exception_division_by_zero : public snap_expr_exception
-{
-public:
-    explicit snap_expr_exception_division_by_zero(char const *        what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_division_by_zero(std::string const & what_msg) : snap_expr_exception(what_msg) {}
-    explicit snap_expr_exception_division_by_zero(QString const &     what_msg) : snap_expr_exception(what_msg) {}
-};
 
 
 
@@ -207,8 +154,10 @@ public:
 #ifdef DEBUG
             if(f_functions.contains(functions->f_name))
             {
-                throw snap_logic_exception(QString("functions_t::add_functions() function \"%s\" already defined")
-                                        .arg(functions->f_name));
+                throw snap_expr_logic(
+                          "functions_t::add_functions() function \""
+                        + std::string(functions->f_name)
+                        + "\" already defined");
             }
 #endif
             f_functions[functions->f_name] = functions->f_function;

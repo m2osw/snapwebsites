@@ -16,42 +16,48 @@
 
 // self
 //
-#include "snapmanager/bundle.h"
+#include    "snapmanager/bundle.h"
+
+#include    "snapmanager/manager.h"
 
 
-// snapmanager lib
+// snapwebsites
 //
-#include "snapmanager/manager.h"
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/snap_string_list.h>
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/file_content.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/mkdir_p.h>
-#include <snapwebsites/process.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/snap_string_list.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_used.h>
-#include <snapdev/tokenize_string.h>
+#include    <snapdev/file_contents.h>
+#include    <snapdev/mkdir_p.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/tokenize_string.h>
 
 
-// boost lib
+// cppprocess
 //
-#include <boost/algorithm/string.hpp>
+#include    <cppprocess/process.h>
+#include    <cppprocess/io_capture_pipe.h>
 
 
-// C++ lib
+// boost
+//
+#include    <boost/algorithm/string.hpp>
+
+
+// C++
 //
 #include <algorithm>
 #include <fstream>
 
 
-// C lib
+// C
 //
 #include <sys/stat.h>
 
@@ -332,7 +338,11 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
             QString const qattribute_name(QString::fromUtf8(f.f_name));
             if(loaded.contains(qattribute_name))
             {
-                SNAP_LOG_ERROR("attribute ")(qattribute_name)("=\"...\" found more than once in this bundle");
+                SNAP_LOG_ERROR
+                    << "attribute "
+                    << qattribute_name
+                    << "=\"...\" found more than once in this bundle"
+                    << SNAP_LOG_SEND;
                 return false;
             }
             loaded << qattribute_name;
@@ -353,7 +363,11 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
         QString const qtag_name(n.tagName());
         if(loaded.contains(qtag_name))
         {
-            SNAP_LOG_ERROR("tag <")(qtag_name)("> (and/or attribute) found more than once in this bundle");
+            SNAP_LOG_ERROR
+                << "tag <"
+                << qtag_name
+                << "> (and/or attribute) found more than once in this bundle"
+                << SNAP_LOG_SEND;
             return false;
         }
         loaded << qtag_name;
@@ -373,7 +387,11 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
                 }));
         if(it == fields.end())
         {
-            SNAP_LOG_ERROR("unknown tag <")(tag_name)("> found in XML bundle declaration");
+            SNAP_LOG_ERROR
+                << "unknown tag <"
+                << tag_name
+                << "> found in XML bundle declaration"
+                << SNAP_LOG_SEND;
             return false;
         }
 
@@ -412,9 +430,11 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
         case bundle_field<T>::type_t::BUNDLE_FIELD_TYPE_ATTRIBUTE:
             // attributes are handled in a previous loop
             //
-            SNAP_LOG_ERROR("bundle attribute cannot be specified using a tag (\"")
-                          (it->f_name)
-                          ("\" is a tag).");
+            SNAP_LOG_ERROR
+                << "bundle attribute cannot be specified using a tag (\""
+                << it->f_name
+                << "\" is a tag)."
+                << SNAP_LOG_SEND;
             return false;
 
         case bundle_field<T>::type_t::BUNDLE_FIELD_TYPE_FIELDS:
@@ -442,9 +462,11 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
                             }));
                     if(ff != (b->*it->f_data_fields).cend())
                     {
-                        SNAP_LOG_ERROR("found two fields with the same name (\"")
-                                      ((*ff)->get_name())
-                                      ("\" is a tag).");
+                        SNAP_LOG_ERROR
+                            << "found two fields with the same name (\""
+                            << (*ff)->get_name()
+                            << "\" is a tag)."
+                            << SNAP_LOG_SEND;
                         return false;
                     }
 
@@ -467,7 +489,11 @@ bool load_dom(T * b, QDomElement e, typename bundle_field<T>::vector_t const & f
         {
             // a required field is missing
             //
-            SNAP_LOG_ERROR("bundle required field named \"")(f.f_name)("\" is missing.");
+            SNAP_LOG_ERROR
+                << "bundle required field named \""
+                << f.f_name
+                << "\" is missing."
+                << SNAP_LOG_SEND;
             return false;
         }
     }
@@ -528,7 +554,11 @@ bool bundle::field::init(QDomElement e)
     std::string const tag_name(e.tagName().toUtf8().data());
     if(tag_name != "field")
     {
-        SNAP_LOG_ERROR("unsupported tag <")(tag_name)("> within the <fields> tag; we only support <field> at this time.");
+        SNAP_LOG_ERROR
+            << "unsupported tag <"
+            << tag_name
+            << "> within the <fields> tag; we only support <field> at this time."
+            << SNAP_LOG_SEND;
         return false;
     }
     return load_dom<bundle::field>(this, e, g_bundle_field_fields);
@@ -727,7 +757,7 @@ void bundle::package::check_status()
     //
     // first make sure the parent directories exist
     //
-    snap::mkdir_p(cache_file, true, 0755, "snapwebsites", "snapwebsites");
+    snapdev::mkdir_p(cache_file, true, 0755, "snapwebsites", "snapwebsites");
     std::ofstream out;
     out.open(cache_file, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
     if(out.is_open())
@@ -1112,7 +1142,7 @@ bundle::bundle_status_t bundle::get_bundle_status() const
     //
     // first make sure the parent directories exist
     //
-    snap::mkdir_p(cache_file, true, 0755, "snapwebsites", "snapwebsites");
+    snapdev::mkdir_p(cache_file, true, 0755, "snapwebsites", "snapwebsites");
     std::ofstream out;
     out.open(cache_file, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
     if(out.is_open())
@@ -1167,8 +1197,8 @@ void bundle::determine_bundle_status() const
 
         // create the script in a file
         //
-        snap::file_content script(path, true);
-        script.set_content(
+        snapdev::file_contents script(path, true);
+        script.contents(
                     std::string(
                             "#!/bin/bash\n"
                             "# auto-generated by snapmanagerdaemon\n"
@@ -1181,24 +1211,31 @@ void bundle::determine_bundle_status() const
 
         // run the script
         //
-        snap::process p("is-installed");
-        p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-        p.set_command(QString::fromUtf8(path.c_str()));
-        int const r(p.run());
+        cppprocess::process p("is-installed");
+        p.set_command(path);
+        cppprocess::io_capture_pipe::pointer_t out(std::make_shared<cppprocess::io_capture_pipe>());
+        p.set_output_io(out);
+        int r(p.start());
+        if(r == 0)
+        {
+            r = p.wait();
+        }
         if(r != 0)
         {
             // the script failed badly
             //
             int const e(errno);
-            SNAP_LOG_ERROR("is-installed script of bundle \"")
-                          (f_name)
-                          ("\" failed with ")
-                          (r)
-                          (" (errno: ")
-                          (e)
-                          (", ")
-                          (strerror(e))
-                          (")");
+            SNAP_LOG_ERROR
+                << "is-installed script of bundle \""
+                << f_name
+                << "\" failed with "
+                << r
+                << " (errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
 
             f_errors.push_back("Bundle \""
                             + f_name
@@ -1212,8 +1249,8 @@ void bundle::determine_bundle_status() const
         // the script worked, check the output which tells us whether
         // the bundle is considered installed or not
         //
-        QString const output(p.get_output(true));
-        if(output.trimmed() != "install ok installed")
+        std::string const output(out->get_trimmed_output());
+        if(output != "install ok installed")
         {
             installed = false;
         }

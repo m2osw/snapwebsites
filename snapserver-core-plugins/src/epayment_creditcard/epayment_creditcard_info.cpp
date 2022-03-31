@@ -40,8 +40,14 @@
 
 
 
+namespace snap
+{
+namespace epayment_creditcard
+{
 
-SNAP_PLUGIN_EXTENSION_START(epayment_creditcard)
+
+
+
 
 
 void epayment_creditcard_info_t::set_user_name(QString const & user_name)
@@ -319,6 +325,7 @@ bool epayment_creditcard_info_t::get_subscription() const
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace epayment_creditcard
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -17,36 +17,56 @@
 
 // self
 //
-#include "no_iframe.h"
+#include    "no_iframe.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../permissions/permissions.h"
-//#include "../sendmail/sendmail.h"
-//#include "../users/users.h"
+#include    "../output/output.h"
+#include    "../permissions/permissions.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(no_iframe, 1, 0)
+namespace snap
+{
+namespace no_iframe
+{
+
+
+
+CPPTHREAD_PLUGIN_START(no_iframe, 1, 0)
+    , ::cppthread::plugin_description(
+            "The no_iframe plugin gives administrators a way to prevent a"
+            " website from being shown in another website iframe tag.")
+    , ::cppthread::plugin_icon("/images/no-iframe/no-iframe-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/no-iframe")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \class info
@@ -103,87 +123,7 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the no_iframe plugin.
- *
- * This function is used to initialize the no_iframe plugin object.
- */
-no_iframe::no_iframe()
-    //: f_snap(nullptr) -- auto-init
-{
-}
 
-/** \brief Clean up the no_iframe plugin.
- *
- * Ensure the no_iframe object is clean before it is gone.
- */
-no_iframe::~no_iframe()
-{
-}
-
-/** \brief Get a pointer to the no_iframe plugin.
- *
- * This function returns an instance pointer to the no_iframe plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the no_iframe plugin.
- */
-no_iframe * no_iframe::instance()
-{
-    return g_plugin_no_iframe_factory.instance();
-}
-
-
-/** \brief Send users to the no_iframe settings.
- *
- * This path represents the no_iframe settings.
- */
-QString no_iframe::settings_path() const
-{
-    return "/admin/settings/no-iframe";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString no_iframe::icon() const
-{
-    return "/images/no-iframe/no-iframe-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString no_iframe::description() const
-{
-    return "The no_iframe plugin gives administrators a way to prevent a"
-          " website from being shown in another website iframe tag.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString no_iframe::dependencies() const
-{
-    return "|editor|output|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -349,7 +289,11 @@ void no_iframe::on_generate_header_content(content::path_info_t & ipath, QDomEle
     {
         // unknown mode?!
         //
-        SNAP_LOG_DEBUG("No IFrame mode \"")(mode)("\" no known. Pretend that page should not be taken out of an IFrame.");
+        SNAP_LOG_DEBUG
+            << "No IFrame mode \""
+            << mode
+            << "\" no known. Pretend that page should not be taken out of an IFrame."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -358,6 +302,7 @@ void no_iframe::on_generate_header_content(content::path_info_t & ipath, QDomEle
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace no_iframe
+} // namespace snap
 // vim: ts=4 sw=4 et

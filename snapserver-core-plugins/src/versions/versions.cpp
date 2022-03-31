@@ -17,55 +17,78 @@
 
 // self
 //
-#include "./versions.h"
+#include    "./versions.h"
 
 
 // other plugins
 //
-#include "../users/users.h"
-#include "../permissions/permissions.h"
+#include    "../users/users.h"
+#include    "../permissions/permissions.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/process.h>
+#include    <snapwebsites/process.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// csspp lib
+// snapdev
 //
-#include <csspp/csspp.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// libtld lib
+// csspp
 //
-#include <libtld/tld.h>
+#include    <csspp/csspp.h>
 
 
-// QtSerialization lib
+// libtld
 //
-#include <QtSerialization/QSerialization.h>
+#include    <libtld/tld.h>
 
 
-// C++ lib
+// QtSerialization
 //
-#include <iostream>
+#include    <QtSerialization/QSerialization.h>
+
+
+// C++
+//
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace versions
+{
 
-SNAP_PLUGIN_START(versions, 1, 0)
+
+CPPTHREAD_PLUGIN_START(versions, 1, 0)
+    , ::cppthread::plugin_description(
+            "The versions plugin displays the version of all the parts used"
+            " by Snap! The parts include the main snap library, the plugins,"
+            " and all the tools that the server may use. It is a filter so it"
+            " can be displayed on any page where the filter is allowed.")
+    , ::cppthread::plugin_icon("/images/versions/versions-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/versions")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("version")
+CPPTHREAD_PLUGIN_END()
 
 
 /* \brief Get a fixed versions name.
@@ -100,91 +123,6 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the versions plugin.
- *
- * This function is used to initialize the versions plugin object.
- */
-versions::versions()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the versions plugin.
- *
- * Ensure the versions object is clean before it is gone.
- */
-versions::~versions()
-{
-}
-
-
-/** \brief Get a pointer to the versions plugin.
- *
- * This function returns an instance pointer to the versions plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the versions plugin.
- */
-versions * versions::instance()
-{
-    return g_plugin_versions_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString versions::settings_path() const
-{
-    return "/admin/versions";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString versions::icon() const
-{
-    return "/images/versions/versions-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString versions::description() const
-{
-    return "The versions plugin displays the version of all the parts used"
-          " by Snap! The parts include the main snap library, the plugins,"
-          " and all the tools that the server may use. It is a filter so it"
-          " can be displayed on any page where the filter is allowed.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString versions::dependencies() const
-{
-    return "|content|filter|permissions|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -592,6 +530,6 @@ void versions::versions_tools_done(filter::filter::token_info_t & token)
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace versions
+} // namespace snap
 // vim: ts=4 sw=4 et

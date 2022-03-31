@@ -25,7 +25,11 @@
 //
 #include "snapwebsites/snapwebsites.h"
 #include "snapwebsites/snap_tables.h"
-#include "snapwebsites/log.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // casswrapper lib

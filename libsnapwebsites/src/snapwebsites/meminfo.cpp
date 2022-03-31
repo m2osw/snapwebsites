@@ -23,9 +23,9 @@
 #include "snapwebsites/meminfo.h"
 
 
-// snapwebsites lib
+// snaplogger lib
 //
-#include "snapwebsites/log.h"
+#include <snaplogger/message.h>
 
 
 // snapdev lib
@@ -182,9 +182,11 @@ meminfo_t get_meminfo()
             }
             else
             {
-                SNAP_LOG_TRACE("unknown value in /proc/meminfo: \"")
-                              (line)
-                              ("\", meminfo.cpp() may need some updating.");
+                SNAP_LOG_TRACE
+                    << "unknown value in /proc/meminfo: \""
+                    << line
+                    << "\", meminfo.cpp() may need some updating."
+                    << SNAP_LOG_SEND;
             }
         }
     }

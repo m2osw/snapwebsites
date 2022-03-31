@@ -97,7 +97,7 @@ private:
 
 
 class path
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                         path();
@@ -109,8 +109,6 @@ public:
     static path *       instance();
 
     // plugins::plugin implementation
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual void        bootstrap(snap_child * snap) override;
 
     // server signals

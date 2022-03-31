@@ -16,10 +16,20 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_exception.h"
-#include "snapwebsites/qstring_stream.h"
+// libexcept
+//
+#include    <libexcept/exception.h>
 
-#include <QVector>
+
+// snapdev
+//
+#include    <snapdev/qstring_extensions.h>
+
+
+// Qt
+//
+#include    <QVector>
+
 
 
 namespace snap
@@ -27,21 +37,10 @@ namespace snap
 namespace snap_version
 {
 
-class snap_version_exception : public snap_exception
-{
-public:
-    explicit snap_version_exception(char const *        whatmsg) : snap_exception("snap_version", whatmsg) {}
-    explicit snap_version_exception(std::string const & whatmsg) : snap_exception("snap_version", whatmsg) {}
-    explicit snap_version_exception(QString const &     whatmsg) : snap_exception("snap_version", whatmsg) {}
-};
+DECLARE_MAIN_EXCEPTION(snap_version_exception);
 
-class snap_version_exception_invalid_extension : public snap_version_exception
-{
-public:
-    explicit snap_version_exception_invalid_extension(char const *        whatmsg) : snap_version_exception(whatmsg) {}
-    explicit snap_version_exception_invalid_extension(std::string const & whatmsg) : snap_version_exception(whatmsg) {}
-    explicit snap_version_exception_invalid_extension(QString const &     whatmsg) : snap_version_exception(whatmsg) {}
-};
+DECLARE_EXCEPTION(snap_version_exception, snap_version_exception_invalid_extension);
+
 
 
 enum class compare_t : signed int

@@ -28,9 +28,14 @@
 
 // snapwebsites lib
 //
-#include <snapwebsites/log.h>
 #include <snapwebsites/qdomhelpers.h>
 #include <snapwebsites/qdomxpath.h>
+#include <snapwebsites/snap_exception.h>
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // snapdev lib
@@ -65,7 +70,7 @@ namespace
 {
 
 
-char const * g_configuration_filename = "snapserver";
+char const * g_configuration_filename = "/etc/snapwebsites/snapserver.conf";
 
 char const * g_configuration_d_filename = "/etc/snapwebsites/snapwebsites.d/snapserver.conf";
 
@@ -101,7 +106,7 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("Invalid SNAP_NAME_SNAPMANAGERCGI_SNAPSERVER_MANAGER_...");
+        throw snap_logic_error("Invalid SNAP_NAME_SNAPMANAGERCGI_SNAPSERVER_MANAGER_...");
 
     }
     snapdev::NOT_REACHED();
@@ -202,7 +207,7 @@ void snapserver_manager::bootstrap(snap_child * snap)
     f_snap = dynamic_cast<snap_manager::manager *>(snap);
     if(f_snap == nullptr)
     {
-        throw snap_logic_exception("snap pointer does not represent a valid manager object.");
+        throw snap_logic_error("snap pointer does not represent a valid manager object.");
     }
 
     SNAP_LISTEN(snapserver_manager, "server", snap_manager::manager, retrieve_status, boost::placeholders::_1);
@@ -224,14 +229,15 @@ void snapserver_manager::on_retrieve_status(snap_manager::server_status & server
 
     // allow for editing the IP:port info
     //
-    snap_config snap_server_conf(g_configuration_filename);
+    advgetopt::conf_file_setup config_setup(g_configuration_filename);
+    advgetopt::conf_file::pointer_t snap_server_conf(advgetopt::conf_file::get_conf_file(config_setup));
 
     {
         snap_manager::status_t const host_list(
                       snap_manager::status_t::state_t::STATUS_STATE_INFO
                     , get_plugin_name()
                     , "listen"
-                    , snap_server_conf["listen"]);
+                    , toQString(snap_server_conf->get_parameter("listen")));
         server_status.set_field(host_list);
     }
 
@@ -407,8 +413,9 @@ bool snapserver_manager::apply_setting(QString const & button_name, QString cons
 
         // fix the value in memory
         //
-        snap_config snap_server_conf(g_configuration_filename);
-        snap_server_conf["listen"] = new_value;
+        advgetopt::conf_file_setup setup(g_configuration_filename);
+        advgetopt::conf_file::pointer_t snap_server_conf(advgetopt::conf_file::get_conf_file(setup));
+        snap_server_conf.set_parameter("listen", new_value);
 
         return f_snap->replace_configuration_value(g_configuration_d_filename, "listen", new_value);
     }

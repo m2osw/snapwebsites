@@ -19,12 +19,12 @@
 
 // other plugins
 //
-#include "../content/content.h"
+#include    "../content/content.h"
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
+#include    <snapdev/not_reached.h>
 
 
 
@@ -33,27 +33,15 @@ namespace snap
 namespace filter
 {
 
-class filter_exception : public snap_exception
-{
-public:
-    explicit filter_exception(char const *        what_msg) : snap_exception("filter", what_msg) {}
-    explicit filter_exception(std::string const & what_msg) : snap_exception("filter", what_msg) {}
-    explicit filter_exception(QString const &     what_msg) : snap_exception("filter", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(filter_exception);
 
-class filter_exception_invalid_arguement : public filter_exception
-{
-public:
-    explicit filter_exception_invalid_arguement(char const *        what_msg) : filter_exception(what_msg) {}
-    explicit filter_exception_invalid_arguement(std::string const & what_msg) : filter_exception(what_msg) {}
-    explicit filter_exception_invalid_arguement(QString const &     what_msg) : filter_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(filter_exception, filter_exception_invalid_arguement);
 
 
 
 
 class filter
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
     enum class token_t
@@ -163,13 +151,21 @@ public:
         {
             if(min < 0 || max < -1)
             {
-                throw filter_exception_invalid_arguement(QString("detected a minimum (%1) or maximum (%2) smaller than zero in token_info_t::args()")
-                                .arg(min).arg(max));
+                throw filter_exception_invalid_arguement(
+                      "detected a minimum ("
+                    + std::to_string(min)
+                    + ") or maximum ("
+                    + std::to_string(max)
+                    + ") smaller than zero in token_info_t::args()");
             }
             if(min > max && max != -1)
             {
-                throw filter_exception_invalid_arguement(QString("detected a minimum (%1) larger than the maximum (%2) in token_info_t::args()")
-                                .arg(min).arg(max));
+                throw filter_exception_invalid_arguement(
+                      "detected a minimum ("
+                    + std::to_string(min)
+                    + ") larger than the maximum ("
+                    + std::to_string(max)
+                    + ") in token_info_t::args()");
             }
             const int size(f_parameters.size());
             const bool valid(size >= min && (max == -1 || size <= max));
@@ -390,10 +386,6 @@ public:
     static filter *     instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

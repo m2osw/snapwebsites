@@ -20,49 +20,49 @@
 
 // self
 //
-#include "snapmanager/manager.h"
+#include    "snapmanager/manager.h"
 
 
-// snapwebsites lib
+// cppprocess
 //
-#include <snapwebsites/file_content.h>
-#include <snapwebsites/glob_dir.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/mkdir_p.h>
-#include <snapwebsites/process.h>
+#include    <cppprocess/process.h>
+#include    <cppprocess/io_capture_pipe.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/lockfile.h>
-#include <snapdev/not_used.h>
-#include <snapdev/tokenize_string.h>
+#include    <snaplogger/message.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QFile>
+#include    <snapdev/file_contents.h>
+#include    <snapdev/glob_to_list.h>
+#include    <snapdev/lockfile.h>
+#include    <snapdev/mkdir_p.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/tokenize_string.h>
 
 
-// C lib
+// Qt
 //
-#include <fcntl.h>
-#include <sys/wait.h>
+#include    <QFile>
+
+
+// C
+//
+#include    <fcntl.h>
+#include    <sys/wait.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 namespace snap_manager
 {
-
-
-
-
-
 
 
 
@@ -92,19 +92,24 @@ int manager::package_status(std::string const & package_name, std::string & outp
 {
     output.clear();
 
-    snap::process p("query package status");
-    p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
+    cppprocess::process p("query package status");
     p.set_command("dpkg-query");
     p.add_argument("--showformat='${Version} ${Status}\\n'");
     p.add_argument("--show");
-    p.add_argument(QString::fromUtf8(package_name.c_str()));
-    int const r(p.run());
+    p.add_argument(package_name);
+    cppprocess::io_capture_pipe::pointer_t out(std::make_shared<cppprocess::io_capture_pipe>());
+    p.set_output_io(out);
+    int r(p.start());
+    if(r == 0)
+    {
+        r = p.wait();
+    }
 
     // the output is saved so we can send it to the user and log it...
     //
     if(r == 0)
     {
-        output = p.get_output(true).toUtf8().data();
+        output = out->get_output();
     }
 
     return r;
@@ -177,14 +182,19 @@ QString manager::count_packages_that_can_be_updated(bool check_cache)
             // apt-check is expected to be a python script and the output
             // will be written in 'stderr'
             //
-            snap::process p("apt-check");
-            p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command(f_apt_check);
+            cppprocess::process p("apt-check");
+            p.set_command(apt_check.data());
             p.add_argument("2>&1"); // python script sends output to STDERR
-            int const r(p.run());
+            cppprocess::io_capture_pipe::pointer_t out(std::make_shared<cppprocess::io_capture_pipe>());
+            p.set_output_io(out);
+            int r(p.start());
             if(r == 0)
             {
-                QString const output(p.get_output(true).toUtf8().data());
+                r = p.wait();
+            }
+            if(r == 0)
+            {
+                QString const output(QString::fromUtf8(out->get_output().c_str()));
                 if(!output.isEmpty())
                 {
                     QFile cache(cache_filename);
@@ -210,7 +220,9 @@ QString manager::count_packages_that_can_be_updated(bool check_cache)
             // this should rarely happen (i.e. generally it would happen
             // whenever the database is in an unknown state)
             //
-            SNAP_LOG_ERROR("the \"apt-get update\" command, that we run prior to running the \"apt-check\" command, failed.");
+            SNAP_LOG_ERROR
+                << "the \"apt-get update\" command, that we run prior to running the \"apt-check\" command, failed."
+                << SNAP_LOG_SEND;
 
             // no ready at this point, we need to do an update and that
             // failed -- we will try again later
@@ -219,7 +231,11 @@ QString manager::count_packages_that_can_be_updated(bool check_cache)
         }
     }
 
-    SNAP_LOG_ERROR("the snapmanager library could not run \"")(f_apt_check)("\" successfully or the output was invalid.");
+    SNAP_LOG_ERROR
+        << "the snapmanager library could not run \""
+        << f_apt_check
+        << "\" successfully or the output was invalid."
+        << SNAP_LOG_SEND;
 
     {
         QFile cache(cache_filename);
@@ -231,7 +247,11 @@ QString manager::count_packages_that_can_be_updated(bool check_cache)
         }
         else
         {
-            SNAP_LOG_ERROR("the snapmanager library could not create \"")(cache_filename)("\".");
+            SNAP_LOG_ERROR
+                << "the snapmanager library could not create \""
+                << cache_filename
+                << "\"."
+                << SNAP_LOG_SEND;
         }
     }
 
@@ -263,8 +283,7 @@ int manager::update_packages(std::string const & command)
     }
 #endif
 
-    snap::process p("update");
-    p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
+    cppprocess::process p("update");
     p.set_command("apt-get");
     p.add_argument("--quiet");
     p.add_argument("--assume-yes");
@@ -276,17 +295,28 @@ int manager::update_packages(std::string const & command)
         p.add_argument("--option");
         p.add_argument("Dpkg::Options::=--force-confold");
     }
-    p.add_argument(QString::fromUtf8(command.c_str()));
+    p.add_argument(command);
     if(command == "autoremove")
     {
         p.add_argument("--purge");
     }
     p.add_environ("DEBIAN_FRONTEND", "noninteractive");
-    int const r(p.run());
+    cppprocess::io_capture_pipe::pointer_t out(std::make_shared<cppprocess::io_capture_pipe>());
+    p.set_output_io(out);
+    int r(p.start());
+    if(r == 0)
+    {
+        r = p.wait();
+    }
 
     // the output is saved so we can send it to the user and log it...
-    QString const output(p.get_output(true));
-    SNAP_LOG_INFO(command)(" of packages returned (exit code: ")(r)("):\n")(output);
+    SNAP_LOG_INFO
+        << command
+        << " of packages returned (exit code: "
+        << r
+        << "): "
+        << out->get_output()
+        << SNAP_LOG_SEND;
 
     return r;
 }
@@ -313,8 +343,7 @@ int manager::install_package(std::string const & package_name, std::string const
     }
 #endif
 
-    snap::process p("install");
-    p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
+    cppprocess::process p("install");
     p.set_command("apt-get");
     p.add_argument("--quiet");
     p.add_argument("--assume-yes");
@@ -326,27 +355,37 @@ int manager::install_package(std::string const & package_name, std::string const
         p.add_argument("Dpkg::Options::=--force-confold");
         p.add_argument("--no-install-recommends");
     }
-    p.add_argument(QString::fromUtf8(command.c_str()));
-    p.add_argument(QString::fromUtf8(package_name.c_str()));
+    p.add_argument(command);
+    p.add_argument(package_name);
     p.add_environ("DEBIAN_FRONTEND", "noninteractive");
-    int const r(p.run());
+    cppprocess::io_capture_pipe::pointer_t out(std::make_shared<cppprocess::io_capture_pipe>());
+    p.set_output_io(out);
+    int r(p.start());
+    if(r == 0)
+    {
+        r = p.wait();
+    }
 
     // the output is saved so we can send it to the user and log it...
-    QString const output(p.get_output(true));
-    if(output.isEmpty())
+    std::string const output(out->get_trimmed_output());
+    if(output.empty())
     {
-        SNAP_LOG_INFO(command)
-                     (" of package named \"")
-                     (package_name)
-                     ("\" output nothing.");
+        SNAP_LOG_INFO
+            << command
+            << " of package named \""
+            << package_name
+            << "\" output nothing."
+            << SNAP_LOG_SEND;
     }
     else
     {
-        SNAP_LOG_INFO(command)
-                     (" of package named \"")
-                     (package_name)
-                     ("\" output:\n")
-                     (output);
+        SNAP_LOG_INFO
+            << command
+            << " of package named \""
+            << package_name
+            << "\" output:\n"
+            << output
+            << SNAP_LOG_SEND;
     }
 
     return r;
@@ -364,17 +403,25 @@ void manager::reset_aptcheck()
     // also make sure that the bundle-package-status directory content gets
     // regenerated (i.e. output of the dpkg-query calls)
     //
-    snap::glob_dir package_status(f_data_path + "/bundle-package-status/*.status", GLOB_NOSORT | GLOB_NOESCAPE, true);
-    package_status.enumerate_glob([](std::string const & path)
-                    {
-                        unlink(path.c_str());
-                    });
+    snapdev::glob_list package_status;
+    package_status.read_path<
+        snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE>(f_data_path + "/bundle-package-status/*.status");
+    snapdev::enumerate(
+          package_status
+        , [](std::string const & path)
+        {
+            unlink(path.c_str());
+        });
 
-    snap::glob_dir bundle_status(f_data_path + "/bundle-status/*.status", GLOB_NOSORT | GLOB_NOESCAPE, true);
-    bundle_status.enumerate_glob([](std::string const & path)
-                    {
-                        unlink(path.c_str());
-                    });
+    snapdev::glob_list bundle_status;
+    bundle_status.read_path<
+        snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE>(f_data_path + "/bundle-status/*.status");
+    snapdev::enumerate(
+          bundle_status
+        , [](std::string const & path)
+        {
+            unlink(path.c_str());
+        });
 
     //QString const bundles_status_filename(QString("%1/bundles.status").arg(f_bundles_path));
     //unlink(bundles_status_filename.toUtf8().data());
@@ -421,7 +468,13 @@ bool manager::upgrader()
             // could not even start the process
             //
             int const e(errno);
-            SNAP_LOG_ERROR("could not properly start snapupgrader (errno: ")(e)(", ")(strerror(e))(").");
+            SNAP_LOG_ERROR
+                << "could not properly start snapupgrader (errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")."
+                << SNAP_LOG_SEND;
         }
         else
         {
@@ -433,26 +486,34 @@ bool manager::upgrader()
             if(WIFEXITED(r))
             {
                 int const exit_code(WEXITSTATUS(r));
-                SNAP_LOG_ERROR("could not properly start snapupgrader (exit code: ")(exit_code)(").");
+                SNAP_LOG_ERROR
+                    << "could not properly start snapupgrader (exit code: "
+                    << exit_code
+                    << ")."
+                    << SNAP_LOG_SEND;
             }
             else if(WIFSIGNALED(r))
             {
                 int const signal_code(WTERMSIG(r));
                 bool const has_code_dump(!!WCOREDUMP(r));
 
-                SNAP_LOG_ERROR("snapupgrader terminated because of OS signal \"")
-                              (strsignal(signal_code))
-                              ("\" (")
-                              (signal_code)
-                              (")")
-                              (has_code_dump ? " and a core dump was generated" : "")
-                              (".");
+                SNAP_LOG_ERROR
+                    << "snapupgrader terminated because of OS signal \""
+                    << strsignal(signal_code)
+                    << "\" ("
+                    << signal_code
+                    << ")"
+                    << (has_code_dump ? " and a core dump was generated" : "")
+                    << "."
+                    << SNAP_LOG_SEND;
             }
             else
             {
                 // I do not think we can reach here...
                 //
-                SNAP_LOG_ERROR("snapupgrader terminated abnormally in an unknown way.");
+                SNAP_LOG_ERROR
+                    << "snapupgrader terminated abnormally in an unknown way."
+                    << SNAP_LOG_SEND;
             }
 #pragma GCC diagnostic pop
 
@@ -519,7 +580,14 @@ bool manager::installer(QString const & bundle_name
     //
     bool const installing(command == "install");
 
-    SNAP_LOG_INFO(installing ? "Installing" : "Removing")(" bundle \"")(bundle_name)("\" on host \"")(f_server_name)("\".");
+    SNAP_LOG_INFO
+        << (installing ? "Installing" : "Removing")
+        << " bundle \""
+        << bundle_name
+        << "\" on host \""
+        << f_server_name
+        << "\"."
+        << SNAP_LOG_SEND;
 
     // make sure we do not start an installation while an upgrade is
     // still going (and vice versa)
@@ -547,11 +615,13 @@ bool manager::installer(QString const & bundle_name
         {
             // TODO: how do we tell the end user about that one?
             //
-            SNAP_LOG_ERROR("Installation of bundle \"")
-                          (bundle_name)
-                          ("\" on host \"")
-                          (f_server_name)
-                          ("\" did not proceed because some packages first need to be upgraded.");
+            SNAP_LOG_ERROR
+                << "Installation of bundle \""
+                << bundle_name
+                << "\" on host \""
+                << f_server_name
+                << "\" did not proceed because some packages first need to be upgraded."
+                << SNAP_LOG_SEND;
             return false;
         }
     }
@@ -564,7 +634,11 @@ bool manager::installer(QString const & bundle_name
     if(!input.open(QIODevice::ReadOnly)
     || !bundle_xml.setContent(&input, false))
     {
-        SNAP_LOG_ERROR("bundle \"")(filename)("\" could not be opened or has invalid XML data. Skipping.");
+        SNAP_LOG_ERROR
+            << "bundle \""
+            << filename
+            << "\" could not be opened or has invalid XML data. Skipping."
+            << SNAP_LOG_SEND;
         return false;
     }
 
@@ -691,7 +765,14 @@ bool manager::installer(QString const & bundle_name
         if(r != 0)
         {
             int const e(errno);
-            SNAP_LOG_ERROR("pre-installation script failed with ")(r)(" (errno: ")(e)(", ")(strerror(e));
+            SNAP_LOG_ERROR
+                << "pre-installation script failed with "
+                << r
+                << " (errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << SNAP_LOG_SEND;
             // if the pre-installation script fails, we do not attempt to
             // install the packages
             //
@@ -757,7 +838,13 @@ bool manager::installer(QString const & bundle_name
             // (although we do not prevent others from looking at the script)
             //
             int const e(errno);
-            SNAP_LOG_WARNING("bundle script file mode could not be changed to 755, (errno: ")(e)(", ")(strerror(e))(")");
+            SNAP_LOG_WARNING
+                << "bundle script file mode could not be changed to 755, (errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
         }
         snap::process p(postname);
         p.set_mode(snap::process::mode_t::PROCESS_MODE_OUTPUT);
@@ -766,7 +853,15 @@ bool manager::installer(QString const & bundle_name
         if(r != 0)
         {
             int const e(errno);
-            SNAP_LOG_ERROR("post installation script failed with ")(r)(" (errno: ")(e)(", ")(strerror(e))(")");
+            SNAP_LOG_ERROR
+                << "post installation script failed with "
+                << r
+                << " (errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
             // not much we can do if the post installation fails
             // (we could remove the packages, but that could be dangerous too)
             success = false;
@@ -1063,14 +1158,22 @@ bool manager::replace_configuration_value(
     {
         if((flags & (REPLACE_CONFIGURATION_VALUE_MUST_EXIST | REPLACE_CONFIGURATION_VALUE_FILE_MUST_EXIST)) != 0)
         {
-            SNAP_LOG_WARNING("configuration file \"")(filename)("\" does not exist and we are not allowed to create it.");
+            SNAP_LOG_WARNING
+                << "configuration file \""
+                << filename
+                << "\" does not exist and we are not allowed to create it."
+                << SNAP_LOG_SEND;
             return false;
         }
 
         fd = open(filename.toUtf8().data(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         if(fd == -1)
         {
-            SNAP_LOG_INFO("could not create file \"")(filename)("\" to save new configuration value.");
+            SNAP_LOG_INFO
+                << "could not create file \""
+                << filename
+                << "\" to save new configuration value."
+                << SNAP_LOG_SEND;
             return false;
         }
         snapdev::raii_fd_t safe_fd(fd);
@@ -1081,7 +1184,15 @@ bool manager::replace_configuration_value(
         if(::write(fd, comment.c_str(), comment.size()) != static_cast<ssize_t>(comment.size()))
         {
             int const e(errno);
-            SNAP_LOG_ERROR("write of header to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+            SNAP_LOG_ERROR
+                << "write of header to \""
+                << filename
+                << "\" failed (errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
             return false;
         }
         if(!section.isEmpty())
@@ -1089,7 +1200,15 @@ bool manager::replace_configuration_value(
             if(::write(fd, utf8_section_line.data(), utf8_section_line.size()) != utf8_section_line.size())
             {
                 int const e(errno);
-                SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                SNAP_LOG_ERROR
+                    << "writing of new parameter to \""
+                    << filename
+                    << "\" failed (errno: "
+                    << e
+                    << ", "
+                    << strerror(e)
+                    << ")"
+                    << SNAP_LOG_SEND;
                 return false;
             }
         }
@@ -1102,14 +1221,30 @@ bool manager::replace_configuration_value(
             || ::write(fd, "\n", 1) != 1)
             {
                 int const e(errno);
-                SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                SNAP_LOG_ERROR
+                    << "writing of new parameter to \""
+                    << filename
+                    << "\" failed (errno: "
+                    << e
+                    << ", "
+                    << strerror(e)
+                    << ")"
+                    << SNAP_LOG_SEND;
                 return false;
             }
         }
         if(::write(fd, utf8_line.data(), utf8_line.size()) != utf8_line.size())
         {
             int const e(errno);
-            SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+            SNAP_LOG_ERROR
+                << "writing of new parameter to \""
+                << filename
+                << "\" failed (errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
             return false;
         }
     }
@@ -1123,7 +1258,15 @@ bool manager::replace_configuration_value(
         if(size < 0)
         {
             int const e(errno);
-            SNAP_LOG_ERROR("could not get size of \"")(filename)("\", errno: ")(e)(", ")(strerror(e))(")");
+            SNAP_LOG_ERROR
+                << "could not get size of \""
+                << filename
+                << "\", errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
             return false;
         }
 
@@ -1133,7 +1276,15 @@ bool manager::replace_configuration_value(
         if(back_pos < 0)
         {
             int const e(errno);
-            SNAP_LOG_ERROR("could not come back to the start of \"")(filename)("\", errno: ")(e)(", ")(strerror(e))(")");
+            SNAP_LOG_ERROR
+                << "could not come back to the start of \""
+                << filename
+                << "\", errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
             return false;
         }
 
@@ -1141,7 +1292,15 @@ bool manager::replace_configuration_value(
         if(read(fd, buf.get(), size) != size)
         {
             int const e(errno);
-            SNAP_LOG_ERROR("writing of new line to \"")(filename)("\" failed -- could not read input file (errno: ")(e)(", ")(strerror(e))(")");
+            SNAP_LOG_ERROR
+                << "writing of new line to \""
+                << filename
+                << "\" failed -- could not read input file (errno: "
+                << e
+                << ", "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
             return false;
         }
 
@@ -1151,12 +1310,20 @@ bool manager::replace_configuration_value(
             snapdev::raii_fd_t bak(open((filename + ".bak").toUtf8().data(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
             if(!bak)
             {
-                SNAP_LOG_INFO("could not create backup file \"")(filename)(".bak\" to save new configuration value.");
+                SNAP_LOG_INFO
+                    << "could not create backup file \""
+                    << filename
+                    << ".bak\" to save new configuration value."
+                    << SNAP_LOG_SEND;
                 return false;
             }
             if(::write(bak.get(), buf.get(), size) != size)
             {
-                SNAP_LOG_INFO("could not save buffer to backup file \"")(filename)(".bak\" before generating a new version.");
+                SNAP_LOG_INFO
+                    << "could not save buffer to backup file \""
+                    << filename
+                    << ".bak\" before generating a new version."
+                    << SNAP_LOG_SEND;
                 return false;
             }
         }
@@ -1213,11 +1380,13 @@ bool manager::replace_configuration_value(
 
                             if((flags &  REPLACE_CONFIGURATION_VALUE_MUST_EXIST) != 0)
                             {
-                                SNAP_LOG_ERROR("configuration file \"")
-                                              (filename)
-                                              ("\" does not have a \"")
-                                              (field_name)
-                                              ("\" field and we are not allowed to append it.");
+                                SNAP_LOG_ERROR
+                                    << "configuration file \""
+                                    << filename
+                                    << "\" does not have a \""
+                                    << field_name
+                                    << "\" field and we are not allowed to append it."
+                                    << SNAP_LOG_SEND;
                                 return false;
                             }
 
@@ -1231,14 +1400,30 @@ bool manager::replace_configuration_value(
                                 || ::write(fd, "\n", 1) != 1)
                                 {
                                     int const e(errno);
-                                    SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                                    SNAP_LOG_ERROR
+                                        << "writing of new parameter to \""
+                                        << filename
+                                        << "\" failed (errno: "
+                                        << e
+                                        << ", "
+                                        << strerror(e)
+                                        << ")"
+                                        << SNAP_LOG_SEND;
                                     return false;
                                 }
                             }
                             if(::write(fd, utf8_line.data(), utf8_line.size()) != utf8_line.size())
                             {
                                 int const e(errno);
-                                SNAP_LOG_ERROR("writing of new parameter at the end of \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                                SNAP_LOG_ERROR
+                                    << "writing of new parameter at the end of \""
+                                    << filename
+                                    << "\" failed (errno: "
+                                    << e
+                                    << ", "
+                                    << strerror(e)
+                                    << ")"
+                                    << SNAP_LOG_SEND;
                                 return false;
                             }
                         }
@@ -1285,7 +1470,15 @@ bool manager::replace_configuration_value(
                         if(::write(fd, start, len) != static_cast<ssize_t>(len))
                         {
                             int const e(errno);
-                            SNAP_LOG_ERROR("writing back of line to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                            SNAP_LOG_ERROR
+                                << "writing back of line to \""
+                                << filename
+                                << "\" failed (errno: "
+                                << e
+                                << ", "
+                                << strerror(e)
+                                << ")"
+                                << SNAP_LOG_SEND;
                             return false;
                         }
                     }
@@ -1301,14 +1494,30 @@ bool manager::replace_configuration_value(
                             if(::write(fd, start, trimmed_len) != trimmed_len)
                             {
                                 int const e(errno);
-                                SNAP_LOG_ERROR("writing of new line to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                                SNAP_LOG_ERROR
+                                    << "writing of new line to \""
+                                    << filename
+                                    << "\" failed (errno: "
+                                    << e
+                                    << ", "
+                                    << strerror(e)
+                                    << ")"
+                                    << SNAP_LOG_SEND;
                                 return false;
                             }
                         }
                         if(::write(fd, utf8_line.data(), utf8_line.size()) != utf8_line.size())
                         {
                             int const e(errno);
-                            SNAP_LOG_ERROR("writing of new line to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                            SNAP_LOG_ERROR
+                                << "writing of new line to \""
+                                << filename
+                                << "\" failed (errno: "
+                                << e
+                                << ", "
+                                << strerror(e)
+                                << ")"
+                                << SNAP_LOG_SEND;
                             return false;
                         }
                     }
@@ -1322,7 +1531,15 @@ bool manager::replace_configuration_value(
                     if(::write(fd, start, len) != static_cast<ssize_t>(len))
                     {
                         int const e(errno);
-                        SNAP_LOG_ERROR("writing back of line to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                        SNAP_LOG_ERROR
+                            << "writing back of line to \""
+                            << filename
+                            << "\" failed (errno: "
+                            << e
+                            << ", "
+                            << strerror(e)
+                            << ")"
+                            << SNAP_LOG_SEND;
                         return false;
                     }
                 }
@@ -1333,11 +1550,13 @@ bool manager::replace_configuration_value(
         {
             if((flags &  REPLACE_CONFIGURATION_VALUE_MUST_EXIST) != 0)
             {
-                SNAP_LOG_ERROR("configuration file \"")
-                              (filename)
-                              ("\" does not have a \"")
-                              (field_name)
-                              ("\" field and we are not allowed to append it.");
+                SNAP_LOG_ERROR
+                    << "configuration file \""
+                    << filename
+                    << "\" does not have a \""
+                    << field_name
+                    << "\" field and we are not allowed to append it."
+                    << SNAP_LOG_SEND;
                 return false;
             }
 
@@ -1350,7 +1569,15 @@ bool manager::replace_configuration_value(
                 if(::write(fd, utf8_section_line.data(), utf8_section_line.size()) != utf8_section_line.size())
                 {
                     int const e(errno);
-                    SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                    SNAP_LOG_ERROR
+                        << "writing of new parameter to \""
+                        << filename
+                        << "\" failed (errno: "
+                        << e
+                        << ", "
+                        << strerror(e)
+                        << ")"
+                        << SNAP_LOG_SEND;
                     return false;
                 }
             }
@@ -1363,14 +1590,30 @@ bool manager::replace_configuration_value(
                 || ::write(fd, "\n", 1) != 1)
                 {
                     int const e(errno);
-                    SNAP_LOG_ERROR("writing of new parameter to \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                    SNAP_LOG_ERROR
+                        << "writing of new parameter to \""
+                        << filename
+                        << "\" failed (errno: "
+                        << e
+                        << ", "
+                        << strerror(e)
+                        << ")"
+                        << SNAP_LOG_SEND;
                     return false;
                 }
             }
             if(::write(fd, utf8_line.data(), utf8_line.size()) != utf8_line.size())
             {
                 int const e(errno);
-                SNAP_LOG_ERROR("writing of new parameter at the end of \"")(filename)("\" failed (errno: ")(e)(", ")(strerror(e))(")");
+                SNAP_LOG_ERROR
+                    << "writing of new parameter at the end of \""
+                    << filename
+                    << "\" failed (errno: "
+                    << e
+                    << ", "
+                    << strerror(e)
+                    << ")"
+                    << SNAP_LOG_SEND;
                 return false;
             }
         }
@@ -1484,7 +1727,12 @@ service_status_t manager::service_status(std::string const & service_filename, s
     p1.add_argument(QString::fromUtf8(service_name.c_str()));
     int const r1(p1.run());
     QString const status(p1.get_output(true).trimmed());
-    SNAP_LOG_INFO("\"is-enabled\" query output (")(r1)("): ")(status);
+    SNAP_LOG_INFO
+        << "\"is-enabled\" query output ("
+        << r1
+        << "): "
+        << status
+        << SNAP_LOG_SEND;
     if(r1 != 0)
     {
         // it is not enabled, so it cannot be active, thus it is disabled
@@ -1512,7 +1760,12 @@ service_status_t manager::service_status(std::string const & service_filename, s
     p2.add_argument("is-active");
     p2.add_argument(QString::fromUtf8(service_name.c_str()));
     int const r2(p2.run());
-    SNAP_LOG_INFO("\"is-active\" query output (")(r2)("): ")(p2.get_output(true).trimmed());
+    SNAP_LOG_INFO
+        << "\"is-active\" query output ("
+        << r2
+        << "): "
+        << p2.get_output(true).trimmed()
+        << SNAP_LOG_SEND;
     if(r2 != 0)
     {
         // it is enabled and not active, it could be failed though
@@ -1523,7 +1776,12 @@ service_status_t manager::service_status(std::string const & service_filename, s
         p3.add_argument("is-failed");
         p3.add_argument(QString::fromUtf8(service_name.c_str()));
         int const r3(p3.run());
-        SNAP_LOG_INFO("\"is-failed\" query output (")(r3)("): ")(p3.get_output(true).trimmed());
+        SNAP_LOG_INFO
+            << "\"is-failed\" query output ("
+            << r3
+            << "): "
+            << p3.get_output(true).trimmed()
+            << SNAP_LOG_SEND;
         if(r3 != 0)
         {
             // it is enabled and not active, thus we return "enabled"
@@ -1624,20 +1882,24 @@ void manager::service_apply_status(std::string const & service_name, service_sta
 
             // show process stdout
             //
-            SNAP_LOG_INFO("\"")
-                         (command)
-                         ("\" function output: ")
-                         (p.get_output(true));
+            SNAP_LOG_INFO
+                << "\""
+                << command
+                << "\" function output: "
+                << p.get_output(true)
+                << SNAP_LOG_SEND;
 
             // if no success, emit an error
             //
             if(r != 0)
             {
-                SNAP_LOG_ERROR(command)
-                              (" of service \"")
-                              (service)
-                              ("\" failed.")
-                              (extra.isEmpty() ? "" : " (" + extra + ")");
+                SNAP_LOG_ERROR
+                    << command
+                    << " of service \""
+                    << service
+                    << "\" failed."
+                    << (extra.isEmpty() ? "" : " (" + extra + ")")
+                    << SNAP_LOG_SEND;
             }
         };
 
@@ -1685,7 +1947,11 @@ void manager::service_apply_status(std::string const & service_name, service_sta
 
     default:
         // invalid status request
-        SNAP_LOG_ERROR("you cannot apply status \"")(service_status_to_string(status))("\" to a service.");
+        SNAP_LOG_ERROR
+            << "you cannot apply status \""
+            << service_status_to_string(status)
+            << "\" to a service."
+            << SNAP_LOG_SEND;
         break;
 
     }

@@ -18,42 +18,64 @@
 
 // self
 //
-#include "snap_locale.h"
-#include "qunicodestring.h"
+#include    "snap_locale.h"
+#include    "qunicodestring.h"
 
 
 // other plugins
 //
-#include "../content/content.h"
+#include    "../content/content.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/mkgmtime.h>
+#include    <snapwebsites/mkgmtime.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// UIC (unicode) lib
+// snapdev
 //
-#include <unicode/datefmt.h>
-#include <unicode/errorcode.h>
-#include <unicode/locid.h>
-#include <unicode/smpdtfmt.h>
-#include <unicode/timezone.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// UIC (unicode)
+//
+#include    <unicode/datefmt.h>
+#include    <unicode/errorcode.h>
+#include    <unicode/locid.h>
+#include    <unicode/smpdtfmt.h>
+#include    <unicode/timezone.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(locale, 1, 0)
+namespace snap
+{
+namespace locale
+{
+
+
+CPPTHREAD_PLUGIN_START(locale, 1, 0)
+    , ::cppthread::plugin_description(
+            "Define base locale functions to be used throughout all the"
+            " plugins. It handles time and date, timezone, numbers, currency,"
+            " etc.")
+    , ::cppthread::plugin_icon("/images/locale/locale-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/locale")
+    , ::cppthread::plugin_dependency("server")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("content")
+CPPTHREAD_PLUGIN_END()
 
 
 /* \brief Get a fixed locale name.
@@ -94,7 +116,7 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("invalid SNAP_NAME_LOCALE_...");
+        throw locale_logic_error("invalid SNAP_NAME_LOCALE_...");
 
     }
     snapdev::NOT_REACHED();
@@ -133,90 +155,7 @@ safe_timezone::~safe_timezone()
 
 
 
-/** \brief Initialize the locale plugin.
- *
- * This function is used to initialize the locale plugin object.
- */
-locale::locale()
-    //: f_snap(nullptr) -- auto-init
-{
-}
 
-
-/** \brief Clean up the locale plugin.
- *
- * Ensure the locale object is clean before it is gone.
- */
-locale::~locale()
-{
-}
-
-
-/** \brief Get a pointer to the locale plugin.
- *
- * This function returns an instance pointer to the locale plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the locale plugin.
- */
-locale * locale::instance()
-{
-    return g_plugin_locale_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString locale::settings_path() const
-{
-    return "/admin/settings/locale";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString locale::icon() const
-{
-    return "/images/locale/locale-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString locale::description() const
-{
-    return "Define base locale functions to be used throughout all the"
-        " plugins. It handles time and date, timezone, numbers, currency,"
-        " etc.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString locale::dependencies() const
-{
-    return "|server|content|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -385,7 +324,10 @@ locale::locale::timezone_list_t const & locale::get_timezone_list()
                 QString const qid(QString::fromUtf16(id));
 // TODO: add a command line one can use to list all timezones
 //       (and also all locales)
-//SNAP_LOG_WARNING("timezone = ")(qid);
+//SNAP_LOG_WARNING
+// << "timezone = "
+// << qid
+// << SNAP_LOG_SEND;
                 snap_string_list const id_segments(qid.split('/'));
                 if(id_segments.size() == 2)
                 {
@@ -656,7 +598,11 @@ void locale::set_locale_done()
 
     // if the timezone was not defined, it is an empty string which is
     // exactly what we want to pass to the child set_timezone() function
-SNAP_LOG_TRACE("*** Set locale_settings::locale [")(f_current_locale)("]");
+SNAP_LOG_TRACE
+<< "*** Set locale_settings::locale ["
+<< f_current_locale
+<< "]"
+<< SNAP_LOG_SEND;
     f_snap->set_locale(f_current_locale);
 }
 
@@ -711,7 +657,11 @@ void locale::set_timezone_done()
 
     // if the timezone was not defined, it is an empty string which is
     // exactly what we want to pass to the child set_timezone() function
-SNAP_LOG_TRACE("*** Set locale_settings::timezone [")(f_current_timezone)("]");
+SNAP_LOG_TRACE
+<< "*** Set locale_settings::timezone ["
+<< f_current_timezone
+<< "]"
+<< SNAP_LOG_SEND;
     f_snap->set_timezone(f_current_timezone);
 }
 
@@ -1653,6 +1603,8 @@ time_t locale::parse_time(QString const & time_str, parse_error_t & errcode)
 // http://unicode.org/repos/cldr/trunk/common/supplemental/supplementalData.xml
 //
 
-SNAP_PLUGIN_END()
 
+
+} // namespace locale
+} // namespace snap
 // vim: ts=4 sw=4 et

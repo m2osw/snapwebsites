@@ -20,74 +20,98 @@
 
 // self
 //
-#include "index.h"
+#include    "index.h"
 
 
 // other plugins
 //
-#include "../links/links.h"
-#include "../path/path.h"
-#include "../output/output.h"
-#include "../taxonomy/taxonomy.h"
+#include    "../links/links.h"
+#include    "../path/path.h"
+#include    "../output/output.h"
+#include    "../taxonomy/taxonomy.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/chownnm.h>
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/snap_backend.h>
-#include <snapwebsites/snap_expr.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/dbutils.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/snap_backend.h>
+#include    <snapwebsites/snap_expr.h>
+#include    <snapwebsites/snap_lock.h>
+
+
+// snaplogger
+//
+#include    <snaplogger/message.h>
 
 
 // snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/chownnm.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// as2js lib
+// as2js
 //
-#include <as2js/json.h>
+#include    <as2js/json.h>
 
 
-// csspp lib
+// csspp
 //
-#include <csspp/csspp.h>
+#include    <csspp/csspp.h>
 
 
-// boost lib
+// boost
 //
-#include <boost/algorithm/string.hpp>
+#include    <boost/algorithm/string.hpp>
 
 
-// Qt lib
+// Qt
 //
-#include <QtCore>
-#include <QtSql>
+#include    <QtCore>
+#include    <QtSql>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
-// C lib
+// C
 //
-#include <sys/file.h>
-#include <sys/stat.h>
-#include <sys/time.h>
+#include    <sys/file.h>
+#include    <sys/stat.h>
+#include    <sys/time.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(index, 1, 0)
+namespace snap
+{
+namespace index
+{
+
+
+CPPTHREAD_PLUGIN_START(index, 1, 0)
+    , ::cppthread::plugin_description(
+            "Generate indexes of pages using a set of parameters as defined"
+            " in said page type.")
+    , ::cppthread::plugin_icon("/images/index/index-logo-64x64.png")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("links")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("content")
+CPPTHREAD_PLUGIN_END()
+
+
 
 
 /** \brief Get a fixed index name.
@@ -412,23 +436,27 @@ int32_t paging_t::get_number_of_records() const
             }
             else
             {
-                SNAP_LOG_FATAL("The number of results for a COUNT(*) is not exactly 1?!");
+                SNAP_LOG_FATAL
+                    << "The number of results for a COUNT(*) is not exactly 1?!"
+                    << SNAP_LOG_SEND;
                 // we continue, it's surprising and "wrong" but what can we do?
             }
         }
         else
         {
-            SNAP_LOG_WARNING("Error counting indexes for get_number_of_records(); page \"")
-                            (f_start_key)
-                            ("\" for website \"")
-                            (f_ipath.get_key())
-                            ("#")
-                            (f_index_name)
-                            ("\" from table \"")
-                            (context->contextName())
-                            (".")
-                            (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                            ("\".");
+            SNAP_LOG_WARNING
+                << "Error counting indexes for get_number_of_records(); page \""
+                << f_start_key
+                << "\" for website \""
+                << f_ipath.get_key()
+                << "#"
+                << f_index_name
+                << "\" from table \""
+                << context->contextName()
+                << "."
+                << get_name(name_t::SNAP_NAME_INDEX_TABLE)
+                << "\"."
+                << SNAP_LOG_SEND;
         }
     }
 
@@ -1343,79 +1371,6 @@ int32_t paging_t::get_page_size() const
 
 
 
-/** \brief Initialize the index plugin.
- *
- * This function is used to initialize the index plugin object.
- */
-index::index()
-{
-}
-
-
-/** \brief Clean up the index plugin.
- *
- * Ensure the index object is clean before it is gone.
- */
-index::~index()
-{
-}
-
-
-/** \brief Get a pointer to the index plugin.
- *
- * This function returns an instance pointer to the index plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the index plugin.
- */
-index * index::instance()
-{
-    return g_plugin_index_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString index::icon() const
-{
-    return "/images/index/index-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString index::description() const
-{
-    return "Generate indexes of pages using a set of parameters as defined"
-          " in said page type.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the index of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our index of dependencies.
- */
-QString index::dependencies() const
-{
-    return "|filter|layout|links|messages|output|";
-}
-
 
 /** \brief Check whether updates are necessary.
  *
@@ -1629,7 +1584,11 @@ void index::on_modified_content(content::path_info_t & ipath)
     // there are times when you may want to debug your code to know which
     // pages are marked as modified; this debug log will help with that
     //
-    SNAP_LOG_DEBUG("index detected that page \"")(ipath.get_key())("\" was modified.");
+    SNAP_LOG_DEBUG
+        << "index detected that page \""
+        << ipath.get_key()
+        << "\" was modified."
+        << SNAP_LOG_SEND;
 
     // save the page URL to a list of pages to manage once down with this
     // access; the 
@@ -1799,9 +1758,11 @@ void index::index_pages(
     {
         // TBD: should we just delete our data and start over?
         //
-        SNAP_LOG_ERROR("invalid JSON for the index_pages() list of scripts \"")
-                      (scripts)
-                      ("\".");
+        SNAP_LOG_ERROR
+            << "invalid JSON for the index_pages() list of scripts \""
+            << scripts
+            << "\"."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -1872,13 +1833,15 @@ void index::index_one_page(
         //
         if(!delete_index_result.succeeded())
         {
-            SNAP_LOG_WARNING("Error deleting indexes for website \"")
-                            (page_ipath.get_key())
-                            ("\" from table \"")
-                            (context->contextName())
-                            (".")
-                            (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                            ("\"");
+            SNAP_LOG_WARNING
+                << "Error deleting indexes for website \""
+                << page_ipath.get_key()
+                << "\" from table \""
+                << context->contextName()
+                << "."
+                << get_name(name_t::SNAP_NAME_INDEX_TABLE)
+                << "\""
+                << SNAP_LOG_SEND;
         }
     }
 
@@ -1940,15 +1903,17 @@ void index::index_one_page(
         libdbproxy::order_result const select_index_result(dbproxy->sendOrder(select_index));
         if(!select_index_result.succeeded())
         {
-            SNAP_LOG_WARNING("Error selecting indexes for deletion; page \"")
-                            (index_key)
-                            ("\" for website \"")
-                            (page_ipath.get_key())
-                            ("\" from table \"")
-                            (context->contextName())
-                            (".")
-                            (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                            ("\".");
+            SNAP_LOG_WARNING
+                << "Error selecting indexes for deletion; page \""
+                << index_key
+                << "\" for website \""
+                << page_ipath.get_key()
+                << "\" from table \""
+                << context->contextName()
+                << "."
+                << get_name(name_t::SNAP_NAME_INDEX_TABLE)
+                << "\"."
+                << SNAP_LOG_SEND;
         }
 
         QByteArray key_value(key.toUtf8());
@@ -1979,15 +1944,17 @@ void index::index_one_page(
                 //
                 if(!delete_index_result.succeeded())
                 {
-                    SNAP_LOG_WARNING("Error deleting indexes pointing to page \"")
-                                    (index_key)
-                                    ("\" for website \"")
-                                    (page_ipath.get_key())
-                                    ("\" from table \"")
-                                    (context->contextName())
-                                    (".")
-                                    (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                                    ("\".");
+                    SNAP_LOG_WARNING
+                        << "Error deleting indexes pointing to page \""
+                        << index_key
+                        << "\" for website \""
+                        << page_ipath.get_key()
+                        << "\" from table \""
+                        << context->contextName()
+                        << "."
+                        << get_name(name_t::SNAP_NAME_INDEX_TABLE)
+                        << "\"."
+                        << SNAP_LOG_SEND;
                 }
             }
         }
@@ -2043,9 +2010,11 @@ QString index::get_key_of_index_page(
             //
             // TODO: generate an error message to the admin
             //
-            SNAP_LOG_ERROR("Error compiling check script: \"")
-                          (vars.at("c"))
-                          ("\".");
+            SNAP_LOG_ERROR
+                << "Error compiling check script: \""
+                << vars.at("c")
+                << "\"."
+                << SNAP_LOG_SEND;
             return QString();
         }
 
@@ -2071,7 +2040,13 @@ QString index::get_key_of_index_page(
             content::content *content_plugin(content::content::instance());
             libdbproxy::table::pointer_t branch_table(content_plugin->get_branch_table());
             libdbproxy::value script(branch_table->getRow(branch_key)->getCell(get_name(name_t::SNAP_NAME_INDEX_ORIGINAL_TEST_SCRIPT))->getValue());
-            SNAP_LOG_TRACE() << "script [" << script.stringValue() << "] result [" << (result.is_true() ? "true" : "false") << "]";
+            SNAP_LOG_TRACE
+                << "script ["
+                << script.stringValue()
+                << "] result ["
+                << (result.is_true() ? "true" : "false")
+                << "]"
+                << SNAP_LOG_SEND;
         }
 #endif
 #endif
@@ -2096,9 +2071,11 @@ QString index::get_key_of_index_page(
             //
             // TODO: generate an error message to admin
             //
-            SNAP_LOG_ERROR("Error compiling key script: \"")
-                          (vars.at("k"))
-                          ("\".");
+            SNAP_LOG_ERROR
+                << "Error compiling key script: \""
+                << vars.at("k")
+                << "\"."
+                << SNAP_LOG_SEND;
             return QString();
         }
 
@@ -2489,7 +2466,11 @@ void index::reindex()
     //
     if(paths.empty())
     {
-        SNAP_LOG_INFO("Restarting processing from root (")(root_key)(")");
+        SNAP_LOG_INFO
+            << "Restarting processing from root ("
+            << root_key
+            << ")"
+            << SNAP_LOG_SEND;
         paths << root_key;
     }
 
@@ -2526,7 +2507,10 @@ void index::reindex()
                 {
                     return loop_timeout_sec;
                 }
-                SNAP_LOG_WARNING("invalid number or timeout too small (under 1s) in ")(field_name);
+                SNAP_LOG_WARNING
+                    << "invalid number or timeout too small (under 1s) in "
+                    << field_name
+                    << SNAP_LOG_SEND;
             }
             return default_timeout;
         };
@@ -2546,7 +2530,13 @@ void index::reindex()
                 {
                     return static_cast<uint32_t>(number);
                 }
-                SNAP_LOG_WARNING("invalid number in ")(field_name)(" (")(number_str)(")");
+                SNAP_LOG_WARNING
+                    << "invalid number in "
+                    << field_name
+                    << " ("
+                    << number_str
+                    << ")"
+                    << SNAP_LOG_SEND;
             }
             return default_number;
         };
@@ -2555,9 +2545,11 @@ void index::reindex()
 
     while(!paths.isEmpty())
     {
-        SNAP_LOG_INFO("reindexing working on index \"")
-                     (paths[0])
-                     ("\".");
+        SNAP_LOG_INFO
+            << "reindexing working on index \""
+            << paths[0]
+            << "\"."
+            << SNAP_LOG_SEND;
 
         content::path_info_t type_ipath;
         type_ipath.set_path(paths[0]);
@@ -2634,13 +2626,19 @@ void index::reindex()
                             ++f_count_processed;
                             if(f_count_processed >= max_count)
                             {
-                                SNAP_LOG_WARNING("Stopping the reindex processing after ")(max_count)(" pages were processed.");
+                                SNAP_LOG_WARNING
+                                    << "Stopping the reindex processing after "
+                                    << max_count
+                                    << " pages were processed."
+                                    << SNAP_LOG_SEND;
                                 return;
                             }
 
                             if(f_backend->stop_received())
                             {
-                                SNAP_LOG_WARNING("Stopping the reindex processing because the parent backend process asked us to.");
+                                SNAP_LOG_WARNING
+                                    << "Stopping the reindex processing because the parent backend process asked us to."
+                                    << SNAP_LOG_SEND;
                                 return;
                             }
 
@@ -2649,7 +2647,11 @@ void index::reindex()
                             int64_t const loop_time_spent(f_snap->get_current_date() - loop_start_time);
                             if(loop_time_spent > loop_timeout)
                             {
-                                SNAP_LOG_WARNING("Stopping the reindex processing after ")(loop_timeout / 1000000LL)(" seconds.");
+                                SNAP_LOG_WARNING
+                                    << "Stopping the reindex processing after "
+                                    << loop_timeout / 1000000LL
+                                    << " seconds."
+                                    << SNAP_LOG_SEND;
                                 return;
                             }
                         }
@@ -2698,13 +2700,15 @@ void index::reindex()
                     //
                     if(!delete_index_result.succeeded())
                     {
-                        SNAP_LOG_ERROR("Error deleting indexes for website \"")
-                                      (page_ipath.get_key())
-                                      ("\" from table \"")
-                                      (context->contextName())
-                                      (".")
-                                      (get_name(name_t::SNAP_NAME_INDEX_TABLE))
-                                      ("\"");
+                        SNAP_LOG_ERROR
+                            << "Error deleting indexes for website \""
+                            << page_ipath.get_key()
+                            << "\" from table \""
+                            << context->contextName()
+                            << ".")
+                            << get_name(name_t::SNAP_NAME_INDEX_TABLE)
+                            << "\""
+                            << SNAP_LOG_SEND;
                     }
                 }
 #endif
@@ -2726,9 +2730,11 @@ void index::reindex()
             // TODO: should this be an error instead?
             //       the root page and all of its children should exist!
             //
-            SNAP_LOG_WARNING("could not access \"")
-                            (type_ipath.get_key())
-                            ("\".");
+            SNAP_LOG_WARNING
+                << "could not access \""
+                << type_ipath.get_key()
+                << "\"."
+                << SNAP_LOG_SEND;
         }
 
         paths.removeAt(0);
@@ -2751,7 +2757,9 @@ void index::reindex()
         }
     }
 
-    SNAP_LOG_INFO("reindexing complete.");
+    SNAP_LOG_INFO
+        << "reindexing complete."
+        << SNAP_LOG_SEND;
 
     // Note: if the delete doesn't happen, it's not a big deal, the reindex
     //       is just a one time backend run so we would leak the memory and
@@ -2808,7 +2816,9 @@ void index::reindex()
 // */
 //void index::on_backend_process()
 //{
-//    SNAP_LOG_TRACE("backend_process: update indexes.");
+//    SNAP_LOG_TRACE
+//      << "backend_process: update indexes."
+//      << SNAP_LOG_SEND;
 //}
 
 
@@ -3161,12 +3171,22 @@ QString index::generate_index(
                         // retrieve names of all the boxes
                         ;
 
-//SNAP_LOG_WARNING("create body for record ")(i)(" with item ")(item);
+//SNAP_LOG_WARNING
+//    << "create body for record "
+//    << i
+//    << " with item "
+//    << item
+//    << SNAP_LOG_SEND;
                     layout_plugin->create_body(record_doc, record_ipath, record_body_xsl, l);
 //std::cerr << "source to be parsed [" << record_doc.toString(-1) << "]\n";
                     QDomElement record_body(snap_dom::get_element(record_doc, "body"));
                     record_body.setAttribute("item", item);
-//SNAP_LOG_WARNING("apply theme to record ")(i)(" with item ")(item);
+//SNAP_LOG_WARNING
+//    << "apply theme to record "
+//    << i
+//    << " with item "
+//    << item
+//    << SNAP_LOG_SEND;
                     QString const themed_record(layout_plugin->apply_theme(record_doc, record_theme_xsl, theme));
 //std::cerr << "themed record [" << themed_record << "]\n";
 
@@ -3180,9 +3200,11 @@ QString index::generate_index(
                 }
                 else
                 {
-                    SNAP_LOG_ERROR("the record_plugin pointer for \"")
-                                  (record_plugin->get_plugin_name())
-                                  ("\" is not a layout_content");
+                    SNAP_LOG_ERROR
+                        << "the record_plugin pointer for \""
+                        << record_plugin->get_plugin_name()
+                        << "\" is not a layout_content"
+                        << SNAP_LOG_SEND;
                 }
             }
         }
@@ -3198,11 +3220,17 @@ QString index::generate_index(
 
         // now theme the index as a whole
         // we add a wrapper so we can use /node()/* in the final theme
-//SNAP_LOG_WARNING("apply index theme");
+//SNAP_LOG_WARNING
+//    << "apply index theme"
+//    << SNAP_LOG_SEND;
         return layout_plugin->apply_theme(index_doc, index_theme_xsl, theme);
     }
     // else index is not accessible (permission "problem")
-//else SNAP_LOG_FATAL("index::on_replace_token() index \"")(index_ipath.get_key())("\" is not accessible.");
+//else SNAP_LOG_FATAL
+//         << "index::on_replace_token() index \""
+//         << index_ipath.get_key()
+//         << "\" is not accessible."
+//         << SNAP_LOG_SEND;
 
     return QString();
 }
@@ -3267,6 +3295,7 @@ void index::on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::r
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace index
+} // namespace snap
 // vim: ts=4 sw=4 et

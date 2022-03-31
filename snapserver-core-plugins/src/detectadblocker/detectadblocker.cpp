@@ -17,34 +17,59 @@
 
 // self
 //
-#include "detectadblocker.h"
+#include    "detectadblocker.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../users/users.h"
+#include    "../output/output.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(detectadblocker, 1, 0)
+namespace snap
+{
+namespace detectadblocker
+{
+
+
+CPPTHREAD_PLUGIN_START(detectadblocker, 1, 0)
+    , ::cppthread::plugin_description(
+            "The detect ad blocker plugin is used to set a variable to"
+            " know whether an ad blocker is active on the client browser."
+            " If so, plugins attempting to show ads can instead do nothing.")
+    , ::cppthread::plugin_icon("/images/detectadblocker/detectadblocker-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/detectadblocker")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("advertising")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \class detectadblocker
@@ -96,91 +121,6 @@ char const * get_name(name_t name)
     snapdev::NOT_REACHED();
 }
 
-
-/** \brief Initialize the detectadblocker plugin.
- *
- * This function is used to initialize the detectadblocker plugin object.
- */
-detectadblocker::detectadblocker()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the detectadblocker plugin.
- *
- * Ensure the detectadblocker object is clean before it is gone.
- */
-detectadblocker::~detectadblocker()
-{
-}
-
-
-/** \brief Get a pointer to the detectadblocker plugin.
- *
- * This function returns an instance pointer to the detectadblocker plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the detectadblocker plugin.
- */
-detectadblocker * detectadblocker::instance()
-{
-    return g_plugin_detectadblocker_factory.instance();
-}
-
-
-/** \brief Send users to the detectadblocker settings.
- *
- * This path represents the detectadblocker settings.
- */
-QString detectadblocker::settings_path() const
-{
-    return "/admin/settings/detectadblocker";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString detectadblocker::icon() const
-{
-    return "/images/detectadblocker/detectadblocker-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString detectadblocker::description() const
-{
-    return "The detect ad blocker plugin is used to set a variable to"
-          " know whether an ad blocker is active on the client browser."
-          " If so, plugins attempting to show ads can instead do nothing.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString detectadblocker::dependencies() const
-{
-    return "|editor|messages|output|path|permissions|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -383,6 +323,7 @@ bool detectadblocker::was_detected() const
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace detectadblocker
+} // namespace snap
 // vim: ts=4 sw=4 et

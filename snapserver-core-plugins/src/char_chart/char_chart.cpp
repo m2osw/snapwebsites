@@ -17,108 +17,49 @@
 
 // self
 //
-#include "char_chart.h"
+#include    "char_chart.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
+#include    "../output/output.h"
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_used.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
+
+namespace snap
+{
+namespace char_chart
+{
 
 
 
 SNAP_PLUGIN_START(char_chart, 1, 0)
+    , ::cppthread::plugin_description(
+            "This dynamically generates tables of characters.")
+    , ::cppthread::plugin_icon("/images/char-chart/char-chart-logo-64x64.png")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("sitemapxml")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("gui")
+SNAP_PLUGIN_END()
 
 
 
-/** \brief Initialize the char_chart plugin.
- *
- * This function is used to initialize the char_chart plugin object.
- */
-char_chart::char_chart()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the char_chart plugin.
- *
- * Ensure the char_chart object is clean before it is gone.
- */
-char_chart::~char_chart()
-{
-}
-
-
-/** \brief Get a pointer to the char_chart plugin.
- *
- * This function returns an instance pointer to the char_chart plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the char_chart plugin.
- */
-char_chart * char_chart::instance()
-{
-    return g_plugin_char_chart_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString char_chart::icon() const
-{
-    return "/images/char-chart/char-chart-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString char_chart::description() const
-{
-    return "This dynamically generates tables of characters.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString char_chart::dependencies() const
-{
-    return "|output|sitemapxml|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -697,6 +638,7 @@ void char_chart::on_generate_sitemapxml(sitemapxml::sitemapxml *sitemap)
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace char_chart
+} // namespace snap
 // vim: ts=4 sw=4 et

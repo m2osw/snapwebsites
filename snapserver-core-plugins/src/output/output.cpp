@@ -16,40 +16,64 @@
 
 // self
 //
-#include "output.h"
+#include    "output.h"
 
 
 // other plugins
 //
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
-#include "../server_access/server_access.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
+#include    "../server_access/server_access.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// C++
+//
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(output, 1, 0)
+namespace snap
+{
+namespace output
+{
+
+
+CPPTHREAD_PLUGIN_START(output, 1, 0)
+    , ::cppthread::plugin_description(
+            "Output nearly all the content of your website. This plugin handles"
+            " the transformation of you pages to HTML, PDF, text, etc.")
+    , ::cppthread::plugin_icon("/images/snap/snap-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/info")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("locale")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("server_access")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("gui")
+CPPTHREAD_PLUGIN_END()
 
 // using the name_t::SNAP_NAME_CONTENT_... for this one.
 /* \brief Get a fixed output name.
@@ -83,90 +107,6 @@ SNAP_PLUGIN_START(output, 1, 0)
 
 
 
-
-/** \brief Initialize the output plugin.
- *
- * This function is used to initialize the output plugin object.
- */
-output::output()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the output plugin.
- *
- * Ensure the output object is clean before it is gone.
- */
-output::~output()
-{
-}
-
-
-/** \brief Get a pointer to the output plugin.
- *
- * This function returns an instance pointer to the output plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the output plugin.
- */
-output * output::instance()
-{
-    return g_plugin_output_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString output::settings_path() const
-{
-    return "/admin/settings/info";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString output::icon() const
-{
-    return "/images/snap/snap-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString output::description() const
-{
-    return "Output nearly all the content of your website. This plugin handles"
-        " the transformation of you pages to HTML, PDF, text, etc.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString output::dependencies() const
-{
-    return "|content|filter|layout|locale|path|server_access|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -1147,7 +1087,10 @@ QString output::phone_to_uri(QString const phone, phone_number_type_t const type
         break;
 
     default:
-        throw snap_logic_exception(QString("unknown phone number type (%1) in output::phone_to_uri()").arg(static_cast<int>(type)));
+        throw snap_logic_error(
+              "unknown phone number type ("
+            + std::to_string(static_cast<int>(type))
+            + ") in output::phone_to_uri()");
 
     }
 
@@ -1197,6 +1140,7 @@ QString output::phone_to_uri(QString const phone, phone_number_type_t const type
 //}
 
 
-SNAP_PLUGIN_END()
 
+} // namespace output
+} // namespace snap
 // vim: ts=4 sw=4 et

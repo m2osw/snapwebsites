@@ -20,14 +20,25 @@
 #include "snapwebsites/snap_console.h"
 
 
-// snapwebsites lib
+// snaplogger lib
 //
-#include "snapwebsites/log.h"
+#include <snaplogger/message.h>
+
+
+// eventdispatcher lib
+//
+#include <eventdispatcher/fd_buffer_connection.h>
 
 
 // snapdev lib
 //
+#include <snapdev/not_reached.h>
 #include <snapdev/not_used.h>
+
+
+// Qt lib
+//
+#include <QString>
 
 
 // C++ lib
@@ -84,11 +95,11 @@ public:
     typedef std::shared_ptr<ncurses_impl>    pointer_t;
 
     class io_pipe_connection
-        : public snap_communicator::snap_fd_buffer_connection
+        : public ed::fd_buffer_connection
     {
     public:
         io_pipe_connection(int fd, ncurses_impl * impl)
-            : snap_fd_buffer_connection(fd, snap_communicator::snap_fd_connection::mode_t::FD_MODE_READ)
+            : fd_buffer_connection(fd, ed::fd_connection::mode_t::FD_MODE_READ)
             , f_impl(impl)
         {
         }
@@ -98,29 +109,29 @@ public:
         io_pipe_connection(io_pipe_connection const & rhs) = delete;
         io_pipe_connection & operator = (io_pipe_connection const & rhs) = delete;
 
-        virtual void process_line(QString const & line) override
+        virtual void process_line(std::string const & line) override
         {
-            if(line.indexOf("error:") != -1)
+            if(line.find("error:") != std::string::npos)
             {
-                f_impl->output(line.toUtf8().data()
+                f_impl->output(line
                              , snap_console::color_t::RED
                              , snap_console::color_t::WHITE);
             }
-            else if(line.indexOf("warning:") != -1)
+            else if(line.find("warning:") != std::string::npos)
             {
-                f_impl->output(line.toUtf8().data()
+                f_impl->output(line
                              , snap_console::color_t::MAGENTA
                              , snap_console::color_t::WHITE);
             }
-            else if(line.indexOf("success:") != -1)
+            else if(line.find("success:") != std::string::npos)
             {
-                f_impl->output(line.toUtf8().data()
+                f_impl->output(line
                              , snap_console::color_t::GREEN
                              , snap_console::color_t::WHITE);
             }
             else
             {
-                f_impl->output(line.toUtf8().data());
+                f_impl->output(line);
             }
         }
 
@@ -231,7 +242,7 @@ public:
         //          that here "manually"
         //
         c->close();
-        snap::snap_communicator::instance()->remove_connection(c);
+        ed::communicator::instance()->remove_connection(c);
         c.reset();
 
         // f is the pipe (write-side) and it can directly be replaced
@@ -410,7 +421,12 @@ private:
         }
         if(::close(p[1]) == -1)
         {
-            SNAP_LOG_WARNING("could not close pipe ")(p[1])(" after dup2() to ")(fileno(f));
+            SNAP_LOG_WARNING
+                << "could not close pipe "
+                << p[1]
+                << " after dup2() to "
+                << fileno(f)
+                << SNAP_LOG_SEND;
         }
 
         // create a communicator connection with the other side of the pipe
@@ -419,7 +435,7 @@ private:
         // in a row or the process will block/fail in weird ways.)
         //
         c = std::make_shared<io_pipe_connection>(p[0], this);
-        if(!snap_communicator::instance()->add_connection(c))
+        if(!ed::communicator::instance()->add_connection(c))
         {
             fatal_error("could not add stdout/stderr stream replacement");
         }
@@ -634,7 +650,9 @@ private:
             //
             if(endwin() != OK)
             {
-                SNAP_LOG_WARNING("endwin() failed");
+                SNAP_LOG_WARNING
+                    << "endwin() failed"
+                    << SNAP_LOG_SEND;
             }
 
             if(f_term != nullptr)
@@ -1014,7 +1032,9 @@ private:
             f_snap_console->f_impl->close_ncurse();
             f_snap_console->f_impl.reset();
         }
-        SNAP_LOG_FATAL(msg);
+        SNAP_LOG_FATAL
+            << msg
+            << SNAP_LOG_SEND;
         std::cerr << msg << std::endl;
         exit(1);
     }
@@ -1177,7 +1197,7 @@ snap_console *     ncurses_impl::f_snap_console = nullptr;
 
 
 snap_console::snap_console(std::string const & history_filename)
-    : snap_fd_connection(fileno(stdin), mode_t::FD_MODE_READ)
+    : fd_connection(fileno(stdin), mode_t::FD_MODE_READ)
 {
     f_impl = ncurses_impl::create_ncurses(this, history_filename);
 }

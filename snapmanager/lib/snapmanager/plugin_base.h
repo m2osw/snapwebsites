@@ -16,17 +16,20 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// ourselves
+// self
 //
-#include "server_status.h"
+#include    "server_status.h"
 
-// snapwebsites lib
+
+// snapwebsites
 //
-#include <snapwebsites/snapwebsites.h>
+#include    <snapwebsites/snapwebsites.h>
 
-// C++ lib
+
+// C++
 //
 #include <set>
+
 
 
 namespace snap_manager
@@ -34,7 +37,7 @@ namespace snap_manager
 
 
 class plugin_base
-        : public snap::plugins::plugin
+    : public cppthread::plugin
 {
 public:
     virtual             ~plugin_base() override;

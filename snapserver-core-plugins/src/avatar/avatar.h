@@ -43,18 +43,12 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class avatar_exception : public snap_exception
-{
-public:
-    explicit avatar_exception(char const *        what_msg) : snap_exception("Avatar", what_msg) {}
-    explicit avatar_exception(std::string const & what_msg) : snap_exception("Avatar", what_msg) {}
-    explicit avatar_exception(QString const &     what_msg) : snap_exception("Avatar", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(avatar_exception);
 
 
 
 class avatar
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
                         avatar();
@@ -66,10 +60,6 @@ public:
     static avatar *     instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

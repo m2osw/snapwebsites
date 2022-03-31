@@ -33,51 +33,18 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class menu_exception : public snap_exception
-{
-public:
-    explicit menu_exception(char const *        what_msg) : snap_exception("menu", what_msg) {}
-    explicit menu_exception(std::string const & what_msg) : snap_exception("menu", what_msg) {}
-    explicit menu_exception(QString const &     what_msg) : snap_exception("menu", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(menu_exception);
 
-class menu_exception_missing_links_table : public menu_exception
-{
-public:
-    explicit menu_exception_missing_links_table(char const *        what_msg) : menu_exception(what_msg) {}
-    explicit menu_exception_missing_links_table(std::string const & what_msg) : menu_exception(what_msg) {}
-    explicit menu_exception_missing_links_table(QString const &     what_msg) : menu_exception(what_msg) {}
-};
-
-class menu_exception_missing_data_table : public menu_exception
-{
-public:
-    explicit menu_exception_missing_data_table(char const *        what_msg) : menu_exception(what_msg) {}
-    explicit menu_exception_missing_data_table(std::string const & what_msg) : menu_exception(what_msg) {}
-    explicit menu_exception_missing_data_table(QString const &     what_msg) : menu_exception(what_msg) {}
-};
-
-class menu_exception_invalid_name : public menu_exception
-{
-public:
-    explicit menu_exception_invalid_name(char const *        what_msg) : menu_exception(what_msg) {}
-    explicit menu_exception_invalid_name(std::string const & what_msg) : menu_exception(what_msg) {}
-    explicit menu_exception_invalid_name(QString const &     what_msg) : menu_exception(what_msg) {}
-};
-
-class menu_exception_invalid_db_data : public menu_exception
-{
-public:
-    explicit menu_exception_invalid_db_data(char const *        what_msg) : menu_exception(what_msg) {}
-    explicit menu_exception_invalid_db_data(std::string const & what_msg) : menu_exception(what_msg) {}
-    explicit menu_exception_invalid_db_data(QString const &     what_msg) : menu_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(menu_exception, menu_exception_missing_links_table);
+DECLARE_EXCEPTION(menu_exception, menu_exception_missing_data_table);
+DECLARE_EXCEPTION(menu_exception, menu_exception_invalid_name);
+DECLARE_EXCEPTION(menu_exception, menu_exception_invalid_db_data);
 
 
 
 
 class menu
-    : public plugins::plugin
+    : public cppthread::plugin
     , public layout::layout_content
 {
 public:
@@ -90,10 +57,6 @@ public:
     static menu *       instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

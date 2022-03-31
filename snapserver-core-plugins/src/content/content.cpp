@@ -40,54 +40,77 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 //#include "../messages/messages.h" -- we now have 2 levels (messages and output) so we could include messages.h there
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/compression.h>
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/flags.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/qcompatibility.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/snap_magic.h>
-#include <snapwebsites/snap_image.h>
-#include <snapwebsites/snap_lock.h>
-#include <snapwebsites/snap_version.h>
+#include    <snapwebsites/compression.h>
+#include    <snapwebsites/dbutils.h>
+#include    <snapwebsites/flags.h>
+#include    <snapwebsites/qcompatibility.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/snap_magic.h>
+#include    <snapwebsites/snap_image.h>
+#include    <snapwebsites/snap_lock.h>
+#include    <snapwebsites/snap_version.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// Qt lib
+// snapdev
 //
-#include <QFile>
-#include <QTextStream>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// Qt
 //
-#include <iostream>
+#include    <QFile>
+#include    <QTextStream>
 
 
-// OpenSSL lib
+// C++
 //
-#include <openssl/md5.h>
+#include    <iostream>
+
+
+// OpenSSL
+//
+#include    <openssl/md5.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(content, 1, 0)
+namespace snap
+{
+namespace content
+{
+
+
+CPPTHREAD_PLUGIN_START(content, 1, 0)
+    , ::cppthread::plugin_description(
+            "Manage nearly all the content of your website. This plugin handles"
+            " your pages, the website taxonomy (tags, categories, permissions...)"
+            " and much much more.")
+    , ::cppthread::plugin_icon("/images/snap/content-logo-64x64.png")
+    , ::cppthread::plugin_settings("/settings/info")
+    , ::cppthread::plugin_dependency("server")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
+
+
 
 /** \brief Get a fixed content name.
  *
@@ -458,91 +481,6 @@ char const * css_extensions[] =
 
 
 
-
-
-/** \brief Initialize the content plugin.
- *
- * This function is used to initialize the content plugin object.
- */
-content::content()
-{
-}
-
-
-/** \brief Clean up the content plugin.
- *
- * Ensure the content object is clean before it is gone.
- */
-content::~content()
-{
-}
-
-
-/** \brief Get a pointer to the content plugin.
- *
- * This function returns an instance pointer to the content plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the content plugin.
- */
-content * content::instance()
-{
-    return g_plugin_content_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString content::settings_path() const
-{
-    return "/settings/info";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString content::icon() const
-{
-    return "/images/snap/content-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString content::description() const
-{
-    return "Manage nearly all the content of your website. This plugin handles"
-        " your pages, the website taxonomy (tags, categories, permissions...)"
-        " and much much more.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString content::dependencies() const
-{
-    return "|server|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -4870,6 +4808,6 @@ void content::on_table_is_accessible(QString const & table_name, server::accessi
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

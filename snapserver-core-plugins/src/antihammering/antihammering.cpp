@@ -32,27 +32,48 @@
 
 // self
 //
-#include "antihammering.h"
+#include    "antihammering.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(antihammering, 1, 0)
+namespace snap
+{
+namespace antihammering
+{
+
+
+CPPTHREAD_PLUGIN_START(antihammering, 1, 0)
+    , ::cppthread::plugin_description(
+            "System used to avoid hammering of our Snap! Websites."
+            " The plugin counts the number of hits and blocks users who"
+            " really hammers a website. The thresholds used against these"
+            " counters are defined in the settings.")
+    , ::cppthread::plugin_icon("/images/antihammering/antihammering-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/antihammering")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("sessions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed antihammering name.
@@ -91,96 +112,10 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("invalid name_t::SNAP_NAME_ANTIHAMMERING_...");
+        throw snap_logic_error("invalid name_t::SNAP_NAME_ANTIHAMMERING_...");
 
     }
     snapdev::NOT_REACHED();
-}
-
-/** \brief Initialize the antihammering plugin.
- *
- * This function is used to initialize the antihammering plugin object.
- */
-antihammering::antihammering()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the antihammering plugin.
- *
- * Ensure the antihammering object is clean before it is gone.
- */
-antihammering::~antihammering()
-{
-}
-
-
-/** \brief Get a pointer to the antihammering plugin.
- *
- * This function returns an instance pointer to the antihammering plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the antihammering plugin.
- */
-antihammering * antihammering::instance()
-{
-    return g_plugin_antihammering_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString antihammering::icon() const
-{
-    return "/images/antihammering/antihammering-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString antihammering::description() const
-{
-    return "System used to avoid hammering of our Snap! Websites."
-          " The plugin counts the number of hits and blocks users who"
-          " really hammers a website. The thresholds used against these"
-          " counters are defined in the settings.";
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString antihammering::settings_path() const
-{
-    return "/admin/settings/antihammering";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString antihammering::dependencies() const
-{
-    return "|messages|path|output|sessions|";
 }
 
 
@@ -452,8 +387,6 @@ void antihammering::on_check_for_redirect(content::path_info_t & ipath)
 }
 
 
-
-
-SNAP_PLUGIN_END()
-
+} // namespace antihammering
+} // namespace snap
 // vim: ts=4 sw=4 et

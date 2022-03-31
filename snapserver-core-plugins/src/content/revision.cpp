@@ -24,24 +24,32 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/snap_lock.h>
+#include    <snapwebsites/dbutils.h>
+#include    <snapwebsites/snap_lock.h>
+
+
+// snaplogger
+//
+#include    <snaplogger/message.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace content
+{
 
-SNAP_PLUGIN_EXTENSION_START(content)
+
 
 /** \brief Call if a revision control version is found to be invalid.
  *
@@ -1143,6 +1151,7 @@ QString content::set_revision_key(QString const & key, snap_version::version_num
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

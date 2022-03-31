@@ -18,31 +18,34 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
+#include    <snapdev/not_reached.h>
 
 
-// C lib
+// C
 //
-#include <unistd.h>
+#include    <unistd.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
 
 
 SNAP_TEST_PLUGIN_SUITE(content)
@@ -215,6 +218,7 @@ SNAP_TEST_PLUGIN_TEST_IMPL(content, test_journal_list)
 }
 
 
-SNAP_PLUGIN_EXTENSION_END()
 
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

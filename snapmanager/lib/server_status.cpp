@@ -39,9 +39,13 @@
 
 // snapwebsites lib
 //
-#include <snapwebsites/log.h>
 #include <snapwebsites/qcompatibility.h>
 #include <snapwebsites/snap_string_list.h>
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // snapdev lib
@@ -203,7 +207,7 @@ status_t const & server_status::get_field_status(QString const & plugin_name, QS
     auto const it(f_statuses.find(key));
     if(it == f_statuses.end())
     {
-        throw snapmanager_exception_undefined(QString("get_field_status() called to get unknown field %1").arg(key));
+        throw snapmanager_exception_undefined("get_field_status() called to get unknown field " + std::string(key.toUtf8().data()));
     }
     return it->second;
 }
@@ -405,7 +409,9 @@ bool server_status::read_all()
     {
         if(f_filename.isEmpty())
         {
-            SNAP_LOG_ERROR("no filename specified to save snapmanagerdamon status.");
+            SNAP_LOG_ERROR
+                << "no filename specified to save snapmanagerdamon status."
+                << SNAP_LOG_SEND;
             f_has_error = true;
             return false;
         }
@@ -462,7 +468,9 @@ bool server_status::read_header()
 
     if(f_filename.isEmpty())
     {
-        SNAP_LOG_ERROR("no filename specified to save snapmanagerdaemon status.");
+        SNAP_LOG_ERROR
+            << "no filename specified to save snapmanagerdaemon status."
+            << SNAP_LOG_SEND;
         f_has_error = true;
         return false;
     }
@@ -547,7 +555,9 @@ bool server_status::write()
 
     if(f_filename.isEmpty())
     {
-        SNAP_LOG_ERROR("no filename specified to save snapmanagerdamon status.");
+        SNAP_LOG_ERROR
+            << "no filename specified to save snapmanagerdamon status."
+            << SNAP_LOG_SEND;
         return false;
     }
 
@@ -557,9 +567,11 @@ bool server_status::write()
     if(f_fd < 0)
     {
         f_fd = -1;
-        SNAP_LOG_ERROR("could not open file \"")
-                      (f_filename)
-                      ("\" to save snapmanagerdamon status.");
+        SNAP_LOG_ERROR
+            << "could not open file \""
+            << f_filename
+            << "\" to save snapmanagerdamon status."
+            << SNAP_LOG_SEND;
         return false;
     }
 
@@ -567,9 +579,11 @@ bool server_status::write()
     //
     if(::flock(f_fd, LOCK_EX) != 0)
     {
-        SNAP_LOG_ERROR("could not lock file \"")
-                      (f_filename)
-                      ("\" to write snapmanagerdamon status.");
+        SNAP_LOG_ERROR
+            << "could not lock file \""
+            << f_filename
+            << "\" to write snapmanagerdamon status."
+            << SNAP_LOG_SEND;
         return false;
     }
 
@@ -578,9 +592,11 @@ bool server_status::write()
     //
     if(ftruncate(f_fd, 0) != 0)
     {
-        SNAP_LOG_ERROR("could not truncate file \"")
-                      (f_filename)
-                      ("\" to write snapmanagerdamon status.");
+        SNAP_LOG_ERROR
+            << "could not truncate file \""
+            << f_filename
+            << "\" to write snapmanagerdamon status."
+            << SNAP_LOG_SEND;
         return false;
     }
 
@@ -590,25 +606,31 @@ bool server_status::write()
     f_file = fdopen(f_fd, "wb");
     if(f_file == nullptr)
     {
-        SNAP_LOG_ERROR("could not allocate a FILE* for file \"")
-                      (f_filename)
-                      ("\" to write snapmanagerdamon status.");
+        SNAP_LOG_ERROR
+            << "could not allocate a FILE* for file \""
+            << f_filename
+            << "\" to write snapmanagerdamon status."
+            << SNAP_LOG_SEND;
         return false;
     }
 
     // write the file magic
     if(fwrite(g_status_file_magic, sizeof g_status_file_magic - 1, 1, f_file) != 1)
     {
-        SNAP_LOG_ERROR("could not write magic to FILE* for file \"")
-                      (f_filename)
-                      ("\".");
+        SNAP_LOG_ERROR
+            << "could not write magic to FILE* for file \""
+            << f_filename
+            << "\"."
+            << SNAP_LOG_SEND;
         return false;
     }
     if(fwrite("\n", 1, 1, f_file) != 1)
     {
-        SNAP_LOG_ERROR("could not write new line after magic in \"")
-                      (f_filename)
-                      ("\".");
+        SNAP_LOG_ERROR
+            << "could not write new line after magic in \""
+            << f_filename
+            << "\"."
+            << SNAP_LOG_SEND;
         return false;
     }
 
@@ -624,16 +646,20 @@ bool server_status::write()
             QByteArray const status_utf8(status.toUtf8());
             if(fwrite(status_utf8.data(), status_utf8.size(), 1, f_file) != 1)
             {
-                SNAP_LOG_ERROR("could not write status data header to \"")
-                              (f_filename)
-                              ("\".");
+                SNAP_LOG_ERROR
+                    << "could not write status data header to \""
+                    << f_filename
+                    << "\"."
+                    << SNAP_LOG_SEND;
                 return false;
             }
             if(fwrite("\n", 1, 1, f_file) != 1)
             {
-                SNAP_LOG_ERROR("could not write new line after status header in \"")
-                              (f_filename)
-                              ("\".");
+                SNAP_LOG_ERROR
+                    << "could not write new line after status header in \""
+                    << f_filename
+                    << "\"."
+                    << SNAP_LOG_SEND;
                 return false;
             }
         }
@@ -655,16 +681,20 @@ bool server_status::write()
             QByteArray const status_utf8(status.toUtf8());
             if(fwrite(status_utf8.data(), status_utf8.size(), 1, f_file) != 1)
             {
-                SNAP_LOG_ERROR("could not write status data to \"")
-                              (f_filename)
-                              ("\".");
+                SNAP_LOG_ERROR
+                    << "could not write status data to \""
+                    << f_filename
+                    << "\"."
+                    << SNAP_LOG_SEND;
                 return false;
             }
             if(fwrite("\n", 1, 1, f_file) != 1)
             {
-                SNAP_LOG_ERROR("could not write new line after status in \"")
-                              (f_filename)
-                              ("\".");
+                SNAP_LOG_ERROR
+                    << "could not write new line after status in \""
+                    << f_filename
+                    << "\"."
+                    << SNAP_LOG_SEND;
                 return false;
             }
         }
@@ -745,9 +775,11 @@ bool server_status::open_for_read()
     if(f_fd < 0)
     {
         f_fd = -1;
-        SNAP_LOG_ERROR("could not open file \"")
-                      (f_filename)
-                      ("\" to read snapmanagerdamon status.");
+        SNAP_LOG_ERROR
+            << "could not open file \""
+            << f_filename
+            << "\" to read snapmanagerdamon status."
+            << SNAP_LOG_SEND;
         f_has_error = true;
         return false;
     }
@@ -757,9 +789,11 @@ bool server_status::open_for_read()
     if(::flock(f_fd, LOCK_SH) != 0)
     {
         close();
-        SNAP_LOG_ERROR("could not lock file \"")
-                      (f_filename)
-                      ("\" to read snapmanagerdamon status.");
+        SNAP_LOG_ERROR
+            << "could not lock file \""
+            << f_filename
+            << "\" to read snapmanagerdamon status."
+            << SNAP_LOG_SEND;
         f_has_error = true;
         return false;
     }
@@ -771,9 +805,11 @@ bool server_status::open_for_read()
     if(f_file == nullptr)
     {
         close();
-        SNAP_LOG_ERROR("could not allocate a FILE* for file \"")
-                      (f_filename)
-                      ("\" to read snapmanagerdamon status.");
+        SNAP_LOG_ERROR
+            << "could not allocate a FILE* for file \""
+            << f_filename
+            << "\" to read snapmanagerdamon status."
+            << SNAP_LOG_SEND;
         f_has_error = true;
         return false;
     }
@@ -784,22 +820,26 @@ bool server_status::open_for_read()
         if(!readline(line))
         {
             close();
-            SNAP_LOG_ERROR("an error occurred while trying to read the first line of status file \"")
-                          (f_filename)
-                          ("\".");
+            SNAP_LOG_ERROR
+                << "an error occurred while trying to read the first line of status file \""
+                << f_filename
+                << "\"."
+                << SNAP_LOG_SEND;
             f_has_error = true;
             return false;
         }
         if(line != g_status_file_magic)
         {
             close();
-            SNAP_LOG_ERROR("status file \"")
-                          (f_filename)
-                          ("\" does not start with the expected magic. Found: \"")
-                          (line)
-                          ("\", expected: \"")
-                          (g_status_file_magic)
-                          ("\".");
+            SNAP_LOG_ERROR
+                << "status file \""
+                << f_filename
+                << "\" does not start with the expected magic. Found: \""
+                << line
+                << "\", expected: \""
+                << g_status_file_magic
+                << "\"."
+                << SNAP_LOG_SEND;
             f_has_error = true;
             return false;
         }
@@ -843,10 +883,12 @@ bool server_status::readline(QString & result)
             }
             // there was an error
             int const e(errno);
-            SNAP_LOG_ERROR("an error occurred while reading status file. Error: ")
-                  (e)
-                  (", ")
-                  (strerror(e));
+            SNAP_LOG_ERROR
+                << "an error occurred while reading status file. Error: "
+                << e
+                << ", "
+                << strerror(e)
+                << SNAP_LOG_SEND;
             f_has_error = true;
             result = QString();
             return false; // simulate an EOF so we stop the reading loop
@@ -896,9 +938,11 @@ bool server_status::readvar(QString & name, QString & value)
     int const pos(line.indexOf('='));
     if(pos < 1)
     {
-        SNAP_LOG_ERROR("invalid line in \"")
-                      (f_filename)
-                      ("\", it has no \"name=...\".");
+        SNAP_LOG_ERROR
+            << "invalid line in \""
+            << f_filename
+            << "\", it has no \"name=...\"."
+            << SNAP_LOG_SEND;
         f_has_error = true;
         return false;
     }

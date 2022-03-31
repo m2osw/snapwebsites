@@ -16,9 +16,10 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// our lib
+// eventdispatcher lib
 //
-#include "snapwebsites/snap_communicator.h"
+#include "eventdispatcher/communicator.h"
+#include "eventdispatcher/fd_connection.h"
 
 
 
@@ -31,7 +32,7 @@ class ncurses_impl;
 
 
 class snap_console
-    : public snap_communicator::snap_fd_connection
+    : public ed::fd_connection
 {
 public:
     typedef std::shared_ptr<snap_console>    pointer_t;

@@ -16,11 +16,20 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include "snapwebsites/snap_exception.h"
-
+// self
+//
 #include "snapwebsites/snap_string_list.h"
 
+
+// libexcept lib
+//
+#include "libexcept/exception.h"
+
+
+// C lib
+//
 #include <unistd.h>
+
 
 
 namespace snap
@@ -28,38 +37,11 @@ namespace snap
 namespace compression
 {
 
-class compression_exception : public snap_exception
-{
-public:
-    compression_exception(char const *        whatmsg) : snap_exception("compression", whatmsg) {}
-    compression_exception(std::string const & whatmsg) : snap_exception("compression", whatmsg) {}
-    compression_exception(QString const &     whatmsg) : snap_exception("compression", whatmsg) {}
-};
+DECLARE_MAIN_EXCEPTION(compression_exception);
 
-class compression_exception_not_implemented : public compression_exception
-{
-public:
-    compression_exception_not_implemented(char const *        whatmsg) : compression_exception(whatmsg) {}
-    compression_exception_not_implemented(std::string const & whatmsg) : compression_exception(whatmsg) {}
-    compression_exception_not_implemented(QString const &     whatmsg) : compression_exception(whatmsg) {}
-};
-
-class compression_exception_not_supported : public compression_exception
-{
-public:
-    compression_exception_not_supported(char const *        whatmsg) : compression_exception(whatmsg) {}
-    compression_exception_not_supported(std::string const & whatmsg) : compression_exception(whatmsg) {}
-    compression_exception_not_supported(QString const &     whatmsg) : compression_exception(whatmsg) {}
-};
-
-class compression_exception_not_compatible : public compression_exception
-{
-public:
-    compression_exception_not_compatible(char const *        whatmsg) : compression_exception(whatmsg) {}
-    compression_exception_not_compatible(std::string const & whatmsg) : compression_exception(whatmsg) {}
-    compression_exception_not_compatible(QString const &     whatmsg) : compression_exception(whatmsg) {}
-};
-
+DECLARE_EXCEPTION(compression_exception, compression_exception_not_implemented);
+DECLARE_EXCEPTION(compression_exception, compression_exception_not_supported);
+DECLARE_EXCEPTION(compression_exception, compression_exception_not_compatible);
 
 
 

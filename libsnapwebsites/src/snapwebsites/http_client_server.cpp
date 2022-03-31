@@ -26,9 +26,13 @@
 
 // snapwebsites
 //
-#include "snapwebsites/log.h"
 #include "snapwebsites/snap_uri.h"
 #include "snapwebsites/snapwebsites.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // snapdev lib

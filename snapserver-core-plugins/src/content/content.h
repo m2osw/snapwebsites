@@ -16,7 +16,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// other plugins
+// self
 //
 #include "../links/links.h"
 #include "../test_plugin_suite/test_plugin_suite.h"
@@ -148,120 +148,21 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class content_exception : public snap_exception
-{
-public:
-    explicit content_exception(char const *        what_msg) : snap_exception("content", what_msg) {}
-    explicit content_exception(std::string const & what_msg) : snap_exception("content", what_msg) {}
-    explicit content_exception(QString const &     what_msg) : snap_exception("content", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(content_exception);
 
-class content_exception_content_invalid_state : public content_exception
-{
-public:
-    explicit content_exception_content_invalid_state(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_content_invalid_state(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_content_invalid_state(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_content_not_initialized : public content_exception
-{
-public:
-    explicit content_exception_content_not_initialized(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_content_not_initialized(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_content_not_initialized(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_invalid_content_xml : public content_exception
-{
-public:
-    explicit content_exception_invalid_content_xml(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_invalid_content_xml(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_invalid_content_xml(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_parameter_not_defined : public content_exception
-{
-public:
-    explicit content_exception_parameter_not_defined(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_parameter_not_defined(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_parameter_not_defined(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_content_already_defined : public content_exception
-{
-public:
-    explicit content_exception_content_already_defined(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_content_already_defined(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_content_already_defined(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_circular_dependencies : public content_exception
-{
-public:
-    explicit content_exception_circular_dependencies(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_circular_dependencies(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_circular_dependencies(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_type_mismatch : public content_exception
-{
-public:
-    explicit content_exception_type_mismatch(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_type_mismatch(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_type_mismatch(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_invalid_sequence : public content_exception
-{
-public:
-    explicit content_exception_invalid_sequence(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_invalid_sequence(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_invalid_sequence(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_invalid_name : public content_exception
-{
-public:
-    explicit content_exception_invalid_name(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_invalid_name(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_invalid_name(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_invalid_parameter : public content_exception
-{
-public:
-    explicit content_exception_invalid_parameter(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_invalid_parameter(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_invalid_parameter(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_unexpected_revision_type : public content_exception
-{
-public:
-    explicit content_exception_unexpected_revision_type(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_unexpected_revision_type(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_unexpected_revision_type(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_data_missing : public content_exception
-{
-public:
-    explicit content_exception_data_missing(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_data_missing(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_data_missing(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-class content_exception_io_error : public content_exception
-{
-public:
-    explicit content_exception_io_error(char const *        what_msg) : content_exception(what_msg) {}
-    explicit content_exception_io_error(std::string const & what_msg) : content_exception(what_msg) {}
-    explicit content_exception_io_error(QString const &     what_msg) : content_exception(what_msg) {}
-};
-
-
-
+DECLARE_EXCEPTION(content_exception, content_exception_content_invalid_state);
+DECLARE_EXCEPTION(content_exception, content_exception_content_not_initialized);
+DECLARE_EXCEPTION(content_exception, content_exception_invalid_content_xml);
+DECLARE_EXCEPTION(content_exception, content_exception_parameter_not_defined);
+DECLARE_EXCEPTION(content_exception, content_exception_content_already_defined);
+DECLARE_EXCEPTION(content_exception, content_exception_circular_dependencies);
+DECLARE_EXCEPTION(content_exception, content_exception_type_mismatch);
+DECLARE_EXCEPTION(content_exception, content_exception_invalid_sequence);
+DECLARE_EXCEPTION(content_exception, content_exception_invalid_name);
+DECLARE_EXCEPTION(content_exception, content_exception_invalid_parameter);
+DECLARE_EXCEPTION(content_exception, content_exception_unexpected_revision_type);
+DECLARE_EXCEPTION(content_exception, content_exception_data_missing);
+DECLARE_EXCEPTION(content_exception, content_exception_io_error);
 
 
 
@@ -689,7 +590,7 @@ private:
 
 
 class content
-    : public plugins::plugin
+    : public cppthread::plugin
     , public server::backend_action
     , public links::links_cloned
 {
@@ -783,12 +684,8 @@ public:
     static content *    instance();
 
     // plugins::plugin implementation
-    virtual QString     settings_path() const override;
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
+    virtual void        bootstrap(void * snap) override;
     virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
 
     // links::links_cloned implementation
     virtual void        repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning) override;

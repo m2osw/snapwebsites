@@ -56,7 +56,7 @@ namespace locale_widgets
 
 
 class locale_widgets
-    : public plugins::plugin
+    : public cppthread::plugin
 {
 public:
     // TODO: this seems to be duplicated from `class locale`
@@ -85,11 +85,6 @@ public:
     static locale_widgets *     instance();
 
     // plugin.cpp implementation
-    virtual QString             settings_path() const override;
-    virtual QString             icon() const override;
-    virtual QString             description() const override;
-    virtual QString             help_uri() const override;
-    virtual QString             dependencies() const override;
     virtual int64_t             do_update(int64_t last_updated) override;
     virtual void                bootstrap(snap_child * snap) override;
 

@@ -17,34 +17,62 @@
 
 // self
 //
-#include "epayment_creditcard.h"
+#include    "epayment_creditcard.h"
 
 
 // other plugins
 //
-#include "../messages/messages.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomxpath.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(epayment_creditcard, 1, 0)
+namespace snap
+{
+namespace epayment_creditcard
+{
+
+
+CPPTHREAD_PLUGIN_START(epayment_creditcard, 1, 0)
+    , ::cppthread::plugin_description(
+            "Generate a credit card form that the end user is expected to"
+            " fill in. This plugin is generally not installed by itself,"
+            " instead it is marked as a dependency of a plugin that is"
+            " capable of processing credit cards.")
+    , ::cppthread::plugin_icon("/images/epayment/epayment-credit-card-logo-64x64.png")
+    , ::cppthread::plugin_settings(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SETTINGS_PATH))
+    , ::cppthread::plugin_dependency("date_widgets")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("epayment")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 
@@ -103,105 +131,6 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the epayment_creditcard plugin.
- *
- * This function is used to initialize the epayment_creditcard plugin object.
- *
- * \todo
- * Add support for a list of countries and whether they support a postal
- * code since we currently make the zip code a mandatory field...
- * List of countries and whether they have a zip code:
- *
- * https://en.wikipedia.org/wiki/List_of_postal_codes
- *
- * \todo
- * Add support for currencies per country. We want to support currencies
- * so customers may not need to pay extra fees (i.e. that way we can
- * charge the card in their currency and they avoid the conversion...
- * but we have to have a way to know, at least more or less, the
- * change for that currency.)
- */
-epayment_creditcard::epayment_creditcard()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the epayment_creditcard plugin.
- *
- * Ensure the epayment_creditcard object is clean before it is gone.
- */
-epayment_creditcard::~epayment_creditcard()
-{
-}
-
-
-/** \brief Get a pointer to the epayment_creditcard plugin.
- *
- * This function returns an instance pointer to the epayment_creditcard plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the epayment_creditcard plugin.
- */
-epayment_creditcard * epayment_creditcard::instance()
-{
-    return g_plugin_epayment_creditcard_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString epayment_creditcard::settings_path() const
-{
-    return get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SETTINGS_PATH);
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString epayment_creditcard::icon() const
-{
-    return "/images/epayment/epayment-credit-card-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString epayment_creditcard::description() const
-{
-    return "Generate a credit card form that the end user is expected to"
-          " fill in. This plugin is generally not installed by itself,"
-          " instead it is marked as a dependency of a plugin that is"
-          " capable of processing credit cards.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString epayment_creditcard::dependencies() const
-{
-    return "|date_widgets|editor|epayment|messages|path|permissions|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -828,7 +757,9 @@ void epayment_creditcard::on_save_editor_fields(editor::save_info_t & save_info)
     snap_string_list const expiration_date_parts(expiration_date.split('/'));
     if(expiration_date_parts.size() < 2)
     {
-        SNAP_LOG_FATAL("could not save the epayment_creditcard data because the expiration date is invalid.");
+        SNAP_LOG_FATAL
+            << "could not save the epayment_creditcard data because the expiration date is invalid."
+            << SNAP_LOG_SEND;
 
         messages::messages * messages(messages::messages::instance());
         messages->set_error(
@@ -935,10 +866,20 @@ void epayment_creditcard::on_save_editor_fields(editor::save_info_t & save_info)
 
     // we are on
     //
-    SNAP_LOG_INFO("Processing a credit card with \"")(gateway)("\".");
+    SNAP_LOG_INFO
+        << "Processing a credit card with \""
+        << gateway
+        << "\"."
+        << SNAP_LOG_SEND;
+
     // also log the name of the person, but only in the secure logs
-    SNAP_LOG_INFO(logging::log_security_t::LOG_SECURITY_SECURE)
-            ("Processing \"")(creditcard_info.get_user_name())("\"'s credit card with \"")(gateway)("\".");
+    SNAP_LOG_INFO
+        << "Processing \""
+        << creditcard_info.get_user_name()
+        << "\"'s credit card with \""
+        << gateway
+        << "\"."
+        << SNAP_LOG_SEND_SECURELY;
 
     // This actually processes the data (i.e. sends the credit card
     // information to the bank's gateway and return with PAID or FAILED.)
@@ -988,7 +929,9 @@ bool epayment_creditcard::process_creditcard(epayment_creditcard_info_t & credit
 {
     snapdev::NOT_USED(creditcard_info, save_info);
 
-    SNAP_LOG_INFO("epayment_creditcard::process_creditcard() called.");
+    SNAP_LOG_INFO
+        << "epayment_creditcard::process_creditcard() called."
+        << SNAP_LOG_SEND;
 
 #ifdef _DEBUG
 // For debug purposes, you may check all the values with the following
@@ -1024,6 +967,6 @@ std::cerr << "cc phone [" << creditcard_info.get_phone() << "]\n";
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace epayment_creditcard
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -25,17 +25,20 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
 
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
 
 
 
@@ -53,18 +56,6 @@ SNAP_PLUGIN_EXTENSION_START(content)
  */
 attachment_file::attachment_file(snap_child *snap)
     : f_snap(snap)
-    //, f_file()
-    //, f_multiple(false) -- auto-init
-    //, f_has_cpath(false) -- auto-init
-    //, f_parent_cpath("") -- auto-init
-    //, f_field_name("") -- auto-init
-    //, f_attachment_cpath("") -- auto-init
-    //, f_attachment_owner("") -- auto-init
-    //, f_attachment_type("") -- auto-init
-    //, f_name("") -- auto-init
-    //, f_creation_time(0) -- auto-init
-    //, f_update_time(0) -- auto-init
-    //, f_dependencies() -- auto-init
 {
 }
 
@@ -104,12 +95,6 @@ attachment_file::attachment_file(snap_child *snap)
 attachment_file::attachment_file(snap_child *snap, snap_child::post_file_t const& file)
     : f_snap(snap)
     , f_file(file)
-    //, f_multiple(false) -- auto-init
-    //, f_parent_cpath("") -- auto-init
-    //, f_field_name("") -- auto-init
-    //, f_attachment_cpath("") -- auto-init
-    //, f_attachment_owner("") -- auto-init
-    //, f_attachment_type("") -- auto-init
 {
 }
 
@@ -808,6 +793,6 @@ QString const& attachment_file::get_name() const
 
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

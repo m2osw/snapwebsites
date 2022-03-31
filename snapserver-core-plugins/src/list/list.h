@@ -67,46 +67,12 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class list_exception : public snap_exception
-{
-public:
-    explicit list_exception(char const *        what_msg) : snap_exception("list", what_msg) {}
-    explicit list_exception(std::string const & what_msg) : snap_exception("list", what_msg) {}
-    explicit list_exception(QString const &     what_msg) : snap_exception("list", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(list_exception);
 
-class list_exception_no_backend : public list_exception
-{
-public:
-    explicit list_exception_no_backend(char const *        what_msg) : list_exception(what_msg) {}
-    explicit list_exception_no_backend(std::string const & what_msg) : list_exception(what_msg) {}
-    explicit list_exception_no_backend(QString const &     what_msg) : list_exception(what_msg) {}
-};
-
-class list_exception_invalid_number_of_parameters : public list_exception
-{
-public:
-    explicit list_exception_invalid_number_of_parameters(char const *        what_msg) : list_exception(what_msg) {}
-    explicit list_exception_invalid_number_of_parameters(std::string const & what_msg) : list_exception(what_msg) {}
-    explicit list_exception_invalid_number_of_parameters(QString const &     what_msg) : list_exception(what_msg) {}
-};
-
-class list_exception_invalid_parameter_type : public list_exception
-{
-public:
-    explicit list_exception_invalid_parameter_type(char const *        what_msg) : list_exception(what_msg) {}
-    explicit list_exception_invalid_parameter_type(std::string const & what_msg) : list_exception(what_msg) {}
-    explicit list_exception_invalid_parameter_type(QString const &     what_msg) : list_exception(what_msg) {}
-};
-
-class list_exception_mysql : public list_exception
-{
-public:
-    explicit list_exception_mysql(char const *        what_msg) : list_exception(what_msg) {}
-    explicit list_exception_mysql(std::string const & what_msg) : list_exception(what_msg) {}
-    explicit list_exception_mysql(QString const &     what_msg) : list_exception(what_msg) {}
-};
-
+DECLARE_EXCEPTION(list_exception, list_exception_no_backend);
+DECLARE_EXCEPTION(list_exception, list_exception_invalid_number_of_parameters);
+DECLARE_EXCEPTION(list_exception, list_exception_invalid_parameter_type);
+DECLARE_EXCEPTION(list_exception, list_exception_mysql);
 
 
 
@@ -194,7 +160,7 @@ private:
 
 
 class list
-    : public plugins::plugin
+    : public cppthread::plugin
     , public server::backend_action
     , public layout::layout_content
     , public layout::layout_boxes
@@ -271,9 +237,6 @@ public:
     static list *       instance();
 
     // plugins::plugin implementation
-    virtual QString     icon() const override;
-    virtual QString     description() const override;
-    virtual QString     dependencies() const override;
     virtual int64_t     do_update(int64_t last_updated) override;
     virtual void        bootstrap(snap_child * snap) override;
 

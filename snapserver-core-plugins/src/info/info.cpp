@@ -17,36 +17,63 @@
 
 // self
 //
-#include "info.h"
+#include    "info.h"
 
 
 // other plugins
 //
-#include "../output/output.h"
-#include "../permissions/permissions.h"
-#include "../sendmail/sendmail.h"
-#include "../users/users.h"
+#include    "../output/output.h"
+#include    "../permissions/permissions.h"
+#include    "../sendmail/sendmail.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(info, 1, 0)
+namespace snap
+{
+namespace info
+{
+
+
+
+CPPTHREAD_PLUGIN_START(info, 1, 0)
+    , ::cppthread::plugin_description(
+            "The info plugin offers handling of the core information of your"
+           "system. It is opens a settings page where all that information"
+           "can directly be edited online.")
+    , ::cppthread::plugin_icon("/images/info/info-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/info")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("permissions")
+    , ::cppthread::plugin_dependency("sendmail")
+    , ::cppthread::plugin_dependency("users")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("content")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \class info
@@ -91,87 +118,6 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the info plugin.
- *
- * This function is used to initialize the info plugin object.
- */
-info::info()
-{
-}
-
-/** \brief Clean up the info plugin.
- *
- * Ensure the info object is clean before it is gone.
- */
-info::~info()
-{
-}
-
-/** \brief Get a pointer to the info plugin.
- *
- * This function returns an instance pointer to the info plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the info plugin.
- */
-info * info::instance()
-{
-    return g_plugin_info_factory.instance();
-}
-
-
-/** \brief Send users to the info settings.
- *
- * This path represents the info settings.
- */
-QString info::settings_path() const
-{
-    return "/admin/settings/info";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString info::icon() const
-{
-    return "/images/info/info-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString info::description() const
-{
-    return "The info plugin offers handling of the core information of your"
-           "system. It is opens a settings page where all that information"
-           "can directly be edited online.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString info::dependencies() const
-{
-    return "|editor|messages|output|path|permissions|sendmail|users|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -461,6 +407,6 @@ void info::on_init_editor_widget(content::path_info_t & ipath, QString const & f
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace info
+} // namespace snap
 // vim: ts=4 sw=4 et

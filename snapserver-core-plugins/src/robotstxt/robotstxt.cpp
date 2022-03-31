@@ -18,32 +18,49 @@
 
 // self
 //
-#include "robotstxt.h"
+#include    "robotstxt.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_used.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
+namespace snap
+{
+namespace robotstxt
+{
 
-SNAP_PLUGIN_START(robotstxt, 1, 0)
+
+CPPTHREAD_PLUGIN_START(robotstxt, 1, 0)
+    , ::cppthread::plugin_description(
+            "Generates the robots.txt file which is used by search engines to"
+            " discover your website pages. You can change the settings to hide"
+            " different pages or all your pages.")
+    , ::cppthread::plugin_icon("/images/robotstxt/robotstxt-logo-64x64.png")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
+
 
 
 /** \brief Get a fixed permissions plugin name.
@@ -93,81 +110,8 @@ const char *        robotstxt::ROBOT_NAME_ALL = "*";
 const char *        robotstxt::ROBOT_NAME_GLOBAL = "";
 const char *        robotstxt::FIELD_NAME_DISALLOW = "Disallow";
 
-/** \brief Initialize the robotstxt plugin.
- *
- * This function is used to initialize the robotstxt plugin object.
- */
-robotstxt::robotstxt()
-    //: f_snap(NULL) -- auto-init
-    : f_robots_path("#")
-{
-}
 
 
-/** \brief Clean up the robotstxt plugin.
- *
- * Ensure the robotstxt object is clean before it is gone.
- */
-robotstxt::~robotstxt()
-{
-}
-
-
-/** \brief Get a pointer to the robotstxt plugin.
- *
- * This function returns an instance pointer to the robotstxt plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the robotstxt plugin.
- */
-robotstxt * robotstxt::instance()
-{
-    return g_plugin_robotstxt_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString robotstxt::icon() const
-{
-    return "/images/robotstxt/robotstxt-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString robotstxt::description() const
-{
-    return "Generates the robots.txt file which is used by search engines to"
-        " discover your website pages. You can change the settings to hide"
-        " different pages or all your pages.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString robotstxt::dependencies() const
-{
-    return "|layout|path|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -586,6 +530,6 @@ void robotstxt::on_generate_page_content(content::path_info_t & ipath, QDomEleme
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace robotstxt
+} // namespace snap
 // vim: ts=4 sw=4 et

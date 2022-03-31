@@ -21,54 +21,78 @@
 
 // self
 //
-#include "layout.h"
+#include    "layout.h"
 
 
 // other plugins
 //
-#include "../filter/filter.h"
-#include "../taxonomy/taxonomy.h"
-#include "../path/path.h"
+#include    "../filter/filter.h"
+#include    "../taxonomy/taxonomy.h"
+#include    "../path/path.h"
 
 
 // snapwebsites lib
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomreceiver.h>
-#include <snapwebsites/qhtmlserializer.h>
-#include <snapwebsites/qxmlmessagehandler.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qstring_stream.h>
-#include <snapwebsites/qdomxpath.h>
-//#include <snapwebsites/qdomnodemodel.h> -- at this point the DOM Node Model seems bogus.
-#include <snapwebsites/snap_expr.h>
-#include <snapwebsites/xslt.h>
+#include    <snapwebsites/qdomreceiver.h>
+#include    <snapwebsites/qhtmlserializer.h>
+#include    <snapwebsites/qxmlmessagehandler.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomxpath.h>
+//#include    <snapwebsites/qdomnodemodel.h> -- at this point the DOM Node Model seems bogus.
+#include    <snapwebsites/snap_expr.h>
+#include    <snapwebsites/xslt.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
-#include <fstream>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+#include    <snapdev/qstring_extensions.h>
 
 
-// Qt lib
+// C++
 //
-#include <QFile>
+#include    <iostream>
+#include    <fstream>
+
+
+// Qt
+//
+#include    <QFile>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(layout, 1, 0)
+namespace snap
+{
+namespace layout
+{
+
+
+
+CPPTHREAD_PLUGIN_START(layout, 1, 0)
+    , ::cppthread::plugin_description(
+            "Determine the layout for a given content and generate the output"
+            " for that layout.")
+    , ::cppthread::plugin_icon("/images/snap/layout-logo-64x64.png")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("filter")
+    , ::cppthread::plugin_dependency("links")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_dependency("server_access")
+    , ::cppthread::plugin_dependency("taxonomy")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("gui")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed layout name.
@@ -126,23 +150,6 @@ char const * get_name(name_t name)
 }
 
 
-/** \brief Initialize the layout plugin.
- *
- * This function is used to initialize the layout plugin object.
- */
-layout::layout()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the layout plugin.
- *
- * Ensure the layout object is clean before it is gone.
- */
-layout::~layout()
-{
-}
 
 
 /** \brief Initialize the layout.
@@ -159,62 +166,6 @@ void layout::bootstrap(snap_child * snap)
     SNAP_LISTEN(layout, "server", server, load_file, boost::placeholders::_1, boost::placeholders::_2);
     SNAP_LISTEN(layout, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
     SNAP_LISTEN(layout, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-}
-
-
-/** \brief Get a pointer to the layout plugin.
- *
- * This function returns an instance pointer to the layout plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the layout plugin.
- */
-layout * layout::instance()
-{
-    return g_plugin_layout_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString layout::icon() const
-{
-    return "/images/snap/layout-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString layout::description() const
-{
-    return "Determine the layout for a given content and generate the output"
-          " for that layout.";
-}
-
-
-/** \brief Return our dependencies
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString layout::dependencies() const
-{
-    return "|content|filter|links|path|server_access|taxonomy|";
 }
 
 
@@ -513,7 +464,14 @@ QString layout::get_layout(content::path_info_t & ipath, QString const & column_
                 }
             }
         }
-//SNAP_LOG_INFO("Layout selection with [")(layout_script)("] run_script = ")(run_script)(" for ")(ipath.get_key());
+//SNAP_LOG_INFO
+//    << "Layout selection with ["
+//    << layout_script
+//    << "] run_script = "
+//    << run_script
+//    << " for "
+//    << ipath.get_key()
+//    << SNAP_LOG_SEND;
 
         if(run_script)
         {
@@ -545,7 +503,11 @@ QString layout::get_layout(content::path_info_t & ipath, QString const & column_
             {
                 // let admins know there is a bug in their layout script
                 //
-                SNAP_LOG_ERROR("could not compile layout script: [")(layout_script)("]");
+                SNAP_LOG_ERROR
+                    << "could not compile layout script: ["
+                    << layout_script
+                    << "]"
+                    << SNAP_LOG_SEND;
             }
         }
         else
@@ -708,7 +670,15 @@ QString layout::define_layout(
     //
     layout_name = get_layout(ipath, name, true);
 
-//SNAP_LOG_TRACE("Got theme / layout name = [")(layout_name)("] (key=")(ipath.get_key())(", theme_name=")(theme_name)(")");
+//SNAP_LOG_TRACE
+// << "Got theme / layout name = ["
+// << layout_name
+// << "] (key="
+// << ipath.get_key(
+// << (", theme_name="
+// << theme_name
+// << ")"
+// << SNAP_LOG_SEND;
 
     // If layout_name is not default, attempt to obtain the selected
     // XSL file from the layout table.
@@ -797,7 +767,11 @@ QString layout::define_layout(
                 // this warning will help at least me to debug a problem
                 // with loading a layout
                 //
-                SNAP_LOG_WARNING("layout data named \"")(names.join("/"))("\" could not be loaded. We will be using the \"default\" layout instead.");
+                SNAP_LOG_WARNING
+                    << "layout data named \""
+                    << names.join("/")
+                    << "\" could not be loaded. We will be using the \"default\" layout instead."
+                    << SNAP_LOG_SEND;
 
                 // if we could not load any XSL, switch to the default theme
                 //
@@ -942,17 +916,21 @@ void layout::create_body(QDomDocument & doc
                        , QString const & theme_name)
 {
 #ifdef DEBUG
-SNAP_LOG_TRACE("layout::create_body() ... cpath = [")
-              (ipath.get_cpath())
-              ("] layout_name = [")
-              (layout_name)
-              ("] theme_name = [")
-              (theme_name)
-              ("]");
+SNAP_LOG_TRACE
+    << "layout::create_body() ... cpath = ["
+    << ipath.get_cpath()
+    << "] layout_name = ["
+    << layout_name
+    << "] theme_name = ["
+    << theme_name
+    << "]"
+    << SNAP_LOG_SEND;
 
-//SNAP_LOG_TRACE("The XSL of the layout body is: [")
-//              (xsl)
-//              ("]");
+//SNAP_LOG_TRACE
+//  << "The XSL of the layout body is: ["
+//  << xsl)
+//  << "]"
+//  << SNAP_LOG_SEND;
 #endif
 
     // get the elements we are dealing with in this function
@@ -998,7 +976,11 @@ SNAP_LOG_TRACE("layout::create_body() ... cpath = [")
     //       tagging capability)
     //
 #ifdef _DEBUG
-    //SNAP_LOG_DEBUG("*** Filter all of that...: [")(doc.toString())("]");
+    //SNAP_LOG_DEBUG
+    //    << "*** Filter all of that...: ["
+    //    << doc.toString()
+    //    << "]"
+    //    << SNAP_LOG_SEND;
 #endif
     filter::filter * filter_plugin(filter::filter::instance());
     filter_plugin->on_token_filter(ipath, doc);
@@ -1050,8 +1032,15 @@ SNAP_LOG_TRACE("layout::create_body() ... cpath = [")
     filtered_content(ipath, doc, filtered_xsl);
 
 #ifdef _DEBUG
-//SNAP_LOG_DEBUG("==== Generated XML is [")(doc.toString(-1))("]");
-//SNAP_LOG_DEBUG("++++ fitered_xsl=")(filtered_xsl);
+//SNAP_LOG_DEBUG
+//    << "==== Generated XML is ["
+//    << doc.toString(-1)
+//    << "]"
+//    << SNAP_LOG_SEND;
+//SNAP_LOG_DEBUG
+//    << "++++ fitered_xsl="
+//    << filtered_xsl
+//    << SNAP_LOG_SEND;
 //std::cout << "Generated XSL is [" << xsl            << "]\n";
 #endif
 
@@ -1134,17 +1123,21 @@ QString layout::create_body_string(
     // the boxes and using different documents
     //
 #ifdef DEBUG
-SNAP_LOG_TRACE("layout::create_body_string() ... cpath = [")
-              (ipath.get_cpath())
-              ("] layout_name = [")
-              (layout_name)
-              ("] unused theme_name = [")
-              (theme_name)
-              ("]");
+SNAP_LOG_TRACE
+    << "layout::create_body_string() ... cpath = ["
+    << ipath.get_cpath()
+    << "] layout_name = ["
+    << layout_name
+    << "] unused theme_name = ["
+    << theme_name
+    << "]"
+    << SNAP_LOG_SEND;
 
-//SNAP_LOG_TRACE("The XSL of the layout body is: [")
-//              (xsl)
-//              ("]");
+//SNAP_LOG_TRACE
+//    << "The XSL of the layout body is: ["
+//    << xsl
+//    << "]"
+//    << SNAP_LOG_SEND;
 #endif
 
     // get the elements we are dealing with in this function
@@ -1194,7 +1187,11 @@ SNAP_LOG_TRACE("layout::create_body_string() ... cpath = [")
     //       (i.e. ultimately we want to have some sort of filter
     //       tagging capability)
     //
-//SNAP_LOG_WARNING("*** Filter all of that...: [")(page_doc.toString())("]");
+//SNAP_LOG_WARNING
+//    << "*** Filter all of that...: ["
+//    << page_doc.toString()
+//    << "]"
+//    << SNAP_LOG_SEND;
     filter::filter * filter_plugin(filter::filter::instance());
     filter_plugin->on_token_filter(ipath, page_doc);
 
@@ -1428,9 +1425,14 @@ void layout::generate_boxes(content::path_info_t & ipath, QString const & layout
     {
         type_ipath.set_path(type_key);
     }
-//SNAP_LOG_TRACE("get layout boxes list from this page ")(ipath.get_key())
-//                                          (" or type ")(type_ipath.get_key())
-//                                    (" or boxes_path ")(boxes_ipath.get_key());
+//SNAP_LOG_TRACE
+//    << "get layout boxes list from this page "
+//    << ipath.get_key()
+//    << " or type "
+//    << type_ipath.get_key()
+//    << " or boxes_path "
+//    << boxes_ipath.get_key()
+//    << SNAP_LOG_SEND;
 
     content::field_search::search_result_t box_names;
     FIELD_SEARCH
@@ -1520,7 +1522,12 @@ void layout::generate_boxes(content::path_info_t & ipath, QString const & layout
                         content::path_info_t box_ipath;
                         box_ipath.set_path(child_info.key());
                         box_ipath.set_parameter("action", "view"); // we are always only viewing those boxes from here
-SNAP_LOG_TRACE("box_ipath key = ")(box_ipath.get_key())(", branch_key=")(box_ipath.get_branch_key());
+SNAP_LOG_TRACE
+<< "box_ipath key = "
+<< box_ipath.get_key()
+<< ", branch_key="
+<< box_ipath.get_branch_key()
+<< SNAP_LOG_SEND;
                         plugin * box_plugin(path::path::instance()->get_plugin(box_ipath, box_error_callback));
                         if(!box_error_callback.has_error() && box_plugin)
                         {
@@ -1534,7 +1541,13 @@ SNAP_LOG_TRACE("box_ipath key = ")(box_ipath.get_key())(", branch_key=")(box_ipa
                                 filter_box.setAttribute("path", box_ipath.get_cpath()); // not the full key
                                 filter_box.setAttribute("owner", box_plugin->get_plugin_name());
                                 dom_boxes[i].appendChild(filter_box);
-SNAP_LOG_TRACE("handle box for ")(box_plugin->get_plugin_name())(" with owner \"")(box_plugin->get_plugin_name())("\"");
+SNAP_LOG_TRACE
+<< "handle box for "
+<< box_plugin->get_plugin_name()
+<< " with owner \""
+<< box_plugin->get_plugin_name()
+<< "\""
+<< SNAP_LOG_SEND;
 
                                 // Unfortunately running the full header content
                                 // signal would overwrite the main data... not good!
@@ -1672,26 +1685,49 @@ void layout::replace_includes(QString & xsl)
                 int const end(xsl.indexOf(">", start + len));
                 if(end < 0)
                 {
-                    SNAP_LOG_ERROR("an ")(tag)(" .../> tag is missing the '>' (byte position: ")(start)(")");
+                    SNAP_LOG_ERROR
+                        << "an "
+                        << tag
+                        << " .../> tag is missing the '>' (byte position: "
+                        << start
+                        << ")"
+                        << SNAP_LOG_SEND;
                     break;
                 }
                 QString attributes(xsl.mid(start + len, end - start - len));
                 int const href_start(attributes.indexOf("href="));
                 if(href_start < 0 || href_start + 7 >= attributes.length())
                 {
-                    SNAP_LOG_ERROR(tag)(" tag missing a valid href=... attribute (")(attributes)(")");
+                    SNAP_LOG_ERROR
+                        << tag
+                        << " tag missing a valid href=... attribute ("
+                        << attributes
+                        << ")"
+                        << SNAP_LOG_SEND;
                     break;
                 }
                 ushort const quote(attributes[href_start + 5].unicode());
                 if(quote != '\'' && quote != '"') // href value is note quoted?! (not valid XML)
                 {
-                    SNAP_LOG_ERROR("the href=... attribute of an ")(tag)(" .../> does not seem to be quoted as expected in XML (")(attributes)(")");
+                    SNAP_LOG_ERROR
+                        << "the href=... attribute of an "
+                        << tag
+                        << " .../> does not seem to be quoted as expected in XML ("
+                        << attributes
+                        << ")"
+                        << SNAP_LOG_SEND;
                     break;
                 }
                 int const href_end(attributes.indexOf(quote, href_start + 6));
                 if(href_end < 0)
                 {
-                    SNAP_LOG_ERROR("the href=... attribute of an ")(tag)(" .../> does not seem to end with a similar quote as expected in XML (")(attributes)(")");
+                    SNAP_LOG_ERROR
+                        << "the href=... attribute of an "
+                        << tag
+                        << " .../> does not seem to end with a similar quote as expected in XML ("
+                        << attributes
+                        << ")"
+                        << SNAP_LOG_SEND;
                     break;
                 }
                 QString uri(attributes.mid(href_start + 6, href_end - href_start - 6));
@@ -1711,7 +1747,13 @@ void layout::replace_includes(QString & xsl)
                 file.set_filename(uri);
                 if(!snap->load_file(file))
                 {
-                    SNAP_LOG_ERROR("xsl tag ")(tag)(" href=\"")(uri)("\" .../> did not reference a known file (file could not be loaded).");
+                    SNAP_LOG_ERROR
+                        << "xsl tag "
+                        << tag
+                        << " href=\""
+                        << uri
+                        << "\" .../> did not reference a known file (file could not be loaded)."
+                        << SNAP_LOG_SEND;
                     // the include string below will be empty
                 }
                 QString include(QString::fromUtf8(file.get_data(), file.get_size()));
@@ -1731,7 +1773,11 @@ void layout::replace_includes(QString & xsl)
     };
     replace_t::replace(f_snap, "<xsl:include", xsl);
     replace_t::replace(f_snap, "<xsl:import", xsl);
-//SNAP_LOG_TRACE() << "include [" << xsl << "]";
+//SNAP_LOG_TRACE
+// << "include ["
+// << xsl
+// << "]
+// << SNAP_LOG_SEND;
 }
 
 
@@ -1771,11 +1817,13 @@ void layout::install_layout(QString const & layout_name)
             // that information, but if you program your own thing, then
             // it could go missing
             //
-            SNAP_LOG_ERROR("layout::install_layout(): the ")
-                          (snap::get_name(snap::name_t::SNAP_NAME_CORE_LAST_UPDATED))
-                          (" field is not defined for layout ")
-                          (layout_name)
-                          (".");
+            SNAP_LOG_ERROR
+                << "layout::install_layout(): the "
+                << snap::get_name(snap::name_t::SNAP_NAME_CORE_LAST_UPDATED)
+                << " field is not defined for layout "
+                << layout_name
+                << "."
+                << SNAP_LOG_SEND;
 
             // force a default using "now"
             //
@@ -1798,10 +1846,13 @@ void layout::install_layout(QString const & layout_name)
     // installing a layout can be complex so knowing which one breaks an
     // update can be really useful
     //
-    /*SNAP_LOG_DEBUG("layout::install_layout(): layout name \"")
-                  (layout_name)
-                  ("\" last updated on ")
-                  (last_updated_value.safeInt64Value());*/
+    /*SNAP_LOG_DEBUG
+         << "layout::install_layout(): layout name \""
+         << layout_name
+         << "\" last updated on "
+         << last_updated_value.safeInt64Value()
+         << SNAP_LOG_SEND;
+         */
 
     // determine the path to this layout
     //
@@ -1899,11 +1950,13 @@ void layout::install_layout(QString const & layout_name)
         {
             // that should probably apply to the body and theme names
             //
-            SNAP_LOG_ERROR("Could not read \"")
-                          (layout_name)
-                          ("/")
-                          (get_name(name_t::SNAP_NAME_LAYOUT_CONTENT_XML))
-                          ("\" from the layout table while updating layouts, error is ignored now so your plugin can fix it.");
+            SNAP_LOG_ERROR
+                << "Could not read \""
+                << layout_name
+                << "/"
+                << get_name(name_t::SNAP_NAME_LAYOUT_CONTENT_XML)
+                << "\" from the layout table while updating layouts, error is ignored now so your plugin can fix it."
+                << SNAP_LOG_SEND;
             return;
         }
         xml_content = layout_table->getRow(layout_name)->getCell(get_name(name_t::SNAP_NAME_LAYOUT_CONTENT_XML))->getValue().stringValue();
@@ -1954,9 +2007,13 @@ void layout::finish_install_layout()
         //
         if(!branch_table->getRow(layout_ipath.get_branch_key())->exists(get_name(name_t::SNAP_NAME_LAYOUT_BOXES)))
         {
-            SNAP_LOG_ERROR("Could not read \"")(layout_ipath.get_branch_key())(".")
-                    (get_name(name_t::SNAP_NAME_LAYOUT_BOXES))
-                    ("\" from the layout, error is ignored now so your plugin can fix it.");
+            SNAP_LOG_ERROR
+                << "Could not read \""
+                << layout_ipath.get_branch_key()
+                << "."
+                << get_name(name_t::SNAP_NAME_LAYOUT_BOXES)
+                << "\" from the layout, error is ignored now so your plugin can fix it."
+                << SNAP_LOG_SEND;
         }
 
         // create a reference back to us from the layout that way we know
@@ -2114,7 +2171,8 @@ bool layout::generate_header_content_impl(content::path_info_t & ipath, QDomElem
         // generate!
         ;
 
-//SNAP_LOG_TRACE() << "layout stuff [" << header.ownerDocument().toString(-1) << "]";
+//SNAP_LOG_TRACE << "layout stuff [" << header.ownerDocument().toString(-1) << "]
+// << SNAP_LOG_SEND;
     return true;
 }
 
@@ -2174,7 +2232,10 @@ bool layout::generate_header_content_impl(content::path_info_t & ipath, QDomElem
 void layout::on_load_file(snap_child::post_file_t & file, bool & found)
 {
 #ifdef DEBUG
-    SNAP_LOG_TRACE("layout::on_load_file(), filename=")(file.get_filename());
+    SNAP_LOG_TRACE
+        << "layout::on_load_file(), filename="
+        << file.get_filename()
+        << SNAP_LOG_SEND;
 #endif
     if(!found)
     {
@@ -2189,7 +2250,11 @@ void layout::on_load_file(snap_child::post_file_t & file, bool & found)
             if(parts.size() != 2)
             {
                 // wrong number of parts...
-                SNAP_LOG_ERROR("layout load_file() called with an invalid path: \"")(filename)("\"");
+                SNAP_LOG_ERROR
+                    << "layout load_file() called with an invalid path: \""
+                    << filename
+                    << "\""
+                    << SNAP_LOG_SEND;
                 return;
             }
             libdbproxy::table::pointer_t layout_table(get_layout_table());
@@ -2541,6 +2606,8 @@ bool layout::on_improve_signature(QString const & path, QDomDocument doc, QDomEl
 </snap>
 */
 
-SNAP_PLUGIN_END()
 
+
+} // namespace layout
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -23,8 +23,12 @@
 
 // snapwebsites lib
 //
-#include "snapwebsites/log.h"
 #include "snapwebsites/qstring_stream.h"
+
+
+// snaplogger lib
+//
+#include <snaplogger/message.h>
 
 
 // Qt lib
@@ -1917,24 +1921,42 @@ struct parser_state
 #ifdef DEBUG
     static void display_array(const state_array_t & a)
     {
-        SNAP_LOG_TRACE() << "+++ ARRAY (" << a.size() << " items)\n";
+        SNAP_LOG_TRACE
+            << "+++ ARRAY ("
+            << a.size()
+            << " items)\n"
+            << SNAP_LOG_SEND;
         for(state_array_t::const_iterator it(a.begin()); it != a.end(); ++it)
         {
             parser_state * state(*it);
             //std::cerr << "  state = " << state << "\n"; // for crash
-            SNAP_LOG_TRACE() << "  current: " << state->toString() << "\n";
+            SNAP_LOG_TRACE
+                << "  current: "
+                << state->toString()
+                << "\n"
+                << SNAP_LOG_SEND;
             for(state_array_t::const_iterator r(state->f_add_on_reduce.begin()); r != state->f_add_on_reduce.end(); ++r)
             {
                 parser_state * s(*r);
-                SNAP_LOG_TRACE() << "      add on reduce: " << s->toString() << "\n";
+                SNAP_LOG_TRACE
+                    << "      add on reduce: "
+                    << s->toString()
+                    << "\n"
+                    << SNAP_LOG_SEND;
             }
             while(state->f_parent != nullptr)
             {
                 state = state->f_parent;
-                SNAP_LOG_TRACE() << "    parent: " << state->toString() << "\n";
+                SNAP_LOG_TRACE
+                    << "    parent: "
+                    << state->toString()
+                    << "\n"
+                    << SNAP_LOG_SEND;
             }
         }
-        SNAP_LOG_TRACE() << "---\n";
+        SNAP_LOG_TRACE
+            << "---\n"
+            << SNAP_LOG_SEND;
     }
 
     void lock()
@@ -2091,7 +2113,11 @@ bool grammar::parse(lexer & input, choices & start)
         // a copy of the current vector so the current
         // vector can change in size
 #ifdef DEBUG
-//SNAP_LOG_TRACE("B: ================================================================= (line: ")(input.line())(")");
+//SNAP_LOG_TRACE
+//    << "B: ================================================================= (line: "
+//    << input.line()
+//    << ")"
+//    << SNAP_LOG_SEND;
 //parser_state::display_array(current);
 #endif
 

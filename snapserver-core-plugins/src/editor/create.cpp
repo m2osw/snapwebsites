@@ -34,18 +34,18 @@
 
 // self
 //
-#include "editor.h"
+#include    "editor.h"
 
 
 // other plugins
 //
-#include "../list/list.h"
-#include "../permissions/permissions.h"
+#include    "../list/list.h"
+#include    "../permissions/permissions.h"
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 

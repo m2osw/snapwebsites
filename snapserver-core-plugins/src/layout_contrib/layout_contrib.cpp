@@ -18,21 +18,40 @@
 
 // self
 //
-#include "layout_contrib.h"
+#include    "layout_contrib.h"
 
 
-// snapdev library
+// snapdev
 //
-#include <snapdev/not_used.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(layout_contrib, 1, 0)
+namespace snap
+{
+namespace layout_contrib
+{
+
+
+
+CPPTHREAD_PLUGIN_START(layout_contrib, 1, 0)
+    , ::cppthread::plugin_description(
+            "Offer additional files (JS, CSS, Fonts) for layouts.")
+    , ::cppthread::plugin_icon("/images/snap/layout_contrib-logo-64x64.png")
+    , ::cppthread::plugin_settings()
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("links")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("path")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed layout name.
@@ -53,43 +72,12 @@ char const * get_name(name_t name)
 
     default:
         // invalid index
-        throw snap_logic_exception("invalid name_t::SNAP_NAME_LAYOUT_CONTRIB_...");
+        throw snap_logic_error("invalid name_t::SNAP_NAME_LAYOUT_CONTRIB_...");
 
     }
     snapdev::NOT_REACHED();
 }
 
-
-/** \brief Initialize the layout_contrib plugin.
- *
- * This function is used to initialize the layout_contrib plugin object.
- */
-layout_contrib::layout_contrib()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the layout_contrib plugin.
- *
- * Ensure the layout_contrib object is clean before it is gone.
- */
-layout_contrib::~layout_contrib()
-{
-}
-
-
-/** \brief Initialize the layout_contrib.
- *
- * This function terminates the initialization of the layout_contrib plugin
- * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
- */
-void layout_contrib::bootstrap(snap_child * snap)
-{
-    f_snap = snap;
-}
 
 
 /** \brief Get a pointer to the layout_contrib plugin.
@@ -104,46 +92,6 @@ void layout_contrib::bootstrap(snap_child * snap)
 layout_contrib * layout_contrib::instance()
 {
     return g_plugin_layout_contrib_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString layout_contrib::icon() const
-{
-    return "/images/snap/layout_contrib-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString layout_contrib::description() const
-{
-    return "Offer additional files (JS, CSS, Fonts) for layouts.";
-}
-
-
-/** \brief Return our dependencies
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString layout_contrib::dependencies() const
-{
-    return "|content|links|output|path|";
 }
 
 
@@ -188,6 +136,7 @@ void layout_contrib::content_update(int64_t variables_timestamp)
 }
 
 
-SNAP_PLUGIN_END()
 
+} // namespace layout_contrib
+} // namespace snap
 // vim: ts=4 sw=4 et

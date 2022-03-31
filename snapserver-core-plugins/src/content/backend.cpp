@@ -26,25 +26,29 @@
 
 // self
 //
-#include "content.h"
+#include    "content.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/compression.h>
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/log.h>
+#include    <snapwebsites/compression.h>
+#include    <snapwebsites/dbutils.h>
 
 
-// csspp lib
+// snaplogger
 //
-#include <csspp/assembler.h>
-#include <csspp/compiler.h>
-#include <csspp/exceptions.h>
-#include <csspp/parser.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// csspp
+//
+#include    <csspp/assembler.h>
+#include    <csspp/compiler.h>
+#include    <csspp/exceptions.h>
+#include    <csspp/parser.h>
+
+
+// C++
 //
 #include <iostream>
 
@@ -56,7 +60,10 @@
 
 
 
-SNAP_PLUGIN_EXTENSION_START(content)
+namespace snap
+{
+namespace content
+{
 
 
 /** \brief Register the various content actions.
@@ -1146,6 +1153,6 @@ void content::backend_minify_css_file(libdbproxy::row::pointer_t file_row, attac
 
 
 
-SNAP_PLUGIN_EXTENSION_END()
-
+} // namespace content
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -17,45 +17,75 @@
 
 // self
 //
-#include "antivirus.h"
+#include    "antivirus.h"
 
 
 // another plugin
 //
-#include "../output/output.h"
+#include    "../output/output.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/flags.h>
-#include <snapwebsites/log.h>
-#include <snapwebsites/process.h>
+#include    <snapwebsites/flags.h>
 
 
-// snapdev lib
+// cppprocess
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <cppprocess/process.h>
 
 
-// Qt lib
+// snaplogger
 //
-#include <QFile>
-#include <QDateTime>
+#include    <snaplogger/message.h>
 
 
-// C lib
+// snapdev
 //
-#include <sys/stat.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
+
+
+// Qt
+//
+#include    <QFile>
+#include    <QDateTime>
+
+
+// C
+//
+#include    <sys/stat.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(antivirus, 1, 0)
+namespace snap
+{
+namespace antivirus
+{
+
+
+
+CPPTHREAD_PLUGIN_START(antivirus, 1, 0)
+    , ::cppthread::plugin_description(
+            "The anti-virus plugin is used to verify that a file is not a"
+            " virus. When a file that a user uploaded is found to be a virus"
+            " this plugin marks that file as unsecure and the file cannot be"
+            " downloaded by end users.")
+    , ::cppthread::plugin_icon("/images/antivirus/antivirus-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/antihammering")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("output")
+    , ::cppthread::plugin_dependency("versions")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed antivirus name.
@@ -96,83 +126,6 @@ char const * get_name(name_t name)
  * are viruses or not. If a file is found to be a virus, it is then marked
  * as not secure and download of the file are prevented.
  */
-
-
-/** \brief Initialize the antivirus plugin.
- *
- * This function is used to initialize the antivirus plugin object.
- */
-antivirus::antivirus()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the antivirus plugin.
- *
- * Ensure the antivirus object is clean before it is gone.
- */
-antivirus::~antivirus()
-{
-}
-
-
-/** \brief Get a pointer to the antivirus plugin.
- *
- * This function returns an instance pointer to the antivirus plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the antivirus plugin.
- */
-antivirus * antivirus::instance()
-{
-    return g_plugin_antivirus_factory.instance();
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString antivirus::icon() const
-{
-    return "/images/antivirus/antivirus-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString antivirus::description() const
-{
-    return "The anti-virus plugin is used to verify that a file is not a"
-        " virus. When a file that a user uploaded is found to be a virus"
-        " this plugin marks that file as unsecure and the file cannot be"
-        " downloaded by end users.";
-}
-
-
-/** \brief Return our dependencies
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString antivirus::dependencies() const
-{
-    return "|content|editor|output|versions|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -292,7 +245,9 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
     {
         // register the antivirus problem
         //
-        SNAP_LOG_WARNING("the antivirus is enabled, but clamav is not installed.");
+        SNAP_LOG_WARNING
+            << "the antivirus is enabled, but clamav is not installed."
+            << SNAP_LOG_SEND;
 
         // also tell the administrator about the problem
         //
@@ -356,7 +311,11 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
         log_path = "/var/log/snapwebsites";
     }
 
-    SNAP_LOG_INFO("check filename \"")(file.get_file().get_filename())("\" for viruses.");
+    SNAP_LOG_INFO
+        << "check filename \""
+        << file.get_file().get_filename()
+        << "\" for viruses."
+        << SNAP_LOG_SEND;
 
     // make sure the reset the temporary log file
     //
@@ -497,6 +456,6 @@ bool antivirus::has_clamscan()
 }
 
 
-SNAP_PLUGIN_END()
-
+} // namespace antivirus
+} // namespace snap
 // vim: ts=4 sw=4 et

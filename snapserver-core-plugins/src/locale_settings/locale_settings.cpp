@@ -20,42 +20,60 @@
 
 // self
 //
-#include "locale_settings.h"
+#include    "locale_settings.h"
 
 
 // other plugins
 //
-#include "../locale/snap_locale.h"
+#include    "../locale/snap_locale.h"
 
 
-// snapwebsites lib
+// snaplogger
 //
-#include <snapwebsites/log.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// Unicode lib
+// Unicode
 //
-#include <unicode/uversion.h>
+#include    <unicode/uversion.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(locale_settings, 1, 0)
+namespace snap
+{
+namespace locale_settings
+{
+
+
+CPPTHREAD_PLUGIN_START(locale_settings, 1, 0)
+    , ::cppthread::plugin_description(
+            "Define locale functions to be used throughout all the plugins."
+            " It handles time and date, timezone, numbers, currency, etc.")
+    , ::cppthread::plugin_icon("/images/locale/locale-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/locale")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_dependency("locale_widgets")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help/plugin/locale")
+    , ::cppthread::plugin_categorization_tag("security")
+    , ::cppthread::plugin_categorization_tag("spam")
+CPPTHREAD_PLUGIN_END()
+
 
 
 ///* \brief Get a fixed locale_settings name.
@@ -85,113 +103,6 @@ SNAP_PLUGIN_START(locale_settings, 1, 0)
 
 
 
-
-
-/** \brief Initialize the locale plugin.
- *
- * This function is used to initialize the locale plugin object.
- */
-locale_settings::locale_settings()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the locale plugin.
- *
- * Ensure the locale object is clean before it is gone.
- */
-locale_settings::~locale_settings()
-{
-}
-
-
-/** \brief Get a pointer to the locale plugin.
- *
- * This function returns an instance pointer to the locale plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the locale plugin.
- */
-locale_settings * locale_settings::instance()
-{
-    return g_plugin_locale_settings_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString locale_settings::settings_path() const
-{
-    return "/admin/settings/locale";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString locale_settings::icon() const
-{
-    return "/images/locale/locale-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString locale_settings::description() const
-{
-    return "Define locale functions to be used throughout all the plugins."
-        " It handles time and date, timezone, numbers, currency, etc.";
-}
-
-
-/** \brief Change the help URI to the base plugin.
- *
- * This help_uri() function returns the URI to the base plugin URI
- * since this plugin is just an extension and does not need to have
- * a separate help page.
- *
- * \return The URI to the locale plugin help page.
- */
-QString locale_settings::help_uri() const
-{
-    // TBD: should we instead call the help_uri() of the locale plugin?
-    //
-    //      locale::locale::instance()->help_uri();
-    //
-    //      I'm afraid that it would be a bad example because the pointer
-    //      may not be a good pointer anymore at this time (once we
-    //      properly remove plugins that we loaded just to get their info.)
-    //
-    return "https://snapwebsites.org/help/plugin/locale";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString locale_settings::dependencies() const
-{
-    return "|editor|locale_widgets|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -534,6 +445,8 @@ void locale_settings::on_token_help(filter::filter::token_help_t & help)
 // file:///usr/share/doc/icu-doc/html/index.html
 //
 
-SNAP_PLUGIN_END()
 
+
+} // namespace locale_settings
+} // namespace snap
 // vim: ts=4 sw=4 et

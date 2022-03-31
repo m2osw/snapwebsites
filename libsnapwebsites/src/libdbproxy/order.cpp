@@ -1,45 +1,37 @@
-/*
- * Text:
- *      libsnapwebsites/src/libdbproxy/order.cpp
- *
- * Description:
- *      Manager an order to be sent to the snapdbproxy daemon.
- *
- * Documentation:
- *      See each function below.
- *
- * License:
- *      Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
- *
- *      https://snapwebsites.org/
- *      contact@m2osw.com
- *
- *      Permission is hereby granted, free of charge, to any person obtaining a
- *      copy of this software and associated documentation files (the
- *      "Software"), to deal in the Software without restriction, including
- *      without limitation the rights to use, copy, modify, merge, publish,
- *      distribute, sublicense, and/or sell copies of the Software, and to
- *      permit persons to whom the Software is furnished to do so, subject to
- *      the following conditions:
- *
- *      The above copyright notice and this permission notice shall be included
- *      in all copies or substantial portions of the Software.
- *
- *      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- *      OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- *      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- *      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- *      CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- *      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/
+// contact@m2osw.com
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "libdbproxy/order.h"
 
 #include "libdbproxy/exception.h"
 #include "libdbproxy/value.h"
 
-#include "snapwebsites/log.h"
+// snaplogger lib
+//
+#include <snaplogger/message.h>
+
+
 
 #include <QtCore>
 
@@ -552,12 +544,17 @@ bool order::decodeOrder(unsigned char const * encoded_order, size_t size)
     }
     catch( std::exception const & x )
     {
-        SNAP_LOG_ERROR("decodeOrder(): exception! what=")(x.what());
+        SNAP_LOG_ERROR
+            << "decodeOrder(): exception! what="
+            << x.what()
+            << SNAP_LOG_SEND;
         throw;
     }
     catch( ... )
     {
-        SNAP_LOG_ERROR("unknown exception caught!");
+        SNAP_LOG_ERROR
+            << "unknown exception caught!"
+            << SNAP_LOG_SEND;
         throw;
     }
 

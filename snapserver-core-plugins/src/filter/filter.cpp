@@ -18,55 +18,77 @@
 
 // self
 //
-#include "filter.h"
+#include    "filter.h"
 
 
 // other plugins
 //
-#include "../locale/snap_locale.h"
-#include "../messages/messages.h"
+#include    "../locale/snap_locale.h"
+#include    "../messages/messages.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/log.h>
-#include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qstring_stream.h>
+#include    <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_used.h>
+#include    <snaplogger/message.h>
 
 
-// C++ lib
+// snapdev
 //
-#include <iostream>
-#include <cctype>
+#include    <snapdev/not_used.h>
+#include    <snapdev/qstring_extensions.h>
 
 
-// Qt lib
+// Qt
 //
-#include <QTextStream>
+#include    <QTextStream>
+
+
+// C++
+//
+#include    <iostream>
+#include    <cctype>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(filter, 1, 0)
+namespace snap
+{
+namespace filter
+{
 
+
+CPPTHREAD_PLUGIN_START(filter, 1, 0)
+    , ::cppthread::plugin_description(
+            "This plugin offers functions to filter XML and HTML data."
+            " Especially, it is used to avoid Cross Site Attacks (XSS) from"
+            " hackers. XSS is a way for a hacker to gain access to a person's"
+            " computer through someone's website.")
+    , ::cppthread::plugin_icon("/images/filter/filter-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/filter")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("locale")
+    , ::cppthread::plugin_dependency("messages")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("editor")
+    , ::cppthread::plugin_categorization_tag("spam")
+    , ::cppthread::plugin_categorization_tag("security")
+CPPTHREAD_PLUGIN_END()
 
 
 filter::filter_text_t::filter_text_t(content::path_info_t & ipath, QDomDocument & xml_document, QString const & text)
     : f_ipath(ipath)
     , f_xml_document(xml_document)
     , f_text(text)
-    //, f_changed(false) -- auto-init
-    //, f_support_edit(true) -- auto-init
 {
 }
 
@@ -174,91 +196,6 @@ QString const & filter::filter_teaser_info_t::get_end_marker_uri_title() const
 }
 
 
-/** \brief Initialize the filter plugin.
- *
- * This function is used to initialize the filter plugin object.
- */
-filter::filter()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the filter plugin.
- *
- * Ensure the filter object is clean before it is gone.
- */
-filter::~filter()
-{
-}
-
-
-/** \brief Get a pointer to the filter plugin.
- *
- * This function returns an instance pointer to the filter plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the filter plugin.
- */
-filter * filter::instance()
-{
-    return g_plugin_filter_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString filter::settings_path() const
-{
-    return "/admin/settings/filter";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString filter::icon() const
-{
-    return "/images/filter/filter-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString filter::description() const
-{
-    return "This plugin offers functions to filter XML and HTML data."
-        " Especially, it is used to avoid Cross Site Attacks (XSS) from"
-        " hackers. XSS is a way for a hacker to gain access to a person's"
-        " computer through someone's website.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString filter::dependencies() const
-{
-    return "|content|locale|messages|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -996,7 +933,13 @@ void filter::on_token_filter(content::path_info_t & ipath, QDomDocument & xml)
         // turning off the error message because in most cases it
         // is not a real problem (We can move on...)
         //
-        SNAP_LOG_ERROR("One or more tokens are looping back to page \"")(ipath.get_key())("\" (all paths are: \"")(paths)("\").");
+        SNAP_LOG_ERROR
+            << "One or more tokens are looping back to page \""
+            << ipath.get_key()
+            << "\" (all paths are: \""
+            << paths
+            << "\")."
+            << SNAP_LOG_SEND;
 
         // this does not work well when we are in a recurring loop
         //messages::messages::instance()->set_error(
@@ -2138,6 +2081,6 @@ bool filter::filter_filename(QString & filename, QString const & extension)
 
 
 
-SNAP_PLUGIN_END()
-
+} // namespace filter
+} // namespace snap
 // vim: ts=4 sw=4 et

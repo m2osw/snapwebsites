@@ -18,26 +18,43 @@
 
 // self
 //
-#include "search.h"
+#include    "search.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomhelpers.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
-SNAP_PLUGIN_START(search, 1, 0)
+namespace snap
+{
+namespace search
+{
+
+
+CPPTHREAD_PLUGIN_START(search, 1, 0)
+    , ::cppthread::plugin_description(
+            "The search plugin index your website public pages in order to"
+            " allow your users to search its content.")
+    , ::cppthread::plugin_icon("/images/search/search-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/search")
+    , ::cppthread::plugin_dependency("layout")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("search")
+    , ::cppthread::plugin_categorization_tag("gui")
+CPPTHREAD_PLUGIN_END()
+
 
 /** \brief Get a fixed path name.
  *
@@ -63,88 +80,6 @@ const char * get_name(name_t name)
 }
 
 
-/** \brief Initialize the search plugin.
- *
- * This function initializes the search plugin.
- */
-search::search()
-{
-}
-
-
-/** \brief Destroy the search plugin.
- *
- * This function cleans up the search plugin.
- */
-search::~search()
-{
-}
-
-
-/** \brief Get a pointer to the search plugin.
- *
- * This function returns an instance pointer to the search plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the search plugin.
- */
-search * search::instance()
-{
-    return g_plugin_search_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString search::settings_path() const
-{
-    return "/admin/settings/search";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString search::icon() const
-{
-    return "/images/search/search-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString search::description() const
-{
-    return "The search plugin index your website public pages in order to"
-          " allow your users to search its content.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString search::dependencies() const
-{
-    return "|layout|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -274,5 +209,7 @@ void search::on_generate_page_content(content::path_info_t & ipath, QDomElement 
 }
 
 
-SNAP_PLUGIN_END()
+
+} // namespace search
+} // namespace snap
 // vim: ts=4 sw=4 et

@@ -17,27 +17,45 @@
 
 // self
 //
-#include "webform.h"
+#include    "webform.h"
 
 
 // other plugins
 //
-#include "../content/content.h"
+#include    "../content/content.h"
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
-SNAP_PLUGIN_START(webform, 1, 0)
+namespace snap
+{
+namespace webform
+{
+
+
+CPPTHREAD_PLUGIN_START(webform, 1, 0)
+    , ::cppthread::plugin_description(
+            "Allows end users to dynamically create their own forms."
+            " This is an extension of our Snap! editor that allows you"
+            " to create forms directly from your website and reuse them"
+            " on any page you'd like to reuse them.")
+    , ::cppthread::plugin_icon("/images/webform/webform-logo-64x64.png")
+    , ::cppthread::plugin_settings("/admin/settings/webform")
+    , ::cppthread::plugin_dependency("content")
+    , ::cppthread::plugin_dependency("editor")
+    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
+    , ::cppthread::plugin_categorization_tag("gui")
+CPPTHREAD_PLUGIN_END()
 
 
 /** \brief Get a fixed webform plugin name.
@@ -69,91 +87,7 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the webform plugin.
- *
- * This function is used to initialize the webform plugin object.
- */
-webform::webform()
-    //: f_snap(nullptr) -- auto-init
-{
-}
 
-
-/** \brief Clean up the webform plugin.
- *
- * Ensure the webform object is clean before it is gone.
- */
-webform::~webform()
-{
-}
-
-
-/** \brief Get a pointer to the webform plugin.
- *
- * This function returns an instance pointer to the webform plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the webform plugin.
- */
-webform * webform::instance()
-{
-    return g_plugin_webform_factory.instance();
-}
-
-
-/** \brief Send users to the plugin settings.
- *
- * This path represents this plugin settings.
- */
-QString webform::settings_path() const
-{
-    return "/admin/settings/webform";
-}
-
-
-/** \brief A path or URI to a logo for this plugin.
- *
- * This function returns a 64x64 icons representing this plugin.
- *
- * \return A path to the logo.
- */
-QString webform::icon() const
-{
-    return "/images/webform/webform-logo-64x64.png";
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString webform::description() const
-{
-    return "Allows end users to dynamically create their own forms."
-        " This is an extension of our Snap! editor that allows you"
-        " to create forms directly from your website and reuse them"
-        " on any page you'd like to reuse them.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString webform::dependencies() const
-{
-    return "|content|editor|";
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -210,7 +144,6 @@ void webform::bootstrap(snap_child * snap)
 
 
 
-
-SNAP_PLUGIN_END()
-
+} // namespace webform
+} // namespace snap
 // vim: ts=4 sw=4 et
