@@ -437,18 +437,18 @@ bool versions::versions_tools_impl(filter::filter::token_info_t & token)
         token.f_replacement += "</li>";
     }
 
-        // snapwatchdogserver
+        // sitter
         //
-        // TODO: until the snapwatchdogserver offers a snapserver-plugin
+        // TODO: until the sitter offers a snapserver-plugin
         //       which does that itself (?)
         //
-    if(access("/usr/sbin/snapwatchdogserver", X_OK))
+    if(access("/usr/sbin/sitterd", X_OK))
     {
-        token.f_replacement += "<li>snapwatchdog ";
+        token.f_replacement += "<li>sitterd ";
         {
-            process p("check snapwatchdogserver version");
+            process p("check sitterd version");
             p.set_mode(process::mode_t::PROCESS_MODE_OUTPUT);
-            p.set_command("/usr/sbin/snapwatchdogserver");
+            p.set_command("/usr/sbin/sitterd");
             p.add_argument("--version");
             p.run();
             token.f_replacement += p.get_output();

@@ -18,16 +18,18 @@
 
 #pragma GCC diagnostic ignored "-Wformat"
 
-#include <snapwebsites/plugins.h>
+#include    <serverplugins/plugin.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include    <snapdev/not_used.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include    <stdio.h>
+#include    <stdlib.h>
+#include    <time.h>
+
 int main(int argc, char *argv[])
 {
+    snapdev::NOT_USED(argc, argv);
+
     struct tm t;
     t.tm_sec = 0;
     t.tm_min = 0;
@@ -101,6 +103,5 @@ int main(int argc, char *argv[])
 
     return err;
 }
-#pragma GCC diagnostic pop
 
 // vim: ts=4 sw=4 et

@@ -584,7 +584,7 @@ bool backend::display_value(QDomElement parent, snap_manager::status_t const & s
             // the old code would allow us to change the status of each
             // individual backend, which would often create a mess in the
             // sense that some backends would then get lost and the system
-            // (specificall, snapwatchdog) would not know whether a backend
+            // (specifically, sitter) would not know whether a backend
             // is expected to be running or not
 
             //QStringList service_list;

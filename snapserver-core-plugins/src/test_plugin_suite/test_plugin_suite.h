@@ -227,7 +227,7 @@ private:
 
 
 class test_plugin_suite
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
                                 test_plugin_suite();

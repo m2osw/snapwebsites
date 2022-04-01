@@ -39,7 +39,7 @@
 
 // cppthread
 //
-#include    <cppthread/plugins.h>
+#include    <serverplugins/plugin.h>
 
 
 // advgetopt
@@ -206,7 +206,7 @@ class listener_impl;
 
 
 class server
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
     typedef std::shared_ptr<server>             pointer_t;
@@ -228,7 +228,7 @@ public:
     class backend_action_set
     {
     public:
-        void                    add_action(QString const & action, cppthread::plugin * p);
+        void                    add_action(QString const & action, serverplugins::plugin * p);
         bool                    has_action(QString const & action) const;
         void                    execute_action(QString const & action);
         QString                 get_plugin_name(QString const & action);
@@ -277,8 +277,8 @@ public:
     static void         verify_server_name(std::string & server_name);
 
     // cppthread::plugin implementation
-    virtual void        bootstrap(void * snap) override;
-    virtual int64_t     do_update(int64_t last_updated);
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated);
 
     [[noreturn]] void   usage();
     void                setup_as_backend();

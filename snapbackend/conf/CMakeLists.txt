@@ -57,13 +57,14 @@ install(
 ## automatically does a purge when it removes a bundle, it either isn't there
 ## already or this script will detect it and let you know there is a problem.)
 ##
-install(
-    PROGRAMS
-        watch_snapbackup_old_cron_script
-
-    DESTINATION
-        share/snapwebsites/snapwatchdog/scripts
-)
+# TODO: move to work with `sitter` instead
+#install(
+#    PROGRAMS
+#        watch_snapbackup_old_cron_script
+#
+#    DESTINATION
+#        share/snapwebsites/snapwatchdog/scripts
+#)
 
 
 # vim: ts=4 sw=4 et

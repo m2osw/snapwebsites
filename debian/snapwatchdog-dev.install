@@ -1,4 +1,0 @@
-debian/tmp/usr/include/snapwatchdog/flags.h             usr/include/snapwebsites/
-debian/tmp/usr/include/snapwatchdog/log_definitions.h   usr/include/snapwebsites/
-debian/tmp/usr/include/snapwatchdog/snapwatchdog.h      usr/include/snapwebsites/
-debian/tmp/usr/include/snapwatchdog/version.h           usr/include/snapwebsites/

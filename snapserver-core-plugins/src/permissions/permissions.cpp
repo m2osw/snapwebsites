@@ -34,7 +34,7 @@
 
 // snapwebsites
 //
-#include    <snapwebsites/plugins.h>
+//#include    <snapwebsites/plugins.h>
 
 
 // snaplogger

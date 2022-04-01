@@ -33,7 +33,8 @@
 
 project(snapbackend)
 
-snap_validate_xml( snapbackend-processes.xml watchdog-processes.xsd )
+# TODO: convert to the Sitter Project
+#snap_validate_xml( snapbackend-processes.xml watchdog-processes.xsd )
 
 add_executable(${PROJECT_NAME}
     snapbackend.cpp
@@ -59,12 +60,13 @@ install(
         sbin
 )
 
-install(
-    FILES
-        snapbackend-processes.xml
-    DESTINATION
-        share/snapwebsites/snapwatchdog/processes
-)
+# TODO: Convert to the Sitter Project
+#install(
+#    FILES
+#        snapbackend-processes.xml
+#    DESTINATION
+#        share/snapwebsites/snapwatchdog/processes
+#)
 
 
 # vim: ts=4 sw=4 et

@@ -96,7 +96,7 @@ include_directories(
 include_directories(
     ${snapwebsites_src_SOURCE_DIR}
     ${snapwebsites_src_BINARY_DIR}
-    ${snapwatchdog_lib_SOURCE_DIR}
+    ${SITTER_INCLUDE_DIRS}
     ${ADVGETOPT_INCLUDE_DIRS}
     ${QTCASSANDRA_INCLUDE_DIRS}
     ${QTSERIALIZATION_INCLUDE_DIRS}
@@ -113,7 +113,7 @@ snap_clear_xml_targets()
 
 add_subdirectory( conf             )
 add_subdirectory( src              )
-add_subdirectory( watchdog-plugins )
+#add_subdirectory( sitter-plugins   ) -- the list will be fixed, so at this point we don't need this
 add_subdirectory( doc              )
 
 ##

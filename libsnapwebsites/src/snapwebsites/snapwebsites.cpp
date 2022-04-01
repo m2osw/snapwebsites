@@ -692,7 +692,7 @@ server::pointer_t server::get_instance()
  * class, obviously.
  *
  * See the get_instance() for more information about how to allocate
- * a new server. As an example, check out the lib/snapwatchdog.cpp file.
+ * a new server. For an example, check out the sitter project.
  *
  * \param[in] other_server  The other type of server to save in this instance.
  *
@@ -889,7 +889,7 @@ void server::usage()
 /** \brief Change the configuration filename.
  *
  * The various daemons that make use of the server will generally want to
- * use a different .conf filename (i.e. snapwatchdog uses snapwatchdog.conf
+ * use a different .conf filename (i.e. snapwatchdog used snapwatchdog.conf
  * instead of snapserver.conf). This function is used for that purpose
  * right after the server was created, call it with the name of your
  * configuration file.
@@ -1870,7 +1870,7 @@ void server::udp_rusage(QString const & process_name)
     snap::snap_communicator_message rusage_message;
     rusage_message.set_command("RUSAGE");
     rusage_message.set_server(get_server_name().c_str());
-    rusage_message.set_service("snapwatchdog");
+    rusage_message.set_service("sitter");
     rusage_message.add_parameter("cache", "ttl=10");  // cache for at most 10 seconds
     rusage_message.add_parameter("process_name", process_name);
     rusage_message.add_parameter("pid", getpid());
