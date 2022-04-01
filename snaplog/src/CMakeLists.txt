@@ -46,7 +46,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-snap_validate_xml( snaplog-processes.xml watchdog-processes.xsd )
+#snap_validate_xml( snaplog-processes.xml watchdog-processes.xsd )
 
 add_executable(${PROJECT_NAME}
     snaplog.cpp
@@ -73,13 +73,13 @@ install(
         sbin
 )
 
-install(
-    FILES
-        snaplog-processes.xml
-
-    DESTINATION
-        share/snapwebsites/snapwatchdog/processes
-)
+#install(
+#    FILES
+#        snaplog-processes.xml
+#
+#    DESTINATION
+#        share/snapwebsites/snapwatchdog/processes
+#)
 
 
 # vim: ts=4 sw=4 et

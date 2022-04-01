@@ -46,7 +46,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-snap_validate_xml( snapserver-processes.xml watchdog-processes.xsd )
+#snap_validate_xml( snapserver-processes.xml watchdog-processes.xsd )
 
 add_executable(${PROJECT_NAME}
     snapserver.cpp
