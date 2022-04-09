@@ -62,7 +62,7 @@ DECLARE_EXCEPTION(sessions_exception, sessions_exception_no_random_data);
 
 
 class sessions
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public layout::layout_content
 {
 public:
@@ -155,17 +155,11 @@ public:
         check_flag_t                f_check_flags = CHECK_DEFAULTS;
     };
 
-                            sessions();
-                            sessions(sessions const & rhs) = delete;
-    virtual                 ~sessions() override;
+    SERVERPLUGINS_DEFAULTS(sessions);
 
-    sessions &              operator = (sessions const & rhs) = delete;
-
-    static sessions *       instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated) override;
 
     // server signals
     void                    on_table_is_accessible(QString const & table_name, server::accessible_flag_t & accessible);

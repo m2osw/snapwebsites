@@ -44,21 +44,15 @@ DECLARE_EXCEPTION(menu_exception, menu_exception_invalid_db_data);
 
 
 class menu
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public layout::layout_content
 {
 public:
-                        menu();
-                        menu(menu const & rhs) = delete;
-    virtual             ~menu() override;
-
-    menu &              operator = (menu const & rhs) = delete;
-
-    static menu *       instance();
+    SERVERPLUGINS_DEFAULTS(menu);
 
     // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated) override;
 
     // layout::layout_content imlementation
     virtual void        on_generate_main_content(content::path_info_t & ipath, QDomElement & page, QDomElement & body);

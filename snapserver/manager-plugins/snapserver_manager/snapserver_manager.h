@@ -22,14 +22,11 @@
 #include    "snapmanager/plugin_base.h"
 
 
-// cppthread
+// serverplugins
 //
-#include    <cppthread/plugins.h>
+#include    <serverplugins/plugin.h>
 
 
-// Qt
-//
-#include    <QDomDocument>
 
 namespace snap
 {
@@ -65,11 +62,9 @@ public:
 
     static snapserver_manager * instance();
 
-    // plugins::plugin implementation
-    virtual QString         description() const override;
-    virtual QString         dependencies() const override;
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated) override;
 
     // manager overload
     virtual bool            display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri) override;

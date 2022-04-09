@@ -37,7 +37,7 @@ namespace snap_manager
 
 
 class plugin_base
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
     virtual             ~plugin_base() override;

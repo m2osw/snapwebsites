@@ -60,17 +60,17 @@ namespace snap
 namespace messages
 {
 
-CPPTHREAD_PLUGIN_START(messages, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(messages, 1, 0)
+    , ::serverplugins::plugin_description(
             "The messages plugin is used by many other plugins to manage"
             " debug, information, warning, and error messages in the Snap! system.")
-    , ::cppthread::plugin_icon("/images/snap/messages-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/info")
-    , ::cppthread::plugin_dependency("server")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::plugin_icon("/images/snap/messages-logo-64x64.png")
+    , ::serverplugins::plugin_settings("/admin/settings/info")
+    , ::serverplugins::plugin_dependency("server")
+    , ::serverplugins::plugin_help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::plugin_categorization_tag("security")
+    , ::serverplugins::plugin_categorization_tag("spam")
+SERVERPLUGINS_END()
 
 
 namespace
@@ -78,7 +78,7 @@ namespace
 
 int32_t        g_message_id = 0;
 
-} // noname namespace
+} // no name namespace
 
 
 

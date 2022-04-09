@@ -247,20 +247,14 @@ private:
 
 
 class epayment
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                                epayment();
-                                epayment(epayment const & rhs) = delete;
-    virtual                     ~epayment() override;
-
-    epayment &                  operator = (epayment const & rhs) = delete;
-
-    static epayment *           instance();
+    SERVERPLUGINS_DEFAULTS(epayment);
 
     // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    virtual time_t              do_update(time_t last_updated) override;
+    virtual void                bootstrap() override;
 
     // layout signals
     void                        on_generate_header_content(content::path_info_t & path, QDomElement & header, QDomElement & metadata);

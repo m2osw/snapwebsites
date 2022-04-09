@@ -66,7 +66,6 @@ add_library( ${PROJECT_NAME} SHARED
     qhtmlserializer.cpp                         # Qt extension to output HTML as a string
     quoted_printable.cpp                        # to encode / decode data using the quoted printable format
     qxmlmessagehandler.cpp                      # Qt extension for us to capture the QXmlQuery messages
-    email.cpp                                   # create emails and send them
     snap_backend.cpp                            # type of snap_child for backends
     snap_cassandra.cpp                          # encapuslate initiating a connection to the database.
     snap_console.cpp                            # a CUI helper with two panels: Input and Output so the output can be asynchronous

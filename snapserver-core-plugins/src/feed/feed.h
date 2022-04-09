@@ -62,23 +62,17 @@ public:
 
 
 class feed
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
     static int const    DEFAULT_TEASER_WORDS = 200;
     static int const    DEFAULT_TEASER_TAGS  = 100;
 
-                        feed();
-                        feed(feed const & rhs) = delete;
-    virtual             ~feed() override;
-
-    feed &              operator = (feed const & rhs) = delete;
-
-    static feed *       instance();
+    SERVERPLUGINS_DEFAULTS(feed);
 
     // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated) override;
 
     // server signals
     void                on_backend_process();

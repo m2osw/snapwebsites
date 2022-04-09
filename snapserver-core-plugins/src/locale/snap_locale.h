@@ -58,7 +58,7 @@ DECLARE_EXCEPTION(locale_exception, locale_exception_invalid_argument);
 
 
 class locale
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
     enum class parse_error_t
@@ -104,17 +104,11 @@ public:
     };
     typedef QVector<timezone_info_t>    timezone_list_t;
 
-                                locale();
-                                locale(locale const & rhs) = delete;
-    virtual                     ~locale() override;
-
-    locale &                    operator = (locale const & rhs) = delete;
-
-    static locale *             instance();
+    SERVERPLUGINS_DEFAULTS(locale);
 
     // plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    virtual time_t              do_update(time_t last_updated) override;
+    virtual void                bootstrap() override;
 
     locale_list_t const &       get_locale_list();
     timezone_list_t const &     get_timezone_list();

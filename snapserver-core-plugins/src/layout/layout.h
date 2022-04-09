@@ -72,25 +72,19 @@ public:
 
 
 class layout
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        layout();
-                        layout(layout const & rhs) = delete;
-    virtual             ~layout() override;
-
-    layout &            operator = (layout const & rhs) = delete;
-
-    static layout *     instance();
+    SERVERPLUGINS_DEFAULTS(layout);
 
     // cppthread::plugin implementation
-    virtual void        bootstrap(void * snap) override;
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual int64_t     do_dynamic_update(int64_t last_updated) override;
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated) override;
 
     libdbproxy::table::pointer_t get_layout_table();
 
     // server signals
+    time_t              on_dynamic_update(time_t last_updated);
     void                on_load_file(snap_child::post_file_t & file, bool & found);
     bool                on_improve_signature(QString const & path, QDomDocument doc, QDomElement & signature_tag);
 

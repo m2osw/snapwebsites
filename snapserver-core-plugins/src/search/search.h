@@ -35,18 +35,14 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class search
-    : public cppthread::plugin
+    : public serverplugin::plugin
 {
 public:
-                            search();
-                            search(search const & rhs) = delete;
-    virtual                 ~search() override;
-
-    search &                operator = (search const & rhs) = delete;
+    SERVERPLUGINS_DEFAULTS(search);
 
     // public plugins::plugin
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated) override;
 
     // server signals
     void                    on_improve_signature(QString const & path, QDomDocument doc, QDomElement signature);

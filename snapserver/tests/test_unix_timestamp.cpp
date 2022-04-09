@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
             for(int hour = 0; hour < 24; ++hour) {
                 for(int minute = 0; minute < 60; ++minute) {
                     for(int second = 0; second < 60; ++second) {
-                        time_t snap_timestamp = SNAP_UNIX_TIMESTAMP(1970, month, day, hour, minute, second);
+                        time_t snap_timestamp = SERVERPLUGINS_UNIX_TIMESTAMP(1970, month, day, hour, minute, second);
                         struct tm t2;
                         t2.tm_sec = second;
                         t2.tm_min = minute;
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     for(int year = 1970; year < 2068; ++year) {
         for(int month = 1; month <= 12; ++month) {
             for(int day = 1; day <= 31; ++day) {
-                time_t snap_timestamp = SNAP_UNIX_TIMESTAMP(year, month, day, 0, 0, 0);
+                time_t snap_timestamp = SERVERPLUGINS_UNIX_TIMESTAMP(year, month, day, 0, 0, 0);
                 struct tm t3;
                 t3.tm_sec = 0;
                 t3.tm_min = 0;

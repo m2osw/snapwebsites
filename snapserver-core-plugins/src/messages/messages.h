@@ -42,7 +42,7 @@ DECLARE_EXCEPTION(messages_exception, messages_exception_already_defined);
 
 
 class messages
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public QtSerialization::QSerializationObject
 {
 public:
@@ -97,17 +97,11 @@ public:
                                     f_user_id = 0;  // we do not have access to users::IDENTIFIER_ANONYMOUS
     };
 
-                        messages();
-                        messages(messages const & rhs) = delete;
-    virtual             ~messages() override;
-
-    messages &          operator = (messages const & rhs) = delete;
-
-    static messages *   instance();
+    SERVERPLUGINS_DEFAULTS(messages);
 
     // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated) override;
 
     // server signals
     void                on_user_status(snap_child::user_status_t status, snap_child::user_identifier_t id);

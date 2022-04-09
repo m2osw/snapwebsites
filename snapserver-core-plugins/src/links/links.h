@@ -248,26 +248,20 @@ public:
 
 
 class links
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public server::backend_action
 {
 public:
+    SERVERPLUGINS_DEFAULTS(links);
+
     typedef std::function<bool (content::path_info_t & ipath)> callback_func_t;
 
     static int const                READ_RECORD_COUNT = 1000;
     static int const                DELETE_RECORD_COUNT = 1000;
 
-                                    links();
-                                    links(links const & rhs) = delete;
-    virtual                         ~links();
-
-    links &                         operator = (links const & rhs) = delete;
-
-    static links *                  instance();
-
     // cppthread::plugin implementation
-    virtual void                    bootstrap(void * snap) override;
-    virtual int64_t                 do_update(int64_t last_updated) override;
+    virtual void                    bootstrap() override;
+    virtual time_t                  do_update(time_t last_updated) override;
 
     libdbproxy::table::pointer_t    get_links_table();
 

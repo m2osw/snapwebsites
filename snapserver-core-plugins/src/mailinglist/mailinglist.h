@@ -49,7 +49,7 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class mailinglist
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
     class list
@@ -78,17 +78,11 @@ public:
         bool                                        f_done = false;
     };
 
-                        mailinglist();
-                        mailinglist(mailinglist const & rhs) = delete;
-    virtual             ~mailinglist() override;
-
-    mailinglist &       operator = (mailinglist const & rhs) = delete;
-
-    static mailinglist *instance();
+    SERVERPLUGINS_DEFAULTS(mailinglist);
 
     // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated) override;
 
     libdbproxy::table::pointer_t get_mailinglist_table();
 

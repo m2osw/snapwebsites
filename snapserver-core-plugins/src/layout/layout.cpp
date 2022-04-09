@@ -219,7 +219,7 @@ int64_t layout::do_update(int64_t last_updated)
 }
 
 
-int64_t layout::do_dynamic_update(int64_t last_updated)
+int64_t layout::on_dynamic_update(int64_t last_updated)
 {
     snapdev::NOT_USED(last_updated);
 

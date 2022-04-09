@@ -63,18 +63,18 @@ namespace links
 {
 
 
-CPPTHREAD_PLUGIN_START(links, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(links, 1, 0)
+    , ::serverplugins::plugin_description(
             "This plugin offers functions to link rows of data together."
             " For example, it allows you to attach a tag to the page of content."
             " This plugin is part of core since it links everything that core"
             " needs to make the system function as expected.")
-    , ::cppthread::plugin_icon("/images/snap/links-logo-64x64.png")
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("content")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::plugin_icon("/images/snap/links-logo-64x64.png")
+    , ::serverplugins::plugin_settings()
+    , ::serverplugins::plugin_dependency("content")
+    , ::serverplugins::plugin_help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::plugin_categorization_tag("content")
+SERVERPLUGINS_END()
 
 
 

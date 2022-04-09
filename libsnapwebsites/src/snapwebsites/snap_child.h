@@ -487,15 +487,14 @@ private:
     public:
         typedef std::shared_ptr<child_messenger> pointer_t;
 
-                            child_messenger( snap_child * s
+                            child_messenger(snap_child * s
                                  , std::string const & addr
-                                 , int port
-                                 );
+                                 , int port);
                             child_messenger(child_messenger & rhs) = delete;
 
         child_messenger &   operator = (child_messenger & rhs) = delete;
 
-        virtual void        process_message( ed::message const & message ) override;
+        virtual void        process_message(ed::message & msg) override;
         virtual void        process_connected() override;
 
     private:

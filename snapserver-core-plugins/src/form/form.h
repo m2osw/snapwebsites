@@ -21,7 +21,7 @@
 #include "../sessions/sessions.h"
 #include "../filter/filter.h"
 
-// Qt lib
+// Qt
 //
 #include <libdbproxy/table.h>
 #include <QDomDocument>
@@ -61,20 +61,14 @@ public:
 
 
 class form
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                                form();
-                                form(form const & rhs) = delete;
-    virtual                     ~form() override;
-
-    form &                      operator = (form const & rhs) = delete;
-
-    static form *               instance();
+    SERVERPLUGINS_DEFAULTS(form);
 
     // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated) override;
 
     QSharedPointer<libdbproxy::table> get_form_table();
 

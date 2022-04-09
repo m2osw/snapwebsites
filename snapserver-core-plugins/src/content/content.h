@@ -590,7 +590,7 @@ private:
 
 
 class content
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public server::backend_action
     , public links::links_cloned
 {
@@ -675,17 +675,11 @@ public:
         cloned_pages_t                          f_pages = cloned_pages_t();
     };
 
-                        content();
-                        content(content const & rhs) = delete;
-    virtual             ~content() override;
-
-    content &           operator = (content const & rhs) = delete;
-
-    static content *    instance();
+    SERVERPLUGINS_DEFAULTS(content);
 
     // plugins::plugin implementation
-    virtual void        bootstrap(void * snap) override;
-    virtual int64_t     do_update(int64_t last_updated) override;
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated) override;
 
     // links::links_cloned implementation
     virtual void        repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning) override;

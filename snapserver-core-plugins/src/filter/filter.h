@@ -41,7 +41,7 @@ DECLARE_EXCEPTION(filter_exception, filter_exception_invalid_arguement);
 
 
 class filter
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
     enum class token_t
@@ -377,17 +377,11 @@ public:
         QDomElement                 f_help_tag = QDomElement();
     };
 
-                        filter();
-                        filter(filter const & rhs) = delete;
-    virtual             ~filter() override;
+    SERVERPLUGINS_DEFAULTS(filter);
 
-    filter &            operator = (filter const & rhs) = delete;
-
-    static filter *     instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated) override;
 
     // server signals
     void                on_xss_filter(QDomNode & node, QString const & accepted_tags, QString const & accepted_attributes);

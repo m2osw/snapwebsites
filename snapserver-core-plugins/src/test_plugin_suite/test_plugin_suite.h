@@ -18,7 +18,12 @@
 
 // snapwebsites
 //
-#include <snapwebsites/snapwebsites.h>
+#include    <snapwebsites/snapwebsites.h>
+
+
+// serverplugins
+//
+#include    <serverplugins/signals.h>
 
 
 namespace snap
@@ -230,21 +235,15 @@ class test_plugin_suite
     : public serverplugins::plugin
 {
 public:
-                                test_plugin_suite();
-                                test_plugin_suite(test_plugin_suite const & rhs) = delete;
-    virtual                     ~test_plugin_suite() override;
-
-    test_plugin_suite &         operator = (test_plugin_suite const & rhs) = delete;
-
-    static test_plugin_suite *  instance();
+    SERVERPLUGINS_DEFAULTS(test_plugin_suite);
 
     // cppthread::plugin implementation
-    virtual void                bootstrap(void * snap) override;
-    virtual int64_t             do_update(int64_t last_updated) override;
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated) override;
 
     test_list_t const &         get_test_list() const;
 
-    SNAP_SIGNAL_WITH_MODE(list_tests, (test_list_t & tests), (tests), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(list_tests, (test_list_t & tests), (tests), NEITHER);
 
 private:
     void                        content_update(int64_t variables_timestamp);

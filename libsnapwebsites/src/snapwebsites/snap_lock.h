@@ -85,7 +85,7 @@ public:
     static void         initialize_snapcommunicator(
                               std::string const & addr
                             , int port
-                            , ed::tcp_bio_client::mode_t mode = ed::tcp_bio_client::mode_t::MODE_PLAIN);
+                            , ed::mode_t mode = ed::mode_t::MODE_PLAIN);
 
     bool                lock(
                               std::string const & object_name

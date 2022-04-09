@@ -1,4 +1,3 @@
-// Snap Websites Server -- queue emails for the backend to send
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -21,14 +20,19 @@
 
 // other plugins
 //
-#include "../users/users.h"
+#include    "../users/users.h"
 
-#include "../test_plugin_suite/test_plugin_suite.h"
+#include    "../test_plugin_suite/test_plugin_suite.h"
 
-// snapwebsites lib
+
+// snapwebsites
 //
-#include <snapwebsites/snap_backend.h>
-#include <snapwebsites/email.h>
+#include    <snapwebsites/snap_backend.h>
+
+
+// libmimemail
+//
+#include    <libmimemail/email.h>
 
 
 namespace snap

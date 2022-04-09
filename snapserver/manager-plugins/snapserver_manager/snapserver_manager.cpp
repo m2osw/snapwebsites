@@ -63,7 +63,11 @@
 
 
 
-SNAP_PLUGIN_START(snapserver_manager, 1, 0)
+SERVERPLUGINS_START(snapserver_manager, 1, 0)
+    , ::cppthread::plugin_description(
+            "Manage the snapsnapserver_manager settings.")
+    , ::cppthread::plugin_dependency("server")
+SERVERPLUGINS_END()
 
 
 namespace
@@ -115,68 +119,6 @@ char const * get_name(name_t name)
 
 
 
-/** \brief Initialize the snapserver_manager plugin.
- *
- * This function is used to initialize the snapserver_manager plugin object.
- */
-snapserver_manager::snapserver_manager()
-    //: f_snap(nullptr) -- auto-init
-{
-}
-
-
-/** \brief Clean up the snapserver_manager plugin.
- *
- * Ensure the snapserver_manager object is clean before it is gone.
- */
-snapserver_manager::~snapserver_manager()
-{
-}
-
-
-/** \brief Get a pointer to the snapserver_manager plugin.
- *
- * This function returns an instance pointer to the snapserver_manager plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the snapserver_manager plugin.
- */
-snapserver_manager * snapserver_manager::instance()
-{
-    return g_plugin_snapserver_manager_factory.instance();
-}
-
-
-/** \brief Return the description of this plugin.
- *
- * This function returns the English description of this plugin.
- * The system presents that description when the user is offered to
- * install or uninstall a plugin on his website. Translation may be
- * available in the database.
- *
- * \return The description in a QString.
- */
-QString snapserver_manager::description() const
-{
-    return "Manage the snapsnapserver_manager settings.";
-}
-
-
-/** \brief Return our dependencies.
- *
- * This function builds the list of plugins (by name) that are considered
- * dependencies (required by this plugin.)
- *
- * \return Our list of dependencies.
- */
-QString snapserver_manager::dependencies() const
-{
-    return "|server|";
-}
-
-
 /** \brief Check whether updates are necessary.
  *
  * This function is ignored in snapmanager.cgi and snapmanagerdaemon plugins.
@@ -185,7 +127,7 @@ QString snapserver_manager::dependencies() const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t snapserver_manager::do_update(int64_t last_updated)
+time_t snapserver_manager::do_update(time_t last_updated)
 {
     snapdev::NOT_USED(last_updated);
 
@@ -202,14 +144,8 @@ int64_t snapserver_manager::do_update(int64_t last_updated)
  *
  * \param[in] snap  The child handling this request.
  */
-void snapserver_manager::bootstrap(snap_child * snap)
+void snapserver_manager::bootstrap()
 {
-    f_snap = dynamic_cast<snap_manager::manager *>(snap);
-    if(f_snap == nullptr)
-    {
-        throw snap_logic_error("snap pointer does not represent a valid manager object.");
-    }
-
     SNAP_LISTEN(snapserver_manager, "server", snap_manager::manager, retrieve_status, boost::placeholders::_1);
 }
 

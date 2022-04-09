@@ -41,17 +41,17 @@ public:
 
     dynamic_plugin_t &  operator = (dynamic_plugin_t const & rhs) = delete;
 
-    plugins::plugin *   get_plugin() const { return f_plugin; }
-    void                set_plugin(plugins::plugin * p);
+    serverplugins::plugin *   get_plugin() const { return f_plugin; }
+    void                set_plugin(serverplugins::plugin * p);
 
-    plugins::plugin *   get_plugin_if_renamed() const { return f_plugin_if_renamed; }
-    void                set_plugin_if_renamed(plugins::plugin * p, QString const & cpath);
+    serverplugins::plugin *   get_plugin_if_renamed() const { return f_plugin_if_renamed; }
+    void                set_plugin_if_renamed(serverplugins::plugin * p, QString const & cpath);
     QString             get_renamed_path() const { return f_cpath_renamed; }
 
 private:
-    plugins::plugin *   f_plugin = nullptr;
-    plugins::plugin *   f_plugin_if_renamed = nullptr;
-    QString             f_cpath_renamed = QString();
+    serverplugins::plugin * f_plugin = nullptr;
+    serverplugins::plugin * f_plugin_if_renamed = nullptr;
+    QString                 f_cpath_renamed = QString();
 };
 
 
@@ -74,7 +74,7 @@ public:
 
     path_error_callback &   operator = (path_error_callback const & rhs) = delete;
 
-    void                    set_plugin(plugins::plugin * p);
+    void                    set_plugin(serverplugins::plugin * p);
     void                    set_autologout(bool autologout = true);
     virtual void            on_error(snap_child::http_code_t err_code
                                    , QString const & err_name
@@ -91,25 +91,19 @@ public:
 private:
     snap_child *            f_snap = nullptr;
     content::path_info_t &  f_ipath;
-    plugins::plugin *       f_plugin = nullptr;
+    serverplugins::plugin * f_plugin = nullptr;
     bool                    f_autologout = false;
 };
 
 
 class path
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        path();
-                        path(path const & rhs) = delete;
-    virtual             ~path() override;
+    SERVERPLUGINS_DEFAULTS(path);
 
-    path &              operator = (path const & rhs) = delete;
-
-    static path *       instance();
-
-    // plugins::plugin implementation
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugin::plugin implementation
+    virtual void        bootstrap() override;
 
     // server signals
     void                on_init();
@@ -121,12 +115,12 @@ public:
     SNAP_SIGNAL_WITH_MODE(page_not_found, (content::path_info_t & ipath), (ipath), NEITHER);
     SNAP_SIGNAL_WITH_MODE(validate_action, (content::path_info_t & ipath, QString const & action, permission_error_callback & err_callback), (ipath, action, err_callback), NEITHER);
     SNAP_SIGNAL(check_for_redirect, (content::path_info_t & ipath), (ipath));
-    SNAP_SIGNAL_WITH_MODE(preprocess_path, (content::path_info_t & ipath, plugins::plugin *owner_plugin), (ipath, owner_plugin), NEITHER);
+    SNAP_SIGNAL_WITH_MODE(preprocess_path, (content::path_info_t & ipath, serverplugins::plugin *owner_plugin), (ipath, owner_plugin), NEITHER);
 
     plugin *            get_plugin(content::path_info_t & uri_path, permission_error_callback & err_callback);
     void                verify_permissions(content::path_info_t & ipath, permission_error_callback & err_callback);
     QString             define_action(content::path_info_t & ipath);
-    void                handle_dynamic_path(plugins::plugin *p);
+    void                handle_dynamic_path(serverplugins::plugin *p);
     void                add_restore_link_to_signature_for(QString const page_path);
 
 private:

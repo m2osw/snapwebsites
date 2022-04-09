@@ -38,20 +38,14 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class layout_contrib
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                            layout_contrib();
-                            layout_contrib(layout_contrib const & rhs) = delete;
-    virtual                 ~layout_contrib() override;
-
-    layout_contrib &        operator = (layout_contrib const & rhs) = delete;
-
-    static layout_contrib * instance();
+    SERVERPLUGINS_DEFAULTS(layout_contrib);
 
     // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child *snap) override;
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated) override;
 
 private:
     void                    content_update(int64_t variables_timestamp);

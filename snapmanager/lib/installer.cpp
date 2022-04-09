@@ -403,7 +403,7 @@ void manager::reset_aptcheck()
     // also make sure that the bundle-package-status directory content gets
     // regenerated (i.e. output of the dpkg-query calls)
     //
-    snapdev::glob_list package_status;
+    snapdev::glob_to_list<std::list<std::string>> package_status;
     package_status.read_path<
         snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE>(f_data_path + "/bundle-package-status/*.status");
     snapdev::enumerate(
@@ -413,7 +413,7 @@ void manager::reset_aptcheck()
             unlink(path.c_str());
         });
 
-    snapdev::glob_list bundle_status;
+    snapdev::glob_to_list<std::list<std::string>> bundle_status;
     bundle_status.read_path<
         snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE>(f_data_path + "/bundle-status/*.status");
     snapdev::enumerate(

@@ -24,12 +24,22 @@
  * at this point.
  */
 
+// snapwebsites
 // include the version and a few other things
-#include <snapwebsites/snapwebsites.h>
+//
+#include    <snapwebsites/snapwebsites.h>
 
-#include <catch.hpp>
 
-#include <string>
+// snapcatch2
+//
+#include    <catch2/snapcatch2.hpp>
+
+
+// C++
+//
+#include    <string>
+
+
 
 class snap_test
 {
@@ -50,12 +60,5 @@ private:
     static bool         f_verbose;
     static std::string  f_host;
 };
-
-// Local Variables:
-// mode: cpp
-// indent-tabs-mode: nil
-// c-basic-offset: 4
-// tab-width: 4
-// End:
 
 // vim: ts=4 sw=4 et
