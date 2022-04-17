@@ -399,35 +399,6 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
  .
  Documentation package.
 
-Package: snapcommunicator
-Section: admin
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, snapbase
-Suggests: snapcommunicator-doc
-Description: Fast Websites: powerful CMS for Apache written in C++.
- Snap! C++ runs your CMS using binary code written in C and C++.
- The basic concept is taken from a large set of Drupal 6.x
- modules from Drupal Core and necessary 3rd party modules (we've been using
- over 220 modules on top of the Core modules.) The result is quite
- extensible as it offers a plug-in mechanism that everyone is welcome to use to
- create their own extensions.
- .
- Faciliates communication between modules.
-
-Package: snapcommunicator-doc
-Section: admin
-Architecture: all
-Depends: ${misc:Depends}
-Description: Fast Websites: powerful CMS for Apache written in C++.
- Snap! C++ runs your CMS using binary code written in C and C++.
- The basic concept is taken from a large set of Drupal 6.x
- modules from Drupal Core and necessary 3rd party modules (we've been using
- over 220 modules on top of the Core modules.) The result is quite
- extensible as it offers a plug-in mechanism that everyone is welcome to use to
- create their own extensions.
- .
- Documentation package.
-
 Package: snapdb
 Section: admin
 Architecture: any
