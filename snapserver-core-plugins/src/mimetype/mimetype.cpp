@@ -43,14 +43,14 @@ namespace mimetype
 {
 
 
-CPPTHREAD_PLUGIN_START(mimetype, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(mimetype, 1, 0)
+    , ::serverplugins::description(
             "Add support detection of many file MIME types in JavaScript.")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(mimetype)
 
 
 namespace
@@ -192,13 +192,16 @@ int find_mimetype(QString const & mime_type)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t mimetype::do_update(int64_t last_updated)
+time_t mimetype::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 3, 14, 19, 39, 30, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 3, 14, 19, 39, 30, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -221,12 +224,9 @@ void mimetype::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the MIME type plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void mimetype::bootstrap(snap_child * snap)
+void mimetype::bootstrap()
 {
-    f_snap = snap;
 }
 
 

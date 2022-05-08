@@ -51,22 +51,16 @@ DECLARE_EXCEPTION(bookkeeping_exception, bookkeeping_exception_invalid_path);
 
 
 class bookkeeping
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     //, public layout::layout_content
 {
 public:
-                            bookkeeping();
-                            bookkeeping(bookkeeping const & rhs) = delete;
-    virtual                 ~bookkeeping() override;
-
-    bookkeeping &           operator = (bookkeeping const & rhs) = delete;
-
-    static bookkeeping *    instance();
+    SERVERPLUGINS_DEFAULTS(bookkeeping);
 
     // plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     //// path_execute implementation
     virtual bool            on_path_execute(content::path_info_t & ipath) override;

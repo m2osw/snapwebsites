@@ -1,4 +1,3 @@
-// Snap Websites Server -- Internet avatar functionality
 // Copyright (c) 2015-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -44,41 +43,18 @@ namespace avatar
 
 
 
-CPPTHREAD_PLUGIN_START(avatar, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(avatar, 1, 0)
+    , ::serverplugins::description(
             "Transform user emails in comments, pages, profiles"
             " to Avatar images.")
-    , ::cppthread::plugin_icon("/images/avatar/avatar-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/avatar")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("user")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/avatar/avatar-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/avatar")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("user")
+SERVERPLUGINS_END(avatar)
 
 
-/** \brief Get a fixed avatar name.
- *
- * The avatar plugin makes use of different names in the database. This
- * function ensures that you get the right spelling for a given name.
- *
- * \param[in] name  The name to retrieve.
- *
- * \return A pointer to the name.
- */
-char const * get_name(name_t name)
-{
-    switch(name)
-    {
-    case name_t::SNAP_NAME_AVATAR_TITLE:
-        return "avatar::title";
-
-    default:
-        // invalid index
-        throw snap_logic_error("invalid SNAP_NAME_AVATAR_...");
-
-    }
-    snapdev::NOT_REACHED();
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -93,13 +69,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t avatar::do_update(int64_t last_updated)
+time_t avatar::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 22, 42, 42, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 22, 42, 42, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -127,12 +106,10 @@ void avatar::content_update(int64_t variables_timestamp)
  *
  * \param[in] snap  The child handling this request.
  */
-void avatar::bootstrap(snap_child * snap)
+void avatar::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(avatar, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(avatar, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(avatar, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(avatar, "filter", filter::filter, token_help, boost::placeholders::_1);
 }
 
 

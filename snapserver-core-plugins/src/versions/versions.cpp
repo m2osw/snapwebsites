@@ -74,21 +74,21 @@ namespace versions
 {
 
 
-CPPTHREAD_PLUGIN_START(versions, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(versions, 1, 0)
+    , ::serverplugins::description(
             "The versions plugin displays the version of all the parts used"
             " by Snap! The parts include the main snap library, the plugins,"
             " and all the tools that the server may use. It is a filter so it"
             " can be displayed on any page where the filter is allowed.")
-    , ::cppthread::plugin_icon("/images/versions/versions-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/versions")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("version")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/versions/versions-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/versions")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("version")
+SERVERPLUGINS_END(versions)
 
 
 /* \brief Get a fixed versions name.
@@ -137,13 +137,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t versions::do_update(int64_t last_updated)
+time_t versions::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 1, 16, 22, 52, 51, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 1, 16, 22, 52, 51, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -167,15 +170,11 @@ void versions::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the versions plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void versions::bootstrap(snap_child * snap)
+void versions::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(versions, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(versions, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(versions, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(versions, "filter", filter::filter, token_help, boost::placeholders::_1);
 }
 
 

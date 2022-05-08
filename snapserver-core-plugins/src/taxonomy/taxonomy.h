@@ -35,21 +35,14 @@ const char * get_name(name_t name) __attribute__ ((const));
 
 
 class taxonomy
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        taxonomy();
-                        taxonomy(taxonomy const & rhs) = delete;
-    virtual             ~taxonomy() override;
+    SERVERPLUGINS_DEFAULTS(taxonomy);
 
-    taxonomy &          operator = (taxonomy const & rhs) = delete;
-
-    static taxonomy *   instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual int64_t     do_dynamic_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // content signals implementation
     void                on_copy_branch_cells(libdbproxy::cells & source_cells, libdbproxy::row::pointer_t destination_row, snap_version::version_number_t const destination_branch);

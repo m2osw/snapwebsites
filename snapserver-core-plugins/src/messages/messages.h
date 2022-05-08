@@ -99,9 +99,9 @@ public:
 
     SERVERPLUGINS_DEFAULTS(messages);
 
-    // plugins::plugin implementation
+    // serverplugins::plugin implementation
     virtual void        bootstrap() override;
-    virtual time_t      do_update(time_t last_updated) override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                on_user_status(snap_child::user_status_t status, snap_child::user_identifier_t id);

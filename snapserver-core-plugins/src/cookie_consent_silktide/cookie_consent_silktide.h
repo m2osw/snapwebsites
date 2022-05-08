@@ -70,20 +70,14 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class cookie_consent_silktide
-        : public cppthread::plugin
+        : public serverplugins::plugin
 {
 public:
-                                cookie_consent_silktide();
-                                cookie_consent_silktide(cookie_consent_silktide const & rhs) = delete;
-    virtual                     ~cookie_consent_silktide() override;
+    SERVERPLUGINS_DEFAULTS(cookie_consent_silktide);
 
-    cookie_consent_silktide &   operator = (cookie_consent_silktide const & rhs) = delete;
-
-    static cookie_consent_silktide * instance();
-
-    // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     // content signals
     void                        on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata);

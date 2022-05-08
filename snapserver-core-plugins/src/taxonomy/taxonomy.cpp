@@ -44,17 +44,17 @@ namespace taxonomy
 
 
 
-CPPTHREAD_PLUGIN_START(taxonomy, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(taxonomy, 1, 0)
+    , ::serverplugins::description(
             "This plugin manages the different types on your website."
             " Types include categories, tags, permissions, etc."
             " Some of these types are locked so the system continues to"
             " work, however, all can be edited by the user in some way.")
-    , ::cppthread::plugin_icon("/images/taxonomy/taxonomy-logo-64x64.png")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("taxonomy")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/taxonomy/taxonomy-logo-64x64.png")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("taxonomy")
+SERVERPLUGINS_END(taxonomy)
 
 
 
@@ -100,13 +100,20 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t taxonomy::do_update(int64_t last_updated)
+time_t taxonomy::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 1, 16, 23, 52, 0, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 1, 16, 23, 52, 0, content_update);
+    }
+    else
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 10, 9, 23, 27, 14, owner_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -121,30 +128,11 @@ int64_t taxonomy::do_update(int64_t last_updated)
  *
  * \param[in] variables_timestamp  The timestamp for all the variables added to the database by this update (in micro-seconds).
  */
-void taxonomy::content_update(int64_t variables_timestamp)
+void taxonomy::content_update(time_t variables_timestamp)
 {
     snapdev::NOT_USED(variables_timestamp);
 
     content::content::instance()->add_xml(get_plugin_name());
-}
-
-
-/** \brief Check whether dynamic updates are necessary.
- *
- * This function updates the database dynamically when we detect a
- * blunder, which requires fixing.
- *
- * \param[in] last_updated  The UTC Unix date when the website was last updated (in micro seconds).
- *
- * \return The UTC Unix date of the last update of this plugin.
- */
-int64_t taxonomy::do_dynamic_update(int64_t last_updated)
-{
-    SNAP_PLUGIN_UPDATE_INIT();
-
-    SNAP_PLUGIN_UPDATE(2015, 10, 9, 23, 27, 14, owner_update);
-
-    SNAP_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -201,14 +189,10 @@ void taxonomy::owner_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the taxonomy plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void taxonomy::bootstrap(snap_child * snap)
+void taxonomy::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(taxonomy, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(taxonomy, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

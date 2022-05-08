@@ -36,34 +36,21 @@ enum class name_t
 const char *get_name(name_t name) __attribute__ ((const));
 
 
-class header_exception : public snap_exception
-{
-public:
-    explicit header_exception(char const *        what_msg) : snap_exception("Header", what_msg) {}
-    explicit header_exception(std::string const & what_msg) : snap_exception("Header", what_msg) {}
-    explicit header_exception(QString const &     what_msg) : snap_exception("Header", what_msg) {}
-};
 
 
 
 
 class header
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public layout::layout_content
 {
 public:
-                        header();
-                        header(header const & rhs) = delete;
-    virtual             ~header() override;
+    SERVERPLUGINS_DEFAULTS(header);
 
-    header &            operator = (header const & rhs) = delete;
-
-    static header *     instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // path::path_execute implementation
     virtual bool        on_path_execute(content::path_info_t & ipath) override;

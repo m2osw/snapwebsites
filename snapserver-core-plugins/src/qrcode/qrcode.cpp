@@ -63,19 +63,19 @@ namespace qrcode
 {
 
 
-CPPTHREAD_PLUGIN_START(qrcode, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(qrcode, 1, 0)
+    , ::serverplugins::description(
             "Generate the QR Code of the website public pages.")
-    , ::cppthread::plugin_icon("/images/qrcode/qrcode-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/qrcode")
-    , ::cppthread::plugin_dependency("attachment")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("shorturl")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("utilities")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/qrcode/qrcode-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/qrcode")
+    , ::serverplugins::dependency("attachment")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("shorturl")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("utilities")
+SERVERPLUGINS_END(qrcode)
 
 
 
@@ -178,13 +178,16 @@ void data_deleter(unsigned char * data)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t qrcode::do_update(int64_t last_updated)
+time_t qrcode::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 20, 1, 30, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 20, 1, 30, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -207,14 +210,10 @@ void qrcode::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the qrcode plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void qrcode::bootstrap(snap_child * snap)
+void qrcode::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(qrcode, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(qrcode, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

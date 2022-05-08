@@ -70,22 +70,22 @@ namespace antivirus
 
 
 
-CPPTHREAD_PLUGIN_START(antivirus, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(antivirus, 1, 0)
+    , ::serverplugins::description(
             "The anti-virus plugin is used to verify that a file is not a"
             " virus. When a file that a user uploaded is found to be a virus"
             " this plugin marks that file as unsecure and the file cannot be"
             " downloaded by end users.")
-    , ::cppthread::plugin_icon("/images/antivirus/antivirus-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/antihammering")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("versions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/antivirus/antivirus-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/antihammering")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("versions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(antivirus)
 
 
 /** \brief Get a fixed antivirus name.
@@ -140,13 +140,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t antivirus::do_update(int64_t last_updated)
+int64_t antivirus::do_update(int64_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 17, 15, 45, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 17, 15, 45, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -171,12 +174,10 @@ void antivirus::content_update(int64_t variables_timestamp)
  *
  * \param[in] snap  The child handling this request.
  */
-void antivirus::bootstrap(snap_child * snap)
+void antivirus::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(antivirus, "content", content::content, check_attachment_security, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(antivirus, "versions", versions::versions, versions_tools, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(antivirus, "content", content::content, check_attachment_security, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(antivirus, "versions", versions::versions, versions_tools, boost::placeholders::_1);
 }
 
 

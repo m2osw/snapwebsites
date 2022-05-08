@@ -1,4 +1,3 @@
-// Snap Websites Server -- JavaScript WYSIWYG form widgets
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,8 +55,8 @@ namespace date_widgets
 {
 
 
-CPPTHREAD_PLUGIN_START(date_widgets, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(date_widgets, 1, 0)
+    , ::serverplugins::description(
             "This plugin offers several \"Date\" widgets for the Snap! editor."
             " By default, one can use a Line Edit widgets to let users type in a"
             " date. Only, it is often a lot faster to just click on the date in"
@@ -65,13 +64,13 @@ CPPTHREAD_PLUGIN_START(date_widgets, 1, 0)
             " selection and a partial date selection (only one of the day, month"
             " or year; i.e. credit card expiration dates is only the year and the"
             " month.)")
-    , ::cppthread::plugin_icon("/images/editor/date-widgets-logo-64x64.png")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("gui")
-    , ::cppthread::plugin_categorization_tag("date")
-    , ::cppthread::plugin_categorization_tag("locale")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/editor/date-widgets-logo-64x64.png")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("gui")
+    , ::serverplugins::categorization_tag("date")
+    , ::serverplugins::categorization_tag("locale")
+SERVERPLUGINS_END(date_widgets)
 
 
 
@@ -118,13 +117,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t date_widgets::do_update(int64_t last_updated)
+time_t date_widgets::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 5, 28, 12, 46, 37, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 5, 28, 12, 46, 37, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -148,18 +150,14 @@ void date_widgets::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the date_widgets plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void date_widgets::bootstrap(snap_child * snap)
+void date_widgets::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(date_widgets, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
-    SNAP_LISTEN(date_widgets, "editor", editor::editor, value_to_string, boost::placeholders::_1);
-    SNAP_LISTEN(date_widgets, "editor", editor::editor, string_to_value, boost::placeholders::_1);
-    SNAP_LISTEN(date_widgets, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
-    SNAP_LISTEN(date_widgets, "editor", editor::editor, validate_editor_post_for_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6, boost::placeholders::_7);
+    SERVERPLUGINS_LISTEN(date_widgets, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(date_widgets, "editor", editor::editor, value_to_string, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(date_widgets, "editor", editor::editor, string_to_value, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(date_widgets, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SERVERPLUGINS_LISTEN(date_widgets, "editor", editor::editor, validate_editor_post_for_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6, boost::placeholders::_7);
 }
 
 

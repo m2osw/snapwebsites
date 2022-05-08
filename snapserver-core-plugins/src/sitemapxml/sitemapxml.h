@@ -74,7 +74,7 @@ public:
 
 
 class sitemapxml
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
 {
 public:
@@ -145,7 +145,7 @@ public:
 
     static sitemapxml *     instance();
 
-    // plugins::plugin implementation
+    // serverplugins::plugin implementation
     virtual int64_t         do_update(int64_t last_updated) override;
     virtual void            bootstrap(snap_child * snap) override;
 

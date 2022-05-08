@@ -1,4 +1,3 @@
-// Snap Websites Server -- manage messages (record, display)
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +23,11 @@
 // snapwebsites
 //
 #include    <snapwebsites/snap_exception.h>
+
+
+// serverplugins
+//
+#include    <serverplugins/factory.h>
 
 
 // snaplogger
@@ -61,16 +65,16 @@ namespace messages
 {
 
 SERVERPLUGINS_START(messages, 1, 0)
-    , ::serverplugins::plugin_description(
+    , ::serverplugins::description(
             "The messages plugin is used by many other plugins to manage"
             " debug, information, warning, and error messages in the Snap! system.")
-    , ::serverplugins::plugin_icon("/images/snap/messages-logo-64x64.png")
-    , ::serverplugins::plugin_settings("/admin/settings/info")
-    , ::serverplugins::plugin_dependency("server")
-    , ::serverplugins::plugin_help_uri("https://snapwebsites.org/help")
-    , ::serverplugins::plugin_categorization_tag("security")
-    , ::serverplugins::plugin_categorization_tag("spam")
-SERVERPLUGINS_END()
+    , ::serverplugins::icon("/images/snap/messages-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/info")
+    , ::serverplugins::dependency("server")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(messages)
 
 
 namespace
@@ -396,13 +400,13 @@ void messages::message::serialize(QtSerialization::QWriter & w) const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t messages::do_update(int64_t last_updated)
+time_t messages::do_update(time_t last_updated, unsigned int phase)
 {
-    snapdev::NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated, phase);
 
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -410,14 +414,10 @@ int64_t messages::do_update(int64_t last_updated)
  *
  * This function terminates the initialization of the messages plugin
  * by registering for different events it supports.
- *
- * \param[in] snap  The child handling this request.
  */
-void messages::bootstrap(snap_child * snap)
+void messages::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(messages, "user_status", server, user_status, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(messages, "user_status", server, user_status, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

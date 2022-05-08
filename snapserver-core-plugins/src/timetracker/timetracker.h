@@ -59,22 +59,16 @@ public:
 
 
 class timetracker
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public layout::layout_content
 {
 public:
-                            timetracker();
-                            timetracker(timetracker const & rhs) = delete;
-    virtual                 ~timetracker() override;
-
-    timetracker &           operator = (timetracker const & rhs) = delete;
-
-    static timetracker *    instance();
+    SERVERPLUGINS_DEFAULTS(timetracker);
 
     // plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // path_execute implementation
     virtual bool            on_path_execute(content::path_info_t & ipath) override;

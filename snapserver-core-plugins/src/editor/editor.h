@@ -165,7 +165,7 @@ private:
 
 
 class editor
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public links::links_cloned
     , public path::path_execute
     , public layout::layout_content
@@ -284,17 +284,11 @@ public:
         libdbproxy::value               f_result = libdbproxy::value();
     };
 
-                        editor();
-                        editor(editor const & rhs) = delete;
-    virtual             ~editor() override;
+    SERVERPLUGINS_DEFAULTS(editor);
 
-    editor &            operator = (editor const & rhs) = delete;
-
-    static editor *     instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                on_process_post(QString const & uri_path);

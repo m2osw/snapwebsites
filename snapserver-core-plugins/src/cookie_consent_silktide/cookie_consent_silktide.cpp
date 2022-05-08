@@ -61,19 +61,19 @@ namespace cookie_consent_silktide
 {
 
 
-CPPTHREAD_PLUGIN_START(cookie_consent_silktide, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(cookie_consent_silktide, 1, 0)
+    , ::serverplugins::description(
             "Show an in-page popup allowing users to agree on use of cookies."
             " This plugin makes use the third party silktide cookie-consent tool.")
-    , ::cppthread::plugin_icon("/images/cookie-consent-silktide/cookie-consent-silktide-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/cookie-consent-silktide")
-    , ::cppthread::plugin_dependency("attachment")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/cookie-consent-silktide/cookie-consent-silktide-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/cookie-consent-silktide")
+    , ::serverplugins::dependency("attachment")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(cookie_consent_silktide)
 
 
 /* \brief Get a fixed cookie_consent_silktide name.
@@ -163,13 +163,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t cookie_consent_silktide::do_update(int64_t last_updated)
+time_t cookie_consent_silktide::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 3, 27, 15, 30, 34, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 3, 27, 15, 30, 34, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -193,15 +196,11 @@ void cookie_consent_silktide::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the locale plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void cookie_consent_silktide::bootstrap(snap_child * snap)
+void cookie_consent_silktide::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(cookie_consent_silktide, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(cookie_consent_silktide, "editor", editor::editor, save_editor_fields, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(cookie_consent_silktide, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(cookie_consent_silktide, "editor", editor::editor, save_editor_fields, boost::placeholders::_1);
 }
 
 

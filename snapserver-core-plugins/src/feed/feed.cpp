@@ -1,4 +1,3 @@
-// Snap Websites Server -- different feed handlers (RSS, Atom, RSS_Cloud, PubSubHubbub, etc.)
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,22 +68,22 @@ namespace feed
 
 
 
-CPPTHREAD_PLUGIN_START(feed, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(feed, 1, 0)
+    , ::serverplugins::description(
             "System used to generate RSS, Atom and other feeds. It also"
             " handles subscriptions for subscription based feed systems"
             " such as RSS Cloud and PubSubHubbub.")
-    , ::cppthread::plugin_icon("/images/feed/feed-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/feed")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/feed/feed-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/feed")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(feed)
 
 
 
@@ -178,13 +177,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t feed::do_update(int64_t last_updated)
+time_t feed::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 2, 5, 16, 38, 42, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 2, 5, 16, 38, 42, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -209,15 +211,11 @@ void feed::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the feed plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void feed::bootstrap(snap_child * snap)
+void feed::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(feed, "server", server, backend_process);
-    SNAP_LISTEN(feed, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN0(feed, "server", server, backend_process);
+    SERVERPLUGINS_LISTEN(feed, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

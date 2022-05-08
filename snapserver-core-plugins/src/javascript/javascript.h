@@ -1,5 +1,5 @@
 // Snap Websites Server -- server side javascript environment
-// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,16 +26,8 @@ namespace snap
 namespace javascript
 {
 
-enum class name_t
-{
-    SNAP_NAME_JAVASCRIPT_MINIMIZED,
-    SNAP_NAME_JAVASCRIPT_MINIMIZED_COMPRESSED
-};
-char const * get_name(name_t name) __attribute__ ((const));
 
 
-//class javascript_exception : public snap_exception {};
-//class javascript_exception_circular_dependencies : public javascript_exception {};
 
 class javascript_dynamic_plugin
 {
@@ -51,20 +43,14 @@ public:
 
 
 class javascript
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        javascript();
-                        javascript(javascript const & rhs) = delete;
-    virtual             ~javascript() override;
+    SERVERPLUGINS_DEFAULTS(javascript);
 
-    javascript &        operator = (javascript const & rhs) = delete;
-
-    static javascript * instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // content signals
     void                on_process_attachment(libdbproxy::row::pointer_t file_row, content::attachment_file const & file);

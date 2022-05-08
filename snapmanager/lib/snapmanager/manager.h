@@ -110,7 +110,7 @@ class manager
 public:
     SERVERPLUGINS_DEFAULTS(manager);
 
-    void                            init(int argc, char * argv[]);
+    void                            init(bool daemon, int argc, char * argv[]);
 
     // serverplugins::plugin
     virtual void                    bootstrap() override;
@@ -170,23 +170,23 @@ protected:
     static void                     sighandler( int sig );
     int                             install_package(std::string const & package_name, std::string const & command);
 
-    bool const                      f_daemon = false;
+    bool                            f_daemon = false;
     bool                            f_debug = false;
     advgetopt::getopt::pointer_t    f_opt = advgetopt::getopt::pointer_t();
     ed::signal_handler::pointer_t   f_signal_handler = ed::signal_handler::pointer_t();
     advgetopt::conf_file::pointer_t f_config = advgetopt::conf_file::pointer_t();
-    QString                         f_server_name = QString();
-    QString                         f_log_conf = QString("/etc/snapwebsites/logger/snapmanager.properties");
-    QString                         f_data_path = QString("/var/lib/snapwebsites");
-    QString                         f_cluster_status_path = f_data_path + "/cluster-status";
-    QString                         f_bundles_path = f_data_path + "/bundles";
-    QString                         f_public_ip = QString();
-    QString                         f_plugins_path = QString("/usr/lib/snapwebsites/manager_plugins");
-    QString                         f_cache_path = QString("/var/cache/snapwebsites");
-    QString                         f_www_cache_path = QString("/var/cache/www-snapwebsites");
-    QString                         f_apt_check = QString("/usr/lib/update-notifier/apt-check");
-    QString                         f_reboot_required = QString("/run/reboot-required");
-    QString                         f_lock_path = QString("/run/lock/snapwebsites");
+    std::string                     f_server_name = std::string();
+    std::string                     f_log_conf = std::string("/etc/snapwebsites/logger/snapmanager.properties");
+    std::string                     f_data_path = std::string("/var/lib/snapwebsites");
+    std::string                     f_cluster_status_path = f_data_path + "/cluster-status";
+    std::string                     f_bundles_path = f_data_path + "/bundles";
+    std::string                     f_public_ip = std::string();
+    std::string                     f_plugins_path = std::string("/usr/lib/snapwebsites/manager_plugins");
+    std::string                     f_cache_path = std::string("/var/cache/snapwebsites");
+    std::string                     f_www_cache_path = std::string("/var/cache/www-snapwebsites");
+    std::string                     f_apt_check = std::string("/usr/lib/update-notifier/apt-check");
+    std::string                     f_reboot_required = std::string("/run/reboot-required");
+    std::string                     f_lock_path = std::string("/run/lock/snapwebsites");
     std::string                     f_signal_address = std::string("127.0.0.1");
     int                             f_signal_port = 4041;
     std::vector<std::string>        f_bundle_uri = std::vector<std::string>();

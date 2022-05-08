@@ -73,22 +73,22 @@ namespace oauth2
 {
 
 
-CPPTHREAD_PLUGIN_START(oauth2, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(oauth2, 1, 0)
+    , ::serverplugins::description(
             "The OAuth2 plugin offers an authentication mechanism to"
             " be used by all the other plugins that support a REST API."
             " The administrator of a website can decide whether to authorize"
             " such access or not.")
-    , ::cppthread::plugin_icon("/images/oauth2/oauth2-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/oauth2")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("login")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/oauth2/oauth2-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/oauth2")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("login")
+SERVERPLUGINS_END(oauth2)
 
 
 namespace
@@ -171,13 +171,16 @@ const char * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t oauth2::do_update(int64_t last_updated)
+time_t oauth2::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 25, 0, 7, 40, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 25, 0, 7, 40, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -201,15 +204,11 @@ void oauth2::content_update(int64_t variables_timestamp)
 /** \brief Bootstrap the oauth2.
  *
  * This function adds the events the oauth2 plugin is listening for.
- *
- * \param[in] snap  The child handling this request.
  */
-void oauth2::bootstrap(snap_child * snap)
+void oauth2::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(oauth2, "server", server, process_cookies);
-    SNAP_LISTEN(oauth2, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN0(oauth2, "server", server, process_cookies);
+    SERVERPLUGINS_LISTEN(oauth2, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

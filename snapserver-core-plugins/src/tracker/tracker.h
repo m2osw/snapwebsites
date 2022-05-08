@@ -66,21 +66,15 @@ public:
 
 
 class tracker
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public server::backend_action
 {
 public:
-                        tracker();
-                        tracker(tracker const & rhs) = delete;
-    virtual             ~tracker() override;
+    SERVERPLUGINS_DEFAULTS(tracker);
 
-    tracker &           operator = (tracker const & rhs) = delete;
-
-    static tracker *    instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     libdbproxy::table::pointer_t get_tracker_table();
 

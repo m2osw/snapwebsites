@@ -1,0 +1,15 @@
+# Names for the Event Dispatcher HTTP plugin
+
+introducer=name
+project=edhttp
+
+[public]
+blocked="*blocked*"
+first_pause=antihammering::first_pause
+hit_limit=antihammering::hit_limit
+hit_limit_duration=antihammering::hit_limit_duration
+second_pause=antihammering::second_pause
+table=antihammering
+third_pause=antihammering::thrid_pause
+
+# vim: syntax=dosini

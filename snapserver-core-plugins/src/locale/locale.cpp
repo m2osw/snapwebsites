@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle various locale information such as timezone and date output, number formatting for display, etc.
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,18 +63,18 @@ namespace locale
 {
 
 
-CPPTHREAD_PLUGIN_START(locale, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(locale, 1, 0)
+    , ::serverplugins::description(
             "Define base locale functions to be used throughout all the"
             " plugins. It handles time and date, timezone, numbers, currency,"
             " etc.")
-    , ::cppthread::plugin_icon("/images/locale/locale-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/locale")
-    , ::cppthread::plugin_dependency("server")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("content")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/locale/locale-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/locale")
+    , ::serverplugins::dependency("server")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("content")
+SERVERPLUGINS_END(locale)
 
 
 /* \brief Get a fixed locale name.
@@ -170,13 +169,13 @@ safe_timezone::~safe_timezone()
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t locale::do_update(int64_t last_updated)
+time_t locale::do_update(time_t last_updated, unsigned int phase)
 {
     snapdev::NOT_USED(last_updated);
 
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 

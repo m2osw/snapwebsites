@@ -1,4 +1,3 @@
-// Snap Websites Server -- manage sendmail (record, display)
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -92,23 +91,23 @@ namespace sendmail
 {
 
 
-CPPTHREAD_PLUGIN_START(sendmail, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(sendmail, 1, 0)
+    , ::serverplugins::description(
             "Handle sending emails from your website environment."
             " This version of sendmail requires a backend process to"
             " actually process the emails and send them out.")
-    , ::cppthread::plugin_icon("/images/sendmail/sendmail-logo-64x64.png")
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("sessions")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/sendmail/sendmail-logo-64x64.png")
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("sessions")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(sendmail)
 
 
 /** \brief Get a fixed sendmail plugin name.
@@ -298,13 +297,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t sendmail::do_update(int64_t last_updated)
+time_t sendmail::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 25, 4, 16, 12, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 25, 4, 16, 12, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -329,17 +331,13 @@ void sendmail::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the sendmail plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void sendmail::bootstrap(snap_child * snap)
+void sendmail::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(sendmail, "server", server, register_backend_cron, boost::placeholders::_1);
-    SNAP_LISTEN(sendmail, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(sendmail, "filter", filter::filter, token_help, boost::placeholders::_1);
-    SNAP_LISTEN(sendmail, "users", users::users, check_user_security, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(sendmail, "server", server, register_backend_cron, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(sendmail, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(sendmail, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(sendmail, "users", users::users, check_user_security, boost::placeholders::_1);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(sendmail);
 }

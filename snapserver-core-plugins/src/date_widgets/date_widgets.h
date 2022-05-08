@@ -26,23 +26,6 @@ namespace snap
 namespace date_widgets
 {
 
-//class date_widgets_exception : public snap_exception
-//{
-//public:
-//    explicit date_widgets_exception(char const *        what_msg) : snap_exception("date_widgets", what_msg) {}
-//    explicit date_widgets_exception(std::string const & what_msg) : snap_exception("date_widgets", what_msg) {}
-//    explicit date_widgets_exception(QString const &     what_msg) : snap_exception("date_widgets", what_msg) {}
-//};
-//
-//class date_widgets_exception_invalid_argument : public date_widgets_exception
-//{
-//public:
-//    explicit date_widgets_exception_invalid_argument(char const *        what_msg) : editor_exception(what_msg) {}
-//    explicit date_widgets_exception_invalid_argument(std::string const & what_msg) : editor_exception(what_msg) {}
-//    explicit date_widgets_exception_invalid_argument(QString const &     what_msg) : editor_exception(what_msg) {}
-//};
-
-
 
 enum class name_t
 {
@@ -52,20 +35,14 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class date_widgets
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                            date_widgets();
-                            date_widgets(date_widgets const & rhs) = delete;
-    virtual                 ~date_widgets() override;
+    SERVERPLUGINS_DEFAULTS(date_widgets);
 
-    date_widgets &          operator = (date_widgets const & rhs) = delete;
-
-    static date_widgets *   instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // editor signals
     void                    on_prepare_editor_form(editor::editor * e);

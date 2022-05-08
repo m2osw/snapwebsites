@@ -1,4 +1,3 @@
-// Snap Websites Server -- all the user content and much of the system content
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -97,18 +96,18 @@ namespace content
 {
 
 
-CPPTHREAD_PLUGIN_START(content, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(content, 1, 0)
+    , ::serverplugins::description(
             "Manage nearly all the content of your website. This plugin handles"
             " your pages, the website taxonomy (tags, categories, permissions...)"
             " and much much more.")
-    , ::cppthread::plugin_icon("/images/snap/content-logo-64x64.png")
-    , ::cppthread::plugin_settings("/settings/info")
-    , ::cppthread::plugin_dependency("server")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/snap/content-logo-64x64.png")
+    , ::serverplugins::settings_path("/settings/info")
+    , ::serverplugins::dependency("server")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(content)
 
 
 
@@ -495,17 +494,20 @@ char const * css_extensions[] =
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t content::do_update(int64_t last_updated)
+time_t content::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    // DO NOT CHANGE THE DATES ON THOSE ENTRIES
-    SNAP_PLUGIN_UPDATE(2015, 7, 3, 20, 54, 18, remove_files_compressor);
+    if(phase == 0)
+    {
+        // DO NOT CHANGE THE DATES ON THOSE ENTRIES
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 7, 3, 20, 54, 18, remove_files_compressor);
 
-    // This entry can get a newer date as things evolve
-    SNAP_PLUGIN_UPDATE(2015, 9, 10, 3, 35, 19, content_update);
+        // This entry can get a newer date as things evolve
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 9, 10, 3, 35, 19, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -594,19 +596,15 @@ void content::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the content plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void content::bootstrap(snap_child * snap)
+void content::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(content, "server", server, save_content);
-    SNAP_LISTEN(content, "server", server, add_snap_expr_functions, boost::placeholders::_1);
-    SNAP_LISTEN(content, "server", server, register_backend_action, boost::placeholders::_1);
-    SNAP_LISTEN0(content, "server", server, backend_process);
-    SNAP_LISTEN(content, "server", server, load_file, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(content, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN0(content, "server", server, save_content);
+    SERVERPLUGINS_LISTEN(content, "server", server, add_snap_expr_functions, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(content, "server", server, register_backend_action, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN0(content, "server", server, backend_process);
+    SERVERPLUGINS_LISTEN(content, "server", server, load_file, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(content, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(content);
 }

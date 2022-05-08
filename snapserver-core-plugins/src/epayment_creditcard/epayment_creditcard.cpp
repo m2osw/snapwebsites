@@ -54,25 +54,25 @@ namespace epayment_creditcard
 {
 
 
-CPPTHREAD_PLUGIN_START(epayment_creditcard, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(epayment_creditcard, 1, 0)
+    , ::serverplugins::description(
             "Generate a credit card form that the end user is expected to"
             " fill in. This plugin is generally not installed by itself,"
             " instead it is marked as a dependency of a plugin that is"
             " capable of processing credit cards.")
-    , ::cppthread::plugin_icon("/images/epayment/epayment-credit-card-logo-64x64.png")
-    , ::cppthread::plugin_settings(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SETTINGS_PATH))
-    , ::cppthread::plugin_dependency("date_widgets")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("epayment")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/epayment/epayment-credit-card-logo-64x64.png")
+    , ::serverplugins::settings_path(get_name(name_t::SNAP_NAME_EPAYMENT_CREDITCARD_SETTINGS_PATH))
+    , ::serverplugins::dependency("date_widgets")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("epayment")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(epayment_creditcard)
 
 
 
@@ -145,13 +145,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t epayment_creditcard::do_update(int64_t last_updated)
+time_t epayment_creditcard::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 5, 6, 23, 33, 16, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 5, 6, 23, 33, 16, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -176,16 +179,12 @@ void epayment_creditcard::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the epayment_creditcard plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void epayment_creditcard::bootstrap(snap_child * snap)
+void epayment_creditcard::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(epayment_creditcard, "server", server, process_post, boost::placeholders::_1);
-    SNAP_LISTEN(epayment_creditcard, "editor", editor::editor, dynamic_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(epayment_creditcard, "editor", editor::editor, save_editor_fields, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(epayment_creditcard, "server", server, process_post, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(epayment_creditcard, "editor", editor::editor, dynamic_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(epayment_creditcard, "editor", editor::editor, save_editor_fields, boost::placeholders::_1);
 }
 
 

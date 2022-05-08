@@ -43,19 +43,19 @@ namespace webform
 {
 
 
-CPPTHREAD_PLUGIN_START(webform, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(webform, 1, 0)
+    , ::serverplugins::description(
             "Allows end users to dynamically create their own forms."
             " This is an extension of our Snap! editor that allows you"
             " to create forms directly from your website and reuse them"
             " on any page you'd like to reuse them.")
-    , ::cppthread::plugin_icon("/images/webform/webform-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/webform")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("gui")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/webform/webform-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/webform")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(webform)
 
 
 /** \brief Get a fixed webform plugin name.
@@ -102,15 +102,18 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t webform::do_update(int64_t last_updated)
+time_t webform::do_update(time_t last_updated, unsigned int phase)
 {
     snapdev::NOT_USED(last_updated);
 
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2012, 1, 1, 0, 0, 0, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2012, 1, 1, 0, 0, 0, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -134,12 +137,9 @@ void webform::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the webform plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void webform::bootstrap(snap_child * snap)
+void webform::bootstrap()
 {
-    f_snap = snap;
 }
 
 

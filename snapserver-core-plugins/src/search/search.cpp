@@ -1,4 +1,3 @@
-// Snap Websites Server -- search capability
 // Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,41 +42,19 @@ namespace search
 {
 
 
-CPPTHREAD_PLUGIN_START(search, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(search, 1, 0)
+    , ::serverplugins::description(
             "The search plugin index your website public pages in order to"
             " allow your users to search its content.")
-    , ::cppthread::plugin_icon("/images/search/search-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/search")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("search")
-    , ::cppthread::plugin_categorization_tag("gui")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/search/search-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/search")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("search")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(search)
 
 
-/** \brief Get a fixed path name.
- *
- * The path plugin makes use of different names in the database. This
- * function ensures that you get the right spelling for a given name.
- *
- * \param[in] name  The name to retrieve.
- *
- * \return A pointer to the name.
- */
-const char * get_name(name_t name)
-{
-    switch(name) {
-    case name_t::SNAP_NAME_SEARCH_STATUS:
-        return "search::status";
-
-    default:
-        // invalid index
-        throw snap_logic_exception("invalid name_t::SNAP_NAME_SEARCH_...");
-
-    }
-    snapdev::NOT_REACHED();
-}
 
 
 
@@ -94,13 +71,16 @@ const char * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t search::do_update(int64_t last_updated)
+time_t search::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 18, 1, 54, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 18, 1, 54, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -121,15 +101,11 @@ void search::content_update(int64_t variables_timestamp)
 /** \brief Bootstrap the search.
  *
  * This function adds the events the search plugin is listening for.
- *
- * \param[in] snap  The child handling this request.
  */
-void search::bootstrap(snap_child * snap)
+void search::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(search, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(search, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(search, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(search, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

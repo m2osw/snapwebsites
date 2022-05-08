@@ -130,22 +130,22 @@ namespace users
 
 
 
-CPPTHREAD_PLUGIN_START(users, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(users, 1, 0)
+    , ::serverplugins::description(
             "The users plugin manages all the users on a website. It is also"
             " capable to create new users which is a Snap! wide feature.")
-    , ::cppthread::plugin_icon("/images/users/users-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/users")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("locale")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("server_access")
-    , ::cppthread::plugin_dependency("sessions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("user")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/users/users-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/users")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("locale")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("server_access")
+    , ::serverplugins::dependency("sessions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("user")
+SERVERPLUGINS_END(users)
 
 
 
@@ -465,30 +465,20 @@ const char * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t users::do_update(int64_t last_updated)
+time_t users::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 1, 4, 0, 42, 55, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 1, 4, 0, 42, 55, content_update);
+    }
+    else
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 12, 14, 18, 6, 32, user_identifier_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
-}
-
-
-/** \brief Update the database as needed
- *
- * \param[in] last_updated  The UTC Unix date when the website was last
- *                          updated (in micro seconds).
- *
- * \return The UTC Unix date of the last update of this plugin.
- */
-int64_t users::do_dynamic_update(int64_t last_updated)
-{
-    SNAP_PLUGIN_UPDATE_INIT();
-
-    SNAP_PLUGIN_UPDATE(2016, 12, 14, 18, 6, 32, user_identifier_update);
-
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -640,26 +630,22 @@ void users::user_identifier_update(int64_t variables_timestamp)
 /** \brief Bootstrap the users.
  *
  * This function adds the events the users plugin is listening for.
- *
- * \param[in] snap  The child handling this request.
  */
-void users::bootstrap(snap_child * snap)
+void users::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0 ( users, "server",  server,           process_cookies                     );
-    SNAP_LISTEN0 ( users, "server",  server,           attach_to_session                   );
-    SNAP_LISTEN0 ( users, "server",  server,           detach_from_session                 );
-    SNAP_LISTEN  ( users, "server",  server,           define_locales,          boost::placeholders::_1         );
-    SNAP_LISTEN  ( users, "server",  server,           improve_signature,       boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
-    SNAP_LISTEN  ( users, "server",  server,           table_is_accessible,     boost::placeholders::_1, boost::placeholders::_2     );
-    SNAP_LISTEN0 ( users, "locale",  locale::locale,   set_locale                          );
-    SNAP_LISTEN0 ( users, "locale",  locale::locale,   set_timezone                        );
-    SNAP_LISTEN  ( users, "content", content::content, create_content,          boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
-    SNAP_LISTEN  ( users, "layout",  layout::layout,   generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
-    SNAP_LISTEN  ( users, "layout",  layout::layout,   generate_page_content,   boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
-    SNAP_LISTEN  ( users, "filter",  filter::filter,   replace_token,           boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
-    SNAP_LISTEN  ( users, "filter",  filter::filter,   token_help,              boost::placeholders::_1         );
+    SERVERPLUGINS_LISTEN0 ( users, "server",  server,           process_cookies                     );
+    SERVERPLUGINS_LISTEN0 ( users, "server",  server,           attach_to_session                   );
+    SERVERPLUGINS_LISTEN0 ( users, "server",  server,           detach_from_session                 );
+    SERVERPLUGINS_LISTEN  ( users, "server",  server,           define_locales,          boost::placeholders::_1         );
+    SERVERPLUGINS_LISTEN  ( users, "server",  server,           improve_signature,       boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SERVERPLUGINS_LISTEN  ( users, "server",  server,           table_is_accessible,     boost::placeholders::_1, boost::placeholders::_2     );
+    SERVERPLUGINS_LISTEN0 ( users, "locale",  locale::locale,   set_locale                          );
+    SERVERPLUGINS_LISTEN0 ( users, "locale",  locale::locale,   set_timezone                        );
+    SERVERPLUGINS_LISTEN  ( users, "content", content::content, create_content,          boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SERVERPLUGINS_LISTEN  ( users, "layout",  layout::layout,   generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SERVERPLUGINS_LISTEN  ( users, "layout",  layout::layout,   generate_page_content,   boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SERVERPLUGINS_LISTEN  ( users, "filter",  filter::filter,   replace_token,           boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3 );
+    SERVERPLUGINS_LISTEN  ( users, "filter",  filter::filter,   token_help,              boost::placeholders::_1         );
 
     f_info.reset(new sessions::sessions::session_info);
 }

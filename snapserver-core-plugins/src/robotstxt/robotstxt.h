@@ -68,7 +68,7 @@ public:
 
 
 class robotstxt
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
 {
 public:
@@ -76,17 +76,11 @@ public:
     static char const * ROBOT_NAME_GLOBAL;
     static char const * FIELD_NAME_DISALLOW;
 
-                        robotstxt();
-                        robotstxt(robotstxt const & rhs) = delete;
-    virtual             ~robotstxt() override;
+    SERVERPLUGINS_DEFAULTS(robotstxt);
 
-    robotstxt &         operator = (robotstxt const & rhs) = delete;
-
-    static robotstxt *  instance();
-
-    // plugins::plugin
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // path::path_execute implementation
     virtual bool        on_path_execute(content::path_info_t & url) override;

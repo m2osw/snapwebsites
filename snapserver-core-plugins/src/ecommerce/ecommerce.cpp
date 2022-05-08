@@ -150,8 +150,8 @@ namespace ecommerce
 {
 
 
-CPPTHREAD_PLUGIN_START(ecommerce, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(ecommerce, 1, 0)
+    , ::serverplugins::description(
             "The e-Commerce plugin offers all the necessary features a"
             " website needs to offer a full e-Commerce environment so your"
             " users can purchase your goods and services. The base plugin"
@@ -159,17 +159,17 @@ CPPTHREAD_PLUGIN_START(ecommerce, 1, 0)
             " need for other plugins. However, you want to install the"
             " ecommerce-payment plugin and at least one of the payments"
             " gateway in order to allow for the actual payments.")
-    , ::cppthread::plugin_icon("/images/ecommerce/ecommerce-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/ecommerce")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("shorturl")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("finance")
-    , ::cppthread::plugin_categorization_tag("payment")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/ecommerce/ecommerce-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/ecommerce")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("shorturl")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("finance")
+    , ::serverplugins::categorization_tag("payment")
+SERVERPLUGINS_END(ecommerce)
 
 
 
@@ -426,13 +426,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t ecommerce::do_update(int64_t last_updated)
+time_t ecommerce::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 6, 6, 23, 33, 34, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 6, 6, 23, 33, 34, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -456,19 +459,15 @@ void ecommerce::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the ecommerce plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void ecommerce::bootstrap(snap_child * snap)
+void ecommerce::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(ecommerce, "server", server, process_post, boost::placeholders::_1);
-    SNAP_LISTEN(ecommerce, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(ecommerce, "epayment", epayment::epayment, generate_invoice, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(ecommerce, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(ecommerce, "filter", filter::filter, token_help, boost::placeholders::_1);
-    SNAP_LISTEN(ecommerce, "path", path::path, preprocess_path, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(ecommerce, "server", server, process_post, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(ecommerce, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(ecommerce, "epayment", epayment::epayment, generate_invoice, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(ecommerce, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(ecommerce, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(ecommerce, "path", path::path, preprocess_path, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

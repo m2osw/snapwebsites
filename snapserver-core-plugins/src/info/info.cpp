@@ -57,23 +57,23 @@ namespace info
 
 
 
-CPPTHREAD_PLUGIN_START(info, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(info, 1, 0)
+    , ::serverplugins::description(
             "The info plugin offers handling of the core information of your"
            "system. It is opens a settings page where all that information"
            "can directly be edited online.")
-    , ::cppthread::plugin_icon("/images/info/info-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/info")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("sendmail")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("content")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/info/info-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/info")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("sendmail")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("content")
+SERVERPLUGINS_END(info)
 
 
 /** \class info
@@ -132,13 +132,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t info::do_update(int64_t last_updated)
+time_t info::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2018, 8, 7, 22, 56, 5, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2018, 8, 7, 22, 56, 5, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -161,18 +164,14 @@ void info::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the info plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void info::bootstrap(snap_child * snap)
+void info::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(info, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(info, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(info, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(info, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(info, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SERVERPLUGINS_LISTEN(info, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(info, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(info, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(info, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(info, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(info);
 }

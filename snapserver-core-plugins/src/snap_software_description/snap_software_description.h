@@ -62,20 +62,14 @@ public:
 
 
 class snap_software_description
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                                            snap_software_description();
-                                            snap_software_description(snap_software_description const & rhs) = delete;
-    virtual                                 ~snap_software_description() override;
+    SERVERPLUGINS_DEFAULTS(snap_software_description);
 
-    snap_software_description &             operator = (snap_software_description const & rhs) = delete;
-
-    static snap_software_description *      instance();
-
-    // plugins::plugin implementation
-    virtual int64_t                         do_update(int64_t last_updated) override;
-    virtual void                            bootstrap(::snap::snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                            bootstrap() override;
+    virtual time_t                          do_update(time_t last_updated, unsigned int phase) override;
 
     // server signal
     void                                    on_backend_process();

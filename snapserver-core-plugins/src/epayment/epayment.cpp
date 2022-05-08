@@ -53,135 +53,135 @@ namespace epayment
 {
 
 
-CPPTHREAD_PLUGIN_START(epayment, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(epayment, 1, 0)
+    , ::serverplugins::description(
             "The e-Payment plugin offers one common way to process an"
             " electronic or not so electronic payment online (i.e. you"
             " may accept checks, for example...)")
-    , ::cppthread::plugin_icon("/images/epayment/epayment-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/epayment")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("payment")
-    , ::cppthread::plugin_categorization_tag("finance")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/epayment/epayment-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/epayment")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("payment")
+    , ::serverplugins::categorization_tag("finance")
+SERVERPLUGINS_END(epayment)
 
 
 
-/* \brief Get a fixed epayment name.
- *
- * The epayment plugin makes use of different names in the database. This
- * function ensures that you get the right spelling for a given name.
- *
- * \param[in] name  The name to retrieve.
- *
- * \return A pointer to the name.
- */
-char const * get_name(name_t name)
-{
-    switch(name)
-    {
-    case name_t::SNAP_NAME_EPAYMENT_CANCELED_PATH:
-        return "epayment/canceled";
-
-    case name_t::SNAP_NAME_EPAYMENT_DESCRIPTION:
-        return "epayment::description";
-
-    case name_t::SNAP_NAME_EPAYMENT_FAILED_PATH:
-        return "epayment/failed";
-
-    case name_t::SNAP_NAME_EPAYMENT_GRAND_TOTAL:
-        return "epayment::grand_total";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER:
-        return "epayment::invoice_number";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS:
-        return "epayment::invoice_status";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_ABANDONED:
-        return "abandoned";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_CANCELED:
-        return "canceled";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_COMPLETED:
-        return "completed";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_CREATED:
-        return "created";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED:
-        return "failed";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PAID:
-        return "paid";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PENDING:
-        return "pending";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PROCESSING:
-        return "processing";
-
-    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_UNKNOWN:
-        return "unknown";
-
-    case name_t::SNAP_NAME_EPAYMENT_LONG_DESCRIPTION:
-        return "epayment::long_description";
-
-    case name_t::SNAP_NAME_EPAYMENT_PRICE:
-        return "epayment::price";
-
-    case name_t::SNAP_NAME_EPAYMENT_PRODUCT:
-        return "epayment::product";
-
-    case name_t::SNAP_NAME_EPAYMENT_PRODUCT_NAME:
-        return "epayment::product_name";
-
-    case name_t::SNAP_NAME_EPAYMENT_PRODUCT_TYPE_PATH:
-        return "types/taxonomy/system/content-types/epayment/product";
-
-    case name_t::SNAP_NAME_EPAYMENT_QUANTITY:
-        return "epayment::quantity";
-
-    case name_t::SNAP_NAME_EPAYMENT_QUANTITY_MINIMUM:
-        return "epayment::quantity_minimum";
-
-    case name_t::SNAP_NAME_EPAYMENT_QUANTITY_MAXIMUM:
-        return "epayment::quantity_maximum";
-
-    case name_t::SNAP_NAME_EPAYMENT_QUANTITY_INCREMENT:
-        return "epayment::quantity_increment";
-
-    case name_t::SNAP_NAME_EPAYMENT_RECURRING:
-        return "epayment::recurring";
-
-    case name_t::SNAP_NAME_EPAYMENT_RECURRING_SETUP_FEE:
-        return "epayment::recurring_setup_fee";
-
-    case name_t::SNAP_NAME_EPAYMENT_SKU:
-        return "epayment::sku";
-
-    case name_t::SNAP_NAME_EPAYMENT_STORE_NAME:
-        return "epayment::store_name";
-
-    case name_t::SNAP_NAME_EPAYMENT_THANK_YOU_PATH:
-        return "epayment/thank-you";
-
-    case name_t::SNAP_NAME_EPAYMENT_THANK_YOU_SUBSCRIPTION_PATH:
-        return "epayment/thank-you-subscription";
-
-    case name_t::SNAP_NAME_EPAYMENT_TOTAL:
-        return "epayment::total";
-
-    default:
-        // invalid index
-        throw snap_logic_exception("invalid name_t::SNAP_NAME_EPAYMENT_...");
-
-    }
-    snapdev::NOT_REACHED();
-}
+///* \brief Get a fixed epayment name.
+// *
+// * The epayment plugin makes use of different names in the database. This
+// * function ensures that you get the right spelling for a given name.
+// *
+// * \param[in] name  The name to retrieve.
+// *
+// * \return A pointer to the name.
+// */
+//char const * get_name(name_t name)
+//{
+//    switch(name)
+//    {
+//    case name_t::SNAP_NAME_EPAYMENT_CANCELED_PATH:
+//        return "epayment/canceled";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_DESCRIPTION:
+//        return "epayment::description";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_FAILED_PATH:
+//        return "epayment/failed";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_GRAND_TOTAL:
+//        return "epayment::grand_total";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_NUMBER:
+//        return "epayment::invoice_number";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS:
+//        return "epayment::invoice_status";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_ABANDONED:
+//        return "abandoned";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_CANCELED:
+//        return "canceled";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_COMPLETED:
+//        return "completed";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_CREATED:
+//        return "created";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_FAILED:
+//        return "failed";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PAID:
+//        return "paid";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PENDING:
+//        return "pending";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_PROCESSING:
+//        return "processing";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_INVOICE_STATUS_UNKNOWN:
+//        return "unknown";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_LONG_DESCRIPTION:
+//        return "epayment::long_description";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_PRICE:
+//        return "epayment::price";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_PRODUCT:
+//        return "epayment::product";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_PRODUCT_NAME:
+//        return "epayment::product_name";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_PRODUCT_TYPE_PATH:
+//        return "types/taxonomy/system/content-types/epayment/product";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_QUANTITY:
+//        return "epayment::quantity";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_QUANTITY_MINIMUM:
+//        return "epayment::quantity_minimum";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_QUANTITY_MAXIMUM:
+//        return "epayment::quantity_maximum";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_QUANTITY_INCREMENT:
+//        return "epayment::quantity_increment";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_RECURRING:
+//        return "epayment::recurring";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_RECURRING_SETUP_FEE:
+//        return "epayment::recurring_setup_fee";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_SKU:
+//        return "epayment::sku";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_STORE_NAME:
+//        return "epayment::store_name";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_THANK_YOU_PATH:
+//        return "epayment/thank-you";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_THANK_YOU_SUBSCRIPTION_PATH:
+//        return "epayment/thank-you-subscription";
+//
+//    case name_t::SNAP_NAME_EPAYMENT_TOTAL:
+//        return "epayment::total";
+//
+//    default:
+//        // invalid index
+//        throw snap_logic_exception("invalid name_t::SNAP_NAME_EPAYMENT_...");
+//
+//    }
+//    snapdev::NOT_REACHED();
+//}
 
 
 
@@ -1462,13 +1462,16 @@ bool recurring_t::operator != (recurring_t const & rhs) const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t epayment::do_update(int64_t last_updated)
+time_t epayment::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 4, 28, 19, 32, 45, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 4, 28, 19, 32, 45, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -1492,14 +1495,10 @@ void epayment::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the epayment plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void epayment::bootstrap(snap_child * snap)
+void epayment::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(epayment, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(epayment, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

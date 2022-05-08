@@ -229,7 +229,11 @@ http_cookie::http_cookie(snap_child * snap, QString const & name, QString const 
         ushort c(f_name[i].unicode());
         if(c <= ' ' || c >= 127 || (http_token[c >> 5] & (1 << (c & 0x1F))) == 0)
         {
-            throw http_cookie_parse_exception(QString("the name of a cookie must only include token compatible characters (offensive character: %1)").arg(QChar(c)));
+            throw http_cookie_parse_exception(
+                      "the name of a cookie must only include token compatible"
+                      " characters (offensive character: "
+                    + std::string(1, c)
+                    + ")");
         }
     }
     if(f_name[0] == '$')

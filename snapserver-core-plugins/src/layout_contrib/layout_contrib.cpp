@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle the contrib files for your layouts
 // Copyright (c) 2017-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,60 +38,22 @@ namespace layout_contrib
 
 
 
-CPPTHREAD_PLUGIN_START(layout_contrib, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(layout_contrib, 1, 0)
+    , ::serverplugins::description(
             "Offer additional files (JS, CSS, Fonts) for layouts.")
-    , ::cppthread::plugin_icon("/images/snap/layout_contrib-logo-64x64.png")
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("links")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
-
-
-/** \brief Get a fixed layout name.
- *
- * The layout plugin makes use of different names in the database. This
- * function ensures that you get the right spelling for a given name.
- *
- * \param[in] name  The name to retrieve.
- *
- * \return A pointer to the name.
- */
-char const * get_name(name_t name)
-{
-    switch(name)
-    {
-    case name_t::SNAP_NAME_LAYOUT_CONTRIB_BOOTSTRAP:
-        return "bootstrap";
-
-    default:
-        // invalid index
-        throw snap_logic_error("invalid name_t::SNAP_NAME_LAYOUT_CONTRIB_...");
-
-    }
-    snapdev::NOT_REACHED();
-}
+    , ::serverplugins::icon("/images/snap/layout_contrib-logo-64x64.png")
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("links")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(layout_contrib)
 
 
 
-/** \brief Get a pointer to the layout_contrib plugin.
- *
- * This function returns an instance pointer to the layout_contrib plugin.
- *
- * Note that you cannot assume that the pointer will be valid until the
- * bootstrap event is called.
- *
- * \return A pointer to the layout_contrib plugin.
- */
-layout_contrib * layout_contrib::instance()
-{
-    return g_plugin_layout_contrib_factory.instance();
-}
 
 
 /** \brief Check whether updates are necessary.
@@ -108,15 +69,18 @@ layout_contrib * layout_contrib::instance()
  *
  * \return The UTC Unix date of the last update of this plugin or a layout.
  */
-int64_t layout_contrib::do_update(int64_t last_updated)
+time_t layout_contrib::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    // first time, make sure the default theme is installed
-    //
-    SNAP_PLUGIN_UPDATE(2017, 5, 20, 0, 14, 30, content_update);
+    if(phase == 0)
+    {
+        // first time, make sure the default theme is installed
+        //
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 5, 20, 0, 14, 30, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -132,7 +96,7 @@ void layout_contrib::content_update(int64_t variables_timestamp)
 {
     snapdev::NOT_USED(variables_timestamp);
 
-    content::content::instance()->add_xml(get_plugin_name());
+    content::content::instance()->add_xml(name());
 }
 
 

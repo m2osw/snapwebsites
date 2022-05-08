@@ -84,24 +84,24 @@ namespace snap
 namespace editor
 {
 
-CPPTHREAD_PLUGIN_START(editor, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(editor, 1, 0)
+    , ::serverplugins::description(
             "Offer a WYSIWYG* editor to people using the website."
             " The editor appears wherever a plugin creates a div tag with"
             " the contenteditable attribute set to true."
             "\n(*) WYSIWYG: What You See Is What You Get.")
-    , ::cppthread::plugin_icon("/images/editor/editor-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/editor")
-    , ::cppthread::plugin_dependency("attachment")
-    , ::cppthread::plugin_dependency("locale")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("server_access")
-    , ::cppthread::plugin_dependency("sessions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("editor")
-    , ::cppthread::plugin_categorization_tag("gui")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/editor/editor-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/editor")
+    , ::serverplugins::dependency("attachment")
+    , ::serverplugins::dependency("locale")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("server_access")
+    , ::serverplugins::dependency("sessions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("editor")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(editor)
 
 
 
@@ -404,13 +404,16 @@ libdbproxy::value & editor::string_to_value_info_t::result()
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t editor::do_update(int64_t last_updated)
+time_t editor::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2018, 10, 17, 17, 7, 19, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2018, 10, 17, 17, 7, 19, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -434,19 +437,15 @@ void editor::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the editor plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void editor::bootstrap(snap_child * snap)
+void editor::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(editor, "server", server,         process_post,              boost::placeholders::_1);
-    SNAP_LISTEN(editor, "layout", layout::layout, generate_header_content,   boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(editor, "layout", layout::layout, generate_page_content,     boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(editor, "layout", layout::layout, add_layout_from_resources, boost::placeholders::_1);
-    SNAP_LISTEN(editor, "form",   form::form,     validate_post_for_widget,  boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6);
-    SNAP_LISTEN(editor, "path",   path::path,     check_for_redirect,        boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(editor, "server", server,         process_post,              boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(editor, "layout", layout::layout, generate_header_content,   boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(editor, "layout", layout::layout, generate_page_content,     boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(editor, "layout", layout::layout, add_layout_from_resources, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(editor, "form",   form::form,     validate_post_for_widget,  boost::placeholders::_1,  boost::placeholders::_2, boost::placeholders::_3,  boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6);
+    SERVERPLUGINS_LISTEN(editor, "path",   path::path,     check_for_redirect,        boost::placeholders::_1);
 }
 
 

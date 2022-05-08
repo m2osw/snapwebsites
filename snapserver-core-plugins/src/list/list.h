@@ -160,7 +160,7 @@ private:
 
 
 class list
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public server::backend_action
     , public layout::layout_content
     , public layout::layout_boxes
@@ -201,7 +201,7 @@ public:
         }
 
     private:
-        list *              f_list_plugin = nullptr;
+        list::pointer_t     f_list_plugin = nullptr;
         priority_t          f_priority = LIST_PRIORITY_NEW_PAGE;
     };
 
@@ -228,17 +228,11 @@ public:
         int64_t             f_start_date_offset = 0;
     };
 
-                        list();
-                        list(list const & rhs) = delete;
-    virtual             ~list() override;
+    SERVERPLUGINS_DEFAULTS(list);
 
-    list &              operator = (list const & rhs) = delete;
-
-    static list *       instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // server::backend_action implementation
     virtual void        on_backend_action(QString const & action) override;

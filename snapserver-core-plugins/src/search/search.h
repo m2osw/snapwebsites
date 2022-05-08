@@ -26,23 +26,17 @@ namespace snap
 namespace search
 {
 
-enum class name_t
-{
-    SNAP_NAME_SEARCH_STATUS
-};
-char const * get_name(name_t name) __attribute__ ((const));
-
 
 
 class search
-    : public serverplugin::plugin
+    : public serverplugins::plugin
 {
 public:
     SERVERPLUGINS_DEFAULTS(search);
 
-    // public plugins::plugin
+    // serverplugins::plugin
     virtual void            bootstrap() override;
-    virtual time_t          do_update(time_t last_updated) override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                    on_improve_signature(QString const & path, QDomDocument doc, QDomElement signature);

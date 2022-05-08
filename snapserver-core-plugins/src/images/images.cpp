@@ -61,20 +61,20 @@ namespace images
 {
 
 
-CPPTHREAD_PLUGIN_START(images, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(images, 1, 0)
+    , ::serverplugins::description(
             "Transform images in one way or another. Also used to generate"
             " previews of attachments such as the first page of a PDF file.")
-    , ::cppthread::plugin_icon("/images/images/images-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/images")
-    , ::cppthread::plugin_dependency("listener")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("versions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("images")
-    , ::cppthread::plugin_categorization_tag("gui")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/images/images-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/images")
+    , ::serverplugins::dependency("listener")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("versions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("images")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(images)
 
 //
 // Magick Documentation
@@ -341,24 +341,20 @@ int const images::g_commands_size(sizeof(images::g_commands) / sizeof(images::g_
  *
  * This function terminates the initialization of the images plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void images::bootstrap(snap_child * snap)
+void images::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(images, "server",   server,             attach_to_session);
-    SNAP_LISTEN(images,  "server",   server,             register_backend_cron,   boost::placeholders::_1);
-    SNAP_LISTEN(images,  "server",   server,             register_backend_action, boost::placeholders::_1);
-    SNAP_LISTEN(images,  "links",    links::links,       modified_link,           boost::placeholders::_1);
-    SNAP_LISTEN(images,  "path",     path::path,         can_handle_dynamic_path, boost::placeholders::_1,  boost::placeholders::_2);
-    SNAP_LISTEN(images,  "content",  content::content,   create_content,          boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3);
-    SNAP_LISTEN(images,  "content",  content::content,   modified_content,        boost::placeholders::_1);
-    SNAP_LISTEN(images,  "listener", listener::listener, listener_check,          boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3,  boost::placeholders::_4);
-    SNAP_LISTEN(images,  "versions", versions::versions, versions_libraries,      boost::placeholders::_1);
-    SNAP_LISTEN(images,  "filter",   filter::filter,     replace_token,           boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3);
-    SNAP_LISTEN(images,  "filter",   filter::filter,     token_help,              boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN0(images, "server",   server,             attach_to_session);
+    SERVERPLUGINS_LISTEN(images,  "server",   server,             register_backend_cron,   boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(images,  "server",   server,             register_backend_action, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(images,  "links",    links::links,       modified_link,           boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(images,  "path",     path::path,         can_handle_dynamic_path, boost::placeholders::_1,  boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(images,  "content",  content::content,   create_content,          boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(images,  "content",  content::content,   modified_content,        boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(images,  "listener", listener::listener, listener_check,          boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3,  boost::placeholders::_4);
+    SERVERPLUGINS_LISTEN(images,  "versions", versions::versions, versions_libraries,      boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(images,  "filter",   filter::filter,     replace_token,           boost::placeholders::_1,  boost::placeholders::_2,  boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(images,  "filter",   filter::filter,     token_help,              boost::placeholders::_1);
 }
 
 
@@ -374,13 +370,16 @@ void images::bootstrap(snap_child * snap)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t images::do_update(int64_t last_updated)
+time_t images::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 10, 15, 16, 58, 30, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 10, 15, 16, 58, 30, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 

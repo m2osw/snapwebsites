@@ -37,9 +37,11 @@
 #include    "snapwebsites/version.h"
 
 
-// cppthread
+// serverplugins
 //
+#include    <serverplugins/collection.h>
 #include    <serverplugins/plugin.h>
+#include    <serverplugins/factory.h>
 
 
 // advgetopt
@@ -278,7 +280,7 @@ public:
 
     // cppthread::plugin implementation
     virtual void        bootstrap() override;
-    virtual time_t      do_update(time_t last_updated);
+    virtual time_t      do_update(time_t last_updated, unsigned int phase = 0) override;
 
     [[noreturn]] void   usage();
     void                setup_as_backend();

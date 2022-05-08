@@ -74,25 +74,25 @@ namespace users_ui
 
 
 
-CPPTHREAD_PLUGIN_START(users_ui, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(users_ui, 1, 0)
+    , ::serverplugins::description(
             "The users_ui plugin manages all the user interface (forms)"
             " on a website.")
-    , ::cppthread::plugin_icon("/images/users/users-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/users")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("form")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("password")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("sendmail")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help/plugin/users")
-    , ::cppthread::plugin_categorization_tag("gui")
-    , ::cppthread::plugin_categorization_tag("user")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/users/users-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/users")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("form")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("password")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("sendmail")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help/plugin/users")
+    , ::serverplugins::categorization_tag("gui")
+    , ::serverplugins::categorization_tag("user")
+SERVERPLUGINS_END(users_ui)
 
 
 namespace
@@ -142,14 +142,17 @@ BOOST_STATIC_ASSERT((COOKIE_NAME_SIZE % 3) == 0);
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t users_ui::do_update(int64_t last_updated)
+time_t users_ui::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 11,  4, 15, 46, 37, fix_owner_update);
-    SNAP_PLUGIN_UPDATE(2017,  1, 17, 13, 57, 10, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 11,  4, 15, 46, 37, fix_owner_update);
+        SERVERPLUGINS_PLUGIN_UPDATE(2017,  1, 17, 13, 57, 10, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -229,22 +232,18 @@ void users_ui::fix_owner_update(int64_t variables_timestamp)
 /** \brief Bootstrap the users.
  *
  * This function adds the events the users plugin is listening for.
- *
- * \param[in] snap  The child handling this request.
  */
-void users_ui::bootstrap(::snap::snap_child * snap)
+void users_ui::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(users_ui, "server", server, attach_to_session);
-    SNAP_LISTEN0(users_ui, "server", server, detach_from_session);
-    SNAP_LISTEN(users_ui, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(users_ui, "path", path::path, check_for_redirect, boost::placeholders::_1);
-    SNAP_LISTEN(users_ui, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(users_ui, "filter", filter::filter, token_help, boost::placeholders::_1);
-    SNAP_LISTEN(users_ui, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
-    SNAP_LISTEN(users_ui, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(users_ui, "editor", editor::editor, save_editor_fields, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN0(users_ui, "server", server, attach_to_session);
+    SERVERPLUGINS_LISTEN0(users_ui, "server", server, detach_from_session);
+    SERVERPLUGINS_LISTEN(users_ui, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(users_ui, "path", path::path, check_for_redirect, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(users_ui, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(users_ui, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(users_ui, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SERVERPLUGINS_LISTEN(users_ui, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(users_ui, "editor", editor::editor, save_editor_fields, boost::placeholders::_1);
 }
 
 

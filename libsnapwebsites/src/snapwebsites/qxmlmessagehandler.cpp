@@ -146,7 +146,13 @@ void QMessageHandler::handleMessage(QtMsgType type, QString const & description,
                 ++count;
 
                 // to actually know who called the QXmlQuery function
-                snap_exception_base::output_stack_trace(100);
+                auto trace(libexcept::collect_stack_trace(100));
+                for(auto t : trace)
+                {
+                    // NOTE: the old version always logs that data with level ERROR
+                    ::snaplogger::send_message(((*::snaplogger::create_message(level, __FILE__, __func__, __LINE__)) << t));
+                }
+                //snap_exception_base::output_stack_trace(100);
 #else
                 *l << " Beginning of the XSLT script involved:\n"
                    << f_xsl.left(200)

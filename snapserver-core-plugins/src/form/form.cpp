@@ -68,21 +68,21 @@ namespace form
 {
 
 
-CPPTHREAD_PLUGIN_START(form, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(form, 1, 0)
+    , ::serverplugins::description(
             "The form plugin is used to generate forms from simple XML"
             " documents. This plugin uses an XSLT template to process"
             " the the XML data. This plugin is a required backend plugin.")
-    , ::cppthread::plugin_icon()
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("sessions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon()
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("sessions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(form)
 
 
 namespace
@@ -156,13 +156,16 @@ char const * get_name(name_t const name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t form::do_update(int64_t last_updated)
+time_t form::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 9, 19, 2, 9, 8, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 9, 19, 2, 9, 8, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -186,17 +189,13 @@ void form::content_update(int64_t variables_timestamp)
 /** \brief Bootstrap the form.
  *
  * This function adds the events the form plugin is listening for.
- *
- * \param[in] snap  The child handling this request.
  */
-void form::bootstrap(::snap::snap_child *snap)
+void form::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(form, "server", server, process_post, boost::placeholders::_1);
-    SNAP_LISTEN(form, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(form, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(form, "layout", layout::layout, filtered_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(form, "server", server, process_post, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(form, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(form, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(form, "layout", layout::layout, filtered_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

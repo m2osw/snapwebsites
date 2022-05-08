@@ -66,9 +66,9 @@ class form
 public:
     SERVERPLUGINS_DEFAULTS(form);
 
-    // plugins::plugin implementation
+    // serverplugins::plugin implementation
     virtual void                bootstrap() override;
-    virtual time_t              do_update(time_t last_updated) override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     QSharedPointer<libdbproxy::table> get_form_table();
 

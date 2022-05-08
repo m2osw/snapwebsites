@@ -1,5 +1,4 @@
-// Snap Websites Server -- antihammering plugin
-// Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2013-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -58,22 +57,22 @@ namespace antihammering
 {
 
 
-CPPTHREAD_PLUGIN_START(antihammering, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(antihammering, 1, 0)
+    , ::serverplugins::description(
             "System used to avoid hammering of our Snap! Websites."
             " The plugin counts the number of hits and blocks users who"
             " really hammers a website. The thresholds used against these"
             " counters are defined in the settings.")
-    , ::cppthread::plugin_icon("/images/antihammering/antihammering-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/antihammering")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("sessions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/antihammering/antihammering-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/antihammering")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("sessions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(antihammering)
 
 
 /** \brief Get a fixed antihammering name.
@@ -131,13 +130,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t antihammering::do_update(int64_t last_updated)
+time_t antihammering::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 27, 5, 36, 57, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 27, 5, 36, 57, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -160,15 +162,11 @@ void antihammering::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the antihammering plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void antihammering::bootstrap(snap_child * snap)
+void antihammering::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(antihammering, "server", server, output_result, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(antihammering, "path", path::path, check_for_redirect, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(antihammering, "server", server, output_result, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(antihammering, "path", path::path, check_for_redirect, boost::placeholders::_1);
 }
 
 

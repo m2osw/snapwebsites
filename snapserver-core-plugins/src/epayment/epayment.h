@@ -252,8 +252,8 @@ class epayment
 public:
     SERVERPLUGINS_DEFAULTS(epayment);
 
-    // plugins::plugin implementation
-    virtual time_t              do_update(time_t last_updated) override;
+    // serverplugins::plugin implementation
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
     virtual void                bootstrap() override;
 
     // layout signals

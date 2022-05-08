@@ -64,23 +64,23 @@ namespace test_plugin
 
 
 
-CPPTHREAD_PLUGIN_START(test_plugin, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(test_plugin, 1, 0)
+    , ::serverplugins::description(
             "The test_plugin plugin is capable of finding tests throughout"
             " all the plugins and run them one by one, per group,"
             " or all at once.")
-    , ::cppthread::plugin_icon("/images/test-plugin/test-plugin-logo-64x64.jpg")
-    , ::cppthread::plugin_settings("/admin/test-plugin")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("server_access")
-    , ::cppthread::plugin_dependency("test_plugin_suite")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help/plugin/test_plugin_suite")
-    , ::cppthread::plugin_categorization_tag("test")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/test-plugin/test-plugin-logo-64x64.jpg")
+    , ::serverplugins::settings_path("/admin/test-plugin")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("server_access")
+    , ::serverplugins::dependency("test_suite")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help/plugin/test_plugin_suite")
+    , ::serverplugins::categorization_tag("test")
+SERVERPLUGINS_END(test_plugin)
 
 
 
@@ -160,13 +160,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t test_plugin::do_update(int64_t last_updated)
+time_t test_plugin::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 23, 29, 40, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 23, 29, 40, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -189,16 +192,12 @@ void test_plugin::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the test_plugin plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void test_plugin::bootstrap(snap_child * snap)
+void test_plugin::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(test_plugin, "server", server, process_post, boost::placeholders::_1);
-    SNAP_LISTEN(test_plugin, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(test_plugin, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(test_plugin, "server", server, process_post, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(test_plugin, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(test_plugin, "filter", filter::filter, token_help, boost::placeholders::_1);
 }
 
 

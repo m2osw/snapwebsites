@@ -1,4 +1,3 @@
-// Snap Websites Server -- filter
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,22 +66,22 @@ namespace filter
 {
 
 
-CPPTHREAD_PLUGIN_START(filter, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(filter, 1, 0)
+    , ::serverplugins::description(
             "This plugin offers functions to filter XML and HTML data."
             " Especially, it is used to avoid Cross Site Attacks (XSS) from"
             " hackers. XSS is a way for a hacker to gain access to a person's"
             " computer through someone's website.")
-    , ::cppthread::plugin_icon("/images/filter/filter-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/filter")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("locale")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("editor")
-    , ::cppthread::plugin_categorization_tag("spam")
-    , ::cppthread::plugin_categorization_tag("security")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/filter/filter-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/filter")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("locale")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("editor")
+    , ::serverplugins::categorization_tag("spam")
+    , ::serverplugins::categorization_tag("security")
+SERVERPLUGINS_END(filter)
 
 
 filter::filter_text_t::filter_text_t(content::path_info_t & ipath, QDomDocument & xml_document, QString const & text)
@@ -210,13 +209,16 @@ QString const & filter::filter_teaser_info_t::get_end_marker_uri_title() const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t filter::do_update(int64_t last_updated)
+time_t filter::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 3, 20, 1, 22, 0, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 3, 20, 1, 22, 0, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -231,7 +233,7 @@ void filter::content_update(int64_t variables_timestamp)
 {
     snapdev::NOT_USED(variables_timestamp);
 
-    content::content::instance()->add_xml(get_plugin_name());
+    content::content::instance()->add_xml(name());
 }
 
 
@@ -239,14 +241,10 @@ void filter::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the filter plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void filter::bootstrap(::snap::snap_child * snap)
+void filter::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(filter, "server", server, xss_filter, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(filter, "server", server, xss_filter, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

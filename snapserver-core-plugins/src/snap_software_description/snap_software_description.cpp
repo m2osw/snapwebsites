@@ -85,25 +85,25 @@ namespace snap_software_description
 
 
 
-CPPTHREAD_PLUGIN_START(snap_software_description, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(snap_software_description, 1, 0)
+    , ::serverplugins::description(
              "The Snap Software Description plugin offers you a way to"
              " define a set of descriptions for software that you are offering"
              " for download on your website. The software may be free or for"
              " a fee. It may also be a shareware.")
-    , ::cppthread::plugin_icon()
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("attachment")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("list")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon()
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("attachment")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("list")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(snap_software_description)
 
 
 
@@ -196,13 +196,16 @@ const char * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t snap_software_description::do_update(int64_t last_updated)
+time_t snap_software_description::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 11, 29, 4, 39, 7, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 11, 29, 4, 39, 7, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -226,18 +229,14 @@ void snap_software_description::content_update(int64_t variables_timestamp)
 /** \brief Bootstrap the snap_software_description.
  *
  * This function adds the events the snap_software_description plugin is listening for.
- *
- * \param[in] snap  The child handling this request.
  */
-void snap_software_description::bootstrap(::snap::snap_child * snap)
+void snap_software_description::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(snap_software_description, "server", server, backend_process);
-    SNAP_LISTEN(snap_software_description, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(snap_software_description, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(snap_software_description, "robotstxt", robotstxt::robotstxt, generate_robotstxt, boost::placeholders::_1);
-    SNAP_LISTEN(snap_software_description, "shorturl", shorturl::shorturl, allow_shorturl, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4);
+    SERVERPLUGINS_LISTEN0(snap_software_description, "server", server, backend_process);
+    SERVERPLUGINS_LISTEN(snap_software_description, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(snap_software_description, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(snap_software_description, "robotstxt", robotstxt::robotstxt, generate_robotstxt, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(snap_software_description, "shorturl", shorturl::shorturl, allow_shorturl, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4);
 }
 
 

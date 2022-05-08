@@ -1,0 +1,14 @@
+# Names for the Event Dispatcher HTTP plugin
+
+introducer=name
+project=links
+
+[public]
+cleanuplinks=cleanuplinks
+createlink=createlink
+deletelink=deletelink
+namespace=links
+snap547_fix_link_branches=snap547_fix_link_branches
+table=links
+
+# vim: syntax=dosini

@@ -1,4 +1,3 @@
-// Snap Websites Server -- track users by saving all their actions in a table
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,15 +53,15 @@ namespace tracker
 {
 
 
-CPPTHREAD_PLUGIN_START(tracker, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(tracker, 1, 0)
+    , ::serverplugins::description(
             "Log all movements of all the users accessing your website.")
-    , ::cppthread::plugin_icon("/images/tracker/tracker-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/tracker")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/tracker/tracker-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/tracker")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+SERVERPLUGINS_END(tracker)
 
 
 /** \brief Get a fixed tracker name.
@@ -129,13 +128,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t tracker::do_update(int64_t last_updated)
+time_t tracker::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 22, 22, 0, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 22, 22, 0, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -158,16 +160,12 @@ void tracker::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the tracker plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void tracker::bootstrap(snap_child * snap)
+void tracker::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(tracker, "server", server, attach_to_session);
-    SNAP_LISTEN0(tracker, "server", server, detach_from_session);
-    SNAP_LISTEN(tracker, "server", server, register_backend_action, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN0(tracker, "server", server, attach_to_session);
+    SERVERPLUGINS_LISTEN0(tracker, "server", server, detach_from_session);
+    SERVERPLUGINS_LISTEN(tracker, "server", server, register_backend_action, boost::placeholders::_1);
 }
 
 

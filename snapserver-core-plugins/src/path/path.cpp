@@ -63,20 +63,20 @@ namespace path
 
 
 
-CPPTHREAD_PLUGIN_START(path, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(path, 1, 0)
+    , ::serverplugins::description(
             "This plugin manages the path to a page. This is used to determine"
             " the plugin that knows how to handle the data displayed to the user"
             " when given a specific path.")
-    , ::cppthread::plugin_icon()
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("links")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("server_access")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("content")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon()
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("links")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("server_access")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("content")
+SERVERPLUGINS_END(path)
 
 /* \brief Get a fixed path name.
  *
@@ -391,15 +391,11 @@ void dynamic_plugin_t::set_plugin_if_renamed(plugins::plugin * p, QString const 
 /** \brief Bootstrap the path.
  *
  * This function adds the events the path plugin is listening for.
- *
- * \param[in] snap  The child handling this request.
  */
-void path::bootstrap(::snap::snap_child * snap)
+void path::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(path, "server", server, execute, boost::placeholders::_1);
-    SNAP_LISTEN(path, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(path, "server", server, execute, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(path, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

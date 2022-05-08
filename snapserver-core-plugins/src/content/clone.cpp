@@ -1,4 +1,3 @@
-// Snap Websites Server -- all the user content and much of the system content
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -111,7 +110,7 @@ void content::repair_link_of_cloned_page(QString const & clone, snap_version::ve
  */
 bool content::page_cloned_impl(cloned_tree_t const& tree)
 {
-    links::links *link_plugin(links::links::instance());
+    links::links::pointer_t link_plugin(links::links::instance());
     size_t const max_pages(tree.f_pages.size());
     for(size_t idx(0); idx < max_pages; ++idx)
     {
@@ -222,7 +221,11 @@ bool content::clone_page(clone_info_t & source, clone_info_t & destination)
             //
             if(f_content_table->exists(f_destination.f_ipath.get_key()))
             {
-                SNAP_LOG_ERROR("clone_page() called with a destination (")(f_destination.f_ipath.get_key())(") which already exists.");
+                SNAP_LOG_ERROR
+                    << "clone_page() called with a destination ("
+                    << f_destination.f_ipath.get_key()
+                    << ") which already exists."
+                    << SNAP_LOG_SEND;
                 f_result = false;
                 return;
             }

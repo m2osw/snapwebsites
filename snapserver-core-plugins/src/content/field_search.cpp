@@ -1,4 +1,3 @@
-// Snap Websites Server -- all the user content and much of the system content
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/

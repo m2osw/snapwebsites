@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle the theme/layout information
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -79,20 +78,20 @@ namespace layout
 
 
 
-CPPTHREAD_PLUGIN_START(layout, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(layout, 1, 0)
+    , ::serverplugins::description(
             "Determine the layout for a given content and generate the output"
             " for that layout.")
-    , ::cppthread::plugin_icon("/images/snap/layout-logo-64x64.png")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("links")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("server_access")
-    , ::cppthread::plugin_dependency("taxonomy")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("gui")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/snap/layout-logo-64x64.png")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("links")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("server_access")
+    , ::serverplugins::dependency("taxonomy")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(layout)
 
 
 /** \brief Get a fixed layout name.
@@ -156,16 +155,12 @@ char const * get_name(name_t name)
  *
  * This function terminates the initialization of the layout plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void layout::bootstrap(snap_child * snap)
+void layout::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(layout, "server", server, load_file, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(layout, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(layout, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(layout, "server", server, load_file, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(layout, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(layout, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 
@@ -182,56 +177,51 @@ void layout::bootstrap(snap_child * snap)
  *
  * \return The UTC Unix date of the last update of this plugin or a layout.
  */
-int64_t layout::do_update(int64_t last_updated)
+time_t layout::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    // first time, make sure the default theme is installed
-    //
-    SNAP_PLUGIN_UPDATE(2012, 1, 1, 0, 0, 0, content_update);
+    if(phase == 0)
+    {
+        // first time, make sure the default theme is installed
+        //
+        SERVERPLUGINS_PLUGIN_UPDATE(2012, 1, 1, 0, 0, 0, content_update);
 
-    // always call the do_layout_updates() function since it may be
-    // that a layout was updated at a date different from any other
-    //
-    // i.e. you may upgrade layout A, run snapinstallwebsite,
-    //      upgrade layout B, run snapinstallwebsite
-    //
-    // In that example, if B has a "last update" timestamp that's
-    // smaller than A's "last update" timestamp, we cannot here
-    // know that B has a smaller timestamp and thus we have to check
-    // each entry and make sure they all get updated acconding to
-    // their own "last update" timestamp.
-    //
-    // TBD: This may be too soon because the output and editor
-    //      will add their own themes AFTER this call (i.e. they
-    //      depend on us, not the other way around.)
-    //
-    //      We may instead need to have a form of signal to know
-    //      that we need to do something.
-    //
-    //      That being said, the first time I do not think we need
-    //      that because the install_layout() does the necessar on
-    //      its own. (we do not need to install and update.)
-    //
-    do_layout_updates();
+        // always call the do_layout_updates() function since it may be
+        // that a layout was updated at a date different from any other
+        //
+        // i.e. you may upgrade layout A, run snapinstallwebsite,
+        //      upgrade layout B, run snapinstallwebsite
+        //
+        // In that example, if B has a "last update" timestamp that's
+        // smaller than A's "last update" timestamp, we cannot here
+        // know that B has a smaller timestamp and thus we have to check
+        // each entry and make sure they all get updated acconding to
+        // their own "last update" timestamp.
+        //
+        // TBD: This may be too soon because the output and editor
+        //      will add their own themes AFTER this call (i.e. they
+        //      depend on us, not the other way around.)
+        //
+        //      We may instead need to have a form of signal to know
+        //      that we need to do something.
+        //
+        //      That being said, the first time I do not think we need
+        //      that because the install_layout() does the necessar on
+        //      its own. (we do not need to install and update.)
+        //
+        do_layout_updates();
+    }
+    else
+    {
+        // we cannot use a static data here since a layout can be updated at
+        // any time and we already check that, at this point we have a list
+        // of names that the next function can use
+        //
+        finish_install_layout();
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
-}
-
-
-int64_t layout::on_dynamic_update(int64_t last_updated)
-{
-    snapdev::NOT_USED(last_updated);
-
-    SNAP_PLUGIN_UPDATE_INIT();
-
-    // we cannot use a static data here since a layout can be updated at
-    // any time and we already check that, at this point we have a list
-    // of names that the next function can use
-    //
-    finish_install_layout();
-
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 

@@ -168,7 +168,7 @@ private:
 
 
 class index
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public server::backend_action
     , public layout::layout_content
     , public layout::layout_boxes
@@ -176,17 +176,11 @@ class index
 public:
     static int const INDEX_MAXIMUM_RECORDS = 10000; // maximum number of records returned by read_index()
 
-                        index();
-                        index(index const & rhs) = delete;
-    virtual             ~index() override;
+    SERVERPLUGINS_DEFAULTS(index);
 
-    index &             operator = (index const & rhs) = delete;
-
-    static index *      instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // server::backend_action implementation
     virtual void        on_backend_action(QString const & action) override;

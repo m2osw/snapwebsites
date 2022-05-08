@@ -77,14 +77,13 @@ class layout
 public:
     SERVERPLUGINS_DEFAULTS(layout);
 
-    // cppthread::plugin implementation
+    // serverplugins::plugin implementation
     virtual void        bootstrap() override;
-    virtual time_t      do_update(time_t last_updated) override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     libdbproxy::table::pointer_t get_layout_table();
 
     // server signals
-    time_t              on_dynamic_update(time_t last_updated);
     void                on_load_file(snap_child::post_file_t & file, bool & found);
     bool                on_improve_signature(QString const & path, QDomDocument doc, QDomElement & signature_tag);
 

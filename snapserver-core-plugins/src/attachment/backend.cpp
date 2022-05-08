@@ -1,4 +1,3 @@
-// Snap Websites Server -- all the user content and much of the system content
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,11 +33,6 @@
 #include    <snapwebsites/snap_exception.h>
 
 
-// cpthread
-//
-//#include    <cppthread/plugins.h>
-
-
 // snaplogger
 //
 #include    <snaplogger/message.h>
@@ -61,7 +55,7 @@
 
 namespace snap
 {
-namespace content
+namespace attachment
 {
 
 
@@ -125,7 +119,7 @@ void attachment::backend_action_extract_file()
     content::path_info_t ipath;
     ipath.set_path(f_snap->get_server_parameter("FILE_URL"));
 
-    content::content * content_plugin(content::content::instance());
+    content::content::pointer_t content_plugin(content::content::instance());
     libdbproxy::table::pointer_t content_table(content_plugin->get_content_table());
 
     // main page exists
@@ -150,7 +144,11 @@ void attachment::backend_action_extract_file()
     libdbproxy::value const attachment_key(revision_table->getRow(ipath.get_revision_key())->getCell(content::get_name(content::name_t::SNAP_NAME_CONTENT_ATTACHMENT))->getValue());
     if(attachment_key.nullValue())
     {
-        SNAP_LOG_ERROR("Attachment MD5 number in page \"")(ipath.get_key())("\" is not defined.");
+        SNAP_LOG_ERROR
+            << "Attachment MD5 number in page \""
+            << ipath.get_key()
+            << "\" is not defined."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -165,7 +163,11 @@ void attachment::backend_action_extract_file()
     if(field_name != files_data
     && !field_name.startsWith(starts_with))
     {
-        SNAP_LOG_ERROR("field name \"")(field_name)("\" is not an acceptable field name for a file data field.");
+        SNAP_LOG_ERROR
+            << "field name \""
+            << field_name
+            << "\" is not an acceptable field name for a file data field."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -174,7 +176,11 @@ void attachment::backend_action_extract_file()
     || !files_table->getRow(attachment_key.binaryValue())->exists(field_name))
     {
         // somehow the file data is not available
-        SNAP_LOG_ERROR("Attachment \"")(ipath.get_key())("\" was not found.");
+        SNAP_LOG_ERROR
+            << "Attachment \""
+            << ipath.get_key()
+            << "\" was not found."
+            << SNAP_LOG_SEND;
         return;
     }
 
@@ -184,7 +190,11 @@ void attachment::backend_action_extract_file()
     QFile out(filename);
     if(!out.open(QIODevice::WriteOnly))
     {
-        SNAP_LOG_ERROR("file \"")(filename)("\" could not be opened for writing.");
+        SNAP_LOG_ERROR
+            << "file \""
+            << filename
+            << "\" could not be opened for writing."
+            << SNAP_LOG_SEND;
         return;
     }
     out.write(data.binaryValue());

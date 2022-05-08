@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2014-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,48 +17,48 @@
 
 // self
 //
-#include "attachment.h"
+#include    "attachment.h"
 
 
 // other plugins
 //
-#include "../content/content.h"
-#include "../messages/messages.h"
-#include "../permissions/permissions.h"
-#include "../users/users.h"
+#include    "../content/content.h"
+#include    "../messages/messages.h"
+#include    "../permissions/permissions.h"
+#include    "../users/users.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/dbutils.h>
-#include <snapwebsites/http_strings.h>
+#include    <snapwebsites/dbutils.h>
+#include    <snapwebsites/http_strings.h>
 
 
-// snaplogger lib
+// snaplogger
 //
-#include <snaplogger/message.h>
+#include    <snaplogger/message.h>
 
 
-// snapdev lib
+// snapdev
 //
-#include <snapdev/not_reached.h>
-#include <snapdev/not_used.h>
+#include    <snapdev/not_reached.h>
+#include    <snapdev/not_used.h>
 
 
-// C++ lib
+// C++
 //
-#include <iostream>
+#include    <iostream>
 
 
-// Qt lib
+// Qt
 //
-#include <QFile>
-#include <QLocale>
+#include    <QFile>
+#include    <QLocale>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -69,21 +69,21 @@ namespace attachment
 
 
 
-CPPTHREAD_PLUGIN_START(attachment, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(attachment, 1, 0)
+    , ::serverplugins::description(
             "Handle the output of attachments, which includes sending the"
             " proper compressed file and in some cases transforming the file"
             " on the fly before sending it to the user (i.e. resizing an image"
             " to \"better\" sizes for the page being presented.)")
-    , ::cppthread::plugin_icon("/images/attachment/attachment-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/antihammering")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("files")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/attachment/attachment-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/antihammering")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("files")
+SERVERPLUGINS_END(attachment)
 
 
 // using the SNAP_NAME_CONTENT_... for this one.
@@ -131,13 +131,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t attachment::do_update(int64_t last_updated)
+time_t attachment::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 22, 50, 12, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 22, 50, 12, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -160,18 +163,14 @@ void attachment::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the attachment plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void attachment::bootstrap(snap_child * snap)
+void attachment::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(attachment, "server", server, register_backend_action, boost::placeholders::_1);
-    SNAP_LISTEN(attachment, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(attachment, "content", content::content, page_cloned, boost::placeholders::_1);
-    SNAP_LISTEN(attachment, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(attachment, "permissions", permissions::permissions, permit_redirect_to_login_on_not_allowed, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(attachment, "server", server, register_backend_action, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(attachment, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(attachment, "content", content::content, page_cloned, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(attachment, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(attachment, "permissions", permissions::permissions, permit_redirect_to_login_on_not_allowed, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

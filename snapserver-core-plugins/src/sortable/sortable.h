@@ -56,20 +56,14 @@ public:
 
 
 class sortable
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        sortable();
-                        sortable(sortable const & rhs) = delete;
-    virtual             ~sortable() override;
+    SERVERPLUGINS_DEFAULTS(sortable);
 
-    sortable &          operator = (sortable const & rhs) = delete;
-
-    static sortable *   instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // editor signals
     void                on_prepare_editor_form(editor::editor * e);

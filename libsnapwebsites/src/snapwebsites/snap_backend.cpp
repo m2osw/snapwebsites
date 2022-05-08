@@ -162,7 +162,7 @@ namespace
  * This is the pointer to the communicator. Since the communicator is
  * a singleton, we have only one and thus can keep a copy here.
  */
-snap_communicator::pointer_t        g_communicator;
+ed::communicator::pointer_t         g_communicator;
 
 
 /** \brief Handle the SIGINT that is expected to stop the server.
@@ -171,7 +171,7 @@ snap_communicator::pointer_t        g_communicator;
  * on the SIGINT.
  */
 class backend_interrupt
-    : public snap::snap_communicator::snap_signal
+    : public ed::signal
 {
 public:
     typedef std::shared_ptr<backend_interrupt>  pointer_t;

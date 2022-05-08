@@ -61,18 +61,18 @@ namespace locale_settings
 {
 
 
-CPPTHREAD_PLUGIN_START(locale_settings, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(locale_settings, 1, 0)
+    , ::serverplugins::description(
             "Define locale functions to be used throughout all the plugins."
             " It handles time and date, timezone, numbers, currency, etc.")
-    , ::cppthread::plugin_icon("/images/locale/locale-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/locale")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("locale_widgets")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help/plugin/locale")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/locale/locale-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/locale")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("locale_widgets")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help/plugin/locale")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(locale_settings)
 
 
 
@@ -117,13 +117,16 @@ CPPTHREAD_PLUGIN_END()
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t locale_settings::do_update(int64_t last_updated)
+time_t locale_settings::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 20, 32, 8, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 20, 32, 8, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -147,15 +150,11 @@ void locale_settings::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the locale plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void locale_settings::bootstrap(snap_child * snap)
+void locale_settings::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(locale_settings, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(locale_settings, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(locale_settings, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(locale_settings, "filter", filter::filter, token_help, boost::placeholders::_1);
 }
 
 

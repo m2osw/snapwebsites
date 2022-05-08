@@ -173,6 +173,7 @@ advgetopt::options_environment const g_manager_options_environment =
     .f_options = g_manager_options,
     .f_options_files_directory = nullptr,
     .f_environment_variable_name = "SNAPMANAGER_OPTIONS",
+    .f_environment_variable_intro = nullptr,
     .f_section_variables_name = nullptr,
     .f_configuration_files = nullptr,
     .f_configuration_filename = nullptr,
@@ -224,20 +225,6 @@ char const * get_name(name_t name)
 
 
 
-manager::manager(bool daemon)
-    : snap_child(server_pointer_t())
-    , f_daemon(daemon)
-    , f_signal_handler(ed::signal_handler::create_instance(
-                              ed::signal_handler::EXTENDED_SIGNAL_TERMINAL))
-    , f_config(advgetopt::conf_file::get_conf_file(advgetopt::conf_file_setup("/etc/snapwebsites/snapmanager.conf")))
-{
-}
-
-
-
-manager::~manager()
-{
-}
 
 
 
@@ -246,12 +233,19 @@ manager::~manager()
  * The constructor parses the command ilne options in a symetrical way
  * for snapmanager.cgi and snapmanagerdaemon.
  *
+ * \param[in] daemon  Whether the daemon (true) or CGI (false) process starts. 
  * \param[in] argc  The number of arguments in argv.
  * \param[in] argv  The list of command line arguments.
- * \param[in] daemon  Whether the daemon (true) or CGI (false) process starts. 
  */
-void manager::init(int argc, char * argv[])
+void manager::init(bool daemon, int argc, char * argv[])
 {
+    f_daemon = daemon;
+
+    f_signal_handler = ed::signal_handler::create_instance(
+                              ed::signal_handler::EXTENDED_SIGNAL_TERMINAL);
+
+    f_config = advgetopt::conf_file::get_conf_file(advgetopt::conf_file_setup("/etc/snapwebsites/snapmanager.conf"));
+
     g_instance = shared_from_this();
 
     // parse the arguments
@@ -267,7 +261,7 @@ void manager::init(int argc, char * argv[])
 
     // get the server name using the library function
     //
-    f_server_name = QString::fromUtf8(snap::server::get_server_name().c_str());
+    f_server_name = snap::server::get_server_name().c_str();
 
     // setup the logger -- the new logger does not yet have such a feature I think
     // the definition in the configuration file has priority...
@@ -280,7 +274,7 @@ void manager::init(int argc, char * argv[])
     //}
     //else
     //{
-    //    f_log_conf = QString::fromUtf8(f_opt->get_string("log-config").c_str());
+    //    f_log_conf = f_opt->get_string("log-config"));
     //}
     //snap::logging::configure_conffile( f_log_conf );
 
@@ -298,16 +292,16 @@ void manager::init(int argc, char * argv[])
     // under a sub-directory of that name.
     //
     f_data_path = "/var/lib/snapwebsites";
-    if(f_config.has_parameter("data_path"))
+    if(f_config->has_parameter("data_path"))
     {
         // use .conf definition when available
-        f_data_path = f_config["data_path"];
+        f_data_path = f_config->get_parameter("data_path");
     }
 
     // create the cluster-status path
     //
     f_cluster_status_path = f_data_path + "/cluster-status";
-    if(snap::mkdir_p(f_cluster_status_path, false) != 0)
+    if(snapdev::mkdir_p(f_cluster_status_path, false) != 0)
     {
         std::stringstream msg;
         msg << "manager::init(): mkdir_p(...): process could not create cluster-status sub-directory \""
@@ -319,7 +313,7 @@ void manager::init(int argc, char * argv[])
     // create the bundles path
     //
     f_bundles_path = f_data_path + "/bundles";
-    if(snap::mkdir_p(f_bundles_path, false) != 0)
+    if(snapdev::mkdir_p(f_bundles_path, false) != 0)
     {
         std::stringstream msg;
         msg << "manager::init(): mkdir_p(...): process could not create bundles sub-directory \""
@@ -330,52 +324,60 @@ void manager::init(int argc, char * argv[])
 
     // get the user defined path to plugins if set
     //
-    if(f_config.has_parameter("plugins_path"))
+    if(f_config->has_parameter("plugins_path"))
     {
-        f_plugins_path = f_config["plugins_path"];
+        f_plugins_path = f_config->get_parameter("plugins_path");
     }
 
     // get the user defined path to a folder used to cache data
     //
-    if(f_config.has_parameter("cache_path"))
+    if(f_config->has_parameter("cache_path"))
     {
-        f_cache_path = f_config["cache_path"];
+        f_cache_path = f_config->get_parameter("cache_path");
     }
 
     // get the user defined path to a folder used to cache data
     //
-    if(f_config.has_parameter("www_cache_path"))
+    if(f_config->has_parameter("www_cache_path"))
     {
-        f_www_cache_path = f_config["www_cache_path"];
+        f_www_cache_path = f_config->get_parameter("www_cache_path");
     }
 
     // get the path and filename to the apt-check tool
     //
-    if(f_config.has_parameter("apt_check"))
+    if(f_config->has_parameter("apt_check"))
     {
-        f_apt_check = f_config["apt_check"];
+        f_apt_check = f_config->get_parameter("apt_check");
     }
 
     // get the path and filename to the reboot-required flag
     //
-    if(f_config.has_parameter("reboot_required"))
+    if(f_config->has_parameter("reboot_required"))
     {
-        f_reboot_required = f_config["reboot_required"];
+        f_reboot_required = f_config->get_parameter("reboot_required");
     }
 
     // get the path to a directory where we can create lock files
     //
-    if(f_config.has_parameter("snapserver", "lock_path"))
+    advgetopt::conf_file::pointer_t snapserver_config =
+            advgetopt::conf_file::get_conf_file(advgetopt::conf_file_setup("/etc/snapwebsites/snapserver.conf"));
+    if(snapserver_config->has_parameter("lock_path"))
     {
-        f_lock_path = f_config(QString("snapserver"), "lock_path");
+        f_lock_path = snapserver_config->get_parameter("lock_path");
     }
 
     // If not defined, keep the default of localhost:4041
     // TODO: make these "just in time" parameters, we nearly never need them
     //
-    if(f_config.has_parameter("snapcommunicator", "signal"))
+    advgetopt::conf_file::pointer_t snapcommunicator_config =
+            advgetopt::conf_file::get_conf_file(advgetopt::conf_file_setup("/etc/snapwebsites/snapserver.conf"));
+    if(snapcommunicator_config->has_parameter("signal"))
     {
-        addr::addr const a(addr::string_to_addr(f_config("snapcommunicator", "signal"), f_signal_address, f_signal_port, "udp"));
+        addr::addr const a(addr::string_to_addr(
+                  snapcommunicator_config->get_parameter("signal")
+                , f_signal_address
+                , f_signal_port
+                , "udp"));
         f_signal_address = a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY);
         f_signal_port = a.get_port();
     }
@@ -419,7 +421,7 @@ void manager::sighandler( int sig )
         default      : signame = "UNKNOWN"; break;
     }
 
-    if( output_stack_trace )
+    if(output_stack_trace)
     {
         snap::snap_exception_base::output_stack_trace();
     }
@@ -499,16 +501,15 @@ void manager::load_plugins()
 
 std::vector<std::string> manager::read_filenames(std::string const & pattern) const
 {
-    std::vector<std::string> result;
-
     try
     {
-        snap::glob_dir files;
-        files.set_path( pattern, GLOB_NOESCAPE, true );
-        files.enumerate_glob( [&]( QString the_path )
-            {
-                result.push_back(the_path.toUtf8().data());
-            });
+        snapdev::glob_to_list<std::vector<std::string>> glob;
+        if(glob.read_path<
+              snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE
+            , snapdev::glob_to_list_flag_t::GLOB_FLAG_IGNORE_ERRORS>(pattern))
+        {
+            return glob;
+        }
     }
     catch(std::exception const & x)
     {
@@ -529,7 +530,7 @@ std::vector<std::string> manager::read_filenames(std::string const & pattern) co
             << SNAP_LOG_SEND;
     }
 
-    return result;
+    return std::vector<std::string>();
 }
 
 
@@ -591,7 +592,7 @@ std::vector<std::string> const & manager::get_bundle_uri() const
 
 std::vector<std::string> manager::get_list_of_bundles() const
 {
-    std::string pattern(f_bundles_path.toUtf8().data());
+    std::string pattern(f_bundles_path);
     pattern += "/bundle-*.xml";
     return read_filenames(pattern);
 }

@@ -74,21 +74,21 @@ namespace sortable
 {
 
 
-CPPTHREAD_PLUGIN_START(sortable, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(sortable, 1, 0)
+    , ::serverplugins::description(
             "Gives the end users the ability to sort list items."
             " This plugin is very rarely added by itself. Instead, another"
             " plugin that needs the sort capability will depend on it.")
-    , ::cppthread::plugin_icon("/images/sortable/sortable-logo-64x64.png")
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("sortable")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/sortable/sortable-logo-64x64.png")
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("sortable")
+SERVERPLUGINS_END(sortable)
 
 
 
@@ -136,13 +136,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t sortable::do_update(int64_t last_updated)
+time_t sortable::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 1, 24, 0, 33, 4, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 1, 24, 0, 33, 4, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -166,14 +169,10 @@ void sortable::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the sortable plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void sortable::bootstrap(snap_child * snap)
+void sortable::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(sortable, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(sortable, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
 }
 
 

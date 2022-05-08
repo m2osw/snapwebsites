@@ -54,22 +54,22 @@ namespace detectadblocker
 {
 
 
-CPPTHREAD_PLUGIN_START(detectadblocker, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(detectadblocker, 1, 0)
+    , ::serverplugins::description(
             "The detect ad blocker plugin is used to set a variable to"
             " know whether an ad blocker is active on the client browser."
             " If so, plugins attempting to show ads can instead do nothing.")
-    , ::cppthread::plugin_icon("/images/detectadblocker/detectadblocker-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/detectadblocker")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("advertising")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/detectadblocker/detectadblocker-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/detectadblocker")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("advertising")
+SERVERPLUGINS_END(detectadblocker)
 
 
 /** \class detectadblocker
@@ -135,13 +135,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t detectadblocker::do_update(int64_t last_updated)
+time_t detectadblocker::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 6, 4, 0, 53, 15, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 6, 4, 0, 53, 15, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -165,16 +168,12 @@ void detectadblocker::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the detectadblocker plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void detectadblocker::bootstrap(snap_child * snap)
+void detectadblocker::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(detectadblocker, "server", server, detach_from_session);
-    //SNAP_LISTEN(detectadblocker, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(detectadblocker, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN0(detectadblocker, "server", server, detach_from_session);
+    //SERVERPLUGINS_LISTEN(detectadblocker, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(detectadblocker, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

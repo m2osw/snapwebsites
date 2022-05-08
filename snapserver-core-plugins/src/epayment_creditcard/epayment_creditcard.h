@@ -189,21 +189,15 @@ public:
 
 
 class epayment_creditcard
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public epayment_creditcard_gateway_t
 {
 public:
-                                epayment_creditcard();
-                                epayment_creditcard(epayment_creditcard const & rhs) = delete;
-    virtual                     ~epayment_creditcard() override;
+    SERVERPLUGINS_DEFAULTS(epayment_creditcard);
 
-    epayment_creditcard &       operator = (epayment_creditcard const & rhs) = delete;
-
-    static epayment_creditcard *instance();
-
-    // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                        on_process_post(QString const & uri_path);

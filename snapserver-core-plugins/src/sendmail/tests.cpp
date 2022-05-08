@@ -1,4 +1,3 @@
-// Snap Websites Server -- tests for sendmail
 // Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/

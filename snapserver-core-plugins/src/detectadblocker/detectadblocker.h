@@ -1,4 +1,3 @@
-// Snap Websites Server -- detectadblocker structures
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,40 +38,22 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class detectadblocker_exception : public snap_exception
-{
-public:
-    explicit detectadblocker_exception(char const *        what_msg) : snap_exception("DetectAdBlocker", what_msg) {}
-    explicit detectadblocker_exception(std::string const & what_msg) : snap_exception("DetectAdBlocker", what_msg) {}
-    explicit detectadblocker_exception(QString const &     what_msg) : snap_exception("DetectAdBlocker", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(detectadblocker_exception);
 
-class detectadblocker_exception_invalid_path : public detectadblocker_exception
-{
-public:
-    explicit detectadblocker_exception_invalid_path(char const *        what_msg) : detectadblocker_exception(what_msg) {}
-    explicit detectadblocker_exception_invalid_path(std::string const & what_msg) : detectadblocker_exception(what_msg) {}
-    explicit detectadblocker_exception_invalid_path(QString const &     what_msg) : detectadblocker_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(detectadblocker_exception, detectadblocker_exception_invalid_path);
 
 
 
 class detectadblocker
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
 {
 public:
-                            detectadblocker();
-                            detectadblocker(detectadblocker const & rhs) = delete;
-    virtual                 ~detectadblocker() override;
+    SERVERPLUGINS_DEFAULTS(detectadblocker);
 
-    detectadblocker &       operator = (detectadblocker const & rhs) = delete;
-
-    static detectadblocker *instance();
-
-    // plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // snapwebsites signals
     void                    on_detach_from_session();

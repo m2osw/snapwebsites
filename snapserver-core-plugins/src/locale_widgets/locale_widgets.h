@@ -56,7 +56,7 @@ namespace locale_widgets
 
 
 class locale_widgets
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
     // TODO: this seems to be duplicated from `class locale`
@@ -76,17 +76,11 @@ public:
     };
     typedef QVector<timezone_info_t>    timezone_list_t;
 
-                                locale_widgets();
-                                locale_widgets(locale_widgets const & rhs) = delete;
-    virtual                     ~locale_widgets() override;
+    SERVERPLUGINS_DEFAULTS(locale_widgets);
 
-    locale_widgets &            operator = (locale_widgets const & rhs) = delete;
-
-    static locale_widgets *     instance();
-
-    // plugin.cpp implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     // editor signals
     void                        on_init_editor_widget(content::path_info_t & ipath, QString const & field_id, QString const & field_type, QDomElement & widget, libdbproxy::row::pointer_t row);

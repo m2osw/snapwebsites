@@ -22,10 +22,6 @@
 #include    <snapwebsites/snap_child.h>
 
 
-// cppthread
-//
-//#include    <cppthread/plugins.h>
-
 // Qt
 //
 #include    <QMap>
@@ -80,16 +76,16 @@ public:
 
     SERVERPLUGINS_DEFAULTS(mailinglist);
 
-    // plugins::plugin implementation
+    // serverplugins::plugin implementation
     virtual void        bootstrap() override;
-    virtual time_t      do_update(time_t last_updated) override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     libdbproxy::table::pointer_t get_mailinglist_table();
 
     SNAP_SIGNAL(name_to_list, (QString const & name, QSharedPointer<list> & emails), (name, emails));
 
 private:
-    void                content_update(int64_t variables_timestamp);
+    void                content_update(time_t variables_timestamp);
 
     snap_child *        f_snap = nullptr;
 };

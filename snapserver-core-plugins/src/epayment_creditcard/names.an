@@ -1,0 +1,18 @@
+# Names for the Event Dispatcher HTTP plugin
+
+introducer=name
+project=epayment_creditcard
+
+[public]
+default_country=epayment_creditcard::default_country
+gateway=epayment_creditcard::gateway
+settings_path=admin/settings/epayment/credit-card
+show_address2=epayment_creditcard::show_address2
+show_business_name=epayment_creditcard::show_business_name
+show_country=epayment_creditcard::show_country
+show_delivery=epayment_creditcard::show_delivery
+show_one_name=epayment_creditcard::show_one_name
+show_phone=epayment_creditcard::show_phone
+show_province=epayment_creditcard::show_province
+user_allows_saving_token=epayment_creditcard::user_allows_saving_token
+

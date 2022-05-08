@@ -1,9 +1,5 @@
-//
-// File:        snapmanager/daemon/snapmanagerdaemon.cpp
-// Object:      Allow for applying functions on any computer.
-//
-// Copyright:   Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
-//              All Rights Reserved.
+// Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
+// All Rights Reserved.
 //
 // https://snapwebsites.org/
 // contact@m2osw.com
@@ -32,24 +28,24 @@
 #include "snapmanagerdaemon.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
 #include <snapwebsites/log.h>
 #include <snapwebsites/mkdir_p.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include <snapdev/not_used.h>
 #include <snapdev/tokenize_string.h>
 
 
-// libaddr lib
+// libaddr
 //
 #include <libaddr/addr_parser.h>
 
 
-// last include
+// C++
 //
 #include <sstream>
 
@@ -153,25 +149,6 @@ manager_daemon::~manager_daemon()
 
 int manager_daemon::run()
 {
-    // Stop on these signals, log them, then terminate.
-    //
-    // Note: the handler uses the logger which the create_instance()
-    //       initializes
-    //
-    signal( SIGSEGV, manager_daemon::sighandler );
-    signal( SIGBUS,  manager_daemon::sighandler );
-    signal( SIGFPE,  manager_daemon::sighandler );
-    signal( SIGILL,  manager_daemon::sighandler );
-    signal( SIGTERM, manager_daemon::sighandler );
-    signal( SIGINT,  manager_daemon::sighandler );
-    signal( SIGQUIT, manager_daemon::sighandler );
-
-    // ignore console signals
-    //
-    signal( SIGTSTP,  SIG_IGN );
-    signal( SIGTTIN,  SIG_IGN );
-    signal( SIGTTOU,  SIG_IGN );
-
     // initialize the communicator and its connections
     //
     f_communicator = snap::snap_communicator::instance();
@@ -200,76 +177,6 @@ int manager_daemon::run()
     f_communicator->run();
 
     return f_force_restart ? 1 : 0;
-}
-
-
-/** \brief A static function to capture various signals.
- *
- * This function captures unwanted signals like SIGSEGV and SIGILL.
- *
- * The handler logs the information and then the service exists.
- * This is done mainly so we have a chance to debug problems even
- * when it crashes on a remote server.
- *
- * \warning
- * The signals are setup after the construction of the manager_daemon
- * object because that is where we initialize the logger.
- *
- * \param[in] sig  The signal that was just emitted by the OS.
- */
-void manager_daemon::sighandler( int sig )
-{
-    QString signame;
-    bool output_stack_trace(true);
-    switch( sig )
-    {
-    case SIGSEGV:
-        signame = "SIGSEGV";
-        break;
-
-    case SIGBUS:
-        signame = "SIGBUS";
-        break;
-
-    case SIGFPE:
-        signame = "SIGFPE";
-        break;
-
-    case SIGILL:
-        signame = "SIGILL";
-        break;
-
-    case SIGTERM:
-        signame = "SIGTERM";
-        output_stack_trace = false;
-        break;
-
-    case SIGINT:
-        signame = "SIGINT";
-        output_stack_trace = false;
-        break;
-
-    case SIGQUIT:
-        signame = "SIGQUIT";
-        output_stack_trace = false;
-        break;
-
-    default:
-        signame = "UNKNOWN";
-        break;
-
-    }
-
-    if(output_stack_trace)
-    {
-        snap::snap_exception_base::output_stack_trace();
-    }
-    SNAP_LOG_FATAL("Fatal signal caught: ")(signame);
-
-    // Exit with error status
-    //
-    ::exit( 1 );
-    snapdev::NOT_REACHED();
 }
 
 

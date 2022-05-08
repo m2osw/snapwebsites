@@ -86,20 +86,20 @@ namespace list
 {
 
 
-CPPTHREAD_PLUGIN_START(list, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(list, 1, 0)
+    , ::serverplugins::description(
             "Generate lists of pages using a set of parameters as defined"
             " by the system (some lists are defined internally) and the end"
             " users.")
-    , ::cppthread::plugin_icon("/images/list/list-logo-64x64.png")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("links")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("content")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/list/list-logo-64x64.png")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("links")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("content")
+SERVERPLUGINS_END(list)
 
 
 /** \brief Get a fixed list name.
@@ -917,14 +917,6 @@ void listdata_connection::mark_done()
 paging_t::paging_t(snap_child * snap, content::path_info_t & ipath)
     : f_snap(snap)
     , f_ipath(ipath)
-    //, f_retrieved_list_name(false) -- auto-init
-    //, f_list_name("") -- auto-init
-    //, f_maximum_number_of_items(-1) -- auto-init
-    //, f_number_of_items(-1) -- auto-init
-    //, f_start_offset(-1) -- auto-init
-    //, f_page(1) -- auto-init
-    //, f_page_size(-1) -- auto-init
-    //, f_default_page_size(-1) -- auto-init
 {
 }
 
@@ -1923,13 +1915,16 @@ int32_t paging_t::get_page_size() const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t list::do_update(int64_t last_updated)
+time_t list::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 1, 16, 21, 10, 30, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 1, 16, 21, 10, 30, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -1952,22 +1947,18 @@ void list::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the list plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void list::bootstrap(snap_child * snap)
+void list::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(list, "server", server, attach_to_session);
-    SNAP_LISTEN(list, "server", server, register_backend_cron, boost::placeholders::_1);
-    SNAP_LISTEN(list, "server", server, register_backend_action, boost::placeholders::_1);
-    SNAP_LISTEN(list, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(list, "content", content::content, modified_content, boost::placeholders::_1);
-    SNAP_LISTEN(list, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(list, "links", links::links, modified_link, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(list, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(list, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN0(list, "server", server, attach_to_session);
+    SERVERPLUGINS_LISTEN(list, "server", server, register_backend_cron, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(list, "server", server, register_backend_action, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(list, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(list, "content", content::content, modified_content, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(list, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(list, "links", links::links, modified_link, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(list, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(list, "filter", filter::filter, token_help, boost::placeholders::_1);
 
     //SNAP_TEST_PLUGIN_SUITE_LISTEN(list);
 }

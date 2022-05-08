@@ -48,20 +48,14 @@ DECLARE_EXCEPTION(server_access_exception, server_access_exception_invalid_uri);
 
 
 class server_access
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                                server_access();
-                                server_access(server_access const & rhs) = delete;
-    virtual                     ~server_access() override;
+    SERVERPLUGINS_DEFAULTS(server_access);
 
-    server_access &             operator = (server_access const & rhs) = delete;
-
-    static server_access *      instance();
-
-    // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                        on_output_result(QString const & uri_path, QByteArray & result);

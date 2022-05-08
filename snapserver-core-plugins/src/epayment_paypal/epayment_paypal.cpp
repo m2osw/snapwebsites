@@ -71,22 +71,22 @@ namespace epayment_paypal
 {
 
 
-CPPTHREAD_PLUGIN_START(epayment_paypal, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(epayment_paypal, 1, 0)
+    , ::serverplugins::description(
             "The PayPal e-Payment Facility plugin offers payment from the"
             " client's PayPal account.")
-    , ::cppthread::plugin_icon("/images/epayment/paypal-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/epayment/paypal")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("epayment")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/epayment/paypal-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/epayment/paypal")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("epayment")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(epayment_paypal)
 
 
 
@@ -290,13 +290,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t epayment_paypal::do_update(int64_t last_updated)
+time_t epayment_paypal::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 5, 6, 23, 32, 40, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 5, 6, 23, 32, 40, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -320,19 +323,15 @@ void epayment_paypal::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the epayment_paypal plugin
  * by registering for various events.
- *
- * \param[in] snap  The child handling this request.
  */
-void epayment_paypal::bootstrap(snap_child * snap)
+void epayment_paypal::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(epayment_paypal, "server", server, process_post, boost::placeholders::_1);
-    SNAP_LISTEN(epayment_paypal, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(epayment_paypal, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(epayment_paypal, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(epayment_paypal, "filter", filter::filter, token_help, boost::placeholders::_1);
-    SNAP_LISTEN(epayment_paypal, "epayment", epayment::epayment, repeat_payment, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(epayment_paypal, "server", server, process_post, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(epayment_paypal, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(epayment_paypal, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(epayment_paypal, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(epayment_paypal, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(epayment_paypal, "epayment", epayment::epayment, repeat_payment, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

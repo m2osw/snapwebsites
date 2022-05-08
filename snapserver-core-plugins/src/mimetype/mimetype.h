@@ -34,43 +34,21 @@ namespace mimetype
 //char const * get_name(name_t name) __attribute__ ((const));
 
 
-class mimetype_exception : public snap_exception
-{
-public:
-    explicit mimetype_exception(char const *        what_msg) : snap_exception("mimetype", what_msg) {}
-    explicit mimetype_exception(std::string const & what_msg) : snap_exception("mimetype", what_msg) {}
-    explicit mimetype_exception(QString const &     what_msg) : snap_exception("mimetype", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(mimetype_exception);
 
-class mimetype_exception_invalid_data : public mimetype_exception
-{
-public:
-    explicit mimetype_exception_invalid_data(char const *        what_msg) : mimetype_exception(what_msg) {}
-    explicit mimetype_exception_invalid_data(std::string const & what_msg) : mimetype_exception(what_msg) {}
-    explicit mimetype_exception_invalid_data(QString const &     what_msg) : mimetype_exception(what_msg) {}
-};
-
-
-
-
+DECLARE_EXCEPTION(mimetype_exception, mimetype_exception_invalid_data);
 
 
 
 class mimetype
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        mimetype();
-                        mimetype(mimetype const & rhs) = delete;
-    virtual             ~mimetype() override;
+    SERVERPLUGINS_DEFAULTS(mimetype);
 
-    mimetype &          operator = (mimetype const & rhs) = delete;
-
-    static mimetype *   instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     QString             mimetype_to_icon(QString const & mime_type);
     QString             mimetype_to_extension(QString const & mime_type);

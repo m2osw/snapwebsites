@@ -56,17 +56,17 @@ namespace locale_widgets
 {
 
 
-CPPTHREAD_PLUGIN_START(locale_widgets, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(locale_widgets, 1, 0)
+    , ::serverplugins::description(
             "Define locale functions to be used throughout all the plugins."
             " It handles time and date, timezone, numbers, currency, etc.")
-    , ::cppthread::plugin_icon("/images/locale/locale-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/locale")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("locale")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help/plugin/locale")
-    , ::cppthread::plugin_categorization_tag("gui")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/locale/locale-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/locale")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("locale")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help/plugin/locale")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(locale_widgets)
 
 
 
@@ -115,13 +115,16 @@ CPPTHREAD_PLUGIN_END()
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t locale_widgets::do_update(int64_t last_updated)
+time_t locale_widgets::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 5, 13, 18, 15, 30, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 5, 13, 18, 15, 30, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -145,18 +148,14 @@ void locale_widgets::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the locale_widgets plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void locale_widgets::bootstrap(snap_child * snap)
+void locale_widgets::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, string_to_value, boost::placeholders::_1);
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, value_to_string, boost::placeholders::_1);
-    SNAP_LISTEN(locale_widgets, "editor", editor::editor, validate_editor_post_for_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6, boost::placeholders::_7);
+    SERVERPLUGINS_LISTEN(locale_widgets, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SERVERPLUGINS_LISTEN(locale_widgets, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(locale_widgets, "editor", editor::editor, string_to_value, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(locale_widgets, "editor", editor::editor, value_to_string, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(locale_widgets, "editor", editor::editor, validate_editor_post_for_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6, boost::placeholders::_7);
 }
 
 

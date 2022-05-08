@@ -54,17 +54,10 @@ class snapserver_manager
     : public snap_manager::plugin_base
 {
 public:
-                            snapserver_manager();
-                            snapserver_manager(snapserver_manager const & rhs) = delete;
-    virtual                 ~snapserver_manager() override;
-
-    snapserver_manager &    operator = (snapserver_manager const & rhs) = delete;
-
-    static snapserver_manager * instance();
+    SERVERPLUGINS_DEFAULTS(snapserver_manager);
 
     // serverplugins::plugin implementation
     virtual void            bootstrap() override;
-    virtual time_t          do_update(time_t last_updated) override;
 
     // manager overload
     virtual bool            display_value(QDomElement parent, snap_manager::status_t const & s, snap::snap_uri const & uri) override;

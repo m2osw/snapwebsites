@@ -1,4 +1,3 @@
-// Snap Websites Server -- handle the Stripe payment facility
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -72,22 +71,22 @@ namespace epayment_stripe
 {
 
 
-CPPTHREAD_PLUGIN_START(epayment_stripe, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(epayment_stripe, 1, 0)
+    , ::serverplugins::description(
             "The stripe e-Payment Facility plugin offers payment from the"
             " client's stripe account.")
-    , ::cppthread::plugin_icon("/images/epayment/stripe-logo-64x64.png")
-    , ::cppthread::plugin_settings(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH))
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("epayment_creditcard")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("payment")
-    , ::cppthread::plugin_categorization_tag("finance")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/epayment/stripe-logo-64x64.png")
+    , ::serverplugins::settings_path(get_name(name_t::SNAP_NAME_EPAYMENT_STRIPE_SETTINGS_PATH))
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("epayment_creditcard")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("payment")
+    , ::serverplugins::categorization_tag("finance")
+SERVERPLUGINS_END(epayment_stripe)
 
 
 
@@ -222,13 +221,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t epayment_stripe::do_update(int64_t last_updated)
+time_t epayment_stripe::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 4, 7, 23, 46, 40, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 4, 7, 23, 46, 40, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -252,17 +254,13 @@ void epayment_stripe::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the epayment_stripe plugin
  * by registering for various events.
- *
- * \param[in] snap  The child handling this request.
  */
-void epayment_stripe::bootstrap(snap_child * snap)
+void epayment_stripe::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(epayment_stripe, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(epayment_stripe, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(epayment_stripe, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(epayment_stripe, "epayment", epayment::epayment, repeat_payment, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(epayment_stripe, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(epayment_stripe, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(epayment_stripe, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(epayment_stripe, "epayment", epayment::epayment, repeat_payment, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

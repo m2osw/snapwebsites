@@ -52,24 +52,18 @@ public:
 
 
 class users_ui
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public layout::layout_content
     , public layout::layout_boxes
     , public form::form_post
 {
 public:
-                            users_ui();
-                            users_ui(users_ui const & rhs) = delete;
-    virtual                 ~users_ui() override;
+    SERVERPLUGINS_DEFAULTS(users_ui);
 
-    users_ui &              operator = (users_ui const & rhs) = delete;
-
-    static users_ui *       instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(::snap::snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                    on_attach_to_session();

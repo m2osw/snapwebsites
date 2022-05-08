@@ -1,7 +1,3 @@
-//
-// File:        snapmanager/daemon/main.cpp
-// Object:      Allow for applying functions on any computer.
-//
 // Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/
@@ -66,6 +62,10 @@ extern QString g_next_register_filename;
 
 int main(int argc, char * argv[])
 {
+    ed::signal_handler::create_instance(
+                  ed::signal_handler::DEFAULT_SIGNAL_TERMINAL
+                | ed::signal_handler::EXTENDED_SIGNAL_TERMINAL);
+
     try
     {
         // Qt wants an application, we do not care too much ourselves,

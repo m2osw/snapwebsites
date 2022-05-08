@@ -1,5 +1,4 @@
-// Snap Websites Server -- generate versions of all the parts used by snap
-// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +17,7 @@
 
 // other plugins
 //
-#include "../filter/filter.h"
+#include    "../filter/filter.h"
 
 
 namespace snap
@@ -27,11 +26,11 @@ namespace versions
 {
 
 
-enum class name_t
-{
-    SNAP_NAME_VERSIONS_VERSION
-};
-char const * get_name(name_t name) __attribute__ ((const));
+//enum class name_t
+//{
+//    SNAP_NAME_VERSIONS_VERSION
+//};
+//char const * get_name(name_t name) __attribute__ ((const));
 
 
 DECLARE_MAIN_EXCEPTION(versions_exception);
@@ -45,27 +44,21 @@ DECLARE_EXCEPTION(versions_exception, versions_exception_invalid_content_xml);
 
 
 class versions
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        versions();
-                        versions(versions const & rhs) = delete;
-    virtual             ~versions() override;
+    SERVERPLUGINS_DEFAULTS(versions);
 
-    versions &          operator = (versions const & rhs) = delete;
-
-    static versions *   instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // filter signals
     void                on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token);
     void                on_token_help(filter::filter::token_help_t & help);
 
-    SNAP_SIGNAL_WITH_MODE(versions_libraries, (filter::filter::token_info_t & token), (token), START_AND_DONE);
-    SNAP_SIGNAL_WITH_MODE(versions_tools, (filter::filter::token_info_t & token), (token), START_AND_DONE);
+    PLUGIN_SIGNAL_WITH_MODE(versions_libraries, (filter::filter::token_info_t & token), (token), START_AND_DONE);
+    PLUGIN_SIGNAL_WITH_MODE(versions_tools, (filter::filter::token_info_t & token), (token), START_AND_DONE);
 
 private:
     void                content_update(int64_t variables_timestamp);

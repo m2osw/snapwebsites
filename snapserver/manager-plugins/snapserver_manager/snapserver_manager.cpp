@@ -26,19 +26,24 @@
 #include <snapmanager/form.h>
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include <snapwebsites/qdomhelpers.h>
-#include <snapwebsites/qdomxpath.h>
-#include <snapwebsites/snap_exception.h>
+#include    <snapwebsites/qdomhelpers.h>
+#include    <snapwebsites/qdomxpath.h>
+#include    <snapwebsites/snap_exception.h>
 
 
-// snaplogger lib
+// serverplugins
 //
-#include <snaplogger/message.h>
+#include    <serverplugins/factory.h>
 
 
-// snapdev lib
+// snaplogger
+//
+#include    <snaplogger/message.h>
+
+
+// snapdev
 //
 #include <snapdev/join_strings.h>
 #include <snapdev/not_reached.h>
@@ -64,10 +69,10 @@
 
 
 SERVERPLUGINS_START(snapserver_manager, 1, 0)
-    , ::cppthread::plugin_description(
+    , ::serverplugins::description(
             "Manage the snapsnapserver_manager settings.")
-    , ::cppthread::plugin_dependency("server")
-SERVERPLUGINS_END()
+    , ::serverplugins::dependency("server")
+SERVERPLUGINS_END(snapserver_manager)
 
 
 namespace
@@ -117,24 +122,6 @@ char const * get_name(name_t name)
 }
 
 
-
-
-/** \brief Check whether updates are necessary.
- *
- * This function is ignored in snapmanager.cgi and snapmanagerdaemon plugins.
- *
- * \param[in] last_updated  The UTC Unix date when the website was last updated (in micro seconds).
- *
- * \return The UTC Unix date of the last update of this plugin.
- */
-time_t snapserver_manager::do_update(time_t last_updated)
-{
-    snapdev::NOT_USED(last_updated);
-
-    SNAP_PLUGIN_UPDATE_INIT();
-    // no updating in snapmanager*
-    SNAP_PLUGIN_UPDATE_EXIT();
-}
 
 
 /** \brief Initialize snapserver_manager.

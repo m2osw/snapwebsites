@@ -48,15 +48,15 @@ namespace char_chart
 
 
 
-SNAP_PLUGIN_START(char_chart, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(char_chart, 1, 0)
+    , ::serverplugins::description(
             "This dynamically generates tables of characters.")
-    , ::cppthread::plugin_icon("/images/char-chart/char-chart-logo-64x64.png")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("sitemapxml")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("gui")
-SNAP_PLUGIN_END()
+    , ::serverplugins::icon("/images/char-chart/char-chart-logo-64x64.png")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("sitemapxml")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(char_chart)
 
 
 
@@ -74,13 +74,16 @@ SNAP_PLUGIN_END()
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t char_chart::do_update(int64_t last_updated)
+time_t char_chart::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 1, 9, 15, 2, 20, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 1, 9, 15, 2, 20, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -110,12 +113,10 @@ void char_chart::content_update(int64_t variables_timestamp)
  *
  * \param[in] snap  The child handling this request.
  */
-void char_chart::bootstrap(snap_child * snap)
+void char_chart::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(char_chart, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(char_chart, "sitemapxml", sitemapxml::sitemapxml, generate_sitemapxml, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(char_chart, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(char_chart, "sitemapxml", sitemapxml::sitemapxml, generate_sitemapxml, boost::placeholders::_1);
 }
 
 

@@ -56,21 +56,15 @@ public:
 
 
 class test_plugin
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
 {
 public:
-                            test_plugin();
-                            test_plugin(test_plugin const & rhs) = delete;
-    virtual                 ~test_plugin() override;
+    SERVERPLUGINS_DEFAULTS(test_plugin);
 
-    test_plugin &           operator = (test_plugin const & rhs) = delete;
-
-    static test_plugin *    instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                    on_process_post(QString const & uri_path);

@@ -97,19 +97,19 @@ namespace index
 {
 
 
-CPPTHREAD_PLUGIN_START(index, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(index, 1, 0)
+    , ::serverplugins::description(
             "Generate indexes of pages using a set of parameters as defined"
             " in said page type.")
-    , ::cppthread::plugin_icon("/images/index/index-logo-64x64.png")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("links")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("content")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/index/index-logo-64x64.png")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("links")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("content")
+SERVERPLUGINS_END(index)
 
 
 
@@ -1384,13 +1384,16 @@ int32_t paging_t::get_page_size() const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t index::do_update(int64_t last_updated)
+time_t index::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2019, 3, 6, 21, 35, 3, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2019, 3, 6, 21, 35, 3, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -1417,19 +1420,17 @@ void index::content_update(int64_t variables_timestamp)
  *
  * \param[in] snap  The child handling this request.
  */
-void index::bootstrap(snap_child * snap)
+void index::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(index, "server", server, attach_to_session);
-    //SNAP_LISTEN (index, "server", server, register_backend_cron, boost::placeholders::_1);
-    SNAP_LISTEN (index, "server", server, register_backend_action, boost::placeholders::_1);
-    SNAP_LISTEN (index, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN (index, "content", content::content, modified_content, boost::placeholders::_1);
-    SNAP_LISTEN (index, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN (index, "links", links::links, modified_link, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN (index, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN (index, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN0(index, "server", server, attach_to_session);
+    //SERVERPLUGINS_LISTEN (index, "server", server, register_backend_cron, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN (index, "server", server, register_backend_action, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN (index, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN (index, "content", content::content, modified_content, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN (index, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN (index, "links", links::links, modified_link, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN (index, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN (index, "filter", filter::filter, token_help, boost::placeholders::_1);
 
     //SNAP_TEST_PLUGIN_SUITE_LISTEN(index);
 }

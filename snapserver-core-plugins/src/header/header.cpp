@@ -43,20 +43,20 @@ namespace header
 {
 
 
-CPPTHREAD_PLUGIN_START(header, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(header, 1, 0)
+    , ::serverplugins::description(
             "Allows you to add/remove HTML and HTTP headers to your content."
             " Note that this module can, but should not be used to manage meta"
             " data for your page.")
-    , ::cppthread::plugin_icon("/images/header/header-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/header")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/header/header-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/header")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(header)
 
 /** \brief Get a fixed header name.
  *
@@ -100,13 +100,16 @@ const char * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t header::do_update(int64_t last_updated)
+time_t header::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 1, 15, 17, 58, 40, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 1, 15, 17, 58, 40, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -128,14 +131,10 @@ void header::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the header plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void header::bootstrap(snap_child * snap)
+void header::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(header, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(header, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

@@ -80,63 +80,28 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class epayment_stripe_exception : public snap_exception
-{
-public:
-    explicit epayment_stripe_exception(char const *        what_msg) : snap_exception("epayment_stripe", what_msg) {}
-    explicit epayment_stripe_exception(std::string const & what_msg) : snap_exception("epayment_stripe", what_msg) {}
-    explicit epayment_stripe_exception(QString const &     what_msg) : snap_exception("epayment_stripe", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(epayment_stripe_exception);
 
-class epayment_stripe_exception_invalid_parameter : public snap_exception
-{
-public:
-    explicit epayment_stripe_exception_invalid_parameter(char const *        what_msg) : snap_exception("epayment_stripe", what_msg) {}
-    explicit epayment_stripe_exception_invalid_parameter(std::string const & what_msg) : snap_exception("epayment_stripe", what_msg) {}
-    explicit epayment_stripe_exception_invalid_parameter(QString const &     what_msg) : snap_exception("epayment_stripe", what_msg) {}
-};
-
-class epayment_stripe_exception_io_error : public snap_exception
-{
-public:
-    explicit epayment_stripe_exception_io_error(char const *        what_msg) : snap_exception("epayment_stripe", what_msg) {}
-    explicit epayment_stripe_exception_io_error(std::string const & what_msg) : snap_exception("epayment_stripe", what_msg) {}
-    explicit epayment_stripe_exception_io_error(QString const &     what_msg) : snap_exception("epayment_stripe", what_msg) {}
-};
-
-class epayment_stripe_exception_invalid_error : public snap_exception
-{
-public:
-    explicit epayment_stripe_exception_invalid_error(char const *        what_msg) : snap_exception("epayment_stripe", what_msg) {}
-    explicit epayment_stripe_exception_invalid_error(std::string const & what_msg) : snap_exception("epayment_stripe", what_msg) {}
-    explicit epayment_stripe_exception_invalid_error(QString const &     what_msg) : snap_exception("epayment_stripe", what_msg) {}
-};
-
-
-
+DECLARE_EXCEPTION(epayment_stripe_exception, epayment_stripe_exception_invalid_parameter);
+DECLARE_EXCEPTION(epayment_stripe_exception, epayment_stripe_exception_io_error);
+DECLARE_EXCEPTION(epayment_stripe_exception, epayment_stripe_exception_invalid_error);
 
 
 
 
 
 class epayment_stripe
-    : public cppthread::plugin
+    : public serverplugins::plugin
     //, public path::path_execute
     , public layout::layout_content
     , public epayment_creditcard::epayment_creditcard_gateway_t
 {
 public:
-                                epayment_stripe();
-                                epayment_stripe(epayment_stripe const & rhs) = delete;
-    virtual                     ~epayment_stripe() override;
+    SERVERPLUGINS_DEFAULTS(epayment_stripe);
 
-    epayment_stripe &           operator = (epayment_stripe const & rhs) = delete;
-
-    static epayment_stripe *    instance();
-
-    // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     libdbproxy::table::pointer_t     get_epayment_stripe_table();
 

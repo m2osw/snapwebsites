@@ -64,16 +64,16 @@ namespace server_access
 
 
 
-CPPTHREAD_PLUGIN_START(server_access, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(server_access, 1, 0)
+    , ::serverplugins::description(
             "Intercept default output and transform it for AJAX responses."
             " Handle AJAX responses for functions that do it right.")
-    , ::cppthread::plugin_icon("/images/server-access/server-access-logo-64x64.png")
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/server-access/server-access-logo-64x64.png")
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+SERVERPLUGINS_END(server_access)
 
 
 /* \brief Get a fixed server_access name.
@@ -117,13 +117,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t server_access::do_update(int64_t last_updated)
+time_t server_access::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2018, 8, 30, 20, 51, 0, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2018, 8, 30, 20, 51, 0, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -148,14 +151,10 @@ void server_access::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the server_access plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void server_access::bootstrap(snap_child * snap)
+void server_access::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(server_access, "server", server, output_result, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(server_access, "server", server, output_result, boost::placeholders::_1, boost::placeholders::_2);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(server_access);
 }

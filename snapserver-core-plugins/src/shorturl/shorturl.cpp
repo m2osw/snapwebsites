@@ -97,19 +97,19 @@ namespace shorturl
 {
 
 
-CPPTHREAD_PLUGIN_START(shorturl, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(shorturl, 1, 0)
+    , ::serverplugins::description(
             "Fully automated management of short URLs for this website.")
-    , ::cppthread::plugin_icon("/images/shorturl/shorturl-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/shorturl")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("sessions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/shorturl/shorturl-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/shorturl")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("sessions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(shorturl)
 
 
 /** \brief Get a fixed shorturl name.
@@ -170,13 +170,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t shorturl::do_update(int64_t last_updated)
+time_t shorturl::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 1, 16, 23, 39, 40, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 1, 16, 23, 39, 40, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -199,17 +202,13 @@ void shorturl::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the shorturl plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void shorturl::bootstrap(snap_child * snap)
+void shorturl::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(shorturl, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(shorturl, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(shorturl, "content", content::content, page_cloned, boost::placeholders::_1);
-    SNAP_LISTEN(shorturl, "path", path::path, check_for_redirect, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(shorturl, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(shorturl, "content", content::content, create_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(shorturl, "content", content::content, page_cloned, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(shorturl, "path", path::path, check_for_redirect, boost::placeholders::_1);
 }
 
 

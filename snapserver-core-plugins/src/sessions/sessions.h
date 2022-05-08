@@ -159,7 +159,7 @@ public:
 
     // serverplugins::plugin implementation
     virtual void            bootstrap() override;
-    virtual time_t          do_update(time_t last_updated) override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                    on_table_is_accessible(QString const & table_name, server::accessible_flag_t & accessible);

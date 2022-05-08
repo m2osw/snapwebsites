@@ -44,7 +44,7 @@ DECLARE_EXCEPTION(output_exception, output_exception_invalid_content_xml);
 
 
 class output
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public layout::layout_content
     , public layout::layout_boxes
@@ -58,17 +58,11 @@ public:
         PHONE_NUMBER_TYPE_TELEPHONE
     };
 
-                        output();
-                        output(output const & rhs) = delete;
-    virtual             ~output();
+    SERVERPLUGINS_DEFAULTS(output);
 
-    output &            operator = (output const & rhs) = delete;
-
-    static output *     instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // path::path_execute implementation
     virtual bool        on_path_execute(content::path_info_t & ipath) override;

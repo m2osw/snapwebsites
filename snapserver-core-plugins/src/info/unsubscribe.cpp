@@ -1,4 +1,3 @@
-// Snap Websites Server -- manage sendmail (record, display)
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify

@@ -27,22 +27,16 @@ namespace char_chart
 {
 
 class char_chart
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public layout::layout_content
 {
 public:
-                        char_chart();
-                        char_chart(char_chart const & rhs) = delete;
-    virtual             ~char_chart() override;
+    SERVERPLUGINS_DEFAULTS(char_chart);
 
-    char_chart &        operator = (char_chart const & rhs) = delete;
-
-    static char_chart * instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // path::path_execute implementation
     bool                on_path_execute(content::path_info_t & cpath);

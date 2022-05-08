@@ -172,22 +172,16 @@ private:
 
 
 class password
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public layout::layout_content
 {
 public:
-                        password();
-                        password(password const & rhs) = delete;
-    virtual             ~password() override;
+    SERVERPLUGINS_DEFAULTS(password);
 
-    password &          operator = (password const & rhs) = delete;
-
-    static password *   instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // users signals
     void                on_check_user_security ( users::users::user_security_t    & security    );

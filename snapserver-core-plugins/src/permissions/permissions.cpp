@@ -71,19 +71,19 @@ namespace permissions
 {
 
 
-CPPTHREAD_PLUGIN_START(permissions, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(permissions, 1, 0)
+    , ::serverplugins::description(
             "The permissions plugin is one of the most important plugins of the"
             " Snap! system. It allows us to determine whether the current user"
             " has enough rights to act on a specific page.")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("user")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("user")
+SERVERPLUGINS_END(permissions)
 
 
 
@@ -1453,13 +1453,16 @@ next_plugin:;
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t permissions::do_update(int64_t last_updated)
+time_t permissions::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 8, 2, 12, 32, 57, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 8, 2, 12, 32, 57, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -1482,21 +1485,17 @@ void permissions::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the permissions plugin
  * by registering for different events it supports.
- *
- * \param[in] snap  The child handling this request.
  */
-void permissions::bootstrap(snap_child * snap)
+void permissions::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(permissions, "server", server, register_backend_action, boost::placeholders::_1);
-    SNAP_LISTEN(permissions, "server", server, add_snap_expr_functions, boost::placeholders::_1);
-    SNAP_LISTEN(permissions, "path", path::path, validate_action, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(permissions, "path", path::path, access_allowed, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
-    SNAP_LISTEN(permissions, "path", path::path, check_for_redirect, boost::placeholders::_1);
-    SNAP_LISTEN(permissions, "users", users::users, user_verified, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(permissions, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(permissions, "links", links::links, modified_link, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(permissions, "server", server, register_backend_action, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(permissions, "server", server, add_snap_expr_functions, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(permissions, "path", path::path, validate_action, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(permissions, "path", path::path, access_allowed, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SERVERPLUGINS_LISTEN(permissions, "path", path::path, check_for_redirect, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(permissions, "users", users::users, user_verified, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(permissions, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(permissions, "links", links::links, modified_link, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

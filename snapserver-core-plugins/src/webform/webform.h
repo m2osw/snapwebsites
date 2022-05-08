@@ -37,20 +37,14 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class webform
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        webform();
-                        webform(webform const & rhs) = delete;
-    virtual             ~webform() override;
+    SERVERPLUGINS_DEFAULTS(webform);
 
-    webform &           operator = (webform const & rhs) = delete;
-
-    static webform *    instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
 private:
     void                content_update(int64_t variables_timestamp);

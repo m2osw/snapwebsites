@@ -55,18 +55,18 @@ namespace no_iframe
 
 
 
-CPPTHREAD_PLUGIN_START(no_iframe, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(no_iframe, 1, 0)
+    , ::serverplugins::description(
             "The no_iframe plugin gives administrators a way to prevent a"
             " website from being shown in another website iframe tag.")
-    , ::cppthread::plugin_icon("/images/no-iframe/no-iframe-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/no-iframe")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/no-iframe/no-iframe-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/no-iframe")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(no_iframe)
 
 
 /** \class info
@@ -138,13 +138,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t no_iframe::do_update(int64_t last_updated)
+time_t no_iframe::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 2, 1, 18, 26, 49, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 2, 1, 18, 26, 49, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -167,14 +170,10 @@ void no_iframe::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the no_iframe plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void no_iframe::bootstrap(snap_child * snap)
+void no_iframe::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(no_iframe, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(no_iframe, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
 }
 
 

@@ -33,6 +33,11 @@
 #include    <snapwebsites/snap_lock.h>
 
 
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+
+
 // snaplogger
 //
 #include    <snaplogger/message.h>
@@ -283,7 +288,7 @@ snap_version::version_number_t content::get_new_branch(QString const & key, QStr
     // increase revision if one exists, otherwise we keep the user default (1)
     snap_version::version_number_t branch(snap_version::SPECIAL_VERSION_USER_FIRST_BRANCH);
 
-    snap_lock lock(key);
+    snap_lock lock(std::string(key.data().toUtf8()));
 
     libdbproxy::value branch_value(content_table->getRow(key)->getCell(last_branch_key)->getValue());
     if(!branch_value.nullValue())

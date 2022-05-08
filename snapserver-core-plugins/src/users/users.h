@@ -125,7 +125,7 @@ DECLARE_EXCEPTION(users_exception, users_exception_invalid_object);
 
 
 class users
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public links::links_cloned
     , public path::path_execute
     , public layout::layout_content
@@ -338,19 +338,11 @@ public:
         mutable QString                 f_uri = QString();
     };
 
-                            users();
-                            users(users const & rhs) = delete;
-    virtual                 ~users() override;
+    SERVERPLUGINS_DEFAULTS(users);
 
-    users &                 operator = (users const & rhs) = delete;
-
-    static users *          instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual int64_t         do_dynamic_update(int64_t last_updated) override;
-    virtual void            bootstrap(::snap::snap_child * snap) override;
-
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     static QString          basic_email_canonicalization(QString const & email);
 

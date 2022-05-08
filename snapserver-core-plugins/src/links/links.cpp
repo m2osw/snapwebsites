@@ -64,17 +64,17 @@ namespace links
 
 
 SERVERPLUGINS_START(links, 1, 0)
-    , ::serverplugins::plugin_description(
+    , ::serverplugins::description(
             "This plugin offers functions to link rows of data together."
             " For example, it allows you to attach a tag to the page of content."
             " This plugin is part of core since it links everything that core"
             " needs to make the system function as expected.")
-    , ::serverplugins::plugin_icon("/images/snap/links-logo-64x64.png")
-    , ::serverplugins::plugin_settings()
-    , ::serverplugins::plugin_dependency("content")
-    , ::serverplugins::plugin_help_uri("https://snapwebsites.org/help")
-    , ::serverplugins::plugin_categorization_tag("content")
-SERVERPLUGINS_END()
+    , ::serverplugins::icon("/images/snap/links-logo-64x64.png")
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("content")
+SERVERPLUGINS_END(links)
 
 
 
@@ -1397,15 +1397,11 @@ bool link_context::next_link(link_info & info)
  *
  * This function terminates the initialization of the links plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void links::bootstrap(snap_child * snap)
+void links::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(links, "server", server, add_snap_expr_functions, boost::placeholders::_1);
-    SNAP_LISTEN(links, "server", server, register_backend_action, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(links, "server", server, add_snap_expr_functions, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(links, "server", server, register_backend_action, boost::placeholders::_1);
 
     SNAP_TEST_PLUGIN_SUITE_LISTEN(links);
 }
@@ -1423,13 +1419,13 @@ void links::bootstrap(snap_child * snap)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t links::do_update(int64_t last_updated)
+int64_t links::do_update(int64_t last_updated, unsigned int phase)
 {
-    snapdev::NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated, phase);
 
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 

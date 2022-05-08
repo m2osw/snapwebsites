@@ -1,4 +1,3 @@
-// Snap Websites Server -- generate lists of links and display them
 // Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,20 +59,20 @@ namespace menu
 {
 
 
-CPPTHREAD_PLUGIN_START(menu, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(menu, 1, 0)
+    , ::serverplugins::description(
             "This plugin generates lists of pages used to form a menu."
             " It manages two different types of lists: automated lists,"
             " using the list plugin, and manually created lists where"
             " a user enters each item in the list.")
-    , ::cppthread::plugin_icon("/images/menu/menu-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/menu")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("gui")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/menu/menu-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/menu")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(menu)
 
 
 /** \brief Get a fixed menu name.
@@ -119,13 +118,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t menu::do_update(int64_t last_updated)
+time_t menu::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 1, 17, 0, 18, 0, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 1, 17, 0, 18, 0, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -149,12 +151,9 @@ void menu::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the menu plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void menu::bootstrap(snap_child * snap)
+void menu::bootstrap()
 {
-    f_snap = snap;
 }
 
 

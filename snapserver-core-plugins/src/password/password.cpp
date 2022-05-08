@@ -96,22 +96,22 @@ namespace password
 {
 
 
-CPPTHREAD_PLUGIN_START(password, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(password, 1, 0)
+    , ::serverplugins::description(
             "Check passwords of newly created users for strength."
             " The plugin verifies various settings to ensure the strength of passwords."
             " It can also check a database of black listed passwords.")
-    , ::cppthread::plugin_icon("/images/password/password-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/password")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("login")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/password/password-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/password")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("login")
+SERVERPLUGINS_END(password)
 
 
 
@@ -283,13 +283,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t password::do_update(int64_t last_updated)
+time_t password::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 2, 13, 13, 11, 51, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 2, 13, 13, 11, 51, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -313,21 +316,17 @@ void password::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the password plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void password::bootstrap(snap_child * snap)
+void password::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(password, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
-    SNAP_LISTEN(password, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
-    SNAP_LISTEN(password, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(password, "users", users::users, check_user_security, boost::placeholders::_1);
-    SNAP_LISTEN(password, "users", users::users, user_logged_in, boost::placeholders::_1);
-    SNAP_LISTEN(password, "users", users::users, save_password, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(password, "users", users::users, invalid_password, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(password, "users", users::users, blocked_user, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(password, "editor", editor::editor, prepare_editor_form, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(password, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    SERVERPLUGINS_LISTEN(password, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(password, "users", users::users, check_user_security, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(password, "users", users::users, user_logged_in, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(password, "users", users::users, save_password, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(password, "users", users::users, invalid_password, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(password, "users", users::users, blocked_user, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

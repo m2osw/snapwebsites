@@ -480,7 +480,7 @@ private:
     snapdbproxy_initializer_thread::pointer_t   f_initializer_thread = snapdbproxy_initializer_thread::pointer_t();
     snap::snap_lock::pointer_t                  f_initializer_lock = nullptr;
     QString                                     f_snapdbproxy_addr = QString("127.0.0.1");
-    int                                         f_snapdbproxy_port = 4042;
+    int                                         f_snapdbproxy_port = 4048;
     snap::snap_communicator::pointer_t          f_communicator = snap::snap_communicator::pointer_t();
     QString                                     f_cassandra_host_list = QString("localhost");
     int                                         f_cassandra_port = 9042;

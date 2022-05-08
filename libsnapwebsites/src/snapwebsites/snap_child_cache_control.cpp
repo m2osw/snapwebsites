@@ -18,33 +18,37 @@
 
 // self
 //
-#include "snapwebsites/snap_child.h"
+#include    "snapwebsites/snap_child.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
-#include "snapwebsites/log.h"
-#include "snapwebsites/snapwebsites.h"
+#include    "snapwebsites/snapwebsites.h"
 
 
-// snapdev lib
+// snaplogger
 //
-#include <snapdev/not_reached.h>
+#include    "snaplogger/message.h"
 
 
-// Qt lib
+// snapdev
 //
-#include <QLocale>
+#include    <snapdev/not_reached.h>
 
 
-// boost lib
+// Qt
 //
-#include <boost/algorithm/string/join.hpp>
+#include    <QLocale>
+
+
+// boost
+//
+#include    <boost/algorithm/string/join.hpp>
 
 
 // last include
 //
-#include <snapdev/poison.h>
+#include    <snapdev/poison.h>
 
 
 
@@ -269,7 +273,11 @@ void snap_child::not_modified()
 
             // log the fact we are sending a 304
             //
-            SNAP_LOG_INFO("snap_child_cache_control.cpp:not_modified(): replying with HTTP 304 for ")(f_uri.path())(" (1)");
+            SNAP_LOG_INFO
+                << "snap_child_cache_control.cpp:not_modified(): replying with HTTP 304 for "
+                << f_uri.path()
+                << " (1)"
+                << SNAP_LOG_SEND;
 
             if(f_is_being_initialized)
             {
@@ -351,7 +359,11 @@ void snap_child::not_modified()
 
                 // log the fact we are sending a 304
                 //
-                SNAP_LOG_INFO("snap_child_cache_control.cpp:not_modified(): replying with HTTP 304 for ")(f_uri.path())(" (2)");
+                SNAP_LOG_INFO
+                    << "snap_child_cache_control.cpp:not_modified(): replying with HTTP 304 for "
+                    << f_uri.path()
+                    << " (2)"
+                    << SNAP_LOG_SEND;
 
                 if(f_is_being_initialized)
                 {
@@ -409,7 +421,9 @@ void snap_child::not_modified()
     {
         // ignore all errors because at this point we must die quickly.
         //
-        SNAP_LOG_FATAL("snap_child_cache_control.cpp:not_modified(): try/catch caught an exception");
+        SNAP_LOG_FATAL
+            << "snap_child_cache_control.cpp:not_modified(): try/catch caught an exception"
+            << SNAP_LOG_SEND;
     }
 
     // exit with an error

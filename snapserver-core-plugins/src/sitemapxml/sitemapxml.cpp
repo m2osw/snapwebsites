@@ -101,18 +101,18 @@ namespace sitemapxml
 {
 
 
-CPPTHREAD_PLUGIN_START(sitemapxml, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(sitemapxml, 1, 0)
+    , ::serverplugins::description(
             "Generates the sitemap.xml file which is used by search engines to"
             " discover your website pages. You can change the settings to hide"
             " different pages or all your pages.")
-    , ::cppthread::plugin_settings("/admin/settings/sitemapxml")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("robotstxt")
-    , ::cppthread::plugin_dependency("shorturl")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("content")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::settings_path("/admin/settings/sitemapxml")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("robotstxt")
+    , ::serverplugins::dependency("shorturl")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("content")
+SERVERPLUGINS_END(sitemapxml)
 
 
 /** \brief Get a fixed sitemapxml name.
@@ -465,13 +465,16 @@ bool sitemapxml::url_info::operator < (url_info const & rhs) const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t sitemapxml::do_update(int64_t last_updated)
+time_t sitemapxml::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 12, 20, 1, 15, 42, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 12, 20, 1, 15, 42, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -498,14 +501,12 @@ void sitemapxml::content_update(int64_t variables_timestamp)
  * This function terminates the initialization of the sitemapxml plugin
  * by registering for different events.
  */
-void sitemapxml::bootstrap(::snap::snap_child * snap)
+void sitemapxml::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN0(sitemapxml, "server", server, backend_process);
-    SNAP_LISTEN(sitemapxml, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(sitemapxml, "robotstxt", robotstxt::robotstxt, generate_robotstxt, boost::placeholders::_1);
-    SNAP_LISTEN(sitemapxml, "shorturl", shorturl::shorturl, allow_shorturl, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4);
+    SERVERPLUGINS_LISTEN0(sitemapxml, "server", server, backend_process);
+    SERVERPLUGINS_LISTEN(sitemapxml, "content", content::content, copy_branch_cells, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(sitemapxml, "robotstxt", robotstxt::robotstxt, generate_robotstxt, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(sitemapxml, "shorturl", shorturl::shorturl, allow_shorturl, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4);
 }
 
 

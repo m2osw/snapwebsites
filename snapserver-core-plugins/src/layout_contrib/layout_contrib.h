@@ -26,15 +26,6 @@ namespace snap
 namespace layout_contrib
 {
 
-enum class name_t
-{
-    SNAP_NAME_LAYOUT_CONTRIB_BOOTSTRAP
-};
-char const * get_name(name_t name) __attribute__ ((const));
-
-
-
-
 
 
 class layout_contrib
@@ -43,9 +34,9 @@ class layout_contrib
 public:
     SERVERPLUGINS_DEFAULTS(layout_contrib);
 
-    // plugins::plugin implementation
+    // serverplugins::plugin implementation
     virtual void            bootstrap() override;
-    virtual time_t          do_update(time_t last_updated) override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
 private:
     void                    content_update(int64_t variables_timestamp);

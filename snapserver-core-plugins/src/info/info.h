@@ -35,41 +35,23 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class info_exception : public snap_exception
-{
-public:
-    explicit info_exception(char const *        what_msg) : snap_exception("Info", what_msg) {}
-    explicit info_exception(std::string const & what_msg) : snap_exception("Info", what_msg) {}
-    explicit info_exception(QString const &     what_msg) : snap_exception("Info", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(info_exception);
 
-class info_exception_invalid_path : public info_exception
-{
-public:
-    explicit info_exception_invalid_path(char const *        what_msg) : info_exception(what_msg) {}
-    explicit info_exception_invalid_path(std::string const & what_msg) : info_exception(what_msg) {}
-    explicit info_exception_invalid_path(QString const &     what_msg) : info_exception(what_msg) {}
-};
+DECLARE_EXCEPTION(info_exception, info_exception_invalid_path);
 
 
 
 class info
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public layout::layout_content
 {
 public:
-                            info();
-                            info(info const & rhs) = delete;
-    virtual                 ~info() override;
+    SERVERPLUGINS_DEFAULTS(info);
 
-    info &                  operator = (info const & rhs) = delete;
-
-    static info *           instance();
-
-    // plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // path_execute implementation
     virtual bool            on_path_execute(content::path_info_t & ipath) override;

@@ -27,41 +27,16 @@ namespace avatar
 {
 
 
-enum class name_t
-{
-    SNAP_NAME_AVATAR_ADMIN_SETTINGS,
-    SNAP_NAME_AVATAR_AGE,
-    SNAP_NAME_AVATAR_ATTACHMENT_TYPE,
-    SNAP_NAME_AVATAR_DESCRIPTION,
-    SNAP_NAME_AVATAR_EXTENSION,
-    SNAP_NAME_AVATAR_MIMETYPE,
-    SNAP_NAME_AVATAR_PAGE_LAYOUT,
-    SNAP_NAME_AVATAR_TITLE,
-    SNAP_NAME_AVATAR_TTL,
-    SNAP_NAME_AVATAR_TYPE
-};
-char const * get_name(name_t name) __attribute__ ((const));
-
-
-DECLARE_MAIN_EXCEPTION(avatar_exception);
-
-
 
 class avatar
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                        avatar();
-                        avatar(avatar const & rhs) = delete;
-    virtual             ~avatar() override;
+    SERVERPLUGINS_DEFAULTS(avatar);
 
-    avatar &            operator = (avatar const & rhs) = delete;
-
-    static avatar *     instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // filter signals
     void                on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token);

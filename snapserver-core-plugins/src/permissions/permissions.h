@@ -86,7 +86,7 @@ DECLARE_EXCEPTION(permissions_exception, permissions_exception_invalid_path);
 
 
 class permissions
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public links::links_cloned
     , public layout::layout_content
     , public server::backend_action
@@ -159,17 +159,11 @@ public:
         SECURE_MODE_ALWAYS
     };
 
-                            permissions();
-                            permissions(permissions const & rhs) = delete;
-    virtual                 ~permissions() override;
+    SERVERPLUGINS_DEFAULTS(permissions);
 
-    permissions &           operator = (permissions const & rhs) = delete;
-
-    static permissions *    instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // server::backend_action implementation
     virtual void            on_backend_action(QString const & action);

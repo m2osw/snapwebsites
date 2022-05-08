@@ -1,4 +1,3 @@
-// Snap Websites Server -- favicon generator and settings
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,19 +63,19 @@ namespace favicon
 {
 
 
-CPPTHREAD_PLUGIN_START(favicon, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(favicon, 1, 0)
+    , ::serverplugins::description(
             "Handling of the favicon.ico file(s).")
-    , ::cppthread::plugin_icon("/images/snap/snap-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/favicon")
-    , ::cppthread::plugin_dependency("form")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/snap/snap-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/favicon")
+    , ::serverplugins::dependency("form")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(favicon)
 
 
 
@@ -178,13 +177,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t favicon::do_update(int64_t last_updated)
+time_t favicon::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 4, 7, 1, 45, 1, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 4, 7, 1, 45, 1, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -207,17 +209,13 @@ void favicon::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the favicon plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void favicon::bootstrap(snap_child * snap)
+void favicon::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(favicon, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(favicon, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(favicon, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(favicon, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(favicon, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(favicon, "layout", layout::layout, generate_header_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(favicon, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(favicon, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

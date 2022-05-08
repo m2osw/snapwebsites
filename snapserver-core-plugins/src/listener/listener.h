@@ -24,43 +24,21 @@ namespace listener
 {
 
 
-class listener_exception : public snap_exception
-{
-public:
-    explicit listener_exception(char const *        what_msg) : snap_exception("server-access", what_msg) {}
-    explicit listener_exception(std::string const & what_msg) : snap_exception("server-access", what_msg) {}
-    explicit listener_exception(QString const &     what_msg) : snap_exception("server-access", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(listener_exception);
 
-class listener_exception_status_missing : public listener_exception
-{
-public:
-    explicit listener_exception_status_missing(char const *        what_msg) : listener_exception(what_msg) {}
-    explicit listener_exception_status_missing(std::string const & what_msg) : listener_exception(what_msg) {}
-    explicit listener_exception_status_missing(QString const &     what_msg) : listener_exception(what_msg) {}
-};
-
-
-
-
+DECLARE_EXCEPTION(listener_exception, listener_exception_status_missing);
 
 
 
 class listener
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                                listener();
-                                listener(listener const & rhs) = delete;
-    virtual                     ~listener() override;
+    SERVERPLUGINS_DEFAULTS(listener);
 
-    listener &                  operator = (listener const & rhs) = delete;
-
-    static listener *           instance();
-
-    // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                        on_process_post(QString const & uri_path);

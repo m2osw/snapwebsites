@@ -379,9 +379,9 @@ public:
 
     SERVERPLUGINS_DEFAULTS(filter);
 
-    // plugin implementation
+    // serverplugins::plugin implementation
     virtual void        bootstrap() override;
-    virtual time_t      do_update(time_t last_updated) override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                on_xss_filter(QDomNode & node, QString const & accepted_tags, QString const & accepted_attributes);

@@ -56,23 +56,23 @@ namespace bookkeeping
 
 
 
-CPPTHREAD_PLUGIN_START(bookkeeping, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(bookkeeping, 1, 0)
+    , ::serverplugins::description(
             "The bookkeeping plugin offers a basic set of functionality to"
             " manage your small business books: expensives, invoices, payroll,"
             " contractors, accounts, etc.")
-    , ::cppthread::plugin_icon("/images/bookkeeping/bookkeeping-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/bookkeeping")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("sendmail")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("finance")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/bookkeeping/bookkeeping-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/bookkeeping")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("sendmail")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("finance")
+SERVERPLUGINS_END(bookkeeping)
 
 
 /** \class bookkeeping
@@ -160,13 +160,16 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t bookkeeping::do_update(int64_t last_updated)
+time_t bookkeeping::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 4, 7, 1, 45, 41, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 4, 7, 1, 45, 41, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -192,15 +195,13 @@ void bookkeeping::content_update(int64_t variables_timestamp)
  *
  * \param[in] snap  The child handling this request.
  */
-void bookkeeping::bootstrap(snap_child * snap)
+void bookkeeping::bootstrap()
 {
-    f_snap = snap;
-
-    //SNAP_LISTEN(bookkeeping, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    //SNAP_LISTEN(bookkeeping, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
-    //SNAP_LISTEN(bookkeeping, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    //SNAP_LISTEN(bookkeeping, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
-    //SNAP_LISTEN(bookkeeping, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
+    //SERVERPLUGINS_LISTEN(bookkeeping, "server", server, improve_signature, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    //SERVERPLUGINS_LISTEN(bookkeeping, "path", path::path, can_handle_dynamic_path, boost::placeholders::_1, boost::placeholders::_2);
+    //SERVERPLUGINS_LISTEN(bookkeeping, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    //SERVERPLUGINS_LISTEN(bookkeeping, "editor", editor::editor, finish_editor_form_processing, boost::placeholders::_1, boost::placeholders::_2);
+    //SERVERPLUGINS_LISTEN(bookkeeping, "editor", editor::editor, init_editor_widget, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5);
 }
 
 

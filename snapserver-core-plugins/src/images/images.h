@@ -48,32 +48,14 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class images_exception : public snap_exception
-{
-public:
-    explicit images_exception(char const *        what_msg) : snap_exception("images", what_msg) {}
-    explicit images_exception(std::string const & what_msg) : snap_exception("images", what_msg) {}
-    explicit images_exception(QString const &     what_msg) : snap_exception("images", what_msg) {}
-};
+DECLARE_MAIN_EXCEPTION(images_exception);
 
-class images_exception_no_backend : public images_exception
-{
-public:
-    images_exception_no_backend(char const *        what_msg) : images_exception(what_msg) {}
-    images_exception_no_backend(std::string const & what_msg) : images_exception(what_msg) {}
-    images_exception_no_backend(QString const &     what_msg) : images_exception(what_msg) {}
-};
-
-
-
-
-
-
+DECLARE_EXCEPTION(images_exception, images_exception_no_backend);
 
 
 
 class images
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public server::backend_action
     , public path::path_execute
 {
@@ -85,17 +67,11 @@ public:
         VIRTUAL_PATH_NOT_AVAILABLE
     };
 
-                        images();
-                        images(images const & rhs) = delete;
-    virtual             ~images() override;
+    SERVERPLUGINS_DEFAULTS(images);
 
-    images &            operator = (images const & rhs) = delete;
-
-    static images *     instance();
-
-    // plugins implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // server::backend_action implementation
     virtual void        on_backend_action(QString const & action) override;

@@ -42,21 +42,15 @@ DECLARE_MAIN_EXCEPTION(antivirus_exception);
 
 
 class antivirus
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public layout::layout_content
 {
 public:
-                            antivirus();
-                            antivirus(antivirus const & rhs) = delete;
-    virtual                 ~antivirus() override;
+    SERVERPLUGINS_DEFAULTS(antivirus);
 
-    antivirus &             operator = (antivirus const & rhs) = delete;
-
-    static antivirus *      instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // layout::layout_content implementation
     virtual void            on_generate_main_content(content::path_info_t & path, QDomElement & page, QDomElement & body) override;

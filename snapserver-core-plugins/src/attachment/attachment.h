@@ -1,5 +1,4 @@
-// Snap Websites Server -- handle the output of attachments
-// Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2014-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -45,23 +44,17 @@ DECLARE_EXCEPTION(attachment_exception, attachment_exception_invalid_filename);
 
 
 class attachment
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public server::backend_action
     , public permission_error_callback::error_by_mime_type
 {
 public:
-                        attachment();
-                        attachment(attachment const & rhs) = delete;
-    virtual             ~attachment() override;
+    SERVERPLUGINS_DEFAULTS(attachment);
 
-    attachment &        operator = (attachment const & rhs) = delete;
-
-    static attachment * instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                on_register_backend_action(server::backend_action_set & actions);

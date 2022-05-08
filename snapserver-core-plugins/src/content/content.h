@@ -18,13 +18,19 @@
 
 // self
 //
-#include "../links/links.h"
-#include "../test_plugin_suite/test_plugin_suite.h"
+#include    "../links/links.h"
+#include    "../test_plugin_suite/test_plugin_suite.h"
 
-#include <libdbproxy/table.h>
-#include <libdbproxy/value.h>
 
-#include <stack>
+// libdbproxy
+//
+#include    <libdbproxy/table.h>
+#include    <libdbproxy/value.h>
+
+
+// C++
+//
+#include    <stack>
 
 
 namespace snap
@@ -679,7 +685,7 @@ public:
 
     // plugins::plugin implementation
     virtual void        bootstrap() override;
-    virtual time_t      do_update(time_t last_updated) override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // links::links_cloned implementation
     virtual void        repair_link_of_cloned_page(QString const & clone, snap_version::version_number_t branch_number, links::link_info const & source, links::link_info const & destination, bool const cloning) override;

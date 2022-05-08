@@ -106,9 +106,9 @@ public:
 
     SERVERPLUGINS_DEFAULTS(locale);
 
-    // plugin implementation
-    virtual time_t              do_update(time_t last_updated) override;
+    // serverplugins::plugin implementation
     virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     locale_list_t const &       get_locale_list();
     timezone_list_t const &     get_timezone_list();

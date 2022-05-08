@@ -1,4 +1,3 @@
-// Snap Websites Server -- JavaScript plugin to run scripts on the server side
 // Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,11 +37,6 @@
 #include    <snapwebsites/snap_version.h>
 
 
-// cppthread
-//
-//#include    <cppthread/plugins.h>
-
-
 // snaplogger
 //
 #include    <snaplogger/message.h>
@@ -75,16 +69,16 @@ namespace javascript
 {
 
 
-CPPTHREAD_PLUGIN_START(javascript, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(javascript, 1, 0)
+    , ::serverplugins::description(
             "Offer server side JavaScript support for different plugins."
             " This implementation makes use of the QScript extension.")
-    , ::cppthread::plugin_icon("/images/snap/javascript-logo-64x64.png")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/snap/javascript-logo-64x64.png")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(javascript)
 
 
 
@@ -98,36 +92,6 @@ CPPTHREAD_PLUGIN_END()
  */
 
 
-
-
-/** \brief Get a fixed javascript name.
- *
- * The javascript plugin makes use of different names in the database. This
- * function ensures that you get the right spelling for a given name.
- *
- * \param[in] name  The name to retrieve.
- *
- * \return A pointer to the name.
- */
-char const * get_name(name_t name)
-{
-    switch(name) {
-    case name_t::SNAP_NAME_JAVASCRIPT_MINIMIZED:
-        return "javascript::minimized";
-
-    case name_t::SNAP_NAME_JAVASCRIPT_MINIMIZED_COMPRESSED:
-        return "javascript::minimized::compressed";
-
-    //case name_t::SNAP_NAME_JAVASCRIPT_ROW: -- use SNAP_NAME_CONTENT_FILES_JAVASCRIPTS instead
-    //    return "javascripts";
-
-    default:
-        // invalid index
-        throw snap_logic_error("invalid name_t::SNAP_NAME_JAVASCRIPT_...");
-
-    }
-    snapdev::NOT_REACHED();
-}
 
 
 
@@ -150,15 +114,18 @@ char const * get_name(name_t name)
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t javascript::do_update(int64_t last_updated)
+time_t javascript::do_update(time_t last_updated, unsigned int phase)
 {
-    snapdev::NOT_USED(last_updated);
+    snapdev::NOT_USED(last_updated, phase);
 
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    //SNAP_PLUGIN_UPDATE(2012, 1, 1, 0, 0, 0, content_update); -- content depends on JavaScript so we cannot do a content update here
+    //if(phase == 0)
+    //{
+    //    SERVERPLUGINS_PLUGIN_UPDATE(2012, 1, 1, 0, 0, 0, content_update); -- content depends on JavaScript so we cannot do a content update here
+    //}
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -166,15 +133,11 @@ int64_t javascript::do_update(int64_t last_updated)
  *
  * This function terminates the initialization of the javascript plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void javascript::bootstrap(snap_child * snap)
+void javascript::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(javascript, "content", content::content, check_attachment_security, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(javascript, "content", content::content, process_attachment, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(javascript, "content", content::content, check_attachment_security, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(javascript, "content", content::content, process_attachment, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 
@@ -316,7 +279,7 @@ public:
 
     virtual QString name() const
     {
-        plugins::plugin * p(dynamic_cast<plugins::plugin *>(f_plugin));
+        plugins::plugin * p(dynamic_cast<serverplugins::plugin *>(f_plugin));
         if(!p)
         {
             throw std::runtime_error("plugin pointer is null (dynamic_plugin_class::name)");
@@ -412,7 +375,7 @@ public:
         {
             throw std::runtime_error("querying the name of the iterator object when the iterator pointer is out of scope");
         }
-        plugins::plugin *p(dynamic_cast<plugins::plugin *>(f_javascript->f_dynamic_plugins[f_pos]));
+        serverplugins::plugin *p(dynamic_cast<serverplugins::plugin *>(f_javascript->f_dynamic_plugins[f_pos]));
         if(!p)
         {
             throw std::runtime_error("javascript.cpp:javascript_plugins_iterator::name: plugin pointer is null");

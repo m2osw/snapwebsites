@@ -1,4 +1,3 @@
-// Snap Websites Server -- manage mailing lists for other plugins
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -44,20 +43,20 @@ namespace mailinglist
 {
 
 
-CPPTHREAD_PLUGIN_START(mailinglist, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(mailinglist, 1, 0)
+    , ::serverplugins::description(
             "Handle lists of emails for systems such as newsletters."
             " This plugin is responsible to offer users a way to subscribe"
             " and unsubscribe from a mailing list. Note that there is a"
             " higher level ban capability for users to make sure their email"
             " is just never ever used by us.")
-    , ::cppthread::plugin_icon("/images/mailinglist/mailinglist-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/mailinglist")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("editor")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("mail")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/mailinglist/mailinglist-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/mailinglist")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("editor")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("mail")
+SERVERPLUGINS_END(mailinglist)
 
 
 /** \brief Get a fixed mailinglist plugin name.
@@ -191,15 +190,18 @@ QString mailinglist::list::next()
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t mailinglist::do_update(int64_t last_updated)
+time_t mailinglist::do_update(time_t last_updated, unsigned int phase)
 {
     snapdev::NOT_USED(last_updated);
 
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2016, 2, 20, 20, 16, 56, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 2, 20, 20, 16, 56, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -223,12 +225,9 @@ void mailinglist::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the mailinglist plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void mailinglist::bootstrap(snap_child * snap)
+void mailinglist::bootstrap()
 {
-    f_snap = snap;
 }
 
 

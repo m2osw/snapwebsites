@@ -1,4 +1,3 @@
-// Snap Websites Server -- test_plugin_suite to list and run unit tests from the browser
 // Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,18 +42,18 @@ namespace test_plugin_suite
 {
 
 
-CPPTHREAD_PLUGIN_START(test_plugin_suite, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(test_plugin_suite, 1, 0)
+    , ::serverplugins::description(
             "The test_plugin_suite plugin is the low level test plugin"
             " capability, which gives you the ability to implement unit"
             " tests in your plugins. Use the test_plugin to run the tests.")
-    , ::cppthread::plugin_icon("/images/test-plugin/test-plugin-logo-64x64.jpg")
-    , ::cppthread::plugin_settings("/admin/test-plugin")
-    , ::cppthread::plugin_dependency("server")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/test-plugin/test-plugin-logo-64x64.jpg")
+    , ::serverplugins::settings_path("/admin/test-plugin")
+    , ::serverplugins::dependency("server")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(test_plugin_suite)
 
 
 /** \class test_plugin_suite
@@ -181,14 +180,16 @@ test_list_t::test_func_map_t const& test_list_t::get_tests() const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t test_plugin_suite::do_update(int64_t last_updated)
+time_t test_plugin_suite::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    snapdev::NOT_USED(last_updated);
-    //SNAP_PLUGIN_UPDATE(2014, 4, 10, 22, 47, 40, content_update);
+    if(phase == 0)
+    {
+        snapdev::NOT_USED(last_updated);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -196,12 +197,9 @@ int64_t test_plugin_suite::do_update(int64_t last_updated)
  *
  * This function terminates the initialization of the test_plugin_suite plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void test_plugin_suite::bootstrap(snap_child * snap)
+void test_plugin_suite::bootstrap()
 {
-    f_snap = snap;
 }
 
 

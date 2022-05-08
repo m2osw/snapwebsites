@@ -133,7 +133,7 @@ public:
 
 
 class sendmail
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public server::backend_action
     , public layout::layout_content
 {
@@ -141,17 +141,11 @@ public:
     static const sessions::sessions::session_info::session_id_t SENDMAIL_SESSION_ID_MESSAGE = 1;
     static const sessions::sessions::session_info::session_id_t SENDMAIL_SESSION_EMAIL_ENCRYPTION = 2;
 
-                            sendmail();
-                            sendmail(sendmail const & rhs) = delete;
-    virtual                 ~sendmail() override;
+    SERVERPLUGINS_DEFAULTS(sendmail);
 
-    sendmail &              operator = (sendmail const & rhs) = delete;
-
-    static sendmail *       instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     libdbproxy::table::pointer_t get_emails_table();
 

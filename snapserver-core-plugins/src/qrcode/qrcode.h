@@ -53,21 +53,15 @@ public:
 
 
 class qrcode
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
 {
 public:
-                        qrcode();
-                        qrcode(qrcode const & rhs) = delete;
-    virtual             ~qrcode() override;
+    SERVERPLUGINS_DEFAULTS(qrcode);
 
-    qrcode &            operator = (qrcode const & rhs) = delete;
-
-    static qrcode *     instance();
-
-    // plugins::plugin implementation
-    virtual int64_t     do_update(int64_t last_updated) override;
-    virtual void        bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void        bootstrap() override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // path signals
     void                on_can_handle_dynamic_path(content::path_info_t & ipath, path::dynamic_plugin_t & plugin_info);

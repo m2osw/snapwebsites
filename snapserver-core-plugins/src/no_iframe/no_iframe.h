@@ -58,20 +58,14 @@ public:
 
 
 class no_iframe
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                            no_iframe();
-                            no_iframe(no_iframe const & rhs) = delete;
-    virtual                 ~no_iframe() override;
-
-    no_iframe &             operator = (no_iframe const & rhs) = delete;
-
-    static no_iframe *      instance();
+    SERVERPLUGINS_DEFAULTS(no_iframe);
 
     // plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // layout signals
     void                    on_generate_header_content(content::path_info_t & ipath, QDomElement & header, QDomElement & metadata);

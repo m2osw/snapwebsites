@@ -1,5 +1,5 @@
 // Snap Websites Server -- feed management (RSS like feeds and aggregators)
-// Copyright (c) 2013-2019  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2013-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -51,13 +51,6 @@ enum class name_t
 char const * get_name(name_t name) __attribute__ ((const));
 
 
-class feed_exception : public snap_exception
-{
-public:
-    explicit feed_exception(char const *        what_msg) : snap_exception("Feed", what_msg) {}
-    explicit feed_exception(std::string const & what_msg) : snap_exception("Feed", what_msg) {}
-    explicit feed_exception(QString const &     what_msg) : snap_exception("Feed", what_msg) {}
-};
 
 
 
@@ -70,9 +63,9 @@ public:
 
     SERVERPLUGINS_DEFAULTS(feed);
 
-    // plugins::plugin implementation
+    // serverplugins::plugin implementation
     virtual void        bootstrap() override;
-    virtual time_t      do_update(time_t last_updated) override;
+    virtual time_t      do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                on_backend_process();

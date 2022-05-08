@@ -51,21 +51,21 @@ namespace listener
 {
 
 
-CPPTHREAD_PLUGIN_START(listener, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(listener, 1, 0)
+    , ::serverplugins::description(
             "Check whether a page or document (when the page represents an"
             " attachment) is ready for consumption. For example, the listener"
             " is used by the editor to listen for attachment upload completion.")
-    , ::cppthread::plugin_icon("/images/listener/listener-logo-64x64.png")
-    , ::cppthread::plugin_dependency("messages")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("permissions")
-    , ::cppthread::plugin_dependency("server_access")
-    , ::cppthread::plugin_dependency("users")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/listener/listener-logo-64x64.png")
+    , ::serverplugins::dependency("messages")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("permissions")
+    , ::serverplugins::dependency("server_access")
+    , ::serverplugins::dependency("users")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(listener)
 
 
 
@@ -82,13 +82,16 @@ CPPTHREAD_PLUGIN_END()
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t listener::do_update(int64_t last_updated)
+time_t listener::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2017, 5, 6, 23, 30, 30, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2017, 5, 6, 23, 30, 30, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -113,14 +116,10 @@ void listener::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the listener plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void listener::bootstrap(snap_child * snap)
+void listener::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(listener, "server", server, process_post, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(listener, "server", server, process_post, boost::placeholders::_1);
 }
 
 

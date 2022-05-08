@@ -25,53 +25,56 @@
 
 // snapwebsites lib
 //
-#include "snapwebsites/compression.h"
-#include "snapwebsites/flags.h"
-#include "snapwebsites/http_strings.h"
-#include "snapwebsites/log.h"
-#include "snapwebsites/mail_exchanger.h"
-#include "snapwebsites/mkgmtime.h"
-#include "snapwebsites/process.h"
-#include "snapwebsites/qcompatibility.h"
-#include "snapwebsites/qdomhelpers.h"
-#include "snapwebsites/qlockfile.h"
-#include "snapwebsites/snap_image.h"
-#include "snapwebsites/snapwebsites.h"
-#include "snapwebsites/snap_lock.h"
-#include "snapwebsites/snap_magic.h"
+#include    "snapwebsites/compression.h"
+#include    "snapwebsites/flags.h"
+#include    "snapwebsites/http_strings.h"
+#include    "snapwebsites/mail_exchanger.h"
+#include    "snapwebsites/mkgmtime.h"
+#include    "snapwebsites/qcompatibility.h"
+#include    "snapwebsites/qdomhelpers.h"
+#include    "snapwebsites/qlockfile.h"
+#include    "snapwebsites/snap_image.h"
+#include    "snapwebsites/snapwebsites.h"
+#include    "snapwebsites/snap_lock.h"
+#include    "snapwebsites/snap_magic.h"
 
 
-// snapdev lib
+// snaplogger
+//
+#include    "snaplogger/message.h"
+
+
+// snapdev
 //
 #include <snapdev/not_used.h>
 
 
-// dbproxy lib
+// dbproxy
 //
 #include <libdbproxy/exception.h>
 
 
-// Qt Serialization lib
+// Qt Serialization
 //
 #include <QtSerialization/QSerialization.h>
 
 
-// libutf8 lib
+// libutf8
 //
 #include <libutf8/libutf8.h>
 
 
-// tld lib
+// tld
 //
 #include <libtld/tld.h>
 
 
-// C++ lib
+// C++
 //
 #include <sstream>
 
 
-// C lib
+// C
 //
 #include <errno.h>
 #include <signal.h>
@@ -81,7 +84,7 @@
 #include <sys/syscall.h>
 
 
-// Qt lib
+// Qt
 //
 #include <QDirIterator>
 
@@ -2542,7 +2545,10 @@ int64_t snap_child::get_current_date()
     if(gettimeofday(&tv, nullptr) != 0)
     {
         int const err(errno);
-        SNAP_LOG_FATAL("gettimeofday() failed with errno: ")(err);
+        SNAP_LOG_FATAL
+            << "gettimeofday() failed with errno: "
+            << err
+            << SNAP_LOG_SEND;
         throw std::runtime_error("gettimeofday() failed");
     }
     return static_cast<int64_t>(tv.tv_sec) * static_cast<int64_t>(1000000)
@@ -2691,7 +2697,9 @@ void snap_child::connect_messenger()
 
     if(!f_messenger_thread.start())
     {
-        SNAP_LOG_ERROR("The thread used to run the background connection process did not start.");
+        SNAP_LOG_ERROR
+            << "The thread used to run the background connection process did not start."
+            << SNAP_LOG_SEND;
     }
 }
 
@@ -2776,7 +2784,9 @@ void snap_child::child_messenger::process_message(snap_communicator_message cons
     }
     else if(command == "QUITTING")
     {
-        SNAP_LOG_WARNING("We received the QUITTING command.");
+        SNAP_LOG_WARNING
+            << "We received the QUITTING command."
+            << SNAP_LOG_SEND;
         f_child->stop_messenger();
         return;
     }
@@ -2787,7 +2797,9 @@ void snap_child::child_messenger::process_message(snap_communicator_message cons
     }
     else if(command == "STOP")
     {
-        SNAP_LOG_WARNING("we received the STOP command.");
+        SNAP_LOG_WARNING
+            << "we received the STOP command."
+            << SNAP_LOG_SEND;
         f_child->stop_messenger();
         return;
     }
@@ -2795,7 +2807,11 @@ void snap_child::child_messenger::process_message(snap_communicator_message cons
     {
         // we sent a command that Snap! Communicator did not understand
         //
-        SNAP_LOG_ERROR("we sent unknown command \"")(message.get_parameter("command"))("\" and probably did not get the expected result.");
+        SNAP_LOG_ERROR
+            << "we sent unknown command \""
+            << message.get_parameter("command")
+            << "\" and probably did not get the expected result."
+            << SNAP_LOG_SEND;
         return;
     }
 }
@@ -2885,7 +2901,11 @@ pid_t snap_child::fork_child()
     {
         if(count != 1)
         {
-            SNAP_LOG_WARNING("snap_child::fork_child(): The number of threads before the fork() to create a snap_child is ")(count)(" when it should be 1.");
+            SNAP_LOG_WARNING
+                << "snap_child::fork_child(): The number of threads before the fork() to create a snap_child is "
+                << count
+                << " when it should be 1."
+                << SNAP_LOG_SEND;
 
             // TODO: look into having a flag concept in a contrib lib.
             //
@@ -2938,21 +2958,29 @@ pid_t snap_child::fork_child()
             // always reconfigure the logger in the child
             logging::reconfigure();
 
-            SNAP_LOG_TRACE("snap_child::fork_child() just hooked up logging! -- child of ")(getppid());
+            SNAP_LOG_TRACE
+                << "snap_child::fork_child() just hooked up logging! -- child of "
+                << getppid()
+                << SNAP_LOG_SEND;
 
             // it could be that the prctrl() was made after the true parent died...
             // so we have to test the PID of our parent
             //
             if(getppid() != parent_pid)
             {
-                SNAP_LOG_FATAL("snap_child::fork_child() lost parent too soon and did not receive SIGHUP; quit immediately.");
+                SNAP_LOG_FATAL
+                    << "snap_child::fork_child() lost parent too soon and did not receive SIGHUP; quit immediately."
+                    << SNAP_LOG_SEND;
                 exit(1);
                 snapdev::NOT_REACHED();
             }
         }
         catch( snap_exception const & except )
         {
-            SNAP_LOG_FATAL("snap_child::fork_child(): snap_exception caught: ")(except.what());
+            SNAP_LOG_FATAL
+                << "snap_child::fork_child(): snap_exception caught: "
+                << except.what()
+                << SNAP_LOG_SEND;
             exit(1);
             snapdev::NOT_REACHED();
         }
@@ -2962,13 +2990,18 @@ pid_t snap_child::fork_child()
             // and other libraries may generate other exceptions
             // (i.e. libtld, C++ cassandra driver...)
             //
-            SNAP_LOG_FATAL("snap_child::fork_child(): std::exception caught: ")(std_except.what());
+            SNAP_LOG_FATAL
+                << "snap_child::fork_child(): std::exception caught: "
+                << std_except.what()
+                << SNAP_LOG_SEND;
             exit(1);
             snapdev::NOT_REACHED();
         }
         catch( ... )
         {
-            SNAP_LOG_FATAL("snap_child::fork_child(): unknown exception caught!");
+            SNAP_LOG_FATAL
+                << "snap_child::fork_child(): unknown exception caught!"
+                << SNAP_LOG_SEND;
             exit(1);
             snapdev::NOT_REACHED();
         }
@@ -2983,8 +3016,18 @@ void snap_child::output_session_log( QString const& what )
     QString const method(snapenv(get_name(name_t::SNAP_NAME_CORE_REQUEST_METHOD)));
     QString const agent(snapenv(get_name(name_t::SNAP_NAME_CORE_HTTP_USER_AGENT)));
     QString const ip(snapenv(get_name(name_t::SNAP_NAME_CORE_REMOTE_ADDR)));
-    SNAP_LOG_INFO("------------------------------------ ")(ip)
-            (" ")(what)(" snap_child session (")(method)(" ")(f_uri.get_uri())(") with ")(agent);
+    SNAP_LOG_INFO
+        << "------------------------------------ "
+        << ip
+        << " "
+        << what
+        << " snap_child session ("
+        << method
+        << " "
+        << f_uri.get_uri()
+        << ") with "
+        << agent
+        << SNAP_LOG_SEND;
 }
 
 
@@ -3028,7 +3071,9 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         // WARNING: At this point we CANNOT call the die() function
         //          (we are not the child and have the wrong socket)
         //
-        SNAP_LOG_FATAL("BUG: snap_child::process() called when the process is still in use.");
+        SNAP_LOG_FATAL
+            << "BUG: snap_child::process() called when the process is still in use."
+            << SNAP_LOG_SEND;
         return false;
     }
 
@@ -3042,7 +3087,9 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         {
             // WARNING: At this point we CANNOT call the die() function
             //          (we are not the child and have the wrong socket)
-            SNAP_LOG_FATAL("snap_child::process() could not create child process, dropping connection.");
+            SNAP_LOG_FATAL
+                << "snap_child::process() could not create child process, dropping connection."
+                << SNAP_LOG_SEND;
             return false;
         }
 
@@ -3148,7 +3195,10 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
     }
     catch( snap_lock_failed_exception const & except )
     {
-        SNAP_LOG_FATAL("snap_child::process(): snap_lock_failed_exception caught: ")(except.what());
+        SNAP_LOG_FATAL
+            << "snap_child::process(): snap_lock_failed_exception caught: "
+            << except.what()
+            << SNAP_LOG_SEND;
 
         // die with a "server locked" error instead of a "random" 500
         //
@@ -3159,22 +3209,37 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
     }
     catch( snap_exception const & except )
     {
-        SNAP_LOG_FATAL("snap_child::process(): snap_exception caught: ")(except.what());
+        SNAP_LOG_FATAL
+            << "snap_child::process(): snap_exception caught: "
+            << except.what()
+            << SNAP_LOG_SEND;
     }
     catch( libexcept::exception_t const & e )
     {
-        SNAP_LOG_FATAL("snap_child::process(): libexcept::exception_t caught: ")(e.what());
+        SNAP_LOG_FATAL
+            << "snap_child::process(): libexcept::exception_t caught: "
+            << e.what()
+            << SNAP_LOG_SEND;
         for( auto const & stack_string : e.get_stack_trace() )
         {
-            SNAP_LOG_ERROR("libexcept(): backtrace=")( stack_string );
+            SNAP_LOG_ERROR
+                << "libexcept(): backtrace="
+                << stack_string
+                << SNAP_LOG_SEND;
         }
     }
     catch( libdbproxy::exception const & e )
     {
-        SNAP_LOG_FATAL("snap_child::process(): libdbproxy::exception caught: ")(e.what());
+        SNAP_LOG_FATAL
+            << "snap_child::process(): libdbproxy::exception caught: "
+            << e.what()
+            << SNAP_LOG_SEND;
         for( auto const & stack_string : e.get_stack_trace() )
         {
-            SNAP_LOG_ERROR("exception(): backtrace=")( stack_string );
+            SNAP_LOG_ERROR
+                << "exception(): backtrace="
+                << stack_string
+                << SNAP_LOG_SEND;
         }
     }
     catch( std::exception const & std_except )
@@ -3183,11 +3248,16 @@ bool snap_child::process(tcp_client_server::bio_client::pointer_t client)
         // and other libraries may generate other exceptions
         // (i.e. libtld, C++ cassandra driver...)
         //
-        SNAP_LOG_FATAL("snap_child::process(): std::exception caught: ")(std_except.what());
+        SNAP_LOG_FATAL
+            << "snap_child::process(): std::exception caught: "
+            << std_except.what()
+            << SNAP_LOG_SEND;
     }
     catch( ... )
     {
-        SNAP_LOG_FATAL("snap_child::process(): unknown exception caught!");
+        SNAP_LOG_FATAL
+            << "snap_child::process(): unknown exception caught!"
+            << SNAP_LOG_SEND;
     }
 
     exit(1);
@@ -3283,7 +3353,9 @@ snap_child::status_t snap_child::check_status()
     if(f_is_child)
     {
         // XXX -- call die() instead
-        SNAP_LOG_FATAL("snap_child::check_status() was called from the child process.");
+        SNAP_LOG_FATAL
+            << "snap_child::check_status() was called from the child process."
+            << SNAP_LOG_SEND;
         return status_t::SNAP_CHILD_STATUS_RUNNING;
     }
 
@@ -3294,7 +3366,13 @@ snap_child::status_t snap_child::check_status()
         if(r == static_cast<pid_t>(-1))
         {
             int const e(errno);
-            SNAP_LOG_FATAL("a waitpid() returned an error (")(e)(" -- ")(strerror(e))(")");
+            SNAP_LOG_FATAL
+                << "a waitpid() returned an error ("
+                << e
+                << " -- "
+                << strerror(e)
+                << ")"
+                << SNAP_LOG_SEND;
         }
         else if(r == f_child_pid)
         {
@@ -3309,7 +3387,12 @@ snap_child::status_t snap_child::check_status()
             else if(WIFSIGNALED(status))
             {
                 // stopped because of a signal
-                SNAP_LOG_ERROR("child process ")(f_child_pid)(" exited after it received signal #")(WTERMSIG(status));
+                SNAP_LOG_ERROR
+                    << "child process "
+                    << f_child_pid
+                    << " exited after it received signal #"
+                    << WTERMSIG(status)
+                    << SNAP_LOG_SEND;
             }
             // else -- other statuses are ignored for now
 #pragma GCC diagnostic pop
@@ -3320,7 +3403,13 @@ snap_child::status_t snap_child::check_status()
         else if(r != 0)
         {
             // TODO: throw instead?
-            SNAP_LOG_ERROR("waitpid() returned ")(r)(", we expected -1, 0 or ")(f_child_pid)(" instead.");
+            SNAP_LOG_ERROR
+                << "waitpid() returned "
+                << r
+                << ", we expected -1, 0 or "
+                << f_child_pid
+                << " instead."
+                << SNAP_LOG_SEND;
         }
     }
 
@@ -3604,8 +3693,10 @@ void snap_child::read_environment()
                         }
                     }
 #ifdef DEBUG
-SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << filename
-    << "\" MIME: " << file.get_mime_type() << ", size: " << f_post_content.size() << ")";
+SNAP_LOG_TRACE
+<< " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << filename
+<< "\" MIME: " << file.get_mime_type() << ", size: " << f_post_content.size() << ")"
+<< SNAP_LOG_SEND;
 #endif
                 }
             }
@@ -3642,7 +3733,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 // make sure to view the input as UTF-8 characters
                 f_post[f_name] = QString::fromUtf8(f_post_content.data(), f_post_content.size() - 1); //snap_uri::urldecode(f_post_content, true);?
 #ifdef DEBUG
-//SNAP_LOG_TRACE() << " f_post[\"" << f_name << "\"] = \"" << f_post_content.data() << "\"\n";
+//SNAP_LOG_TRACE << " f_post[\"" << f_name << "\"] = \"" << f_post_content.data() << "\"" << SNAP_LOG_SEND;
 #endif
             }
         }
@@ -3711,7 +3802,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 // we got a header (Blah: value)
                 QString const line(f_post_line);
 #ifdef DEBUG
-//SNAP_LOG_TRACE(" ++ header line [\n")(line.trimmed())("\n] ")(line.size());
+//SNAP_LOG_TRACE << " ++ header line [\n" << line.trimmed() << "\n] " << line.size() << SNAP_LOG_SEND;
 #endif
                 if(isspace(line.at(0).unicode()))
                 {
@@ -3851,7 +3942,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
             {
                 f_post[f_name] = snap_uri::urldecode(f_value, true);
 #ifdef DEBUG
-//SNAP_LOG_TRACE("(simple) f_post[\"")(f_name)("\"] = \"")(f_value)("\" (\"")(f_post[f_name])("\");");
+//SNAP_LOG_TRACE << "(simple) f_post[\"" << f_name << "\"] = \"" << f_value << "\" (\"" << f_post[f_name] << "\");" << SNAP_LOG_SEND;
 #endif
             }
             else
@@ -3861,7 +3952,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                     // special case for cookies
                     snap_string_list cookies(split_string(f_value, ';'));
 #ifdef DEBUG
-//SNAP_LOG_TRACE(" HTTP_COOKIE = [\"")(f_value)("\"]");
+//SNAP_LOG_TRACE << " HTTP_COOKIE = [\"" << f_value << "\"]" << SNAP_LOG_SEND;
 #endif
                     int const max_strings(cookies.size());
                     for(int i(0); i < max_strings; ++i)
@@ -3889,8 +3980,11 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                                 //
                                 // http://tools.ietf.org/html/rfc6265#section-5.4
                                 //
-                                SNAP_LOG_DEBUG(QString("cookie \"%1\" defined twice")
-                                            .arg(cookie_name));
+                                SNAP_LOG_DEBUG
+                                    << "cookie \""
+                                    << cookie_name
+                                    << "\" defined twice"
+                                    << SNAP_LOG_SEND;
                             }
                             f_browser_cookies[cookie_name] = cookie_value;
                         }
@@ -3901,7 +3995,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                     // TODO: verify that f_name is a valid header name
                     f_env[f_name] = f_value;
 #ifdef DEBUG
-//SNAP_LOG_TRACE(" f_env[\"")(f_name)("\"] = \"")(f_value)("\"");
+//SNAP_LOG_TRACE << " f_env[\"" << f_name << "\"] = \"" << f_value << "\"" << SNAP_LOG_SEND;
 #endif
                 }
             }
@@ -3920,7 +4014,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 else if(c == '\n')
                 {
 #ifdef DEBUG
-//SNAP_LOG_TRACE("f_name=")(f_name)(", f_value=\"")(f_value)("\" when reading the \\n");
+//SNAP_LOG_TRACE << "f_name=" << f_name << ", f_value=\"" << f_value << "\" when reading the \\n" << SNAP_LOG_SEND;
 #endif
                     process_line();
 
@@ -3966,7 +4060,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
                 ss << pair.first << ": " << pair.second << std::endl;
             }
 
-            //SNAP_LOG_DEBUG( ss.str().c_str() );
+            //SNAP_LOG_DEBUG << ss.str().c_str() << SNAP_LOG_SEND;
         }
 #endif
 
@@ -4002,7 +4096,7 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
     f_files.clear();
 
 #ifdef DEBUG
-    SNAP_LOG_TRACE("Read environment variables including POST data.");
+    SNAP_LOG_TRACE << "Read environment variables including POST data." << SNAP_LOG_SEND;
 #endif
 
     read_env r(this, f_client, f_env, f_browser_cookies, f_post, f_files);
@@ -4013,7 +4107,10 @@ SNAP_LOG_TRACE() << " f_files[\"" << f_name << "\"] = \"...\" (Filename: \"" << 
     f_has_post = r.has_post();
 
 #ifdef DEBUG
-    SNAP_LOG_TRACE("Done reading environment variables.")(f_has_post ? " (This request includes a POST)" : "");
+    SNAP_LOG_TRACE
+        << "Done reading environment variables."
+        << (f_has_post ? " (This request includes a POST)" : "")
+        << SNAP_LOG_SEND;
 #endif
 
     trace("#START\n");
@@ -4052,7 +4149,9 @@ void snap_child::write(char const * data, ssize_t size)
 
     if(f_client->write(data, size) != size)
     {
-        SNAP_LOG_FATAL("error while sending data to a client.");
+        SNAP_LOG_FATAL
+            << "error while sending data to a client."
+            << SNAP_LOG_SEND;
         // XXX throw? we cannot call die() because die() calls write()!
         throw std::runtime_error("error while sending data to the client");
     }
@@ -4560,7 +4659,11 @@ snap_child::verified_email_t snap_child::verify_email(QString const & email, siz
                 switch(result)
                 {
                 case verified_email_t::VERIFIED_EMAIL_UNKNOWN:
-                    SNAP_LOG_TRACE("domain \"")(e.f_domain)("\" is considered to represent an example email.");
+                    SNAP_LOG_TRACE
+                        << "domain \""
+                        << e.f_domain
+                        << "\" is considered to represent an example email."
+                        << SNAP_LOG_SEND;
                     result = verified_email_t::VERIFIED_EMAIL_EXAMPLE;
                 case verified_email_t::VERIFIED_EMAIL_EXAMPLE:
                     break;
@@ -4586,7 +4689,11 @@ snap_child::verified_email_t snap_child::verify_email(QString const & email, siz
                 {
                     // considered valid without the need to check again
                     //
-                    SNAP_LOG_TRACE("domain \"")(e.f_domain)("\" is considered valid (saved in mx table)");
+                    SNAP_LOG_TRACE
+                        << "domain \""
+                        << e.f_domain
+                        << "\" is considered valid (saved in mx table)"
+                        << SNAP_LOG_SEND;
                     set_result();
                     continue;
                 }
@@ -4618,7 +4725,11 @@ snap_child::verified_email_t snap_child::verify_email(QString const & email, siz
         signed char const succeeded(1);
         row->getCell(QString(get_name(name_t::SNAP_NAME_CORE_MX_RESULT)))->setValue(succeeded);
 
-        SNAP_LOG_TRACE("domain \"")(e.f_domain)("\" was just checked and is considered valid (it has an MX record.)");
+        SNAP_LOG_TRACE
+            << "domain \""
+            << e.f_domain
+            << "\" was just checked and is considered valid (it has an MX record.)"
+            << SNAP_LOG_SEND;
 
         // TODO: if we have the timeout, we could save the time when
         //       the data goes out of date (instead of using exactly
@@ -4657,7 +4768,9 @@ bool snap_child::connect_cassandra(bool child)
     {
         if(!child)
         {
-            SNAP_LOG_DEBUG("snap_child::connect_cassandra() already considered connected.");
+            SNAP_LOG_DEBUG
+                << "snap_child::connect_cassandra() already considered connected."
+                << SNAP_LOG_SEND;
 
             // here we return true since the Cassandra connection is
             // already in place, valid and well
@@ -4696,7 +4809,14 @@ bool snap_child::connect_cassandra(bool child)
     catch(std::exception const & e)
     {
         connected = false; // make double sure this is still false
-        SNAP_LOG_FATAL("Could not connect to the snapdbproxy server (")(snapdbproxy_addr)(":")(snapdbproxy_port)("). Reason: ")(e.what());
+        SNAP_LOG_FATAL
+            << "Could not connect to the snapdbproxy server ("
+            << snapdbproxy_addr
+            << ":"
+            << snapdbproxy_port
+            << "). Reason: "
+            << e.what()
+            << SNAP_LOG_SEND;
     }
     if(!connected)
     {
@@ -4704,7 +4824,9 @@ bool snap_child::connect_cassandra(bool child)
         f_cassandra.reset();
         if(!child)
         {
-            SNAP_LOG_WARNING("snap_child::connect_cassandra() could not connect to snapdbproxy.");
+            SNAP_LOG_WARNING
+                << "snap_child::connect_cassandra() could not connect to snapdbproxy."
+                << SNAP_LOG_SEND;
             return false;
         }
         die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE, "",
@@ -4716,7 +4838,9 @@ bool snap_child::connect_cassandra(bool child)
 // WARNING: The f_casssandra->contexts() function should not be used anymore
 //          (only to check whether the context exists,) because the context
 //          is normally created by snapmanager[.cgi] now.
-SNAP_LOG_WARNING("snap_child::connect_cassandra() should not have to call contexts() anymore...");
+SNAP_LOG_WARNING
+<< "snap_child::connect_cassandra() should not have to call contexts() anymore..."
+<< SNAP_LOG_SEND;
 
     try
     {
@@ -4731,7 +4855,9 @@ SNAP_LOG_WARNING("snap_child::connect_cassandra() should not have to call contex
             f_cassandra.reset();
             if(!child)
             {
-                SNAP_LOG_WARNING("snap_child::connect_cassandra() could not read the context.");
+                SNAP_LOG_WARNING
+                    << "snap_child::connect_cassandra() could not read the context."
+                    << SNAP_LOG_SEND;
                 return false;
             }
             die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE,
@@ -4743,7 +4869,14 @@ SNAP_LOG_WARNING("snap_child::connect_cassandra() should not have to call contex
     }
     catch(std::exception const & e)
     {
-        SNAP_LOG_FATAL("Connected to snapdbproxy server, but could not gather the Cassandra metadata (")(snapdbproxy_addr)(":")(snapdbproxy_port)("). Reason: ")(e.what());
+        SNAP_LOG_FATAL
+            << "Connected to snapdbproxy server, but could not gather the Cassandra metadata ("
+            << snapdbproxy_addr
+            << ":"
+            << snapdbproxy_port
+            << "). Reason: "
+            << e.what()
+            << SNAP_LOG_SEND;
 
         // we connected to the database, but it is not properly initialized!?
         //
@@ -4751,7 +4884,9 @@ SNAP_LOG_WARNING("snap_child::connect_cassandra() should not have to call contex
         f_cassandra.reset();
         if(!child)
         {
-            SNAP_LOG_WARNING("snap_child::connect_cassandra() could not read the context metadata.");
+            SNAP_LOG_WARNING
+                << "snap_child::connect_cassandra() could not read the context metadata."
+                << SNAP_LOG_SEND;
             return false;
         }
         die(http_code_t::HTTP_CODE_SERVICE_UNAVAILABLE,
@@ -6796,11 +6931,17 @@ void snap_child::trace(std::string const & data)
         //
         if(data.back() == '\n')
         {
-            SNAP_LOG_INFO("trace() from installation: ")(data.substr(0, data.length() - 1));
+            SNAP_LOG_INFO
+                << "trace() from installation: "
+                << data.substr(0, data.length() - 1)
+                << SNAP_LOG_SEND;
         }
         else
         {
-            SNAP_LOG_INFO("trace() from installation: ")(data);
+            SNAP_LOG_INFO
+                << "trace() from installation: "
+                << data
+                << SNAP_LOG_SEND;
         }
 
         write(data.c_str(), data.size());
@@ -6873,7 +7014,17 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
 
         // log the error
         //
-        SNAP_LOG_FATAL("snap child process: ")(err_details)(" (")(static_cast<int>(err_code))(" ")(err_name)(": ")(err_description)(")");
+        SNAP_LOG_FATAL
+            << "snap child process: "
+            << err_details
+            << " ("
+            << static_cast<int>(err_code)
+            << " "
+            << err_name
+            << ": "
+            << err_description
+            << ")"
+            << SNAP_LOG_SEND;
 
         if(f_is_being_initialized)
         {
@@ -6931,12 +7082,17 @@ void snap_child::die(http_code_t err_code, QString err_name, QString const & err
     catch(std::exception const & e)
     {
         // ignore all errors because at this point we must die quickly.
-        SNAP_LOG_FATAL("snap_child.cpp:die(): try/catch caught an exception. What: ")(e.what());
+        SNAP_LOG_FATAL
+            << "snap_child.cpp:die(): try/catch caught an exception. What: "
+            << e.what()
+            << SNAP_LOG_SEND;
     }
     catch(...)
     {
         // ignore all errors because at this point we must die quickly.
-        SNAP_LOG_FATAL("snap_child.cpp:die(): try/catch caught an exception");
+        SNAP_LOG_FATAL
+            << "snap_child.cpp:die(): try/catch caught an exception"
+            << SNAP_LOG_SEND;
     }
 
     // exit with an error
@@ -7642,7 +7798,7 @@ void snap_child::output_cookies()
             // are used so we can use toLatin1() below
             //
             QString cookie_header(it.value().to_http_header() + "\n");
-//SNAP_LOG_DEBUG("snap child output cookie = [")(cookie_header.toLatin1().data())("]?");
+//SNAP_LOG_DEBUG << "snap child output cookie = [" << cookie_header.toLatin1().data() << "]?" << SNAP_LOG_SEND;
 
             write(cookie_header.toLatin1().data());
         }
@@ -7884,7 +8040,11 @@ snap_string_list snap_child::init_plugins(bool const add_defaults, QString const
  */
 void snap_child::update_plugins(snap_string_list const & list_of_plugins)
 {
-    SNAP_LOG_INFO("update_plugins() called with \"")(list_of_plugins.join(", "))("\"");
+    SNAP_LOG_INFO
+        << "update_plugins() called with \""
+        << list_of_plugins.join(", ")
+        << "\""
+        << SNAP_LOG_SEND;
 
     // system updates run at most once every 10 minutes
     QString const core_last_updated(get_name(name_t::SNAP_NAME_CORE_LAST_UPDATED));
@@ -7938,7 +8098,11 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
         {
             // unknown state... what to do? what to do?
             //
-            SNAP_LOG_ERROR("Updating website failed as we do not understand its current state: \"")(state.stringValue())("\".");
+            SNAP_LOG_ERROR
+                << "Updating website failed as we do not understand its current state: \""
+                << state.stringValue()
+                << "\"."
+                << SNAP_LOG_SEND;
             return;
         }
 
@@ -7977,7 +8141,11 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
             plugins::plugin * p(plugins::get_plugin(plugin_name));
             if(p != nullptr)
             {
-                SNAP_LOG_INFO("update_plugins() called with \"")(plugin_name)("\"");
+                SNAP_LOG_INFO
+                    << "update_plugins() called with \""
+                    << plugin_name
+                    << "\""
+                    << SNAP_LOG_SEND;
                 trace(QString("Updating plugin \"%1\"\n").arg(plugin_name));
 
                 // the plugin changed, we want to call do_update() on it!
@@ -7998,7 +8166,7 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
                 }
                 try
                 {
-                    specific_last_updated.setInt64Value(p->do_update(old_last_updated));
+                    specific_last_updated.setInt64Value(p->do_update(old_last_updated, 0));
 
                     // avoid the database access if the value did not change
                     //
@@ -8009,13 +8177,20 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
                 }
                 catch(std::exception const & e)
                 {
-                    SNAP_LOG_ERROR("Updating ")(plugin_name)(" failed with an exception: ")(e.what());
+                    SNAP_LOG_ERROR
+                        << "Updating "
+                        << plugin_name
+                        << " failed with an exception: "
+                        << e.what()
+                        << SNAP_LOG_SEND;
                 }
             }
         }
 
         // this finishes the content.xml updates
-        SNAP_LOG_INFO("update_plugins() finalize the content.xml (a.k.a. static) update.");
+        SNAP_LOG_INFO
+            << "update_plugins() finalize the content.xml (a.k.a. static) update."
+            << SNAP_LOG_SEND;
         finish_update();
 
         // now allow plugins to have a more dynamic set of updates
@@ -8046,7 +8221,7 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
                 //            missing many updates!)
                 try
                 {
-                    specific_last_updated.setInt64Value(p->do_dynamic_update(old_last_updated));
+                    specific_last_updated.setInt64Value(p->do_update(old_last_updated, 1));
 
                     // avoid the database access if the value did not change
                     //
@@ -8057,7 +8232,12 @@ void snap_child::update_plugins(snap_string_list const & list_of_plugins)
                 }
                 catch(std::exception const & e)
                 {
-                    SNAP_LOG_ERROR("Dynamically updating ")(plugin_name)(" failed with an exception: ")(e.what());
+                    SNAP_LOG_ERROR
+                        << "Dynamically updating "
+                        << plugin_name
+                        << " failed with an exception: "
+                        << e.what()
+                        << SNAP_LOG_SEND;
                 }
             }
         }
@@ -8861,7 +9041,9 @@ snap_child::locale_info_vector_t const& snap_child::get_plugins_locales()
         {
             // I do not think this happens, but just in case warn myself
             //
-            SNAP_LOG_WARNING("get_plugins_locales() called before f_ready was set to true");
+            SNAP_LOG_WARNING
+                << "get_plugins_locales() called before f_ready was set to true"
+                << SNAP_LOG_SEND;
         }
 
         // retrieve the locales from all the plugins
@@ -8902,8 +9084,11 @@ snap_child::locale_info_vector_t const& snap_child::get_plugins_locales()
                 {
                     // plugin sent us something we do not understand
                     //
-                    SNAP_LOG_WARNING(QString("plugin locale \"%1\" does not look like a legal locale, ignore")
-                                                .arg(plugins_languages[i].get_name()));
+                    SNAP_LOG_WARNING
+                        << "plugin locale \""
+                        << plugins_languages[i].get_name()
+                        << "\" does not look like a legal locale, ignore"
+                        << SNAP_LOG_SEND;
                 }
             }
         }

@@ -210,22 +210,22 @@ namespace sessions
 {
 
 
-CPPTHREAD_PLUGIN_START(sessions, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(sessions, 1, 0)
+    , ::serverplugins::description(
             "The sessions plugin is used by many other plugins to generate"
             " session identifiers and save information about the given session."
             " This is useful for many different reasons. In case of a user, a"
             " session is used to make sure that the same user comes back to the"
             " website. It is also used by forms to make sure that a for submission"
             " is valid.")
-    , ::cppthread::plugin_icon("/images/sessions/sessions-logo-64x64.png")
-    , ::cppthread::plugin_settings()
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("output")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("security")
-    , ::cppthread::plugin_categorization_tag("spam")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/sessions/sessions-logo-64x64.png")
+    , ::serverplugins::settings_path()
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("output")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("security")
+    , ::serverplugins::categorization_tag("spam")
+SERVERPLUGINS_END(sessions)
 
 
 /** \brief Get a fixed sessions plugin name.
@@ -1300,14 +1300,17 @@ int32_t sessions::session_info::get_ttl(int64_t now) const
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t sessions::do_update(int64_t last_updated)
+time_t sessions::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2015, 5, 25, 17, 40, 0, clean_session_table);
-    SNAP_PLUGIN_UPDATE(2016, 2, 21, 16, 30, 40, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2015, 5, 25, 17, 40, 0, clean_session_table);
+        SERVERPLUGINS_PLUGIN_UPDATE(2016, 2, 21, 16, 30, 40, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -1330,14 +1333,10 @@ void sessions::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the sessions plugin
  * by registering for different events it supports.
- *
- * \param[in] snap  The child handling this request.
  */
-void sessions::bootstrap(snap_child * snap)
+void sessions::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(sessions, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(sessions, "server", server, table_is_accessible, boost::placeholders::_1, boost::placeholders::_2);
 }
 
 

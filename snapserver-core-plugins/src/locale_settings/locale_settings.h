@@ -62,20 +62,14 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 class locale_settings
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                                locale_settings();
-                                locale_settings(locale_settings const & rhs) = delete;
-    virtual                     ~locale_settings() override;
+    SERVERPLUGINS_DEFAULTS(locale_settings);
 
-    locale_settings &           operator = (locale_settings const & rhs) = delete;
-
-    static locale_settings *    instance();
-
-    // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     // filter signals
     void                        on_replace_token(content::path_info_t & ipath, QDomDocument & xml, filter::filter::token_info_t & token);

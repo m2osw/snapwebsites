@@ -1,4 +1,3 @@
-// Snap Websites Server -- password policy handling
 // Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,12 +28,12 @@
 #include "password.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
 #include <snapwebsites/qcompatibility.h>
 
 
-// Qt lib
+// Qt
 //
 #include <QRegExp>
 

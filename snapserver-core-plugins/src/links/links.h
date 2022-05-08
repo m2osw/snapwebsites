@@ -21,11 +21,6 @@
 #include "../test_plugin_suite/test_plugin_suite.h"
 
 
-// snapwebsites
-//
-#include <snapwebsites/snapwebsites.h>
-
-
 
 namespace snap
 {
@@ -259,9 +254,9 @@ public:
     static int const                READ_RECORD_COUNT = 1000;
     static int const                DELETE_RECORD_COUNT = 1000;
 
-    // cppthread::plugin implementation
+    // serverplugins::plugin implementation
     virtual void                    bootstrap() override;
-    virtual time_t                  do_update(time_t last_updated) override;
+    virtual time_t                  do_update(time_t last_updated, unsigned int phase) override;
 
     libdbproxy::table::pointer_t    get_links_table();
 

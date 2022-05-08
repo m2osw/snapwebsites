@@ -45,20 +45,14 @@ DECLARE_MAIN_EXCEPTION(antihammering_exception);
 
 
 class antihammering
-    : public cppthread::plugin
+    : public serverplugins::plugin
 {
 public:
-                            antihammering();
-                            antihammering(antihammering const & rhs) = delete;
-    virtual                 ~antihammering() override;
+    SERVERPLUGINS_DEFAULTS(antihammering);
 
-    antihammering &         operator = (antihammering const & rhs) = delete;
-
-    static antihammering *  instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     libdbproxy::table::pointer_t get_antihammering_table();
 

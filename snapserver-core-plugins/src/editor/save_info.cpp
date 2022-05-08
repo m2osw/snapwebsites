@@ -1,4 +1,3 @@
-// Snap Websites Server -- save_info_t implementation
 // Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // This program is free software; you can redistribute it and/or modify

@@ -112,22 +112,16 @@ DECLARE_EXCEPTION(epayment_paypal_exception, epayment_paypal_exception_io_error)
 
 
 class epayment_paypal
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
     , public layout::layout_content
 {
 public:
-                                epayment_paypal();
-                                epayment_paypal(epayment_paypal const & rhs) = delete;
-    virtual                     ~epayment_paypal() override;
+    SERVERPLUGINS_DEFAULTS(epayment_paypal);
 
-    epayment_paypal &           operator = (epayment_paypal const & rhs) = delete;
-
-    static epayment_paypal *    instance();
-
-    // plugins::plugin implementation
-    virtual int64_t             do_update(int64_t last_updated) override;
-    virtual void                bootstrap(snap_child * snap) override;
+    // serverplugins::plugin implementation
+    virtual void                bootstrap() override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     libdbproxy::table::pointer_t     get_epayment_paypal_table();
 

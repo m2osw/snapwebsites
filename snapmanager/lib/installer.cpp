@@ -36,11 +36,13 @@
 
 // snapdev
 //
+#include    <snapdev/enumerate.h>
 #include    <snapdev/file_contents.h>
 #include    <snapdev/glob_to_list.h>
 #include    <snapdev/lockfile.h>
 #include    <snapdev/mkdir_p.h>
 #include    <snapdev/not_used.h>
+#include    <snapdev/qstring_extensions.h>
 #include    <snapdev/tokenize_string.h>
 
 
@@ -405,7 +407,8 @@ void manager::reset_aptcheck()
     //
     snapdev::glob_to_list<std::list<std::string>> package_status;
     package_status.read_path<
-        snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE>(f_data_path + "/bundle-package-status/*.status");
+        snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE>(
+            to_string(f_data_path) + "/bundle-package-status/*.status");
     snapdev::enumerate(
           package_status
         , [](std::string const & path)
@@ -415,7 +418,8 @@ void manager::reset_aptcheck()
 
     snapdev::glob_to_list<std::list<std::string>> bundle_status;
     bundle_status.read_path<
-        snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE>(f_data_path + "/bundle-status/*.status");
+        snapdev::glob_to_list_flag_t::GLOB_FLAG_NO_ESCAPE>(
+            to_string(f_data_path) + "/bundle-status/*.status");
     snapdev::enumerate(
           bundle_status
         , [](std::string const & path)
@@ -440,13 +444,13 @@ bool manager::upgrader()
 {
     // TODO: add command path/name to the configuration file?
     //
-    snap::process p("upgrader");
-    p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
+    cppprocess::process p("upgrader");
+    //p.set_mode(snap::process::mode_t::PROCESS_MODE_COMMAND);
     p.set_command("snapupgrader");
     if(f_opt->is_defined("config"))
     {
         p.add_argument("--config");
-        p.add_argument( QString::fromUtf8( f_opt->get_string("config").c_str() ) );
+        p.add_argument(f_opt->get_string("config"));
     }
     p.add_argument("--data-path");
     p.add_argument(f_data_path);
@@ -456,7 +460,11 @@ bool manager::upgrader()
     }
     p.add_argument("--log-config");
     p.add_argument(f_log_conf);
-    int const r(p.run());
+    int const r(p.start());
+    if(r == 0)
+    {
+        r = p.wait();
+    }
     if(r != 0)
     {
         // TODO: get errors to front end...

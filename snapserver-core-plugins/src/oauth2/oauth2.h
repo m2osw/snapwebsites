@@ -55,21 +55,15 @@ public:
 
 
 class oauth2
-    : public cppthread::plugin
+    : public serverplugins::plugin
     , public path::path_execute
 {
 public:
-                            oauth2();
-                            oauth2(oauth2 const & rhs) = delete;
-    virtual                 ~oauth2() override;
+    SERVERPLUGINS_DEFAULTS(oauth2);
 
-    oauth2 &                operator = (oauth2 const & rhs) = delete;
-
-    static oauth2 *         instance();
-
-    // plugins::plugin implementation
-    virtual int64_t         do_update(int64_t last_updated) override;
-    virtual void            bootstrap(snap_child * snap) override;
+    // plugin implementation
+    virtual void            bootstrap() override;
+    virtual time_t          do_update(time_t last_updated, unsigned int phase) override;
 
     // server signals
     void                    on_process_cookies();

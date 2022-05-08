@@ -59,21 +59,21 @@ namespace output
 {
 
 
-CPPTHREAD_PLUGIN_START(output, 1, 0)
-    , ::cppthread::plugin_description(
+SERVERPLUGINS_START(output, 1, 0)
+    , ::serverplugins::description(
             "Output nearly all the content of your website. This plugin handles"
             " the transformation of you pages to HTML, PDF, text, etc.")
-    , ::cppthread::plugin_icon("/images/snap/snap-logo-64x64.png")
-    , ::cppthread::plugin_settings("/admin/settings/info")
-    , ::cppthread::plugin_dependency("content")
-    , ::cppthread::plugin_dependency("filter")
-    , ::cppthread::plugin_dependency("layout")
-    , ::cppthread::plugin_dependency("locale")
-    , ::cppthread::plugin_dependency("path")
-    , ::cppthread::plugin_dependency("server_access")
-    , ::cppthread::plugin_help_uri("https://snapwebsites.org/help")
-    , ::cppthread::plugin_categorization_tag("gui")
-CPPTHREAD_PLUGIN_END()
+    , ::serverplugins::icon("/images/snap/snap-logo-64x64.png")
+    , ::serverplugins::settings_path("/admin/settings/info")
+    , ::serverplugins::dependency("content")
+    , ::serverplugins::dependency("filter")
+    , ::serverplugins::dependency("layout")
+    , ::serverplugins::dependency("locale")
+    , ::serverplugins::dependency("path")
+    , ::serverplugins::dependency("server_access")
+    , ::serverplugins::help_uri("https://snapwebsites.org/help")
+    , ::serverplugins::categorization_tag("gui")
+SERVERPLUGINS_END(output)
 
 // using the name_t::SNAP_NAME_CONTENT_... for this one.
 /* \brief Get a fixed output name.
@@ -121,13 +121,16 @@ CPPTHREAD_PLUGIN_END()
  *
  * \return The UTC Unix date of the last update of this plugin.
  */
-int64_t output::do_update(int64_t last_updated)
+time_t output::do_update(time_t last_updated, unsigned int phase)
 {
-    SNAP_PLUGIN_UPDATE_INIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_INIT();
 
-    SNAP_PLUGIN_UPDATE(2019, 3, 23, 21, 1, 51, content_update);
+    if(phase == 0)
+    {
+        SERVERPLUGINS_PLUGIN_UPDATE(2019, 3, 23, 21, 1, 51, content_update);
+    }
 
-    SNAP_PLUGIN_UPDATE_EXIT();
+    SERVERPLUGINS_PLUGIN_UPDATE_EXIT();
 }
 
 
@@ -153,17 +156,13 @@ void output::content_update(int64_t variables_timestamp)
  *
  * This function terminates the initialization of the output plugin
  * by registering for different events.
- *
- * \param[in] snap  The child handling this request.
  */
-void output::bootstrap(snap_child * snap)
+void output::bootstrap()
 {
-    f_snap = snap;
-
-    SNAP_LISTEN(output, "user_status", server, user_status, boost::placeholders::_1, boost::placeholders::_2);
-    SNAP_LISTEN(output, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(output, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
-    SNAP_LISTEN(output, "filter", filter::filter, token_help, boost::placeholders::_1);
+    SERVERPLUGINS_LISTEN(output, "user_status", server, user_status, boost::placeholders::_1, boost::placeholders::_2);
+    SERVERPLUGINS_LISTEN(output, "layout", layout::layout, generate_page_content, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(output, "filter", filter::filter, replace_token, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+    SERVERPLUGINS_LISTEN(output, "filter", filter::filter, token_help, boost::placeholders::_1);
 }
 
 

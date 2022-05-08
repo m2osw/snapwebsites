@@ -102,7 +102,7 @@ class path
 public:
     SERVERPLUGINS_DEFAULTS(path);
 
-    // serverplugin::plugin implementation
+    // serverplugins::plugin implementation
     virtual void        bootstrap() override;
 
     // server signals

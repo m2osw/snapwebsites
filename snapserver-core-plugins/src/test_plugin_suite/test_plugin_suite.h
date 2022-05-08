@@ -237,9 +237,9 @@ class test_plugin_suite
 public:
     SERVERPLUGINS_DEFAULTS(test_plugin_suite);
 
-    // cppthread::plugin implementation
+    // serverplugins::plugin implementation
     virtual void                bootstrap() override;
-    virtual time_t              do_update(time_t last_updated) override;
+    virtual time_t              do_update(time_t last_updated, unsigned int phase) override;
 
     test_list_t const &         get_test_list() const;
 
