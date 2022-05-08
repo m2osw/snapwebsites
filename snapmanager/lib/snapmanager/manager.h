@@ -167,7 +167,6 @@ public:
     static service_status_t         string_to_service_status(std::string const & status);
 
 protected:
-    static void                     sighandler( int sig );
     int                             install_package(std::string const & package_name, std::string const & command);
 
     bool                            f_daemon = false;

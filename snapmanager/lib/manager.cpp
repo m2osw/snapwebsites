@@ -401,47 +401,6 @@ manager::pointer_t manager::instance()
 }
 
 
-/** \brief Handle caught signals
- *
- * Catch the signal, then log the signal, then terminate with 1 status.
- */
-void manager::sighandler( int sig )
-{
-    QString signame;
-    bool output_stack_trace(true);
-    switch( sig )
-    {
-        case SIGSEGV : signame = "SIGSEGV"; break;
-        case SIGBUS  : signame = "SIGBUS";  break;
-        case SIGFPE  : signame = "SIGFPE";  break;
-        case SIGILL  : signame = "SIGILL";  break;
-        case SIGTERM : signame = "SIGTERM"; output_stack_trace = false; break;
-        case SIGINT  : signame = "SIGINT";  output_stack_trace = false; break;
-        case SIGQUIT : signame = "SIGQUIT"; output_stack_trace = false; break;
-        default      : signame = "UNKNOWN"; break;
-    }
-
-    if(output_stack_trace)
-    {
-        snap::snap_exception_base::output_stack_trace();
-    }
-    //
-    SNAP_LOG_FATAL
-        << "signal caught: "
-        << signame
-        << SNAP_LOG_SEND;
-
-    // is server available?
-    if(g_instance)
-    {
-        g_instance->exit(1);
-    }
-
-    // server not available, exit directly
-    ::exit(1);
-}
-
-
 QString manager::description() const
 {
     return "Main manager plugin (\"server\")";
