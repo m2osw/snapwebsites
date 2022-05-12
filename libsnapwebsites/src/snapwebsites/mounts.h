@@ -24,14 +24,12 @@
 
 // C++
 //
-//#include    <memory>
 #include    <vector>
 
 
 // C
 //
 #include    <mntent.h>
-//#include    <proc/readproc.h>
 
 
 
