@@ -52,6 +52,10 @@ if(SnapCatch2_FOUND)
         test_snap_cgi.cpp
     )
     # while developing you may need to set LD_LIBRARY_PATH
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            ${SNAPDEV_INCLUDE_DIRS}
+    )
     target_link_libraries(test_snap_cgi
         ${LIBEXCEPT_LIBRARIES}
     )

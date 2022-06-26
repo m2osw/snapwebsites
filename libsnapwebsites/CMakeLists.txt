@@ -117,7 +117,7 @@ set( SNAP_TABLE_DESCRIPTION_PATH lib/snapwebsites/tables )
 ##
 ## Compiling
 ##
-add_subdirectory(src)           # The snapwebsites libraries
+add_subdirectory(snapwebsites)  # The snapwebsites libraries
 add_subdirectory(doc)           # API Documentation
 add_subdirectory(tools)         # Various tools built with the libraries
 add_subdirectory(tests)         # Unit tests
