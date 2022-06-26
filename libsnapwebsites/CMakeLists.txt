@@ -62,17 +62,6 @@ enable_language( C )
 ##
 set( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH} )
 
-include_directories(
-    SYSTEM
-        ${Qt5Core_INCLUDE_DIRS}
-        ${Qt5Network_INCLUDE_DIRS}
-        ${Qt5Script_INCLUDE_DIRS}
-        ${Qt5Sql_INCLUDE_DIRS}
-        ${Qt5Widgets_INCLUDE_DIRS}
-        ${Qt5Xml_INCLUDE_DIRS}
-        ${Qt5XmlPatterns_INCLUDE_DIRS}
-)
-
 set( QT_LIBRARIES
     Qt5::Core
     Qt5::Network
@@ -103,12 +92,23 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wnoexcept -DUNISTR_FR
 set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fwrapv" )
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/src
+    SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Network_INCLUDE_DIRS}
+        ${Qt5Script_INCLUDE_DIRS}
+        ${Qt5Sql_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
+        ${Qt5Xml_INCLUDE_DIRS}
+        ${Qt5XmlPatterns_INCLUDE_DIRS}
+)
+
+include_directories(
+    ${PROJECT_SOURCE_DIR}
     ${ADVGETOPT_INCLUDE_DIRS}
     ${QTCASSANDRA_INCLUDE_DIRS}
     ${QTSERIALIZATION_INCLUDE_DIRS}
     ${LIBTLD_INCLUDE_DIRS}
-    ${PROJECT_BINARY_DIR}/src
+    ${PROJECT_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 

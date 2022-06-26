@@ -49,8 +49,8 @@ set( QT_LIBRARIES
     Qt5::Xml
 )
 include_directories(
-    ${libsnapwebsites_project_SOURCE_DIR}/src
-    ${libsnapwebsites_project_BINARY_DIR}/src
+    ${libsnapwebsites_project_SOURCE_DIR}
+    ${libsnapwebsites_project_BINARY_DIR}
 )
 
 # This can't use the debian version one directory up

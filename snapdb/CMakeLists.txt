@@ -51,8 +51,8 @@ set( QT_LIBRARIES
     Qt5::Xml
 )
 include_directories(
-    ${libsnapwebsites_project_SOURCE_DIR}/src
-    ${libsnapwebsites_project_BINARY_DIR}/src
+    ${libsnapwebsites_project_SOURCE_DIR}
+    ${libsnapwebsites_project_BINARY_DIR}
     ${snapmanagercgi_project_BINARY_DIR}/lib
     ${snapmanagercgi_project_SOURCE_DIR}/lib
     ${QTSERIALIZATION_INCLUDE_DIRS}

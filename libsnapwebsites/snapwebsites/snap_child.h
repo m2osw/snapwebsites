@@ -22,8 +22,12 @@
 #include    "snapwebsites/http_cookie.h"
 #include    "snapwebsites/http_link.h"
 #include    "snapwebsites/snap_signals.h"
-#include    "snapwebsites/snap_uri.h"
 #include    "snapwebsites/snap_version.h"
+
+
+// edhttp
+//
+#include    "edhttp/uri.h"
 
 
 // cppthread

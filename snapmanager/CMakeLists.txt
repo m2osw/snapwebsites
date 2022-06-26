@@ -65,8 +65,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/lib
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/lib
-    ${libsnapwebsites_project_SOURCE_DIR}/src
-    ${libsnapwebsites_project_BINARY_DIR}/src
+    ${libsnapwebsites_project_SOURCE_DIR}
+    ${libsnapwebsites_project_BINARY_DIR}
     ${QTSERIALIZATION_INCLUDE_DIRS}
 )
 

@@ -49,8 +49,8 @@ set( QT_LIBRARIES
 )
 
 include_directories(
-    ${libsnapwebsites_project_SOURCE_DIR}/src
-    ${libsnapwebsites_project_BINARY_DIR}/src
+    ${libsnapwebsites_project_SOURCE_DIR}
+    ${libsnapwebsites_project_BINARY_DIR}
     ${CASSWRAPPER_INCLUDE_DIRS}
     ${QTSERIALIZATION_INCLUDE_DIRS}
     ${ZIPIOSCC_INCLUDE_DIRS}

@@ -79,7 +79,6 @@ add_library( ${PROJECT_NAME} SHARED
     snap_parser.cpp                             # lexer/parser for all our script like entries
     snap_pid.cpp                                # RAII PID file management
     snap_tables.cpp                             # table schema/definitions
-    snap_uri.cpp                                # URI handling
     snap_version.cpp                            # extract name, version, browser info from a filename
     snapwebsites.cpp                            # server
     xslt.cpp                                    # code to do XSLT transformations

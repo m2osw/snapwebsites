@@ -38,8 +38,8 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
 
-    ${libsnapwebsites_project_SOURCE_DIR}/src
-    ${libsnapwebsites_project_BINARY_DIR}/src
+    ${libsnapwebsites_project_SOURCE_DIR}
+    ${libsnapwebsites_project_BINARY_DIR}
     ${snapmanagercgi_project_BINARY_DIR}/lib
     ${snapmanagercgi_project_SOURCE_DIR}/lib
 
