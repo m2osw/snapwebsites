@@ -16,14 +16,28 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-#include <snapwebsites/snap_uri.h>
-#include <snapwebsites/snap_string_list.h>
+// snapwebsites
+//
+#include    <snapwebsites/snap_string_list.h>
 
+
+// edhttp
+//
+#include    <edhttp/uri.h>
+
+
+// Qt
+//
 #include <QDomElement>
 #include <QString>
 
+
+// C++
+//
 #include <memory>
 #include <vector>
+
+
 
 namespace snap_manager
 {

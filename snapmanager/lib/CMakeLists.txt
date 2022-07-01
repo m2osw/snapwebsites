@@ -46,11 +46,6 @@ find_package( Qt5Core        REQUIRED )
 find_package( Qt5Xml         REQUIRED )
 find_package( Qt5XmlPatterns REQUIRED )
 
-include_directories(
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${QT_INCLUDES}
-)
-
 set( HEADERS
     snapmanager/bundle.h                        # Helper class to load bundle XML files
     snapmanager/form.h                          # Helper classes to generate forms
@@ -71,9 +66,19 @@ add_library( ${PROJECT_NAME} SHARED
     status.cpp                                  # Hanele one specific status
 )
 
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${LIBEXCEPT_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${QT_INCLUDES}
+)
+
+
 target_link_libraries( ${PROJECT_NAME}
     ${ADVGETOPT_LIBRARIES}
-    ${LOG4CPLUS_LIBRARY}
+    ${LIBEXCEPT_LIBRARIES}
+    ${SNAPLOGGER_LIBRARY}
     ${QT_LIBRARIES}
     ${SNAPWEBSITES_LIBRARIES}
 )

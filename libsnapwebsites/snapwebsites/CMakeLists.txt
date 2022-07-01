@@ -42,17 +42,11 @@ snap_validate_xml( core-tables.xml tables.xsd )
 
 
 add_library( ${PROJECT_NAME} SHARED
-    cache_control.cpp                           # parse / handle Cache-Control settings
     compression.cpp                             # compress/decompress data
     dbutils.cpp                                 # utilities to help convert coded table and row names and column data. (see snap_tables.cpp too!)
     flags.cpp                                   # raise/drop flags
     floats.cpp                                  # Floats helper functions
     fuzzy_string_compare.cpp                    # Compare strings in a fuzzy manner
-    http_client_server.cpp                      # implementation of the HTTP protocol
-    http_cookie.cpp                             # HTTP cookie, server side
-    http_link.cpp                               # HTTP link, server side (HTTP header)
-    http_strings.cpp                            # parse HTTP strings (Accept strings in particular)
-    inet_helpers.cpp                            # helper functions in link with the network
     loadavg.cpp                                 # handle the loadavg file
     mail_exchanger.cpp                          # retrieve the MX record for a given domain
     meminfo.cpp                                 # read /proc/meminfo
@@ -86,21 +80,21 @@ add_library( ${PROJECT_NAME} SHARED
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-        ${MAGIC_INCLUDE_DIRS}
-        ${LIBPROCPS_INCLUDE_DIRS}
-        ${OPENSSL_INCLUDE_DIR}
-        ${CASSVALUE_INCLUDE_DIRS}
         ${LIBADDR_INCLUDE_DIRS}
-        ${LOG4CPLUS_INCLUDE_DIRS}
+        ${LIBEXCEPT_INCLUDE_DIRS}
+        ${LIBPROCPS_INCLUDE_DIRS}
+        ${MAGIC_INCLUDE_DIRS}
+        ${OPENSSL_INCLUDE_DIR}
+        ${SNAPLOGGER_INCLUDE_DIRS}
 )
 
-target_link_libraries( ${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}
     ${ADVGETOPT_LIBRARIES}
     ${CASSVALUE_LIBRARIES}
     ${LIBADDR_LIBRARIES}
     ${LIBEXCEPT_LIBRARIES}
     ${LIBTLD_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
+    ${SNAPLOGGER_LIBRARIES}
     ${QT_LIBRARIES}
     ${AS2JS_LIBRARIES}
     ${QTCASSANDRA_LIBRARIES}

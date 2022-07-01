@@ -16,26 +16,26 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
-// libexcept lib
+// libexcept
 //
 #include    <libexcept/exception.h>
 
 
-// libQtCassandra lib
+// libdbproxy
 //
-#include    <libdbproxy/value.h>
-#include    <libdbproxy/context.h>
+//#include    <libdbproxy/value.h>
+//#include    <libdbproxy/context.h>
 
 
-// C++ lib
-//
-#include    <cmath>
-
-
-// Qt lib
+// Qt
 //
 #include <QMap>
 #include <QSharedPointer>
+
+
+// C++
+//
+#include    <cmath>
 
 
 

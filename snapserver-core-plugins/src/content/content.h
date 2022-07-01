@@ -24,8 +24,8 @@
 
 // libdbproxy
 //
-#include    <libdbproxy/table.h>
-#include    <libdbproxy/value.h>
+//#include    <libdbproxy/table.h>
+//#include    <libdbproxy/value.h>
 
 
 // C++

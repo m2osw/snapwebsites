@@ -24,7 +24,6 @@
 // snapwebsites lib
 //
 #include "snapwebsites/snapwebsites.h"
-#include "snapwebsites/log.h"
 #include "snapwebsites/qdomreceiver.h"
 #include "snapwebsites/qhtmlserializer.h"
 #include "snapwebsites/qxmlmessagehandler.h"

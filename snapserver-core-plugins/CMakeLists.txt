@@ -94,8 +94,8 @@ include_directories(
 )
 
 include_directories(
-    ${snapwebsites_src_SOURCE_DIR}
-    ${snapwebsites_src_BINARY_DIR}
+    ${libsnapwebsites_project_SOURCE_DIR}
+    ${libsnapwebsites_project_BINARY_DIR}
     ${SITTER_INCLUDE_DIRS}
     ${ADVGETOPT_INCLUDE_DIRS}
     ${QTCASSANDRA_INCLUDE_DIRS}

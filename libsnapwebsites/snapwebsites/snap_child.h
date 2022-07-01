@@ -44,8 +44,8 @@
 
 // libdbproxy
 //
-#include    <libdbproxy/libdbproxy.h>
-#include    <libdbproxy/context.h>
+//#include    <libdbproxy/libdbproxy.h>
+//#include    <libdbproxy/context.h>
 
 
 // Qt

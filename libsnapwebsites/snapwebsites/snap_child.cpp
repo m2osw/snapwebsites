@@ -51,7 +51,7 @@
 
 // dbproxy
 //
-#include <libdbproxy/exception.h>
+//#include <libdbproxy/exception.h>
 
 
 // Qt Serialization

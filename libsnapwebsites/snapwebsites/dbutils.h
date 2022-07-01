@@ -19,9 +19,9 @@
 
 // libdbproxy
 //
-#include    <libdbproxy/cell.h>
-#include    <libdbproxy/row.h>
-#include    <libdbproxy/table.h>
+//#include    <libdbproxy/cell.h>
+//#include    <libdbproxy/row.h>
+//#include    <libdbproxy/table.h>
 
 
 // libexcep
