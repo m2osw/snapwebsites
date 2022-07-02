@@ -30,12 +30,15 @@
 
 // self
 //
-#include    "snapwebsites/http_strings.h"
 #include    "snapwebsites/snap_child.h"
 #include    "snapwebsites/snap_expr.h"
 #include    "snapwebsites/snap_pid.h"
 #include    "snapwebsites/version.h"
 
+
+// edhttp
+//
+#include    <edhttp/weighted_http_string.h>
 
 // serverplugins
 //
@@ -332,7 +335,7 @@ public:
     SNAP_SIGNAL_WITH_MODE(attach_to_session, (), (), NEITHER);
     SNAP_SIGNAL_WITH_MODE(detach_from_session, (), (), NEITHER);
     SNAP_SIGNAL_WITH_MODE(user_status, (snap_child::user_status_t status, snap_child::user_identifier_t id), (status, id), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(define_locales, (http_strings::WeightedHttpString & locales), (locales), NEITHER);
+    SNAP_SIGNAL_WITH_MODE(define_locales, (edhttp::weighted_http_string & locales), (locales), NEITHER);
     SNAP_SIGNAL_WITH_MODE(process_post, (QString const & url), (url), NEITHER);
     SNAP_SIGNAL_WITH_MODE(execute, (QString const & url), (url), NEITHER);
     SNAP_SIGNAL_WITH_MODE(register_backend_cron, (backend_action_set & actions), (actions), NEITHER);

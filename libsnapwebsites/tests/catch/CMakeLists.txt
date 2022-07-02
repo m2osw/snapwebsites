@@ -39,8 +39,6 @@ if(SnapCatch2_FOUND)
 
         # actual tests
         catch_email.cpp
-        catch_snapuri.cpp
-        catch_weightedhttpstrings.cpp
     )
 
     target_include_directories(${PROJECT_NAME}
