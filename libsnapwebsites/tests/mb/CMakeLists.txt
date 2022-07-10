@@ -1,38 +1,21 @@
+# Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 #
-# File:
-#      libsnapwebsites/tests/mb/CMakeLists.txt
+# https://snapwebsites.org/
+# contact@m2osw.com
 #
-# Description:
-#      Multi-binary and/or tests with side effects.
-#      These tests do not include any network related test.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-# Documentation:
-#      See the CMake documentation.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# License:
-#      Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
-#
-#      https://snapwebsites.org/
-#      contact@m2osw.com
-#
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#     
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#     
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-#
-
-#include_directories(
-#    ${CMAKE_CURRENT_SOURCE_DIR}
-#)
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
 ##
@@ -40,7 +23,7 @@
 ##       running the test may not be that simple.
 ##
 
-set( LIBRARIES
+set(LIBRARIES
     ${CASSWRAPPER_LIBRARIES}
     dl
     ${LIBEXCEPT_LIBRARIES}

@@ -1,41 +1,23 @@
+# Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 #
-# File:
-#      snapserver-core-plugins/src/output/javascript_unicode/CMakeLists.txt
+# https://snapwebsites.org/
+# contact@m2osw.com
 #
-# Description:
-#      Generate JavaScript used to help with Unicode handling. We can look
-#      at RegExp again once most browsers support version 6, but until then
-#      we do not have access to most of that data within JavaScript.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-#      This project is a separate, standalone project. We only rebuild and
-#      generate the final javascript-unicode.js only once in a while when
-#      the version of Unicode changes in Qt.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# Documentation:
-#      See the CMake documentation.
-#
-# License:
-#      Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
-#
-#      https://snapwebsites.org/
-#      contact@m2osw.com
-#
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#     
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#     
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10.2)
 
 project(javascript_unicode)
 

@@ -1,34 +1,22 @@
+# Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
 #
-# File:
-#      snaplock/tests/CMakeLists.txt
+# https://snapwebsites.org/
+# contact@m2osw.com
 #
-# Description:
-#      A daemon to synchronize processes between any number of computers
-#      by blocking all of them but one.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-# Documentation:
-#      See the CMake documentation.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# License:
-#      Copyright (c) 2016-2019  Made to Order Software Corp.  All Rights Reserved
-#
-#      https://snapwebsites.org/
-#      contact@m2osw.com
-#
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#     
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#     
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
 find_package(SnapCatch2)
 
 if(SnapCatch2_FOUND)

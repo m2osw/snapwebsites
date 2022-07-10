@@ -1,39 +1,21 @@
+# Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 #
-# File:
-#      snapserver-core-plugins/src/mimetype/CMakeLists.txt
+# https://snapwebsites.org/
+# contact@m2osw.com
 #
-# Description:
-#      Generate the MIME type of a file. This plugin expects a set of
-#      bytes from a file and checks the bytes to determine the MIME
-#      type when known. For better transfer speed, since this has to
-#      be sent to the client, we offer 3 levels: basics, normal, and
-#      advanced. It is really rare that you'd ever even remotely
-#      consider using advanced (it will be slow and probably won't
-#      add much anything that's useful.)
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-# Documentation:
-#      See the CMake documentation.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# License:
-#      Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
-#
-#      https://snapwebsites.org/
-#      contact@m2osw.com
-#
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#     
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#     
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 project(plugin_mimetype)
 

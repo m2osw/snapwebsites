@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2019 Made to Order Software Corp.
+# Copyright (c) 2013-2019 Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/snapdatabase
 # contact@m2osw.com

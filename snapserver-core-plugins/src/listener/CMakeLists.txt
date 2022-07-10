@@ -1,46 +1,21 @@
+# Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
 #
-# File:
-#      snapserver-core-plugins/src/listener/CMakeLists.txt
+# https://snapwebsites.org/
+# contact@m2osw.com
 #
-# Description:
-#      List to the client's polls. This plugin is capable of accepting
-#      AJAX requests that include a set of URIs that are to be pushed
-#      to other plugins that offer a listen capability. For example,
-#      a user who drags and drops a PDF file can be given a preview
-#      of the file. However, the preview is "calculated" by a backend
-#      and as such takes "a while" (many seconds). Because of that we
-#      like to not have a connection that last that long (it could
-#      prevents other connections from being added to the service as
-#      that would use up an Apache child process for a long time.)
-#      So instead the client can check about once a second whether
-#      the item is available. The different processes can also give
-#      a long period of time for the test (i.e. if we know that an
-#      item will take at least 10 seconds, then we do not need to
-#      test 10 times before it has a chance to be there.)
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-# Documentation:
-#      See the CMake documentation.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# License:
-#      Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
-#
-#      https://snapwebsites.org/
-#      contact@m2osw.com
-#
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#     
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#     
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 project(plugin_listener)
 
