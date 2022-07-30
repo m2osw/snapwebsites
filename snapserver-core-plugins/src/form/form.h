@@ -23,7 +23,7 @@
 
 // Qt
 //
-#include <libdbproxy/table.h>
+//#include <libdbproxy/table.h>
 #include <QDomDocument>
 
 

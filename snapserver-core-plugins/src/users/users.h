@@ -26,9 +26,9 @@
 #include <QByteArray>
 #include <QString>
 
-#include <libdbproxy/row.h>
-#include <libdbproxy/table.h>
-#include <libdbproxy/value.h>
+//#include <libdbproxy/row.h>
+//#include <libdbproxy/table.h>
+//#include <libdbproxy/value.h>
 
 namespace snap
 {
@@ -191,8 +191,8 @@ public:
     class user_info_t
     {
     public:
-        typedef libdbproxy::cell::pointer_t  cell_t;
-        typedef libdbproxy::value            value_t;
+        //typedef libdbproxy::cell::pointer_t  cell_t;
+        //typedef libdbproxy::value            value_t;
 
                                 user_info_t();
                                 user_info_t(QString const & email_or_path);
@@ -210,12 +210,12 @@ public:
 
         bool                    value_exists ( QString const & v ) const;
         bool                    value_exists ( name_t  const   v ) const;
-        cell_t                  get_cell     ( QString const & name ) const;
-        cell_t                  get_cell     ( name_t  const   name ) const;
-        value_t const &         get_value    ( QString const & name ) const;
-        value_t const &         get_value    ( name_t  const   name ) const;
-        void                    set_value    ( QString const & name, value_t const & value );
-        void                    set_value    ( name_t  const   name, value_t const & value );
+        //cell_t                  get_cell     ( QString const & name ) const;
+        //cell_t                  get_cell     ( name_t  const   name ) const;
+        //value_t const &         get_value    ( QString const & name ) const;
+        //value_t const &         get_value    ( name_t  const   name ) const;
+        //void                    set_value    ( QString const & name, value_t const & value );
+        //void                    set_value    ( name_t  const   name, value_t const & value );
         void                    delete_value ( QString const & name );
         void                    delete_value ( name_t  const   name );
 
@@ -229,11 +229,11 @@ public:
         bool                    exists() const;
         void                    reset();
 
-        void                    save_user_parameter( QString const & field_name, libdbproxy::value const &  value );
+        //void                    save_user_parameter( QString const & field_name, libdbproxy::value const &  value );
         void                    save_user_parameter( QString const & field_name, QString                      const &  value );
         void                    save_user_parameter( QString const & field_name, int64_t                      const &  value );
         //
-        bool                    load_user_parameter( QString const & field_name, libdbproxy::value &        value ) const;
+        //bool                    load_user_parameter( QString const & field_name, libdbproxy::value &        value ) const;
         bool                    load_user_parameter( QString const & field_name, QString                      &        value ) const;
         bool                    load_user_parameter( QString const & field_name, int64_t                      &        value ) const;
 
@@ -248,11 +248,11 @@ public:
         snap_child *            get_snap() const;
         void                    init_tables() const;
         void                    get_user_id_by_email();
-        libdbproxy::row::pointer_t get_user_row() const;
+        //libdbproxy::row::pointer_t get_user_row() const;
 
         mutable snap_child *    f_snap        = nullptr;
-        mutable libdbproxy::table::pointer_t
-                                f_users_table = libdbproxy::table::pointer_t();
+        //mutable libdbproxy::table::pointer_t
+        //                        f_users_table = libdbproxy::table::pointer_t();
         identifier_t            f_identifier  = IDENTIFIER_INVALID;
         QString                 f_user_email  = QString();
         mutable QString         f_user_key    = QString();
@@ -391,7 +391,7 @@ public:
     SNAP_SIGNAL_WITH_MODE( invalid_password,     (user_info_t & user_info, QString const & policy),                                (user_info, policy),                NEITHER );
     SNAP_SIGNAL_WITH_MODE( blocked_user,         (user_info_t & user_info, QString const & policy),                                (user_info, policy),                NEITHER );
 
-    libdbproxy::table::pointer_t get_users_table() const;
+    //libdbproxy::table::pointer_t get_users_table() const;
 
     int64_t                 get_total_session_duration();
     int64_t                 get_user_session_duration();

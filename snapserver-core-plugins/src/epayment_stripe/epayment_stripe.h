@@ -18,15 +18,16 @@
 
 // other plugins
 //
-#include "../epayment/epayment.h"
-#include "../epayment_creditcard/epayment_creditcard.h"
-#include "../filter/filter.h"
-#include "../layout/layout.h"
-#include "../path/path.h"
+#include    "../epayment/epayment.h"
+#include    "../epayment_creditcard/epayment_creditcard.h"
+#include    "../filter/filter.h"
+#include    "../layout/layout.h"
+#include    "../path/path.h"
 
-// snapwebsites lib
+
+// edhttp
 //
-#include <snapwebsites/http_client_server.h>
+#include    <edhttp/http_client_server.h>
 
 
 /** \file

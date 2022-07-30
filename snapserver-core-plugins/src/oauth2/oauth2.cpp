@@ -47,8 +47,12 @@
 
 // snapwebsites
 //
-#include    <snapwebsites/http_strings.h>
 #include    <snapwebsites/qdomhelpers.h>
+
+
+// edhttp
+//
+#include    <edhttp/http_strings.h>
 
 
 // snaplogger

@@ -18,15 +18,15 @@
 
 // snapwebsites
 //
-#include    "snapwebsites/cache_control.h"
-#include    "snapwebsites/http_cookie.h"
-#include    "snapwebsites/http_link.h"
 #include    "snapwebsites/snap_signals.h"
 #include    "snapwebsites/snap_version.h"
 
 
 // edhttp
 //
+#include    "edhttp/cache_control.h"
+#include    "edhttp/http_cookie.h"
+#include    "edhttp/http_link.h"
 #include    "edhttp/uri.h"
 
 
@@ -319,7 +319,7 @@ public:
     void                        kill();
     status_t                    check_status();
 
-    snap_uri const &            get_uri() const;
+    edhttp::uri const &         get_uri() const;
     void                        set_uri_path(QString const & path);
     bool                        has_post() const { return f_has_post; }
     QString                     get_action() const;
@@ -457,7 +457,7 @@ protected:
     int64_t                                     f_start_date = 0; // time request arrived
     bool                                        f_ready = false; // becomes true just before the server::execute() call
     environment_map_t                           f_env = environment_map_t();
-    snap_uri                                    f_uri = snap_uri();
+    edhttp::uri                                 f_uri = edhttp::uri();
     QString                                     f_site_key = QString();
     QString                                     f_original_site_key = QString();
 

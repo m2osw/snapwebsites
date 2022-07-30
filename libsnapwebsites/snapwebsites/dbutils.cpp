@@ -105,36 +105,36 @@ dbutils::dbutils( QString const & table_name, QString const & row_name )
  * \param[in] tb  The destination table.
  * \param[in] b  The name of the row to copy to.
  */
-void dbutils::copy_row(libdbproxy::table::pointer_t ta, QString const & a, // source
-                       libdbproxy::table::pointer_t tb, QString const & b) // destination
-{
-    // just in case there is still a previous query, clear the cache ahead of time
-    libdbproxy::row::pointer_t source_row(ta->getRow(a));
-    source_row->clearCache();
-    libdbproxy::row::pointer_t destination_row(tb->getRow(b));
-    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
-    column_predicate->setCount(100); // we have to copy everything also it is likely very small (i.e. 10 fields...)
-    column_predicate->setIndex(); // behave like an index
-    for(;;)
-    {
-        source_row->readCells(column_predicate);
-        libdbproxy::cells const source_cells(source_row->getCells());
-        if(source_cells.isEmpty())
-        {
-            // done
-            break;
-        }
-        // handle one batch
-        for(libdbproxy::cells::const_iterator nc(source_cells.begin());
-                nc != source_cells.end();
-                ++nc)
-        {
-            libdbproxy::cell::pointer_t source_cell(*nc);
-            QByteArray cell_key(source_cell->columnKey());
-            destination_row->getCell(cell_key)->setValue(source_cell->getValue());
-        }
-    }
-}
+//void dbutils::copy_row(libdbproxy::table::pointer_t ta, QString const & a, // source
+//                       libdbproxy::table::pointer_t tb, QString const & b) // destination
+//{
+//    // just in case there is still a previous query, clear the cache ahead of time
+//    libdbproxy::row::pointer_t source_row(ta->getRow(a));
+//    source_row->clearCache();
+//    libdbproxy::row::pointer_t destination_row(tb->getRow(b));
+//    auto column_predicate = std::make_shared<libdbproxy::cell_range_predicate>();
+//    column_predicate->setCount(100); // we have to copy everything also it is likely very small (i.e. 10 fields...)
+//    column_predicate->setIndex(); // behave like an index
+//    for(;;)
+//    {
+//        source_row->readCells(column_predicate);
+//        libdbproxy::cells const source_cells(source_row->getCells());
+//        if(source_cells.isEmpty())
+//        {
+//            // done
+//            break;
+//        }
+//        // handle one batch
+//        for(libdbproxy::cells::const_iterator nc(source_cells.begin());
+//                nc != source_cells.end();
+//                ++nc)
+//        {
+//            libdbproxy::cell::pointer_t source_cell(*nc);
+//            QByteArray cell_key(source_cell->columnKey());
+//            destination_row->getCell(cell_key)->setValue(source_cell->getValue());
+//        }
+//    }
+//}
 
 
 
@@ -163,17 +163,17 @@ QByteArray dbutils::get_row_key() const
     }
     else if( f_tableName == "users" )
     {
-        libdbproxy::value const identifier(f_rowName);
-        if( identifier.stringValue() == "*index_row*" || identifier.stringValue() == "*id_row*" )
-        {
-            return identifier.binaryValue();
-        }
-        else
-        {
-            QByteArray new_key;
-            libdbproxy::appendInt64Value( new_key, static_cast<int64_t>(f_rowName.toLong()) );
-            return new_key;
-        }
+        //libdbproxy::value const identifier(f_rowName);
+        //if( identifier.stringValue() == "*index_row*" || identifier.stringValue() == "*id_row*" )
+        //{
+        //    return identifier.binaryValue();
+        //}
+        //else
+        //{
+        //    QByteArray new_key;
+        //    libdbproxy::appendInt64Value( new_key, static_cast<int64_t>(f_rowName.toLong()) );
+        //    return new_key;
+        //}
     }
     else
     {
