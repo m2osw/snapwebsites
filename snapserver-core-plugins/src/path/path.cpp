@@ -30,7 +30,11 @@
 // snapwebsites
 //
 #include    <snapwebsites/qdomhelpers.h>
-#include    <snapwebsites/snap_uri.h>
+
+
+// edhttp
+//
+#include    <edhttp/uri.h>
 
 
 // snaplogger

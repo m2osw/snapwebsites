@@ -33,12 +33,16 @@
 // snapwebsites
 //
 #include    <snapwebsites/flags.h>
-#include    <snapwebsites/http_strings.h>
 #include    <snapwebsites/mkgmtime.h>
 #include    <snapwebsites/qdomhelpers.h>
 #include    <snapwebsites/qdomxpath.h>
 #include    <snapwebsites/quoted_printable.h>
 #include    <snapwebsites/snap_magic.h>
+
+
+// edhttp
+//
+#include    <edhttp/weighted_http_string.h>
 
 
 // snaplogger
