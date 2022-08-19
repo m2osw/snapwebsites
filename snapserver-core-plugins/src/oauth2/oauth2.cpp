@@ -52,7 +52,7 @@
 
 // edhttp
 //
-#include    <edhttp/http_strings.h>
+#include    <edhttp/weighted_http_string.h>
 
 
 // snaplogger

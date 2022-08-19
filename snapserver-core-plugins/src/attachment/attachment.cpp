@@ -30,8 +30,12 @@
 
 // snapwebsites
 //
-#include    <snapwebsites/dbutils.h>
-#include    <snapwebsites/http_strings.h>
+//#include    <snapwebsites/dbutils.h>
+
+
+// edhttp
+//
+#include    <edhttp/weighted_http_string.h>
 
 
 // snaplogger

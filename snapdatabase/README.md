@@ -14,8 +14,19 @@ The basic features include:
 
 # Database Access
 
-The library comes with a C++ front end library which allows you to manage
-everything from a very simple set of C++ objects.
+The library comes with a C++ front end library (client) which allows you to
+manage everything from a very simple set of C++ objects.
+
+## Circuit Breaker Feature
+
+The client actually connects to a local proxy system working as a circuit
+breaker. This pattern allows local applications to pretty much instantly
+connect and get current information about the database cluster status.
+
+This proxy system acts as a cache as well as a way to save data locally
+before it gets sent to the cluster, making it really fast to do reads and
+writes (as long as it is not the entire database). The cache is in part
+in memory and in part on disk.
 
 ## Cluster Object
 
@@ -43,18 +54,18 @@ A table comes with its own settings:
 
 * Replication Factor
 
-    How many times the data will be replicated. A duplicate always resides
-    on another computer.
+  How many times the data will be replicated. A duplicate always resides
+  on another computer.
 
 * Partitioning
 
-    Whether partitioning is used--generally not necessary on tables that
-    remain very small like our journals.
+  Whether partitioning is used--generally not necessary on tables that
+  remain very small like our journals.
 
 * Secure
 
-    The table holds secure data. This means any row that gets deleted
-    automatically gets cleared.
+  The table holds secure data. This means any row that gets deleted
+  automatically gets cleared.
 
 ## Row Object
 

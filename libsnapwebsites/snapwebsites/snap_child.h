@@ -52,6 +52,7 @@
 //
 #include    <QBuffer>
 #include    <QDomDocument>
+#include    <QMap>
 
 
 namespace snap
@@ -335,15 +336,15 @@ public:
     QString                     get_data_path();
     QString                     get_list_data_path();
     void                        reset_sites_table();
-    libdbproxy::value           get_site_parameter(QString const & name);
-    void                        set_site_parameter(QString const & name, libdbproxy::value const & value);
+    //libdbproxy::value           get_site_parameter(QString const & name);
+    //void                        set_site_parameter(QString const & name, libdbproxy::value const & value);
     void                        user_status(user_status_t status, user_identifier_t id);
     void                        improve_signature(QString const & path, QDomDocument doc, QDomElement signature_tag);
     QString                     error_body(http_code_t err_code, QString const & err_name, QString const & err_description);
-    libdbproxy::libdbproxy::pointer_t
-                                get_cassandra() { return f_cassandra; }
-    libdbproxy::context::pointer_t
-                                get_context() { return f_context; }
+    //libdbproxy::libdbproxy::pointer_t
+    //                            get_cassandra() { return f_cassandra; }
+    //libdbproxy::context::pointer_t
+    //                            get_context() { return f_context; }
     QString const &             get_domain_key() const { return f_domain_key; }
     QString const &             get_website_key() const { return f_website_key; }
     QString const &             get_site_key() const { return f_site_key; }
@@ -352,23 +353,25 @@ public:
     void                        init_start_date();
     int64_t                     get_start_date() const { return f_start_date; }
     time_t                      get_start_time() const { return f_start_date / static_cast<int64_t>(1000000); }
-    cache_control_settings const &
+    edhttp::cache_control_settings const &
                                 client_cache_control() const;
-    cache_control_settings &    server_cache_control();
-    cache_control_settings &    page_cache_control();
+    edhttp::cache_control_settings &
+                                server_cache_control();
+    edhttp::cache_control_settings &
+                                page_cache_control();
     bool                        no_caching() const;
     void                        set_header(QString const & name, QString const & value, header_mode_t modes = HEADER_MODE_NO_ERROR);
-    void                        add_http_link(http_link const & link);
+    void                        add_http_link(edhttp::http_link const & link);
     bool                        http_link_is_defined(std::string const & name);
-    http_link const &           get_http_link(std::string const & name);
+    edhttp::http_link const &   get_http_link(std::string const & name);
     void                        output_http_links(header_mode_t modes);
-    void                        set_cookie(http_cookie const & cookie);
+    void                        set_cookie(edhttp::http_cookie const & cookie);
     void                        set_ignore_cookies();
     bool                        has_header(QString const & name) const;
     QString                     get_header(QString const & name) const;
     QString                     get_unique_number();
-    libdbproxy::table::pointer_t
-                                get_table(QString const & table_name);
+    //libdbproxy::table::pointer_t
+    //                            get_table(QString const & table_name);
     void                        new_content();
     void                        verify_permissions(QString const & path, permission_error_callback & err_callback);
     QString                     default_action(QString uri_path);
@@ -446,14 +449,14 @@ protected:
     void                        canonicalize_website();
     void                        canonicalize_options();
     void                        site_redirect();
-    snap_string_list            init_plugins(bool const add_defaults, QString const & introducer = QString());
+    advgetopt::string_list_t    init_plugins(bool const add_defaults, QString const & introducer = QString());
 
     server_pointer_t                            f_server = server_pointer_t();
     bool                                        f_is_child = false;
     pid_t                                       f_child_pid = 0;
     ed::tcp_bio_client::pointer_t               f_client = ed::tcp_bio_client::pointer_t();
-    libdbproxy::libdbproxy::pointer_t           f_cassandra = libdbproxy::libdbproxy::pointer_t();
-    libdbproxy::context::pointer_t              f_context = libdbproxy::context::pointer_t();
+    //libdbproxy::libdbproxy::pointer_t           f_cassandra = libdbproxy::libdbproxy::pointer_t();
+    //libdbproxy::context::pointer_t              f_context = libdbproxy::context::pointer_t();
     int64_t                                     f_start_date = 0; // time request arrived
     bool                                        f_ready = false; // becomes true just before the server::execute() call
     environment_map_t                           f_env = environment_map_t();
@@ -467,8 +470,8 @@ private:
         QString         f_header = QString();
         header_mode_t   f_modes = HEADER_MODE_UNDEFINED;
     };
-    typedef QMap<QString, http_header_t>    header_map_t;
-    typedef QMap<QString, http_cookie>      cookie_map_t;
+    typedef QMap<QString, http_header_t>        header_map_t;
+    typedef QMap<QString, edhttp::http_cookie>  cookie_map_t;
 
     class messenger_runner
         : public cppthread::runner
@@ -514,7 +517,7 @@ private:
     void                        setup_uri();
     void                        snap_info();
     void                        snap_statistics();
-    void                        update_plugins(snap_string_list const & list_of_plugins);
+    void                        update_plugins(advgetopt::string_list_t const & list_of_plugins);
     void                        execute();
     void                        process_backend_uri(QString const & uri);
     void                        write(char const * data, ssize_t size);
@@ -527,7 +530,7 @@ private:
     void                        connect_messenger();
     void                        stop_messenger();
 
-    libdbproxy::table::pointer_t        f_sites_table = libdbproxy::table::pointer_t();
+    //libdbproxy::table::pointer_t        f_sites_table = libdbproxy::table::pointer_t();
     bool                                f_new_content = false;
     bool                                f_is_being_initialized = false;
     environment_map_t                   f_post = environment_map_t();
@@ -540,7 +543,7 @@ private:
     QString                             f_site_key_with_slash = QString();
     QBuffer                             f_output;
     header_map_t                        f_header = header_map_t();
-    http_link::map_t                    f_http_links = http_link::map_t();
+    edhttp::http_link::map_t            f_http_links = edhttp::http_link::map_t();
     cookie_map_t                        f_cookies = cookie_map_t();
     bool                                f_ignore_cookies = false;
     bool                                f_died = false; // die() was already called once
@@ -558,9 +561,9 @@ private:
     snap_version::version_number_t      f_revision = snap_version::version_number_t();
     QString                             f_revision_key = QString();
     compression_vector_t                f_compressions = compression_vector_t();
-    cache_control_settings              f_client_cache_control = cache_control_settings();
-    cache_control_settings              f_server_cache_control = cache_control_settings();
-    cache_control_settings              f_page_cache_control = cache_control_settings();
+    edhttp::cache_control_settings      f_client_cache_control = edhttp::cache_control_settings();
+    edhttp::cache_control_settings      f_server_cache_control = edhttp::cache_control_settings();
+    edhttp::cache_control_settings      f_page_cache_control = edhttp::cache_control_settings();
     messenger_runner                    f_messenger_runner;
     cppthread::thread                   f_messenger_thread;
     ed::communicator::pointer_t         f_communicator = ed::communicator::pointer_t();

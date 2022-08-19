@@ -34,7 +34,7 @@
 
 // libdbproxy
 //
-#include    <libdbproxy/table.h>
+//#include    <libdbproxy/table.h>
 
 
 // last include

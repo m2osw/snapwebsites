@@ -43,7 +43,7 @@ snap_validate_xml( core-tables.xml tables.xsd )
 
 add_library(${PROJECT_NAME} SHARED
     compression.cpp                             # compress/decompress data
-    dbutils.cpp                                 # utilities to help convert coded table and row names and column data. (see snap_tables.cpp too!)
+    #dbutils.cpp                                 # utilities to help convert coded table and row names and column data. (see snap_tables.cpp too!)
     flags.cpp                                   # raise/drop flags
     floats.cpp                                  # Floats helper functions
     fuzzy_string_compare.cpp                    # Compare strings in a fuzzy manner

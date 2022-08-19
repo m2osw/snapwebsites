@@ -51,7 +51,7 @@
 
 // libdbproxy
 //
-#include    <libdbproxy/value.h>
+//#include    <libdbproxy/value.h>
 
 
 // OpenSSL

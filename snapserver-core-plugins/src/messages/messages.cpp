@@ -37,15 +37,9 @@
 
 // snapdev
 //
+#include    <snapdev/brs.h>
 #include    <snapdev/not_reached.h>
 #include    <snapdev/not_used.h>
-
-
-// QtSerialization
-//
-#include    <QtSerialization/QSerializationComposite.h>
-#include    <QtSerialization/QSerializationFieldString.h>
-#include    <QtSerialization/QSerializationFieldBasicTypes.h>
 
 
 // C++
@@ -326,8 +320,9 @@ void messages::message::set_widget_name(QString const & widget_name)
  *
  * \sa serialize()
  */
-void messages::message::unserialize(QtSerialization::QReader & r)
+void messages::message::unserialize(snapdev::serializer<std::stringstream> & out)
 {
+    // TODO: convert to snapdev::brs
     QtSerialization::QComposite comp;
     qint32 type(static_cast<qint32>(static_cast<message_type_t>(message_type_t::MESSAGE_TYPE_ERROR)));
     QtSerialization::QFieldInt32 tag_type(comp, "type", type);
@@ -356,12 +351,10 @@ void messages::message::unserialize(QtSerialization::QReader & r)
  * \param[in] name  The name of the tag being read.
  * \param[in] r  The reader used to read the input data.
  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 void messages::message::readTag(QString const & name, QtSerialization::QReader & r)
 {
+    snapdev::NOT_USED(name, r);
 }
-#pragma GCC diagnostic pop
 
 
 /** \brief Serialize a message to a writer.
@@ -373,7 +366,7 @@ void messages::message::readTag(QString const & name, QtSerialization::QReader &
  *
  * \sa unserialize()
  */
-void messages::message::serialize(QtSerialization::QWriter & w) const
+void messages::message::serialize(snapdev::serializer<std::stringstream> & out) const
 {
     QtSerialization::QWriter::QTag tag(w, "message");
     QtSerialization::writeTag(w, "type", static_cast<int32_t>(static_cast<message_type_t>(f_type)));
@@ -859,7 +852,7 @@ void messages::unserialize(QString const & data)
  * \param[in] name  The name of the tag being read.
  * \param[in] r  The reader used to read the input data.
  */
-void messages::readTag(QString const & name, QtSerialization::QReader & r)
+void messages::readTag(QString const & name, snapdev::serializer<std::stringstream> & out)
 {
     if(name == "messages")
     {

@@ -153,7 +153,7 @@ public:
 
                         form(QString const & plugin_name, QString const & field_name, button_t button = FORM_BUTTON_NONE);
 
-    void                generate(QDomElement parent, snap::snap_uri const & uri);
+    void                generate(QDomElement parent, edhttp::uri const & uri);
     void                add_widget(widget::pointer_t w);
 
 private:
