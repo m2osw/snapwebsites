@@ -1025,7 +1025,7 @@ int main(int argc, char * argv [])
 #if 0
     // since sendmail may be invoked from CRON and other tools, it may
     // be useful to see the command line arguments used in those situations
-    // the following helps we determining such
+    // the following helps me determine such
     //
     // my problem on my test server was that my hourly cron script was not
     // executable (chmod 755 /etc/cron.hourly/myscript) and thus it did not
