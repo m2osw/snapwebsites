@@ -486,7 +486,7 @@ which this database implementation will look into preventing.
 A very interesting trick is to learn how to get statistics when loading
 a binary under Linux.
 
-    LD_DEBBUG=statistics <path to binary>
+    LD_DEBUG=statistics <path to binary>
 
 The results of the statistics are written in your console so you have
 to capture that output.
