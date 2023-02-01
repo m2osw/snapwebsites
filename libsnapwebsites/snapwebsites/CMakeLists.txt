@@ -65,7 +65,6 @@ add_library(${PROJECT_NAME} SHARED
     snap_console.cpp                            # a CUI helper with two panels: Input and Output so the output can be asynchronous
     snap_child.cpp                              # requests processing
     snap_child_cache_control.cpp                # manage cache controls in the snap_child class
-    snap_expr.cpp                               # snap C-like expression compiler and execution environment
     snap_image.cpp                              # image handling
     snap_initialize_website.cpp                 # initialize website by sending an Apache-like query to the server
     snap_lock.cpp                               # support for inter-process / inter-computer locks using network and memory only
