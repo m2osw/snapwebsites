@@ -23,10 +23,14 @@
 
 //#include "../test_plugin_suite/test_plugin_suite.h"
 
-// snapwebsites lib
+// snapwebsites
 //
 #include <snapwebsites/snap_backend.h>
-#include <snapwebsites/snap_expr.h>
+
+// as2js
+//
+#include <as2js/binary.h>
+
 
 
 namespace snap
@@ -301,8 +305,8 @@ private:
 
     snap_child *                            f_snap = nullptr;
     snap_backend *                          f_backend = nullptr;
-    snap_expr::expr::expr_map_t             f_check_expressions = snap_expr::expr::expr_map_t();
-    snap_expr::expr::expr_map_t             f_item_key_expressions = snap_expr::expr::expr_map_t();
+    as2js::running_file::map_t              f_check_expressions = as2js::running_file::map_t();
+    as2js::funning_file::map_t              f_item_key_expressions = as2js::running_file::map_t();
     bool                                    f_ping_backend = false;
     bool                                    f_list_link = false;
     priority_t                              f_priority = LIST_PRIORITY_NEW_PAGE;                // specific order in which pages should be worked on

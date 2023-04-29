@@ -46,17 +46,6 @@ if(SnapCatch2_FOUND)
         dl
     )
 
-    project(test_snap_parser)
-    add_executable(${PROJECT_NAME}
-        ${SNAP_TESTS}
-        test_snap_parser.cpp
-    )
-    target_link_libraries(${PROJECT_NAME}
-        ${TEST_LIBRARIES}
-    )
-    add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} )
-
-
     project( test_unix_timestamp )
     add_executable(${PROJECT_NAME}
         ${SNAP_TESTS}

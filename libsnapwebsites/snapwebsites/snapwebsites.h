@@ -31,7 +31,6 @@
 // self
 //
 #include    "snapwebsites/snap_child.h"
-#include    "snapwebsites/snap_expr.h"
 #include    "snapwebsites/snap_pid.h"
 #include    "snapwebsites/version.h"
 
@@ -329,28 +328,28 @@ public:
     bool nofork() const;
 #endif
 
-    SNAP_SIGNAL_WITH_MODE(init, (), (), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(update, (int64_t last_updated), (last_updated), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(process_cookies, (), (), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(attach_to_session, (), (), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(detach_from_session, (), (), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(user_status, (snap_child::user_status_t status, snap_child::user_identifier_t id), (status, id), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(define_locales, (edhttp::weighted_http_string & locales), (locales), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(process_post, (QString const & url), (url), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(execute, (QString const & url), (url), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(register_backend_cron, (backend_action_set & actions), (actions), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(register_backend_action, (backend_action_set & actions), (actions), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(backend_process, (), (), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(save_content, (), (), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(xss_filter, (QDomNode & node,
+    PLUGIN_SIGNAL_WITH_MODE(init, (), (), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(update, (int64_t last_updated), (last_updated), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(process_cookies, (), (), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(attach_to_session, (), (), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(detach_from_session, (), (), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(user_status, (snap_child::user_status_t status, snap_child::user_identifier_t id), (status, id), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(define_locales, (edhttp::weighted_http_string & locales), (locales), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(process_post, (QString const & url), (url), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(execute, (QString const & url), (url), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(register_backend_cron, (backend_action_set & actions), (actions), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(register_backend_action, (backend_action_set & actions), (actions), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(backend_process, (), (), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(save_content, (), (), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(xss_filter, (QDomNode & node,
                              QString const & accepted_tags,
                              QString const & accepted_attributes),
                             (node, accepted_tags, accepted_attributes), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(improve_signature, (QString const & path, QDomDocument doc, QDomElement & signature_tag), (path, doc, signature_tag), NEITHER);
-    SNAP_SIGNAL(load_file, (snap_child::post_file_t & file, bool & found), (file, found));
-    SNAP_SIGNAL_WITH_MODE(table_is_accessible, (QString const & table, accessible_flag_t & accessible), (table, accessible), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(add_snap_expr_functions, (snap_expr::functions_t & functions), (functions), NEITHER);
-    SNAP_SIGNAL_WITH_MODE(output_result, (QString const & uri_path, QByteArray & output), (uri_path, output), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(improve_signature, (QString const & path, QDomDocument doc, QDomElement & signature_tag), (path, doc, signature_tag), NEITHER);
+    PLUGIN_SIGNAL(load_file, (snap_child::post_file_t & file, bool & found), (file, found));
+    PLUGIN_SIGNAL_WITH_MODE(table_is_accessible, (QString const & table, accessible_flag_t & accessible), (table, accessible), NEITHER);
+    //PLUGIN_SIGNAL_WITH_MODE(add_snap_expr_functions, (snap_expr::functions_t & functions), (functions), NEITHER);
+    PLUGIN_SIGNAL_WITH_MODE(output_result, (QString const & uri_path, QByteArray & output), (uri_path, output), NEITHER);
 
 protected:
                                 server();

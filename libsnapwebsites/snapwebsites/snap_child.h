@@ -18,16 +18,20 @@
 
 // snapwebsites
 //
-#include    "snapwebsites/snap_signals.h"
 #include    "snapwebsites/snap_version.h"
+
+
+// serverplugins
+//
+#include    <serverplugins/signals.h>
 
 
 // edhttp
 //
-#include    "edhttp/cache_control.h"
-#include    "edhttp/http_cookie.h"
-#include    "edhttp/http_link.h"
-#include    "edhttp/uri.h"
+#include    <edhttp/cache_control.h>
+#include    <edhttp/http_cookie.h>
+#include    <edhttp/http_link.h>
+#include    <edhttp/uri.h>
 
 
 // cppthread

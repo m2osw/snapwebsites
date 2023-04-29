@@ -69,7 +69,6 @@ add_library(${PROJECT_NAME} SHARED
     snap_initialize_website.cpp                 # initialize website by sending an Apache-like query to the server
     snap_lock.cpp                               # support for inter-process / inter-computer locks using network and memory only
     snap_magic.cpp                              # support for MIME type
-    snap_parser.cpp                             # lexer/parser for all our script like entries
     snap_pid.cpp                                # RAII PID file management
     snap_tables.cpp                             # table schema/definitions
     snap_version.cpp                            # extract name, version, browser info from a filename

@@ -267,7 +267,7 @@ public:
     // server::backend_action implementation
     virtual void                    on_backend_action(QString const & action);
 
-    SNAP_SIGNAL(modified_link, (link_info const & link, bool const created), (link, created));
+    PLUGIN_SIGNAL(modified_link, (link_info const & link, bool const created), (link, created));
 
     // TBD should those be events? (they do trigger the modified_link() event already...)
     void                            create_link(link_info const & src, link_info const & dst);
@@ -287,7 +287,7 @@ public:
                                                      , bool all_status = false);
 
     // links test suite
-    SNAP_TEST_PLUGIN_SUITE_SIGNALS()
+    PLUGIN_TEST_PLUGIN_SUITE_SIGNALS()
 
 private:
     void                            init_tables();
@@ -297,10 +297,10 @@ private:
     void                            cleanup_links();
 
     // tests
-    SNAP_TEST_PLUGIN_TEST_DECL(test_unique_unique_create_delete)
-    SNAP_TEST_PLUGIN_TEST_DECL(test_unique_unique_create_replace_delete)
-    SNAP_TEST_PLUGIN_TEST_DECL(test_unique_unique_create2_replace2_delete2)
-    SNAP_TEST_PLUGIN_TEST_DECL(test_multiple_multiple_create_delete)
+    PLUGIN_TEST_PLUGIN_TEST_DECL(test_unique_unique_create_delete)
+    PLUGIN_TEST_PLUGIN_TEST_DECL(test_unique_unique_create_replace_delete)
+    PLUGIN_TEST_PLUGIN_TEST_DECL(test_unique_unique_create2_replace2_delete2)
+    PLUGIN_TEST_PLUGIN_TEST_DECL(test_multiple_multiple_create_delete)
 
     snap_child *                    f_snap = nullptr;
     libdbproxy::table::pointer_t    f_links_table = libdbproxy::table::pointer_t();

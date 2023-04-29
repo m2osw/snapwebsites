@@ -20,16 +20,14 @@
 
 // self
 //
-#include "snapwebsites/snap_child.h"
+#include    "snapwebsites/snap_child.h"
 
 
-// snapwebsites lib
+// snapwebsites
 //
 #include    "snapwebsites/compression.h"
 #include    "snapwebsites/flags.h"
-#include    "snapwebsites/http_strings.h"
 #include    "snapwebsites/mail_exchanger.h"
-#include    "snapwebsites/mkgmtime.h"
 #include    "snapwebsites/qcompatibility.h"
 #include    "snapwebsites/qdomhelpers.h"
 #include    "snapwebsites/qlockfile.h"
@@ -44,19 +42,21 @@
 #include    "snaplogger/message.h"
 
 
+// edhttp
+//
+#include    <edhttp/weighted_http_string.h>
+#include    <edhttp/mkgmtime.h>
+
+
 // snapdev
 //
-#include <snapdev/not_used.h>
+#include    <snapdev/brs.h>
+#include    <snapdev/not_used.h>
 
 
 // dbproxy
 //
 //#include <libdbproxy/exception.h>
-
-
-// Qt Serialization
-//
-#include <QtSerialization/QSerialization.h>
 
 
 // libutf8
@@ -67,6 +67,11 @@
 // tld
 //
 #include <libtld/tld.h>
+
+
+// Qt
+//
+#include <QDirIterator>
 
 
 // C++
@@ -82,11 +87,6 @@
 #include <wait.h>
 #include <sys/prctl.h>
 #include <sys/syscall.h>
-
-
-// Qt
-//
-#include <QDirIterator>
 
 
 // last include
@@ -4236,13 +4236,9 @@ void snap_child::snap_info()
     version += "\n";
     write(version);
 
-    // the libQtSerialization version
-    version = "LIBQTSERIALIZATION=";
-    version += QtSerialization::QT_SERIALIZATION_LIBRARY_VERSION_STRING;
-    version += "\n";
-    write(version);
-    version = "RUNTIME_LIBQTSERIALIZATION=";
-    version += QtSerialization::QLibraryVersion();
+    // the snapdev version (no "runtime" since it's all headers)
+    version = "SNAPDEV=";
+    version += SNAPDEV_VERSION_STRING
     version += "\n";
     write(version);
 
