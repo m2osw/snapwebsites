@@ -38,7 +38,7 @@
 #include    <snapwebsites/qdomhelpers.h>
 #include    <snapwebsites/qdomxpath.h>
 //#include    <snapwebsites/qdomnodemodel.h> -- at this point the DOM Node Model seems bogus.
-#include    <snapwebsites/snap_expr.h>
+//#include    <snapwebsites/snap_expr.h> -- this is to use as2js if still necessary at this level.
 #include    <snapwebsites/xslt.h>
 
 
