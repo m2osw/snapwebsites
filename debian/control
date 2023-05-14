@@ -1,14 +1,12 @@
 Source: snapwebsites
 Priority: extra
 Maintainer: R. Douglas Barbieri <doug@dooglio.net>
-Build-Depends: closure-linter (>= 2.3.13),
-    cmake,
+Build-Depends: cmake,
     commonmarkcpp-dev (>= 1.0.0.0~bionic),
     communicatord-dev (>= 2.0.0.0~bionic),
     cppthread (>= 1.0.1.0~bionic),
     libcsspp-dev (>= 1.0.17.149~bionic),
     debhelper,
-    dh-systemd,
     doxygen,
     edhttp-dev (>= 0.1.0.0~bionic),
     eventdispatcher-dev (>= 1.1.51.0~bionic),
