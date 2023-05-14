@@ -24,51 +24,51 @@
 
 cmake_minimum_required(VERSION 3.10.2)
 
-project( snapwebsites_top_dir )
+project(snapwebsites_top_dir)
 
-if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-    message( STATUS "Debug is in effect for snapwebsites!" )
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    message(STATUS "Debug is in effect for snapwebsites!")
 endif()
 
 ## Include support modules
 ##
-set( CMAKE_MODULE_PATH
+set(CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake
     ${CMAKE_MODULE_PATH}
 )
 
 ## Include 3rdparty and contrib
 ##
-find_package( AdvGetOpt        REQUIRED       )
-find_package( As2Js            REQUIRED 0.1.0 )
-find_package( AtomicNames      REQUIRED       )
-find_package( Boost            REQUIRED       )
-find_package( CSSPP            REQUIRED       )
-find_package( CppThread        REQUIRED       )
-find_package( LibAddr          REQUIRED       )
-find_package( LibExcept        REQUIRED       )
-find_package( LibTLD           REQUIRED       )
-find_package( LibXml2          REQUIRED       )
-find_package( Magic            REQUIRED       )
-find_package( Murmur3          REQUIRED       )
-find_package( OpenSSL          REQUIRED       )
-find_package( Qt5Core          REQUIRED       )
-find_package( Qt5Network       REQUIRED       )
-find_package( Qt5Script        REQUIRED       )
-find_package( Qt5Sql           REQUIRED       )
-find_package( Qt5Widgets       REQUIRED       )
-find_package( Qt5X11Extras     REQUIRED       )
-find_package( Qt5Xml           REQUIRED       )
-find_package( Qt5XmlPatterns   REQUIRED       )
-find_package( SnapCMakeModules REQUIRED       )
-find_package( SnapDev          REQUIRED       )
-find_package( SnapLogger       REQUIRED       )
-find_package( ZLIB             REQUIRED       )
-find_package( ZipIos           REQUIRED 2.1   )
+find_package(AdvGetOpt        REQUIRED       )
+find_package(As2Js            REQUIRED 0.1.0 )
+find_package(AtomicNames      REQUIRED       )
+find_package(Boost            REQUIRED       )
+find_package(CSSPP            REQUIRED       )
+find_package(CppThread        REQUIRED       )
+find_package(LibAddr          REQUIRED       )
+find_package(LibExcept        REQUIRED       )
+find_package(LibTLD           REQUIRED       )
+find_package(LibXml2          REQUIRED       )
+find_package(Magic            REQUIRED       )
+find_package(Murmur3          REQUIRED       )
+find_package(OpenSSL          REQUIRED       )
+find_package(Qt5Core          REQUIRED       )
+find_package(Qt5Network       REQUIRED       )
+find_package(Qt5Script        REQUIRED       )
+find_package(Qt5Sql           REQUIRED       )
+find_package(Qt5Widgets       REQUIRED       )
+find_package(Qt5X11Extras     REQUIRED       )
+find_package(Qt5Xml           REQUIRED       )
+find_package(Qt5XmlPatterns   REQUIRED       )
+find_package(SnapCMakeModules REQUIRED       )
+find_package(SnapDev          REQUIRED       )
+find_package(SnapLogger       REQUIRED       )
+find_package(ZLIB             REQUIRED       )
+find_package(ZipIos           REQUIRED 2.1   )
 
-find_package( SnapDoxygen                     )
+find_package(SnapDoxygen)
 
-SnapGetVersion( SNAPWEBSITES ${CMAKE_CURRENT_SOURCE_DIR} )
+SnapGetVersion(SNAPWEBSITES ${CMAKE_CURRENT_SOURCE_DIR})
 
 ###############################################################################
 ## Define the ${SNAP_COMMON_DIR} variable used to save common files within

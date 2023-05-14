@@ -1,13 +1,12 @@
 Source: snapwebsites
 Priority: extra
 Maintainer: R. Douglas Barbieri <doug@dooglio.net>
-Build-Depends: brs-dev (>= 1.0.0.0~bionic),
-    closure-linter (>= 2.3.13),
+Build-Depends: closure-linter (>= 2.3.13),
     cmake,
     commonmarkcpp-dev (>= 1.0.0.0~bionic),
     communicatord-dev (>= 2.0.0.0~bionic),
     cppthread (>= 1.0.1.0~bionic),
-    csspp-dev (>= 1.0.17.149~bionic),
+    libcsspp-dev (>= 1.0.17.149~bionic),
     debhelper,
     dh-systemd,
     doxygen,
@@ -49,7 +48,6 @@ Build-Depends: brs-dev (>= 1.0.0.0~bionic),
     sitter-dev (>= 0.3.0.0~bionic),
     snapcatch2 (>= 3.0.1.4~bionic),
     snapcmakemodules (>= 1.0.35.3~bionic),
-    snapcommunicator (>= 2.0.0.0~bionic),
     snapdev (>= 1.1.2.0~bionic),
     snaplogger (>= 1.0.7.0~bionic),
     snaprfs-dev (>= 1.0.0.0~bionic),
