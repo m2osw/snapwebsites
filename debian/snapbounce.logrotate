@@ -16,7 +16,7 @@
     delaycompress
     sharedscripts
     postrotate
-        /usr/lib/rsyslog/rsyslog-rotate
+        [ -x /usr/lib/rsyslog/rsyslog-rotate ] && /usr/lib/rsyslog/rsyslog-rotate || true
     endscript
 }
 
