@@ -1,3 +1,9 @@
+snapwebsites (1.8.6.0~jammy) jammy; urgency=high
+
+  * Moved only many of the libraries and other projects as contribs.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 04 Jul 2023 10:21:30 -0700
+
 snapwebsites (1.8.5.0~xenial) xenial; urgency=high
 
   * Added the snaplogger and cppthread as dependencies (for snapdatabase).
