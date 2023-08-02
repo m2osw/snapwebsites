@@ -4,7 +4,7 @@ Maintainer: R. Douglas Barbieri <doug@dooglio.net>
 Build-Depends: cmake,
     commonmarkcpp-dev (>= 1.0.0.0~jammy),
     communicatord-dev (>= 2.0.0.0~jammy),
-    cppthread (>= 1.0.1.0~jammy),
+    cppthread-dev (>= 1.0.1.0~jammy),
     libcsspp-dev (>= 1.0.17.149~jammy),
     debhelper,
     doxygen,
