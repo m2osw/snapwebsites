@@ -2,6 +2,7 @@ Source: snapwebsites
 Priority: extra
 Maintainer: R. Douglas Barbieri <doug@dooglio.net>
 Build-Depends: cmake,
+    closure-compiler,
     commonmarkcpp-dev (>= 1.0.0.0~jammy),
     communicatord-dev (>= 2.0.0.0~jammy),
     cppthread-dev (>= 1.0.1.0~jammy),
