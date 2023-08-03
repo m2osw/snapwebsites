@@ -47,7 +47,7 @@ Build-Depends: cmake,
     snapcatch2 (>= 3.0.1.4~jammy),
     snapcmakemodules (>= 1.0.35.3~jammy),
     snapdev (>= 1.1.2.0~jammy),
-    snaplogger (>= 1.0.7.0~jammy),
+    snaplogger-dev (>= 1.0.7.0~jammy),
     snaprfs-dev (>= 1.0.0.0~jammy),
     uuid-dev,
     zip
