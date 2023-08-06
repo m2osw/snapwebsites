@@ -48,7 +48,6 @@
 //
 #include    <snapwebsites/compression.h>
 #include    <snapwebsites/dbutils.h>
-#include    <snapwebsites/flags.h>
 #include    <snapwebsites/qcompatibility.h>
 #include    <snapwebsites/qdomhelpers.h>
 #include    <snapwebsites/snap_magic.h>
@@ -66,6 +65,11 @@
 //
 #include    <snapdev/not_reached.h>
 #include    <snapdev/not_used.h>
+
+
+// communicatord
+//
+#include    "communicatord/flags.h"
 
 
 // Qt
@@ -3441,6 +3445,8 @@ void content::on_save_content()
         return;
     }
 
+    // TODO: switch to safevariable if we keep this
+    //
     class restore_flag_t
     {
     public:
@@ -4199,7 +4205,7 @@ void content::add_javascript(QDomDocument doc, QString const & name)
                 //       which JavaScript we flagged; so for now we mark
                 //       them as manual flags
                 //
-                snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
+                communicatord::pointer_t flag(COMMUNICATORD_FLAG_UP(
                               "snapserver-plugin"
                             , "content"
                             , "javascript-file"

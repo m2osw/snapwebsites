@@ -32,7 +32,6 @@
 
 // snapwebsites
 //
-#include    <snapwebsites/flags.h>
 #include    <snapwebsites/mkgmtime.h>
 #include    <snapwebsites/qdomhelpers.h>
 #include    <snapwebsites/qdomxpath.h>
@@ -43,6 +42,11 @@
 // edhttp
 //
 #include    <edhttp/weighted_http_string.h>
+
+
+// communicatord
+//
+#include    "communicatord/flags.h"
 
 
 // snaplogger
@@ -607,7 +611,7 @@ void sendmail::on_check_user_security(users::users::user_security_t & security)
                         // we could do about it anyway; the names can't
                         // include an email address...
                         //
-                        snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
+                        communicatord::flag::pointer_t flag(COMMUNICATORD_FLAG_UP(
                                   "snapserver-plugin"
                                 , "sendmail"
                                 , "email-bounced"

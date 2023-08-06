@@ -25,11 +25,6 @@
 #include    "../output/output.h"
 
 
-// snapwebsites
-//
-#include    <snapwebsites/flags.h>
-
-
 // cppprocess
 //
 #include    <cppprocess/process.h>
@@ -44,6 +39,11 @@
 //
 #include    <snapdev/not_reached.h>
 #include    <snapdev/not_used.h>
+
+
+// communicatord
+//
+#include    "communicatord/flags.h"
 
 
 // Qt
@@ -254,7 +254,7 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
         //
         QString const site_key(f_snap->get_site_key_with_slash());
         std::string site(site_key.toUtf8().data());
-        snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
+        communicatord::flag::pointer_t flag(COMMUNICATORD_FLAG_UP(
                       "snapserver-plugin"
                     , "antivirus"
                     , "clamav-missing"
@@ -267,9 +267,10 @@ void antivirus::on_check_attachment_security(content::attachment_file const & fi
     }
 
     {
-        snap::snap_flag::pointer_t flag(SNAP_FLAG_DOWN("snapserver-plugin"
-                     , "antivirus"
-                     , "clamav-missing"));
+        communicatord::flag::pointer_t flag(COMMUNICATORD_FLAG_DOWN(
+                      "snapserver-plugin"
+                    , "antivirus"
+                    , "clamav-missing"));
         flag->save();
     }
 

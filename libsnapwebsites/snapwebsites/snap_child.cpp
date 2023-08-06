@@ -26,7 +26,6 @@
 // snapwebsites
 //
 #include    "snapwebsites/compression.h"
-#include    "snapwebsites/flags.h"
 #include    "snapwebsites/mail_exchanger.h"
 #include    "snapwebsites/qcompatibility.h"
 #include    "snapwebsites/qdomhelpers.h"
@@ -40,6 +39,11 @@
 // snaplogger
 //
 #include    "snaplogger/message.h"
+
+
+// communicatord
+//
+#include    "communicatord/flags.h"
 
 
 // edhttp
@@ -2912,7 +2916,7 @@ pid_t snap_child::fork_child()
             // this is a rather important bug, only developers have a chance
             // to fix it, though... (hence the rather low priority)
             //
-            SNAP_FLAG_UP(
+            COMMUNICATORD_FLAG_UP(
                           "snap_child"
                         , "create-child"
                         , "thread"
@@ -5655,6 +5659,7 @@ void snap_child::canonicalize_options()
             {
                 // since we support multiple name we make use of a
                 // flag to avoid adding gzip more than once
+                //
                 if(!got_gzip)
                 {
                     compressions.push_back(compression_t::COMPRESSION_GZIP);

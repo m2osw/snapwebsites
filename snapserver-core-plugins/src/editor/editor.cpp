@@ -32,7 +32,6 @@
 // snapwebsites
 //
 #include    <snapwebsites/dbutils.h>
-#include    <snapwebsites/flags.h>
 #include    <snapwebsites/mkgmtime.h>
 #include    <snapwebsites/qcompatibility.h>
 #include    <snapwebsites/qdomhelpers.h>
@@ -53,6 +52,11 @@
 //
 #include    <snapdev/not_reached.h>
 #include    <snapdev/not_used.h>
+
+
+// communicatord
+//
+#include    "communicatord/flags.h"
 
 
 // libtld
@@ -780,7 +784,7 @@ void editor::process_new_draft()
                 // (because if it happens often it could mean
                 // robots are working on the website!)
                 //
-                snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
+                communicatord::flag::pointer_t flag(COMMUNICATORD_FLAG_UP(
                               "snapserver-plugin"
                             , "editor"
                             , "new-draft"

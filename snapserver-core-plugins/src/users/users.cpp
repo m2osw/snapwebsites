@@ -84,7 +84,6 @@
 
 // snapwebsites
 //
-#include    <snapwebsites/flags.h>
 #include    <snapwebsites/qdomhelpers.h>
 #include    <snapwebsites/qstring_stream.h>
 #include    <snapwebsites/snap_lock.h>
@@ -99,6 +98,11 @@
 //
 #include    <snapdev/not_reached.h>
 #include    <snapdev/not_used.h>
+
+
+// communicatord
+//
+#include    "communicatord/flags.h"
 
 
 // Qt
@@ -2594,7 +2598,7 @@ void users::make_cookie_secure(http_cookie & cookie)
             //
             QString const site_key(f_snap->get_site_key_with_slash());
             std::string site(site_key.toUtf8().data());
-            snap::snap_flag::pointer_t flag(SNAP_FLAG_UP(
+            communicatord::flag::pointer_t flag(COMMUNICATORD_FLAG_UP(
                           "snapserver-plugin"
                         , "users"
                         , "secure-cookie"
