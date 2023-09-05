@@ -68,7 +68,7 @@
 
 
 
-SERVERPLUGINS_START(snapserver_manager, 1, 0)
+SERVERPLUGINS_START(snapserver_manager)
     , ::serverplugins::description(
             "Manage the snapsnapserver_manager settings.")
     , ::serverplugins::dependency("server")

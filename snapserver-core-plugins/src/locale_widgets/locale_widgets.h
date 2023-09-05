@@ -55,6 +55,9 @@ namespace locale_widgets
 
 
 
+SERVERPLUGINS_VERSION(locale_widgets, 1, 0)
+
+
 class locale_widgets
     : public serverplugins::plugin
 {

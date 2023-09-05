@@ -61,7 +61,7 @@ namespace images
 {
 
 
-SERVERPLUGINS_START(images, 1, 0)
+SERVERPLUGINS_START(images)
     , ::serverplugins::description(
             "Transform images in one way or another. Also used to generate"
             " previews of attachments such as the first page of a PDF file.")

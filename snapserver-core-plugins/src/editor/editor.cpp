@@ -88,7 +88,9 @@ namespace snap
 namespace editor
 {
 
-SERVERPLUGINS_START(editor, 1, 0)
+
+
+SERVERPLUGINS_START(editor)
     , ::serverplugins::description(
             "Offer a WYSIWYG* editor to people using the website."
             " The editor appears wherever a plugin creates a div tag with"

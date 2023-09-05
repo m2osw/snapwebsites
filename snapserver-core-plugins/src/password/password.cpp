@@ -96,6 +96,9 @@ namespace password
 {
 
 
+SERVERPLUGINS_VERSION(password, 1, 0)
+
+
 SERVERPLUGINS_START(password, 1, 0)
     , ::serverplugins::description(
             "Check passwords of newly created users for strength."

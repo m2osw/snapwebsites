@@ -61,7 +61,7 @@ namespace locale_settings
 {
 
 
-SERVERPLUGINS_START(locale_settings, 1, 0)
+SERVERPLUGINS_START(locale_settings)
     , ::serverplugins::description(
             "Define locale functions to be used throughout all the plugins."
             " It handles time and date, timezone, numbers, currency, etc.")

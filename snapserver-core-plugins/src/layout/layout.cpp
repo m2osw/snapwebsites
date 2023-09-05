@@ -78,7 +78,7 @@ namespace layout
 
 
 
-SERVERPLUGINS_START(layout, 1, 0)
+SERVERPLUGINS_START(layout)
     , ::serverplugins::description(
             "Determine the layout for a given content and generate the output"
             " for that layout.")

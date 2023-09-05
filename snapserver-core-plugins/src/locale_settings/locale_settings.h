@@ -61,6 +61,9 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 
+SERVERPLUGINS_VERSION(locale_settings, 1, 0)
+
+
 class locale_settings
     : public serverplugins::plugin
 {

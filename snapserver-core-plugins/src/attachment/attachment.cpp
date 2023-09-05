@@ -73,7 +73,7 @@ namespace attachment
 
 
 
-SERVERPLUGINS_START(attachment, 1, 0)
+SERVERPLUGINS_START(attachment)
     , ::serverplugins::description(
             "Handle the output of attachments, which includes sending the"
             " proper compressed file and in some cases transforming the file"

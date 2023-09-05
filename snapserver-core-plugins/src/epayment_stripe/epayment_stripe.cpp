@@ -71,7 +71,7 @@ namespace epayment_stripe
 {
 
 
-SERVERPLUGINS_START(epayment_stripe, 1, 0)
+SERVERPLUGINS_START(epayment_stripe)
     , ::serverplugins::description(
             "The stripe e-Payment Facility plugin offers payment from the"
             " client's stripe account.")

@@ -27,6 +27,7 @@ namespace antihammering
 {
 
 
+
 enum class name_t
 {
     SNAP_NAME_ANTIHAMMERING_BLOCKED,
@@ -42,6 +43,9 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 DECLARE_MAIN_EXCEPTION(antihammering_exception);
 
+
+
+SERVERPLUGINS_VERSION(antihammering, 1, 0)
 
 
 class antihammering

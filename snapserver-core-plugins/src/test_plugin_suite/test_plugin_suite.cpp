@@ -42,7 +42,7 @@ namespace test_plugin_suite
 {
 
 
-SERVERPLUGINS_START(test_plugin_suite, 1, 0)
+SERVERPLUGINS_START(test_plugin_suite)
     , ::serverplugins::description(
             "The test_plugin_suite plugin is the low level test plugin"
             " capability, which gives you the ability to implement unit"

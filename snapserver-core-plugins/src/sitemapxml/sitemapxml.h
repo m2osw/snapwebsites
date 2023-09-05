@@ -73,6 +73,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(sitemapxml, 1, 0)
+
+
 class sitemapxml
     : public serverplugins::plugin
     , public path::path_execute

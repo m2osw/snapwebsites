@@ -67,7 +67,7 @@ namespace path
 
 
 
-SERVERPLUGINS_START(path, 1, 0)
+SERVERPLUGINS_START(path)
     , ::serverplugins::description(
             "This plugin manages the path to a page. This is used to determine"
             " the plugin that knows how to handle the data displayed to the user"

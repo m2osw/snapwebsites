@@ -61,7 +61,7 @@ namespace cookie_consent_silktide
 {
 
 
-SERVERPLUGINS_START(cookie_consent_silktide, 1, 0)
+SERVERPLUGINS_START(cookie_consent_silktide)
     , ::serverplugins::description(
             "Show an in-page popup allowing users to agree on use of cookies."
             " This plugin makes use the third party silktide cookie-consent tool.")

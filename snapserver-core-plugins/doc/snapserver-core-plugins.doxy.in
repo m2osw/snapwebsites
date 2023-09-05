@@ -2049,8 +2049,8 @@ PREDEFINED             = DEBUG=1
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
 EXPAND_AS_DEFINED      = SNAP_SIGNAL \
-                         SNAP_PLUGIN_START \
-                         SNAP_PLUGIN_END
+                         SERVERPLUGINS_START \
+                         SERVERPLUGINS_END
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES then doxygen's preprocessor will
 # remove all references to function-like macros that are alone on a line, have

@@ -150,7 +150,7 @@ namespace ecommerce
 {
 
 
-SERVERPLUGINS_START(ecommerce, 1, 0)
+SERVERPLUGINS_START(ecommerce)
     , ::serverplugins::description(
             "The e-Commerce plugin offers all the necessary features a"
             " website needs to offer a full e-Commerce environment so your"

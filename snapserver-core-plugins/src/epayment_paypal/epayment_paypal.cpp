@@ -71,7 +71,8 @@ namespace epayment_paypal
 {
 
 
-SERVERPLUGINS_START(epayment_paypal, 1, 0)
+
+SERVERPLUGINS_START(epayment_paypal)
     , ::serverplugins::description(
             "The PayPal e-Payment Facility plugin offers payment from the"
             " client's PayPal account.")

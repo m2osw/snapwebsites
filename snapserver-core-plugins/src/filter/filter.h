@@ -40,6 +40,9 @@ DECLARE_EXCEPTION(filter_exception, filter_exception_invalid_arguement);
 
 
 
+SERVERPLUGINS_VERSION(filter, 1, 0)
+
+
 class filter
     : public serverplugins::plugin
 {

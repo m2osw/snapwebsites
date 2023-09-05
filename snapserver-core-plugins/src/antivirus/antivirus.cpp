@@ -70,7 +70,7 @@ namespace antivirus
 
 
 
-SERVERPLUGINS_START(antivirus, 1, 0)
+SERVERPLUGINS_START(antivirus)
     , ::serverplugins::description(
             "The anti-virus plugin is used to verify that a file is not a"
             " virus. When a file that a user uploaded is found to be a virus"

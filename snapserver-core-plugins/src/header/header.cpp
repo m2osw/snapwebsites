@@ -43,7 +43,7 @@ namespace header
 {
 
 
-SERVERPLUGINS_START(header, 1, 0)
+SERVERPLUGINS_START(header)
     , ::serverplugins::description(
             "Allows you to add/remove HTML and HTTP headers to your content."
             " Note that this module can, but should not be used to manage meta"

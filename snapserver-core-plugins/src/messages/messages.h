@@ -41,6 +41,9 @@ DECLARE_EXCEPTION(messages_exception, messages_exception_already_defined);
 
 
 
+SERVERPLUGINS_VERSION(messages, 1, 0)
+
+
 class messages
     : public serverplugins::plugin
     , public QtSerialization::QSerializationObject

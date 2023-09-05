@@ -96,6 +96,9 @@ private:
 };
 
 
+SERVERPLUGINS_VERSION(path, 1, 0)
+
+
 class path
     : public serverplugins::plugin
 {

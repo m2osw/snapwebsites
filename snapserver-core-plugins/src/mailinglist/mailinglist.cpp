@@ -43,7 +43,7 @@ namespace mailinglist
 {
 
 
-SERVERPLUGINS_START(mailinglist, 1, 0)
+SERVERPLUGINS_START(mailinglist)
     , ::serverplugins::description(
             "Handle lists of emails for systems such as newsletters."
             " This plugin is responsible to offer users a way to subscribe"

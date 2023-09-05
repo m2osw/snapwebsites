@@ -56,7 +56,7 @@ namespace bookkeeping
 
 
 
-SERVERPLUGINS_START(bookkeeping, 1, 0)
+SERVERPLUGINS_START(bookkeeping)
     , ::serverplugins::description(
             "The bookkeeping plugin offers a basic set of functionality to"
             " manage your small business books: expensives, invoices, payroll,"

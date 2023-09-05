@@ -52,6 +52,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(qrcode, 1, 0)
+
+
 class qrcode
     : public serverplugins::plugin
     , public path::path_execute

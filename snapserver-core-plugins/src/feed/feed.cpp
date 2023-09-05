@@ -68,7 +68,7 @@ namespace feed
 
 
 
-SERVERPLUGINS_START(feed, 1, 0)
+SERVERPLUGINS_START(feed)
     , ::serverplugins::description(
             "System used to generate RSS, Atom and other feeds. It also"
             " handles subscriptions for subscription based feed systems"

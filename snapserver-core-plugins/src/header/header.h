@@ -40,6 +40,9 @@ const char *get_name(name_t name) __attribute__ ((const));
 
 
 
+SERVERPLUGINS_VERSION(header, 1, 0)
+
+
 class header
     : public serverplugins::plugin
     , public path::path_execute

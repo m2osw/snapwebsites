@@ -43,6 +43,9 @@ DECLARE_EXCEPTION(menu_exception, menu_exception_invalid_db_data);
 
 
 
+SERVERPLUGINS_VERSION(menu, 1, 0)
+
+
 class menu
     : public serverplugins::plugin
     , public layout::layout_content

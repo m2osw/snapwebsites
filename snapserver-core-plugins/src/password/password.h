@@ -171,6 +171,9 @@ private:
 
 
 
+SERVERPLUGINS_VERSION(password, 1, 0)
+
+
 class password
     : public serverplugins::plugin
     , public path::path_execute

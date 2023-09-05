@@ -54,6 +54,9 @@ DECLARE_EXCEPTION(images_exception, images_exception_no_backend);
 
 
 
+SERVERPLUGINS_VERSION(images, 1, 0)
+
+
 class images
     : public serverplugins::plugin
     , public server::backend_action

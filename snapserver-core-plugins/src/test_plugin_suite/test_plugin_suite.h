@@ -231,6 +231,9 @@ private:
     if(!(test)) throw ::snap::test_plugin_suite::test_plugin_suite_assert_failed(QString("%1:%2:%3: %4").arg(__FILE__).arg(__func__).arg(__LINE__).arg(#test));
 
 
+SERVERPLUGINS_VERSION(test_plugin_suite, 1, 0)
+
+
 class test_plugin_suite
     : public serverplugins::plugin
 {

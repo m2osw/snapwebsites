@@ -57,7 +57,7 @@ namespace antihammering
 {
 
 
-SERVERPLUGINS_START(antihammering, 1, 0)
+SERVERPLUGINS_START(antihammering)
     , ::serverplugins::description(
             "System used to avoid hammering of our Snap! Websites."
             " The plugin counts the number of hits and blocks users who"

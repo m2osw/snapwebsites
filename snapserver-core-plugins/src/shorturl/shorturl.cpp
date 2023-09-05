@@ -97,7 +97,7 @@ namespace shorturl
 {
 
 
-SERVERPLUGINS_START(shorturl, 1, 0)
+SERVERPLUGINS_START(shorturl)
     , ::serverplugins::description(
             "Fully automated management of short URLs for this website.")
     , ::serverplugins::icon("/images/shorturl/shorturl-logo-64x64.png")

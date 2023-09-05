@@ -54,7 +54,7 @@ namespace epayment_creditcard
 {
 
 
-SERVERPLUGINS_START(epayment_creditcard, 1, 0)
+SERVERPLUGINS_START(epayment_creditcard)
     , ::serverplugins::description(
             "Generate a credit card form that the end user is expected to"
             " fill in. This plugin is generally not installed by itself,"

@@ -100,7 +100,7 @@ namespace content
 {
 
 
-SERVERPLUGINS_START(content, 1, 0)
+SERVERPLUGINS_START(content)
     , ::serverplugins::description(
             "Manage nearly all the content of your website. This plugin handles"
             " your pages, the website taxonomy (tags, categories, permissions...)"

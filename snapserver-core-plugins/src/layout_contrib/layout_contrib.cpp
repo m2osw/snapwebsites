@@ -38,7 +38,7 @@ namespace layout_contrib
 
 
 
-SERVERPLUGINS_START(layout_contrib, 1, 0)
+SERVERPLUGINS_START(layout_contrib)
     , ::serverplugins::description(
             "Offer additional files (JS, CSS, Fonts) for layouts.")
     , ::serverplugins::icon("/images/snap/layout_contrib-logo-64x64.png")

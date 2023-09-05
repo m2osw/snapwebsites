@@ -85,6 +85,9 @@ DECLARE_EXCEPTION(permissions_exception, permissions_exception_invalid_path);
 
 
 
+SERVERPLUGINS_VERSION(permissions, 1, 0)
+
+
 class permissions
     : public serverplugins::plugin
     , public links::links_cloned

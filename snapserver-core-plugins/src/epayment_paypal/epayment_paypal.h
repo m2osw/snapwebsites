@@ -114,6 +114,8 @@ DECLARE_EXCEPTION(epayment_paypal_exception, epayment_paypal_exception_io_error)
 
 
 
+SERVERPLUGINS_VERSION(epayment_paypal, 1, 0)
+
 
 class epayment_paypal
     : public serverplugins::plugin

@@ -42,6 +42,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(javascript, 1, 0)
+
+
 class javascript
     : public serverplugins::plugin
 {

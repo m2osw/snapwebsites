@@ -50,6 +50,9 @@ DECLARE_EXCEPTION(snapserver_manager_exception, snapserver_manager_exception_inv
 
 
 
+SERVERPLUGINS_VERSION(snapserver_manager, 1, 0)
+
+
 class snapserver_manager
     : public snap_manager::plugin_base
 {

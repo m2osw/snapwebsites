@@ -74,7 +74,7 @@ namespace sortable
 {
 
 
-SERVERPLUGINS_START(sortable, 1, 0)
+SERVERPLUGINS_START(sortable)
     , ::serverplugins::description(
             "Gives the end users the ability to sort list items."
             " This plugin is very rarely added by itself. Instead, another"

@@ -64,6 +64,9 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 
+SERVERPLUGINS_VERSION(ecommerce, 1, 0)
+
+
 class ecommerce
     : public serverplugins::plugin
     , public path::path_execute

@@ -40,6 +40,9 @@ DECLARE_MAIN_EXCEPTION(hashtag_exception);
 
 
 
+SERVERPLUGINS_VERSION(hashtag, 1, 0)
+
+
 class hashtag
     : public serverplugins::plugin
 {

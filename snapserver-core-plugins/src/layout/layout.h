@@ -71,6 +71,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(layout, 1, 0)
+
+
 class layout
     : public serverplugins::plugin
 {

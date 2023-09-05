@@ -28,6 +28,9 @@ namespace search
 
 
 
+SERVERPLUGINS_VERSION(search, 1, 0)
+
+
 class search
     : public serverplugins::plugin
 {

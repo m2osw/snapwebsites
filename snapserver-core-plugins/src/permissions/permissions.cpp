@@ -71,7 +71,7 @@ namespace permissions
 {
 
 
-SERVERPLUGINS_START(permissions, 1, 0)
+SERVERPLUGINS_START(permissions)
     , ::serverplugins::description(
             "The permissions plugin is one of the most important plugins of the"
             " Snap! system. It allows us to determine whether the current user"

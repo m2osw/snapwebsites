@@ -66,7 +66,7 @@ namespace filter
 {
 
 
-SERVERPLUGINS_START(filter, 1, 0)
+SERVERPLUGINS_START(filter)
     , ::serverplugins::description(
             "This plugin offers functions to filter XML and HTML data."
             " Especially, it is used to avoid Cross Site Attacks (XSS) from"

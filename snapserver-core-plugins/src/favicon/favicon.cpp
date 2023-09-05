@@ -63,7 +63,11 @@ namespace favicon
 {
 
 
-SERVERPLUGINS_START(favicon, 1, 0)
+
+SERVERPLUGINS_VERSION(favicon, 1, 0)
+
+
+SERVERPLUGINS_START(favicon)
     , ::serverplugins::description(
             "Handling of the favicon.ico file(s).")
     , ::serverplugins::icon("/images/snap/snap-logo-64x64.png")

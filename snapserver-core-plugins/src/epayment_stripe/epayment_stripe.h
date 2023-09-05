@@ -91,6 +91,9 @@ DECLARE_EXCEPTION(epayment_stripe_exception, epayment_stripe_exception_invalid_e
 
 
 
+SERVERPLUGINS_VERSION(epayment_stripe, 1, 0)
+
+
 class epayment_stripe
     : public serverplugins::plugin
     //, public path::path_execute

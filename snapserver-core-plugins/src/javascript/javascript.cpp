@@ -69,7 +69,7 @@ namespace javascript
 {
 
 
-SERVERPLUGINS_START(javascript, 1, 0)
+SERVERPLUGINS_START(javascript)
     , ::serverplugins::description(
             "Offer server side JavaScript support for different plugins."
             " This implementation makes use of the QScript extension.")

@@ -61,6 +61,9 @@ DECLARE_EXCEPTION(sessions_exception, sessions_exception_no_random_data);
 
 
 
+SERVERPLUGINS_VERSION(sessions, 1, 0)
+
+
 class sessions
     : public serverplugins::plugin
     , public layout::layout_content

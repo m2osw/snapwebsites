@@ -69,8 +69,11 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 
+SERVERPLUGINS_VERSION(cookie_consent_silktide, 1, 0)
+
+
 class cookie_consent_silktide
-        : public serverplugins::plugin
+    : public serverplugins::plugin
 {
 public:
     SERVERPLUGINS_DEFAULTS(cookie_consent_silktide);

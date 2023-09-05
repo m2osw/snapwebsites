@@ -77,7 +77,7 @@ namespace oauth2
 {
 
 
-SERVERPLUGINS_START(oauth2, 1, 0)
+SERVERPLUGINS_START(oauth2)
     , ::serverplugins::description(
             "The OAuth2 plugin offers an authentication mechanism to"
             " be used by all the other plugins that support a REST API."

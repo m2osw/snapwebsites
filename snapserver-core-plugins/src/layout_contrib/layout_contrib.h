@@ -28,6 +28,9 @@ namespace layout_contrib
 
 
 
+SERVERPLUGINS_VERSION(layout_contrib, 1, 0)
+
+
 class layout_contrib
     : public serverplugins::plugin
 {

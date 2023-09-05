@@ -44,6 +44,9 @@ DECLARE_EXCEPTION(detectadblocker_exception, detectadblocker_exception_invalid_p
 
 
 
+SERVERPLUGINS_VERSION(detectadblocker, 1, 0)
+
+
 class detectadblocker
     : public serverplugins::plugin
     , public path::path_execute

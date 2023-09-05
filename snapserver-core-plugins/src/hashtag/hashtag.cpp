@@ -42,7 +42,7 @@ namespace hashtag
 {
 
 
-SERVERPLUGINS_START(hashtag, 1, 0)
+SERVERPLUGINS_START(hashtag)
     , ::serverplugins::description(
             "Plugin used to transform #hashtag entries into tags and links."
             " Because all the pages linked to a particular hashtags appear"

@@ -55,6 +55,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(sortable, 1, 0)
+
+
 class sortable
     : public serverplugins::plugin
 {

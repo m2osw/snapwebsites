@@ -54,7 +54,7 @@ namespace detectadblocker
 {
 
 
-SERVERPLUGINS_START(detectadblocker, 1, 0)
+SERVERPLUGINS_START(detectadblocker)
     , ::serverplugins::description(
             "The detect ad blocker plugin is used to set a variable to"
             " know whether an ad blocker is active on the client browser."

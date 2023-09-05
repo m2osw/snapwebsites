@@ -57,6 +57,9 @@ DECLARE_EXCEPTION(locale_exception, locale_exception_invalid_argument);
 
 
 
+SERVERPLUGINS_VERSION(locale, 1, 0)
+
+
 class locale
     : public serverplugins::plugin
 {

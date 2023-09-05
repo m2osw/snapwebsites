@@ -164,6 +164,9 @@ private:
 
 
 
+SERVERPLUGINS_VERSION(editor, 1, 0)
+
+
 class editor
     : public serverplugins::plugin
     , public links::links_cloned

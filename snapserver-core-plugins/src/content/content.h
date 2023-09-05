@@ -595,6 +595,9 @@ private:
 
 
 
+SERVERPLUGINS_VERSION(content, 1, 0)
+
+
 class content
     : public serverplugins::plugin
     , public server::backend_action

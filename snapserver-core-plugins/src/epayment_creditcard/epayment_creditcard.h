@@ -188,6 +188,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(epayment_creditcard, 1, 0)
+
+
 class epayment_creditcard
     : public serverplugins::plugin
     , public epayment_creditcard_gateway_t

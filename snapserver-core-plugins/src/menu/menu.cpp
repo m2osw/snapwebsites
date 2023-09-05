@@ -59,7 +59,7 @@ namespace menu
 {
 
 
-SERVERPLUGINS_START(menu, 1, 0)
+SERVERPLUGINS_START(menu)
     , ::serverplugins::description(
             "This plugin generates lists of pages used to form a menu."
             " It manages two different types of lists: automated lists,"

@@ -58,7 +58,9 @@ namespace snap
 namespace messages
 {
 
-SERVERPLUGINS_START(messages, 1, 0)
+
+
+SERVERPLUGINS_START(messages)
     , ::serverplugins::description(
             "The messages plugin is used by many other plugins to manage"
             " debug, information, warning, and error messages in the Snap! system.")

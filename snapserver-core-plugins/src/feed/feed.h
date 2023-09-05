@@ -54,6 +54,9 @@ char const * get_name(name_t name) __attribute__ ((const));
 
 
 
+SERVERPLUGINS_VERSION(feed, 1, 0)
+
+
 class feed
     : public serverplugins::plugin
 {

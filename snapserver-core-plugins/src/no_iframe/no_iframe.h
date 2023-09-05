@@ -57,6 +57,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(no_iframe, 1, 0)
+
+
 class no_iframe
     : public serverplugins::plugin
 {

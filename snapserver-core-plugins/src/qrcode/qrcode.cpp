@@ -63,7 +63,7 @@ namespace qrcode
 {
 
 
-SERVERPLUGINS_START(qrcode, 1, 0)
+SERVERPLUGINS_START(qrcode)
     , ::serverplugins::description(
             "Generate the QR Code of the website public pages.")
     , ::serverplugins::icon("/images/qrcode/qrcode-logo-64x64.png")

@@ -55,7 +55,7 @@ namespace no_iframe
 
 
 
-SERVERPLUGINS_START(no_iframe, 1, 0)
+SERVERPLUGINS_START(no_iframe)
     , ::serverplugins::description(
             "The no_iframe plugin gives administrators a way to prevent a"
             " website from being shown in another website iframe tag.")

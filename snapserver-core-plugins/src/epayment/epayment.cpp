@@ -53,7 +53,9 @@ namespace epayment
 {
 
 
-SERVERPLUGINS_START(epayment, 1, 0)
+SERVERPLUGINS_VERSION(epayment, 1, 0)
+
+SERVERPLUGINS_START(epayment)
     , ::serverplugins::description(
             "The e-Payment plugin offers one common way to process an"
             " electronic or not so electronic payment online (i.e. you"

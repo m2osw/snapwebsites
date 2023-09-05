@@ -54,6 +54,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(oauth2, 1, 0)
+
+
 class oauth2
     : public serverplugins::plugin
     , public path::path_execute

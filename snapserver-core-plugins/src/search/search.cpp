@@ -42,7 +42,7 @@ namespace search
 {
 
 
-SERVERPLUGINS_START(search, 1, 0)
+SERVERPLUGINS_START(search)
     , ::serverplugins::description(
             "The search plugin index your website public pages in order to"
             " allow your users to search its content.")

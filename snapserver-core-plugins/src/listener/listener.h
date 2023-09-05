@@ -29,6 +29,8 @@ DECLARE_MAIN_EXCEPTION(listener_exception);
 DECLARE_EXCEPTION(listener_exception, listener_exception_status_missing);
 
 
+SERVERPLUGINS_VERSION(listener, 1, 0)
+
 
 class listener
     : public serverplugins::plugin

@@ -67,6 +67,9 @@ public:
 
 
 
+SERVERPLUGINS_VERSION(robotstxt, 1, 0)
+
+
 class robotstxt
     : public serverplugins::plugin
     , public path::path_execute

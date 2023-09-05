@@ -50,6 +50,9 @@ DECLARE_EXCEPTION(bookkeeping_exception, bookkeeping_exception_invalid_path);
 
 
 
+SERVERPLUGINS_VERSION(bookkeeping, 1, 0)
+
+
 class bookkeeping
     : public serverplugins::plugin
     , public path::path_execute

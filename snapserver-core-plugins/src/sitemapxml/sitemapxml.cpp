@@ -101,7 +101,7 @@ namespace sitemapxml
 {
 
 
-SERVERPLUGINS_START(sitemapxml, 1, 0)
+SERVERPLUGINS_START(sitemapxml)
     , ::serverplugins::description(
             "Generates the sitemap.xml file which is used by search engines to"
             " discover your website pages. You can change the settings to hide"

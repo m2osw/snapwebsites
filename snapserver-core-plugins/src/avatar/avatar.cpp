@@ -43,7 +43,7 @@ namespace avatar
 
 
 
-SERVERPLUGINS_START(avatar, 1, 0)
+SERVERPLUGINS_START(avatar)
     , ::serverplugins::description(
             "Transform user emails in comments, pages, profiles"
             " to Avatar images.")

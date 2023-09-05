@@ -163,6 +163,9 @@ private:
 
 
 
+SERVERPLUGINS_VERSION(list, 1, 0)
+
+
 class list
     : public serverplugins::plugin
     , public server::backend_action

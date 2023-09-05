@@ -3523,7 +3523,7 @@ bool sendmail::parse_email(QString const & email_data, email & e, bool bounce_em
 
 
 
-SNAP_PLUGIN_END()
+
 
 // Multipart emails are documented here
 // http://tools.ietf.org/html/rfc2557

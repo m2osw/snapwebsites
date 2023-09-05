@@ -43,6 +43,9 @@ DECLARE_EXCEPTION(attachment_exception, attachment_exception_invalid_filename);
 
 
 
+SERVERPLUGINS_VERSION(attachment, 1, 0)
+
+
 class attachment
     : public serverplugins::plugin
     , public path::path_execute

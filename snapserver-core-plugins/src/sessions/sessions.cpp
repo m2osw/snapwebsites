@@ -210,7 +210,7 @@ namespace sessions
 {
 
 
-SERVERPLUGINS_START(sessions, 1, 0)
+SERVERPLUGINS_START(sessions)
     , ::serverplugins::description(
             "The sessions plugin is used by many other plugins to generate"
             " session identifiers and save information about the given session."

@@ -63,7 +63,8 @@ namespace locale
 {
 
 
-SERVERPLUGINS_START(locale, 1, 0)
+
+SERVERPLUGINS_START(locale)
     , ::serverplugins::description(
             "Define base locale functions to be used throughout all the"
             " plugins. It handles time and date, timezone, numbers, currency,"

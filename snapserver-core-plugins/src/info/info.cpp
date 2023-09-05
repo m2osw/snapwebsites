@@ -57,7 +57,7 @@ namespace info
 
 
 
-SERVERPLUGINS_START(info, 1, 0)
+SERVERPLUGINS_START(info)
     , ::serverplugins::description(
             "The info plugin offers handling of the core information of your"
            "system. It is opens a settings page where all that information"

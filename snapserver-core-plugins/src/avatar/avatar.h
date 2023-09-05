@@ -28,6 +28,9 @@ namespace avatar
 
 
 
+SERVERPLUGINS_VERSION(avatar, 1, 0)
+
+
 class avatar
     : public serverplugins::plugin
 {

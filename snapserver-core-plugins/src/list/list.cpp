@@ -86,7 +86,7 @@ namespace list
 {
 
 
-SERVERPLUGINS_START(list, 1, 0)
+SERVERPLUGINS_START(list)
     , ::serverplugins::description(
             "Generate lists of pages using a set of parameters as defined"
             " by the system (some lists are defined internally) and the end"

@@ -41,6 +41,9 @@ DECLARE_MAIN_EXCEPTION(antivirus_exception);
 
 
 
+SERVERPLUGINS_VERSION(antivirus, 1, 0)
+
+
 class antivirus
     : public serverplugins::plugin
     , public layout::layout_content

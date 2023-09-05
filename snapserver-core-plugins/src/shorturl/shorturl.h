@@ -45,6 +45,9 @@ DECLARE_MAIN_EXCEPTION(shorturl_exception);
 
 
 
+SERVERPLUGINS_VERSION(shorturl, 1, 0)
+
+
 class shorturl
     : public serverplugins::plugin
     , public path::path_execute

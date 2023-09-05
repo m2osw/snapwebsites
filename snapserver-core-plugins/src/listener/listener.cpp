@@ -51,7 +51,8 @@ namespace listener
 {
 
 
-SERVERPLUGINS_START(listener, 1, 0)
+
+SERVERPLUGINS_START(listener)
     , ::serverplugins::description(
             "Check whether a page or document (when the page represents an"
             " attachment) is ready for consumption. For example, the listener"

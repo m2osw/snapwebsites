@@ -41,6 +41,9 @@ DECLARE_EXCEPTION(info_exception, info_exception_invalid_path);
 
 
 
+SERVERPLUGINS_VERSION(info, 1, 0)
+
+
 class info
     : public serverplugins::plugin
     , public path::path_execute
