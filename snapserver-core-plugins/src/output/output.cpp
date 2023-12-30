@@ -59,7 +59,7 @@ namespace output
 {
 
 
-SERVERPLUGINS_START(output, 1, 0)
+SERVERPLUGINS_START(output)
     , ::serverplugins::description(
             "Output nearly all the content of your website. This plugin handles"
             " the transformation of you pages to HTML, PDF, text, etc.")

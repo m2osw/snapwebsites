@@ -64,7 +64,7 @@ namespace server_access
 
 
 
-SERVERPLUGINS_START(server_access, 1, 0)
+SERVERPLUGINS_START(server_access)
     , ::serverplugins::description(
             "Intercept default output and transform it for AJAX responses."
             " Handle AJAX responses for functions that do it right.")
