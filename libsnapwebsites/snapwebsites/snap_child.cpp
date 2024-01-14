@@ -7835,6 +7835,8 @@ void snap_child::output_cookies()
  */
 QString snap_child::get_unique_number()
 {
+    // replace file handling with snapdev/unique_number.h
+
     server::pointer_t server(get_server());
     QString const data_path(get_data_path());
 
@@ -7844,7 +7846,7 @@ QString snap_child::get_unique_number()
         QLockFile counter(name);
         if(!counter.open(QIODevice::ReadWrite))
         {
-            throw snap_child_exception_unique_number_error("count not open counter file \"" + name + "\"");
+            throw snap_child_exception_unique_number_error("could not open counter file \"" + name + "\"");
         }
         // the very first time the size is zero (empty)
         if(counter.size() != 0)
@@ -10240,5 +10242,4 @@ void snap_child::extract_resource(QString const & resource_name, QString const &
 
 
 } // namespace snap
-
 // vim: ts=4 sw=4 et
