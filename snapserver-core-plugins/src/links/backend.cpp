@@ -107,7 +107,7 @@ namespace links
  *
  * # delete all links named users::author in this page
  * snapbackend [website-url] \
- *      [--config snapserver.conf]
+ *      [--config snapserver.conf] \
  *      --action links::deletelink \
  *      --param SOURCE_LINK_NAME=users::author \
  *              SOURCE_LINK=/ \
