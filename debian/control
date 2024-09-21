@@ -131,29 +131,6 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
  projects to offer extensions to snapmanagercgi and snapmanagerdaemon in
  the form of plugins.
 
-Package: libsnapwatchdog
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator, snapdbproxy
-Description: Track status and health of any number of servers.
- Snap! Watchdog is a tool that works on any number of servers to
- gather various information that let you know how your server is
- doing.
- .
- This is the base library binary package.
-
-Package: libsnapwatchdog-dev
-Section: libdevel
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-    libsnapwatchdog (= ${binary:Version})
-Description: Track status and health of any number of servers.
- Snap! Watchdog is a tool that works on any number of servers to
- gather various information that let you know how your server is
- doing.
- .
- This is the developer package.
-
 Package: libsnapwebsites
 Section: libdevel
 Architecture: any
@@ -235,7 +212,7 @@ Package: snapbackend
 Section: admin
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy,
+    snapserver-core-plugins (>= 1.0.0), cluck, snapdbproxy,
     snapmanagerdaemon
 Recommends: snapfirewall
 Suggests: snapbackend-doc, snapserver
@@ -419,7 +396,7 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
 Package: snapdbproxy
 Section: admin
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, snaplock
+Depends: ${shlibs:Depends}, ${misc:Depends}, cluck
 Suggests: cassandra (>= 3.5.0), snapdbproxy-doc
 Description: Fast Websites: powerful CMS for Apache written in C++.
  Snap! C++ runs your CMS using binary code written in C and C++.
@@ -508,35 +485,6 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
  This is the snaplistd-specific package.
 
 Package: snaplistd-doc
-Section: admin
-Architecture: all
-Depends: ${misc:Depends}
-Description: Fast Websites: powerful CMS for Apache written in C++.
- Snap! C++ runs your CMS using binary code written in C and C++.
- The basic concept is taken from a large set of Drupal 6.x
- modules from Drupal Core and necessary 3rd party modules (we've been using
- over 220 modules on top of the Core modules.) The result is quite
- extensible as it offers a plug-in mechanism that everyone is welcome to use to
- create their own extensions.
- .
- Documentation package.
-
-Package: snaplock
-Section: web
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, snapcommunicator
-Suggests: snaplock-doc
-Description: Fast Websites: powerful CMS for Apache written in C++.
- Snap! C++ runs your CMS using binary code written in C and C++.
- The basic concept is taken from a large set of Drupal 6.x
- modules from Drupal Core and necessary 3rd party modules (we've been using
- over 220 modules on top of the Core modules.) The result is quite
- extensible as it offers a plug-in mechanism that everyone is welcome to use to
- create their own extensions.
- .
- This is the snaplock-specific package.
-
-Package: snaplock-doc
 Section: admin
 Architecture: all
 Depends: ${misc:Depends}
@@ -704,38 +652,11 @@ Description: Fast Websites: powerful CMS for Apache written in C++.
  .
  This package contains the documentation for the core plugins dev package.
 
-Package: snapwatchdog
-Section: utils
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-    libsnapwatchdog (= ${binary:Version}),
-    snapwatchdog-core-plugins
-Suggests: snapmta | snapbounce
-Description: Track status and health of any number of servers.
- Snap! Watchdog is a tool that works on any number of servers to
- gather various information that let you know how your server is
- doing.
- .
- This package installs the server daemon that gathers the statistics
- on one server.
-
-Package: snapwatchdog-core-plugins
-Section: utils
-Architecture: any
-Depends: libsnapwatchdog (= ${binary:Version}), ${shlibs:Depends},
-    ${misc:Depends}
-Description: Plugins used to gather various types of data from your
- servers for the purpose of indicating the health of each computer
- in your cluster. This includes processes, CPU, memory, disk,
- number of network hits, connectivity.
- .
- This package contains required core plugins for the snapwatchdog daemon.
-
 Package: snapserver
 Section: web
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-    snapserver-core-plugins (>= 1.0.0), snaplock, snapdbproxy
+    snapserver-core-plugins (>= 1.0.0), cluck, snapdbproxy
 Recommends: snapdb
 Suggests: cassandra (>= 3.5.0), snapcgi, snapbounce, snapserver-doc
 Description: Fast Websites: powerful CMS for Apache written in C++.

@@ -1,9 +1,0 @@
-Document: snaplog
-Title: snaplog daemon
-Author: Alexis Wilke
-Abstract: This is the reference manual for the snaplog daemon.
-Section: web
-
-Format: HTML
-Index: /usr/share/doc/snaplog/html/index.html
-Files: /usr/share/doc/snaplog/html/*

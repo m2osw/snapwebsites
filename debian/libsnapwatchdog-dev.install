@@ -1,4 +1,0 @@
-debian/tmp/usr/include/snapmanager/plugins/watchdog/* usr/include/snapmanager/plugins/watchdog/
-debian/tmp/usr/include/snapwatchdog/*                 usr/include/snapwatchdog/
-debian/tmp/usr/lib/libsnapwatchdog.so                 usr/lib
-debian/tmp/usr/share/cmake/SnapWatchdog/*             usr/share/cmake/SnapWatchdog

@@ -1,9 +1,0 @@
-Document: snaplock
-Title: snaplock daemon
-Author: Alexis Wilke
-Abstract: This is the reference manual for the snaplock daemon.
-Section: web
-
-Format: HTML
-Index: /usr/share/doc/snaplock/html/index.html
-Files: /usr/share/doc/snaplock/html/*
