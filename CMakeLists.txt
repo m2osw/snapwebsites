@@ -131,7 +131,6 @@ add_subdirectory( snapdatabase            )
 add_subdirectory( snapdb                  )
 add_subdirectory( snaplayout              )
 add_subdirectory( snaplistd               )
-add_subdirectory( snaplock                )
 add_subdirectory( snaplog                 )
 
 # vim: ts=4 sw=4 et nocindent
